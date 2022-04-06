@@ -22,11 +22,11 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "15637538-7a2c-42e3-adbf-93bf0f156afb",
-        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
+        "ephemeral_id": "8efe1113-788d-47cf-8e81-b0ebadc3f5ba",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.0.0-beta1"
     },
     "anomali": {
         "limo": {
@@ -44,19 +44,19 @@ An example event for `limo` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
-        "snapshot": true,
-        "version": "8.0.0"
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2021-12-13T06:00:37.662Z",
+        "created": "2022-01-25T02:58:03.288Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2021-12-13T06:00:38Z",
+        "ingested": "2022-01-25T02:58:04Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -134,6 +134,7 @@ An example event for `limo` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -153,7 +154,9 @@ An example event for `limo` looks as following:
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| threat.indicator.url.full.text | Multi-field of `threat.indicator.url.full`. | match_only_text |
 | threat.indicator.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| threat.indicator.url.original.text | Multi-field of `threat.indicator.url.original`. | match_only_text |
 | threat.indicator.url.path | Path of the request, such as "/search". | wildcard |
 | threat.indicator.url.port | Port of the request, such as 443. | long |
 | threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
@@ -183,30 +186,33 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-13T06:02:03.635Z",
+    "@timestamp": "2022-01-25T03:00:07.167Z",
     "agent": {
-        "ephemeral_id": "78f6f452-5888-448d-b560-2cc5da34c0ab",
-        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
+        "ephemeral_id": "764c192d-9491-492a-b9e0-722495b33397",
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.0.0-beta1"
     },
     "anomali": {
         "threatstream": {
-            "classification": "private",
-            "confidence": 35,
-            "detail2": "imported by user 156",
-            "id": "3304738500",
-            "import_session_id": "3166",
+            "classification": "public",
+            "confidence": 56,
+            "detail2": "imported by user 723",
+            "id": "1785659799",
+            "import_session_id": "244",
             "itype": "mal_md5",
-            "resource_uri": "/api/v1/intelligence/P24670712639/",
-            "severity": "low",
-            "source_feed_id": "1624",
+            "md5": "6466e2",
+            "resource_uri": "/api/v1/intelligence/P44706407813/",
+            "severity": "very-high",
+            "source_feed_id": "3759",
             "state": "active",
             "trusted_circle_ids": [
-                "407"
+                "439",
+                "942",
+                "801"
             ],
-            "update_id": "2184632737",
+            "update_id": "3898969521",
             "value_type": "md5"
         }
     },
@@ -216,21 +222,21 @@ An example event for `threatstream` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "15d7ab55-3c36-48d1-b19e-655b72426246",
-        "snapshot": true,
-        "version": "8.0.0"
+        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2021-12-13T06:02:04Z",
+        "ingested": "2022-01-25T03:00:08Z",
         "kind": "enrichment",
-        "original": "{\"classification\":\"private\",\"confidence\":35,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 156\",\"id\":3304738500,\"import_session_id\":3166,\"itype\":\"mal_md5\",\"md5\":\"c0667e3cbdb8e7ed09e36cf16bbf367d270b7893dbd57a838add3f1f7d6e34f4\",\"resource_uri\":\"/api/v1/intelligence/P24670712639/\",\"severity\":\"low\",\"source\":\"Phony generated indicator\",\"source_feed_id\":1624,\"state\":\"active\",\"trusted_circle_ids\":\"407\",\"update_id\":2184632737,\"value_type\":\"md5\"}",
-        "severity": 3,
+        "original": "{\"classification\":\"public\",\"confidence\":56,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 723\",\"id\":1785659799,\"import_session_id\":244,\"itype\":\"mal_md5\",\"md5\":\"6466e2\",\"resource_uri\":\"/api/v1/intelligence/P44706407813/\",\"severity\":\"very-high\",\"source\":\"Default Organization\",\"source_feed_id\":3759,\"state\":\"active\",\"trusted_circle_ids\":\"439,942,801\",\"update_id\":3898969521,\"value_type\":\"md5\"}",
+        "severity": 9,
         "type": "indicator"
     },
     "input": {
@@ -244,19 +250,14 @@ An example event for `threatstream` looks as following:
     "threat": {
         "indicator": {
             "confidence": "Med",
-            "file": {
-                "hash": {
-                    "sha256": "c0667e3cbdb8e7ed09e36cf16bbf367d270b7893dbd57a838add3f1f7d6e34f4"
-                }
-            },
             "first_seen": "2020-10-08T12:22:16.000Z",
             "last_seen": "2020-10-08T12:24:42.000Z",
             "marking": {
                 "tlp": [
-                    "Amber"
+                    "White"
                 ]
             },
-            "provider": "Phony generated indicator",
+            "provider": "Default Organization",
             "type": "file"
         }
     }
@@ -324,6 +325,7 @@ An example event for `threatstream` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -337,7 +339,8 @@ An example event for `threatstream` looks as following:
 | threat.feed.name | Display friendly feed name | constant_keyword |
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.as.organization.name | Organization name. | keyword |
-| threat.indicator.confidence | Identifies the confidence rating assigned by the provider using STIX confidence scales. Recommended values:   \* Not Specified, None, Low, Medium, High   \* 0-10   \* Admirality Scale (1-6)   \* DNI Scale (5-95)   \* WEP Scale (Impossible - Certain) | keyword |
+| threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. Expected values are:   \* Not Specified   \* None   \* Low   \* Medium   \* High | keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
@@ -355,7 +358,9 @@ An example event for `threatstream` looks as following:
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| threat.indicator.url.full.text | Multi-field of `threat.indicator.url.full`. | match_only_text |
 | threat.indicator.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| threat.indicator.url.original.text | Multi-field of `threat.indicator.url.original`. | match_only_text |
 | threat.indicator.url.path | Path of the request, such as "/search". | wildcard |
 | threat.indicator.url.port | Port of the request, such as 443. | long |
 | threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |

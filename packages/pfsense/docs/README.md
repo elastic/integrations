@@ -25,66 +25,102 @@ An example event for `log` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-07-04T00:10:14.578Z",
+    "agent": {
+        "ephemeral_id": "238d98ab-083f-4ff7-990f-1651450ce860",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "pfsense.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "175.16.199.1",
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.1",
+        "port": 853
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "action": "block",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "pfsense.log",
+        "id": "72237",
+        "ingested": "2022-02-03T09:44:29Z",
+        "kind": "event",
+        "original": "\u003c134\u003e1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale\n",
+        "provider": "filterlog",
+        "reason": "match",
+        "timezone": "-05:00",
+        "type": [
+            "connection",
+            "denied"
+        ]
+    },
+    "input": {
+        "type": "udp"
+    },
     "log": {
+        "source": {
+            "address": "172.19.0.7:54953"
+        },
         "syslog": {
             "priority": 134
         }
     },
-    "destination": {
-        "geo": {
-            "continent_name": "Oceania",
-            "country_name": "Australia",
-            "location": {
-                "lon": 143.2104,
-                "lat": -33.494
-            },
-            "country_iso_code": "AU"
-        },
-        "as": {
-            "number": 13335,
-            "organization": {
-                "name": "Cloudflare, Inc."
-            }
-        },
-        "address": "1.1.1.1",
-        "port": 853,
-        "ip": "1.1.1.1"
-    },
-    "rule": {
-        "id": "1535324496"
-    },
-    "source": {
-        "port": 49724,
-        "address": "10.170.12.50",
-        "ip": "10.170.12.50"
-    },
-    "message": "146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,12617,0,DF,6,tcp,60,10.170.12.50,1.1.1.1,49724,853,0,S,1891286705,,64240,,mss;sackOK;TS;nop;wscale",
-    "tags": [
-        "preserve_original_event"
-    ],
+    "message": "146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
     "network": {
-        "community_id": "1:sHss/MZhCpIXxOfJoM05khzrJ4k=",
-        "transport": "tcp",
-        "type": "ipv4",
         "bytes": 60,
+        "community_id": "1:pOXVyPJTFJI5seusI/UD6SwvBjg=",
+        "direction": "outbound",
         "iana_number": "6",
-        "direction": "in"
+        "transport": "tcp",
+        "type": "ipv4"
     },
     "observer": {
         "ingress": {
-            "vlan": {
-                "id": "12"
-            },
             "interface": {
                 "name": "igb1.12"
+            },
+            "vlan": {
+                "id": "12"
             }
-        }
-    },
-    "@timestamp": "2021-07-03T19:10:30.000Z",
-    "ecs": {
-        "version": "1.10.0"
+        },
+        "name": "pfSense.example.com"
     },
     "pfsense": {
+        "ip": {
+            "flags": "DF",
+            "id": 32989,
+            "offset": 0,
+            "tos": "0x0",
+            "ttl": 63
+        },
         "tcp": {
             "flags": "S",
             "length": 0,
@@ -96,37 +132,27 @@ An example event for `log` looks as following:
                 "wscale"
             ],
             "window": 64240
-        },
-        "ip": {
-            "flags": "DF",
-            "tos": "0x0",
-            "id": 12617,
-            "offset": 0,
-            "ttl": 63
         }
     },
     "related": {
         "ip": [
-            "1.1.1.1",
+            "175.16.199.1",
             "10.170.12.50"
         ]
     },
-    "event": {
-        "reason": "match",
-        "ingested": "2021-08-15T21:51:26.914106944Z",
-        "original": "\u003c134\u003eJul  3 19:10:30 filterlog[72237]: 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,12617,0,DF,6,tcp,60,10.170.12.50,1.1.1.1,49724,853,0,S,1891286705,,64240,,mss;sackOK;TS;nop;wscale",
-        "provider": "filterlog",
-        "kind": "event",
-        "action": "block",
-        "id": "72237",
-        "category": [
-            "network"
-        ],
-        "type": [
-            "connection",
-            "denied"
-        ]
-    }
+    "rule": {
+        "id": "1535324496"
+    },
+    "source": {
+        "address": "10.170.12.50",
+        "ip": "10.170.12.50",
+        "port": 49652
+    },
+    "tags": [
+        "preserve_original_event",
+        "pfsense",
+        "forwarded"
+    ]
 }
 ```
 
@@ -138,8 +164,9 @@ An example event for `log` looks as following:
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
+| client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
 | client.bytes | Bytes sent from the client to the server. | long |
-| client.domain | Client domain. | keyword |
+| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
@@ -169,6 +196,7 @@ An example event for `log` looks as following:
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
@@ -240,12 +268,13 @@ An example event for `log` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | hostname | Hostname from syslog header. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
@@ -261,9 +290,9 @@ An example event for `log` looks as following:
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
-| network.protocol | L7 Network protocol name. ex. http, lumberjack, transport protocol. The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | observer.geo.city_name | City name. | keyword |
 | observer.geo.continent_name | Name of the continent. | keyword |
 | observer.geo.country_iso_code | Country ISO code. | keyword |
@@ -275,8 +304,8 @@ An example event for `log` looks as following:
 | observer.ingress.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
+| observer.type | The type of the observer the data is coming from | constant_keyword |
+| observer.vendor | Vendor name of the observer | constant_keyword |
 | pfsense.dhcp.hostname | Hostname of DHCP client | keyword |
 | pfsense.icmp.code | ICMP code. | long |
 | pfsense.icmp.destination.ip | Original destination address of the connection that caused this notification | ip |
@@ -286,7 +315,7 @@ An example event for `log` looks as following:
 | pfsense.icmp.parameter | ICMP parameter. | long |
 | pfsense.icmp.redirect | ICMP redirect address. | ip |
 | pfsense.icmp.rtime | Receive Timestamp | date |
-| pfsense.icmp.seq | Sequence number of the echo request/reply | long |
+| pfsense.icmp.seq | ICMP sequence number. | long |
 | pfsense.icmp.ttime | Transmit Timestamp | date |
 | pfsense.icmp.type | ICMP type. | keyword |
 | pfsense.icmp.unreachable.iana_number | Protocol ID number that was unreachable | long |
@@ -319,8 +348,9 @@ An example event for `log` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -334,6 +364,7 @@ An example event for `log` looks as following:
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
 | source.port | Port of the source. | long |
 | source.user.full_name | User's full name, if available. | keyword |
+| source.user.full_name.text | Multi-field of `source.user.full_name`. | match_only_text |
 | source.user.id | Unique identifier of the user. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
@@ -342,7 +373,9 @@ An example event for `log` looks as following:
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.password | Password of the request. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
@@ -352,13 +385,18 @@ An example event for `log` looks as following:
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
 | user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 

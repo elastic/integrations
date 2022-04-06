@@ -10,6 +10,8 @@ The GitHub audit log records all events related to the GitHub organization. See 
 
 To use this integration, you must be an organization owner, and you must use an Personal Access Token with the admin:org scope.
 
+*This integration is not compatible with GitHub Enterprise server.*
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -49,6 +51,7 @@ To use this integration, you must be an organization owner, and you must use an 
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -57,8 +60,10 @@ To use this integration, you must be an organization owner, and you must use an 
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.target.group.name | Name of the group. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 
 
 An example event for `audit` looks as following:
@@ -67,12 +72,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "5633bb96-3750-418a-a27c-e58227dafdd9",
-        "hostname": "docker-fleet-agent",
-        "id": "7ff657e8-482e-4c52-b7d7-394247247d53",
+        "ephemeral_id": "95d78df4-1364-43b9-ab4f-62fc70d21b04",
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "github.audit",
@@ -80,12 +84,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7ff657e8-482e-4c52-b7d7-394247247d53",
-        "snapshot": true,
-        "version": "7.16.0"
+        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "repo.destroy",
@@ -94,10 +98,10 @@ An example event for `audit` looks as following:
             "web",
             "iam"
         ],
-        "created": "2021-10-12T20:42:48.203Z",
+        "created": "2022-02-03T12:34:05.664Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2021-10-12T20:42:49Z",
+        "ingested": "2022-02-03T12:34:06Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [

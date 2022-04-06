@@ -21,30 +21,12 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2021-11-16T12:01:37.000Z",
     "agent": {
-        "ephemeral_id": "57841034-22ed-4fcd-bcfd-0a9518249e2d",
+        "ephemeral_id": "b2833ed3-e047-442e-945f-291f7d6ace9d",
         "hostname": "docker-fleet-agent",
-        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
-    },
-    "client": {
-        "as": {
-            "number": 15169,
-            "organization": {
-                "name": "Google LLC"
-            }
-        },
-        "geo": {
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 37.751,
-                "lon": -97.822
-            }
-        },
-        "ip": "8.8.8.8"
     },
     "data_stream": {
         "dataset": "mimecast.audit_events",
@@ -52,34 +34,30 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
         "snapshot": true,
         "version": "7.16.0"
     },
     "event": {
-        "action": "case-action",
+        "action": "search-action",
         "agent_id_status": "verified",
-        "created": "2021-11-16T12:01:37.000Z",
+        "created": "2022-04-01T12:35:03.501Z",
         "dataset": "mimecast.audit_events",
-        "id": "eNqrVipOTS4tSs1MUbJSskwzjDIMyDRKLinNSEl1c0pOqXLJyQlL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkrqOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAE_sLAI",
-        "ingested": "2021-11-24T15:39:11Z",
-        "original": "{\"auditType\":\"Case Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Viewed Case - Case: GDPR/CCPA, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSskwzjDIMyDRKLinNSEl1c0pOqXLJyQlL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkrqOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAE_sLAI\",\"user\":\"johndoe@example.com\"}"
+        "id": "eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK1o",
+        "ingested": "2022-04-01T12:35:04Z",
+        "original": "{\"auditType\":\"Search Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK1o\",\"user\":\"johndoe@example.com\"}"
     },
     "input": {
         "type": "httpjson"
     },
     "mimecast": {
-        "application": "mimecast-case-review",
         "category": "case_review_logs",
-        "eventInfo": "Viewed Case - Case: GDPR/CCPA, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review"
+        "eventInfo": "Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review"
     },
     "related": {
-        "ip": [
-            "8.8.8.8"
-        ],
         "user": [
             "johndoe",
             "johndoe@example.com"
@@ -106,7 +84,8 @@ An example event for `audit_events` looks as following:
 | client.as.asn | Client ASN number. | long |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
-| client.as.organization_name |  | keyword |
+| client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
+| client.as.organization_name | Client Organization name. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
@@ -135,6 +114,7 @@ An example event for `audit_events` looks as following:
 | email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
 | email.origination_timestamp | The date and time the email message was composed. Many email clients will fill this in automatically when the message is sent by a user. | date |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | The email address(es) of the message recipient(s) | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -157,22 +137,26 @@ An example event for `audit_events` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| mimecast.2FA | Info about two-factor authentication. | keyword |
 | mimecast.application | The Mimecast unique id of the event. | keyword |
 | mimecast.category | The category of the event. | keyword |
 | mimecast.email.address | Email address from event info. | keyword |
 | mimecast.email.metadata | The email meta data from audit info. | keyword |
 | mimecast.eventInfo | The detailed event information. | keyword |
+| mimecast.method | Method which triggers audit events. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ### DLP Logs
@@ -185,9 +169,9 @@ An example event for `dlp` looks as following:
 {
     "@timestamp": "2021-11-18T21:41:18.000Z",
     "agent": {
-        "ephemeral_id": "1aef981f-3448-4d12-bd5a-723ac1cdcc81",
+        "ephemeral_id": "4a1c8c13-aee6-49b9-afc3-a2e62a310761",
         "hostname": "docker-fleet-agent",
-        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -198,22 +182,26 @@ An example event for `dlp` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "eb7f38a3-c00c-4d87-9c69-fddb3d650fab",
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
         "snapshot": true,
         "version": "7.16.0"
     },
     "email": {
         "direction": "inbound",
         "from": {
-            "address": "\u003c\u003e"
+            "address": [
+                "\u003c\u003e"
+            ]
         },
         "message_id": "\u003c20211118214115.B346F10021D@mail.emailsec.ninja\u003e",
         "subject": "Undelivered Mail Returned to Sender",
         "to": {
-            "address": "johndoe@example.com"
+            "address": [
+                "johndoe@example.com"
+            ]
         }
     },
     "event": {
@@ -221,7 +209,7 @@ An example event for `dlp` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-18T21:41:18+0000",
         "dataset": "mimecast.dlp_logs",
-        "ingested": "2021-11-24T15:39:49Z",
+        "ingested": "2022-04-01T12:35:41Z",
         "original": "{\"action\":\"notification\",\"eventTime\":\"2021-11-18T21:41:18+0000\",\"messageId\":\"\\u003c20211118214115.B346F10021D@mail.emailsec.ninja\\u003e\",\"policy\":\"Content Inspection - Watermark\",\"recipientAddress\":\"johndoe@example.com\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Undelivered Mail Returned to Sender\"}"
     },
     "input": {
@@ -263,7 +251,9 @@ An example event for `dlp` looks as following:
 | email.direction | Direction of the message based on the sending and receiving domains | keyword |
 | email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
 | email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
+| email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | The email address(es) of the message recipient(s) | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -282,6 +272,7 @@ An example event for `dlp` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -306,40 +297,62 @@ An example event for `siem` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-18T08:02:43.000Z",
-    "ecs": {
-        "version": "1.12.0"
+    "@timestamp": "2021-11-12T12:15:46.000Z",
+    "agent": {
+        "ephemeral_id": "503077e3-a489-4d55-9c64-4e965385d30f",
+        "hostname": "docker-fleet-agent",
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
     },
-    "event": {
-        "reason": "Spm",
-        "action": "Hld",
-        "ingested": "2021-11-25T11:34:11.459620200Z",
-        "original": "{\"Act\":\"Hld\",\"AttCnt\":0,\"AttNames\":null,\"AttSize\":0,\"Content-Disposition\":\"attachment; filename=\\\"process_20211018093329655.json\\\"\",\"Hld\":\"Spm\",\"MsgId\":\"\\u003cINX.164dae0719be95da77068c7d264.3e915.e7719.c78c.17c926a3231ace@newsletter.77onlineshop.eu\\u003e\",\"MsgSize\":157436,\"Sender\":\"bounce_9244+cdaahhimyaaaaagaad5ekqaaaaaaaaeribenpq@newsletter.77onlineshop.eu\",\"Subject\":\"Hi Sandra! Neue Styles eingetroffen! – Finde deinen Lieblings-Look!\",\"aCode\":\"HhuwRf_AOcuJZINE2ZgcKw\",\"acc\":\"ABC123\",\"datetime\":\"2021-10-18T09:02:43+0100\"}",
-        "created": "2021-10-18T09:02:43+0100",
-        "outcome": "unknown"
+    "data_stream": {
+        "dataset": "mimecast.siem_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "email": {
-        "message_id": "\u003cINX.164dae0719be95da77068c7d264.3e915.e7719.c78c.17c926a3231ace@newsletter.77onlineshop.eu\u003e",
+        "direction": "internal",
         "from": {
-            "address": "bounce_9244+cdaahhimyaaaaagaad5ekqaaaaaaaaeribenpq@newsletter.77onlineshop.eu"
+            "address": [
+                "johndoe@example.com"
+            ]
         },
-        "attachments": {
-            "file": {
-                "size": 0
-            }
-        },
-        "local_id": "HhuwRf_AOcuJZINE2ZgcKw",
-        "subject": "Hi Sandra! Neue Styles eingetroffen! – Finde deinen Lieblings-Look!",
-        "message_size": 157436
+        "local_id": "fjihpfEgM_iRwemxhe3t_w",
+        "to": {
+            "address": "o365_service_account@example.com"
+        }
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "created": "2021-11-12T12:15:46+0000",
+        "dataset": "mimecast.siem_logs",
+        "ingested": "2022-04-01T12:36:24Z",
+        "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
+        "outcome": "unknown"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "mimecast": {
+        "RcptActType": "Jnl",
+        "RcptHdrType": "Unknown",
+        "acc": "ABC123",
+        "log_type": "jrnl"
     },
     "tags": [
-        "preserve_original_event"
-    ],
-    "mimecast": {
-        "acc": "ABC123",
-        "log_type": "process",
-        "AttCnt": 0
-    }
+        "preserve_original_event",
+        "forwarded",
+        "mimecast-siem-logs"
+    ]
 }
 ```
 
@@ -377,8 +390,10 @@ An example event for `siem` looks as following:
 | email.header_from | The sender address found in the from header of the email. | keyword |
 | email.local_id | Unique identifier given to the email by the source (MTA, gateway, etc.) that created the event and is not persistent across hops (for example, the X-MS-Exchange-Organization-Network-Message-Id id). | keyword |
 | email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
+| email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.message_size | The total size of the email.The total size of the email. | long |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | The email address(es) of the message recipient(s). | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
@@ -403,6 +418,7 @@ An example event for `siem` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -451,13 +467,14 @@ An example event for `siem` looks as following:
 | mimecast.msgid | The internet message id of the email. | keyword |
 | mimecast.urlCategory | The category of the URL that was clicked. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.established | Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel. | boolean |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
 | user.email | User email address. | keyword |
 
 
@@ -469,12 +486,74 @@ An example event for `ttp_ip` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-15T17:10:46.000Z",
+    "@timestamp": "2021-11-12T15:27:04.000Z",
+    "agent": {
+        "ephemeral_id": "4df4bba6-bacf-4bc8-9637-6c43d41d059d",
+        "hostname": "docker-fleet-agent",
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
+    "data_stream": {
+        "dataset": "mimecast.ttp_ip_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "snapshot": true,
+        "version": "7.16.0"
+    },
+    "email": {
+        "from": {
+            "address": [
+                "johndoe@example.com"
+            ]
+        },
+        "message_id": "\u003cMN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\u003e",
+        "subject": "Don't read, just fill out!",
+        "to": {
+            "address": [
+                "johndoe@example.com"
+            ]
+        }
+    },
+    "event": {
+        "action": "none",
+        "agent_id_status": "verified",
+        "created": "2021-11-12T15:27:04+0000",
+        "dataset": "mimecast.ttp_ip_logs",
+        "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8",
+        "ingested": "2022-04-01T12:39:16Z",
+        "original": "{\"action\":\"none\",\"definition\":\"IP - 1 hit (Tag email)\",\"eventTime\":\"2021-11-12T15:27:04+0000\",\"hits\":1,\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8\",\"identifiers\":[\"internal_user_name\"],\"impersonationResults\":[{\"checkerResult\":\"hit\",\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe \\u003cjohndoe_cdw@example.com\\u003e\",\"stringSimilarToDomain\":\"John Doe\"}],\"messageId\":\"\\u003cMN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\\u003e\",\"recipientAddress\":\"johndoe@example.com\",\"senderAddress\":\"johndoe@example.com\",\"senderIpAddress\":\"8.8.8.8\",\"subject\":\"Don't read, just fill out!\",\"taggedExternal\":false,\"taggedMalicious\":true}"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "mimecast": {
+        "hits": 1,
+        "identifiers": [
+            "internal_user_name"
+        ],
+        "impersonationResults": [
+            {
+                "checkerResult": "hit",
+                "impersonationDomainSource": "internal_user_name",
+                "similarDomain": "John Doe \u003cjohndoe_cdw@example.com\u003e",
+                "stringSimilarToDomain": "John Doe"
+            }
+        ],
+        "taggedExternal": false,
+        "taggedMalicious": true
     },
     "related": {
-        "ip": "8.8.8.8"
+        "ip": [
+            "8.8.8.8"
+        ]
     },
     "rule": {
         "name": "IP - 1 hit (Tag email)"
@@ -482,42 +561,11 @@ An example event for `ttp_ip` looks as following:
     "source": {
         "ip": "8.8.8.8"
     },
-    "event": {
-        "action": "none",
-        "ingested": "2021-11-19T14:42:59.823940200Z",
-        "original": "{\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjU1NjIw1FEqSy0qzszPU7ICskvywAoNDAyVagFirRIG\",\"senderAddress\":\"smtp@example.com\",\"recipientAddress\":\"johndoe@example.com\",\"subject\":\"Requested File\",\"definition\":\"IP - 1 hit (Tag email)\",\"hits\":1,\"identifiers\":[\"internal_user_name\"],\"action\":\"none\",\"taggedExternal\":false,\"taggedMalicious\":true,\"senderIpAddress\":\"8.8.8.8\",\"eventTime\":\"2021-10-15T17:10:46+0000\",\"impersonationResults\":[{\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe Jr \u003cjohndoejr@example.com\u003e\",\"stringSimilarToDomain\":\"John Doe Jr\",\"checkerResult\":\"hit\"}],\"messageId\":\"\u003cEE7E97EA-1926-4A90-9399-D049A98893F4@emailsec.ninja\u003e\"}",
-        "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjU1NjIw1FEqSy0qzszPU7ICskvywAoNDAyVagFirRIG",
-        "created": "2021-10-15T17:10:46+0000"
-    },
-    "email": {
-        "from": {
-            "address": "smtp@example.com"
-        },
-        "message_id": "\u003cEE7E97EA-1926-4A90-9399-D049A98893F4@emailsec.ninja\u003e",
-        "to": {
-            "address": "johndoe@example.com"
-        },
-        "subject": "Requested File"
-    },
     "tags": [
-        "preserve_original_event"
-    ],
-    "mimecast": {
-        "hits": 1,
-        "impersonationResults": [
-            {
-                "checkerResult": "hit",
-                "impersonationDomainSource": "internal_user_name",
-                "stringSimilarToDomain": "John Doe Jr",
-                "similarDomain": "John Doe Jr \u003cjohndoejr@example.com\u003e"
-            }
-        ],
-        "taggedMalicious": true,
-        "taggedExternal": false,
-        "identifiers": [
-            "internal_user_name"
-        ]
-    }
+        "preserve_original_event",
+        "forwarded",
+        "mimecast-ttp-ip"
+    ]
 }
 ```
 
@@ -545,7 +593,9 @@ An example event for `ttp_ip` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
 | email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
+| email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | The email address(es) of the message recipient(s) | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -565,6 +615,7 @@ An example event for `ttp_ip` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -588,7 +639,7 @@ An example event for `ttp_ip` looks as following:
 | mimecast.taggedMalicious | Whether the message was tagged as malicious. | boolean |
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 
@@ -601,48 +652,79 @@ An example event for `ttp_ap` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-14T18:54:32.000Z",
+    "@timestamp": "2021-11-24T11:54:27.000Z",
+    "agent": {
+        "ephemeral_id": "97a110e6-9e9b-40f0-abfe-6053fadbfc61",
+        "hostname": "docker-fleet-agent",
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
+    "data_stream": {
+        "dataset": "mimecast.ttp_ap_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "snapshot": true,
+        "version": "7.16.0"
+    },
+    "email": {
+        "attachments": {
+            "file": {
+                "extension": "pdf",
+                "mime_type": "application/pdf",
+                "name": "Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf"
+            },
+            "hash": "cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254"
+        },
+        "direction": "inbound",
+        "from": {
+            "address": [
+                "\u003c\u003e"
+            ]
+        },
+        "message_id": "\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\u003e",
+        "subject": "Test Files",
+        "to": {
+            "address": [
+                "johndoe@emample.com"
+            ]
+        }
+    },
+    "event": {
+        "action": "user_release_none",
+        "agent_id_status": "verified",
+        "created": "2021-11-24T11:54:27+0000",
+        "dataset": "mimecast.ttp_ap_logs",
+        "ingested": "2022-04-01T12:38:36Z",
+        "original": "{\"actionTriggered\":\"user release, none\",\"date\":\"2021-11-24T11:54:27+0000\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\",\"details\":\"Safe                                              \\r\\nTime taken: 0 hrs, 0 min, 7 sec\",\"fileHash\":\"cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254\",\"fileName\":\"Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf\",\"fileType\":\"application/pdf\",\"messageId\":\"\\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\\u003e\",\"recipientAddress\":\"johndoe@emample.com\",\"result\":\"safe\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Test Files\"}"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "mimecast": {
+        "details": "Safe                                              \r\nTime taken: 0 hrs, 0 min, 7 sec",
+        "result": "safe"
     },
     "related": {
-        "hash": "eaeef09b60a59b913e9bfc0a4373e25d6182beff388957473fba517cc09345e3"
+        "hash": [
+            "cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254"
+        ]
     },
     "rule": {
         "name": "Inbound - Safe file with On-Demand Sandbox"
     },
-    "event": {
-        "action": "user_release_none",
-        "ingested": "2021-11-19T14:40:07.263592900Z",
-        "original": "{\"senderAddress\":\"\u003c\u003e\",\"recipientAddress\":\"johndoe@example.com\",\"fileName\":\"numbers.pdf\",\"fileType\":\"application\\/pdf\",\"result\":\"safe\",\"actionTriggered\":\"user release, none\",\"date\":\"2021-10-14T18:54:32+0000\",\"details\":\"Safe                                              \\r\\nTime taken: 0 hrs, 0 min, 4 sec\",\"route\":\"inbound\",\"messageId\":\"\u003c20200806044148.F35F813B435@mail.brianjthronton.com\u003e\",\"subject\":\"Important Updated Numbers from the Center for Disease Control\",\"fileHash\":\"eaeef09b60a59b913e9bfc0a4373e25d6182beff388957473fba517cc09345e3\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\"}",
-        "created": "2021-10-14T18:54:32+0000"
-    },
-    "email": {
-        "from": {
-            "address": "\u003c\u003e"
-        },
-        "message_id": "\u003c20200806044148.F35F813B435@mail.brianjthronton.com\u003e",
-        "attachments": {
-            "hash": "eaeef09b60a59b913e9bfc0a4373e25d6182beff388957473fba517cc09345e3",
-            "file": {
-                "name": "numbers.pdf",
-                "mime_type": "application/pdf",
-                "extension": "pdf"
-            }
-        },
-        "to": {
-            "address": "johndoe@example.com"
-        },
-        "subject": "Important Updated Numbers from the Center for Disease Control",
-        "direction": "inbound"
-    },
     "tags": [
-        "preserve_original_event"
-    ],
-    "mimecast": {
-        "result": "safe",
-        "details": "Safe                                              \r\nTime taken: 0 hrs, 0 min, 4 sec"
-    }
+        "preserve_original_event",
+        "forwarded",
+        "mimecast-ttp-ap"
+    ]
 }
 ```
 
@@ -675,7 +757,9 @@ An example event for `ttp_ap` looks as following:
 | email.direction | Direction of the message based on the sending and receiving domains | keyword |
 | email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
 | email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
+| email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | The email address(es) of the message recipient(s) | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -694,6 +778,7 @@ An example event for `ttp_ap` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -724,61 +809,83 @@ An example event for `ttp_url` looks as following:
 
 ```json
 {
+    "@timestamp": "2021-11-10T03:49:53.000Z",
+    "agent": {
+        "ephemeral_id": "9ef77b02-4979-44aa-97af-54ae4e5612f4",
+        "hostname": "docker-fleet-agent",
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
+    "data_stream": {
+        "dataset": "mimecast.ttp_url_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "snapshot": true,
+        "version": "7.16.0"
+    },
+    "email": {
+        "direction": "inbound",
+        "from": {
+            "address": [
+                "googlealerts-noreply@google.com"
+            ]
+        },
+        "message_id": "\u003c000000000000a02a0a05d0671c06@google.com\u003e",
+        "subject": "Google Alert - china",
+        "to": {
+            "address": "johndoe@example.com"
+        }
+    },
+    "event": {
+        "action": "Continue",
+        "agent_id_status": "verified",
+        "created": "2021-11-10T03:49:53+0000",
+        "dataset": "mimecast.ttp_url_logs",
+        "ingested": "2022-04-01T12:40:05Z",
+        "original": "{\"action\":\"allow\",\"actions\":\"Allow\",\"adminOverride\":\"N/A\",\"category\":\"Search Engines \\u0026 Portals\",\"creationMethod\":\"User Click\",\"date\":\"2021-11-10T03:49:53+0000\",\"emailPartsDescription\":[\"Body\"],\"fromUserEmailAddress\":\"googlealerts-noreply@google.com\",\"messageId\":\"\\u003c000000000000a02a0a05d0671c06@google.com\\u003e\",\"route\":\"inbound\",\"scanResult\":\"clean\",\"sendingIp\":\"8.8.8.8\",\"subject\":\"Google Alert - china\",\"ttpDefinition\":\"Inbound URL 'Aggressive'\",\"url\":\"https://www.google.co.za/alerts/share?hl=en\\u0026gl=US\\u0026ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224\\u0026ss=tw\\u0026rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ\\u0026cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw\\u0026ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg\",\"userAwarenessAction\":\"Continue\",\"userEmailAddress\":\"johndoe@example.com\",\"userOverride\":\"None\"}"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "mimecast": {
+        "action": "allow",
+        "actions": "Allow",
+        "adminOverride": "N/A",
+        "category": "Search Engines \u0026 Portals",
+        "creationMethod": "User Click",
+        "emailPartsDescription": [
+            "Body"
+        ],
+        "fromUserEmailAddress": "googlealerts-noreply@google.com",
+        "scanResult": "clean",
+        "userOverride": "None"
+    },
+    "related": {
+        "ip": [
+            "8.8.8.8"
+        ]
+    },
     "rule": {
         "name": "Inbound URL 'Aggressive'"
     },
     "source": {
         "ip": "8.8.8.8"
     },
-    "url": {
-        "original": "https://click.emailinfo2.bestbuy.com/?qs=5c47c91aeb44fac857370c26ddf09c3f484431e1ccfa636fc64e26e40dd87efdb43d4deeeab8c2e727ebfa079e8cf1404c095c511152e4b09e7d00bf8377f32d"
-    },
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "mimecast-ttp-url"
     ],
-    "@timestamp": "2021-10-16T14:45:34.000Z",
-    "ecs": {
-        "version": "1.12.0"
-    },
-    "related": {
-        "user": [
-            "johndoe",
-            "johndoe@example.com"
-        ],
-        "ip": [
-            "8.8.8.8"
-        ]
-    },
-    "event": {
-        "action": "Continue",
-        "ingested": "2021-11-24T14:39:10.084705200Z",
-        "original": "{\"userEmailAddress\": \"johndoe@example.com\", \"fromUserEmailAddress\": \"bestbuyinfo@emailinfo.bestbuy.com\", \"url\": \"https://click.emailinfo2.bestbuy.com/?qs=5c47c91aeb44fac857370c26ddf09c3f484431e1ccfa636fc64e26e40dd87efdb43d4deeeab8c2e727ebfa079e8cf1404c095c511152e4b09e7d00bf8377f32d\", \"ttpDefinition\": \"Inbound URL 'Aggressive'\", \"subject\": \"Today only: Save $100 on Tineco Pure One S12 smart cordless stick vacuum, plus more.\", \"action\": \"allow\", \"adminOverride\": \"N/A\", \"userOverride\": \"None\", \"scanResult\": \"clean\", \"category\": \"Business\", \"sendingIp\": \"8.8.8.8\", \"userAwarenessAction\": \"Continue\", \"date\": \"2021-10-16T14:45:34+0000\", \"actions\": \"Allow\", \"route\": \"inbound\", \"creationMethod\": \"User Click\", \"emailPartsDescription\": [ \"Body\" ], \"messageId\": \"\u003c31b43097-94f9-4f64-8e37-8ad23650c692@ind1s01mta1292.xt.local\u003e\" }",
-        "created": "2021-10-16T14:45:34+0000"
-    },
-    "user": {
-        "name": "johndoe",
-        "email": "johndoe@example.com",
-        "domain": "example.com"
-    },
-    "email": {
-        "message_id": "\u003c31b43097-94f9-4f64-8e37-8ad23650c692@ind1s01mta1292.xt.local\u003e",
-        "from": {
-            "address": "bestbuyinfo@emailinfo.bestbuy.com"
-        },
-        "subject": "Today only: Save $100 on Tineco Pure One S12 smart cordless stick vacuum, plus more.",
-        "direction": "inbound"
-    },
-    "mimecast": {
-        "userOverride": "None",
-        "action": "allow",
-        "adminOverride": "N/A",
-        "scanResult": "clean",
-        "category": "Business",
-        "actions": "Allow",
-        "creationMethod": "User Click",
-        "emailPartsDescription": [
-            "Body"
-        ]
+    "url": {
+        "original": "https://www.google.co.za/alerts/share?hl=en\u0026gl=US\u0026ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224\u0026ss=tw\u0026rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ\u0026cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw\u0026ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg"
     }
 }
 ```
@@ -808,7 +915,10 @@ An example event for `ttp_url` looks as following:
 | email.direction | Direction of the message based on the sending and receiving domains | keyword |
 | email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
 | email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
+| email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
+| email.to.address | Stores the from email address to the RFC5322 From - header field. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -826,6 +936,7 @@ An example event for `ttp_url` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -854,9 +965,11 @@ An example event for `ttp_url` looks as following:
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ### Threat Intel Feed Malware: Customer
@@ -867,44 +980,71 @@ An example event for `threat_intel_malware_customer` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-29T15:07:26.653Z",
+    "@timestamp": "2021-11-19T01:28:37.099Z",
+    "agent": {
+        "ephemeral_id": "57a36b7d-5e1c-4bc5-8f10-962cfe2948f5",
+        "hostname": "docker-fleet-agent",
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
+    "data_stream": {
+        "dataset": "mimecast.threat_intel_malware_customer",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
-        "version": "1.12"
+        "version": "8.2.0"
     },
-    "related": {
-        "hash": "c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de"
-    },
-    "threat": {
-        "indicator": {
-            "first_seen": "2021-10-29T15:07:26.653Z",
-            "file": {
-                "hash": {
-                    "sha256": "c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de"
-                }
-            },
-            "modified_at": "2021-10-29T15:07:26.653Z",
-            "type": "file"
-        }
+    "elastic_agent": {
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "event": {
-        "ingested": "2021-11-17T13:42:34.324885300Z",
-        "original": "{ \"Content-Disposition\":\"attachment; filename=\\\"malware_customer_stix_20211028161801144.stix\\\"\",\"type\": \"indicator\", \"id\": \"indicator--18c62174-0d31-4653-afe6-d104c57b6b2c\", \"created\": \"2021-10-29T15:07:26.653Z\", \"modified\": \"2021-10-29T15:07:26.653Z\", \"labels\": [ \"malicious-activity\" ], \"pattern\": \"[file:hashes.'SHA-256' = 'c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de']\", \"valid_from\": \"2021-10-29T15:07:26.653Z\" }",
+        "agent_id_status": "verified",
         "category": "threat",
-        "type": "indicator",
-        "kind": "enrichment"
+        "created": "2022-04-01T12:37:06.220Z",
+        "dataset": "mimecast.threat_intel_malware_customer",
+        "ingested": "2022-04-01T12:37:07Z",
+        "kind": "enrichment",
+        "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
+        "type": "indicator"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "mimecast": {
+        "id": "indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd",
+        "labels": [
+            "malicious-activity"
+        ],
+        "pattern": "[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']",
+        "type": "indicator"
+    },
+    "related": {
+        "hash": [
+            "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+        ]
     },
     "tags": [
         "preserve_original_event",
+        "forwarded",
+        "mimecast-threat-intel-feed-malware-customer",
         "malicious-activity"
     ],
-    "mimecast": {
-        "pattern": "[file:hashes.'SHA-256' = 'c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de']",
-        "log_type": "malware_customer",
-        "id": "indicator--18c62174-0d31-4653-afe6-d104c57b6b2c",
-        "type": "indicator",
-        "labels": [
-            "malicious-activity"
-        ]
+    "threat": {
+        "indicator": {
+            "file": {
+                "hash": {
+                    "sha256": "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+                }
+            },
+            "first_seen": "2021-11-19T01:28:37.099Z",
+            "modified_at": "2021-11-19T01:28:37.099Z",
+            "type": "file"
+        }
     }
 }
 ```
@@ -947,6 +1087,7 @@ An example event for `threat_intel_malware_customer` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -985,43 +1126,71 @@ An example event for `threat_intel_malware_grid` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-29T15:07:26.653Z",
+    "@timestamp": "2021-11-19T01:28:37.099Z",
+    "agent": {
+        "ephemeral_id": "b8e44907-6bc2-4c8b-9aad-67e6a9319a10",
+        "hostname": "docker-fleet-agent",
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
+    "data_stream": {
+        "dataset": "mimecast.threat_intel_malware_grid",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
-        "version": "1.12"
+        "version": "8.2.0"
     },
-    "related": {
-        "hash": "c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de"
-    },
-    "threat": {
-        "indicator": {
-            "first_seen": "2021-10-29T15:07:26.653Z",
-            "file": {
-                "hash": {
-                    "sha256": "c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de"
-                }
-            },
-            "modified_at": "2021-10-29T15:07:26.653Z",
-            "type": "file"
-        }
+    "elastic_agent": {
+        "id": "755dd553-bc87-4d8b-9736-61e8bbd15a3d",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "event": {
-        "ingested": "2021-11-17T13:42:35.248902200Z",
-        "original": "{ \"Content-Disposition\":\"attachment; filename=\\\"malware_grid_stix_20211028161801144.stix\\\"\",\"type\": \"indicator\", \"id\": \"indicator--18c62174-0d31-4653-afe6-d104c57b6b2c\", \"created\": \"2021-10-29T15:07:26.653Z\", \"modified\": \"2021-10-29T15:07:26.653Z\", \"labels\": [ \"malicious-activity\" ], \"pattern\": \"[file:hashes.'SHA-256' = 'c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de']\", \"valid_from\": \"2021-10-29T15:07:26.653Z\" }",
+        "agent_id_status": "verified",
         "category": "threat",
-        "kind": "enrichment"
+        "created": "2022-04-01T12:37:51.296Z",
+        "dataset": "mimecast.threat_intel_malware_grid",
+        "ingested": "2022-04-01T12:37:52Z",
+        "kind": "enrichment",
+        "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
+        "type": "indicator"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "mimecast": {
+        "id": "indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd",
+        "labels": [
+            "malicious-activity"
+        ],
+        "pattern": "[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']",
+        "type": "indicator"
+    },
+    "related": {
+        "hash": [
+            "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+        ]
     },
     "tags": [
         "preserve_original_event",
+        "forwarded",
+        "mimecast-threat-intel-feed-malware-grid",
         "malicious-activity"
     ],
-    "mimecast": {
-        "pattern": "[file:hashes.'SHA-256' = 'c20d551424f2df6312f7fa700ed97cd199c3d5c8a0f4dfd683627f18913096de']",
-        "log_type": "malware_grid",
-        "id": "indicator--18c62174-0d31-4653-afe6-d104c57b6b2c",
-        "type": "indicator",
-        "labels": [
-            "malicious-activity"
-        ]
+    "threat": {
+        "indicator": {
+            "file": {
+                "hash": {
+                    "sha256": "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+                }
+            },
+            "first_seen": "2021-11-19T01:28:37.099Z",
+            "modified_at": "2021-11-19T01:28:37.099Z",
+            "type": "file"
+        }
     }
 }
 ```
@@ -1064,6 +1233,7 @@ An example event for `threat_intel_malware_grid` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |

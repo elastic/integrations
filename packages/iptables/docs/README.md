@@ -20,26 +20,48 @@ An example event for `log` looks as following:
 ```json
 {
     "@timestamp": "2021-03-12T14:10:18.000Z",
+    "agent": {
+        "ephemeral_id": "6458f441-1385-4115-994d-b082e5735c2a",
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "iptables.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "destination": {
         "ip": "10.4.0.5",
         "mac": "90:10:20:76:8d:20",
         "port": 443
     },
     "ecs": {
-        "version": "1.8.0"
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "drop",
+        "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "ingested": "2021-03-26T14:16:07.526797365Z",
+        "dataset": "iptables.log",
+        "ingested": "2022-01-01T21:48:16Z",
         "kind": "event",
-        "original": "\u003c6\u003e2021-03-12T14:10:18Z Hostname kernel: [wan-lan-default-D]IN=eth0 OUT= MAC=90:10:20:76:8d:20:90:10:65:29:b6:2a:08:00 SRC=158.109.0.1 DST=10.4.0.5 LEN=52 TOS=0x00 PREC=0x00 TTL=63 ID=0 DF PROTO=TCP SPT=38842 DPT=443 WINDOW=2853 RES=0x00 ACK URGP=0",
+        "timezone": "+00:00",
         "type": [
             "denied",
             "connection"
         ]
+    },
+    "input": {
+        "type": "udp"
     },
     "iptables": {
         "ether_type": 2048,
@@ -68,13 +90,16 @@ An example event for `log` looks as following:
         }
     },
     "log": {
+        "source": {
+            "address": "172.18.0.7:38816"
+        },
         "syslog": {
             "priority": 6
         }
     },
-    "message": "Hostname kernel: [wan-lan-default-D]IN=eth0 OUT= MAC=90:10:20:76:8d:20:90:10:65:29:b6:2a:08:00 SRC=158.109.0.1 DST=10.4.0.5 LEN=52 TOS=0x00 PREC=0x00 TTL=63 ID=0 DF PROTO=TCP SPT=38842 DPT=443 WINDOW=2853 RES=0x00 ACK URGP=0",
+    "message": "Hostname kernel: [wan-lan-default-D]IN=eth0 OUT= MAC=90:10:20:76:8d:20:90:10:65:29:b6:2a:08:00 SRC=67.43.156.15 DST=10.4.0.5 LEN=52 TOS=0x00 PREC=0x00 TTL=63 ID=0 DF PROTO=TCP SPT=38842 DPT=443 WINDOW=2853 RES=0x00 ACK URGP=0",
     "network": {
-        "community_id": "1:RGJPRWtru8Lg2itNyFREDvoRkNA=",
+        "community_id": "1:jc/7ajWLmm0xdpLA7mOyvas9TyE=",
         "transport": "tcp",
         "type": "ipv4"
     },
@@ -84,11 +109,12 @@ An example event for `log` looks as following:
         },
         "ingress": {
             "zone": "wan"
-        }
+        },
+        "name": "Hostname"
     },
     "related": {
         "ip": [
-            "158.109.0.1",
+            "67.43.156.15",
             "10.4.0.5"
         ]
     },
@@ -98,24 +124,25 @@ An example event for `log` looks as following:
     },
     "source": {
         "as": {
-            "number": 13041,
-            "organization": {
-                "name": "Consorci de Serveis Universitaris de Catalunya"
-            }
+            "number": 35908
         },
         "geo": {
-            "continent_name": "Europe",
-            "country_iso_code": "ES",
-            "country_name": "Spain",
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
             "location": {
-                "lat": 40.4172,
-                "lon": -3.684
+                "lat": 27.5,
+                "lon": 90.5
             }
         },
-        "ip": "158.109.0.1",
+        "ip": "67.43.156.15",
         "mac": "90:10:65:29:b6:2a",
         "port": 38842
-    }
+    },
+    "tags": [
+        "iptables-log",
+        "forwarded"
+    ]
 }
 ```
 
@@ -142,6 +169,7 @@ An example event for `log` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -171,6 +199,7 @@ An example event for `log` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -207,7 +236,6 @@ An example event for `log` looks as following:
 | journald.host.boot_id | The kernel boot ID for the boot the message was generated in, formatted as a 128-bit hexadecimal string. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
-| log.original | Deprecated for removal in next major version release. This field is superseded by  `event.original`. This is the original log message and contains the full log message before splitting it up in multiple parts. In contrast to the `message` field which can contain an extracted part of the log message, this field contains the original, full log message. It can have already some modifications applied like encoding or new lines removed to clean up the log message. This field is not indexed and doc_values are disabled so it can't be queried but the value can be retrieved from `_source`. | keyword |
 | log.source.address | Source address of the syslog message. | keyword |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
 | log.syslog.identifier | Identifier (usually process) contained in the syslog header. | keyword |
@@ -216,8 +244,8 @@ An example event for `log` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
@@ -228,6 +256,7 @@ An example event for `log` looks as following:
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
