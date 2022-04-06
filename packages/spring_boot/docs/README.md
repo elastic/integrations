@@ -1,10 +1,10 @@
-# Spring Boot Integration
+# Spring Boot integration
 
-The Spring Boot Integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+The Spring Boot integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
 
 ## Compatibility
 
-This module has been tested against Spring Boot v2.3.12.
+This integration has been tested against Spring Boot v2.3.12.
 
 ## Requirements
 
@@ -21,8 +21,8 @@ In order to ingest data from Spring Boot:
 - For access of jolokia add below dependency in `pom.xml` of Spring Boot Application.
 ```
 <dependency>
-	<groupId>org.jolokia</groupId>
-	<artifactId>jolokia-core</artifactId>
+    <groupId>org.jolokia</groupId>
+    <artifactId>jolokia-core</artifactId>
 </dependency>
 ```
 
@@ -38,13 +38,13 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-03T05:53:49.180Z",
+    "@timestamp": "2022-04-06T11:56:15.300Z",
     "agent": {
-        "ephemeral_id": "6cdeb98a-3eaa-4274-818a-a9c2968b6fd7",
-        "id": "e02f033d-ea94-4b94-991e-eecf8901640f",
+        "ephemeral_id": "a31088ca-d488-4f8d-b36a-60f786515453",
+        "id": "3bb4c15a-9abf-452d-becd-4452dd79b8de",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "data_stream": {
         "dataset": "spring_boot.memory",
@@ -52,19 +52,19 @@ An example event for `memory` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "e02f033d-ea94-4b94-991e-eecf8901640f",
+        "id": "3bb4c15a-9abf-452d-becd-4452dd79b8de",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.memory",
-        "duration": 481704961,
-        "ingested": "2022-04-03T05:53:52Z",
+        "duration": 491533689,
+        "ingested": "2022-04-06T11:56:18Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -74,10 +74,10 @@ An example event for `memory` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.19.0.7"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:ac:13:00:06"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -90,7 +90,6 @@ An example event for `memory` looks as following:
             "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
-    "jolokia": {},
     "metricset": {
         "name": "jmx",
         "period": 60000
