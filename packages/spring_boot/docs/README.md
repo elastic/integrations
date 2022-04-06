@@ -38,9 +38,9 @@ An example event for `info` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-06T08:01:18.023Z",
+    "@timestamp": "2022-04-06T09:07:42.976Z",
     "agent": {
-        "ephemeral_id": "4680f8bd-9b2e-4f2a-9b48-2884eb32518f",
+        "ephemeral_id": "40fbf9df-2b2f-4480-9ead-40ecfa769c87",
         "id": "b07b4685-5009-47d9-8c92-f0e5ce2de3c4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -62,9 +62,9 @@ An example event for `info` looks as following:
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-04-06T08:01:18.023Z",
+        "created": "2022-04-06T09:07:42.976Z",
         "dataset": "spring_boot.info",
-        "ingested": "2022-04-06T08:01:21Z",
+        "ingested": "2022-04-06T09:07:46Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
