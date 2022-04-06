@@ -28,15 +28,15 @@ processors:
         def app_name = bean_name.splitOnToken(".")[0];
         def executor_id = bean_name.splitOnToken(".")[1];
         if (executor_id == "driver") {
-          ctx.apache_spark.driver.application = new HashMap();
           ctx.apache_spark.driver.application_name = app_name;
         } else {
-          ctx.apache_spark.executors.application = new HashMap();
           ctx.apache_spark.executors.application_name = app_name;
           ctx.apache_spark.executors.id = executor_id;
         }
   - remove:
-      field: apache_spark.mbean
+      field: 
+        - apache_spark.mbean
+        - jolokia
       ignore_failure: true
 on_failure:
   - set:

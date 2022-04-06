@@ -1,5 +1,13 @@
 #!/bin/bash
 
+echo 'export SPARK_MASTER_OPTS="$SPARK_MASTER_OPTS -javaagent:/usr/share/java/jolokia-agent.jar=config=/spark/conf/jolokia-master.properties"' >> "/opt/bitnami/spark/conf/spark-env.sh"
+echo 'export SPARK_WORKER_OPTS="$SPARK_WORKER_OPTS -javaagent:/usr/share/java/jolokia-agent.jar=config=/spark/conf/jolokia-worker.properties"' >> "/opt/bitnami/spark/conf/spark-env.sh"
+
+echo '*.sink.jmx.class=org.apache.spark.metrics.sink.JmxSink' >> "/opt/bitnami/spark/conf/metrics.properties"
+echo '*.source.jvm.class=org.apache.spark.metrics.source.JvmSource' >> "/opt/bitnami/spark/conf/metrics.properties"
+
+echo 'spark.driver.extraJavaOptions   -javaagent:/usr/share/java/jolokia-agent.jar=config=/spark/conf/jolokia-driver.properties' >> "/opt/bitnami/spark/conf/spark-defaults.conf"
+
 # shellcheck disable=SC1091
 
 set -o errexit
@@ -32,7 +40,7 @@ eval "$(spark_env)"
 cd /opt/bitnami/spark/sbin
 ./start-worker.sh $SPARK_MAIN_URL --cores $SPARK_WORKER_CORES --memory $SPARK_WORKER_MEMORY &
 cd /opt/bitnami/spark/examples/src/main/python/
-/opt/bitnami/spark/bin/spark-submit wordcount.py status_api_demo.py $SPARK_MAIN_URL &
+/opt/bitnami/spark/bin/spark-submit wordcount.py wordcount.py $SPARK_MAIN_URL &
 
 echo ""
 exec "$@"

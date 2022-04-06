@@ -4,7 +4,7 @@ The Apache Spark integration collects and parses data using the Jolokia Metricbe
 
 ## Compatibility
 
-This module has been tested against `Apache Spark version 3.2.0`
+This integration has been tested against `Apache Spark version 3.2.0`
 
 ## Requirements
 
@@ -181,21 +181,22 @@ An example event for `driver` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-05T06:10:28.165Z",
+    "@timestamp": "2022-04-06T09:28:29.830Z",
     "agent": {
-        "ephemeral_id": "38489b31-e4eb-4374-bc91-9cb3465e7f9e",
-        "id": "f66e4391-296b-4a54-a372-1219e11a18b4",
+        "ephemeral_id": "0136f072-d8da-429f-92f9-310435dbeb07",
+        "id": "b92a6ed6-a92c-4064-9b78-b3b21cab191c",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
     },
     "apache_spark": {
         "driver": {
-            "application": {},
-            "application_name": "app-20220405061010-0000",
-            "memory": {
-                "on_heap": {
-                    "remaining": 730
+            "application_name": "app-20220406092805-0000",
+            "executor_metrics": {
+                "memory": {
+                    "jvm": {
+                        "heap": 288770488
+                    }
                 }
             }
         }
@@ -209,15 +210,15 @@ An example event for `driver` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "f66e4391-296b-4a54-a372-1219e11a18b4",
+        "id": "b92a6ed6-a92c-4064-9b78-b3b21cab191c",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "apache_spark.driver",
-        "duration": 71958046,
-        "ingested": "2022-04-05T06:10:31Z",
+        "duration": 51414715,
+        "ingested": "2022-04-06T09:28:33Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -227,10 +228,10 @@ An example event for `driver` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.27.0.4"
+            "192.168.80.7"
         ],
         "mac": [
-            "02:42:ac:1b:00:04"
+            "02:42:c0:a8:50:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -243,7 +244,6 @@ An example event for `driver` looks as following:
             "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
-    "jolokia": {},
     "metricset": {
         "name": "jmx",
         "period": 60000
@@ -260,7 +260,7 @@ An example event for `driver` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache_spark.driver.application_name | Data stream namespace. | keyword |
+| apache_spark.driver.application_name | Name of the application. | keyword |
 | apache_spark.driver.dag_scheduler.job.active | Number of active jobs. | long |
 | apache_spark.driver.dag_scheduler.job.all | Total number of jobs. | long |
 | apache_spark.driver.dag_scheduler.stages.failed | Number of failed stages. | long |
