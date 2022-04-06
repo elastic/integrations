@@ -1,10 +1,10 @@
-# Spring Boot Integration
+# Spring Boot integration
 
-The Spring Boot Integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+The Spring Boot integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
 
 ## Compatibility
 
-This module has been tested against Spring Boot v2.3.12.
+This integration has been tested against Spring Boot v2.3.12.
 
 ## Requirements
 
@@ -38,10 +38,10 @@ An example event for `gc` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-03T05:45:57.708Z",
+    "@timestamp": "2022-04-06T13:00:10.197Z",
     "agent": {
-        "ephemeral_id": "9b9a1227-0276-47bc-9c3f-e97d1f0adaae",
-        "id": "c547f54e-23a1-48ad-9e51-434197a5043b",
+        "ephemeral_id": "1328e617-5ec0-4879-90c2-22eea7b958af",
+        "id": "98ddbd0a-cd27-4c91-b30d-81424ff4544e",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -52,10 +52,10 @@ An example event for `gc` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "c547f54e-23a1-48ad-9e51-434197a5043b",
+        "id": "98ddbd0a-cd27-4c91-b30d-81424ff4544e",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -63,8 +63,8 @@ An example event for `gc` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.gc",
-        "duration": 214508446,
-        "ingested": "2022-04-03T05:46:01Z",
+        "duration": 213837127,
+        "ingested": "2022-04-06T13:00:13Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -101,97 +101,95 @@ An example event for `gc` looks as following:
     },
     "spring_boot": {
         "gc": {
-            "garbage_collector": {
-                "collection": {
-                    "count": 2,
-                    "time": 107
-                },
-                "last_gc_info": {
-                    "duration": 68,
-                    "end_time": 5475,
-                    "gc_thread_count": 4,
-                    "id": 2,
-                    "memory_usage_after_gc": {
-                        "code_cache": {
-                            "committed": 12910592,
-                            "init": 2555904,
-                            "max": 251658240,
-                            "used": 12236224
-                        },
-                        "compressed_class_space": {
-                            "committed": 4980736,
-                            "init": 0,
-                            "max": 1073741824,
-                            "used": 4439304
-                        },
-                        "metaspace": {
-                            "committed": 36265984,
-                            "init": 0,
-                            "max": -1,
-                            "used": 33736632
-                        },
-                        "ps_eden_space": {
-                            "committed": 222822400,
-                            "init": 24641536,
-                            "max": 482869248,
-                            "used": 0
-                        },
-                        "ps_old_gen": {
-                            "committed": 56623104,
-                            "init": 64487424,
-                            "max": 1012400128,
-                            "used": 13913344
-                        },
-                        "ps_survivor_space": {
-                            "committed": 12058624,
-                            "init": 3670016,
-                            "max": 12058624,
-                            "used": 0
-                        }
+            "collection": {
+                "count": 2,
+                "time": 120
+            },
+            "last_gc_info": {
+                "duration": 85,
+                "end_time": 4922,
+                "gc_thread_count": 4,
+                "id": 2,
+                "memory_usage_after_gc": {
+                    "code_cache": {
+                        "committed": 13238272,
+                        "init": 2555904,
+                        "max": 251658240,
+                        "used": 13206080
                     },
-                    "memory_usage_before_gc": {
-                        "code_cache": {
-                            "committed": 12910592,
-                            "init": 2555904,
-                            "max": 251658240,
-                            "used": 12236224
-                        },
-                        "compressed_class_space": {
-                            "committed": 4980736,
-                            "init": 0,
-                            "max": 1073741824,
-                            "used": 4439304
-                        },
-                        "metaspace": {
-                            "committed": 36265984,
-                            "init": 0,
-                            "max": -1,
-                            "used": 33736632
-                        },
-                        "ps_eden_space": {
-                            "committed": 222822400,
-                            "init": 24641536,
-                            "max": 482869248,
-                            "used": 0
-                        },
-                        "ps_old_gen": {
-                            "committed": 45088768,
-                            "init": 64487424,
-                            "max": 1012400128,
-                            "used": 15326152
-                        },
-                        "ps_survivor_space": {
-                            "committed": 12058624,
-                            "init": 3670016,
-                            "max": 12058624,
-                            "used": 5636112
-                        }
+                    "compressed_class_space": {
+                        "committed": 4980736,
+                        "init": 0,
+                        "max": 1073741824,
+                        "used": 4450784
                     },
-                    "start_time": 5407
+                    "metaspace": {
+                        "committed": 36265984,
+                        "init": 0,
+                        "max": -1,
+                        "used": 33795560
+                    },
+                    "ps_eden_space": {
+                        "committed": 350748672,
+                        "init": 24641536,
+                        "max": 479723520,
+                        "used": 0
+                    },
+                    "ps_old_gen": {
+                        "committed": 60293120,
+                        "init": 64487424,
+                        "max": 1012400128,
+                        "used": 14863520
+                    },
+                    "ps_survivor_space": {
+                        "committed": 12582912,
+                        "init": 3670016,
+                        "max": 12582912,
+                        "used": 0
+                    }
                 },
-                "name": "PS MarkSweep",
-                "valid": true
-            }
+                "memory_usage_before_gc": {
+                    "code_cache": {
+                        "committed": 13238272,
+                        "init": 2555904,
+                        "max": 251658240,
+                        "used": 13206080
+                    },
+                    "compressed_class_space": {
+                        "committed": 4980736,
+                        "init": 0,
+                        "max": 1073741824,
+                        "used": 4450784
+                    },
+                    "metaspace": {
+                        "committed": 36265984,
+                        "init": 0,
+                        "max": -1,
+                        "used": 33795560
+                    },
+                    "ps_eden_space": {
+                        "committed": 350748672,
+                        "init": 24641536,
+                        "max": 479723520,
+                        "used": 0
+                    },
+                    "ps_old_gen": {
+                        "committed": 43515904,
+                        "init": 64487424,
+                        "max": 1012400128,
+                        "used": 9627152
+                    },
+                    "ps_survivor_space": {
+                        "committed": 12582912,
+                        "init": 3670016,
+                        "max": 12582912,
+                        "used": 9588816
+                    }
+                },
+                "start_time": 4837
+            },
+            "name": "PS MarkSweep",
+            "valid": true
         }
     }
 }
@@ -244,63 +242,61 @@ An example event for `gc` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| spring_boot.gc.garbage_collector.collection.count |  | long |
-| spring_boot.gc.garbage_collector.collection.time |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.duration |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.end_time |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.gc_thread_count |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.id |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.code_cache.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.code_cache.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.code_cache.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.code_cache.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.compressed_class_space.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.compressed_class_space.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.compressed_class_space.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.compressed_class_space.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.metaspace.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.metaspace.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.metaspace.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.metaspace.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_eden_space.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_eden_space.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_eden_space.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_eden_space.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_old_gen.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_old_gen.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_old_gen.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_old_gen.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_survivor_space.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_survivor_space.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_survivor_space.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_after_gc.ps_survivor_space.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.code_cache.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.code_cache.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.code_cache.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.code_cache.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.compressed_class_space.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.compressed_class_space.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.compressed_class_space.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.compressed_class_space.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.metaspace.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.metaspace.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.metaspace.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.metaspace.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_eden_space.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_eden_space.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_eden_space.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_eden_space.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_old_gen.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_old_gen.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_old_gen.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_old_gen.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_survivor_space.committed |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_survivor_space.init |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_survivor_space.max |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.memory_usage_before_gc.ps_survivor_space.used |  | long |
-| spring_boot.gc.garbage_collector.last_gc_info.start_time |  | long |
-| spring_boot.gc.garbage_collector.name |  | keyword |
-| spring_boot.gc.garbage_collector.valid |  | boolean |
+| spring_boot.gc.collection.count |  | long |
+| spring_boot.gc.collection.time |  | long |
+| spring_boot.gc.last_gc_info.duration |  | long |
+| spring_boot.gc.last_gc_info.end_time |  | long |
+| spring_boot.gc.last_gc_info.gc_thread_count |  | long |
+| spring_boot.gc.last_gc_info.id |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.code_cache.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.code_cache.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.code_cache.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.code_cache.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.compressed_class_space.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.compressed_class_space.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.compressed_class_space.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.compressed_class_space.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.metaspace.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.metaspace.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.metaspace.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.metaspace.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_eden_space.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_eden_space.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_eden_space.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_eden_space.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_old_gen.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_old_gen.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_old_gen.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_old_gen.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_survivor_space.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_survivor_space.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_survivor_space.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_after_gc.ps_survivor_space.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.code_cache.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.code_cache.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.code_cache.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.code_cache.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.compressed_class_space.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.compressed_class_space.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.compressed_class_space.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.compressed_class_space.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.metaspace.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.metaspace.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.metaspace.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.metaspace.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_eden_space.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_eden_space.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_eden_space.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_eden_space.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_old_gen.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_old_gen.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_old_gen.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_old_gen.used |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_survivor_space.committed |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_survivor_space.init |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_survivor_space.max |  | long |
+| spring_boot.gc.last_gc_info.memory_usage_before_gc.ps_survivor_space.used |  | long |
+| spring_boot.gc.last_gc_info.start_time |  | long |
 | spring_boot.gc.memory_pool.collection_usage.committed |  | long |
 | spring_boot.gc.memory_pool.collection_usage.init |  | long |
 | spring_boot.gc.memory_pool.collection_usage.max |  | long |
@@ -324,6 +320,8 @@ An example event for `gc` looks as following:
 | spring_boot.gc.memory_pool.usage_threshold.supported |  | boolean |
 | spring_boot.gc.memory_pool.usage_threshold.threshold |  | long |
 | spring_boot.gc.memory_pool.valid |  | boolean |
+| spring_boot.gc.name |  | keyword |
+| spring_boot.gc.valid |  | boolean |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
