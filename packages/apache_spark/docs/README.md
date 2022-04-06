@@ -1,4 +1,4 @@
-# Apache Spark
+# Apache Spark Integration
 
 The Apache Spark integration collects and parses data using the Jolokia Metricbeat Module.
 
@@ -71,18 +71,20 @@ An example event for `applications` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T11:54:51.083Z",
+    "@timestamp": "2022-04-06T10:45:07.704Z",
     "agent": {
-        "ephemeral_id": "ee411959-b7ce-4172-a203-7701ea051771",
-        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
+        "ephemeral_id": "041a15d5-cddb-46ef-9217-9e7bd3f5f810",
+        "id": "f4acefdb-4d3b-409c-9ec6-b652b4e958ac",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "apache_spark": {
         "applications": {
-            "cores": 8,
-            "name": "JavaWordCount.1646133990496"
+            "name": "PythonWordCount.1649241886324",
+            "runtime": {
+                "ms": 21385
+            }
         }
     },
     "data_stream": {
@@ -91,18 +93,18 @@ An example event for `applications` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "bb7da080-fbb3-4124-aef4-06eccf171318",
+        "id": "f4acefdb-4d3b-409c-9ec6-b652b4e958ac",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "apache_spark.applications",
-        "duration": 89018916,
-        "ingested": "2022-03-09T11:54:54Z",
+        "duration": 4255374,
+        "ingested": "2022-04-06T10:45:11Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -112,16 +114,16 @@ An example event for `applications` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.21.0.5"
+            "172.25.0.7"
         ],
         "mac": [
-            "02:42:ac:15:00:05"
+            "02:42:ac:19:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "5.4.0-100-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -133,7 +135,7 @@ An example event for `applications` looks as following:
         "period": 60000
     },
     "service": {
-        "address": "http://apachesparkmaster:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
+        "address": "http://apache-spark-main:7777/jolokia/%3FignoreErrors=true\u0026canonicalNaming=false",
         "type": "jolokia"
     }
 }
@@ -146,7 +148,7 @@ An example event for `applications` looks as following:
 | @timestamp | Event timestamp. | date |
 | apache_spark.applications.cores | Number of cores. | long |
 | apache_spark.applications.name | Name of the application. | keyword |
-| apache_spark.applications.runtime_ms | Time taken to run the application (ms). | long |
+| apache_spark.applications.runtime.ms | Time taken to run the application (ms). | long |
 | apache_spark.applications.status | Current status of the application. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

@@ -1,4 +1,4 @@
-# Apache Spark
+# Apache Spark Integration
 
 The Apache Spark integration collects and parses data using the Jolokia Metricbeat Module.
 
