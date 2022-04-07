@@ -2,9 +2,6 @@
 description: Pipeline for Okta system logs.
 processors:
   - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-  - set:
       field: ecs.version
       value: '8.0.0'
   - rename:
@@ -196,9 +193,10 @@ processors:
       target_field: okta.client.id
       ignore_missing: true
       ignore_failure: true
-  - rename:
+  - convert:
       field: json.client.ipAddress
       target_field: okta.client.ip
+      type: ip
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -336,16 +334,14 @@ processors:
       target_field: user_agent.original
       type: string
       ignore_failure: true
-  - convert:
-      field: okta.client.ip
-      target_field: client.ip
-      type: string
-      ignore_failure: true
-  - convert:
-      field: okta.client.ip
-      target_field: source.ip
-      type: string
-      ignore_failure: true
+  - set:
+      field: client.ip
+      copy_from: okta.client.ip
+      if: ctx?.okta?.client?.ip != null
+  - set:
+      field: source.ip
+      copy_from: okta.client.ip
+      if: ctx?.okta?.client?.ip != null
   - convert:
       field: okta.event_type
       target_field: event.action
