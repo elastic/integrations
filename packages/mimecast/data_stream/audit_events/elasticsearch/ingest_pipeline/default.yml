@@ -4,7 +4,7 @@ processors:
   #  # Generic event/ecs fields we always want to populate
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.2.0"
   - rename:
       field: message
       target_field: event.original
@@ -143,6 +143,26 @@ processors:
       field: mimecast.eventInfo
       pattern: "[%{?key} : %{mimecast.export_type},%{?key} :%{mimecast.export_name},%{?key} :%{user.email},%{?key} :%{mimecast.weekday} %{mimecast.month} %{mimecast.monthday} %{mimecast.time} %{mimecast.timezone} %{mimecast.year},%{?key} :%{client.ip},%{?key} :%{mimecast.columns_exported},%{?key} : %{file.name},%{?key}: %{file.size},%{?key} : %{file.extension}], %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
       if: 'ctx?.event?.action=="page-data-exports"'
+      ignore_missing: true
+      ignore_failure: true    
+  - set:
+      field: email.from.address
+      value: ["{{{email.from.address}}}"]
+      if: "ctx?.email?.from?.address != null"
+  - set:
+      field: email.to.address
+      value: ["{{{email.to.address}}}"]
+      if: "ctx?.email?.to?.address != null"
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true     
   - convert:
       field: file.size
       type: long
