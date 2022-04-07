@@ -38,10 +38,10 @@ An example event for `threading` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-06T12:37:34.147Z",
+    "@timestamp": "2022-04-07T08:39:22.858Z",
     "agent": {
-        "ephemeral_id": "acb090db-0138-4879-8d6c-73f973a50dc5",
-        "id": "ae0ec113-7756-4aaf-a499-4406d2cd7b7e",
+        "ephemeral_id": "63ac268e-d25a-4bcf-9137-ab5cf8b7cc71",
+        "id": "924c4653-b527-4bc0-bad5-d2ce8be31a49",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -55,7 +55,7 @@ An example event for `threading` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "ae0ec113-7756-4aaf-a499-4406d2cd7b7e",
+        "id": "924c4653-b527-4bc0-bad5-d2ce8be31a49",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -63,8 +63,8 @@ An example event for `threading` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.threading",
-        "duration": 238889514,
-        "ingested": "2022-04-06T12:37:34Z",
+        "duration": 96664954,
+        "ingested": "2022-04-07T08:39:26Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -74,10 +74,10 @@ An example event for `threading` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.24.0.4"
+            "172.31.0.7"
         ],
         "mac": [
-            "02:42:ac:18:00:04"
+            "02:42:ac:1f:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -115,10 +115,10 @@ An example event for `threading` looks as following:
                 "supported": true
             },
             "current_thread": {
-                "allocated_bytes": 58849216,
-                "cpu_time": 712810163,
+                "allocated_bytes": 29595576,
+                "cpu_time": 402234755,
                 "cpu_time_supported": true,
-                "user_time": 680000000
+                "user_time": 390000000
             },
             "daemon_thread_count": 16,
             "object_monitor_usage_supported": true,
@@ -177,22 +177,22 @@ An example event for `threading` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| spring_boot.threading.allocated_memory.enabled |  | boolean |
-| spring_boot.threading.allocated_memory.supported |  | boolean |
-| spring_boot.threading.contention_monitoring.enabled |  | boolean |
-| spring_boot.threading.contention_monitoring.supported |  | boolean |
-| spring_boot.threading.count |  | long |
-| spring_boot.threading.cpu_time.enabled |  | boolean |
-| spring_boot.threading.cpu_time.supported |  | boolean |
-| spring_boot.threading.current_thread.allocated_bytes |  | double |
-| spring_boot.threading.current_thread.cpu_time |  | long |
-| spring_boot.threading.current_thread.cpu_time_supported |  | boolean |
-| spring_boot.threading.current_thread.user_time |  | long |
-| spring_boot.threading.daemon_thread_count |  | long |
-| spring_boot.threading.object_monitor_usage_supported |  | boolean |
-| spring_boot.threading.peak_thread_count |  | long |
-| spring_boot.threading.synchronizer_usage_supported |  | boolean |
-| spring_boot.threading.total_started_thread_count |  | long |
+| spring_boot.threading.allocated_memory.enabled | Returns the allocated memory for threads | boolean |
+| spring_boot.threading.allocated_memory.supported | Returns the allocated memory support for threads | boolean |
+| spring_boot.threading.contention_monitoring.enabled | Tests if thread contention monitoring is enabled | boolean |
+| spring_boot.threading.contention_monitoring.supported | Tests if the Java virtual machine supports thread contention monitoring | boolean |
+| spring_boot.threading.count | Returns the current number of live threads including both daemon and non-daemon threads | long |
+| spring_boot.threading.cpu_time.enabled | Tests if thread CPU time measurement is enabled | boolean |
+| spring_boot.threading.cpu_time.supported | Tests if the Java virtual machine implementation supports CPU time measurement for any thread | boolean |
+| spring_boot.threading.current_thread.allocated_bytes | Returns the allocated bytes for the current thread | double |
+| spring_boot.threading.current_thread.cpu_time | Returns the CPU time for the current thread in nanoseconds | long |
+| spring_boot.threading.current_thread.cpu_time_supported | Tests if the Java virtual machine supports CPU time measurement for the current thread | boolean |
+| spring_boot.threading.current_thread.user_time | Returns the user time for the current thread | long |
+| spring_boot.threading.daemon_thread_count | Returns the current number of live daemon threads | long |
+| spring_boot.threading.object_monitor_usage_supported | Returns the object monitor usage support | boolean |
+| spring_boot.threading.peak_thread_count | Resets the peak thread count to the current number of live threads | long |
+| spring_boot.threading.synchronizer_usage_supported | Returns the synchronizer usage support | boolean |
+| spring_boot.threading.total_started_thread_count | Returns the total number of threads created and also started since the Java virtual machine started | long |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
