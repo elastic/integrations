@@ -1,0 +1,136 @@
+format_version: 1.0.0
+name: carbon_black_cloud
+title: Carbon Black Cloud
+version: 0.1.0
+license: basic
+description: This Elastic integration collects logs from Carbon Black Cloud
+type: integration
+categories:
+  - security
+release: beta
+conditions:
+  kibana.version: ^7.17.0 || ^8.0.0
+screenshots:
+  - src: /img/carbon_black_cloud-screenshot.png
+    title: Carbon Black Cloud alert dashboard screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/carbon_black_cloud-logo.svg
+    title: Carbon Black Cloud logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: carbon_black_cloud
+    title: Carbon Black Cloud
+    description: Collect Logs from Carbon Black Cloud
+    inputs:
+      - type: httpjson
+        title: Collect Carbon Black Cloud logs via API
+        description: Collect Carbon Black Cloud logs via API
+        vars:
+          - name: hostname
+            type: text
+            title: Hostname
+            description: Carbon Black Cloud console Hostname. Find hostname in the console dashboard at the beginning of the web address (Add https:// before the hostname).
+            required: true
+          - name: org_key
+            type: text
+            title: Organization Key
+            description: Organization Key.
+            required: true
+          - name: custom_api_id
+            type: text
+            title: Custom API ID
+            description: API ID with Custom Access Level type.
+            required: true
+          - name: custom_api_secret_key
+            type: password
+            title: Custom API Secret Key
+            description: API Secret Key with Custom Access Level type
+            required: true
+          - name: api_id
+            type: text
+            title: API ID
+            description: API ID with API Access Level type.
+            required: true
+          - name: api_secret_key
+            type: password
+            title: API Secret Key
+            description: API Secret Key with API Access Level type
+            required: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+      - type: aws-s3
+        title: Collect Carbon Black Cloud logs via AWS S3
+        description: Collect Carbon Black Cloud logs via AWS S3
+        vars:
+          - name: bucket_arn
+            type: text
+            title: Bucket ARN
+            multi: false
+            required: true
+            show_user: true
+          - name: access_key_id
+            type: password
+            title: Access Key ID
+            multi: false
+            required: true
+            show_user: true
+          - name: secret_access_key
+            type: password
+            title: Secret Access Key
+            multi: false
+            required: true
+            show_user: true
+          - name: number_of_workers
+            type: integer
+            title: Number of Workers
+            multi: false
+            required: false
+            show_user: false
+            default: 5
+            description: Number of workers that will process the S3 objects listed.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+owner:
+  github: elastic/security-external-integrations

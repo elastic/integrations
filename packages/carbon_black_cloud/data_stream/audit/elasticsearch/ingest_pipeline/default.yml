@@ -1,0 +1,93 @@
+---
+description: Pipeline for parsing Carbon Black Cloud audit logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.0.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - date:
+      field: json.eventTime
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - UNIX_MS
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.outcome
+      value: success
+  - set: 
+      field: event.outcome
+      value: failed
+      if: ctx?.json?.flagged == true
+  - rename: 
+      field: json.description
+      target_field: event.reason
+  - rename: 
+      field: json.clientIp
+      target_field: client.ip
+      ignore_missing: true
+  - rename: 
+      field: json.loginName
+      target_field: client.user.id
+      ignore_missing: true
+  - rename: 
+      field: json.eventId
+      target_field: event.id
+      ignore_missing: true
+  - rename: 
+      field: json.orgName
+      target_field: organization.name
+      ignore_missing: true
+  - urldecode: 
+      field: json.requestUrl
+      target_field: url.original
+      ignore_missing: true
+  - rename: 
+      field: json.verbose
+      target_field: carbon_black_cloud.audit.verbose
+      ignore_missing: true
+  - rename: 
+      field: json.flagged
+      target_field: carbon_black_cloud.audit.flagged
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{client.ip}}}"
+      allow_duplicates: false
+  - remove:
+      field: json
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
