@@ -38,10 +38,10 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-06T11:56:15.300Z",
+    "@timestamp": "2022-04-07T11:46:38.660Z",
     "agent": {
-        "ephemeral_id": "a31088ca-d488-4f8d-b36a-60f786515453",
-        "id": "3bb4c15a-9abf-452d-becd-4452dd79b8de",
+        "ephemeral_id": "e1570c05-dba3-4696-9cfe-8d3af2eaf68f",
+        "id": "7e8569a0-45e9-41ab-9434-acbb356752a7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -55,7 +55,7 @@ An example event for `memory` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "3bb4c15a-9abf-452d-becd-4452dd79b8de",
+        "id": "7e8569a0-45e9-41ab-9434-acbb356752a7",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -63,8 +63,8 @@ An example event for `memory` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.memory",
-        "duration": 491533689,
-        "ingested": "2022-04-06T11:56:18Z",
+        "duration": 443583075,
+        "ingested": "2022-04-07T11:46:42Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -74,16 +74,16 @@ An example event for `memory` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.19.0.6"
+            "172.18.0.5"
         ],
         "mac": [
-            "02:42:ac:13:00:06"
+            "02:42:ac:12:00:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -159,26 +159,26 @@ An example event for `memory` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| spring_boot.memory.buffer_pool.direct.count |  | long |
-| spring_boot.memory.buffer_pool.direct.memory_used |  | long |
-| spring_boot.memory.buffer_pool.direct.total_capacity |  | long |
-| spring_boot.memory.buffer_pool.mapped.count |  | long |
-| spring_boot.memory.buffer_pool.mapped.memory_used |  | long |
-| spring_boot.memory.buffer_pool.mapped.total_capacity |  | long |
-| spring_boot.memory.memory.heap_memory_usage.committed |  | long |
-| spring_boot.memory.memory.heap_memory_usage.init |  | long |
-| spring_boot.memory.memory.heap_memory_usage.max |  | long |
-| spring_boot.memory.memory.heap_memory_usage.used |  | long |
-| spring_boot.memory.memory.non_heap_memory_usage.committed |  | long |
-| spring_boot.memory.memory.non_heap_memory_usage.init |  | long |
-| spring_boot.memory.memory.non_heap_memory_usage.max |  | long |
-| spring_boot.memory.memory.non_heap_memory_usage.used |  | long |
-| spring_boot.memory.memory.object_pending_finalization_count |  | long |
-| spring_boot.memory.memory.verbose |  | boolean |
-| spring_boot.memory.memory_manager.code_cache_manager.name |  | keyword |
-| spring_boot.memory.memory_manager.code_cache_manager.valid |  | boolean |
-| spring_boot.memory.memory_manager.metaspace_manager.name |  | keyword |
-| spring_boot.memory.memory_manager.metaspace_manager.valid |  | boolean |
+| spring_boot.memory.buffer_pool.direct.count | Returns count of direct buffer pool memory | long |
+| spring_boot.memory.buffer_pool.direct.memory_used | Returns used memory of direct buffer pool | long |
+| spring_boot.memory.buffer_pool.direct.total_capacity | Returns total capacity of direct buffer pool memory | long |
+| spring_boot.memory.buffer_pool.mapped.count | Returns count of mapped buffer pool memory | long |
+| spring_boot.memory.buffer_pool.mapped.memory_used | Returns used memory of mapped buffer pool | long |
+| spring_boot.memory.buffer_pool.mapped.total_capacity | Returns total capacity of mapped buffer pool memory | long |
+| spring_boot.memory.memory.heap_memory_usage.committed | Returns committed heap memory usage of JVM | long |
+| spring_boot.memory.memory.heap_memory_usage.init | Returns init heap memory usage of JVM | long |
+| spring_boot.memory.memory.heap_memory_usage.max | Returns max heap memory usage of JVM | long |
+| spring_boot.memory.memory.heap_memory_usage.used | Returns used heap memory usage of JVM | long |
+| spring_boot.memory.memory.non_heap_memory_usage.committed | Returns committed non-heap memory usage of JVM | long |
+| spring_boot.memory.memory.non_heap_memory_usage.init | Returns init non-heap memory usage of JVM | long |
+| spring_boot.memory.memory.non_heap_memory_usage.max | Returns max non-heap memory usage of JVM | long |
+| spring_boot.memory.memory.non_heap_memory_usage.used | Returns used non-heap memory usage of JVM | long |
+| spring_boot.memory.memory.object_pending_finalization_count | Returns the approximate number of objects for which finalization is pending | long |
+| spring_boot.memory.memory.verbose | Tests if verbose output for the memory system is enabled | boolean |
+| spring_boot.memory.memory_manager.code_cache_manager.name | Name of the cacheManager to qualify the cache | keyword |
+| spring_boot.memory.memory_manager.code_cache_manager.valid | Return the validation | boolean |
+| spring_boot.memory.memory_manager.metaspace_manager.name | Name of the Metaspace Manager to qualify the cache | keyword |
+| spring_boot.memory.memory_manager.metaspace_manager.valid | Return the validation | boolean |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
