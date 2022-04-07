@@ -1,89 +1,82 @@
 {
-    "description": "Calculate latest findings score",
-    "source": {
-        "index": "logs-cloud_security_posture.findings_latest-default"
-    },
-    "dest": {
-        "index": "logs-cloud_security_posture.scores-default"
-    },
-    "frequency": "30m",
-    "sync": {
-        "time": {
-            "field": "event.ingested",
-            "delay": "60s"
-        }
-    },
-    "retention_policy": {
-        "time": {
-            "field": "@timestamp",
-            "max_age": "30d"
-        }
-    },
-    "pivot": {
-        "group_by": {
-            "rule.benchmark.name": {
-                "terms": {
-                    "field": "rule.benchmark.name.keyword"
-                }
-            },
-            "cluster_id": {
-                "terms": {
-                    "field": "cluster_id.keyword"
-                }
-            },
-            "@timestamp": {
-                "date_histogram": {
-                    "field": "@timestamp",
-                    "calendar_interval": "1m"
-                }
-            }
-        },
-        "aggregations": {
-            "total_findings": {
-                "value_count": {
-                    "field": "result.evaluation.keyword"
-                }
-            },
-            "passed": {
-                "filter": {
-                    "term": {
-                        "result.evaluation.keyword": "passed"
-                    }
-                },
-                "aggs": {
-                    "passed_counter": {
-                        "value_count": {
-                            "field": "result.evaluation.keyword"
-                        }
-                    }
-                }
-            },
-            "failed": {
-                "filter": {
-                    "term": {
-                        "result.evaluation.keyword": "failed"
-                    }
-                },
-                "aggs": {
-                    "failed_counter": {
-                        "value_count": {
-                            "field": "result.evaluation.keyword"
-                        }
-                    }
-                }
-            },
-            "score": {
-                "bucket_script": {
-                    "buckets_path": {
-                        "passed": "passed\u003epassed_counter",
-                        "total": "total_findings"
-                    },
-                    "script": "params.passed / params.total"
-                }
-            }
-        }
-    },
-    "_meta": {
-        "managed": true
+  "description": "Calculate latest findings score",
+  "source": {
+    "index": "logs-cloud_security_posture.findings_latest-default"
+  },
+  "dest": {
+    "index": "logs-cloud_security_posture.scores-default"
+  },
+  "frequency": "30m",
+  "sync": {
+    "time": {
+      "field": "event.ingested",
+      "delay": "60s"
     }
+  },
+  "retention_policy": {
+    "time": {
+      "field": "@timestamp",
+      "max_age": "30d"
+    }
+  },
+  "pivot": {
+    "group_by": {
+      "@timestamp": {
+        "date_histogram": {
+          "field": "@timestamp",
+          "calendar_interval": "1m"
+        }
+      }
+    },
+    "aggs": {
+      "total_findings": {
+        "value_count": {
+          "field": "result.evaluation.keyword"
+        }
+      },
+      "passed_findings": {
+        "filter": {
+          "term": {
+            "result.evaluation.keyword": "passed"
+          }
+        }
+      },
+      "failed_findings": {
+        "filter": {
+          "term": {
+            "result.evaluation.keyword": "failed"
+          }
+        }
+      },
+      "score_by_cluster_id": {
+        "terms": {
+          "field": "cluster_id.keyword"
+        },
+        "aggs": {
+          "total_findings": {
+            "value_count": {
+              "field": "result.evaluation.keyword"
+            }
+          },
+          "passed_findings": {
+            "filter": {
+              "term": {
+                "result.evaluation.keyword": "passed"
+              }
+            }
+          },
+          "failed_findings": {
+            "filter": {
+              "term": {
+                "result.evaluation.keyword": "failed"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "_meta": {
+    "managed": true
+  }
 }
