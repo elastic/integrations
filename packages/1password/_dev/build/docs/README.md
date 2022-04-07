@@ -57,14 +57,14 @@
 
   <meta name="viewport" content="width=device-width">
   
-  <title>integrations/README.md at main · elastic/integrations</title>
-    <meta name="description" content="Elastic Integrations. Contribute to elastic/integrations development by creating an account on GitHub.">
+  <title>integrations/README.md at main · GinnyGalicia/integrations</title>
+    <meta name="description" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub.">
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub">
   <link rel="fluid-icon" href="https://github.com/fluidicon.png" title="GitHub">
   <meta property="fb:app_id" content="1401488693436528">
   <meta name="apple-itunes-app" content="app-id=1477376905" />
-    <meta name="twitter:image:src" content="https://opengraph.githubassets.com/3ab26f314b6c5847dfb6dcc3a8be138f1dd2cbaa79dfd5214dfafa9c2e4b49a5/elastic/integrations" /><meta name="twitter:site" content="@github" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="integrations/README.md at main · elastic/integrations" /><meta name="twitter:description" content="Elastic Integrations. Contribute to elastic/integrations development by creating an account on GitHub." />
-    <meta property="og:image" content="https://opengraph.githubassets.com/3ab26f314b6c5847dfb6dcc3a8be138f1dd2cbaa79dfd5214dfafa9c2e4b49a5/elastic/integrations" /><meta property="og:image:alt" content="Elastic Integrations. Contribute to elastic/integrations development by creating an account on GitHub." /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="600" /><meta property="og:site_name" content="GitHub" /><meta property="og:type" content="object" /><meta property="og:title" content="integrations/README.md at main · elastic/integrations" /><meta property="og:url" content="https://github.com/elastic/integrations" /><meta property="og:description" content="Elastic Integrations. Contribute to elastic/integrations development by creating an account on GitHub." />
+    <meta name="twitter:image:src" content="https://opengraph.githubassets.com/ab0f3bd9c6bd76d80c19d6da975c8c91607c8b93cce0be39553d6ff6a36ae6f1/GinnyGalicia/integrations" /><meta name="twitter:site" content="@github" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="integrations/README.md at main · GinnyGalicia/integrations" /><meta name="twitter:description" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub." />
+    <meta property="og:image" content="https://opengraph.githubassets.com/ab0f3bd9c6bd76d80c19d6da975c8c91607c8b93cce0be39553d6ff6a36ae6f1/GinnyGalicia/integrations" /><meta property="og:image:alt" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub." /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="600" /><meta property="og:site_name" content="GitHub" /><meta property="og:type" content="object" /><meta property="og:title" content="integrations/README.md at main · GinnyGalicia/integrations" /><meta property="og:url" content="https://github.com/GinnyGalicia/integrations" /><meta property="og:description" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub." />
     
 
 
@@ -72,14 +72,14 @@
     
 
   <link rel="assets" href="https://github.githubassets.com/">
-    <link rel="shared-web-socket" href="wss://alive.github.com/_sockets/u/18070719/ws?session=eyJ2IjoiVjMiLCJ1IjoxODA3MDcxOSwicyI6ODYxMDczMDY0LCJjIjoyMTM1OTY0NjIsInQiOjE2NDkzNDgwOTR9--3b0594ffda62d69c2177f72a1322f8ab34c1e303f776f2c15bd4a64dddf79f99" data-refresh-url="/_alive" data-session-id="4e99c6117ac6237a758bfaa9751be9b91eb8036577c8a3b321020f0831428cb5">
+    <link rel="shared-web-socket" href="wss://alive.github.com/_sockets/u/92439019/ws?session=eyJ2IjoiVjMiLCJ1Ijo5MjQzOTAxOSwicyI6ODYxMDg1Njc3LCJjIjoxOTU3MjkwMjgxLCJ0IjoxNjQ5MzQ4NDg2fQ==--9c76ed1110ff08eab546524787563b05e19218e422f1193b62c2cd6706b33a76" data-refresh-url="/_alive" data-session-id="210f3a92aa9bea018946087ed16a66058efe80042c27319b0fb7720edbe8b557">
     <link rel="shared-web-socket-src" href="/assets-cdn/worker/socket-worker-b98ccfd9236e.js">
   <link rel="sudo-modal" href="/sessions/sudo_modal">
 
 
-  <meta name="request-id" content="DDFE:92D4:1951EE:1A7F6C:624F0DF7" data-pjax-transient="true" /><meta name="html-safe-nonce" content="ad747e0f6ccd31d22ee0bc38574a0ddfcc5f32d3a4cd712142e03441de5f0eef" data-pjax-transient="true" /><meta name="visitor-payload" content="eyJyZWZlcnJlciI6bnVsbCwicmVxdWVzdF9pZCI6IkRERkU6OTJENDoxOTUxRUU6MUE3RjZDOjYyNEYwREY3IiwidmlzaXRvcl9pZCI6IjM2NDcwNjE1NDY3ODgzNzM5NzMiLCJyZWdpb25fZWRnZSI6ImZyYSIsInJlZ2lvbl9yZW5kZXIiOiJpYWQifQ==" data-pjax-transient="true" /><meta name="visitor-hmac" content="93aed60cbef07e536a3ccd88682dfb2dc46aa5aa5ecaae222b14a9766d0e1523" data-pjax-transient="true" />
+  <meta name="request-id" content="DE0E:10B81:1B1AC8:1C6375:624F0F81" data-pjax-transient="true" /><meta name="html-safe-nonce" content="2d20322bce6599da2486f0146faaed8b7c5b56773f19e4d1b33b82ac75b756fe" data-pjax-transient="true" /><meta name="visitor-payload" content="eyJyZWZlcnJlciI6Imh0dHBzOi8vZ2l0aHViLmNvbS9HaW5ueUdhbGljaWEvaW50ZWdyYXRpb25zL3RyZWUvbWFpbi9wYWNrYWdlcy8xcGFzc3dvcmQvX2Rldi9idWlsZC9kb2NzIiwicmVxdWVzdF9pZCI6IkRFMEU6MTBCODE6MUIxQUM4OjFDNjM3NTo2MjRGMEY4MSIsInZpc2l0b3JfaWQiOiIxMDMwOTgzODgwMDE2NDgwODExIiwicmVnaW9uX2VkZ2UiOiJmcmEiLCJyZWdpb25fcmVuZGVyIjoiaWFkIn0=" data-pjax-transient="true" /><meta name="visitor-hmac" content="d95c6fa1fb57b0b913aa865739d42a5c61ecc5c91f7339e67629ffbcd26481c4" data-pjax-transient="true" />
 
-    <meta name="hovercard-subject-tag" content="repository:202127068" data-pjax-transient>
+    <meta name="hovercard-subject-tag" content="repository:468348113" data-pjax-transient>
 
 
   <meta name="github-keyboard-shortcuts" content="repository,source-code" data-pjax-transient="true" />
@@ -93,7 +93,7 @@
   <meta name="google-site-verification" content="ZzhVyEFwb7w3e0-uOTltm8Jsck2F5StVihD0exw2fsA">
   <meta name="google-site-verification" content="GXs5KoUUkNCoaAZn7wPN-t01Pywp9M3sEjnt_3_ZWPc">
 
-<meta name="octolytics-url" content="https://collector.github.com/github/collect" /><meta name="octolytics-actor-id" content="18070719" /><meta name="octolytics-actor-login" content="cherryleaf" /><meta name="octolytics-actor-hash" content="0f56e5420f19fdb0f26dd805c8df980eb4e7b1ed296c6b97c3864c2a54a82d9b" />
+<meta name="octolytics-url" content="https://collector.github.com/github/collect" /><meta name="octolytics-actor-id" content="92439019" /><meta name="octolytics-actor-login" content="GinnyGalicia" /><meta name="octolytics-actor-hash" content="8e2c8c6d14864015d423dfc666a42121f4d648094c6ee1132972e78977553d00" />
 
   <meta name="analytics-location" content="/&lt;user-name&gt;/&lt;repo-name&gt;/blob/show" data-pjax-transient="true" />
 
@@ -105,7 +105,7 @@
   
 
       <meta name="hostname" content="github.com">
-    <meta name="user-login" content="cherryleaf">
+    <meta name="user-login" content="GinnyGalicia">
 
 
     <meta name="keyboard-shortcuts-preference" content="all">
@@ -113,7 +113,7 @@
 
       <meta name="expected-hostname" content="github.com">
 
-      <meta name="js-proxy-site-detection-payload" content="M2Q3YTQ4MjA1YWVmZTI1ZTM4NDA0NTgzZDAxNTExZjY3MDk5MmQ4NTlhM2UxMDQ2MmEwOGUzYTUxOGE2NDllYXx7InJlbW90ZV9hZGRyZXNzIjoiNzcuOTkuNDEuMzIiLCJyZXF1ZXN0X2lkIjoiRERGRTo5MkQ0OjE5NTFFRToxQTdGNkM6NjI0RjBERjciLCJ0aW1lc3RhbXAiOjE2NDkzNDgwOTQsImhvc3QiOiJnaXRodWIuY29tIn0=">
+      <meta name="js-proxy-site-detection-payload" content="ZGJlNjQ5ZDUyMjUwZWEzOGMxZTI4YTc3ZmVlNTJhOTMwOTQyNjJhNDhmMWRiMjE5OGJjODVjNGI0M2FiN2EwOHx7InJlbW90ZV9hZGRyZXNzIjoiNzcuOTkuNDEuMzIiLCJyZXF1ZXN0X2lkIjoiREUwRToxMEI4MToxQjFBQzg6MUM2Mzc1OjYyNEYwRjgxIiwidGltZXN0YW1wIjoxNjQ5MzQ4NDg2LCJob3N0IjoiZ2l0aHViLmNvbSJ9">
 
     <meta name="enabled-features" content="ACTIONS_CALLABLE_WORKFLOWS,MARKETPLACE_PENDING_INSTALLATIONS,PRESENCE_IDLE">
 
@@ -125,13 +125,13 @@
   
 
     
-  <meta name="go-import" content="github.com/elastic/integrations git https://github.com/elastic/integrations.git">
+  <meta name="go-import" content="github.com/GinnyGalicia/integrations git https://github.com/GinnyGalicia/integrations.git">
 
-  <meta name="octolytics-dimension-user_id" content="6764390" /><meta name="octolytics-dimension-user_login" content="elastic" /><meta name="octolytics-dimension-repository_id" content="202127068" /><meta name="octolytics-dimension-repository_nwo" content="elastic/integrations" /><meta name="octolytics-dimension-repository_public" content="true" /><meta name="octolytics-dimension-repository_is_fork" content="false" /><meta name="octolytics-dimension-repository_network_root_id" content="202127068" /><meta name="octolytics-dimension-repository_network_root_nwo" content="elastic/integrations" />
+  <meta name="octolytics-dimension-user_id" content="92439019" /><meta name="octolytics-dimension-user_login" content="GinnyGalicia" /><meta name="octolytics-dimension-repository_id" content="468348113" /><meta name="octolytics-dimension-repository_nwo" content="GinnyGalicia/integrations" /><meta name="octolytics-dimension-repository_public" content="true" /><meta name="octolytics-dimension-repository_is_fork" content="true" /><meta name="octolytics-dimension-repository_parent_id" content="202127068" /><meta name="octolytics-dimension-repository_parent_nwo" content="elastic/integrations" /><meta name="octolytics-dimension-repository_network_root_id" content="202127068" /><meta name="octolytics-dimension-repository_network_root_nwo" content="elastic/integrations" />
 
 
 
-    <link rel="canonical" href="https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md" data-pjax-transient>
+    <link rel="canonical" href="https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md" data-pjax-transient>
 
 
   <meta name="browser-stats-url" content="https://api.github.com/_private/browser/stats">
@@ -147,9 +147,6 @@
 <meta name="theme-color" content="#1e2327">
 <meta name="color-scheme" content="light dark" />
 
-  <link rel="apple-touch-icon" href="https://github.githubassets.com/apple-touch-icon.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="https://github.githubassets.com/apple-touch-icon-180x180.png">
-  <meta name="apple-mobile-web-app-title" content="GitHub">
 
   <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials">
 
@@ -203,7 +200,7 @@
 <div class="header-search flex-auto js-site-search position-relative flex-self-stretch flex-md-self-auto mb-3 mb-md-0 mr-0 mr-md-3 scoped-search site-scoped-search js-jump-to"
 >
   <div class="position-relative">
-    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="js-site-search-form" role="search" aria-label="Site" data-scope-type="Repository" data-scope-id="202127068" data-scoped-search-url="/elastic/integrations/search" data-owner-scoped-search-url="/orgs/elastic/search" data-unscoped-search-url="/search" data-turbo="false" action="/elastic/integrations/search" accept-charset="UTF-8" method="get">
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="js-site-search-form" role="search" aria-label="Site" data-scope-type="Repository" data-scope-id="468348113" data-scoped-search-url="/GinnyGalicia/integrations/search" data-owner-scoped-search-url="/users/GinnyGalicia/search" data-unscoped-search-url="/search" data-turbo="false" action="/GinnyGalicia/integrations/search" accept-charset="UTF-8" method="get">
       <label class="form-control input-sm header-search-wrapper p-0 js-chromeless-input-container header-search-wrapper-jump-to position-relative d-flex flex-justify-between flex-items-center">
         <input type="text"
           class="form-control input-sm header-search-input jump-to-field js-jump-to-field js-site-search-focus js-site-search-field is-clearable"
@@ -224,7 +221,7 @@
           spellcheck="false"
           autocomplete="off"
         >
-        <input type="hidden" value="buvDwl1Mbp5dkJnSpDvyiO4ryGysUaiL1txqe02CSiumUt0twvaxy2t8DEhMs-v78JGDBwcFTofYEWif8NaB7Q" data-csrf="true" class="js-data-jump-to-suggestions-path-csrf" />
+        <input type="hidden" value="C10G3feYr_jRMBhsFyJJ-39xa4u4FANANRRGV1sNGGjNQxNEj2fh8O2YUN_phdfUyBFT75jbqrTRTqAPxD3Tmg" data-csrf="true" class="js-data-jump-to-suggestions-path-csrf" />
         <input type="hidden" class="js-site-search-type-field" name="type" >
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="20" aria-hidden="true" class="mr-1 header-search-key-slash"><path fill="none" stroke="#979A9C" opacity=".4" d="M3.5.5h12c1.7 0 3 1.3 3 3v13c0 1.7-1.3 3-3 3h-12c-1.7 0-3-1.3-3-3v-13c0-1.7 1.3-3 3-3z"></path><path fill="#979A9C" d="M11.8 6L8 15.1h-.9L10.8 6h1z"></path></svg>
 
@@ -339,8 +336,8 @@
     </div>
 
     <div class="border rounded-2 flex-shrink-0 color-bg-subtle px-1 color-fg-muted ml-1 f6 d-none js-jump-to-badge-search">
-      <span class="js-jump-to-badge-search-text-default d-none" aria-label="in this organization">
-        In this organization
+      <span class="js-jump-to-badge-search-text-default d-none" aria-label="in this user">
+        In this user
       </span>
       <span class="js-jump-to-badge-search-text-global d-none" aria-label="in all of GitHub">
         All GitHub
@@ -423,15 +420,15 @@
 
     <a class="js-selected-navigation-item Header-link d-block d-md-none py-2 py-md-3 border-top border-md-top-0 border-white-fade" data-ga-click="Header, click, Nav menu - item:workspaces context:user" data-turbo="false" data-selected-links="/codespaces /codespaces" href="/codespaces">Codespaces</a>
 
-      <a class="js-selected-navigation-item Header-link d-block d-md-none py-2 py-md-3 border-top border-md-top-0 border-white-fade" data-ga-click="Header, click, Nav menu - item:Sponsors" data-hydro-click="{&quot;event_type&quot;:&quot;sponsors.button_click&quot;,&quot;payload&quot;:{&quot;button&quot;:&quot;HEADER_SPONSORS_DASHBOARD&quot;,&quot;sponsorable_login&quot;:&quot;cherryleaf&quot;,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="5e0c8b7690a687cbff0464a66a7bc5556e67e582a62ca513dc49088f352ae3f0" data-turbo="false" data-selected-links=" /sponsors/accounts" href="/sponsors/accounts">Sponsors</a>
+      <a class="js-selected-navigation-item Header-link d-block d-md-none py-2 py-md-3 border-top border-md-top-0 border-white-fade" data-ga-click="Header, click, Nav menu - item:Sponsors" data-hydro-click="{&quot;event_type&quot;:&quot;sponsors.button_click&quot;,&quot;payload&quot;:{&quot;button&quot;:&quot;HEADER_SPONSORS_DASHBOARD&quot;,&quot;sponsorable_login&quot;:&quot;GinnyGalicia&quot;,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="45574d91ddf14cc462a9af14392453599ab09e39bc2111215bf0e744335c13c4" data-turbo="false" data-selected-links=" /sponsors/accounts" href="/sponsors/accounts">Sponsors</a>
 
     <a class="Header-link d-block d-md-none mr-0 mr-md-3 py-2 py-md-3 border-top border-md-top-0 border-white-fade" data-turbo="false" href="/settings/profile">Settings</a>
 
-    <a class="Header-link d-block d-md-none mr-0 mr-md-3 py-2 py-md-3 border-top border-md-top-0 border-white-fade" data-turbo="false" href="/cherryleaf">
-      <img class="avatar avatar-user" loading="lazy" decoding="async" src="https://avatars.githubusercontent.com/u/18070719?s=40&amp;v=4" width="20" height="20" alt="@cherryleaf" />
-      cherryleaf
+    <a class="Header-link d-block d-md-none mr-0 mr-md-3 py-2 py-md-3 border-top border-md-top-0 border-white-fade" data-turbo="false" href="/GinnyGalicia">
+      <img class="avatar avatar-user" loading="lazy" decoding="async" src="https://avatars.githubusercontent.com/u/92439019?s=40&amp;v=4" width="20" height="20" alt="@GinnyGalicia" />
+      GinnyGalicia
 </a>
-    <!-- '"` --><!-- </textarea></xmp> --></option></form><form data-turbo="false" action="/logout" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="LHGOXGtByU-koLxUiwMuFMrp3rTvEU1H5u4q4WAPj5WY3nz9V81mIiXW5RBoSw86k--bxWzXRh28sZdeu5x_CQ" />
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form data-turbo="false" action="/logout" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="acOpPVIK5kFqHUn4R1euziQyaSUkEEqiPP41-bn6FvjR0zEJXdrKX-WWpu7d1Qp39JSsvBDERCBQf3fxbQq-jg" />
       <button
         type="submit"
         class="Header-link mr-0 mr-md-3 py-2 py-md-3 border-top border-md-top-0 border-white-fade d-md-none btn-link d-block width-full text-left"
@@ -470,16 +467,16 @@
       <notification-indicator
         class="js-socket-channel"
         data-test-selector="notifications-indicator"
-        data-channel="eyJjIjoibm90aWZpY2F0aW9uLWNoYW5nZWQ6MTgwNzA3MTkiLCJ0IjoxNjQ5MzQ4MDk0fQ==--5c31d30466c34e63a84fbd5b9c7b85955a972d491c1dd4b57d6a349cc5ceb726">
+        data-channel="eyJjIjoibm90aWZpY2F0aW9uLWNoYW5nZWQ6OTI0MzkwMTkiLCJ0IjoxNjQ5MzQ4NDg2fQ==--3fe86169883c53ec378ddb45aa477712b217ee8097cb4bd125137e33a7e730c0">
         <a href="/notifications"
           data-turbo=false
           class="Header-link notification-indicator position-relative tooltipped tooltipped-sw"
           
-          aria-label="You have unread notifications"
+          aria-label="You have no unread notifications"
           data-hotkey="g n"
-          data-ga-click="Header, go to notifications, icon:unread"
+          data-ga-click="Header, go to notifications, icon:read"
           data-target="notification-indicator.link">
-          <span class="mail-status unread " data-target="notification-indicator.modifier"></span>
+          <span class="mail-status  " data-target="notification-indicator.modifier"></span>
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-bell">
     <path d="M8 16a2 2 0 001.985-1.75c.017-.137-.097-.25-.235-.25h-3.5c-.138 0-.252.113-.235.25A2 2 0 008 16z"></path><path fill-rule="evenodd" d="M8 1.5A3.5 3.5 0 004.5 5v2.947c0 .346-.102.683-.294.97l-1.703 2.556a.018.018 0 00-.003.01l.001.006c0 .002.002.004.004.006a.017.017 0 00.006.004l.007.001h10.964l.007-.001a.016.016 0 00.006-.004.016.016 0 00.004-.006l.001-.007a.017.017 0 00-.003-.01l-1.703-2.554a1.75 1.75 0 01-.294-.97V5A3.5 3.5 0 008 1.5zM3 5a5 5 0 0110 0v2.947c0 .05.015.098.042.139l1.703 2.555A1.518 1.518 0 0113.482 13H2.518a1.518 1.518 0 01-1.263-2.36l1.703-2.554A.25.25 0 003 7.947V5z"></path>
 </svg>
@@ -527,14 +524,14 @@
 
     <div class="Header-item position-relative mr-0 d-none d-md-flex">
         
-  <details class="details-overlay details-reset js-feature-preview-indicator-container" data-feature-preview-indicator-src="/users/cherryleaf/feature_preview/indicator_check">
+  <details class="details-overlay details-reset js-feature-preview-indicator-container" data-feature-preview-indicator-src="/users/GinnyGalicia/feature_preview/indicator_check">
 
   <summary
     class="Header-link"
     aria-label="View profile and more"
     data-analytics-event="{&quot;category&quot;:&quot;Header&quot;,&quot;action&quot;:&quot;show menu&quot;,&quot;label&quot;:&quot;icon:avatar&quot;}"
   >
-    <img src="https://avatars.githubusercontent.com/u/18070719?s=40&amp;v=4" alt="@cherryleaf" size="20" height="20" width="20" data-view-component="true" class="avatar avatar-small circle" />
+    <img src="https://avatars.githubusercontent.com/u/92439019?s=40&amp;v=4" alt="@GinnyGalicia" size="20" height="20" width="20" data-view-component="true" class="avatar avatar-small circle" />
       <span class="feature-preview-indicator js-feature-preview-indicator" style="top: 1px;" hidden></span>
     <span class="dropdown-caret"></span>
   </summary>
@@ -543,7 +540,7 @@
       style="width: 180px"
       
       preload>
-      <include-fragment src="/users/18070719/menu" loading="lazy">
+      <include-fragment src="/users/92439019/menu" loading="lazy">
         <p class="text-center mt-3" data-hide-on-error>
           <svg style="box-sizing: content-box; color: var(--color-icon-primary);" width="32" height="32" viewBox="0 0 16 16" fill="none" data-view-component="true" class="anim-rotate">
   <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-opacity="0.25" stroke-width="2" vector-effect="non-scaling-stroke" />
@@ -607,8 +604,8 @@
   <details-dialog class="command-palette-details-dialog d-flex flex-column flex-justify-center height-fit" aria-label="command palette">
     <command-palette
       class="command-palette color-bg-default rounded-3 border color-shadow-small"
-      data-return-to=/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md
-      data-user-id="18070719"
+      data-return-to=/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md
+      data-user-id="92439019"
       data-activation-hotkey="Mod+k,Mod+Alt+k"
       data-command-mode-hotkey="Mod+Shift+k"
         data-action="
@@ -620,10 +617,10 @@
 
 
       <input type="hidden" name="color-mode-path" id="color-mode-path" value="/settings/appearance/color_mode" class="js-color-mode-path" autocomplete="off" />
-      <input type="hidden" value="YZoOBSyshno5mRJ6u-ZFsKfM9u0-fB7OD6WqUiX1WWjDpYkN8HKdu9elEMZcRy7OnqpHPNKjFTX7VTxeeWSBzA" data-csrf="true" class="js-color-mode-csrf" />
+      <input type="hidden" value="myzj2Fu7DfGdSvFcvBkYKS7z4uf9OeU4xIJj1HbrE7XuTQEeafVu7YB_WXe9cuoMqyYl_ylRm_S72ekYZy6gHw" data-csrf="true" class="js-color-mode-csrf" />
 
       <input type="hidden" name="tab-size-path" id="tab-size-path" value="/settings/appearance/tab_size" class="js-tab-size-path" autocomplete="off" />
-      <input type="hidden" value="Jsnt7NJditXCd9zrL6IsnPU75xNSKbXWjw7Exw8E-6chzljK0GOIGH7g1nd0WV8wGDj7KJLirgqmsDIJ-Z7zQQ" data-csrf="true" class="js-tab-size-csrf" />
+      <input type="hidden" value="tDW61kHvQ6NfEwwSr1aoO78k1PWsnjJHicoJzRmMlFPASKj2PLk_leXwnYWjETsIQTGdmWOF2J1EYOEMSW81gQ" data-csrf="true" class="js-tab-size-csrf" />
 
         <command-palette-mode
           data-char="#"
@@ -709,17 +706,17 @@
         <command-palette-scope >
           <div data-target="command-palette-scope.placeholder" hidden class="color-fg-subtle">/&nbsp;&nbsp;<span class="text-semibold color-fg-default">...</span>&nbsp;&nbsp;/&nbsp;&nbsp;</div>
               <command-palette-token
-                data-text="elastic"
-                data-id="MDEyOk9yZ2FuaXphdGlvbjY3NjQzOTA="
+                data-text="GinnyGalicia"
+                data-id="U_kgDOBYKB6w"
                 data-type="owner"
-                data-value="elastic"
+                data-value="GinnyGalicia"
                 data-targets="command-palette-scope.tokens"
                 class="color-fg-default text-semibold"
                 style="white-space:nowrap;line-height:20px;"
-                >elastic<span class="color-fg-subtle text-normal">&nbsp;&nbsp;/&nbsp;&nbsp;</span></command-palette-token>
+                >GinnyGalicia<span class="color-fg-subtle text-normal">&nbsp;&nbsp;/&nbsp;&nbsp;</span></command-palette-token>
               <command-palette-token
                 data-text="integrations"
-                data-id="MDEwOlJlcG9zaXRvcnkyMDIxMjcwNjg="
+                data-id="R_kgDOG-ps0Q"
                 data-type="repository"
                 data-value="integrations"
                 data-targets="command-palette-scope.tokens"
@@ -1467,7 +1464,7 @@
 </div>
 
         <command-palette-pjax-metadata hidden class="js-command-palette-pjax-metadata" data-pjax-replace id="command-palette-pjax-metadata"
-  data-default-scope-id="MDEwOlJlcG9zaXRvcnkyMDIxMjcwNjg="
+  data-default-scope-id="R_kgDOG-ps0Q"
   data-default-scope-type="Repository"
 >
 </command-palette-pjax-metadata>
@@ -1484,9 +1481,6 @@
       
 
     
-    
-
-
 
 
 
@@ -1499,25 +1493,37 @@
 
         <div class="flex-auto min-width-0 width-fit mr-3">
             <h2 class=" d-flex flex-wrap flex-items-center wb-break-word f3 text-normal">
-    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-repo color-fg-muted mr-2">
-    <path fill-rule="evenodd" d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714 1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8zM5 12.25v3.25a.25.25 0 00.4.2l1.45-1.087a.25.25 0 01.3 0L8.6 15.7a.25.25 0 00.4-.2v-3.25a.25.25 0 00-.25-.25h-3.5a.25.25 0 00-.25.25z"></path>
+    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-repo-forked color-fg-muted mr-2">
+    <path fill-rule="evenodd" d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"></path>
 </svg>
   <span class="author flex-self-stretch" itemprop="author">
-    <a class="url fn" rel="author" data-hovercard-type="organization" data-hovercard-url="/orgs/elastic/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/elastic">elastic</a>
+    <a class="url fn" rel="author" data-hovercard-type="user" data-hovercard-url="/users/GinnyGalicia/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/GinnyGalicia">GinnyGalicia</a>
   </span>
   <span class="mx-1 flex-self-stretch color-fg-muted">/</span>
   <strong itemprop="name" class="mr-2 flex-self-stretch">
-    <a data-pjax="#repo-content-pjax-container" href="/elastic/integrations">integrations</a>
+    <a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations">integrations</a>
   </strong>
 
   <span></span><span class="Label Label--secondary v-align-middle mr-1">Public</span>
 </h2>
+  <span class="text-small lh-condensed-ultra no-wrap mt-1" data-repository-hovercards-enabled>
+    forked from <a data-hovercard-type="repository" data-hovercard-url="/elastic/integrations/hovercard" href="/elastic/integrations">elastic/integrations</a>
+  </span>
 
         </div>
 
           <ul class="pagehead-actions flex-shrink-0 d-none d-md-inline" style="padding: 2px 0;">
 
+  <li>
+  <div class="float-left" data-test-selector="pin-repo-button">
+    <form data-turbo="false" action="/GinnyGalicia/integrations/profile_pin" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="_U-yHgPKjOEXUUJ0Iu6gx1Y6W-v2k13w_gZEn6e3r5eC5zE5i-0Y1IBWK1Osr4TDMcnBH5mO9Nk69GXJqLLa_w" autocomplete="off" />
+      <button title="Pin this repository to your profile" type="submit" data-view-component="true" class="btn-sm btn">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-pin mr-2">
+    <path fill-rule="evenodd" d="M4.456.734a1.75 1.75 0 012.826.504l.613 1.327a3.081 3.081 0 002.084 1.707l2.454.584c1.332.317 1.8 1.972.832 2.94L11.06 10l3.72 3.72a.75.75 0 11-1.061 1.06L10 11.06l-2.204 2.205c-.968.968-2.623.5-2.94-.832l-.584-2.454a3.081 3.081 0 00-1.707-2.084l-1.327-.613a1.75 1.75 0 01-.504-2.826L4.456.734zM5.92 1.866a.25.25 0 00-.404-.072L1.794 5.516a.25.25 0 00.072.404l1.328.613A4.582 4.582 0 015.73 9.63l.584 2.454a.25.25 0 00.42.12l5.47-5.47a.25.25 0 00-.12-.42L9.63 5.73a4.581 4.581 0 01-3.098-2.537L5.92 1.866z"></path>
+</svg>Pin
   
+</button></form>  </div>
+</li>
+
 
   <li>
         <notifications-list-subscription-form
@@ -1530,7 +1536,7 @@
         data-action="toggle:notifications-list-subscription-form#detailsToggled"
       >
 
-      <summary data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;WATCH_BUTTON&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="92adcb2ab61e2156a2c257f34c1fd35b4cf2f7c2a1fe9398e71b0b0747dfdd66" data-ga-click="Repository, click Watch settings, action:blob#show" aria-label="Notification settings" data-view-component="true" class="btn-sm btn">  <span data-menu-button>
+      <summary data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;WATCH_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="e2dc5e70a4bdb755059c18cf76b313c83ed1116ed672826f381d0f17c8153fa5" data-ga-click="Repository, click Watch settings, action:blob#show" aria-label="Notification settings" data-view-component="true" class="btn-sm btn">  <span data-menu-button>
             <span
               hidden
               
@@ -1562,7 +1568,7 @@
               Watch
             </span>
           </span>
-            <span id="repo-notifications-counter" data-target="notifications-list-subscription-form.socialCount" data-pjax-replace="true" title="247" data-view-component="true" class="Counter">247</span>
+            <span id="repo-notifications-counter" data-target="notifications-list-subscription-form.socialCount" data-pjax-replace="true" title="0" data-view-component="true" class="Counter">0</span>
           <span class="dropdown-caret"></span>
   
 </summary>
@@ -1583,9 +1589,9 @@
             </header>
 
             <div class="SelectMenu-list">
-              <form data-target="notifications-list-subscription-form.form" data-action="submit:notifications-list-subscription-form#submitForm" data-turbo="false" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="GBQjKaRH6TnthGEmXcwSBNiZdd9OB3xuTsvmesXz5N3iPvLbE3UxbGAwxmrhwB9Ia1-pQKo9MALzJvcYheEOtQ" autocomplete="off" />
+              <form data-target="notifications-list-subscription-form.form" data-action="submit:notifications-list-subscription-form#submitForm" data-turbo="false" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="LVPIMrRJ0OErrOarQWNWY8JsDuFk1SgSeOxONmy7IfNmKhS_W5C9_zdLpWZtfbF75xuzOc8z6vfkVAwkk9PQzA" autocomplete="off" />
 
-                <input type="hidden" name="repository_id" value="202127068">
+                <input type="hidden" name="repository_id" value="468348113">
 
                 <button
                   type="submit"
@@ -1711,9 +1717,9 @@
           hidden
         >
           <div class="SelectMenu-modal notifications-component-dialog-modal overflow-visible">
-            <form data-target="notifications-list-subscription-form.customform" data-action="submit:notifications-list-subscription-form#submitCustomForm" data-turbo="false" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="i9jh6gkq8lstVFpOolpnVO35o4I8Y0pFnYzezray_kBx8jAYvhgqDqDg_QIeVmoYXj9_HdhZBikgYc-s9qAUKA" autocomplete="off" />
+            <form data-target="notifications-list-subscription-form.customform" data-action="submit:notifications-list-subscription-form#submitCustomForm" data-turbo="false" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="KvihblX-DOHWU-2EJ0BPhAhjBSTZxNRqcVDhQpgFq_FhgX3juidh_8q0rkkLXqicLRS4_HIiFo_t6KNQZ21azg" autocomplete="off" />
 
-              <input type="hidden" name="repository_id" value="202127068">
+              <input type="hidden" name="repository_id" value="468348113">
 
               <header class="d-sm-none SelectMenu-header pb-0 border-bottom-0 px-2 px-sm-3">
                 <h1 class="f3 SelectMenu-title d-inline-flex">
@@ -1770,6 +1776,14 @@
                       Issues
                     </label>
 
+                      <span
+                        class="tooltipped tooltipped-nw mr-2 p-1 float-right"
+                        
+                        aria-label="Issues are not enabled for this repo">
+                        <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-info color-fg-muted">
+    <path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm6.5-.25A.75.75 0 017.25 7h1a.75.75 0 01.75.75v2.75h.25a.75.75 0 010 1.5h-2a.75.75 0 010-1.5h.25v-2h-.25a.75.75 0 01-.75-.75zM8 6a1 1 0 100-2 1 1 0 000 2z"></path>
+</svg>
+                      </span>
                   </div>
                   <div class="form-checkbox mr-3 ml-6 ml-sm-5 mb-2 mt-0">
                     <label class="f5 text-normal">
@@ -1858,43 +1872,12 @@
   </li>
 
   <li>
-            <div class="float-left">
-        <details class="details-reset details-overlay details-overlay-dark " >
-                <summary data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;FORK_BUTTON&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="b393e54d6a436b03320f4e56142a88598132397843aca1ec291c4e484a9a8f9a" data-ga-click="Repository, show fork modal, action:blob#show; text:Fork" aria-label="Fork your own copy of elastic/integrations to your account" data-view-component="true" class="btn-sm btn">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-repo-forked mr-2">
+          <button aria-label="Cannot fork because you own this repository and are not a member of any organizations." disabled="disabled" type="button" data-view-component="true" class="tooltipped tooltipped-s btn-sm btn">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-repo-forked mr-2">
     <path fill-rule="evenodd" d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"></path>
 </svg>Fork
-              <span id="repo-network-counter" data-pjax-replace="true" title="133" data-view-component="true" class="Counter">133</span>
+      <span id="repo-network-counter" data-pjax-replace="true" title="133" data-view-component="true" class="Counter">133</span>
   
-</summary>
-  <details-dialog
-    class="Box d-flex flex-column anim-fade-in fast Box--overlay overflow-visible"
-      aria-label="Fork integrations"
-      src="/elastic/integrations/fork?fragment=1"
-      preload
-    >
-    <div class="Box-header">
-      <button class="Box-btn-octicon btn-octicon float-right" type="button" aria-label="Close dialog" data-close-dialog>
-        <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-x">
-    <path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"></path>
-</svg>
-      </button>
-      <h1 class="Box-title" >Fork integrations</h1>
-    </div>
-      
-          <div class="text-center">
-            <include-fragment>
-              <svg aria-label="Loading..." style="box-sizing: content-box; color: var(--color-icon-primary);" width="32" height="32" viewBox="0 0 16 16" fill="none" data-view-component="true" class="my-5 anim-rotate">
-  <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-opacity="0.25" stroke-width="2" vector-effect="non-scaling-stroke" />
-  <path d="M15 8a7.002 7.002 0 00-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke" />
-</svg>
-              <p class="f5 color-fg-muted">If this dialog fails to load, you can visit <a href="/elastic/integrations/fork">the fork page</a> directly.</p>
-            </include-fragment>
-          </div>
-
-  </details-dialog>
-</details>
-      </div>
-
+</button>
   </li>
 
   <li>
@@ -1918,26 +1901,26 @@
 </template>
 
   <div data-view-component="true" class="js-toggler-container js-social-container starring-container BtnGroup d-flex">
-    <form class="starred js-social-form BtnGroup-parent flex-auto js-deferred-toggler-target" data-turbo="false" action="/elastic/integrations/unstar" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="dMoKSZATfS0cJDQzg3K6Nt7sIIYdDDm_gPc9I-6kCCYCz1WEsFsIh1I94eITa_XEkOYv4_8STMUwYC3H_hzhVw" autocomplete="off" />
-        <input type="hidden" value="bBWHnZMUlOjUTJaejAdzQRhTvhxzeUi___oQFfIeeeUaENhQs1zhQppVQ08cHjyzVlmxeZFnPcVPbQDx4qaQlA" data-csrf="true" class="js-confirm-csrf-token" />
+    <form class="starred js-social-form BtnGroup-parent flex-auto js-deferred-toggler-target" data-turbo="false" action="/GinnyGalicia/integrations/unstar" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="evW1kHyalba4JWjMqJxxyl0JtBzsb_sCUgHIA_K-U1bTA-fPlucib_F_m55XPyMF5tdQj0rmyaB5Fx6zdVRIdQ" autocomplete="off" />
+        <input type="hidden" value="YvQTjNo25l6SlRsVKEkpDtKjQM_nCb4gA6s0-7_EBlbLAkHTMEtRh9vP6EfX6nvBaX2kXEGAjIIoveJLOC4ddQ" data-csrf="true" class="js-confirm-csrf-token" />
       <input type="hidden" name="context" value="repository">
-      <button data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;UNSTAR_BUTTON&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="1254f117e4554486b6fb116176fbf73887955e78d6b0e5e7b01b25bf1a34996c" data-ga-click="Repository, click unstar button, action:blob#show; text:Unstar" aria-label="Unstar this repository" type="submit" data-view-component="true" class="rounded-left-2 border-right-0 btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-star-fill starred-button-icon d-inline-block mr-2">
+      <button data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;UNSTAR_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="d94d5a02ce64aabdd015d40f5354e286f0b91bf206207f0f345ac497eaff3fa9" data-ga-click="Repository, click unstar button, action:blob#show; text:Unstar" aria-label="Unstar this repository" type="submit" data-view-component="true" class="rounded-left-2 border-right-0 btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-star-fill starred-button-icon d-inline-block mr-2">
     <path fill-rule="evenodd" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"></path>
 </svg><span data-view-component="true" class="d-inline">
           Starred
-</span>          <span id="repo-stars-counter-unstar" aria-label="51 users starred this repository" data-singular-suffix="user starred this repository" data-plural-suffix="users starred this repository" data-pjax-replace="true" title="51" data-view-component="true" class="Counter js-social-count">51</span>
+</span>          <span id="repo-stars-counter-unstar" aria-label="0 users starred this repository" data-singular-suffix="user starred this repository" data-plural-suffix="users starred this repository" data-pjax-replace="true" title="0" data-view-component="true" class="Counter js-social-count">0</span>
   
 </button></form>
-    <form class="unstarred js-social-form BtnGroup-parent flex-auto" data-turbo="false" action="/elastic/integrations/star" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="QUeoTlacUfUOcftq5Q3j5OZLeT6lNyqkZ3H3eXrlV1JwMtZN-rIlzb8sbVGHjSjMXKN2oPPOr70t1VB-7ku_3Q" autocomplete="off" />
+    <form class="unstarred js-social-form BtnGroup-parent flex-auto" data-turbo="false" action="/GinnyGalicia/integrations/star" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="66HwJObPj-AZwoHTaN6aWR0hVl-6JyJhSb07N_jxzvA17QWdL2i03C-SMXeMlzlzEL5nijEIPGI0sSxdgqPxfw" autocomplete="off" />
       <input type="hidden" name="context" value="repository">
-      <button data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;STAR_BUTTON&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="21938f8374d69c5ce2a755ed1d4c07e678c8706cc079352b468762d19ae87fa9" data-ga-click="Repository, click star button, action:blob#show; text:Star" aria-label="Star this repository" type="submit" data-view-component="true" class="js-toggler-target rounded-left-2 btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-star d-inline-block mr-2">
+      <button data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;STAR_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="3d6a2ee80423d7d317a20257152c4361ff5c3e88decef428dad7e19814f327c8" data-ga-click="Repository, click star button, action:blob#show; text:Star" aria-label="Star this repository" type="submit" data-view-component="true" class="js-toggler-target rounded-left-2 btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-star d-inline-block mr-2">
     <path fill-rule="evenodd" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25zm0 2.445L6.615 5.5a.75.75 0 01-.564.41l-3.097.45 2.24 2.184a.75.75 0 01.216.664l-.528 3.084 2.769-1.456a.75.75 0 01.698 0l2.77 1.456-.53-3.084a.75.75 0 01.216-.664l2.24-2.183-3.096-.45a.75.75 0 01-.564-.41L8 2.694v.001z"></path>
 </svg><span data-view-component="true" class="d-inline">
           Star
-</span>          <span id="repo-stars-counter-star" aria-label="51 users starred this repository" data-singular-suffix="user starred this repository" data-plural-suffix="users starred this repository" data-pjax-replace="true" title="51" data-view-component="true" class="Counter js-social-count">51</span>
+</span>          <span id="repo-stars-counter-star" aria-label="0 users starred this repository" data-singular-suffix="user starred this repository" data-plural-suffix="users starred this repository" data-pjax-replace="true" title="0" data-view-component="true" class="Counter js-social-count">0</span>
   
 </button></form>
-      <details id="details-user-list-202127068" data-view-component="true" class="details-reset details-overlay BtnGroup-parent js-user-list-menu d-inline-block position-relative">
+      <details id="details-user-list-468348113" data-view-component="true" class="details-reset details-overlay BtnGroup-parent js-user-list-menu d-inline-block position-relative">
       <summary aria-label="Add this repository to a list" data-view-component="true" class="btn-sm btn BtnGroup-item px-2 float-none">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-triangle-down">
     <path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z"></path>
 </svg>
@@ -1945,19 +1928,19 @@
 </summary>
   <details-menu
     class="SelectMenu right-0"
-      src="/elastic/integrations/lists"
+      src="/GinnyGalicia/integrations/lists"
       
       role="menu"
       
 >
     <div class="SelectMenu-modal">
-        <button class="SelectMenu-closeButton position-absolute right-0 m-2" type="button" aria-label="Close menu" data-toggle-for="details-062d4f">
+        <button class="SelectMenu-closeButton position-absolute right-0 m-2" type="button" aria-label="Close menu" data-toggle-for="details-0aee73">
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-x">
     <path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"></path>
 </svg>
         </button>
       <div
-        id="filter-menu-062d4f"
+        id="filter-menu-0aee73"
         class="d-flex flex-column flex-1 overflow-hidden"
 >
         <div
@@ -1994,7 +1977,7 @@
 
   <ul data-view-component="true" class="UnderlineNav-body list-style-none">
       <li data-view-component="true" class="d-inline-flex">
-  <a id="code-tab" href="/elastic/integrations" data-tab-item="i0code-tab" data-selected-links="repo_source repo_downloads repo_commits repo_releases repo_tags repo_branches repo_packages repo_deployments /elastic/integrations" data-pjax="#repo-content-pjax-container" data-hotkey="g c" data-ga-click="Repository, Navigation click, Code tab" aria-current="page" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item selected">
+  <a id="code-tab" href="/GinnyGalicia/integrations" data-tab-item="i0code-tab" data-selected-links="repo_source repo_downloads repo_commits repo_releases repo_tags repo_branches repo_packages repo_deployments /GinnyGalicia/integrations" data-pjax="#repo-content-pjax-container" data-hotkey="g c" data-ga-click="Repository, Navigation click, Code tab" aria-current="page" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item selected">
     
                   <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-code UnderlineNav-octicon d-none d-sm-inline">
     <path fill-rule="evenodd" d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06l4.25-4.25zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06l-4.25-4.25z"></path>
@@ -2006,31 +1989,19 @@
     
 </a></li>
       <li data-view-component="true" class="d-inline-flex">
-  <a id="issues-tab" href="/elastic/integrations/issues" data-tab-item="i1issues-tab" data-selected-links="repo_issues repo_labels repo_milestones /elastic/integrations/issues" data-pjax="#repo-content-pjax-container" data-hotkey="g i" data-ga-click="Repository, Navigation click, Issues tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
-    
-                  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-issue-opened UnderlineNav-octicon d-none d-sm-inline">
-    <path d="M8 9.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"></path><path fill-rule="evenodd" d="M8 0a8 8 0 100 16A8 8 0 008 0zM1.5 8a6.5 6.5 0 1113 0 6.5 6.5 0 01-13 0z"></path>
-</svg>
-          <span data-content="Issues">Issues</span>
-            <span id="issues-repo-tab-count" data-pjax-replace="" title="374" data-view-component="true" class="Counter">374</span>
-
-
-    
-</a></li>
-      <li data-view-component="true" class="d-inline-flex">
-  <a id="pull-requests-tab" href="/elastic/integrations/pulls" data-tab-item="i2pull-requests-tab" data-selected-links="repo_pulls checks /elastic/integrations/pulls" data-pjax="#repo-content-pjax-container" data-hotkey="g p" data-ga-click="Repository, Navigation click, Pull requests tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
+  <a id="pull-requests-tab" href="/GinnyGalicia/integrations/pulls" data-tab-item="i1pull-requests-tab" data-selected-links="repo_pulls checks /GinnyGalicia/integrations/pulls" data-pjax="#repo-content-pjax-container" data-hotkey="g p" data-ga-click="Repository, Navigation click, Pull requests tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
     
                   <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-git-pull-request UnderlineNav-octicon d-none d-sm-inline">
     <path fill-rule="evenodd" d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.251 2.251 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z"></path>
 </svg>
           <span data-content="Pull requests">Pull requests</span>
-            <span id="pull-requests-repo-tab-count" data-pjax-replace="" title="132" data-view-component="true" class="Counter">132</span>
+            <span id="pull-requests-repo-tab-count" data-pjax-replace="" title="0" hidden="hidden" data-view-component="true" class="Counter">0</span>
 
 
     
 </a></li>
       <li data-view-component="true" class="d-inline-flex">
-  <a id="actions-tab" href="/elastic/integrations/actions" data-tab-item="i3actions-tab" data-selected-links="repo_actions /elastic/integrations/actions" data-pjax="#repo-content-pjax-container" data-hotkey="g a" data-analytics-event="{&quot;category&quot;:&quot;Actions&quot;,&quot;action&quot;:&quot;clicked&quot;,&quot;label&quot;:&quot;ref_cta:Actions;ref_loc:navigation_helper&quot;}" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
+  <a id="actions-tab" href="/GinnyGalicia/integrations/actions" data-tab-item="i2actions-tab" data-selected-links="repo_actions /GinnyGalicia/integrations/actions" data-pjax="#repo-content-pjax-container" data-hotkey="g a" data-analytics-event="{&quot;category&quot;:&quot;Actions&quot;,&quot;action&quot;:&quot;clicked&quot;,&quot;label&quot;:&quot;ref_cta:Actions;ref_loc:navigation_helper&quot;}" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
     
                   <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-play UnderlineNav-octicon d-none d-sm-inline">
     <path fill-rule="evenodd" d="M1.5 8a6.5 6.5 0 1113 0 6.5 6.5 0 01-13 0zM8 0a8 8 0 100 16A8 8 0 008 0zM6.379 5.227A.25.25 0 006 5.442v5.117a.25.25 0 00.379.214l4.264-2.559a.25.25 0 000-.428L6.379 5.227z"></path>
@@ -2042,7 +2013,7 @@
     
 </a></li>
       <li data-view-component="true" class="d-inline-flex">
-  <a id="projects-tab" href="/elastic/integrations/projects?type=beta" data-tab-item="i4projects-tab" data-selected-links="repo_projects new_repo_project repo_project /elastic/integrations/projects?type=beta" data-pjax="#repo-content-pjax-container" data-hotkey="g b" data-ga-click="Repository, Navigation click, Projects tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
+  <a id="projects-tab" href="/GinnyGalicia/integrations/projects?type=beta" data-tab-item="i3projects-tab" data-selected-links="repo_projects new_repo_project repo_project /GinnyGalicia/integrations/projects?type=beta" data-pjax="#repo-content-pjax-container" data-hotkey="g b" data-ga-click="Repository, Navigation click, Projects tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
     
                   <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-table UnderlineNav-octicon d-none d-sm-inline">
     <path fill-rule="evenodd" d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v3.585a.746.746 0 010 .83v8.085A1.75 1.75 0 0114.25 16H6.309a.748.748 0 01-1.118 0H1.75A1.75 1.75 0 010 14.25V6.165a.746.746 0 010-.83V1.75zM1.5 6.5v7.75c0 .138.112.25.25.25H5v-8H1.5zM5 5H1.5V1.75a.25.25 0 01.25-.25H5V5zm1.5 1.5v8h7.75a.25.25 0 00.25-.25V6.5h-8zm8-1.5h-8V1.5h7.75a.25.25 0 01.25.25V5z"></path>
@@ -2054,7 +2025,7 @@
     
 </a></li>
       <li data-view-component="true" class="d-inline-flex">
-  <a id="wiki-tab" href="/elastic/integrations/wiki" data-tab-item="i5wiki-tab" data-selected-links="repo_wiki /elastic/integrations/wiki" data-pjax="#repo-content-pjax-container" data-hotkey="g w" data-ga-click="Repository, Navigation click, Wikis tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
+  <a id="wiki-tab" href="/GinnyGalicia/integrations/wiki" data-tab-item="i4wiki-tab" data-selected-links="repo_wiki /GinnyGalicia/integrations/wiki" data-pjax="#repo-content-pjax-container" data-hotkey="g w" data-ga-click="Repository, Navigation click, Wikis tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
     
                   <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-book UnderlineNav-octicon d-none d-sm-inline">
     <path fill-rule="evenodd" d="M0 1.75A.75.75 0 01.75 1h4.253c1.227 0 2.317.59 3 1.501A3.744 3.744 0 0111.006 1h4.245a.75.75 0 01.75.75v10.5a.75.75 0 01-.75.75h-4.507a2.25 2.25 0 00-1.591.659l-.622.621a.75.75 0 01-1.06 0l-.622-.621A2.25 2.25 0 005.258 13H.75a.75.75 0 01-.75-.75V1.75zm8.755 3a2.25 2.25 0 012.25-2.25H14.5v9h-3.757c-.71 0-1.4.201-1.992.572l.004-7.322zm-1.504 7.324l.004-5.073-.002-2.253A2.25 2.25 0 005.003 2.5H1.5v9h3.757a3.75 3.75 0 011.994.574z"></path>
@@ -2066,24 +2037,36 @@
     
 </a></li>
       <li data-view-component="true" class="d-inline-flex">
-  <a id="security-tab" href="/elastic/integrations/security" data-tab-item="i6security-tab" data-selected-links="security overview alerts policy token_scanning code_scanning /elastic/integrations/security" data-pjax="#repo-content-pjax-container" data-hotkey="g s" data-ga-click="Repository, Navigation click, Security tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
+  <a id="security-tab" href="/GinnyGalicia/integrations/security" data-tab-item="i5security-tab" data-selected-links="security overview alerts policy token_scanning code_scanning /GinnyGalicia/integrations/security" data-pjax="#repo-content-pjax-container" data-hotkey="g s" data-ga-click="Repository, Navigation click, Security tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
     
                   <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-shield UnderlineNav-octicon d-none d-sm-inline">
     <path fill-rule="evenodd" d="M7.467.133a1.75 1.75 0 011.066 0l5.25 1.68A1.75 1.75 0 0115 3.48V7c0 1.566-.32 3.182-1.303 4.682-.983 1.498-2.585 2.813-5.032 3.855a1.7 1.7 0 01-1.33 0c-2.447-1.042-4.049-2.357-5.032-3.855C1.32 10.182 1 8.566 1 7V3.48a1.75 1.75 0 011.217-1.667l5.25-1.68zm.61 1.429a.25.25 0 00-.153 0l-5.25 1.68a.25.25 0 00-.174.238V7c0 1.358.275 2.666 1.057 3.86.784 1.194 2.121 2.34 4.366 3.297a.2.2 0 00.154 0c2.245-.956 3.582-2.104 4.366-3.298C13.225 9.666 13.5 8.36 13.5 7V3.48a.25.25 0 00-.174-.237l-5.25-1.68zM9 10.5a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.75a.75.75 0 10-1.5 0v3a.75.75 0 001.5 0v-3z"></path>
 </svg>
           <span data-content="Security">Security</span>
-            <include-fragment src="/elastic/integrations/security/overall-count" accept="text/fragment+html"></include-fragment>
+            <include-fragment src="/GinnyGalicia/integrations/security/overall-count" accept="text/fragment+html"></include-fragment>
 
     
 </a></li>
       <li data-view-component="true" class="d-inline-flex">
-  <a id="insights-tab" href="/elastic/integrations/pulse" data-tab-item="i7insights-tab" data-selected-links="repo_graphs repo_contributors dependency_graph dependabot_updates pulse people community /elastic/integrations/pulse" data-pjax="#repo-content-pjax-container" data-ga-click="Repository, Navigation click, Insights tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
+  <a id="insights-tab" href="/GinnyGalicia/integrations/pulse" data-tab-item="i6insights-tab" data-selected-links="repo_graphs repo_contributors dependency_graph dependabot_updates pulse people community /GinnyGalicia/integrations/pulse" data-pjax="#repo-content-pjax-container" data-ga-click="Repository, Navigation click, Insights tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
     
                   <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-graph UnderlineNav-octicon d-none d-sm-inline">
     <path fill-rule="evenodd" d="M1.5 1.75a.75.75 0 00-1.5 0v12.5c0 .414.336.75.75.75h14.5a.75.75 0 000-1.5H1.5V1.75zm14.28 2.53a.75.75 0 00-1.06-1.06L10 7.94 7.53 5.47a.75.75 0 00-1.06 0L3.22 8.72a.75.75 0 001.06 1.06L7 7.06l2.47 2.47a.75.75 0 001.06 0l5.25-5.25z"></path>
 </svg>
           <span data-content="Insights">Insights</span>
             <span id="insights-repo-tab-count" data-pjax-replace="" title="Not available" data-view-component="true" class="Counter"></span>
+
+
+    
+</a></li>
+      <li data-view-component="true" class="d-inline-flex">
+  <a id="settings-tab" href="/GinnyGalicia/integrations/settings" data-tab-item="i7settings-tab" data-selected-links="repo_settings repo_branch_settings collaborators hooks integration_installations repo_keys_settings issue_template_editor secrets_settings_actions secrets_settings_codespaces secrets_settings_dependabot security_analysis key_links_settings repo_actions_settings notifications repository_actions_settings_runners repository_environments interaction_limits repository_actions_settings_general repository_actions_settings_add_new_runner repo_pages_settings /GinnyGalicia/integrations/settings" data-pjax="#repo-content-pjax-container" data-ga-click="Repository, Navigation click, Settings tab" data-view-component="true" class="UnderlineNav-item hx_underlinenav-item no-wrap js-responsive-underlinenav-item js-selected-navigation-item">
+    
+                  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-gear UnderlineNav-octicon d-none d-sm-inline">
+    <path fill-rule="evenodd" d="M7.429 1.525a6.593 6.593 0 011.142 0c.036.003.108.036.137.146l.289 1.105c.147.56.55.967.997 1.189.174.086.341.183.501.29.417.278.97.423 1.53.27l1.102-.303c.11-.03.175.016.195.046.219.31.41.641.573.989.014.031.022.11-.059.19l-.815.806c-.411.406-.562.957-.53 1.456a4.588 4.588 0 010 .582c-.032.499.119 1.05.53 1.456l.815.806c.08.08.073.159.059.19a6.494 6.494 0 01-.573.99c-.02.029-.086.074-.195.045l-1.103-.303c-.559-.153-1.112-.008-1.529.27-.16.107-.327.204-.5.29-.449.222-.851.628-.998 1.189l-.289 1.105c-.029.11-.101.143-.137.146a6.613 6.613 0 01-1.142 0c-.036-.003-.108-.037-.137-.146l-.289-1.105c-.147-.56-.55-.967-.997-1.189a4.502 4.502 0 01-.501-.29c-.417-.278-.97-.423-1.53-.27l-1.102.303c-.11.03-.175-.016-.195-.046a6.492 6.492 0 01-.573-.989c-.014-.031-.022-.11.059-.19l.815-.806c.411-.406.562-.957.53-1.456a4.587 4.587 0 010-.582c.032-.499-.119-1.05-.53-1.456l-.815-.806c-.08-.08-.073-.159-.059-.19a6.44 6.44 0 01.573-.99c.02-.029.086-.075.195-.045l1.103.303c.559.153 1.112.008 1.529-.27.16-.107.327-.204.5-.29.449-.222.851-.628.998-1.189l.289-1.105c.029-.11.101-.143.137-.146zM8 0c-.236 0-.47.01-.701.03-.743.065-1.29.615-1.458 1.261l-.29 1.106c-.017.066-.078.158-.211.224a5.994 5.994 0 00-.668.386c-.123.082-.233.09-.3.071L3.27 2.776c-.644-.177-1.392.02-1.82.63a7.977 7.977 0 00-.704 1.217c-.315.675-.111 1.422.363 1.891l.815.806c.05.048.098.147.088.294a6.084 6.084 0 000 .772c.01.147-.038.246-.088.294l-.815.806c-.474.469-.678 1.216-.363 1.891.2.428.436.835.704 1.218.428.609 1.176.806 1.82.63l1.103-.303c.066-.019.176-.011.299.071.213.143.436.272.668.386.133.066.194.158.212.224l.289 1.106c.169.646.715 1.196 1.458 1.26a8.094 8.094 0 001.402 0c.743-.064 1.29-.614 1.458-1.26l.29-1.106c.017-.066.078-.158.211-.224a5.98 5.98 0 00.668-.386c.123-.082.233-.09.3-.071l1.102.302c.644.177 1.392-.02 1.82-.63.268-.382.505-.789.704-1.217.315-.675.111-1.422-.364-1.891l-.814-.806c-.05-.048-.098-.147-.088-.294a6.1 6.1 0 000-.772c-.01-.147.039-.246.088-.294l.814-.806c.475-.469.679-1.216.364-1.891a7.992 7.992 0 00-.704-1.218c-.428-.609-1.176-.806-1.82-.63l-1.103.303c-.066.019-.176.011-.299-.071a5.991 5.991 0 00-.668-.386c-.133-.066-.194-.158-.212-.224L10.16 1.29C9.99.645 9.444.095 8.701.031A8.094 8.094 0 008 0zm1.5 8a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM11 8a3 3 0 11-6 0 3 3 0 016 0z"></path>
+</svg>
+          <span data-content="Settings">Settings</span>
+            <span id="settings-repo-tab-count" data-pjax-replace="" title="Not available" data-view-component="true" class="Counter"></span>
 
 
     
@@ -2101,36 +2084,36 @@
   
             <ul>
                 <li data-menu-item="i0code-tab" hidden>
-                  <a role="menuitem" class="js-selected-navigation-item selected dropdown-item" aria-current="page" data-selected-links="repo_source repo_downloads repo_commits repo_releases repo_tags repo_branches repo_packages repo_deployments /elastic/integrations" href="/elastic/integrations">
+                  <a role="menuitem" class="js-selected-navigation-item selected dropdown-item" aria-current="page" data-selected-links="repo_source repo_downloads repo_commits repo_releases repo_tags repo_branches repo_packages repo_deployments /GinnyGalicia/integrations" href="/GinnyGalicia/integrations">
                     Code
 </a>                </li>
-                <li data-menu-item="i1issues-tab" hidden>
-                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_issues repo_labels repo_milestones /elastic/integrations/issues" href="/elastic/integrations/issues">
-                    Issues
-</a>                </li>
-                <li data-menu-item="i2pull-requests-tab" hidden>
-                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_pulls checks /elastic/integrations/pulls" href="/elastic/integrations/pulls">
+                <li data-menu-item="i1pull-requests-tab" hidden>
+                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_pulls checks /GinnyGalicia/integrations/pulls" href="/GinnyGalicia/integrations/pulls">
                     Pull requests
 </a>                </li>
-                <li data-menu-item="i3actions-tab" hidden>
-                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_actions /elastic/integrations/actions" href="/elastic/integrations/actions">
+                <li data-menu-item="i2actions-tab" hidden>
+                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_actions /GinnyGalicia/integrations/actions" href="/GinnyGalicia/integrations/actions">
                     Actions
 </a>                </li>
-                <li data-menu-item="i4projects-tab" hidden>
-                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_projects new_repo_project repo_project /elastic/integrations/projects?type=beta" href="/elastic/integrations/projects?type=beta">
+                <li data-menu-item="i3projects-tab" hidden>
+                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_projects new_repo_project repo_project /GinnyGalicia/integrations/projects?type=beta" href="/GinnyGalicia/integrations/projects?type=beta">
                     Projects
 </a>                </li>
-                <li data-menu-item="i5wiki-tab" hidden>
-                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_wiki /elastic/integrations/wiki" href="/elastic/integrations/wiki">
+                <li data-menu-item="i4wiki-tab" hidden>
+                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_wiki /GinnyGalicia/integrations/wiki" href="/GinnyGalicia/integrations/wiki">
                     Wiki
 </a>                </li>
-                <li data-menu-item="i6security-tab" hidden>
-                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="security overview alerts policy token_scanning code_scanning /elastic/integrations/security" href="/elastic/integrations/security">
+                <li data-menu-item="i5security-tab" hidden>
+                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="security overview alerts policy token_scanning code_scanning /GinnyGalicia/integrations/security" href="/GinnyGalicia/integrations/security">
                     Security
 </a>                </li>
-                <li data-menu-item="i7insights-tab" hidden>
-                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_graphs repo_contributors dependency_graph dependabot_updates pulse people community /elastic/integrations/pulse" href="/elastic/integrations/pulse">
+                <li data-menu-item="i6insights-tab" hidden>
+                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_graphs repo_contributors dependency_graph dependabot_updates pulse people community /GinnyGalicia/integrations/pulse" href="/GinnyGalicia/integrations/pulse">
                     Insights
+</a>                </li>
+                <li data-menu-item="i7settings-tab" hidden>
+                  <a role="menuitem" class="js-selected-navigation-item dropdown-item" data-selected-links="repo_settings repo_branch_settings collaborators hooks integration_installations repo_keys_settings issue_template_editor secrets_settings_actions secrets_settings_codespaces secrets_settings_dependabot security_analysis key_links_settings repo_actions_settings notifications repository_actions_settings_runners repository_environments interaction_limits repository_actions_settings_general repository_actions_settings_add_new_runner repo_pages_settings /GinnyGalicia/integrations/settings" href="/GinnyGalicia/integrations/settings">
+                    Settings
 </a>                </li>
             </ul>
 
@@ -2160,7 +2143,7 @@
 
 
     
-<a class="d-none js-permalink-shortcut" data-hotkey="y" href="/elastic/integrations/blob/f7a2a1905cad6a5942bc0bcc9777d7f19aaab180/packages/1password/_dev/build/docs/README.md">Permalink</a>
+<a class="d-none js-permalink-shortcut" data-hotkey="y" href="/GinnyGalicia/integrations/blob/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/1password/_dev/build/docs/README.md">Permalink</a>
 
 <div class="d-flex flex-items-start flex-shrink-0 pb-3 flex-wrap flex-md-nowrap flex-justify-between flex-md-justify-start">
   
@@ -2196,8 +2179,8 @@
                  data-controls-ref-menu-id="ref-list-branches"
                  autofocus
                  autocomplete="off"
-                 aria-label="Filter branches/tags"
-                 placeholder="Filter branches/tags"
+                 aria-label="Find or create a branch…"
+                 placeholder="Find or create a branch…"
                  type="text"
           >
         </div>
@@ -2207,7 +2190,7 @@
           <button class="SelectMenu-tab" type="button" role="tab">Tags</button>
         </div>
 
-        <div role="tabpanel" id="ref-list-branches" data-filter-placeholder="Filter branches/tags" tabindex="" class="d-flex flex-column flex-auto overflow-auto">
+        <div role="tabpanel" id="ref-list-branches" data-filter-placeholder="Find or create a branch…" tabindex="" class="d-flex flex-column flex-auto overflow-auto">
           <ref-selector
             type="branch"
             data-targets="input-demux.sinks"
@@ -2216,12 +2199,12 @@
               tab-selected:ref-selector#tabSelected
               focus-list:ref-selector#focusFirstListMember
             "
-            query-endpoint="/elastic/integrations/refs"
-            
-            cache-key="v0:1649345860.4887412"
+            query-endpoint="/GinnyGalicia/integrations/refs"
+            can-create
+            cache-key="v0:1649336141.9028878"
             current-committish="bWFpbg=="
             default-branch="bWFpbg=="
-            name-with-owner="ZWxhc3RpYy9pbnRlZ3JhdGlvbnM="
+            name-with-owner="R2lubnlHYWxpY2lhL2ludGVncmF0aW9ucw=="
             prefetch-on-mouseover
           >
 
@@ -2230,8 +2213,21 @@
             </template>
 
               <template data-target="ref-selector.noMatchTemplate">
-    <div class="SelectMenu-message">Nothing to show</div>
-</template>
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form data-turbo="false" action="/GinnyGalicia/integrations/branches" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="rZy--z9rEnHrkDH1_x40XFWWiIEslkPPuV4C8WNgyv7Za7R4i5lvc1KTbhoztuUpLBKmUQXz97hHYP_gjWGPJw" />
+      <input type="hidden" name="name" value="{{ refName }}">
+      <input type="hidden" name="branch"  value="main">
+      <input type="hidden" name="path_binary" value="cGFja2FnZXMvMXBhc3N3b3JkL19kZXYvYnVpbGQvZG9jcy9SRUFETUUubWQ=">
+
+      <button class="SelectMenu-item wb-break-word" type="submit" role="menuitem" data-index="{{ index }}">
+        <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-git-branch SelectMenu-icon flex-self-baseline">
+    <path fill-rule="evenodd" d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"></path>
+</svg>
+        <div>
+          <span class="text-bold">Create branch: {{ refName }}</span>
+          <span class="color-fg-muted">from ‘main’</span>
+        </div>
+      </button>
+</form></template>
 
 
             <!-- TODO: this max-height is necessary or else the branch list won't scroll.  why? -->
@@ -2245,7 +2241,7 @@
             </div>
 
               <template data-target="ref-selector.itemTemplate">
-  <a href="https://github.com/elastic/integrations/blob/{{ urlEncodedRefName }}/packages/1password/_dev/build/docs/README.md" class="SelectMenu-item" role="menuitemradio" rel="nofollow" aria-checked="{{ isCurrent }}" data-index="{{ index }}">
+  <a href="https://github.com/GinnyGalicia/integrations/blob/{{ urlEncodedRefName }}/packages/1password/_dev/build/docs/README.md" class="SelectMenu-item" role="menuitemradio" rel="nofollow" aria-checked="{{ isCurrent }}" data-index="{{ index }}">
     <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-check SelectMenu-icon SelectMenu-icon--check">
     <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
 </svg>
@@ -2255,7 +2251,7 @@
 </template>
 
 
-              <footer class="SelectMenu-footer"><a href="/elastic/integrations/branches">View all branches</a></footer>
+              <footer class="SelectMenu-footer"><a href="/GinnyGalicia/integrations/branches">View all branches</a></footer>
           </ref-selector>
 
         </div>
@@ -2269,11 +2265,11 @@
               focus-list:ref-selector#focusFirstListMember
             "
             data-targets="input-demux.sinks"
-            query-endpoint="/elastic/integrations/refs"
-            cache-key="v0:1649345860.4887412"
+            query-endpoint="/GinnyGalicia/integrations/refs"
+            cache-key="v0:1649336141.9028878"
             current-committish="bWFpbg=="
             default-branch="bWFpbg=="
-            name-with-owner="ZWxhc3RpYy9pbnRlZ3JhdGlvbnM="
+            name-with-owner="R2lubnlHYWxpY2lhL2ludGVncmF0aW9ucw=="
           >
 
             <template data-target="ref-selector.fetchFailedTemplate">
@@ -2285,7 +2281,7 @@
             </template>
 
               <template data-target="ref-selector.itemTemplate">
-  <a href="https://github.com/elastic/integrations/blob/{{ urlEncodedRefName }}/packages/1password/_dev/build/docs/README.md" class="SelectMenu-item" role="menuitemradio" rel="nofollow" aria-checked="{{ isCurrent }}" data-index="{{ index }}">
+  <a href="https://github.com/GinnyGalicia/integrations/blob/{{ urlEncodedRefName }}/packages/1password/_dev/build/docs/README.md" class="SelectMenu-item" role="menuitemradio" rel="nofollow" aria-checked="{{ isCurrent }}" data-index="{{ index }}">
     <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-check SelectMenu-icon SelectMenu-icon--check">
     <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
 </svg>
@@ -2303,7 +2299,7 @@
 </svg>
               </div>
             </div>
-              <footer class="SelectMenu-footer"><a href="/elastic/integrations/tags">View all tags</a></footer>
+              <footer class="SelectMenu-footer"><a href="/GinnyGalicia/integrations/tags">View all tags</a></footer>
           </ref-selector>
         </div>
       </tab-container>
@@ -2316,9 +2312,9 @@
 </div>
 
   <h2 id="blob-path" class="breadcrumb flex-auto flex-self-center min-width-0 text-normal mx-2 width-full width-md-auto flex-order-1 flex-md-order-none mt-3 mt-md-0">
-    <span class="js-repo-root text-bold"><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/elastic/integrations"><span>integrations</span></a></span></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/elastic/integrations/tree/main/packages"><span>packages</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/elastic/integrations/tree/main/packages/1password"><span>1password</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/elastic/integrations/tree/main/packages/1password/_dev"><span>_dev</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/elastic/integrations/tree/main/packages/1password/_dev/build"><span>build</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/elastic/integrations/tree/main/packages/1password/_dev/build/docs"><span>docs</span></a></span><span class="separator">/</span><strong class="final-path">README.md</strong>
+    <span class="js-repo-root text-bold"><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations"><span>integrations</span></a></span></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages"><span>packages</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages/1password"><span>1password</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages/1password/_dev"><span>_dev</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages/1password/_dev/build"><span>build</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages/1password/_dev/build/docs"><span>docs</span></a></span><span class="separator">/</span><strong class="final-path">README.md</strong>
   </h2>
-  <a href="/elastic/integrations/find/main" data-pjax="" data-hotkey="t" data-view-component="true" class="js-pjax-capture-input btn mr-2 d-none d-md-block">  Go to file
+  <a href="/GinnyGalicia/integrations/find/main" data-pjax="" data-hotkey="t" data-view-component="true" class="js-pjax-capture-input btn mr-2 d-none d-md-block">  Go to file
   
 </a>
   <details id="blob-more-options-details" data-view-component="true" class="details-overlay details-reset position-relative">
@@ -2329,7 +2325,7 @@
 </summary>
   <div data-view-component="true">      <ul class="dropdown-menu dropdown-menu-sw">
         <li class="d-block d-md-none">
-          <a class="dropdown-item d-flex flex-items-baseline" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;FIND_FILE_BUTTON&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="e98af465c62727a20543e7873472b8919ab17f2bac7e6effb474cdd35385f53d" data-ga-click="Repository, find file, location:repo overview" data-hotkey="t" data-pjax="true" href="/elastic/integrations/find/main">
+          <a class="dropdown-item d-flex flex-items-baseline" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;FIND_FILE_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="2ce68175d6e38a7c3e6436441d3f61fdbbd43c7e5ab56e1ac40e24e623369f1b" data-ga-click="Repository, find file, location:repo overview" data-hotkey="t" data-pjax="true" href="/GinnyGalicia/integrations/find/main">
             <span class="flex-auto">Go to file</span>
             <span class="text-small color-fg-muted" aria-hidden="true">T</span>
 </a>        </li>
@@ -2348,7 +2344,7 @@
 
 </clipboard-copy>        </li>
         <li>
-          <clipboard-copy data-toggle-for="blob-more-options-details" aria-label="Copy permalink" value="https://github.com/elastic/integrations/blob/f7a2a1905cad6a5942bc0bcc9777d7f19aaab180/packages/1password/_dev/build/docs/README.md" data-view-component="true" class="dropdown-item cursor-pointer">
+          <clipboard-copy data-toggle-for="blob-more-options-details" aria-label="Copy permalink" value="https://github.com/GinnyGalicia/integrations/blob/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/1password/_dev/build/docs/README.md" data-view-component="true" class="dropdown-item cursor-pointer">
     
             <span class="d-flex flex-items-baseline">
               <span class="flex-auto">Copy permalink</span>
@@ -2377,10 +2373,10 @@
   
 </div></div>
 
-    <include-fragment src="/elastic/integrations/spoofed_commit_check/f7a2a1905cad6a5942bc0bcc9777d7f19aaab180" data-test-selector="spoofed-commit-check"></include-fragment>
+    <include-fragment src="/GinnyGalicia/integrations/spoofed_commit_check/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595" data-test-selector="spoofed-commit-check"></include-fragment>
 
     <div class="Box d-flex flex-column flex-shrink-0 mb-3">
-  <include-fragment src="/elastic/integrations/contributors/main/packages/1password/_dev/build/docs/README.md" class="commit-loader">
+  <include-fragment src="/GinnyGalicia/integrations/contributors/main/packages/1password/_dev/build/docs/README.md" class="commit-loader">
     <div class="Box-header d-flex flex-items-center">
       <div class="Skeleton avatar avatar-user flex-shrink-0 ml-n1 mr-n1 mt-n1 mb-n1" style="width:24px;height:24px;"></div>
       <div class="Skeleton Skeleton--text col-5 ml-2">&nbsp;</div>
@@ -2413,8 +2409,8 @@
 
       <details
   data-target="readme-toc.trigger"
-  data-menu-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;trigger&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}"
-  data-menu-hydro-click-hmac="536e19cd077746c2aba70028e9e3244cc94605ee2efc4e506e1259eb11fb733b"
+  data-menu-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;trigger&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}"
+  data-menu-hydro-click-hmac="8c2ae90d615647c90e80893801353b80b1f193b968fc0caedb5329d1b482e996"
   class="dropdown details-reset details-overlay"
 >
   <summary
@@ -2432,10 +2428,10 @@
 
 
       <div class="SelectMenu-list SelectMenu-list--borderless p-2" style="overscroll-behavior: contain;">
-          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 text-emphasized" style="-webkit-box-orient: vertical; padding-left: 12px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="6f74745530bb1963b060055e64eedf1c9c4ffc701125ed4e6c88394371015aa6" href="#1password-events-reporting">1Password Events Reporting</a>
-          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 24px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="6f74745530bb1963b060055e64eedf1c9c4ffc701125ed4e6c88394371015aa6" href="#events">Events</a>
-          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="6f74745530bb1963b060055e64eedf1c9c4ffc701125ed4e6c88394371015aa6" href="#sign-in-attempts">Sign-in Attempts</a>
-          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="6f74745530bb1963b060055e64eedf1c9c4ffc701125ed4e6c88394371015aa6" href="#item-usages">Item Usages</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 text-emphasized" style="-webkit-box-orient: vertical; padding-left: 12px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="f69cd195df359b5e774c68ae6adbf9f65ccc851927710f8f4ac0aa4a83cb6d04" href="#1password-events-reporting">1Password Events Reporting</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 24px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="f69cd195df359b5e774c68ae6adbf9f65ccc851927710f8f4ac0aa4a83cb6d04" href="#events">Events</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="f69cd195df359b5e774c68ae6adbf9f65ccc851927710f8f4ac0aa4a83cb6d04" href="#sign-in-attempts">Sign-in Attempts</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="f69cd195df359b5e774c68ae6adbf9f65ccc851927710f8f4ac0aa4a83cb6d04" href="#item-usages">Item Usages</a>
       </div>
     </div>
   </details-menu>
@@ -2443,7 +2439,7 @@
 
 
   <div class="text-mono f6 flex-auto pr-3 flex-order-2 flex-md-order-1">
-      <include-fragment src="/elastic/integrations/codeowners/main/packages/1password/_dev/build/docs/README.md"></include-fragment>
+      <include-fragment src="/GinnyGalicia/integrations/codeowners/main/packages/1password/_dev/build/docs/README.md"></include-fragment>
 
       37 lines (22 sloc)
       <span class="file-info-divider"></span>
@@ -2452,11 +2448,11 @@
 
   <div class="d-flex py-1 py-md-0 flex-auto flex-order-1 flex-md-order-2 flex-sm-grow-0 flex-justify-between hide-sm hide-md">
         <div class="BtnGroup">
-    <a href="/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md?plain=1" data-permalink-href="/elastic/integrations/blob/f7a2a1905cad6a5942bc0bcc9777d7f19aaab180/packages/1password/_dev/build/docs/README.md?plain=1" aria-label="Display the source blob" data-view-component="true" class="source tooltipped tooltipped tooltipped-n  js-permalink-replaceable-link btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-code">
+    <a href="/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md?plain=1" data-permalink-href="/GinnyGalicia/integrations/blob/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/1password/_dev/build/docs/README.md?plain=1" aria-label="Display the source blob" data-view-component="true" class="source tooltipped tooltipped tooltipped-n  js-permalink-replaceable-link btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-code">
     <path fill-rule="evenodd" d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06l4.25-4.25zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06l-4.25-4.25z"></path>
 </svg>
   
-</a>    <a href="/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md" data-permalink-href="/elastic/integrations/blob/f7a2a1905cad6a5942bc0bcc9777d7f19aaab180/packages/1password/_dev/build/docs/README.md" aria-label="Display the rendered blob" data-view-component="true" class="rendered tooltipped tooltipped tooltipped-n selected js-permalink-replaceable-link btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-file">
+</a>    <a href="/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md" data-permalink-href="/GinnyGalicia/integrations/blob/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/1password/_dev/build/docs/README.md" aria-label="Display the rendered blob" data-view-component="true" class="rendered tooltipped tooltipped tooltipped-n selected js-permalink-replaceable-link btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-file">
     <path fill-rule="evenodd" d="M3.75 1.5a.25.25 0 00-.25.25v11.5c0 .138.112.25.25.25h8.5a.25.25 0 00.25-.25V6H9.75A1.75 1.75 0 018 4.25V1.5H3.75zm5.75.56v2.19c0 .138.112.25.25.25h2.19L9.5 2.06zM2 1.75C2 .784 2.784 0 3.75 0h5.086c.464 0 .909.184 1.237.513l3.414 3.414c.329.328.513.773.513 1.237v8.086A1.75 1.75 0 0112.25 15h-8.5A1.75 1.75 0 012 13.25V1.75z"></path>
 </svg>
   
@@ -2464,16 +2460,16 @@
 
 
     <div class="BtnGroup">
-      <a data-permalink-href="/elastic/integrations/raw/f7a2a1905cad6a5942bc0bcc9777d7f19aaab180/packages/1password/_dev/build/docs/README.md" href="/elastic/integrations/raw/main/packages/1password/_dev/build/docs/README.md" id="raw-url" data-view-component="true" class="js-permalink-replaceable-link btn-sm btn BtnGroup-item">  Raw
+      <a data-permalink-href="/GinnyGalicia/integrations/raw/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/1password/_dev/build/docs/README.md" href="/GinnyGalicia/integrations/raw/main/packages/1password/_dev/build/docs/README.md" id="raw-url" data-view-component="true" class="js-permalink-replaceable-link btn-sm btn BtnGroup-item">  Raw
   
-</a>        <a data-permalink-href="/elastic/integrations/blame/f7a2a1905cad6a5942bc0bcc9777d7f19aaab180/packages/1password/_dev/build/docs/README.md" href="/elastic/integrations/blame/main/packages/1password/_dev/build/docs/README.md" data-hotkey="b" data-view-component="true" class="js-update-url-with-hash js-permalink-replaceable-link btn-sm btn BtnGroup-item">  Blame
+</a>        <a data-permalink-href="/GinnyGalicia/integrations/blame/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/1password/_dev/build/docs/README.md" href="/GinnyGalicia/integrations/blame/main/packages/1password/_dev/build/docs/README.md" data-hotkey="b" data-view-component="true" class="js-update-url-with-hash js-permalink-replaceable-link btn-sm btn BtnGroup-item">  Blame
   
 </a>    </div>
 
     <div>
           <a class="btn-octicon tooltipped tooltipped-nw js-remove-unless-platform"
              data-platforms="windows,mac"
-             href="x-github-client://openRepo/https://github.com/elastic/integrations?branch=main&amp;filepath=packages%2F1password%2F_dev%2Fbuild%2Fdocs%2FREADME.md"
+             href="x-github-client://openRepo/https://github.com/GinnyGalicia/integrations?branch=main&amp;filepath=packages%2F1password%2F_dev%2Fbuild%2Fdocs%2FREADME.md"
              aria-label="Open this file in GitHub Desktop"
              data-ga-click="Repository, open with desktop">
               <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-device-desktop">
@@ -2481,11 +2477,11 @@
 </svg>
           </a>
 
-        <remote-clipboard-copy class="d-inline-block btn-octicon" style="height: 26px" data-src="/elastic/integrations/raw/main/packages/1password/_dev/build/docs/README.md" data-action="click:remote-clipboard-copy#remoteCopy">
+        <remote-clipboard-copy class="d-inline-block btn-octicon" style="height: 26px" data-src="/GinnyGalicia/integrations/raw/main/packages/1password/_dev/build/docs/README.md" data-action="click:remote-clipboard-copy#remoteCopy">
   
 
 
-  <span data-target="remote-clipboard-copy.idle">            <span class="tooltipped tooltipped-nw cursor-pointer" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;COPY_RAW_CONTENTS_BUTTON&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="7a8c0a4c9f28505f218cf3b41e2f87440c673cbf680cae1e06edc8c2f36a4e93" aria-label="Copy raw contents">
+  <span data-target="remote-clipboard-copy.idle">            <span class="tooltipped tooltipped-nw cursor-pointer" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;COPY_RAW_CONTENTS_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="81aaa68c59f4088a0a70b934c2449b36fc70b748d8fd239b0397e0c6c1fbb5d0" aria-label="Copy raw contents">
               <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-copy">
     <path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
 </svg>
@@ -2508,17 +2504,17 @@
             </span>
 </span>
 </remote-clipboard-copy>
-          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form js-update-url-with-hash" data-turbo="false" action="/elastic/integrations/edit/main/packages/1password/_dev/build/docs/README.md" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="GkdRLEhSqLZWocLRbCs9RWG2xLBmZOUFAasX1JfwoxsylJvomWZ4SJL0AeuFeuHTqZfQ7ubBfEJP8C-6gP91LQ" />
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form js-update-url-with-hash" data-turbo="false" action="/GinnyGalicia/integrations/edit/main/packages/1password/_dev/build/docs/README.md" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="0DbxPEj5hciJpE9qM6UpVG66ptUZyD-3xhP0uej1cEG8feE6lLu9HWGr1yqpcRHwFKE2JLEIGqBo3SQHFvF4dQ" />
             <button class="btn-octicon tooltipped tooltipped-nw" type="submit"
-              aria-label="Edit the file in your fork of this project" data-hotkey="e" data-disable-with>
+              aria-label="Edit this file" data-hotkey="e" data-disable-with>
               <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-pencil">
     <path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path>
 </svg>
             </button>
 </form>
-          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" data-turbo="false" action="/elastic/integrations/delete/main/packages/1password/_dev/build/docs/README.md" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="LSAPVH3r5Rq85Y3iwDOGKQcEm_-x11WF8C8QifoS0L3aat6xvMZtPxlDU1k9WfnOFV2UC0n0B9ZTqiGbnz1pjw" />
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" data-turbo="false" action="/GinnyGalicia/integrations/delete/main/packages/1password/_dev/build/docs/README.md" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="-lGR1CCizpAE9tthrLcofRqpuo8o6S_1A6R2ZJankG5CjANAlLOZVs71lCiigFSNUc_i0Xxo4DSWf8DTHX7KhA" />
             <button class="btn-octicon btn-octicon-danger tooltipped tooltipped-nw" type="submit"
-              aria-label="Delete the file in your fork of this project" data-disable-with>
+              aria-label="Delete this file" data-disable-with>
               <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-trash">
     <path fill-rule="evenodd" d="M6.5 1.75a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3V1.75zm4.5 0V3h2.25a.75.75 0 010 1.5H2.75a.75.75 0 010-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75zM4.496 6.675a.75.75 0 10-1.492.15l.66 6.6A1.75 1.75 0 005.405 15h5.19c.9 0 1.652-.681 1.741-1.576l.66-6.6a.75.75 0 00-1.492-.149l-.66 6.6a.25.25 0 01-.249.225h-5.19a.25.25 0 01-.249-.225l-.66-6.6z"></path>
 </svg>
@@ -2538,21 +2534,21 @@
             <li>
                 <a class="dropdown-item tooltipped tooltipped-nw js-remove-unless-platform"
                    data-platforms="windows,mac"
-                   href="x-github-client://openRepo/https://github.com/elastic/integrations?branch=main&amp;filepath=packages%2F1password%2F_dev%2Fbuild%2Fdocs%2FREADME.md"
+                   href="x-github-client://openRepo/https://github.com/GinnyGalicia/integrations?branch=main&amp;filepath=packages%2F1password%2F_dev%2Fbuild%2Fdocs%2FREADME.md"
                    data-ga-click="Repository, open with desktop">
                   Open with Desktop
                 </a>
             </li>
           <li>
-            <a class="dropdown-item" href="/elastic/integrations/raw/main/packages/1password/_dev/build/docs/README.md">
+            <a class="dropdown-item" href="/GinnyGalicia/integrations/raw/main/packages/1password/_dev/build/docs/README.md">
               View raw
             </a>
           </li>
             <li>
-              <remote-clipboard-copy class="dropdown-item" data-src="/elastic/integrations/raw/main/packages/1password/_dev/build/docs/README.md" data-action="click:remote-clipboard-copy#remoteCopy">
+              <remote-clipboard-copy class="dropdown-item" data-src="/GinnyGalicia/integrations/raw/main/packages/1password/_dev/build/docs/README.md" data-action="click:remote-clipboard-copy#remoteCopy">
   
 
-  <span data-target="remote-clipboard-copy.idle">                  <span class="cursor-pointer" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;COPY_RAW_CONTENTS_BUTTON&quot;,&quot;repository_id&quot;:202127068,&quot;originating_url&quot;:&quot;https://github.com/elastic/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:18070719}}" data-hydro-click-hmac="7a8c0a4c9f28505f218cf3b41e2f87440c673cbf680cae1e06edc8c2f36a4e93">
+  <span data-target="remote-clipboard-copy.idle">                  <span class="cursor-pointer" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;COPY_RAW_CONTENTS_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/1password/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="81aaa68c59f4088a0a70b934c2449b36fc70b748d8fd239b0397e0c6c1fbb5d0">
                     Copy raw contents
 </span></span>
   <span data-target="remote-clipboard-copy.fetching" hidden="hidden">                  Copy raw contents
@@ -2575,17 +2571,17 @@
 </span>
 </remote-clipboard-copy>            </li>
             <li>
-              <a class="dropdown-item" href="/elastic/integrations/blame/main/packages/1password/_dev/build/docs/README.md">
+              <a class="dropdown-item" href="/GinnyGalicia/integrations/blame/main/packages/1password/_dev/build/docs/README.md">
                 View blame
               </a>
             </li>
 
               <li class="dropdown-divider" role="none"></li>
               <li>
-                <a class="dropdown-item" href="/elastic/integrations/edit/main/packages/1password/_dev/build/docs/README.md">Edit file</a>
+                <a class="dropdown-item" href="/GinnyGalicia/integrations/edit/main/packages/1password/_dev/build/docs/README.md">Edit file</a>
               </li>
               <li>
-                <a class="dropdown-item menu-item-danger" href="/elastic/integrations/delete/main/packages/1password/_dev/build/docs/README.md">Delete file</a>
+                <a class="dropdown-item menu-item-danger" href="/GinnyGalicia/integrations/delete/main/packages/1password/_dev/build/docs/README.md">Delete file</a>
               </li>
         </ul>
       </details>
@@ -2638,7 +2634,7 @@ Learn how to <a href="https://support.1password.com/events-reporting/#step-1-set
 
     <div class="Popover anim-scale-in js-tagsearch-popover"
      hidden
-     data-tagsearch-url="/elastic/integrations/find-definition"
+     data-tagsearch-url="/GinnyGalicia/integrations/find-definition"
      data-tagsearch-ref="main"
      data-tagsearch-code-nav-context="BLOB_VIEW">
   <div class="Popover-message Popover-message--large Popover-message--top-left TagsearchPopover mt-1 mb-4 mx-auto Box color-shadow-large">
@@ -2751,7 +2747,7 @@ Learn how to <a href="https://support.1password.com/events-reporting/#step-1-set
 
 
     <style>
-      .user-mention[href$="/cherryleaf"] {
+      .user-mention[href$="/GinnyGalicia"] {
         color: var(--color-user-mention-fg);
         background-color: var(--color-user-mention-bg);
         border-radius: 2px;
