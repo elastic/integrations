@@ -9,7 +9,7 @@ This module has been tested against `Alerts API(v6)`, `Audit Log Events (v3)` an
 ## Requirements
 
 ### In order to ingest data from the AWS S3 bucket you must:
-1. Configure the [Data Forwarder](https://docs.vmware.com/en/VMware-Carbon-Black-Cloud/services/carbon-black-cloud-user-guide/GUID-F68F63DD-2271-4088-82C9-71D675CD0535.html) to ingest data into AWS S3 bucket.
+1. Configure the [Data Forwarder](https://docs.vmware.com/en/VMware-Carbon-Black-Cloud/services/carbon-black-cloud-user-guide/GUID-F68F63DD-2271-4088-82C9-71D675CD0535.html) to ingest data into an AWS S3 bucket.
 2. Create an [AWS Access Keys and Secret Access Keys](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
 
 
@@ -140,6 +140,7 @@ An example event for `audit` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -155,15 +156,18 @@ An example event for `audit` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | organization.name | Organization name. | keyword |
+| organization.name.text | Multi-field of `organization.name`. | match_only_text |
 | related.ip | All of the IPs seen on your event. | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 
 
 ### Alert
@@ -176,11 +180,12 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2020-11-17T22:05:13.000Z",
     "agent": {
-        "ephemeral_id": "92676668-001f-447e-8be8-9dbe63976939",
-        "id": "926269e0-99fc-41d6-aee2-6eed3c276741",
+        "ephemeral_id": "3102b667-53be-4efc-b035-9d72bef2853f",
+        "hostname": "docker-fleet-agent",
+        "id": "1465e432-24f3-456b-98ab-e79cdc8d86f6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "7.17.0"
     },
     "carbon_black_cloud": {
         "alert": {
@@ -200,9 +205,11 @@ An example event for `alert` looks as following:
                 "name": "Standard"
             },
             "product_id": "0x5406",
+            "product_name": "U3 Cruzer Micro",
             "reason_code": "6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC",
             "run_state": "DID_NOT_RUN",
             "sensor_action": "DENY",
+            "serial_number": "0875920EF7C2A304",
             "target_value": "MEDIUM",
             "threat_cause": {
                 "cause_event_id": "FCEE2AF0-D832-4C9F-B988-F11B46028C9E",
@@ -212,6 +219,7 @@ An example event for `alert` looks as following:
             "threat_id": "t5678",
             "type": "DEVICE_CONTROL",
             "vendor_id": "0x0781",
+            "vendor_name": "SanDisk",
             "workflow": {
                 "changed_by": "Carbon Black",
                 "last_update_time": "2020-11-17T22:02:16Z",
@@ -228,17 +236,17 @@ An example event for `alert` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "926269e0-99fc-41d6-aee2-6eed3c276741",
+        "id": "1465e432-24f3-456b-98ab-e79cdc8d86f6",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-03-14T03:02:17.500Z",
+        "created": "2022-04-05T10:25:54.372Z",
         "dataset": "carbon_black_cloud.alert",
         "end": "2020-11-17T22:02:16Z",
         "id": "test1",
-        "ingested": "2022-03-14T03:02:21Z",
+        "ingested": "2022-04-05T10:25:57Z",
         "kind": "alert",
         "original": "{\"alert_url\":\"https://defense-eap01.conferdeploy.net/alerts?orgId=1889976\",\"category\":\"WARNING\",\"create_time\":\"2020-11-17T22:05:13Z\",\"device_external_ip\":\"81.2.69.143\",\"device_id\":2,\"device_internal_ip\":\"81.2.69.144\",\"device_location\":\"UNKNOWN\",\"device_name\":\"DESKTOP-002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_username\":\"test34@demo.com\",\"first_event_time\":\"2020-11-17T22:02:16Z\",\"id\":\"test1\",\"last_event_time\":\"2020-11-17T22:02:16Z\",\"last_update_time\":\"2020-11-17T22:05:13Z\",\"legacy_alert_id\":\"C8EB7306-AF26-4A9A-B677-814B3AF69720\",\"org_key\":\"ABCD6X3T\",\"policy_applied\":\"APPLIED\",\"policy_id\":6997287,\"policy_name\":\"Standard\",\"product_id\":\"0x5406\",\"product_name\":\"U3 Cruzer Micro\",\"reason\":\"Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.\",\"reason_code\":\"6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC\",\"run_state\":\"DID_NOT_RUN\",\"sensor_action\":\"DENY\",\"serial_number\":\"0875920EF7C2A304\",\"severity\":3,\"target_value\":\"MEDIUM\",\"threat_cause_cause_event_id\":\"FCEE2AF0-D832-4C9F-B988-F11B46028C9E\",\"threat_cause_threat_category\":\"NON_MALWARE\",\"threat_cause_vector\":\"REMOVABLE_MEDIA\",\"threat_id\":\"t5678\",\"type\":\"DEVICE_CONTROL\",\"vendor_id\":\"0x0781\",\"vendor_name\":\"SanDisk\",\"workflow\":{\"changed_by\":\"Carbon Black\",\"comment\":\"\",\"last_update_time\":\"2020-11-17T22:02:16Z\",\"remediation\":\"\",\"state\":\"OPEN\"}}",
         "reason": "Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.",
@@ -260,11 +268,6 @@ An example event for `alert` looks as following:
     },
     "input": {
         "type": "httpjson"
-    },
-    "observer": {
-        "product": "U3 Cruzer Micro",
-        "serial_number": "0875920EF7C2A304",
-        "vendor": "SanDisk"
     },
     "related": {
         "hosts": [
@@ -316,11 +319,13 @@ An example event for `alert` looks as following:
 | carbon_black_cloud.alert.policy.id | The identifier for the policy associated with the device at the time of the alert. | long |
 | carbon_black_cloud.alert.policy.name | The name of the policy associated with the device at the time of the alert. | keyword |
 | carbon_black_cloud.alert.product_id | The hexadecimal id of the USB device's product. | keyword |
+| carbon_black_cloud.alert.product_name | The name of the USB device’s vendor. | keyword |
 | carbon_black_cloud.alert.reason_code | Shorthand enum for the full-text reason. | keyword |
 | carbon_black_cloud.alert.report.id | The identifier of the report that contains the IOC. | keyword |
 | carbon_black_cloud.alert.report.name | The name of the report that contains the IOC. | keyword |
 | carbon_black_cloud.alert.run_state | Whether the threat in the alert ran. | keyword |
 | carbon_black_cloud.alert.sensor_action | The action taken by the sensor, according to the rule of the policy. | keyword |
+| carbon_black_cloud.alert.serial_number | The serial number of the USB device. | keyword |
 | carbon_black_cloud.alert.status | status of alert. | keyword |
 | carbon_black_cloud.alert.tags | Tags associated with the alert. | keyword |
 | carbon_black_cloud.alert.target_value | The priority of the device assigned by the policy. | keyword |
@@ -343,6 +348,7 @@ An example event for `alert` looks as following:
 | carbon_black_cloud.alert.threat_indicators.ttps | Tactics, techniques and procedures associated with threat. | keyword |
 | carbon_black_cloud.alert.type | Type of alert. | keyword |
 | carbon_black_cloud.alert.vendor_id | The hexadecimal id of the USB device's vendor. | keyword |
+| carbon_black_cloud.alert.vendor_name | The name of the USB device’s vendor. | keyword |
 | carbon_black_cloud.alert.watchlists.id | The identifier of watchlist. | keyword |
 | carbon_black_cloud.alert.watchlists.name | The name of the watchlist. | keyword |
 | carbon_black_cloud.alert.workflow.changed_by | The name of user who changed the workflow. | keyword |
@@ -372,6 +378,7 @@ An example event for `alert` looks as following:
 | event.id | Unique ID to describe the event. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
@@ -389,24 +396,25 @@ An example event for `alert` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| observer.product | The product name of the observer. | keyword |
-| observer.serial_number | Observer serial number. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ### Endpoint Event
@@ -602,10 +610,12 @@ An example event for `endpoint_event` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | file.hash.md5 | MD5 hash. | keyword |
 | file.hash.sha256 | SHA256 hash. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -619,6 +629,7 @@ An example event for `endpoint_event` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -627,13 +638,17 @@ An example event for `endpoint_event` looks as following:
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.hash.md5 | MD5 hash. | keyword |
 | process.hash.sha256 | SHA256 hash. | keyword |
 | process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.parent.command_line.text | Multi-field of `process.parent.command_line`. | match_only_text |
 | process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.parent.executable | Absolute path to the process executable. | keyword |
+| process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
 | process.parent.hash.md5 | MD5 hash. | keyword |
 | process.parent.hash.sha256 | SHA256 hash. | keyword |
 | process.parent.pid | Process id. | long |
@@ -778,6 +793,7 @@ An example event for `watchlist_hit` looks as following:
         "id": "4467271"
     },
     "event": {
+        "kind": "event",
         "severity": 3,
         "agent_id_status": "verified",
         "ingested": "2022-02-17T07:23:31Z",
@@ -830,7 +846,9 @@ An example event for `watchlist_hit` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -845,6 +863,7 @@ An example event for `watchlist_hit` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
@@ -852,13 +871,17 @@ An example event for `watchlist_hit` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.hash.md5 | MD5 hash. | keyword |
 | process.hash.sha256 | SHA256 hash. | keyword |
 | process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.parent.command_line.text | Multi-field of `process.parent.command_line`. | match_only_text |
 | process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.parent.executable | Absolute path to the process executable. | keyword |
+| process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
 | process.parent.hash.md5 | MD5 hash. | keyword |
 | process.parent.hash.sha256 | SHA256 hash. | keyword |
 | process.parent.pid | Process id. | long |
@@ -878,18 +901,22 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-14T03:03:50.821Z",
+    "@timestamp": "2022-04-05T12:07:27.035Z",
     "agent": {
-        "ephemeral_id": "5b904d08-1219-455c-94e3-b498d7fcd50b",
-        "id": "926269e0-99fc-41d6-aee2-6eed3c276741",
+        "ephemeral_id": "90b0b6ec-10f9-41d4-94a5-b47c68f6b376",
+        "hostname": "docker-fleet-agent",
+        "id": "1465e432-24f3-456b-98ab-e79cdc8d86f6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "7.17.0"
     },
     "carbon_black_cloud": {
         "asset_vulnerability_summary": {
             "last_sync": {
                 "timestamp": "2022-01-17T08:33:37.384Z"
+            },
+            "os_info": {
+                "os_arch": "64-bit"
             },
             "sync": {
                 "status": "COMPLETED",
@@ -908,19 +935,18 @@ An example event for `asset_vulnerability_summary` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "926269e0-99fc-41d6-aee2-6eed3c276741",
+        "id": "1465e432-24f3-456b-98ab-e79cdc8d86f6",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-03-14T03:03:50.821Z",
+        "created": "2022-04-05T12:07:27.035Z",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2022-03-14T03:03:54Z",
-        "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64 ビット\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
+        "ingested": "2022-04-05T12:07:27Z",
+        "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64-bit\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },
     "host": {
-        "architecture": "64 ビット",
         "hostname": "DESKTOP-008",
         "id": "8",
         "name": "DESKTOP-008KK",
@@ -958,6 +984,7 @@ An example event for `asset_vulnerability_summary` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | carbon_black_cloud.asset_vulnerability_summary.last_sync.timestamp | The identifier is for the Last sync time. | date |
+| carbon_black_cloud.asset_vulnerability_summary.os_info.os_arch | The identifier is for the Operating system architecture. | keyword |
 | carbon_black_cloud.asset_vulnerability_summary.sync.status | The identifier is for the Device sync status. | keyword |
 | carbon_black_cloud.asset_vulnerability_summary.sync.type | The identifier is for the Whether a manual sync was triggered for the device, or if it was a scheduled sync. | keyword |
 | carbon_black_cloud.asset_vulnerability_summary.type | The identifier is for the Device type. | keyword |
@@ -983,6 +1010,7 @@ An example event for `asset_vulnerability_summary` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -996,6 +1024,7 @@ An example event for `asset_vulnerability_summary` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
