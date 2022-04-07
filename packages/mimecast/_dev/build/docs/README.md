@@ -57,14 +57,14 @@
 
   <meta name="viewport" content="width=device-width">
   
-  <title>integrations/manifest.yml at main · GinnyGalicia/integrations</title>
+  <title>integrations/README.md at main · GinnyGalicia/integrations</title>
     <meta name="description" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub.">
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub">
   <link rel="fluid-icon" href="https://github.com/fluidicon.png" title="GitHub">
   <meta property="fb:app_id" content="1401488693436528">
   <meta name="apple-itunes-app" content="app-id=1477376905" />
-    <meta name="twitter:image:src" content="https://opengraph.githubassets.com/ab0f3bd9c6bd76d80c19d6da975c8c91607c8b93cce0be39553d6ff6a36ae6f1/GinnyGalicia/integrations" /><meta name="twitter:site" content="@github" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="integrations/manifest.yml at main · GinnyGalicia/integrations" /><meta name="twitter:description" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub." />
-    <meta property="og:image" content="https://opengraph.githubassets.com/ab0f3bd9c6bd76d80c19d6da975c8c91607c8b93cce0be39553d6ff6a36ae6f1/GinnyGalicia/integrations" /><meta property="og:image:alt" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub." /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="600" /><meta property="og:site_name" content="GitHub" /><meta property="og:type" content="object" /><meta property="og:title" content="integrations/manifest.yml at main · GinnyGalicia/integrations" /><meta property="og:url" content="https://github.com/GinnyGalicia/integrations" /><meta property="og:description" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub." />
+    <meta name="twitter:image:src" content="https://opengraph.githubassets.com/ab0f3bd9c6bd76d80c19d6da975c8c91607c8b93cce0be39553d6ff6a36ae6f1/GinnyGalicia/integrations" /><meta name="twitter:site" content="@github" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="integrations/README.md at main · GinnyGalicia/integrations" /><meta name="twitter:description" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub." />
+    <meta property="og:image" content="https://opengraph.githubassets.com/ab0f3bd9c6bd76d80c19d6da975c8c91607c8b93cce0be39553d6ff6a36ae6f1/GinnyGalicia/integrations" /><meta property="og:image:alt" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub." /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="600" /><meta property="og:site_name" content="GitHub" /><meta property="og:type" content="object" /><meta property="og:title" content="integrations/README.md at main · GinnyGalicia/integrations" /><meta property="og:url" content="https://github.com/GinnyGalicia/integrations" /><meta property="og:description" content="Elastic Integrations. Contribute to GinnyGalicia/integrations development by creating an account on GitHub." />
     
 
 
@@ -72,12 +72,12 @@
     
 
   <link rel="assets" href="https://github.githubassets.com/">
-    <link rel="shared-web-socket" href="wss://alive.github.com/_sockets/u/92439019/ws?session=eyJ2IjoiVjMiLCJ1Ijo5MjQzOTAxOSwicyI6ODYxMDg1Njc3LCJjIjo4NTE5Nzc2LCJ0IjoxNjQ5MzQ4NzYxfQ==--d552dad8fb4655bc6f93755a46378eeea0b392555a550c5e618f74c69f8c24f0" data-refresh-url="/_alive" data-session-id="210f3a92aa9bea018946087ed16a66058efe80042c27319b0fb7720edbe8b557">
+    <link rel="shared-web-socket" href="wss://alive.github.com/_sockets/u/92439019/ws?session=eyJ2IjoiVjMiLCJ1Ijo5MjQzOTAxOSwicyI6ODYxMDg1Njc3LCJjIjoxNzI5MDI4MjUxLCJ0IjoxNjQ5MzQ4Njc3fQ==--24256561e1690c754f370877726d1073918dda4ac146f5a95fca3960ebeafe89" data-refresh-url="/_alive" data-session-id="210f3a92aa9bea018946087ed16a66058efe80042c27319b0fb7720edbe8b557">
     <link rel="shared-web-socket-src" href="/assets-cdn/worker/socket-worker-b98ccfd9236e.js">
   <link rel="sudo-modal" href="/sessions/sudo_modal">
 
 
-  <meta name="request-id" content="DE0E:10B81:1C4613:1D9D82:624F1098" data-pjax-transient="true" /><meta name="html-safe-nonce" content="2d20322bce6599da2486f0146faaed8b7c5b56773f19e4d1b33b82ac75b756fe" data-pjax-transient="true" /><meta name="visitor-payload" content="eyJyZWZlcnJlciI6Imh0dHBzOi8vZ2l0aHViLmNvbS9HaW5ueUdhbGljaWEvaW50ZWdyYXRpb25zL3RyZWUvbWFpbi9wYWNrYWdlcy9taW1lY2FzdCIsInJlcXVlc3RfaWQiOiJERTBFOjEwQjgxOjFDNDYxMzoxRDlEODI6NjI0RjEwOTgiLCJ2aXNpdG9yX2lkIjoiMTAzMDk4Mzg4MDAxNjQ4MDgxMSIsInJlZ2lvbl9lZGdlIjoiZnJhIiwicmVnaW9uX3JlbmRlciI6ImlhZCJ9" data-pjax-transient="true" /><meta name="visitor-hmac" content="39c7b763a5fc31f57a493c93d9ed7aec54f20b4fa8603ea61eaefe76b605c779" data-pjax-transient="true" />
+  <meta name="request-id" content="DE0E:10B81:1BEE01:1D40FB:624F1039" data-pjax-transient="true" /><meta name="html-safe-nonce" content="2d20322bce6599da2486f0146faaed8b7c5b56773f19e4d1b33b82ac75b756fe" data-pjax-transient="true" /><meta name="visitor-payload" content="eyJyZWZlcnJlciI6Imh0dHBzOi8vZ2l0aHViLmNvbS9HaW5ueUdhbGljaWEvaW50ZWdyYXRpb25zL3RyZWUvbWFpbi9wYWNrYWdlcy9taW1lY2FzdC9fZGV2L2J1aWxkL2RvY3MiLCJyZXF1ZXN0X2lkIjoiREUwRToxMEI4MToxQkVFMDE6MUQ0MEZCOjYyNEYxMDM5IiwidmlzaXRvcl9pZCI6IjEwMzA5ODM4ODAwMTY0ODA4MTEiLCJyZWdpb25fZWRnZSI6ImZyYSIsInJlZ2lvbl9yZW5kZXIiOiJpYWQifQ==" data-pjax-transient="true" /><meta name="visitor-hmac" content="5ad24cd814e07052709059cdcb42d7c136c7de75b5bed20ea5632f17a1a56307" data-pjax-transient="true" />
 
     <meta name="hovercard-subject-tag" content="repository:468348113" data-pjax-transient>
 
@@ -113,7 +113,7 @@
 
       <meta name="expected-hostname" content="github.com">
 
-      <meta name="js-proxy-site-detection-payload" content="MmE1OTliZGRmNDlkZDljNzcwYWFhNzYxZTY1MTk0ZGIyMDgxZDk5MTc2ZWFmZmUzOTViMjJiOWNkNDI3N2IxY3x7InJlbW90ZV9hZGRyZXNzIjoiNzcuOTkuNDEuMzIiLCJyZXF1ZXN0X2lkIjoiREUwRToxMEI4MToxQzQ2MTM6MUQ5RDgyOjYyNEYxMDk4IiwidGltZXN0YW1wIjoxNjQ5MzQ4NzYxLCJob3N0IjoiZ2l0aHViLmNvbSJ9">
+      <meta name="js-proxy-site-detection-payload" content="ZDE2MmVlZTczOTVhYmZiOTE3MDI2ODZlNDQ0YmNjN2E3ODhjNTdlNWZhZTQyNDlmZTFlMGE2MTkwMzE1ODNkZXx7InJlbW90ZV9hZGRyZXNzIjoiNzcuOTkuNDEuMzIiLCJyZXF1ZXN0X2lkIjoiREUwRToxMEI4MToxQkVFMDE6MUQ0MEZCOjYyNEYxMDM5IiwidGltZXN0YW1wIjoxNjQ5MzQ4Njc3LCJob3N0IjoiZ2l0aHViLmNvbSJ9">
 
     <meta name="enabled-features" content="ACTIONS_CALLABLE_WORKFLOWS,MARKETPLACE_PENDING_INSTALLATIONS,PRESENCE_IDLE">
 
@@ -131,7 +131,7 @@
 
 
 
-    <link rel="canonical" href="https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/manifest.yml" data-pjax-transient>
+    <link rel="canonical" href="https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md" data-pjax-transient>
 
 
   <meta name="browser-stats-url" content="https://api.github.com/_private/browser/stats">
@@ -221,7 +221,7 @@
           spellcheck="false"
           autocomplete="off"
         >
-        <input type="hidden" value="25aZnMx9LsZf8GzZ2w_ZNhwUohb7l5EA4Ndc5kOqepMdiIwFtIJgzmNYJGolqEcZq3SacttYOPQEjbq-3JqxYQ" data-csrf="true" class="js-data-jump-to-suggestions-path-csrf" />
+        <input type="hidden" value="rZFItbBpi-b_Kb19Uy_Cd7OUyK0rOaGvOrv5lQWVPnRrj10syJbF7sOB9c6tiFxYBPTwyQv2CFve4R_NmqX1hg" data-csrf="true" class="js-data-jump-to-suggestions-path-csrf" />
         <input type="hidden" class="js-site-search-type-field" name="type" >
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="20" aria-hidden="true" class="mr-1 header-search-key-slash"><path fill="none" stroke="#979A9C" opacity=".4" d="M3.5.5h12c1.7 0 3 1.3 3 3v13c0 1.7-1.3 3-3 3h-12c-1.7 0-3-1.3-3-3v-13c0-1.7 1.3-3 3-3z"></path><path fill="#979A9C" d="M11.8 6L8 15.1h-.9L10.8 6h1z"></path></svg>
 
@@ -420,7 +420,7 @@
 
     <a class="js-selected-navigation-item Header-link d-block d-md-none py-2 py-md-3 border-top border-md-top-0 border-white-fade" data-ga-click="Header, click, Nav menu - item:workspaces context:user" data-turbo="false" data-selected-links="/codespaces /codespaces" href="/codespaces">Codespaces</a>
 
-      <a class="js-selected-navigation-item Header-link d-block d-md-none py-2 py-md-3 border-top border-md-top-0 border-white-fade" data-ga-click="Header, click, Nav menu - item:Sponsors" data-hydro-click="{&quot;event_type&quot;:&quot;sponsors.button_click&quot;,&quot;payload&quot;:{&quot;button&quot;:&quot;HEADER_SPONSORS_DASHBOARD&quot;,&quot;sponsorable_login&quot;:&quot;GinnyGalicia&quot;,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/manifest.yml&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="2f33ea3ef81e7b3b6c5f5e862629598415ee91b7c3ad1b7b991d2f08c4ca0ced" data-turbo="false" data-selected-links=" /sponsors/accounts" href="/sponsors/accounts">Sponsors</a>
+      <a class="js-selected-navigation-item Header-link d-block d-md-none py-2 py-md-3 border-top border-md-top-0 border-white-fade" data-ga-click="Header, click, Nav menu - item:Sponsors" data-hydro-click="{&quot;event_type&quot;:&quot;sponsors.button_click&quot;,&quot;payload&quot;:{&quot;button&quot;:&quot;HEADER_SPONSORS_DASHBOARD&quot;,&quot;sponsorable_login&quot;:&quot;GinnyGalicia&quot;,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="01d136b22f98c8a6f7aa435e3fa0992f73b2f137d464ce6fc117ec22747df1ee" data-turbo="false" data-selected-links=" /sponsors/accounts" href="/sponsors/accounts">Sponsors</a>
 
     <a class="Header-link d-block d-md-none mr-0 mr-md-3 py-2 py-md-3 border-top border-md-top-0 border-white-fade" data-turbo="false" href="/settings/profile">Settings</a>
 
@@ -428,7 +428,7 @@
       <img class="avatar avatar-user" loading="lazy" decoding="async" src="https://avatars.githubusercontent.com/u/92439019?s=40&amp;v=4" width="20" height="20" alt="@GinnyGalicia" />
       GinnyGalicia
 </a>
-    <!-- '"` --><!-- </textarea></xmp> --></option></form><form data-turbo="false" action="/logout" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="yhh2llWTdjBPFvSdE7MOeuW7B9J0XXglnBlreAU3tAVyCO6iWkNaLsCdG4uJMarDNR3CS0CJdqfwmClw0ccccw" />
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form data-turbo="false" action="/logout" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="nf4gesa1WMnQe4XOnrH4n4NuWRZQE2X5f4e9tEM7hT4l7rhOyWV011_watgEM1wmU8icj2THa3sTBv-8l8stSA" />
       <button
         type="submit"
         class="Header-link mr-0 mr-md-3 py-2 py-md-3 border-top border-md-top-0 border-white-fade d-md-none btn-link d-block width-full text-left"
@@ -467,7 +467,7 @@
       <notification-indicator
         class="js-socket-channel"
         data-test-selector="notifications-indicator"
-        data-channel="eyJjIjoibm90aWZpY2F0aW9uLWNoYW5nZWQ6OTI0MzkwMTkiLCJ0IjoxNjQ5MzQ4NzYxfQ==--65f6fe73c7c609e496ea72700cb9f8ec8007d09f1d7de4ab95c29f9804ae6203">
+        data-channel="eyJjIjoibm90aWZpY2F0aW9uLWNoYW5nZWQ6OTI0MzkwMTkiLCJ0IjoxNjQ5MzQ4Njc3fQ==--2f6377ec55f8061fd40ae2be5f8883a6c645ae43a03c03edbe435de24361e1f4">
         <a href="/notifications"
           data-turbo=false
           class="Header-link notification-indicator position-relative tooltipped tooltipped-sw"
@@ -604,7 +604,7 @@
   <details-dialog class="command-palette-details-dialog d-flex flex-column flex-justify-center height-fit" aria-label="command palette">
     <command-palette
       class="command-palette color-bg-default rounded-3 border color-shadow-small"
-      data-return-to=/GinnyGalicia/integrations/blob/main/packages/mimecast/manifest.yml
+      data-return-to=/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md
       data-user-id="92439019"
       data-activation-hotkey="Mod+k,Mod+Alt+k"
       data-command-mode-hotkey="Mod+Shift+k"
@@ -617,10 +617,10 @@
 
 
       <input type="hidden" name="color-mode-path" id="color-mode-path" value="/settings/appearance/color_mode" class="js-color-mode-path" autocomplete="off" />
-      <input type="hidden" value="CAECkEyBjic9Y1kjyl71jddvxglcGIkgRAADDdb4SOR9YOBWfs_tOyBW8QjLNQeoUroBEYhw9-w7W4nBxz37Tg" data-csrf="true" class="js-color-mode-csrf" />
+      <input type="hidden" value="Jj_UNLX8TAHAECdbxF3IBmQozPi6aBajbgM_M6yoB-9TXjbyh7IvHd0lj3DFNjoj4f0L4G4AaG8RWLX_vW20RQ" data-csrf="true" class="js-color-mode-csrf" />
 
       <input type="hidden" name="tab-size-path" id="tab-size-path" value="/settings/appearance/tab_size" class="js-tab-size-path" autocomplete="off" />
-      <input type="hidden" value="Px3pKErTJOfO_SLendLwA1V1J1FXqip11Osfzj4QaYhLYPsIN4VY0XQes0mRlWMwq2BuPZixwK8ZQfcPbvPIWg" data-csrf="true" class="js-tab-size-csrf" />
+      <input type="hidden" value="VSVSOthZxufLiOQh9nomjeADMG6Ln1ndXOqT-SmSBx0hWEAapQ-60XFrdbb6PbW-HhZ5AkSEsweRQHs4eXGmzw" data-csrf="true" class="js-tab-size-csrf" />
 
         <command-palette-mode
           data-char="#"
@@ -1516,7 +1516,7 @@
 
   <li>
   <div class="float-left" data-test-selector="pin-repo-button">
-    <form data-turbo="false" action="/GinnyGalicia/integrations/profile_pin" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="3QCbtTecsBARfwieYZGJz1B6slRatzUy2DIGopnDEFOiqBiSv7skJYZ4Ybnv0K3LN4kooDWqnBscwCf0lsZlOw" autocomplete="off" />
+    <form data-turbo="false" action="/GinnyGalicia/integrations/profile_pin" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="KB8_v8tPQ0fu5tSXn3Uno1iGcuR3CZ46JnwA6lxPuRNXt7yYQ2jXcnnhvbARNAOnP3XoEBgUNxPijiG8U0rMew" autocomplete="off" />
       <button title="Pin this repository to your profile" type="submit" data-view-component="true" class="btn-sm btn">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-pin mr-2">
     <path fill-rule="evenodd" d="M4.456.734a1.75 1.75 0 012.826.504l.613 1.327a3.081 3.081 0 002.084 1.707l2.454.584c1.332.317 1.8 1.972.832 2.94L11.06 10l3.72 3.72a.75.75 0 11-1.061 1.06L10 11.06l-2.204 2.205c-.968.968-2.623.5-2.94-.832l-.584-2.454a3.081 3.081 0 00-1.707-2.084l-1.327-.613a1.75 1.75 0 01-.504-2.826L4.456.734zM5.92 1.866a.25.25 0 00-.404-.072L1.794 5.516a.25.25 0 00.072.404l1.328.613A4.582 4.582 0 015.73 9.63l.584 2.454a.25.25 0 00.42.12l5.47-5.47a.25.25 0 00-.12-.42L9.63 5.73a4.581 4.581 0 01-3.098-2.537L5.92 1.866z"></path>
 </svg>Pin
@@ -1536,7 +1536,7 @@
         data-action="toggle:notifications-list-subscription-form#detailsToggled"
       >
 
-      <summary data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;WATCH_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/manifest.yml&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="c9a8d88c8a9a48ca2847c7be142114348cb86eb30e9d50e2b38e64fd7bed96bd" data-ga-click="Repository, click Watch settings, action:blob#show" aria-label="Notification settings" data-view-component="true" class="btn-sm btn">  <span data-menu-button>
+      <summary data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;WATCH_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="ded552da19f661cb60a8f32785c0f1f148c5c5cf600a5b434c9d1c4dd8de70d3" data-ga-click="Repository, click Watch settings, action:blob#show" aria-label="Notification settings" data-view-component="true" class="btn-sm btn">  <span data-menu-button>
             <span
               hidden
               
@@ -1589,7 +1589,7 @@
             </header>
 
             <div class="SelectMenu-list">
-              <form data-target="notifications-list-subscription-form.form" data-action="submit:notifications-list-subscription-form#submitForm" data-turbo="false" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="Ny7PRvHb3f_KSDXkNDUZbMJ-Lo02Z9iQyMuvov_Vy558VxPLHgKw4davdikYK_505wmTVZ2BGnVUc-2wAL06oQ" autocomplete="off" />
+              <form data-target="notifications-list-subscription-form.form" data-action="submit:notifications-list-subscription-form#submitForm" data-turbo="false" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="Kos5Ewm4tNEDsLyzD--YEcOTtvBhJbq3PFesI9TnCfJh8uWe5mHZzx9X_34j8X8J5uQLKMrDeFKg7-4xK4_4zQ" autocomplete="off" />
 
                 <input type="hidden" name="repository_id" value="468348113">
 
@@ -1717,7 +1717,7 @@
           hidden
         >
           <div class="SelectMenu-modal notifications-component-dialog-modal overflow-visible">
-            <form data-target="notifications-list-subscription-form.customform" data-action="submit:notifications-list-subscription-form#submitCustomForm" data-turbo="false" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="hhnNDEaWfovReFZx2gWXalf9s5a51eGZh3Fiba26NWXNYBGBqU8Tlc2fFbz2G3BycooOThIzI3wbySB_UtLEWg" autocomplete="off" />
+            <form data-target="notifications-list-subscription-form.customform" data-action="submit:notifications-list-subscription-form#submitCustomForm" data-turbo="false" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="p0YV_F7mBTVYyo8zN3W0bVE1XmLa_YSm8M-C6hcbSy7sP8lxsT9oK0QtzP4ba1N1dELjunEbRkNsd8D46HO6EQ" autocomplete="off" />
 
               <input type="hidden" name="repository_id" value="468348113">
 
@@ -1901,19 +1901,19 @@
 </template>
 
   <div data-view-component="true" class="js-toggler-container js-social-container starring-container BtnGroup d-flex">
-    <form class="starred js-social-form BtnGroup-parent flex-auto js-deferred-toggler-target" data-turbo="false" action="/GinnyGalicia/integrations/unstar" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="lOZf-yXA7cWDOMrFKoJzpwPORTwJMCRy-xATHXpmdJ89EA2kz71aHMpiOZfVISFouBChr6-5FtDQBsWt_YxvvA" autocomplete="off" />
-        <input type="hidden" value="qFSUlpZ6wYAop7jrT0ieL55cJKf4DiLykHrnr0qq7LMBosbJfAd2WWH9S7mw68zgJYLANF6HEFC7bDEfzUD3kA" data-csrf="true" class="js-confirm-csrf-token" />
+    <form class="starred js-social-form BtnGroup-parent flex-auto js-deferred-toggler-target" data-turbo="false" action="/GinnyGalicia/integrations/unstar" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="6eM9uMuJKX5HisZuE3XtKKXIM3XupXEJSd7MfKde5EBAFW_nIfSepw7QNTzs1r_nHhbX5kgsQ6tiyBrMILT_Yw" autocomplete="off" />
+        <input type="hidden" value="EyDwT1qL8JTZHMY0eAB_QmKqJfPFF3TBIL9oLTq8hsa61qIQsPZHTZBGNWaHoy2N2XTBYGOeRmMLqb6dvVad5Q" data-csrf="true" class="js-confirm-csrf-token" />
       <input type="hidden" name="context" value="repository">
-      <button data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;UNSTAR_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/manifest.yml&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="7dc287bb4aab1d3e1b4bf2ee3ca85432b62bcd9ed1907faeafba9bb16c0fcbce" data-ga-click="Repository, click unstar button, action:blob#show; text:Unstar" aria-label="Unstar this repository" type="submit" data-view-component="true" class="rounded-left-2 border-right-0 btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-star-fill starred-button-icon d-inline-block mr-2">
+      <button data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;UNSTAR_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="e742946d9194c22f20d7e9015d6e19a097bb8011af13e275b259da5184182387" data-ga-click="Repository, click unstar button, action:blob#show; text:Unstar" aria-label="Unstar this repository" type="submit" data-view-component="true" class="rounded-left-2 border-right-0 btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-star-fill starred-button-icon d-inline-block mr-2">
     <path fill-rule="evenodd" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"></path>
 </svg><span data-view-component="true" class="d-inline">
           Starred
 </span>          <span id="repo-stars-counter-unstar" aria-label="0 users starred this repository" data-singular-suffix="user starred this repository" data-plural-suffix="users starred this repository" data-pjax-replace="true" title="0" data-view-component="true" class="Counter js-social-count">0</span>
   
 </button></form>
-    <form class="unstarred js-social-form BtnGroup-parent flex-auto" data-turbo="false" action="/GinnyGalicia/integrations/star" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="LwWiCaEyCqhqKntM1CAyFAO05Jmd0adn2RfZg5-P-IvxSVewaJUxlFx6y-gwaZE-DivVTBb-uWSkG87p5d3HBA" autocomplete="off" />
+    <form class="unstarred js-social-form BtnGroup-parent flex-auto" data-turbo="false" action="/GinnyGalicia/integrations/star" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="TJ05Rh5l9kajlBUGjN9B7Xl54npIvSDHytfYLWA5FoGS0cz_18LNepXEpaJoluLHdObTr8OSPsS3289HGmspDg" autocomplete="off" />
       <input type="hidden" name="context" value="repository">
-      <button data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;STAR_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/manifest.yml&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="366feab32f415c928d8bd4990e4d1a84958dea0c5e766224be16e2d9401d15d0" data-ga-click="Repository, click star button, action:blob#show; text:Star" aria-label="Star this repository" type="submit" data-view-component="true" class="js-toggler-target rounded-left-2 btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-star d-inline-block mr-2">
+      <button data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;STAR_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="fc3f1f7342c425b0790050acd301b0031c0ed4f96b54b34af84628122183d031" data-ga-click="Repository, click star button, action:blob#show; text:Star" aria-label="Star this repository" type="submit" data-view-component="true" class="js-toggler-target rounded-left-2 btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-star d-inline-block mr-2">
     <path fill-rule="evenodd" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25zm0 2.445L6.615 5.5a.75.75 0 01-.564.41l-3.097.45 2.24 2.184a.75.75 0 01.216.664l-.528 3.084 2.769-1.456a.75.75 0 01.698 0l2.77 1.456-.53-3.084a.75.75 0 01.216-.664l2.24-2.183-3.096-.45a.75.75 0 01-.564-.41L8 2.694v.001z"></path>
 </svg><span data-view-component="true" class="d-inline">
           Star
@@ -1934,13 +1934,13 @@
       
 >
     <div class="SelectMenu-modal">
-        <button class="SelectMenu-closeButton position-absolute right-0 m-2" type="button" aria-label="Close menu" data-toggle-for="details-bfb6b2">
+        <button class="SelectMenu-closeButton position-absolute right-0 m-2" type="button" aria-label="Close menu" data-toggle-for="details-0afea4">
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-x">
     <path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"></path>
 </svg>
         </button>
       <div
-        id="filter-menu-bfb6b2"
+        id="filter-menu-0afea4"
         class="d-flex flex-column flex-1 overflow-hidden"
 >
         <div
@@ -2143,7 +2143,7 @@
 
 
     
-<a class="d-none js-permalink-shortcut" data-hotkey="y" href="/GinnyGalicia/integrations/blob/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/manifest.yml">Permalink</a>
+<a class="d-none js-permalink-shortcut" data-hotkey="y" href="/GinnyGalicia/integrations/blob/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/_dev/build/docs/README.md">Permalink</a>
 
 <div class="d-flex flex-items-start flex-shrink-0 pb-3 flex-wrap flex-md-nowrap flex-justify-between flex-md-justify-start">
   
@@ -2213,10 +2213,10 @@
             </template>
 
               <template data-target="ref-selector.noMatchTemplate">
-    <!-- '"` --><!-- </textarea></xmp> --></option></form><form data-turbo="false" action="/GinnyGalicia/integrations/branches" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="2bCJ74nRyN5tWVS0uBxGz445Pq1RLCSJ2bCq-RJlEw-tR4NsPSO13NRaC1t0tJe6970QfXhJkP4njlfo_GRW1g" />
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form data-turbo="false" action="/GinnyGalicia/integrations/branches" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="UbvHlByo7CqN_NvQOquVCIEN7ZKozaRmDG3GktBgx78lTM0XqFqRKDT_hD_2A0R9-InDQoGoEBHyUzuDPmGCZg" />
       <input type="hidden" name="name" value="{{ refName }}">
       <input type="hidden" name="branch"  value="main">
-      <input type="hidden" name="path_binary" value="cGFja2FnZXMvbWltZWNhc3QvbWFuaWZlc3QueW1s">
+      <input type="hidden" name="path_binary" value="cGFja2FnZXMvbWltZWNhc3QvX2Rldi9idWlsZC9kb2NzL1JFQURNRS5tZA==">
 
       <button class="SelectMenu-item wb-break-word" type="submit" role="menuitem" data-index="{{ index }}">
         <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-git-branch SelectMenu-icon flex-self-baseline">
@@ -2241,7 +2241,7 @@
             </div>
 
               <template data-target="ref-selector.itemTemplate">
-  <a href="https://github.com/GinnyGalicia/integrations/blob/{{ urlEncodedRefName }}/packages/mimecast/manifest.yml" class="SelectMenu-item" role="menuitemradio" rel="nofollow" aria-checked="{{ isCurrent }}" data-index="{{ index }}">
+  <a href="https://github.com/GinnyGalicia/integrations/blob/{{ urlEncodedRefName }}/packages/mimecast/_dev/build/docs/README.md" class="SelectMenu-item" role="menuitemradio" rel="nofollow" aria-checked="{{ isCurrent }}" data-index="{{ index }}">
     <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-check SelectMenu-icon SelectMenu-icon--check">
     <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
 </svg>
@@ -2281,7 +2281,7 @@
             </template>
 
               <template data-target="ref-selector.itemTemplate">
-  <a href="https://github.com/GinnyGalicia/integrations/blob/{{ urlEncodedRefName }}/packages/mimecast/manifest.yml" class="SelectMenu-item" role="menuitemradio" rel="nofollow" aria-checked="{{ isCurrent }}" data-index="{{ index }}">
+  <a href="https://github.com/GinnyGalicia/integrations/blob/{{ urlEncodedRefName }}/packages/mimecast/_dev/build/docs/README.md" class="SelectMenu-item" role="menuitemradio" rel="nofollow" aria-checked="{{ isCurrent }}" data-index="{{ index }}">
     <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-check SelectMenu-icon SelectMenu-icon--check">
     <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
 </svg>
@@ -2312,7 +2312,7 @@
 </div>
 
   <h2 id="blob-path" class="breadcrumb flex-auto flex-self-center min-width-0 text-normal mx-2 width-full width-md-auto flex-order-1 flex-md-order-none mt-3 mt-md-0">
-    <span class="js-repo-root text-bold"><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations"><span>integrations</span></a></span></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages"><span>packages</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages/mimecast"><span>mimecast</span></a></span><span class="separator">/</span><strong class="final-path">manifest.yml</strong>
+    <span class="js-repo-root text-bold"><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations"><span>integrations</span></a></span></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages"><span>packages</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages/mimecast"><span>mimecast</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages/mimecast/_dev"><span>_dev</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages/mimecast/_dev/build"><span>build</span></a></span><span class="separator">/</span><span class="js-path-segment d-inline-block wb-break-all"><a data-pjax="#repo-content-pjax-container" href="/GinnyGalicia/integrations/tree/main/packages/mimecast/_dev/build/docs"><span>docs</span></a></span><span class="separator">/</span><strong class="final-path">README.md</strong>
   </h2>
   <a href="/GinnyGalicia/integrations/find/main" data-pjax="" data-hotkey="t" data-view-component="true" class="js-pjax-capture-input btn mr-2 d-none d-md-block">  Go to file
   
@@ -2325,7 +2325,7 @@
 </summary>
   <div data-view-component="true">      <ul class="dropdown-menu dropdown-menu-sw">
         <li class="d-block d-md-none">
-          <a class="dropdown-item d-flex flex-items-baseline" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;FIND_FILE_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/manifest.yml&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="418731f475edeaf3101a4b0215c6628a4ed0127a12d58b97a8b435d6b49833e7" data-ga-click="Repository, find file, location:repo overview" data-hotkey="t" data-pjax="true" href="/GinnyGalicia/integrations/find/main">
+          <a class="dropdown-item d-flex flex-items-baseline" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;FIND_FILE_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="096f70271964e4993318c092a2a35331979b3453993eb713ed7f5f3004bc4406" data-ga-click="Repository, find file, location:repo overview" data-hotkey="t" data-pjax="true" href="/GinnyGalicia/integrations/find/main">
             <span class="flex-auto">Go to file</span>
             <span class="text-small color-fg-muted" aria-hidden="true">T</span>
 </a>        </li>
@@ -2338,13 +2338,13 @@
 </button>        </li>
         <li class="dropdown-divider" role="none"></li>
         <li>
-          <clipboard-copy data-toggle-for="blob-more-options-details" aria-label="Copy path" value="packages/mimecast/manifest.yml" data-view-component="true" class="dropdown-item cursor-pointer">
+          <clipboard-copy data-toggle-for="blob-more-options-details" aria-label="Copy path" value="packages/mimecast/_dev/build/docs/README.md" data-view-component="true" class="dropdown-item cursor-pointer">
     
             Copy path
 
 </clipboard-copy>        </li>
         <li>
-          <clipboard-copy data-toggle-for="blob-more-options-details" aria-label="Copy permalink" value="https://github.com/GinnyGalicia/integrations/blob/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/manifest.yml" data-view-component="true" class="dropdown-item cursor-pointer">
+          <clipboard-copy data-toggle-for="blob-more-options-details" aria-label="Copy permalink" value="https://github.com/GinnyGalicia/integrations/blob/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/_dev/build/docs/README.md" data-view-component="true" class="dropdown-item cursor-pointer">
     
             <span class="d-flex flex-items-baseline">
               <span class="flex-auto">Copy permalink</span>
@@ -2376,7 +2376,7 @@
     <include-fragment src="/GinnyGalicia/integrations/spoofed_commit_check/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595" data-test-selector="spoofed-commit-check"></include-fragment>
 
     <div class="Box d-flex flex-column flex-shrink-0 mb-3">
-  <include-fragment src="/GinnyGalicia/integrations/contributors/main/packages/mimecast/manifest.yml" class="commit-loader">
+  <include-fragment src="/GinnyGalicia/integrations/contributors/main/packages/mimecast/_dev/build/docs/README.md" class="commit-loader">
     <div class="Box-header d-flex flex-items-center">
       <div class="Skeleton avatar avatar-user flex-shrink-0 ml-n1 mr-n1 mt-n1 mb-n1" style="width:24px;height:24px;"></div>
       <div class="Skeleton Skeleton--text col-5 ml-2">&nbsp;</div>
@@ -2398,37 +2398,96 @@
 
 
 
-  
+    <readme-toc>
+
     <div data-target="readme-toc.content" class="Box mt-3 position-relative">
       
   <div
-    class="Box-header js-blob-header py-2 pr-2 d-flex flex-shrink-0 flex-md-row flex-items-center"
-    
+    class="Box-header js-blob-header blob-header js-sticky js-position-sticky top-0 p-2 d-flex flex-shrink-0 flex-md-row flex-items-center"
+    style="position: sticky; z-index: 1;"
   >
+
+      <details
+  data-target="readme-toc.trigger"
+  data-menu-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;trigger&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}"
+  data-menu-hydro-click-hmac="8f1bf4c4fae0a973e643a3552bb3a5af260dba73955a4dd839b8fd68d945860a"
+  class="dropdown details-reset details-overlay"
+>
+  <summary
+    class="btn btn-octicon m-0 mr-2 p-2"
+    aria-haspopup="true"
+    aria-label="Table of Contents">
+    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-list-unordered">
+    <path fill-rule="evenodd" d="M2 4a1 1 0 100-2 1 1 0 000 2zm3.75-1.5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zM3 8a1 1 0 11-2 0 1 1 0 012 0zm-1 6a1 1 0 100-2 1 1 0 000 2z"></path>
+</svg>
+  </summary>
+
+
+  <details-menu class="SelectMenu" role="menu">
+    <div class="SelectMenu-modal rounded-3 mt-1" style="max-height:340px;">
+
+        <div class="SelectMenu-filter">
+          <input
+            class="SelectMenu-input form-control js-filterable-field"
+            id="toc-filter-field"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            autofocus
+            placeholder="Filter headings"
+            aria-label="Filter headings">
+        </div>
+
+      <div class="SelectMenu-list SelectMenu-list--borderless p-2" style="overscroll-behavior: contain;" data-filterable-for="toc-filter-field" data-filterable-type="substring">
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 text-emphasized" style="-webkit-box-orient: vertical; padding-left: 12px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#mimecast-integration">Mimecast Integration</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 24px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#configuration">Configuration</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 24px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#logs">Logs</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#audit-events">Audit Events</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#dlp-logs">DLP Logs</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#siem-logs">SIEM Logs</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#ttp-impersonation-logs">TTP Impersonation Logs</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#ttp-attachment-logs">TTP Attachment Logs</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#ttp-url-logs">TTP URL Logs</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#threat-intel-feed-malware-customer">Threat Intel Feed Malware: Customer</a>
+          <a role="menuitem" class="filter-item SelectMenu-item ws-normal wb-break-word line-clamp-2 py-1 " style="-webkit-box-orient: vertical; padding-left: 36px;" data-action="click:readme-toc#blur" data-targets="readme-toc.entries" data-hydro-click="{&quot;event_type&quot;:&quot;repository_toc_menu.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;entry&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="072cbd0d55fe90d94baaab06cea6daf8e9cbbbcffbea5a82545daa2edf5f794c" href="#threat-intel-feed-malware-grid">Threat Intel Feed Malware: Grid</a>
+      </div>
+    </div>
+  </details-menu>
+</details>
 
 
   <div class="text-mono f6 flex-auto pr-3 flex-order-2 flex-md-order-1">
-      <include-fragment src="/GinnyGalicia/integrations/codeowners/main/packages/mimecast/manifest.yml"></include-fragment>
+      <include-fragment src="/GinnyGalicia/integrations/codeowners/main/packages/mimecast/_dev/build/docs/README.md"></include-fragment>
 
-      32 lines (32 sloc)
+      76 lines (39 sloc)
       <span class="file-info-divider"></span>
-    739 Bytes
+    4.39 KB
   </div>
 
   <div class="d-flex py-1 py-md-0 flex-auto flex-order-1 flex-md-order-2 flex-sm-grow-0 flex-justify-between hide-sm hide-md">
-      
+        <div class="BtnGroup">
+    <a href="/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md?plain=1" data-permalink-href="/GinnyGalicia/integrations/blob/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/_dev/build/docs/README.md?plain=1" aria-label="Display the source blob" data-view-component="true" class="source tooltipped tooltipped tooltipped-n  js-permalink-replaceable-link btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-code">
+    <path fill-rule="evenodd" d="M4.72 3.22a.75.75 0 011.06 1.06L2.06 8l3.72 3.72a.75.75 0 11-1.06 1.06L.47 8.53a.75.75 0 010-1.06l4.25-4.25zm6.56 0a.75.75 0 10-1.06 1.06L13.94 8l-3.72 3.72a.75.75 0 101.06 1.06l4.25-4.25a.75.75 0 000-1.06l-4.25-4.25z"></path>
+</svg>
+  
+</a>    <a href="/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md" data-permalink-href="/GinnyGalicia/integrations/blob/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/_dev/build/docs/README.md" aria-label="Display the rendered blob" data-view-component="true" class="rendered tooltipped tooltipped tooltipped-n selected js-permalink-replaceable-link btn-sm btn BtnGroup-item">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-file">
+    <path fill-rule="evenodd" d="M3.75 1.5a.25.25 0 00-.25.25v11.5c0 .138.112.25.25.25h8.5a.25.25 0 00.25-.25V6H9.75A1.75 1.75 0 018 4.25V1.5H3.75zm5.75.56v2.19c0 .138.112.25.25.25h2.19L9.5 2.06zM2 1.75C2 .784 2.784 0 3.75 0h5.086c.464 0 .909.184 1.237.513l3.414 3.414c.329.328.513.773.513 1.237v8.086A1.75 1.75 0 0112.25 15h-8.5A1.75 1.75 0 012 13.25V1.75z"></path>
+</svg>
+  
+</a>  </div>
+
 
     <div class="BtnGroup">
-      <a data-permalink-href="/GinnyGalicia/integrations/raw/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/manifest.yml" href="/GinnyGalicia/integrations/raw/main/packages/mimecast/manifest.yml" id="raw-url" data-view-component="true" class="js-permalink-replaceable-link btn-sm btn BtnGroup-item">  Raw
+      <a data-permalink-href="/GinnyGalicia/integrations/raw/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/_dev/build/docs/README.md" href="/GinnyGalicia/integrations/raw/main/packages/mimecast/_dev/build/docs/README.md" id="raw-url" data-view-component="true" class="js-permalink-replaceable-link btn-sm btn BtnGroup-item">  Raw
   
-</a>        <a data-permalink-href="/GinnyGalicia/integrations/blame/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/manifest.yml" href="/GinnyGalicia/integrations/blame/main/packages/mimecast/manifest.yml" data-hotkey="b" data-view-component="true" class="js-update-url-with-hash js-permalink-replaceable-link btn-sm btn BtnGroup-item">  Blame
+</a>        <a data-permalink-href="/GinnyGalicia/integrations/blame/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/_dev/build/docs/README.md" href="/GinnyGalicia/integrations/blame/main/packages/mimecast/_dev/build/docs/README.md" data-hotkey="b" data-view-component="true" class="js-update-url-with-hash js-permalink-replaceable-link btn-sm btn BtnGroup-item">  Blame
   
 </a>    </div>
 
     <div>
           <a class="btn-octicon tooltipped tooltipped-nw js-remove-unless-platform"
              data-platforms="windows,mac"
-             href="x-github-client://openRepo/https://github.com/GinnyGalicia/integrations?branch=main&amp;filepath=packages%2Fmimecast%2Fmanifest.yml"
+             href="x-github-client://openRepo/https://github.com/GinnyGalicia/integrations?branch=main&amp;filepath=packages%2Fmimecast%2F_dev%2Fbuild%2Fdocs%2FREADME.md"
              aria-label="Open this file in GitHub Desktop"
              data-ga-click="Repository, open with desktop">
               <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-device-desktop">
@@ -2436,11 +2495,11 @@
 </svg>
           </a>
 
-        <remote-clipboard-copy class="d-inline-block btn-octicon" style="height: 26px" data-src="/GinnyGalicia/integrations/raw/main/packages/mimecast/manifest.yml" data-action="click:remote-clipboard-copy#remoteCopy">
+        <remote-clipboard-copy class="d-inline-block btn-octicon" style="height: 26px" data-src="/GinnyGalicia/integrations/raw/main/packages/mimecast/_dev/build/docs/README.md" data-action="click:remote-clipboard-copy#remoteCopy">
   
 
 
-  <span data-target="remote-clipboard-copy.idle">            <span class="tooltipped tooltipped-nw cursor-pointer" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;COPY_RAW_CONTENTS_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/manifest.yml&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="f837a3862e94306cc6a173b0153bea4af9b2d71b95df5af31e20db60f0a1e5dc" aria-label="Copy raw contents">
+  <span data-target="remote-clipboard-copy.idle">            <span class="tooltipped tooltipped-nw cursor-pointer" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;COPY_RAW_CONTENTS_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="ff5e1d1f8cbba2c2787201d6fcdef506ebd0acdc9f743f3537a74e158a169730" aria-label="Copy raw contents">
               <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-copy">
     <path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"></path><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"></path>
 </svg>
@@ -2463,7 +2522,7 @@
             </span>
 </span>
 </remote-clipboard-copy>
-          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form js-update-url-with-hash" data-turbo="false" action="/GinnyGalicia/integrations/edit/main/packages/mimecast/manifest.yml" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="V1-MupZfE7iRrmlo9km17MVnADEfQ38Aki_F8q2iTJxzcWLGB7GIcK3oES7rFdPVXqqmjlp9SBC32IZVwpUiAw" />
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form js-update-url-with-hash" data-turbo="false" action="/GinnyGalicia/integrations/edit/main/packages/mimecast/_dev/build/docs/README.md" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="j3SxyjrE9xDWokj9h-6qQwwzB_v10E_bZrMimWZ2BYcYNOtVUQ0aT_6-dwjMQCQ_1ulMBUQHkIs6KBjY_bnRbQ" />
             <button class="btn-octicon tooltipped tooltipped-nw" type="submit"
               aria-label="Edit this file" data-hotkey="e" data-disable-with>
               <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-pencil">
@@ -2471,7 +2530,7 @@
 </svg>
             </button>
 </form>
-          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" data-turbo="false" action="/GinnyGalicia/integrations/delete/main/packages/mimecast/manifest.yml" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="-1b8VyyAUIqZcNH9Hw4a05fvXu3Lk91G8A5tAF11teFNqbBn_g5GDuFMaPx1GTFWZxrSiDuFgqeHEq09hPl3Mw" />
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" data-turbo="false" action="/GinnyGalicia/integrations/delete/main/packages/mimecast/_dev/build/docs/README.md" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="euFk-OMfIBZOuDVnKgbXccXT1imwISTQCNyo3OLwyfZJ0zcSuQH_Hk9AW4tHadMxmTqx_yj0oiAm6nt3yKt4AQ" />
             <button class="btn-octicon btn-octicon-danger tooltipped tooltipped-nw" type="submit"
               aria-label="Delete this file" data-disable-with>
               <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-trash">
@@ -2483,7 +2542,7 @@
 
     <div class="d-flex hide-lg hide-xl flex-order-2 flex-grow-0">
       <details class="dropdown details-reset details-overlay d-inline-block">
-        <summary class="btn-octicon" aria-haspopup="true" aria-label="possible actions">
+        <summary class="btn-octicon p-2" aria-haspopup="true" aria-label="possible actions">
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-kebab-horizontal">
     <path d="M8 9a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM1.5 9a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm13 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"></path>
 </svg>
@@ -2493,21 +2552,21 @@
             <li>
                 <a class="dropdown-item tooltipped tooltipped-nw js-remove-unless-platform"
                    data-platforms="windows,mac"
-                   href="x-github-client://openRepo/https://github.com/GinnyGalicia/integrations?branch=main&amp;filepath=packages%2Fmimecast%2Fmanifest.yml"
+                   href="x-github-client://openRepo/https://github.com/GinnyGalicia/integrations?branch=main&amp;filepath=packages%2Fmimecast%2F_dev%2Fbuild%2Fdocs%2FREADME.md"
                    data-ga-click="Repository, open with desktop">
                   Open with Desktop
                 </a>
             </li>
           <li>
-            <a class="dropdown-item" href="/GinnyGalicia/integrations/raw/main/packages/mimecast/manifest.yml">
+            <a class="dropdown-item" href="/GinnyGalicia/integrations/raw/main/packages/mimecast/_dev/build/docs/README.md">
               View raw
             </a>
           </li>
             <li>
-              <remote-clipboard-copy class="dropdown-item" data-src="/GinnyGalicia/integrations/raw/main/packages/mimecast/manifest.yml" data-action="click:remote-clipboard-copy#remoteCopy">
+              <remote-clipboard-copy class="dropdown-item" data-src="/GinnyGalicia/integrations/raw/main/packages/mimecast/_dev/build/docs/README.md" data-action="click:remote-clipboard-copy#remoteCopy">
   
 
-  <span data-target="remote-clipboard-copy.idle">                  <span class="cursor-pointer" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;COPY_RAW_CONTENTS_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/manifest.yml&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="f837a3862e94306cc6a173b0153bea4af9b2d71b95df5af31e20db60f0a1e5dc">
+  <span data-target="remote-clipboard-copy.idle">                  <span class="cursor-pointer" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;COPY_RAW_CONTENTS_BUTTON&quot;,&quot;repository_id&quot;:468348113,&quot;originating_url&quot;:&quot;https://github.com/GinnyGalicia/integrations/blob/main/packages/mimecast/_dev/build/docs/README.md&quot;,&quot;user_id&quot;:92439019}}" data-hydro-click-hmac="ff5e1d1f8cbba2c2787201d6fcdef506ebd0acdc9f743f3537a74e158a169730">
                     Copy raw contents
 </span></span>
   <span data-target="remote-clipboard-copy.fetching" hidden="hidden">                  Copy raw contents
@@ -2530,17 +2589,17 @@
 </span>
 </remote-clipboard-copy>            </li>
             <li>
-              <a class="dropdown-item" href="/GinnyGalicia/integrations/blame/main/packages/mimecast/manifest.yml">
+              <a class="dropdown-item" href="/GinnyGalicia/integrations/blame/main/packages/mimecast/_dev/build/docs/README.md">
                 View blame
               </a>
             </li>
 
               <li class="dropdown-divider" role="none"></li>
               <li>
-                <a class="dropdown-item" href="/GinnyGalicia/integrations/edit/main/packages/mimecast/manifest.yml">Edit file</a>
+                <a class="dropdown-item" href="/GinnyGalicia/integrations/edit/main/packages/mimecast/_dev/build/docs/README.md">Edit file</a>
               </li>
               <li>
-                <a class="dropdown-item menu-item-danger" href="/GinnyGalicia/integrations/delete/main/packages/mimecast/manifest.yml">Delete file</a>
+                <a class="dropdown-item menu-item-danger" href="/GinnyGalicia/integrations/delete/main/packages/mimecast/_dev/build/docs/README.md">Delete file</a>
               </li>
         </ul>
       </details>
@@ -2548,198 +2607,52 @@
 </div>
 
 
-      
-  <div itemprop="text" class="Box-body p-0 blob-wrapper data type-yaml  gist-border-0">
-
-      
-<div class="js-check-bidi js-blob-code-container blob-code-content">
-
-  <template class="js-file-alert-template">
-  <div data-view-component="true" class="flash flash-warn flash-full d-flex flex-items-center">
-  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-alert">
-    <path fill-rule="evenodd" d="M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z"></path>
-</svg>
-  
-    <span>
-      This file contains bidirectional Unicode text that may be interpreted or compiled differently than what appears below. To review, open the file in an editor that reveals hidden Unicode characters.
-      <a href="https://github.co/hiddenchars" target="_blank">Learn more about bidirectional Unicode characters</a>
-    </span>
-
-
-  <div data-view-component="true" class="flash-action">        <a href="{{ revealButtonHref }}" data-view-component="true" class="btn-sm btn">  Show hidden characters
-  
-</a>
-</div>
-</div></template>
-<template class="js-line-alert-template">
-  <span aria-label="This line has hidden Unicode characters" data-view-component="true" class="line-alert tooltipped tooltipped-e">
-    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-alert">
-    <path fill-rule="evenodd" d="M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z"></path>
-</svg>
-</span></template>
-
-  <table class="highlight tab-size js-file-line-container js-code-nav-container js-tagsearch-file" data-tab-size="8" data-paste-markdown-skip data-tagsearch-lang="YAML" data-tagsearch-path="packages/mimecast/manifest.yml">
-        <tr>
-          <td id="L1" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="1"></td>
-          <td id="LC1" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">format_version</span>: <span class="pl-s">1.0.0</span></td>
-        </tr>
-        <tr>
-          <td id="L2" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="2"></td>
-          <td id="LC2" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">name</span>: <span class="pl-s">mimecast</span></td>
-        </tr>
-        <tr>
-          <td id="L3" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="3"></td>
-          <td id="LC3" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">title</span>: <span class="pl-s"><span class="pl-pds">&quot;</span>Mimecast<span class="pl-pds">&quot;</span></span></td>
-        </tr>
-        <tr>
-          <td id="L4" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="4"></td>
-          <td id="LC4" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">version</span>: <span class="pl-s">0.0.9</span></td>
-        </tr>
-        <tr>
-          <td id="L5" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="5"></td>
-          <td id="LC5" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">license</span>: <span class="pl-s">basic</span></td>
-        </tr>
-        <tr>
-          <td id="L6" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="6"></td>
-          <td id="LC6" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">description</span>: <span class="pl-s"><span class="pl-pds">&quot;</span>Fetching logs from Mimecast API and ingest into Elasticsearch<span class="pl-pds">&quot;</span></span></td>
-        </tr>
-        <tr>
-          <td id="L7" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="7"></td>
-          <td id="LC7" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">type</span>: <span class="pl-s">integration</span></td>
-        </tr>
-        <tr>
-          <td id="L8" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="8"></td>
-          <td id="LC8" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">categories</span>:</td>
-        </tr>
-        <tr>
-          <td id="L9" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="9"></td>
-          <td id="LC9" class="blob-code blob-code-inner js-file-line">  - <span class="pl-s">security</span></td>
-        </tr>
-        <tr>
-          <td id="L10" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="10"></td>
-          <td id="LC10" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">release</span>: <span class="pl-s">beta</span></td>
-        </tr>
-        <tr>
-          <td id="L11" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="11"></td>
-          <td id="LC11" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">conditions</span>:</td>
-        </tr>
-        <tr>
-          <td id="L12" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="12"></td>
-          <td id="LC12" class="blob-code blob-code-inner js-file-line">  <span class="pl-ent">kibana.version</span>: <span class="pl-s"><span class="pl-pds">&quot;</span>^7.17.0 || ^8.0.0<span class="pl-pds">&quot;</span></span></td>
-        </tr>
-        <tr>
-          <td id="L13" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="13"></td>
-          <td id="LC13" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">screenshots</span>:</td>
-        </tr>
-        <tr>
-          <td id="L14" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="14"></td>
-          <td id="LC14" class="blob-code blob-code-inner js-file-line">  - <span class="pl-ent">src</span>: <span class="pl-s">/img/mimecast.png</span></td>
-        </tr>
-        <tr>
-          <td id="L15" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="15"></td>
-          <td id="LC15" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">title</span>: <span class="pl-s">Sample screenshot</span></td>
-        </tr>
-        <tr>
-          <td id="L16" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="16"></td>
-          <td id="LC16" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">size</span>: <span class="pl-c1">600x600</span></td>
-        </tr>
-        <tr>
-          <td id="L17" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="17"></td>
-          <td id="LC17" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">type</span>: <span class="pl-s">image/png</span></td>
-        </tr>
-        <tr>
-          <td id="L18" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="18"></td>
-          <td id="LC18" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">icons</span>:</td>
-        </tr>
-        <tr>
-          <td id="L19" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="19"></td>
-          <td id="LC19" class="blob-code blob-code-inner js-file-line">  - <span class="pl-ent">src</span>: <span class="pl-s">/img/mimecast.svg</span></td>
-        </tr>
-        <tr>
-          <td id="L20" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="20"></td>
-          <td id="LC20" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">title</span>: <span class="pl-s">Sample logo</span></td>
-        </tr>
-        <tr>
-          <td id="L21" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="21"></td>
-          <td id="LC21" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">size</span>: <span class="pl-c1">32x32</span></td>
-        </tr>
-        <tr>
-          <td id="L22" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="22"></td>
-          <td id="LC22" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">type</span>: <span class="pl-s">image/svg+xml</span></td>
-        </tr>
-        <tr>
-          <td id="L23" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="23"></td>
-          <td id="LC23" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">policy_templates</span>:</td>
-        </tr>
-        <tr>
-          <td id="L24" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="24"></td>
-          <td id="LC24" class="blob-code blob-code-inner js-file-line">  - <span class="pl-ent">name</span>: <span class="pl-s">mimecast</span></td>
-        </tr>
-        <tr>
-          <td id="L25" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="25"></td>
-          <td id="LC25" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">title</span>: <span class="pl-s">Mimecast</span></td>
-        </tr>
-        <tr>
-          <td id="L26" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="26"></td>
-          <td id="LC26" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">description</span>: <span class="pl-s">Mimecast Integration</span></td>
-        </tr>
-        <tr>
-          <td id="L27" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="27"></td>
-          <td id="LC27" class="blob-code blob-code-inner js-file-line">    <span class="pl-ent">inputs</span>:</td>
-        </tr>
-        <tr>
-          <td id="L28" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="28"></td>
-          <td id="LC28" class="blob-code blob-code-inner js-file-line">      - <span class="pl-ent">type</span>: <span class="pl-s">httpjson</span></td>
-        </tr>
-        <tr>
-          <td id="L29" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="29"></td>
-          <td id="LC29" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">title</span>: <span class="pl-s">Mimecast API</span></td>
-        </tr>
-        <tr>
-          <td id="L30" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="30"></td>
-          <td id="LC30" class="blob-code blob-code-inner js-file-line">        <span class="pl-ent">description</span>: <span class="pl-s">Collect logs from Mimecast API</span></td>
-        </tr>
-        <tr>
-          <td id="L31" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="31"></td>
-          <td id="LC31" class="blob-code blob-code-inner js-file-line"><span class="pl-ent">owner</span>:</td>
-        </tr>
-        <tr>
-          <td id="L32" class="blob-num js-line-number js-code-nav-line-number js-blob-rnum" data-line-number="32"></td>
-          <td id="LC32" class="blob-code blob-code-inner js-file-line">  <span class="pl-ent">github</span>: <span class="pl-s">elastic/security-external-integrations</span></td>
-        </tr>
-  </table>
-</div>
-
-  <details class="details-reset details-overlay BlobToolbar position-absolute js-file-line-actions dropdown d-none" aria-hidden="true">
-    <summary class="btn-octicon ml-0 px-2 p-0 color-bg-default border color-border-default rounded-2" aria-label="Inline file action toolbar">
-      <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-kebab-horizontal">
-    <path d="M8 9a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM1.5 9a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm13 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"></path>
-</svg>
-    </summary>
-    <details-menu>
-
-      <ul class="BlobToolbar-dropdown dropdown-menu dropdown-menu-se ml-2 mt-2"
-      style="width:185px"
-      >
-        <li>
-          <clipboard-copy role="menuitem" class="dropdown-item" id="js-copy-lines" style="cursor:pointer;" aria-label="Copy lines">
-            Copy lines
-          </clipboard-copy>
-        </li>
-        <li>
-          <clipboard-copy role="menuitem" class="dropdown-item" id="js-copy-permalink" style="cursor:pointer;" aria-label="Copy permalink">
-            Copy permalink
-          </clipboard-copy>
-        </li>
-        <li><a class="dropdown-item js-update-url-with-hash" id="js-view-git-blame" role="menuitem" href="/GinnyGalicia/integrations/blame/3be4f2b4e0231c54f4a9eb1f7c78a53847e8e595/packages/mimecast/manifest.yml">View git blame</a></li>
-      </ul>
-    </details-menu>
-  </details>
-
+        <div id="readme" class="Box-body readme blob js-code-block-container p-5 p-xl-6 gist-border-0">
+    <article class="markdown-body entry-content container-lg" itemprop="text"><h1 dir="auto"><a id="user-content-mimecast-integration" class="anchor" aria-hidden="true" href="#mimecast-integration"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>Mimecast Integration</h1>
+<p dir="auto">The Mimecast integration collects events from the Mimecast API.</p>
+<h2 dir="auto"><a id="user-content-configuration" class="anchor" aria-hidden="true" href="#configuration"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>Configuration</h2>
+<p dir="auto">Authorization parameters for the Mimecast API (<code>Application Key</code>, <code>Application ID</code>, <code>Access Key</code>, and <code>Secret Key</code>), should be provided by a Mimecast representative for this integration.
+Under <code>Advanced options</code> you can set the time interval between two API requests as well as the API URL. A Mimecast representative should also be able to give you with this information in case you need to change the defaults.</p>
+<p dir="auto">Note that rate limit quotas may require you to set up different credentials for the different available log types.</p>
+<h2 dir="auto"><a id="user-content-logs" class="anchor" aria-hidden="true" href="#logs"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>Logs</h2>
+<h3 dir="auto"><a id="user-content-audit-events" class="anchor" aria-hidden="true" href="#audit-events"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>Audit Events</h3>
+<p dir="auto">This is the <code>mimecast.audit_events</code> dataset. These logs contain Mimecast audit events with the following details: audit type, event category and detailed information about the event. More information about these logs [here] (<a href="https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/" rel="nofollow">https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/</a>).</p>
+<p dir="auto">{{event "audit_events"}}</p>
+<p dir="auto">{{fields "audit_events"}}</p>
+<h3 dir="auto"><a id="user-content-dlp-logs" class="anchor" aria-hidden="true" href="#dlp-logs"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>DLP Logs</h3>
+<p dir="auto">This is the <code>mimecast.dlp_logs</code> dataset. These logs contain information about messages that triggered a DLP or Content Examination policy. More information about these logs [here] (<a href="https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/" rel="nofollow">https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/</a>).</p>
+<p dir="auto">{{event "dlp_logs"}}</p>
+<p dir="auto">{{fields "dlp_logs"}}</p>
+<h3 dir="auto"><a id="user-content-siem-logs" class="anchor" aria-hidden="true" href="#siem-logs"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>SIEM Logs</h3>
+<p dir="auto">This is the <code>mimecast.siem_logs</code> dataset. These logs contain information about messages that contains MTA logs (MTA = message transfer agent) – all Inbound, outbound and internal messages. More about these logs <a href="https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/" rel="nofollow">here</a>.</p>
+<p dir="auto">{{event "siem_logs"}}</p>
+<p dir="auto">{{fields "siem_logs"}}</p>
+<h3 dir="auto"><a id="user-content-ttp-impersonation-logs" class="anchor" aria-hidden="true" href="#ttp-impersonation-logs"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>TTP Impersonation Logs</h3>
+<p dir="auto">This is the <code>mimecast.ttp_ip_logs</code> dataset. These logs contain information about messages containing information flagged by an Impersonation Protection configuration. Learn more about these logs [here] (<a href="https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/" rel="nofollow">https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/</a>).</p>
+<p dir="auto">{{event "ttp_ip_logs"}}</p>
+<p dir="auto">{{fields "ttp_ip_logs"}}</p>
+<h3 dir="auto"><a id="user-content-ttp-attachment-logs" class="anchor" aria-hidden="true" href="#ttp-attachment-logs"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>TTP Attachment Logs</h3>
+<p dir="auto">This is the <code>mimecast.ttp_ap_logs</code> dataset. These logs contain Mimecast TTP attachment protection logs with the following details: result of attachment analysis (if it is malicious or not etc.), date when file is released, sender and recipient address, filename and type, action triggered for the attachment, the route of the original email containing the attachment and details. Learn more about these logs [here] (<a href="https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/" rel="nofollow">https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/</a>).</p>
+<p dir="auto">{{event "ttp_ap_logs"}}</p>
+<p dir="auto">{{fields "ttp_ap_logs"}}</p>
+<h3 dir="auto"><a id="user-content-ttp-url-logs" class="anchor" aria-hidden="true" href="#ttp-url-logs"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>TTP URL Logs</h3>
+<p dir="auto">This is the <code>mimecast.ttp_url_logs</code> dataset. These logs contain Mimecast TTP attachment protection logs with the following details: the category of the URL clicked, the email address of the user who clicked the link, the url clicked, the action taken by the user if user awareness was applied, the route of the email that contained the link, the action defined by the administrator for the URL, the date that the URL was clicked, url scan result, the action that was taken for the click, the description of the definition that triggered the URL to be rewritten by Mimecast, the action requested by the user, an array of components of the message where the URL was found. More about these logs <a href="https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/" rel="nofollow">here</a>.</p>
+<p dir="auto">{{event "ttp_url_logs"}}</p>
+<p dir="auto">{{fields "ttp_url_logs"}}</p>
+<h3 dir="auto"><a id="user-content-threat-intel-feed-malware-customer" class="anchor" aria-hidden="true" href="#threat-intel-feed-malware-customer"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>Threat Intel Feed Malware: Customer</h3>
+<p dir="auto">This is the <code>mimecast.threat_intel_malware_customer</code> dataset. These logs contain information about messages that return identified malware threats at a customer level. More about these logs <a href="https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/" rel="nofollow">here</a>.</p>
+<p dir="auto">{{event "threat_intel_malware_customer"}}</p>
+<p dir="auto">{{fields "threat_intel_malware_customer"}}</p>
+<h3 dir="auto"><a id="user-content-threat-intel-feed-malware-grid" class="anchor" aria-hidden="true" href="#threat-intel-feed-malware-grid"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"></path></svg></a>Threat Intel Feed Malware: Grid</h3>
+<p dir="auto">This is the <code>mimecast.threat_intel_malware_grid</code> dataset. These logs contain information about messages that return identified malware threats at a regional grid level. More about these logs <a href="https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/" rel="nofollow">here</a>.</p>
+<p dir="auto">{{event "threat_intel_malware_grid"}}</p>
+<p dir="auto">{{fields "threat_intel_malware_grid"}}</p>
+</article>
   </div>
 
     </div>
 
+  </readme-toc>
 
   
 
@@ -2753,6 +2666,17 @@
 </button>
 </form>    </details-dialog>
   </details>
+
+    <div class="Popover anim-scale-in js-tagsearch-popover"
+     hidden
+     data-tagsearch-url="/GinnyGalicia/integrations/find-definition"
+     data-tagsearch-ref="main"
+     data-tagsearch-code-nav-context="BLOB_VIEW">
+  <div class="Popover-message Popover-message--large Popover-message--top-left TagsearchPopover mt-1 mb-4 mx-auto Box color-shadow-large">
+    <div class="TagsearchPopover-content js-tagsearch-popover-content overflow-auto" style="will-change:transform;">
+    </div>
+  </div>
+</div>
 
 
 </div>
