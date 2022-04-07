@@ -317,8 +317,11 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | awsfargate.task_stats.diskio.write.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |
 | awsfargate.task_stats.diskio.writes | Number of current writes per second | scaled_float |
 | awsfargate.task_stats.identifier | Container identifier across tasks and clusters, which equals to container.name + '/' + container.id. | keyword |
+| awsfargate.task_stats.memory.commit.peak | Peak committed bytes on Windows | long |
+| awsfargate.task_stats.memory.commit.total | Total bytes | long |
 | awsfargate.task_stats.memory.fail.count | Fail counter. | scaled_float |
 | awsfargate.task_stats.memory.limit | Memory limit. | long |
+| awsfargate.task_stats.memory.private_working_set.total | private working sets on Windows | long |
 | awsfargate.task_stats.memory.rss.pct | Memory resident set size percentage. | scaled_float |
 | awsfargate.task_stats.memory.rss.total | Total memory resident set size. | long |
 | awsfargate.task_stats.memory.rss.usage.max | Max memory usage. | long |
