@@ -13,7 +13,7 @@ Follow these instructions to ingest data with the ingest pipeline and enrich you
 
 Once you’ve installed the package you can ingest your data using the ingest pipeline. This will enrich your incoming data with its predictions from the machine learning model.
 
-This pipeline is designed to work with [Winglogbeat data](https://www.elastic.co/downloads/beats/winlogbeat).
+This pipeline is designed to work with [Winlogbeat data](https://www.elastic.co/downloads/beats/winlogbeat).
 
 ### (Optional) Add preconfigured anomaly detection jobs
 
