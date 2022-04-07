@@ -331,6 +331,8 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| container.disk.read.bytes | ECS counter of disk read bytes by the container | long |  |  |
+| container.disk.write.bytes | ECS counter of disk read bytes by the container | long |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.name | Container name. | keyword |  |  |
@@ -805,6 +807,7 @@ The Docker `memory` data stream collects memory metrics from docker.
 | @timestamp | Event timestamp. | date |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.memory.usage | ECS field for container memory usage | scaled_float |  |  |
 | container.name | Container name. | keyword |  |  |
 | container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
@@ -935,6 +938,8 @@ The Docker `network` data stream collects network metrics.
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
+| container.network.egress.bytes | ECS container field for network outbound bytes | long |  |
+| container.network.ingress.bytes | ECS container field for network inbound bytes | long |  |
 | container.runtime | Runtime managing this container. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
