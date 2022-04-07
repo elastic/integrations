@@ -4,7 +4,7 @@ processors:
   # Generic event/ecs fields we always want to populated
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.2.0"
   - rename:
       field: message
       target_field: event.original
@@ -20,17 +20,26 @@ processors:
       timezone: UTC
       formats:
         - yyyy-MM-dd'T'HH:mm:ssZ
-
-  - rename:
-      field: mimecast.senderAddress
-      target_field: email.from.address
-      ignore_missing: true
-      if: 'ctx?.mimecast?.senderAddress !=null'
-  - rename:
-      field: mimecast.recipientAddress
-      target_field: email.to.address
-      ignore_missing: true
-      if: 'ctx?.mimecast?.recipientAddress !=null'
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.senderAddress}}}"
+      if: "ctx?.mimecast?.senderAddress != null"
+      ignore_failure: true
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.recipientAddress}}}"
+      if: "ctx?.mimecast?.recipientAddress != null"
+      ignore_failure: true
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true      
   - gsub:
       field: mimecast.actionTriggered
       pattern: ","
@@ -107,6 +116,8 @@ processors:
         - mimecast.date
         - file.parts
         - file
+        - mimecast.senderAddress
+        - mimecast.recipientAddress
       ignore_missing: true
   - remove:
       description: Remove 'event.original' if 'preserve_original_event' is not set.
