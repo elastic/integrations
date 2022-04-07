@@ -174,12 +174,22 @@ processors:
 ######################
 ## ECS Host Mapping ##
 ######################
+- rename:
+    field: cisco.secure_endpoint.computer.hostname
+    target_field: host.name
+    ignore_missing: true
+    if: ctx?.host?.name == null
+- rename:
+    field: cisco.secure_endpoint.hostname
+    target_field: host.name
+    ignore_missing: true
+    if: ctx?.host?.name == null
 - script:
     lang: painless
-    if: 'ctx.cisco?.secure_endpoint?.computer?.hostname != null && ctx.cisco?.secure_endpoint?.computer?.hostname.contains(".")'
+    if: 'ctx.host?.name != null && ctx.host?.name.contains(".")'
     source: |
       def domain = "";
-      def nameArray = ctx.cisco.secure_endpoint.computer.hostname.toString().splitOnToken(".");
+      def nameArray = ctx.host.name.toString().splitOnToken(".");
       if (ctx.host == null) {
         ctx.host = new HashMap();
       }
@@ -190,6 +200,11 @@ processors:
         ctx.host.hostname = nameArray[0];
         ctx.host.domain = domain; 
       }
+- set:
+    field: host.hostname
+    copy_from: host.name
+    ignore_empty_value: true
+    if: ctx?.host?.hostname == null
 - script:
     lang: painless
     if: 'ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco?.secure_endpoint?.computer?.user.contains("@")'
@@ -204,15 +219,6 @@ processors:
       ctx.user.email = ctx.user.id;
       ctx.user.domain = splitmail[1];
       ctx.user.name = splitmail[0];
-- rename:
-    field: cisco.secure_endpoint.computer.hostname
-    target_field: host.hostname
-    ignore_missing: true
-    if: ctx?.host?.hostname == null && ctx?.cisco?.secure_endpoint?.computer?.hostname != null
-- set:
-    field: host.name
-    copy_from: host.hostname
-    ignore_empty_value: true
 - rename:
     field: cisco.secure_endpoint.computer.user
     target_field: user.name
@@ -356,6 +362,38 @@ processors:
     field: cisco.secure_endpoint.network_info.parent.identity.md5
     target_field: process.hash.md5
     ignore_missing: true
+- script:
+    description: Set process.command_line and process.args.
+    tag: set-process-command_line
+    lang: painless
+    source: |
+      def commandLine = ctx?.cisco?.secure_endpoint?.command_line?.arguments;
+      if (commandLine != null) {
+        commandLine = commandLine.trim();
+        if (commandLine != "") {
+          ctx.process.command_line = commandLine;
+      
+          def args = [];
+          for (def v : / /.split(commandLine)) {
+            if (v != "") {
+              args.add(v);
+            }
+          }
+          if (args.size() > 0) {
+            ctx.process.args = args;
+          }
+        }
+      }
+- script:
+    description: Set process.args_count and process.executable based on process.args.
+    tag: set-process-args_count
+    lang: painless
+    if: ctx?.process?.args != null
+    source: |
+      ctx.process.args_count = ctx.process.args.length;
+      if (ctx.process.args.length > 0) {
+        ctx.process.executable = ctx.process.args[0];
+      }
 
 #########################
 ## ECS Related Mapping ##
@@ -569,22 +607,26 @@ processors:
     ignore_missing: true
 - remove:
     field:
-    - cisco.secure_endpoint.timestamp
-    - cisco.secure_endpoint.computer.links
-    - json
-    - cisco.secure_endpoint.severity
-    - cisco.secure_endpoint.start_timestamp
-    - cisco.secure_endpoint.date
-    - cisco.secure_endpoint.timestamp_nanoseconds
-    - cisco.secure_endpoint.start_date
-    - cisco.secure_endpoint.id
-    - cisco.secure_endpoint.threat_hunting.techniques
-    - cisco.secure_endpoint.threat_hunting.tactics
-    - cisco.secure_endpoint.computer.hostname
-    - cisco.secure_endpoint.computer.user
+      - cisco.secure_endpoint.computer.hostname
+      - cisco.secure_endpoint.computer.links
+      - cisco.secure_endpoint.computer.user
+      - cisco.secure_endpoint.date
+      - cisco.secure_endpoint.id
+      - cisco.secure_endpoint.severity
+      - cisco.secure_endpoint.start_date
+      - cisco.secure_endpoint.start_timestamp
+      - cisco.secure_endpoint.threat_hunting.tactics
+      - cisco.secure_endpoint.threat_hunting.techniques
+      - cisco.secure_endpoint.timestamp
+      - cisco.secure_endpoint.timestamp_nanoseconds
+      - json
     ignore_missing: true
 on_failure:
+- remove:
+    field:
+      - json
+    ignore_missing: true
 - set:
     field: error.message
-    value: '{{ _ingest.on_failure_message }}'
-
+    value: |-
+      Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" failed with message "{{{ _ingest.on_failure_message }}}"
