@@ -3,101 +3,121 @@ description: Pipeline for parsing JDBC metrics
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.1.0'
   - rename:
       field: prometheus.metrics.was_connectionpool_jdbcOperation_time_seconds_total
-      target_field: was.jdbc.connection.total_operations_seconds
+      target_field: websphere_application_server.jdbc.connection.total_operations_seconds
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_jdbcOperations_total
-      target_field: was.jdbc.connection.total_operations_calls
+      target_field: websphere_application_server.jdbc.connection.total_operations_calls
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_create_total
-      target_field: was.jdbc.connection.created
+      target_field: websphere_application_server.jdbc.connection.created
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_close_total
-      target_field: was.jdbc.connection.closed
+      target_field: websphere_application_server.jdbc.connection.closed
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_allocate_total
-      target_field: was.jdbc.connection.allocated
+      target_field: websphere_application_server.jdbc.connection.allocated
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_return_total
-      target_field: was.jdbc.connection.returned
+      target_field: websphere_application_server.jdbc.connection.returned
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_free_connections
-      target_field: was.jdbc.connection.free
+      target_field: websphere_application_server.jdbc.connection.free
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_fault_total
-      target_field: was.jdbc.connection.fault_total
+      target_field: websphere_application_server.jdbc.connection.fault_total
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_waiting_threads
-      target_field: was.jdbc.connection.waiting_threads
+      target_field: websphere_application_server.jdbc.connection.waiting_threads
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_inUse_time_seconds_total
-      target_field: was.jdbc.connection.total_seconds_in_use
+      target_field: websphere_application_server.jdbc.connection.total_seconds_in_use
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_inUse_total
-      target_field: was.jdbc.connection.total_in_use
+      target_field: websphere_application_server.jdbc.connection.total_in_use
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_wait_time_seconds_total
-      target_field: was.jdbc.connection.wait_seconds_total
+      target_field: websphere_application_server.jdbc.connection.wait_seconds_total
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_wait_total
-      target_field: was.jdbc.connection.wait_total
+      target_field: websphere_application_server.jdbc.connection.wait_total
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_managed_connections
-      target_field: was.jdbc.connection.managed
+      target_field: websphere_application_server.jdbc.connection.managed
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_connectionHandles
-      target_field: was.jdbc.connection.handles
+      target_field: websphere_application_server.jdbc.connection.handles
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_size
-      target_field: was.jdbc.pool_size
+      target_field: websphere_application_server.jdbc.pool_size
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_utilization
-      target_field: was.jdbc.percent_used
+      target_field: websphere_application_server.jdbc.percent_used
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.metrics.was_connectionpool_prepStmtCacheDiscard_total
-      target_field: was.jdbc.total_cache_discarded
+      target_field: websphere_application_server.jdbc.total_cache_discarded
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: prometheus.labels.jndiname
+      target_field: websphere_application_server.jdbc.datasource
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: prometheus.labels.instance
-      target_field: client.address
+      target_field: server.address
       ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: metric
+      ignore_empty_value: true
+      ignore_failure: true
+  - set:
+      field: event.module
+      value: websphere_application_server
+      ignore_empty_value: true
+      ignore_failure: true
+  - set:
+      field: event.type
+      value: info
+      ignore_empty_value: true
       ignore_failure: true
   - script:
       description: Add job to tag list.

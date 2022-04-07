@@ -6,17 +6,16 @@ license: basic
 description: This integration collects data from IBM WebSphere Application Server.
 type: integration
 categories:
-  - custom
-  - monitoring
+  - web
 conditions:
-  kibana.version: "^8.0.0"
+  kibana.version: "^8.1.0"
 screenshots:
-  - src: /img/sample-screenshot.png
-    title: Sample screenshot
+  - src: /img/websphere_application_server-jdbc-dashboard-screenshot.png
+    title: Websphere Application Server JDBC Dashboard Screenshot
     size: 600x600
     type: image/png
 icons:
-  - src: /img/ibm_was-logo.svg
+  - src: /img/websphere_application_server-logo.svg
     title: Sample logo
     size: 32x32
     type: image/svg+xml
@@ -32,7 +31,7 @@ policy_templates:
             title: Host
             required: true
             show_user: true
-            description: WebSphere Application Server Host.
+            description: WebSphere Application Server Host. (http://localhost:9080 or localhost:9080)
             default:
               - localhost:9080
           - name: period
@@ -41,8 +40,27 @@ policy_templates:
             required: true
             show_user: true
             description: Period between collecting metrics.
-            default: 15m
+            default: 60s
+          - name: username
+            type: text
+            title: Username
+            multi: false
+            required: false
+            show_user: true
+          - name: password
+            type: password
+            title: Password
+            multi: false
+            required: false
+            show_user: true
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
         title: Metrics using Prometheus.
         description: Collecting metrics from WebSphere Application Server using Prometheus.
 owner:
-  github: elastic/integrations
+  github: elastic/obs-service-integration
