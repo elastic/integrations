@@ -1,6 +1,6 @@
 # Microsoft Office 365 Integration
 
-This integration is for Microsoft Office 365. It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the Office 365 Management Activity API.
+This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/previous-versions/office/office-365-api/). It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the Office 365 Management Activity API.
 
 ## Configuration
 
@@ -11,7 +11,6 @@ Once this application is registered note the _Application (client) ID_ and the _
 To use client-secret authentication, add you secret to the _Client Secret (API key)_ field.
 
 To use certificate-based authentication, set the paths to the certificate and private key files. If the key file is protected with a passphrase, set this passphrase in the _Private key passphrase_ field. Paths must be absolute and files must exist in the host where _Elastic Agent_ is running.
-
 
 Add your tenant ID(s) to the _Directory (tenant) IDs_ field, then add the hostname that this tenant identifies to the _Directory (tenant) domains_ field. For example:
 - Directory IDs: `my-id-a` `my-id-b`
