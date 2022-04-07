@@ -152,6 +152,7 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| container.cpu.usage | ECS field for container CPU usage | scaled_float |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.name | Container name. | keyword |  |  |
