@@ -4,7 +4,7 @@ processors:
   # Generic event/ecs fields we always want to populated
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.2.0"
   - rename:
       field: message
       target_field: event.original
@@ -82,11 +82,10 @@ processors:
       target_field: error.type
       ignore_missing: true
       if: 'ctx?.mimecast?.RejType !=null'
-  - rename:
-      field: mimecast.Sender
-      target_field: email.from.address
-      ignore_missing: true
-      if: 'ctx?.mimecast?.Sender !=null'
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.Sender}}}"
+      if: "ctx?.mimecast?.Sender != null"
   - rename:
       field: mimecast.Subject
       target_field: email.subject
@@ -224,11 +223,10 @@ processors:
       target_field: email.direction
       ignore_missing: true
       if: 'ctx?.mimecast?.route !=null'
-  - rename:
-      field: mimecast.sender
-      target_field: email.from.address
-      ignore_missing: true
-      if: 'ctx?.mimecast?.sender !=null'
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.sender}}}"
+      if: "ctx?.mimecast?.sender != null"
   - rename:
       field: mimecast.senderDomain
       target_field: source.domain
@@ -310,6 +308,16 @@ processors:
       field: event.outcome
       value: "unknown"
       if: 'ctx?.event?.outcome ==null'
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true  
   # Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
@@ -320,6 +328,8 @@ processors:
         - mimecast.log_type_part1
         - mimecast.log_type_part2
         - mimecast.log_type_parts
+        - mimecast.sender
+        - mimecast.Sender
       ignore_missing: true
   - remove:
       description: Remove 'mimecast.RecieptApk' if null
