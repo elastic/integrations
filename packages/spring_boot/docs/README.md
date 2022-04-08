@@ -38,10 +38,10 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-07T11:46:38.660Z",
+    "@timestamp": "2022-04-08T15:05:38.181Z",
     "agent": {
-        "ephemeral_id": "e1570c05-dba3-4696-9cfe-8d3af2eaf68f",
-        "id": "7e8569a0-45e9-41ab-9434-acbb356752a7",
+        "ephemeral_id": "e0b0ac58-9011-4ddd-ab62-850090808b05",
+        "id": "3802ef0b-f65b-47f0-a5d4-9f752cfa4293",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -55,7 +55,7 @@ An example event for `memory` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "7e8569a0-45e9-41ab-9434-acbb356752a7",
+        "id": "3802ef0b-f65b-47f0-a5d4-9f752cfa4293",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -63,8 +63,8 @@ An example event for `memory` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.memory",
-        "duration": 443583075,
-        "ingested": "2022-04-07T11:46:42Z",
+        "duration": 447298001,
+        "ingested": "2022-04-08T15:05:41Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -74,10 +74,10 @@ An example event for `memory` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.18.0.5"
+            "172.22.0.4"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02:42:ac:16:00:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
