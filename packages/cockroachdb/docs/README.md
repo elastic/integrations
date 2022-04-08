@@ -1,6 +1,6 @@
 # CockroachDB Integration
 
-This integration collects metrics from [https://www.cockroachlabs.com/docs/stable/developer-guide-overview.html](https://www.cockroachlabs.com/docs/stable/developer-guide-overview.html). It includes the
+This integration collects metrics from [CockroachDB](https://www.cockroachlabs.com/docs/stable/developer-guide-overview.html). It includes the
 following datasets for receiving logs:
 
 - `status` datastream: consists of status metrics
@@ -726,4 +726,3 @@ An example event for `status` looks as following:
     }
 }
 ```
-
