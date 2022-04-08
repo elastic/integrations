@@ -88,8 +88,7 @@ The Docker `image` data stream collects metrics on docker images
 
 ### Info
 
-The Docker `info` data stream collects system-wide information based on the
-https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-system-wide-information[Docker Remote API].
+The Docker `info` data stream collects system-wide information based on the [Docker Remote API](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-system-wide-information).
 
 {{fields "info"}}
 

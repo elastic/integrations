@@ -1,7 +1,8 @@
 # CyberArk integration
 
-This integration is for CyberArk device's logs. It includes the following
+This integration is for [CyberArk device's logs](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-CP/10.10/en/Content/LandingPages/LP-Tile2.htm). It includes the following
 datasets for receiving logs over syslog or read from a file:
+
 - `corepas` dataset: supports CyberArk logs.
 
 ### Corepas

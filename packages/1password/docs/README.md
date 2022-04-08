@@ -1,5 +1,4 @@
-1Password Events Reporting
-==========================
+# 1Password Events Reporting
 
 With [1Password Business](https://support.1password.com/explore/business/), you can send your account activity to your security information and event management (SIEM) system using the 1Password Events API. Get reports about 1Password activity like sign-in attempts and item usage while you manage all your company’s applications and services from a central location.
 
@@ -13,9 +12,7 @@ With 1Password Events Reporting and Elastic SIEM, you can:
 You can set up Events Reporting if you’re an owner or administrator.  
 Learn how to [obtain your 1Password Events API credentials](https://support.1password.com/events-reporting/#step-1-set-up-an-events-reporting-integration).
 
-Events
-------
-
+## Events
 ### Sign-in Attempts
 
 Uses the 1Password Events API to retrieve information about sign-in attempts. Events include the name and IP address of the user who attempted to sign in to the account, when the attempt was made, and – for failed attempts – the cause of the failure.
@@ -50,11 +47,13 @@ Uses the 1Password Events API to retrieve information about sign-in attempts. Ev
 | onepassword.type | Details about the sign-in attempt | keyword |
 | onepassword.uuid | The UUID of the event | keyword |
 | os.name | Operating system name, without the version. | keyword |
+| os.name.text | Multi-field of `os.name`. | match_only_text |
 | os.version | Operating system version as a raw string. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -66,6 +65,7 @@ Uses the 1Password Events API to retrieve information about sign-in attempts. Ev
 | tags | List of keywords used to tag each event. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
 
 
@@ -189,11 +189,13 @@ Uses the 1Password Events API to retrieve information about items in shared vaul
 | onepassword.uuid | The UUID of the event | keyword |
 | onepassword.vault_uuid | The UUID of the vault the item is in | keyword |
 | os.name | Operating system name, without the version. | keyword |
+| os.name.text | Multi-field of `os.name`. | match_only_text |
 | os.version | Operating system version as a raw string. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -205,6 +207,7 @@ Uses the 1Password Events API to retrieve information about items in shared vaul
 | tags | List of keywords used to tag each event. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
 
 
