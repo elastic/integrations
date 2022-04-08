@@ -14,7 +14,7 @@ This module has been tested against `Cisco ISE server version 3.1.0.518`.
   - **Procedure**
       1. In Cisco ISE Administrator Portal, go to **Administration** > **System** > **Logging** > **Remote Logging Targets**.
       2. Click **Add**.
-      ![Cisco ISE server setup image](../../../img/cisco-ise-setup.png)
+      ![Cisco ISE server setup image](../img/cisco-ise-setup.png)
       3. Enter all the **Required Details**.
       4. Set the maximum length to **8192**.
       5. Click **Submit**. 
