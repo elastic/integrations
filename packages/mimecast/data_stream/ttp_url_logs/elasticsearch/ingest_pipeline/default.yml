@@ -63,34 +63,11 @@ processors:
       field: event.created
       value: "{{mimecast.date}}"
       if: 'ctx?.mimecast?.date != null'
-#   - split:
-#       field: user.email
-#       separator: "@"
-#       target_field: user.parts
-#       if: 'ctx?.user?.email != null'
-#   - set:
-#       field: user.name
-#       copy_from: user.parts.0
-#       if: 'ctx?.user?.parts !=null && ctx?.user?.parts.length > 1'
-#   - set:
-#       field: user.domain
-#       copy_from: user.parts.1
-#       if: 'ctx?.user?.parts !=null && ctx?.user?.parts.length > 1'
   - append:
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
       if: 'ctx?.source?.ip !=null'
-#   - append:
-#       field: related.user
-#       value: "{{user.name}}"
-#       allow_duplicates: false
-#      if: 'ctx?.user?.name !=null'
-#   - append:
-#       field: related.user
-#       value: "{{user.email}}"
-#       allow_duplicates: false
-#       if: 'ctx?.user?.email !=null'
   - lowercase:
       field: email.direction
       ignore_missing: true
@@ -99,9 +76,7 @@ processors:
       description: Cleanup of repeated/unwanted/temporary fields.
       field: 
         - mimecast.date
-        # - user.parts
-        # - user.parts.0
-        # - user.parts.1
+        - mimecast.fromUserEmailAddress
       ignore_missing: true
   - remove:
       description: Remove 'event.original' if 'preserve_original_event' is not set.

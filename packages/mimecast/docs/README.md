@@ -21,9 +21,9 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2021-11-16T12:01:37.000Z",
     "agent": {
-        "ephemeral_id": "d5d13118-2d34-4f40-9ba4-87039c9daba3",
+        "ephemeral_id": "41503fc4-72b5-4f63-842d-8cb6047588b9",
         "hostname": "docker-fleet-agent",
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -37,17 +37,17 @@ An example event for `audit_events` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "snapshot": true,
         "version": "7.16.0"
     },
     "event": {
         "action": "search-action",
         "agent_id_status": "verified",
-        "created": "2022-03-30T12:13:11.085Z",
+        "created": "2022-04-09T21:09:33.147Z",
         "dataset": "mimecast.audit_events",
         "id": "eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK1o",
-        "ingested": "2022-03-30T12:13:12Z",
+        "ingested": "2022-04-09T21:09:34Z",
         "original": "{\"auditType\":\"Search Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK1o\",\"user\":\"johndoe@example.com\"}"
     },
     "input": {
@@ -84,6 +84,7 @@ An example event for `audit_events` looks as following:
 | client.as.asn | Client ASN number. | long |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
+| client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
 | client.as.organization_name | Client Organization name. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
@@ -113,6 +114,7 @@ An example event for `audit_events` looks as following:
 | email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
 | email.origination_timestamp | The date and time the email message was composed. Many email clients will fill this in automatically when the message is sent by a user. | date |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | The email address(es) of the message recipient(s) | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -135,6 +137,7 @@ An example event for `audit_events` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -153,6 +156,7 @@ An example event for `audit_events` looks as following:
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ### DLP Logs
@@ -165,9 +169,9 @@ An example event for `dlp` looks as following:
 {
     "@timestamp": "2021-11-18T21:41:18.000Z",
     "agent": {
-        "ephemeral_id": "964543f3-c79c-48b6-b848-427576b8621e",
+        "ephemeral_id": "552d66a7-65eb-40a3-941a-bc22670344d1",
         "hostname": "docker-fleet-agent",
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -181,7 +185,7 @@ An example event for `dlp` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "snapshot": true,
         "version": "7.16.0"
     },
@@ -205,7 +209,7 @@ An example event for `dlp` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-18T21:41:18+0000",
         "dataset": "mimecast.dlp_logs",
-        "ingested": "2022-03-30T12:13:54Z",
+        "ingested": "2022-04-09T21:10:19Z",
         "original": "{\"action\":\"notification\",\"eventTime\":\"2021-11-18T21:41:18+0000\",\"messageId\":\"\\u003c20211118214115.B346F10021D@mail.emailsec.ninja\\u003e\",\"policy\":\"Content Inspection - Watermark\",\"recipientAddress\":\"johndoe@example.com\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Undelivered Mail Returned to Sender\"}"
     },
     "input": {
@@ -247,7 +251,9 @@ An example event for `dlp` looks as following:
 | email.direction | Direction of the message based on the sending and receiving domains | keyword |
 | email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
 | email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
+| email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | The email address(es) of the message recipient(s) | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -266,6 +272,7 @@ An example event for `dlp` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -292,9 +299,9 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2021-11-12T12:15:46.000Z",
     "agent": {
-        "ephemeral_id": "fc3baa75-fcbf-4879-83f5-90156f386959",
+        "ephemeral_id": "87efbb2b-144e-428a-82ed-8b81a630d3da",
         "hostname": "docker-fleet-agent",
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -308,7 +315,7 @@ An example event for `siem` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "snapshot": true,
         "version": "7.16.0"
     },
@@ -328,7 +335,7 @@ An example event for `siem` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-12T12:15:46+0000",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2022-03-30T12:14:44Z",
+        "ingested": "2022-04-09T21:11:02Z",
         "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
         "outcome": "unknown"
     },
@@ -383,8 +390,10 @@ An example event for `siem` looks as following:
 | email.header_from | The sender address found in the from header of the email. | keyword |
 | email.local_id | Unique identifier given to the email by the source (MTA, gateway, etc.) that created the event and is not persistent across hops (for example, the X-MS-Exchange-Organization-Network-Message-Id id). | keyword |
 | email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
+| email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.message_size | The total size of the email.The total size of the email. | long |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | The email address(es) of the message recipient(s). | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
@@ -409,6 +418,7 @@ An example event for `siem` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -460,6 +470,7 @@ An example event for `siem` looks as following:
 | source.as.asn | Client ASN number. | long |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.as.organization_name | Client Organization name. | keyword |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
@@ -475,6 +486,7 @@ An example event for `siem` looks as following:
 | tls.established | Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel. | boolean |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
 | user.email | User email address. | keyword |
 
 
@@ -488,9 +500,9 @@ An example event for `ttp_ip` looks as following:
 {
     "@timestamp": "2021-11-12T15:27:04.000Z",
     "agent": {
-        "ephemeral_id": "2f1f93c0-e67e-47c2-bdfc-fe7b195778d9",
+        "ephemeral_id": "a0f9d8f0-c556-4141-ad9c-69899b4d0abc",
         "hostname": "docker-fleet-agent",
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -504,7 +516,7 @@ An example event for `ttp_ip` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "snapshot": true,
         "version": "7.16.0"
     },
@@ -528,7 +540,7 @@ An example event for `ttp_ip` looks as following:
         "created": "2021-11-12T15:27:04+0000",
         "dataset": "mimecast.ttp_ip_logs",
         "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8",
-        "ingested": "2022-03-30T12:17:41Z",
+        "ingested": "2022-04-09T21:14:05Z",
         "original": "{\"action\":\"none\",\"definition\":\"IP - 1 hit (Tag email)\",\"eventTime\":\"2021-11-12T15:27:04+0000\",\"hits\":1,\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8\",\"identifiers\":[\"internal_user_name\"],\"impersonationResults\":[{\"checkerResult\":\"hit\",\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe \\u003cjohndoe_cdw@example.com\\u003e\",\"stringSimilarToDomain\":\"John Doe\"}],\"messageId\":\"\\u003cMN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\\u003e\",\"recipientAddress\":\"johndoe@example.com\",\"senderAddress\":\"johndoe@example.com\",\"senderIpAddress\":\"8.8.8.8\",\"subject\":\"Don't read, just fill out!\",\"taggedExternal\":false,\"taggedMalicious\":true}"
     },
     "input": {
@@ -593,7 +605,9 @@ An example event for `ttp_ip` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
 | email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
+| email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | The email address(es) of the message recipient(s) | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -613,6 +627,7 @@ An example event for `ttp_ip` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -651,9 +666,9 @@ An example event for `ttp_ap` looks as following:
 {
     "@timestamp": "2021-11-24T11:54:27.000Z",
     "agent": {
-        "ephemeral_id": "5a4e1a98-4e70-4620-91a2-81fb96a6f02a",
+        "ephemeral_id": "2f31d31e-e2a9-4f19-95c9-92d3979e5769",
         "hostname": "docker-fleet-agent",
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -667,7 +682,7 @@ An example event for `ttp_ap` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "snapshot": true,
         "version": "7.16.0"
     },
@@ -699,7 +714,7 @@ An example event for `ttp_ap` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-24T11:54:27+0000",
         "dataset": "mimecast.ttp_ap_logs",
-        "ingested": "2022-03-30T12:16:54Z",
+        "ingested": "2022-04-09T21:13:18Z",
         "original": "{\"actionTriggered\":\"user release, none\",\"date\":\"2021-11-24T11:54:27+0000\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\",\"details\":\"Safe                                              \\r\\nTime taken: 0 hrs, 0 min, 7 sec\",\"fileHash\":\"cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254\",\"fileName\":\"Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf\",\"fileType\":\"application/pdf\",\"messageId\":\"\\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\\u003e\",\"recipientAddress\":\"johndoe@emample.com\",\"result\":\"safe\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Test Files\"}"
     },
     "input": {
@@ -754,7 +769,9 @@ An example event for `ttp_ap` looks as following:
 | email.direction | Direction of the message based on the sending and receiving domains | keyword |
 | email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
 | email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
+| email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | The email address(es) of the message recipient(s) | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -773,6 +790,7 @@ An example event for `ttp_ap` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -805,9 +823,9 @@ An example event for `ttp_url` looks as following:
 {
     "@timestamp": "2021-11-10T03:49:53.000Z",
     "agent": {
-        "ephemeral_id": "1912d638-7093-4c27-94be-3b3b66f48730",
+        "ephemeral_id": "c23f7d02-6e8c-46b5-bbaa-72c83a970a9c",
         "hostname": "docker-fleet-agent",
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -821,7 +839,7 @@ An example event for `ttp_url` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "snapshot": true,
         "version": "7.16.0"
     },
@@ -843,7 +861,7 @@ An example event for `ttp_url` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-10T03:49:53+0000",
         "dataset": "mimecast.ttp_url_logs",
-        "ingested": "2022-03-30T12:18:19Z",
+        "ingested": "2022-04-09T21:14:44Z",
         "original": "{\"action\":\"allow\",\"actions\":\"Allow\",\"adminOverride\":\"N/A\",\"category\":\"Search Engines \\u0026 Portals\",\"creationMethod\":\"User Click\",\"date\":\"2021-11-10T03:49:53+0000\",\"emailPartsDescription\":[\"Body\"],\"fromUserEmailAddress\":\"googlealerts-noreply@google.com\",\"messageId\":\"\\u003c000000000000a02a0a05d0671c06@google.com\\u003e\",\"route\":\"inbound\",\"scanResult\":\"clean\",\"sendingIp\":\"8.8.8.8\",\"subject\":\"Google Alert - china\",\"ttpDefinition\":\"Inbound URL 'Aggressive'\",\"url\":\"https://www.google.co.za/alerts/share?hl=en\\u0026gl=US\\u0026ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224\\u0026ss=tw\\u0026rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ\\u0026cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw\\u0026ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg\",\"userAwarenessAction\":\"Continue\",\"userEmailAddress\":\"johndoe@example.com\",\"userOverride\":\"None\"}"
     },
     "input": {
@@ -858,7 +876,6 @@ An example event for `ttp_url` looks as following:
         "emailPartsDescription": [
             "Body"
         ],
-        "fromUserEmailAddress": "googlealerts-noreply@google.com",
         "scanResult": "clean",
         "userOverride": "None"
     },
@@ -909,7 +926,9 @@ An example event for `ttp_url` looks as following:
 | email.direction | Direction of the message based on the sending and receiving domains | keyword |
 | email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
 | email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
+| email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.subject | A brief summary of the topic of the message | keyword |
+| email.subject.text | Multi-field of `email.subject`. | text |
 | email.to.address | Email of the recipient/user who click the link. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -928,6 +947,7 @@ An example event for `ttp_url` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -955,6 +975,7 @@ An example event for `ttp_url` looks as following:
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | user.email | User email address. | keyword |
 
 
@@ -968,9 +989,9 @@ An example event for `threat_intel_malware_customer` looks as following:
 {
     "@timestamp": "2021-11-19T01:28:37.099Z",
     "agent": {
-        "ephemeral_id": "076a652b-f1c6-4e54-8c92-5bd396499d0a",
+        "ephemeral_id": "1bb24c4f-ab73-4752-bdd0-faf1f298da73",
         "hostname": "docker-fleet-agent",
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -984,16 +1005,16 @@ An example event for `threat_intel_malware_customer` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "snapshot": true,
         "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-03-30T12:15:23.647Z",
+        "created": "2022-04-09T21:11:50.303Z",
         "dataset": "mimecast.threat_intel_malware_customer",
-        "ingested": "2022-03-30T12:15:24Z",
+        "ingested": "2022-04-09T21:11:51Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
         "type": "indicator"
@@ -1073,6 +1094,7 @@ An example event for `threat_intel_malware_customer` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1113,9 +1135,9 @@ An example event for `threat_intel_malware_grid` looks as following:
 {
     "@timestamp": "2021-11-19T01:28:37.099Z",
     "agent": {
-        "ephemeral_id": "17a12c1c-e414-49c0-bf72-1465d7e4198a",
+        "ephemeral_id": "6353336f-0de8-4f9f-a5de-8b70350bd838",
         "hostname": "docker-fleet-agent",
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.0"
@@ -1129,16 +1151,16 @@ An example event for `threat_intel_malware_grid` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "775a1f26-2d42-4792-8816-18164c3cc463",
+        "id": "b8592fbc-ea45-4501-b2a4-3eedd11b3477",
         "snapshot": true,
         "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-03-30T12:16:07.588Z",
+        "created": "2022-04-09T21:12:36.429Z",
         "dataset": "mimecast.threat_intel_malware_grid",
-        "ingested": "2022-03-30T12:16:08Z",
+        "ingested": "2022-04-09T21:12:37Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
         "type": "indicator"
@@ -1218,6 +1240,7 @@ An example event for `threat_intel_malware_grid` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
