@@ -876,6 +876,7 @@ An example event for `ttp_url` looks as following:
         "emailPartsDescription": [
             "Body"
         ],
+        "fromUserEmailAddress": "googlealerts-noreply@google.com",
         "scanResult": "clean",
         "userOverride": "None"
     },

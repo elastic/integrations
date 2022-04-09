@@ -139,6 +139,7 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
 | destination.domain | Destination domain. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
@@ -164,6 +165,7 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | file.hash.sha1 | SHA1 hash. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.pe.company | Internal company name of the file, provided at compile-time. | keyword |
 | file.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
 | file.pe.product | Internal product name of the file, provided at compile-time. | keyword |
@@ -184,6 +186,7 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -207,9 +210,11 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | observer.type | The type of the observer the data is coming from. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.hash.md5 | MD5 hash. | keyword |
 | process.hash.sha256 | SHA256 hash. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -219,6 +224,7 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.domain | Source domain. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -333,11 +339,14 @@ Vendor documentation: https://knowledge.broadcom.com/external/article?legacyId=T
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 
 
 An example event for `log` looks as following:

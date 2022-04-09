@@ -71,6 +71,26 @@ processors:
   - lowercase:
       field: email.direction
       ignore_missing: true
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      allow_duplicates: false
+      if: 'ctx?.user?.name !=null'
+  - append:
+      field: related.user
+      value: "{{user.email}}"
+      allow_duplicates: false
+      if: 'ctx?.user?.email !=null'
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true  
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
