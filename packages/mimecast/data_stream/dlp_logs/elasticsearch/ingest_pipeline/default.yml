@@ -30,6 +30,16 @@ processors:
       field: email.to.address
       value: "{{{mimecast.recipientAddress}}}"
       if: "ctx?.mimecast?.recipientAddress != null"
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true  
   - rename:
       field: mimecast.action
       target_field: event.action
