@@ -1,6 +1,6 @@
 # Atlassian Bitbucket Integration
 
-The Bitbucket integration collects audit logs from the audit log files or the audit API.
+The Bitbucket integration collects audit logs from the audit log files or the [audit API](https://docs.atlassian.com/bitbucket-server/rest/4.7.1/bitbucket-audit-rest.html).
 
 ## Logs
 
