@@ -202,27 +202,13 @@ An example event for `container` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
 | cloud.region | Region in which this host is running. | keyword |  |  |
-| container.cpu.usage.core.ns | Container CPU Core usage nanoseconds | long |  | gauge |
-| container.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the container (or total node allocatable CPU if unlimited) | scaled_float | percent | gauge |
-| container.cpu.usage.nanocores | CPU used nanocores | long |  | gauge |
-| container.cpu.usage.node.pct | CPU usage as a percentage of the total node allocatable CPU | scaled_float | percent | gauge |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.labels | Image labels. | object |  |  |
-| container.memory.available.bytes | Total available memory | long | byte | gauge |
-| container.memory.majorpagefaults | Number of major page faults | long |  | counter |
-| container.memory.pagefaults | Number of page faults | long |  | counter |
-| container.memory.rss.bytes | RSS memory usage | long | byte | gauge |
-| container.memory.usage.bytes | Total memory usage | long | byte | gauge |
-| container.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
-| container.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float | percent | gauge |
-| container.memory.workingset.bytes | Working set memory usage | long | byte | gauge |
-| container.memory.workingset.limit.pct | Working set memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
+| container.memory.usage | Memory usage percentage. | scaled_float | percent | gauge |
 | container.name | Container name. | keyword |  |  |
-| container.network.rx.bytes | Received bytes | long | byte | counter |
-| container.network.rx.errors | Rx errors | long |  | counter |
-| container.network.tx.bytes | Transmitted bytes | long | byte | counter |
-| container.network.tx.errors | Tx errors | long |  | counter |
+| container.network.egress.bytes | Total number of outgoing bytes. | long |  | counter |
+| container.network.ingress.bytes | Total number of incoming bytes. | long |  | counter |
 | container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
@@ -705,27 +691,13 @@ An example event for `pod` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
 | cloud.region | Region in which this host is running. | keyword |  |  |
-| container.cpu.usage.core.ns | Container CPU Core usage nanoseconds | long |  | gauge |
-| container.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the container (or total node allocatable CPU if unlimited) | scaled_float | percent | gauge |
-| container.cpu.usage.nanocores | CPU used nanocores | long |  | gauge |
-| container.cpu.usage.node.pct | CPU usage as a percentage of the total node allocatable CPU | scaled_float | percent | gauge |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.labels | Image labels. | object |  |  |
-| container.memory.available.bytes | Total available memory | long | byte | gauge |
-| container.memory.majorpagefaults | Number of major page faults | long |  | counter |
-| container.memory.pagefaults | Number of page faults | long |  | counter |
-| container.memory.rss.bytes | RSS memory usage | long | byte | gauge |
-| container.memory.usage.bytes | Total memory usage | long | byte | gauge |
-| container.memory.usage.limit.pct | Memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
-| container.memory.usage.node.pct | Memory usage as a percentage of the total node allocatable memory | scaled_float | percent | gauge |
-| container.memory.workingset.bytes | Working set memory usage | long | byte | gauge |
-| container.memory.workingset.limit.pct | Working set memory usage as a percentage of the defined limit for the container (or total node allocatable memory if unlimited) | scaled_float | percent | gauge |
+| container.memory.usage | Memory usage percentage. | scaled_float | percent | gauge |
 | container.name | Container name. | keyword |  |  |
-| container.network.rx.bytes | Received bytes | long | byte | counter |
-| container.network.rx.errors | Rx errors | long |  | counter |
-| container.network.tx.bytes | Transmitted bytes | long | byte | counter |
-| container.network.tx.errors | Tx errors | long |  | counter |
+| container.network.egress.bytes | Total number of outgoing bytes. | long |  | counter |
+| container.network.ingress.bytes | Total number of incoming bytes. | long |  | counter |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
