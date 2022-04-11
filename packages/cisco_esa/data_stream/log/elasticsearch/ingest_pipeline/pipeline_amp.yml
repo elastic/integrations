@@ -1,0 +1,117 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - grok:
+      field: remaining_message
+      patterns:
+        - "File reputation query initiating. %{GREEDYDATA:new_message}"
+        - "Response received for file reputation query from Cloud. %{GREEDYDATA:new_message}"
+        - "File Analysis complete. SHA256: %{GREEDYDATA:hash.sha256}, Submit Timestamp: %{GREEDYDATA:submit.timestamp}, Update Timestamp: %{GREEDYDATA:update.timestamp}, Disposition: %{DATA:cisco_esa.log.disposition} Score: %{NUMBER:cisco_esa.log.score:long}, run_id: %{NUMBER:cisco_esa.log.run_id} Details: %{DATA:cisco_esa.log.details} Spyname:\\[%{GREEDYDATA:cisco_esa.log.spy_name}\\]"
+        - "File not uploaded for analysis. MID = %{NUMBER:email.message_id} File SHA256\\[%{GREEDYDATA:hash.sha256}\\] file mime\\[%{GREEDYDATA:email.attachments.file.mime_type}\\] Reason: %{GREEDYDATA:cisco_esa.log.reason}"
+        - "File analysis upload skipped. SHA256: %{GREEDYDATA:hash.sha256},Timestamp\\[%{DATA:Timestamp}\\] details\\[%{GREEDYDATA:cisco_esa.log.remaining_details}]"
+        - "SHA256: %{GREEDYDATA:hash.sha256},Timestamp\\[%{DATA:Timestamp}\\] details\\[%{GREEDYDATA:cisco_esa.log.server_error_details}\\]"
+        - "Retrospective verdict received. %{GREEDYDATA:new_message}" 
+        - "%{GREEDYDATA:cisco_esa.log.message}"
+  - kv:
+      field: new_message
+      if: ctx.new_message != null
+      field_split: ", |,"
+      value_split: " = | =|: "
+  - grok:
+      field: cisco_esa.log.remaining_details
+      if: ctx?.cisco_esa?.log?.remaining_details != null
+      patterns:
+        - "File SHA256\\[%{GREEDYDATA:hash.sha256}\\] file mime\\[%{GREEDYDATA:email.attachments.file.mime_type}\\], upload priority\\[%{GREEDYDATA:cisco_esa.log.upload.priority}\\] not uploaded, re-tries\\[%{GREEDYDATA:cisco_esa.log.retries:long}\\], backoff\\[%{GREEDYDATA:cisco_esa.log.backoff:long}\\] %{GREEDYDATA:cisco_esa.log.details}"
+  - date: 
+      field: submit.timestamp
+      target_field: cisco_esa.log.submit.timestamp
+      if: ctx?.cisco_esa?.log?.submit?.timestamp != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - date: 
+      field: update.timestamp
+      target_field: cisco_esa.log.update.timestamp
+      if: ctx?.cisco_esa?.log?.update?.timestamp != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX 
+  - date: 
+      field: "Timestamp"
+      target_field: cisco_esa.log.timestamp
+      if: ctx?.cisco_esa?.log?.timestamp != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - rename:
+      field: "File Name"
+      target_field: email.attachments.file.name
+      ignore_missing: true
+  - rename:
+      field: "MID"
+      target_field: email.message_id
+      ignore_missing: true
+  - rename:
+      field: "File Size"
+      target_field: cisco_esa.log.file.size
+      ignore_missing: true
+  - rename:
+      field: "File Type"
+      target_field: email.content_type
+      ignore_missing: true
+  - rename:
+      field: "FileName"
+      target_field: email.attachments.file.name
+      ignore_missing: true
+  - rename:
+      field: "Malware"
+      target_field: cisco_esa.log.malware
+      ignore_missing: true
+  - rename:
+      field: "Disposition"
+      target_field: cisco_esa.log.disposition
+      ignore_missing: true
+  - rename:
+      field: "Reputation Score"
+      target_field: cisco_esa.log.reputation_score
+      ignore_missing: true
+  - rename:
+      field: "sha256"
+      target_field: hash.sha256
+      ignore_missing: true
+  - rename:
+      field: "upload_action"
+      target_field: cisco_esa.log.upload.action
+      ignore_missing: true
+  - rename:
+      field: "Reputation Score"
+      target_field: cisco_esa.log.reputation_score
+      ignore_missing: true
+  - rename:
+      field: "SHA256"
+      target_field: hash.sha256
+      ignore_missing: true
+  - rename:
+      field: "Spyname"
+      target_field: cisco_esa.log.spy_name
+      ignore_missing: true
+  - rename:
+      field: "Verdict"
+      target_field: cisco_esa.log.verdict
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: "{{{hash.sha256}}}"
+      if: ctx?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: 
+        - new_message
+        - cisco_esa.log.remaining_details
+        - submit.timestamp
+        - update.timestamp
+        - Timestamp
+      ignore_missing: true

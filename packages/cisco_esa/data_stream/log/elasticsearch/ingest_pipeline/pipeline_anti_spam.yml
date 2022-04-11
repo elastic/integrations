@@ -1,0 +1,12 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - grok:
+      field: remaining_message
+      patterns:
+        - "case %{GREEDYDATA:cisco_esa.log.object_category} \\(%{NUMBER:cisco_esa.log.case_id}\\) : case-daemon: all %{DATA:cisco_esa.log.object} killed, %{GREEDYDATA:cisco_esa.log.result}"
+        - "case %{GREEDYDATA:cisco_esa.log.object_category} \\(%{NUMBER:cisco_esa.log.case_id}\\) : case-daemon: %{DATA:cisco_esa.log.object} killed by %{DATA:cisco_esa.log.command}, %{GREEDYDATA:cisco_esa.log.result}"
+        - "case %{GREEDYDATA:cisco_esa.log.object_category} \\(%{NUMBER:cisco_esa.log.case_id}\\) : case-daemon: %{GREEDYDATA:cisco_esa.log.result}"
+        - "%{GREEDYDATA:cisco_esa.log.message}"

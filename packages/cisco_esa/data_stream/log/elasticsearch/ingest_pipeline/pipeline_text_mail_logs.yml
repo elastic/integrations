@@ -1,0 +1,53 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - grok:
+      field: remaining_message
+      patterns:
+        - "graymail \\[CONFIG\\] %{WORD:cisco_esa.log.vendor_action} %{GREEDYDATA:cisco_esa.log.object}"
+        - "URL_REP_CLIENT: %{WORD:cisco_esa.log.object_attr} %{DATA:cisco_esa.log.type}. Triggering %{WORD:cisco_esa.log.vendor_action} of %{GREEDYDATA:cisco_esa.log.object}."
+        - "MID %{NUMBER:email.message_id} %{GREEDYDATA:cisco_esa.log.subject}. Severity: %{WORD:cisco_esa.log.severity} \\(Risk Factor: %{NUMBER:cisco_esa.log.risk_factor:long}\\). %{GREEDYDATA:cisco_esa.log.description}"
+        - "A System/Warning %{DATA:event.kind} was sent to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}."
+        - "%{WORD:cisco_esa.log.connection_status} %{WORD:network.protocol} ICID %{NUMBER:cisco_esa.log.injection_connection_id} interface Management \\(%{IP:cisco_esa.log.interface}\\) address %{IP:cisco_esa.log.address} reverse dns host %{DATA:dns.question.name} verified %{WORD:cisco_esa.log.verified}"
+        - "%{WORD:cisco_esa.log.connection_status} MID %{NUMBER:email.message_id} ICID %{NUMBER:cisco_esa.log.injection_connection_id}"
+        - "MID %{NUMBER:email.message_id} ICID %{NUMBER:cisco_esa.log.injection_connection_id} From: <%{DATA:email.from.address}>"
+        - "MID %{NUMBER:email.message_id} ICID %{NUMBER:cisco_esa.log.injection_connection_id} RID %{DATA:cisco_esa.log.recipient_id} To: <%{DATA:email.to.address}>"
+        - "MID %{NUMBER:email.message_id} ready %{NUMBER:cisco_esa.log.read_bytes:long} bytes from <%{DATA:email.from.address}>"
+        - "ICID %{NUMBER:cisco_esa.log.injection_connection_id} %{WORD:cisco_esa.log.connection_status}"
+        - "%{DATA:cisco_esa.log.message_status} %{WORD:network.protocol} DCID %{NUMBER:cisco_esa.log.delivery_connection_id} interface %{IP:cisco_esa.log.interface} address %{IP:cisco_esa.log.address}"
+        - "%{GREEDYDATA:cisco_esa.log.message_status} DCID %{NUMBER:cisco_esa.log.delivery_connection_id} MID %{NUMBER:email.message_id} to RID \\[%{DATA:cisco_esa.log.recipient_id}\\]"
+        - "%{GREEDYDATA:cisco_esa.log.message_status} DCID %{NUMBER:cisco_esa.log.delivery_connection_id} MID %{NUMBER:email.message_id} to RID \\[%{DATA:cisco_esa.log.recipient_id}\\]"
+        - "DCID %{NUMBER:cisco_esa.log.delivery_connection_id} %{WORD:cisco_esa.log.connection_status}"
+        - "%{GREEDYDATA:cisco_esa.log.subject}\\. %{GREEDYDATA:cisco_esa.log.description}"
+        - "%{GREEDYDATA:cisco_esa.log.description}: Unable to send System/Warning %{DATA:event.kind} to %{DATA:email.to.address} with subject \"%{GREEDYDATA:email.subject}\"."
+        - "Internal %{DATA:network.protocol} system successfully sent a message to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}."
+        - "Internal %{DATA:network.protocol} giving up on message to %{DATA:email.to.address} with subject %{GREEDYDATA:email.subject}."
+        - "Internal %{DATA:network.protocol} Error: %{GREEDYDATA:cisco_esa.log.description} to host %{IP:destination.ip}:%{NUMBER:destination.port:long} for recipient %{DATA:email.to.address}: %{GREEDYDATA:cisco_esa.log.subject}"
+        - "%{GREEDYDATA:cisco_esa.log.message}"
+  - lowercase:
+      field: network.protocol
+      ignore_failure: true
+  - set:
+      field: event.type
+      if: ctx?.cisco_esa?.log?.type == "changed"
+      value: change
+  - append:
+      field: related.ip
+      value: "{{{cisco_esa.log.interface}}}"
+      if: ctx?.cisco_esa?.log?.interface != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: "{{{cisco_esa.log.address}}}"
+      if: ctx?.cisco_esa?.log?.address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: "{{{destination.ip}}}"
+      if: ctx?.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true

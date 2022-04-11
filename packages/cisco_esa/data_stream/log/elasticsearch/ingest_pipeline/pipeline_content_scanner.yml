@@ -1,0 +1,11 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - grok:
+      field: remaining_message
+      patterns:
+        - "PF: %{WORD:cisco_esa.log.vendor_action} %{WORD:cisco_esa.log.object} %{GREEDYDATA:cisco_esa.log.object_category}"
+        - "PF: %{WORD:cisco_esa.log.vendor_action} %{GREEDYDATA:cisco_esa.log.object_category} \\(pid=%{NUMBER:process.pid:long}\\)"
+        - "%{GREEDYDATA:cisco_esa.log.message}"
