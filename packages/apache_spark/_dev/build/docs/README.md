@@ -63,13 +63,13 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ## Metrics
 
-### Applications
+### Application
 
-This is the `applications` data stream.
+This is the `application` data stream.
 
-{{event "applications"}}
+{{event "application"}}
 
-{{fields "applications"}}
+{{fields "application"}}
 ### Nodes
 
 This is the `nodes` data stream.

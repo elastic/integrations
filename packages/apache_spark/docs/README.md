@@ -63,32 +63,32 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ## Metrics
 
-### Applications
+### Application
 
-This is the `applications` data stream.
+This is the `application` data stream.
 
-An example event for `applications` looks as following:
+An example event for `application` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-06T10:45:07.704Z",
+    "@timestamp": "2022-04-11T09:45:08.887Z",
     "agent": {
-        "ephemeral_id": "041a15d5-cddb-46ef-9217-9e7bd3f5f810",
-        "id": "f4acefdb-4d3b-409c-9ec6-b652b4e958ac",
+        "ephemeral_id": "fd3ce7d1-e237-45c7-88f9-875edafec41e",
+        "id": "e7990c69-6909-48d1-be06-89dbe36d302c",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
     },
     "apache_spark": {
-        "applications": {
-            "name": "PythonWordCount.1649241886324",
+        "application": {
+            "name": "PythonWordCount.1649670292906",
             "runtime": {
-                "ms": 21385
+                "ms": 16007
             }
         }
     },
     "data_stream": {
-        "dataset": "apache_spark.applications",
+        "dataset": "apache_spark.application",
         "namespace": "ep",
         "type": "metrics"
     },
@@ -96,15 +96,15 @@ An example event for `applications` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "f4acefdb-4d3b-409c-9ec6-b652b4e958ac",
+        "id": "e7990c69-6909-48d1-be06-89dbe36d302c",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "dataset": "apache_spark.applications",
-        "duration": 4255374,
-        "ingested": "2022-04-06T10:45:11Z",
+        "dataset": "apache_spark.application",
+        "duration": 21401735,
+        "ingested": "2022-04-11T09:45:12Z",
         "kind": "metric",
         "module": "apache_spark",
         "type": "info"
@@ -114,16 +114,16 @@ An example event for `applications` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.25.0.7"
+            "192.168.0.5"
         ],
         "mac": [
-            "02:42:ac:19:00:07"
+            "02:42:c0:a8:00:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-100-generic",
+            "kernel": "5.4.0-107-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -146,10 +146,10 @@ An example event for `applications` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache_spark.applications.cores | Number of cores. | long |
-| apache_spark.applications.name | Name of the application. | keyword |
-| apache_spark.applications.runtime.ms | Time taken to run the application (ms). | long |
-| apache_spark.applications.status | Current status of the application. | keyword |
+| apache_spark.application.cores | Number of cores. | long |
+| apache_spark.application.name | Name of the application. | keyword |
+| apache_spark.application.runtime.ms | Time taken to run the application (ms). | long |
+| apache_spark.application.status | Current status of the application. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
