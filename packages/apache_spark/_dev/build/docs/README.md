@@ -4,7 +4,7 @@ The Apache Spark integration collects and parses data using the Jolokia Metricbe
 
 ## Compatibility
 
-This integration has been tested against `Apache Spark version 3.2.0`
+This integration has been tested against [Apache Spark version 3.2.0](https://spark.apache.org/docs/3.2.0/).
 
 ## Requirements
 
