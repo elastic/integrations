@@ -7,7 +7,7 @@ datasets for receiving logs over syslog or read from a file:
 
 ### Corepas
 
-The `corepas` dataset collects CyberArk logs.
+The `corepas` dataset supports ingesting logs from CyberArk [Privileged Access Manager](https://docs.cyberark.com/Product-Doc/OnlineHelp/PAS/Latest/en/Content/Resources/_TopNav/cc_Home.htm).
 
 **Exported fields**
 
