@@ -1,6 +1,6 @@
 # Atlassian Confluence Integration
 
-The Confluence integration collects audit logs from the audit log files or the audit API.
+The Confluence integration collects audit logs from the audit log files or the [audit API](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/).
 
 ## Logs
 
