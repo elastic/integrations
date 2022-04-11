@@ -168,8 +168,6 @@ An example event for `state_container` looks as following:
 | container.labels | Image labels. | object |  |  |
 | container.memory.usage | Memory usage percentage. | scaled_float | percent | gauge |
 | container.name | Container name. | keyword |  |  |
-| container.network.egress.bytes | Total number of outgoing bytes. | long |  | counter |
-| container.network.ingress.bytes | Total number of incoming bytes. | long |  | counter |
 | container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
@@ -1360,78 +1358,77 @@ An example event for `state_pod` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type | Unit | Metric Type |
-|---|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
-| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
-| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
-| cloud.region | Region in which this host is running. | keyword |  |  |
-| container.id | Unique container id. | keyword |  |  |
-| container.image.name | Name of the image the container was built on. | keyword |  |  |
-| container.labels | Image labels. | object |  |  |
-| container.memory.usage | Memory usage percentage. | scaled_float | percent | gauge |
-| container.name | Container name. | keyword |  |  |
-| container.network.egress.bytes | Total number of outgoing bytes. | long |  | counter |
-| container.network.ingress.bytes | Total number of incoming bytes. | long |  | counter |
-| container.runtime | Runtime managing this container. | keyword |  |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
-| data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| host.architecture | Operating system architecture. | keyword |  |  |
-| host.containerized | If the host is a container. | boolean |  |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
-| host.ip | Host ip addresses. | ip |  |  |
-| host.mac | Host mac addresses. | keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
-| host.os.build | OS build information. | keyword |  |  |
-| host.os.codename | OS codename, if any. | keyword |  |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
-| host.os.name | Operating system name, without the version. | keyword |  |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
-| kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
-| kubernetes.container.image | Kubernetes container image | keyword |  |  |
-| kubernetes.container.name | Kubernetes container name | keyword |  |  |
-| kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
-| kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
-| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
-| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |  |
-| kubernetes.labels.\* | Kubernetes labels map | object |  |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
-| kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |  |  |
-| kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |  |
-| kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |  |
-| kubernetes.node.annotations.\* | Kubernetes node annotations map | object |  |  |
-| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |  |
-| kubernetes.node.labels.\* | Kubernetes node labels map | object |  |  |
-| kubernetes.node.name | Kubernetes node name | keyword |  |  |
-| kubernetes.node.uid | Kubernetes node UID | keyword |  |  |
-| kubernetes.pod.host_ip | Kubernetes pod host IP | ip |  |  |
-| kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
-| kubernetes.pod.status.phase | Kubernetes pod phase (Running, Pending...) | keyword |  |  |
-| kubernetes.pod.status.ready | Kubernetes pod ready status (true, false or unknown) | keyword |  |  |
-| kubernetes.pod.status.scheduled | Kubernetes pod scheduled status (true, false, unknown) | keyword |  |  |
-| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |  |
-| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |  |
-| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |  |
-| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |  |
-| orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
-| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
+| cloud.region | Region in which this host is running. | keyword |  |
+| container.id | Unique container id. | keyword |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |
+| container.labels | Image labels. | object |  |
+| container.name | Container name. | keyword |  |
+| container.network.egress.bytes | Total number of outgoing bytes. | long | counter |
+| container.network.ingress.bytes | Total number of incoming bytes. | long | counter |
+| container.runtime | Runtime managing this container. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| host.architecture | Operating system architecture. | keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
+| host.ip | Host ip addresses. | ip |  |
+| host.mac | Host mac addresses. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
+| host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| kubernetes.annotations.\* | Kubernetes annotations map | object |  |
+| kubernetes.container.image | Kubernetes container image | keyword |  |
+| kubernetes.container.name | Kubernetes container name | keyword |  |
+| kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |
+| kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |
+| kubernetes.deployment.name | Kubernetes deployment name | keyword |  |
+| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |
+| kubernetes.labels.\* | Kubernetes labels map | object |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |
+| kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |  |
+| kubernetes.namespace_labels.\* | Kubernetes namespace labels map | object |  |
+| kubernetes.namespace_uid | Kubernetes namespace UID | keyword |  |
+| kubernetes.node.annotations.\* | Kubernetes node annotations map | object |  |
+| kubernetes.node.hostname | Kubernetes hostname as reported by the node’s kernel | keyword |  |
+| kubernetes.node.labels.\* | Kubernetes node labels map | object |  |
+| kubernetes.node.name | Kubernetes node name | keyword |  |
+| kubernetes.node.uid | Kubernetes node UID | keyword |  |
+| kubernetes.pod.host_ip | Kubernetes pod host IP | ip |  |
+| kubernetes.pod.ip | Kubernetes pod IP | ip |  |
+| kubernetes.pod.name | Kubernetes pod name | keyword |  |
+| kubernetes.pod.status.phase | Kubernetes pod phase (Running, Pending...) | keyword |  |
+| kubernetes.pod.status.ready | Kubernetes pod ready status (true, false or unknown) | keyword |  |
+| kubernetes.pod.status.scheduled | Kubernetes pod scheduled status (true, false, unknown) | keyword |  |
+| kubernetes.pod.uid | Kubernetes pod UID | keyword |  |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |  |
+| kubernetes.selectors.\* | Kubernetes Service selectors map | object |  |
+| kubernetes.statefulset.name | Kubernetes statefulset name | keyword |  |
+| orchestrator.cluster.name | Name of the cluster. | keyword |  |
+| orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
 
 ### state_replicaset
