@@ -22,11 +22,11 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "8efe1113-788d-47cf-8e81-b0ebadc3f5ba",
-        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "ephemeral_id": "29217578-e780-4c3e-912d-0f35ce981fb4",
+        "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "anomali": {
         "limo": {
@@ -47,16 +47,16 @@ An example event for `limo` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-01-25T02:58:03.288Z",
+        "created": "2022-04-11T08:51:02.140Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2022-01-25T02:58:04Z",
+        "ingested": "2022-04-11T08:51:03Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -115,6 +115,7 @@ An example event for `limo` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -186,13 +187,13 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-25T03:00:07.167Z",
+    "@timestamp": "2022-04-11T08:52:31.294Z",
     "agent": {
-        "ephemeral_id": "764c192d-9491-492a-b9e0-722495b33397",
-        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "ephemeral_id": "b49fcac4-6f07-4c25-8505-3306c6f56ca0",
+        "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "anomali": {
         "threatstream": {
@@ -225,15 +226,15 @@ An example event for `threatstream` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2022-01-25T03:00:08Z",
+        "ingested": "2022-04-11T08:52:32Z",
         "kind": "enrichment",
         "original": "{\"classification\":\"public\",\"confidence\":56,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 723\",\"id\":1785659799,\"import_session_id\":244,\"itype\":\"mal_md5\",\"md5\":\"6466e2\",\"resource_uri\":\"/api/v1/intelligence/P44706407813/\",\"severity\":\"very-high\",\"source\":\"Default Organization\",\"source_feed_id\":3759,\"state\":\"active\",\"trusted_circle_ids\":\"439,942,801\",\"update_id\":3898969521,\"value_type\":\"md5\"}",
         "severity": 9,
@@ -305,6 +306,7 @@ An example event for `threatstream` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |

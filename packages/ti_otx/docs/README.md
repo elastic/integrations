@@ -36,6 +36,7 @@ Retrieves all the related indicators over time, related to your pulse subscripti
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -100,13 +101,13 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-25T02:00:19.597Z",
+    "@timestamp": "2022-04-11T09:14:18.594Z",
     "agent": {
-        "ephemeral_id": "26b658ab-32e3-489d-9e39-59f3a276007c",
-        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "ephemeral_id": "26518763-fc35-4393-a414-ab320e780eee",
+        "id": "93ca38c5-fdea-4af2-acab-27edbc2b3434",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "ti_otx.threat",
@@ -117,16 +118,16 @@ An example event for `threat` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "id": "93ca38c5-fdea-4af2-acab-27edbc2b3434",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-01-25T02:00:19.597Z",
+        "created": "2022-04-11T09:14:18.594Z",
         "dataset": "ti_otx.threat",
-        "ingested": "2022-01-25T02:00:20Z",
+        "ingested": "2022-04-11T09:14:19Z",
         "kind": "enrichment",
         "original": "{\"content\":\"\",\"description\":null,\"id\":1251,\"indicator\":\"info.3000uc.com\",\"title\":null,\"type\":\"hostname\"}",
         "type": "indicator"
