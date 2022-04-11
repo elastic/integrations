@@ -51,7 +51,7 @@ An example event for `cluster` looks as following:
     },
     "hadoop": {
         "cluster": {
-            "application_master": {
+            "application_main": {
                 "launch_delay_avg_time": 2115,
                 "launch_delay_num_ops": 1,
                 "register_delay_avg_time": 0,
@@ -115,10 +115,10 @@ An example event for `cluster` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| hadoop.cluster.application_master.launch_delay_avg_time | Application Master Launch Delay Average Time (Milliseconds) | long |
-| hadoop.cluster.application_master.launch_delay_num_ops | Application Master Launch Delay Operations (Operations) | long |
-| hadoop.cluster.application_master.register_delay_avg_time | Application Master Register Delay Average Time (Milliseconds) | long |
-| hadoop.cluster.application_master.register_delay_num_ops | Application Master Register Delay Operations (Operations) | long |
+| hadoop.cluster.application_main.launch_delay_avg_time | Application Main Launch Delay Average Time (Milliseconds) | long |
+| hadoop.cluster.application_main.launch_delay_num_ops | Application Main Launch Delay Operations (Number of Operations) | long |
+| hadoop.cluster.application_main.register_delay_avg_time | Application Main Register Delay Average Time (Milliseconds) | long |
+| hadoop.cluster.application_main.register_delay_num_ops | Application Main Register Delay Operations (Number of Operations) | long |
 | hadoop.cluster.applications.completed | The number of applications completed | long |
 | hadoop.cluster.applications.failed | The number of applications failed | long |
 | hadoop.cluster.applications.killed | The number of applications killed | long |
