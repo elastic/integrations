@@ -33,6 +33,11 @@ func TestCheckManifest(t *testing.T) {
 			valid:          true,
 		},
 		{
+			codeownersPath: "testdata/CODEOWNERS-no-owner",
+			manifestPath:   "testdata/devexp/manifest.yml",
+			valid:          false,
+		},
+		{
 			codeownersPath: "testdata/CODEOWNERS-empty",
 			manifestPath:   "testdata/devexp/manifest.yml",
 			valid:          false,
@@ -84,11 +89,15 @@ func TestReadGithubOwners(t *testing.T) {
 		},
 		{
 			codeownersPath: "testdata/CODEOWNERS-no-owner",
-			valid:          false,
+			valid:          true,
 		},
 		{
 			codeownersPath: "testdata/CODEOWNERS-multiple-owners",
 			valid:          true,
+		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-invalid-override",
+			valid:          false,
 		},
 	}
 
