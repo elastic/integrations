@@ -202,9 +202,11 @@ An example event for `container` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
 | cloud.region | Region in which this host is running. | keyword |  |  |
+| container.cpu.usage | Total CPU usage normalized by the number of CPU cores. | scaled_float | percent | gauge |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.labels | Image labels. | object |  |  |
+| container.memory.usage | Memory usage percentage. | scaled_float | percent | gauge |
 | container.name | Container name. | keyword |  |  |
 | container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
@@ -692,6 +694,8 @@ An example event for `pod` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.labels | Image labels. | object |  |  |
 | container.name | Container name. | keyword |  |  |
+| container.network.egress.bytes | Total number of outgoing bytes. | long |  | counter |
+| container.network.ingress.bytes | Total number of incoming bytes. | long |  | counter |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
