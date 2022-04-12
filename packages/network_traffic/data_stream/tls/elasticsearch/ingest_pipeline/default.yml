@@ -21,6 +21,27 @@ processors:
 - uppercase:
     field: host.mac
     ignore_missing: true
+
+##
+# Make tls.{client,server}.x509.version_number a string as per ECS.
+##
+- convert:
+    field: tls.client.x509.version_number
+    type: string
+    ignore_missing: true
+- convert:
+    field: tls.server.x509.version_number
+    type: string
+    ignore_missing: true
+
+- convert:
+    field: tls.detailed.client_certificate.version_number
+    type: string
+    ignore_missing: true
+- convert:
+    field: tls.detailed.server_certificate.version_number
+    type: string
+    ignore_missing: true
 on_failure:
 - set:
     field: error.message
