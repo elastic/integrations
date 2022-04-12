@@ -63,10 +63,10 @@ Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ## Metrics
 
-### Nodes
+### Node
 
-This is the `nodes` data stream.
+This is the `node` data stream.
 
-{{event "nodes"}}
+{{event "node"}}
 
-{{fields "nodes"}}
+{{fields "node"}}
