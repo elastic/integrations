@@ -1763,7 +1763,7 @@ processors:
           type:
             - info
         malware-detected:
-          kind: alert
+          kind: event
           category:
             - malware
           type:
@@ -1819,6 +1819,16 @@ processors:
             ctx.event.type.add('denied');
           }
         }
+
+  # Malware event kind is classified as alert when sha_disposition is "Malware", "Custom Detection" not for other cases.
+  - set:
+      if: 'ctx?.event?.code == "430005" && ["Malware", "Custom Detection"].contains(ctx.cisco.ftd.security.sha_disposition)'
+      field: event.kind
+      value: alert
+  - append:
+      if: 'ctx?.event?.code == "430005" && !["Malware", "Custom Detection"].contains(ctx.cisco.ftd.security.sha_disposition)'
+      field: event.category
+      value: file
 
   - set:
       description: copy destination.user.name to user.name if it is not set

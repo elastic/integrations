@@ -17,11 +17,12 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
-        "ephemeral_id": "fb59da35-f6e4-4052-ae20-539243c9049e",
-        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
+        "ephemeral_id": "dc7057b3-a7ae-4c27-9c9c-8de003cda102",
+        "hostname": "docker-fleet-agent",
+        "id": "43265318-62cb-431d-b8c2-c36438978d88",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "cisco": {
         "ftd": {
@@ -79,20 +80,21 @@ An example event for `log` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7cefd7f8-53e3-4884-ab65-da99d71b166f",
+        "id": "43265318-62cb-431d-b8c2-c36438978d88",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "event": {
         "action": "malware-detected",
         "agent_id_status": "verified",
         "category": [
-            "malware"
+            "malware",
+            "file"
         ],
         "code": "430005",
         "dataset": "cisco_ftd.log",
-        "ingested": "2021-12-29T10:08:02Z",
-        "kind": "alert",
+        "ingested": "2022-04-11T08:03:35Z",
+        "kind": "event",
         "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip\n",
         "severity": 1,
         "start": "2019-08-16T09:39:02Z",
@@ -117,7 +119,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "192.168.128.6:54121"
+            "address": "172.21.0.4:50821"
         }
     },
     "network": {
