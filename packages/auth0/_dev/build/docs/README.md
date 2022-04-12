@@ -4,6 +4,8 @@ Auth0 offers integrations that push log events via log streams to Elasticsearch.
 
 The agent running this integration must be able to accept requests from the Internet in order for Auth0 to be able connect. Auth0 requires that the webhook accept requests over HTTPS. So you must either configure the integration with a valid TLS certificate or use a reverse proxy in front of the integration.
 
+For more information, see Auth0's webpage on [integration to Elastic Security](https://marketplace.auth0.com/integrations/elastic-security).
+
 ## Compatability
 
 The package collects log events sent via log stream webhooks.
