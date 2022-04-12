@@ -10,33 +10,41 @@ ECS fields where applicable and the remaining fields are written under
 ## Setup steps
 
 1. Configure this integration with the TCP input in Kibana.
+
 2. For all Netskope Cloud Exchange configurations refer to the [Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785).
+
 3. In Netskope Cloud Exchange please enable Log Shipper, add your Netskope Tenant.
+
 4. Configure input connectors:  
     1. First with all Event types, and
     2. Second with all Alerts type. 
     For detailed steps refer to [Configure the Netskope Plugin for Log Shipper](https://docs.netskope.com/en/configure-the-netskope-plugin-for-log-shipper.html).
+    
 5. Creating mappings:
     1. Navigate to Settings -> Log Shipper -> Mapping.
     2. Click on Add mapping and paste mappings of Alerts mentioned below in Netskope Elastic Integration's Overview Page.
     3. Click on Add mapping and paste mappings of Events mentioned below in Netskope Elastic Integration's Overview Page.
+    
 6. Configure output connectors:
     1. Navigate to Settings -> Plugins.
     2. Adding output connector **Elastic CLS**, select mapping created for Alerts and click **Next**, then paste the Events-validation in the **Valid Extensions** section for Alerts mentioned below in Netskope Elastic Integration's Overview Page.
     For detailed steps refer to [Elastic Plugin for Log Shipper](https://docs.netskope.com/en/elastic-plugin-for-log-shipper.html).
+    
 7. Create business rules: 
     1. Navigate to Home Page > Log Shipper > Business rules.
     2. Create business rules with Netskope Alerts.
     3. Create business rules with Netskope Events.
     For detailed steps refer to [Manage Log Shipper Business Rules](https://docs.netskope.com/en/manage-log-shipper-business-rules.html).
+    
 8. Adding SIEM mappings:
     1. Navigate to Home Page > Log Shipper > SIEM Mappings
     2. Add SIEM mapping for events: 
         * Add **Rule** put rule created in step 7.
         * Add **Source Configuration** put input created for Events in step 4.
         * Add **Destination Configuration**, put output created for Events in step 6.
-        For detailed steps refer to[Configure Log Shipper SIEM Mappings](https://docs.netskope.com/en/configure-log-shipper-siem-mappings.html).
-9. *Please make sure to use the given response formats.*
+> Notes: 
+> For detailed steps refer to [Configure Log Shipper SIEM Mappings](https://docs.netskope.com/en/configure-log-shipper-siem-mappings.html).
+> Please make sure to use the given response formats.
 
 ## Compatibility
 
@@ -1863,7 +1871,6 @@ user.email.6,,String
 | file.mime_type | MIME type should identify the format of the file or stream of bytes using https://www.iana.org/assignments/media-types/media-types.xhtml[IANA official types], where possible. When more than one type is applicable, the most specific type should be used. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1878,7 +1885,6 @@ user.email.6,,String
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2282,13 +2288,10 @@ user.email.6,,String
 | user.email | User email address. | keyword |
 | user.group.name | Name of the group. | keyword |
 | user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.roles | Array of user roles at the time of the event. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
-| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | user_agent.os.name | Operating system name, without the version. | keyword |
-| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
@@ -2534,7 +2537,6 @@ An example event for `alerts` looks as following:
 | file.mime_type | MIME type should identify the format of the file or stream of bytes using https://www.iana.org/assignments/media-types/media-types.xhtml[IANA official types], where possible. When more than one type is applicable, the most specific type should be used. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -2549,7 +2551,6 @@ An example event for `alerts` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2840,16 +2841,12 @@ An example event for `alerts` looks as following:
 | user.email | User email address. | keyword |
 | user.group.name | Name of the group. | keyword |
 | user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.roles | Array of user roles at the time of the event. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
-| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | user_agent.os.full | Operating system name, including the version or code name. | keyword |
-| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
 | user_agent.os.name | Operating system name, without the version. | keyword |
-| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
