@@ -13,6 +13,10 @@ An example event for `container` looks as following:
 {
     "kubernetes": {
         "container": {
+            "network": {
+                "ingress.bytes": 107056,
+                "egress.bytes": 72447
+            },
             "start_time": "2021-12-20T08:47:19Z",
             "memory": {
                 "rss": {
