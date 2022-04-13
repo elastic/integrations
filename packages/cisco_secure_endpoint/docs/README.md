@@ -17,8 +17,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-01-13T10:13:08.000Z",
     "agent": {
-        "ephemeral_id": "1f61a51e-f837-493d-8813-2948b32a0ab6",
-        "id": "c24f19f1-2453-4481-99b2-551bd6757809",
+        "ephemeral_id": "1bee52ec-b713-415e-9d9b-32c5217f9796",
+        "id": "83d8d392-d20c-40ef-a257-bf9cf314d1db",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -69,7 +69,7 @@ An example event for `event` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "c24f19f1-2453-4481-99b2-551bd6757809",
+        "id": "83d8d392-d20c-40ef-a257-bf9cf314d1db",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -80,12 +80,12 @@ An example event for `event` looks as following:
             "file"
         ],
         "code": "1107296274",
-        "created": "2022-03-25T08:24:30.668Z",
+        "created": "2022-04-13T11:54:03.909Z",
         "dataset": "cisco_secure_endpoint.event",
         "id": "1515298355162029000",
-        "ingested": "2022-03-25T08:24:31Z",
+        "ingested": "2022-04-13T11:54:04Z",
         "kind": "alert",
-        "original": "{\"data\":{\"cloud_ioc\":{\"description\":\"Microsoft Word launched PowerShell. This is indicative of multiple dropper variants that make use of Visual Basic Application macros to perform nefarious activities, such as downloading and executing malicious executables.\",\"short_description\":\"W32.WinWord.Powershell\"},\"computer\":{\"active\":true,\"connector_guid\":\"test_connector_guid\",\"external_ip\":\"8.8.8.8\",\"hostname\":\"Demo_AMP\",\"links\":{\"computer\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer\",\"group\":\"https://api.eu.amp.cisco.com/v1/groups/test_group\",\"trajectory\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer/trajectory\"},\"network_addresses\":[{\"ip\":\"10.10.10.10\",\"mac\":\"38:1e:eb:ba:2c:15\"}]},\"connector_guid\":\"test_connector_guid\",\"date\":\"2021-01-13T10:13:08+00:00\",\"event_type\":\"Cloud IOC\",\"event_type_id\":1107296274,\"file\":{\"disposition\":\"Clean\",\"file_name\":\"PowerShell.exe\",\"file_path\":\"/C:/Windows/SysWOW64/WindowsPowerShell/v1.0/PowerShell.exe\",\"identity\":{\"sha256\":\"6c05e11399b7e3c8ed31bae72014cf249c144a8f4a2c54a758eb2e6fad47aec7\"},\"parent\":{\"disposition\":\"Clean\",\"identity\":{\"sha256\":\"3d46e95284f93bbb76b3b7e1bf0e1b2d51e8a9411c2b6e649112f22f92de63c2\"}}},\"group_guids\":[\"test_group_guid\"],\"id\":1515298355162029000,\"severity\":\"Medium\",\"start_date\":\"2021-01-13T10:13:08+00:00\",\"start_timestamp\":1610532788,\"timestamp\":1610532788,\"timestamp_nanoseconds\":162019000},\"metadata\":{\"links\":{\"next\":\"http://670900e6b2c2:8080/v1/events?start_date=2022-03-24T08:24:30+00:00\\u0026limit=1\\u0026offset=1\",\"self\":\"http://670900e6b2c2:8080/v1/events?start_date=2022-03-24T08:24:30+00:00\\u0026limit=1\"},\"results\":{\"current_item_count\":1,\"index\":0,\"items_per_page\":1,\"total\":2}},\"version\":\"v1.2.0\"}",
+        "original": "{\"data\":{\"cloud_ioc\":{\"description\":\"Microsoft Word launched PowerShell. This is indicative of multiple dropper variants that make use of Visual Basic Application macros to perform nefarious activities, such as downloading and executing malicious executables.\",\"short_description\":\"W32.WinWord.Powershell\"},\"computer\":{\"active\":true,\"connector_guid\":\"test_connector_guid\",\"external_ip\":\"8.8.8.8\",\"hostname\":\"Demo_AMP\",\"links\":{\"computer\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer\",\"group\":\"https://api.eu.amp.cisco.com/v1/groups/test_group\",\"trajectory\":\"https://api.eu.amp.cisco.com/v1/computers/test_computer/trajectory\"},\"network_addresses\":[{\"ip\":\"10.10.10.10\",\"mac\":\"38:1e:eb:ba:2c:15\"}]},\"connector_guid\":\"test_connector_guid\",\"date\":\"2021-01-13T10:13:08+00:00\",\"event_type\":\"Cloud IOC\",\"event_type_id\":1107296274,\"file\":{\"disposition\":\"Clean\",\"file_name\":\"PowerShell.exe\",\"file_path\":\"/C:/Windows/SysWOW64/WindowsPowerShell/v1.0/PowerShell.exe\",\"identity\":{\"sha256\":\"6c05e11399b7e3c8ed31bae72014cf249c144a8f4a2c54a758eb2e6fad47aec7\"},\"parent\":{\"disposition\":\"Clean\",\"identity\":{\"sha256\":\"3d46e95284f93bbb76b3b7e1bf0e1b2d51e8a9411c2b6e649112f22f92de63c2\"}}},\"group_guids\":[\"test_group_guid\"],\"id\":1515298355162029000,\"severity\":\"Medium\",\"start_date\":\"2021-01-13T10:13:08+00:00\",\"start_timestamp\":1610532788,\"timestamp\":1610532788,\"timestamp_nanoseconds\":162019000},\"metadata\":{\"links\":{\"next\":\"http://7d3a7ffa9a19:8080/v1/events?start_date=2022-04-12T11:54:03+00:00\\u0026limit=1\\u0026offset=1\",\"self\":\"http://7d3a7ffa9a19:8080/v1/events?start_date=2022-04-12T11:54:03+00:00\\u0026limit=1\"},\"results\":{\"current_item_count\":1,\"index\":0,\"items_per_page\":1,\"total\":2}},\"version\":\"v1.2.0\"}",
         "severity": 2,
         "start": "2021-01-13T10:13:08.000Z"
     },
@@ -132,7 +132,7 @@ An example event for `event` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| @timestamp | Event timestamp. | date |
 | cisco.secure_endpoint.bp_data | Endpoint isolation information | flattened |
 | cisco.secure_endpoint.cloud_ioc.description | Description of the related IOC for specific IOC events from AMP. | keyword |
 | cisco.secure_endpoint.cloud_ioc.short_description | Short description of the related IOC for specific IOC events from AMP. | keyword |
@@ -221,6 +221,7 @@ An example event for `event` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
