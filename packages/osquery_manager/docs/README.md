@@ -16,4 +16,4 @@ For information about using Osquery, see the [Osquery Kibana documentation](http
 This includes information about required privileges; how to run, schedule, and save queries; how to map osquery fields to ECS; and other useful information about managing Osquery with this integration.
 
 ## Exported Fields
-For a full list of fields that can be returned in osquery results, see the [Osquery Kibana documentation](https://www.elastic.co/guide/en/kibana/current/osquery.html). 
+For a full list of fields that can be returned in osquery results, see the [Exported Fields reference](https://www.elastic.co/guide/en/kibana/current/exported-fields-osquery.html) in the Kibana documentation. 
