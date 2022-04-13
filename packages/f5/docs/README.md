@@ -1,7 +1,8 @@
 # F5 integration
 
-This integration is for F5 device's logs. It includes the following
+This integration is for [F5](https://clouddocs.f5.com/products/agc/8.0/ ) device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
+
 - `bigipapm` dataset: supports Big-IP Access Policy Manager logs.
 - `bigipafm` dataset: supports Big-IP Advanced Firewall Manager logs.
 
