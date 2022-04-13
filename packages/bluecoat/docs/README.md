@@ -1,7 +1,8 @@
 # Bluecoat integration
 
-This integration is for Bluecoat device's logs. It includes the following
+This integration is for [Blue Coat](https://www.broadcom.com/site-search?q=blue%20coat%20director) device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
+
 - `director` dataset: supports Blue Coat Director logs.
 
 ### Director
