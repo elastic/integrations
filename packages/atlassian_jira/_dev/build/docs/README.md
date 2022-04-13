@@ -1,6 +1,6 @@
 # Atlassian Jira Integration
 
-The Jira integration collects audit logs from the audit log files or the [audit API](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-audit-records/). 
+The Jira integration collects audit logs from the audit log files or the [audit API](https://confluence.atlassian.com/jiracore/audit-log-improvements-for-developers-1019401815.html). 
 
 ## Logs
 
