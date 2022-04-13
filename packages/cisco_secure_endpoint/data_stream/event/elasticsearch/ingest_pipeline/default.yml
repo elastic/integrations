@@ -1,6 +1,9 @@
 ---
 description: Pipeline for parsing Cisco Secure Endpoint logs
 processors:
+- remove:
+    field: host
+    ignore_missing: true
 - rename:
     field: message
     target_field: event.original
@@ -178,7 +181,6 @@ processors:
     field: cisco.secure_endpoint.computer.hostname
     target_field: host.name
     ignore_missing: true
-    if: ctx?.host?.name == null
 - rename:
     field: cisco.secure_endpoint.hostname
     target_field: host.name
