@@ -237,6 +237,8 @@ An example event for `container` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
+| kubernetes.container.container.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the container since the last metric collection. | long |  | counter |
+| kubernetes.container.container.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the container since the last metric collection. | long |  | counter |
 | kubernetes.container.cpu.usage.core.ns | Container CPU Core usage nanoseconds | long |  | gauge |
 | kubernetes.container.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the container (or total node allocatable CPU if unlimited) | scaled_float | percent | gauge |
 | kubernetes.container.cpu.usage.nanocores | CPU used nanocores | long |  | gauge |
