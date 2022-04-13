@@ -1128,9 +1128,8 @@ An example event for `xg` looks as following:
 | sophos.xg.dst_domainname | Receiver domain name | keyword |
 | sophos.xg.dst_ip | Original destination IP address of traffic | ip |
 | sophos.xg.dst_port | Original destination port of TCP and UDP traffic | integer |
+| sophos.xg.dst_zone_type | Type of destination zone | keyword |
 | sophos.xg.dstdomain | Destination Domain | keyword |
-| sophos.xg.dstzone | Name of destination zone | keyword |
-| sophos.xg.dstzonetype | Type of destination zone, e.g., WAN | keyword |
 | sophos.xg.duration | Durability of traffic (seconds) | long |
 | sophos.xg.email_subject | Email Subject | keyword |
 | sophos.xg.ep_uuid | Endpoint UUID | keyword |
@@ -1228,8 +1227,7 @@ An example event for `xg` looks as following:
 | sophos.xg.src_ip | Original source IP address of traffic | ip |
 | sophos.xg.src_mac | Original source MAC address of traffic | keyword |
 | sophos.xg.src_port | Original source port of TCP and UDP traffic | integer |
-| sophos.xg.srczone | Name of source zone | keyword |
-| sophos.xg.srczonetype | Type of source zone, e.g., LAN | keyword |
+| sophos.xg.src_zone_type | Type of source zone | keyword |
 | sophos.xg.ssid | ssid | keyword |
 | sophos.xg.start_time | Start time | date |
 | sophos.xg.starttime | Starttime | date |
