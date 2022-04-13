@@ -4,7 +4,6 @@ The Microsoft SQL Server integration package allows you to search, observe and v
 Auditing an instance of the SQL Server Database Engine or an individual database involves tracking and logging events that occur on the Database Engine. 
 SQL Server audit lets you create server audits, which can contain server audit specifications for server level events, and database audit specifications for database level events. 
 See: [SQL Server Audit page](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15) for more information on SQL Server auditing.
-The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit events through Elasticsearch. 
 
 ## Compatibility
 
