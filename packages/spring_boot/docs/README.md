@@ -1,6 +1,6 @@
 # Spring Boot integration
 
-The Spring Boot integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+The Spring Boot integration is used to fetch observability data from [Spring Boot Actuator web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
 
 ## Compatibility
 
@@ -30,18 +30,18 @@ In order to ingest data from Spring Boot:
 
 ### Info logs
 
-This is the `info` dataset.
+This is the `info` data stream.
 
-- This dataset gives arbitrary application info.
+- This data stream gives arbitrary application info.
 
 An example event for `info` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-06T10:17:54.013Z",
+    "@timestamp": "2022-04-14T12:10:50.277Z",
     "agent": {
-        "ephemeral_id": "2231f428-494f-490d-892e-68edac29b573",
-        "id": "9258ea52-15a1-4c4b-844c-c0dc1793bf51",
+        "ephemeral_id": "106224aa-2471-42ec-8517-27e1ba7a55ba",
+        "id": "1b870c58-42b6-40d2-8024-74b7949a5a2f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -55,16 +55,16 @@ An example event for `info` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "9258ea52-15a1-4c4b-844c-c0dc1793bf51",
+        "id": "1b870c58-42b6-40d2-8024-74b7949a5a2f",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-04-06T10:17:54.013Z",
+        "created": "2022-04-14T12:10:50.277Z",
         "dataset": "spring_boot.info",
-        "ingested": "2022-04-06T10:17:57Z",
+        "ingested": "2022-04-14T12:10:53Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -101,9 +101,9 @@ An example event for `info` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| spring_boot.info.application.encoding | Encoding type of spring boot application | text |
-| spring_boot.info.application.name | Name of spring boot application | text |
-| spring_boot.info.application.version | Spring boot application version | text |
-| spring_boot.info.jdk.version | Java version of spring boot application | text |
+| spring_boot.info.application.encoding | Encoding type of Spring Boot application | text |
+| spring_boot.info.application.name | Name of Spring Boot application | text |
+| spring_boot.info.application.version | Spring Boot application version | text |
+| spring_boot.info.jdk.version | Java version of Spring Boot application | text |
 | tags | List of keywords used to tag each event. | keyword |
 
