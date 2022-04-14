@@ -6,6 +6,7 @@ package codeowners
 
 import (
 	"bufio"
+	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -68,8 +69,12 @@ func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 			continue
 		}
 		fields := strings.Fields(line)
-		if len(fields) < 2 {
-			return nil, errors.Errorf("invalid line %d in %q: %q", lineNumber, codeownersPath, line)
+		if len(fields) == 1 {
+			err := codeowners.checkSingleField(fields[0])
+			if err != nil {
+				return nil, fmt.Errorf("invalid line %d in %q: %w", lineNumber, codeownersPath, err)
+			}
+			continue
 		}
 		path, owners := fields[0], fields[1:]
 
@@ -83,11 +88,37 @@ func readGithubOwners(codeownersPath string) (*githubOwners, error) {
 	return &codeowners, nil
 }
 
+// checkSingleField checks if a single field in a CODEOWNERS file is valid.
+// We allow single fields to add files for which we don't need to have owners.
+func (codeowners *githubOwners) checkSingleField(field string) error {
+	switch field[0] {
+	case '/':
+		// Allow only rules that wouldn't remove owners for previously
+		// defined rules.
+		for path := range codeowners.owners {
+			matches, err := filepath.Match(field, path)
+			if err != nil {
+				return err
+			}
+			if matches || strings.HasPrefix(field, path) {
+				return fmt.Errorf("%q would remove owners for %q", field, path)
+			}
+		}
+
+		// Excluding other files is fine.
+		return nil
+	case '@':
+		return fmt.Errorf("rule with owner without path: %q", field)
+	default:
+		return fmt.Errorf("unexpected field found: %q", field)
+	}
+}
+
 func (codeowners *githubOwners) checkManifest(path string) error {
 	pkgDir := filepath.Dir(path)
 	owners, found := codeowners.owners["/"+pkgDir]
 	if !found {
-		return errors.Errorf("there is no owner for %q in %q", pkgDir, codeowners.path)
+		return fmt.Errorf("there is no owner for %q in %q", pkgDir, codeowners.path)
 	}
 
 	content, err := ioutil.ReadFile(path)
@@ -106,7 +137,7 @@ func (codeowners *githubOwners) checkManifest(path string) error {
 	}
 
 	if manifest.Owner.Github == "" {
-		return errors.Errorf("no owner specified in %q", path)
+		return fmt.Errorf("no owner specified in %q", path)
 	}
 
 	found = false
@@ -117,7 +148,7 @@ func (codeowners *githubOwners) checkManifest(path string) error {
 		}
 	}
 	if !found {
-		return errors.Errorf("owner %q defined in %q is not in %q", manifest.Owner.Github, path, codeowners.path)
+		return fmt.Errorf("owner %q defined in %q is not in %q", manifest.Owner.Github, path, codeowners.path)
 	}
 	return nil
 }
