@@ -20,11 +20,12 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2016-01-03T00:37:51.394Z",
     "agent": {
-        "ephemeral_id": "26e35ddc-258e-426f-87cf-40517f808d30",
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "ephemeral_id": "ef6d17d9-f955-48be-a4c5-6b4ea1fe9772",
+        "hostname": "docker-fleet-agent",
+        "id": "f386c08a-1dcf-444a-a259-9c33fa001606",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "auditd": {
         "log": {
@@ -41,37 +42,36 @@ An example event for `log` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "id": "f386c08a-1dcf-444a-a259-9c33fa001606",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "event": {
         "action": "proctitle",
         "agent_id_status": "verified",
         "dataset": "auditd.log",
-        "ingested": "2021-12-24T01:30:55Z",
+        "ingested": "2022-04-13T05:23:36Z",
         "kind": "event"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "192.168.224.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:e0:07"
+            "02:42:ac:13:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-41-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -214,6 +214,7 @@ An example event for `log` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -225,14 +226,18 @@ An example event for `log` looks as following:
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.pid | Process id. | long |
 | process.pid | Process id. | long |
 | process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -250,6 +255,7 @@ An example event for `log` looks as following:
 | user.effective.group.name | Name of the group. | keyword |
 | user.effective.id | Unique identifier of the user. | keyword |
 | user.effective.name | Short name or login of the user. | keyword |
+| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
 | user.filesystem.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.filesystem.group.name | Name of the group. | keyword |
 | user.filesystem.id | One or multiple unique identifiers of the user. | keyword |
@@ -257,6 +263,7 @@ An example event for `log` looks as following:
 | user.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.owner.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.owner.group.name | Name of the group. | keyword |
 | user.owner.id | One or multiple unique identifiers of the user. | keyword |
@@ -269,5 +276,6 @@ An example event for `log` looks as following:
 | user.target.group.name | Name of the group. | keyword |
 | user.target.id | Unique identifier of the user. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 | user.terminal | Terminal or tty device on which the user is performing the observed activity. | keyword |
 
