@@ -38,9 +38,9 @@ An example event for `audit_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-14T13:18:44.216Z",
+    "@timestamp": "2022-04-14T13:27:24.297Z",
     "agent": {
-        "ephemeral_id": "aed7b1f6-279f-433c-81ad-cba417ebc338",
+        "ephemeral_id": "2eea8efc-59dc-46fc-afce-f434fabe20ba",
         "id": "3e08c9a5-7aba-4695-a46c-22e4624f457a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -62,9 +62,9 @@ An example event for `audit_events` looks as following:
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-04-14T13:18:44.216Z",
+        "created": "2022-04-14T13:27:24.297Z",
         "dataset": "spring_boot.audit_events",
-        "ingested": "2022-04-14T13:18:47Z",
+        "ingested": "2022-04-14T13:27:27Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -93,7 +93,7 @@ An example event for `audit_events` looks as following:
     "spring_boot": {
         "audit_events": {
             "data": {
-                "remote_address": "172.24.0.2"
+                "remote_address": "172.27.0.2"
             },
             "principal": "actuator",
             "type": "AUTHENTICATION_SUCCESS"
