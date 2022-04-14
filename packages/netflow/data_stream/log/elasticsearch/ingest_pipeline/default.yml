@@ -3,9 +3,6 @@ description: Pipeline for NetFlow
 
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
   - convert:
@@ -13,6 +10,13 @@ processors:
       type: string
       ignore_missing: true
       ignore_failure: true
+
+  - set:
+      field: event.category
+      value:
+        - network
+        - session
+      if: 'ctx.event?.category != null && ctx.event?.category == "network_session"'
 
   # IP Geolocation Lookup
   - geoip:
