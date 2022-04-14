@@ -28,6 +28,16 @@ In order to ingest data from Spring Boot:
 
 ## Logs
 
+### Audit Events logs
+
+This is the `audit_events` data stream.
+
+- This data stream exposes audit events information for the current application.
+
+{{event "audit_events"}}
+
+{{fields "audit_events"}}
+
 ### HTTP Trace logs
 
 This is the `http_trace` data stream.
