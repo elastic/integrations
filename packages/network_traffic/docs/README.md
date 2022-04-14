@@ -64,6 +64,7 @@ host.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -198,6 +199,7 @@ Fields published for AMQP packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -474,6 +476,7 @@ Fields published for Apache Cassandra packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -730,6 +733,7 @@ Fields published for DHCPv4 packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -976,6 +980,7 @@ Fields published for DNS packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1233,6 +1238,7 @@ Fields published for HTTP packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1280,11 +1286,13 @@ Fields published for HTTP packets.
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 
 
 An example event for `http` looks as following:
@@ -1491,6 +1499,7 @@ Fields published for ICMP packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1700,6 +1709,7 @@ Fields published for Memcached packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -1952,6 +1962,7 @@ Fields published for MongoDB packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2167,6 +2178,7 @@ Fields published for MySQL packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2378,6 +2390,7 @@ Fields published for NFS packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2614,6 +2627,7 @@ Fields published for PostgreSQL packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -2818,6 +2832,7 @@ Fields published for Redis packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3020,6 +3035,7 @@ Fields published for SIP packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3056,6 +3072,7 @@ Fields published for SIP packets.
 | sip.auth.scheme | Auth scheme | keyword |
 | sip.auth.uri.host | Auth URI host | keyword |
 | sip.auth.uri.original | Auth original URI | keyword |
+| sip.auth.uri.original.text | Multi-field of `sip.auth.uri.original`. | text |
 | sip.auth.uri.port | Auth URI port | long |
 | sip.auth.uri.scheme | Auth URI scheme | keyword |
 | sip.call_id | Call ID. | keyword |
@@ -3067,6 +3084,7 @@ Fields published for SIP packets.
 | sip.contact.transport | Contact transport | keyword |
 | sip.contact.uri.host | Contact URI host | keyword |
 | sip.contact.uri.original | Contact original URI | keyword |
+| sip.contact.uri.original.text | Multi-field of `sip.contact.uri.original`. | text |
 | sip.contact.uri.port | Contact URI port | long |
 | sip.contact.uri.scheme | Contat URI scheme | keyword |
 | sip.contact.uri.username | Contact URI user name | keyword |
@@ -3078,6 +3096,7 @@ Fields published for SIP packets.
 | sip.from.tag | From tag | keyword |
 | sip.from.uri.host | From URI host | keyword |
 | sip.from.uri.original | From original URI | keyword |
+| sip.from.uri.original.text | Multi-field of `sip.from.uri.original`. | text |
 | sip.from.uri.port | From URI port | long |
 | sip.from.uri.scheme | From URI scheme | keyword |
 | sip.from.uri.username | From URI user name | keyword |
@@ -3085,10 +3104,12 @@ Fields published for SIP packets.
 | sip.method | Request method. | keyword |
 | sip.private.uri.host | Private URI host. | keyword |
 | sip.private.uri.original | Private original URI. | keyword |
+| sip.private.uri.original.text | Multi-field of `sip.private.uri.original`. | text |
 | sip.private.uri.port | Private URI port. | long |
 | sip.private.uri.scheme | Private URI scheme. | keyword |
 | sip.private.uri.username | Private URI user name. | keyword |
 | sip.sdp.body.original | SDP original body | keyword |
+| sip.sdp.body.original.text | Multi-field of `sip.sdp.body.original`. | text |
 | sip.sdp.connection.address | SDP connection address | keyword |
 | sip.sdp.connection.info | SDP connection info | keyword |
 | sip.sdp.owner.ip | SDP owner IP | ip |
@@ -3103,24 +3124,29 @@ Fields published for SIP packets.
 | sip.to.tag | To tag | keyword |
 | sip.to.uri.host | To URI host | keyword |
 | sip.to.uri.original | To original URI | keyword |
+| sip.to.uri.original.text | Multi-field of `sip.to.uri.original`. | text |
 | sip.to.uri.port | To URI port | long |
 | sip.to.uri.scheme | To URI scheme | keyword |
 | sip.to.uri.username | To URI user name | keyword |
 | sip.type | Either request or response. | keyword |
 | sip.uri.host | The URI host. | keyword |
 | sip.uri.original | The original URI. | keyword |
+| sip.uri.original.text | Multi-field of `sip.uri.original`. | text |
 | sip.uri.port | The URI port. | long |
 | sip.uri.scheme | The URI scheme. | keyword |
 | sip.uri.username | The URI user name. | keyword |
 | sip.user_agent.original |  | keyword |
+| sip.user_agent.original.text | Multi-field of `sip.user_agent.original`. | text |
 | sip.version | SIP protocol version. | keyword |
 | sip.via.original | The original Via value. | keyword |
+| sip.via.original.text | Multi-field of `sip.via.original`. | text |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 An example event for `sip` looks as following:
@@ -3363,6 +3389,7 @@ Fields published for Thrift packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -3568,6 +3595,7 @@ Fields published for TLS packets.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
