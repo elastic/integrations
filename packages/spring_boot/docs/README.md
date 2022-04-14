@@ -1,6 +1,6 @@
 # Spring Boot integration
 
-The Spring Boot integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+The Spring Boot integration is used to fetch observability data from [Spring Boot Actuator web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
 
 ## Compatibility
 
@@ -30,18 +30,18 @@ In order to ingest data from Spring Boot:
 
 ### Audit Events logs
 
-This is the `audit_events` dataset.
+This is the `audit_events` data stream.
 
-- This dataset exposes audit events information for the current application.
+- This data stream exposes audit events information for the current application.
 
 An example event for `audit_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-06T10:10:19.859Z",
+    "@timestamp": "2022-04-14T13:18:44.216Z",
     "agent": {
-        "ephemeral_id": "7eab0e55-8b09-49fb-925e-a8d3fa4fb39b",
-        "id": "2bd35329-40b2-4b78-a5ac-4fd13f280c49",
+        "ephemeral_id": "aed7b1f6-279f-433c-81ad-cba417ebc338",
+        "id": "3e08c9a5-7aba-4695-a46c-22e4624f457a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -55,16 +55,16 @@ An example event for `audit_events` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "2bd35329-40b2-4b78-a5ac-4fd13f280c49",
+        "id": "3e08c9a5-7aba-4695-a46c-22e4624f457a",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-04-06T10:10:19.859Z",
+        "created": "2022-04-14T13:18:44.216Z",
         "dataset": "spring_boot.audit_events",
-        "ingested": "2022-04-06T10:10:23Z",
+        "ingested": "2022-04-14T13:18:47Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -74,16 +74,16 @@ An example event for `audit_events` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.160.6"
+            "172.22.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:a0:06"
+            "02:42:ac:16:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -93,7 +93,7 @@ An example event for `audit_events` looks as following:
     "spring_boot": {
         "audit_events": {
             "data": {
-                "session_id": "192.168.176.2"
+                "remote_address": "172.24.0.2"
             },
             "principal": "actuator",
             "type": "AUTHENTICATION_SUCCESS"
@@ -118,8 +118,8 @@ An example event for `audit_events` looks as following:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| spring_boot.audit_events.data.remote_address | Remote Address of the Spring Boot application | keyword |
-| spring_boot.audit_events.data.session_id | Session ID of the Spring Boot application | keyword |
+| spring_boot.audit_events.data.remote_address | Remote Address of the Spring Boot application user | keyword |
+| spring_boot.audit_events.data.session_id | Session ID of the Spring Boot application user | keyword |
 | spring_boot.audit_events.principal | Restricts the events to those with the given principal | keyword |
 | spring_boot.audit_events.type | Authentication type | keyword |
 | tags | List of keywords used to tag each event. | keyword |
