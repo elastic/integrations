@@ -135,10 +135,10 @@ An example event for `http_trace` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-14T17:13:51.931Z",
+    "@timestamp": "2022-04-14T17:41:34.611Z",
     "agent": {
-        "ephemeral_id": "1525981a-bc88-4301-936a-49f48862d865",
-        "id": "26a594cb-5b70-4014-9435-d2085f6af2d7",
+        "ephemeral_id": "0d57a535-2a83-4d67-9a2f-4807b7877776",
+        "id": "cbd24208-b839-41e5-b792-8022dff409b8",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -152,17 +152,17 @@ An example event for `http_trace` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "26a594cb-5b70-4014-9435-d2085f6af2d7",
+        "id": "cbd24208-b839-41e5-b792-8022dff409b8",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "database",
-        "created": "2022-04-14T17:13:51.931Z",
+        "created": "2022-04-14T17:41:34.611Z",
         "dataset": "spring_boot.http_trace",
-        "duration": 3,
-        "ingested": "2022-04-14T17:13:55Z",
+        "duration": 4,
+        "ingested": "2022-04-14T17:41:38Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -172,10 +172,10 @@ An example event for `http_trace` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.28.0.5"
+            "172.30.0.7"
         ],
         "mac": [
-            "02:42:ac:1c:00:05"
+            "02:42:ac:1e:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
