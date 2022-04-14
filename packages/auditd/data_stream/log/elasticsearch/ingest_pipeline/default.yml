@@ -2114,10 +2114,21 @@ processors:
       ignore_failure: true
       field: auditd.log.msg
       target_field: message
-  - rename:
+  - set:
+      if: (ctx?.auditd?.log?.res != null && ["1", "success"].contains(ctx.auditd.log.res))
+      field: event.outcome
+      value: "success"
       ignore_failure: true
-      field: auditd.log.res
-      target_field: event.outcome
+  - set:
+      if: (ctx?.auditd?.log?.res != null && ["0", "failed"].contains(ctx.auditd.log.res))
+      field: event.outcome
+      value: "failure"
+      ignore_failure: true
+  - set:
+      if: (ctx?.auditd?.log?.res != null && !["0", "1", "success", "failed"].contains(ctx.auditd.log.res))
+      field: event.outcome
+      value: "unknown"
+      ignore_failure: true
    # The processor below populates process.args list from argN fields.
    #
    # It handles the common case of a complete record: Contains argc=N and a0 to aN-1,
@@ -2218,6 +2229,7 @@ processors:
         - auditd.log.epoch
         - auditd.log.copy
         - auditd.log.arch
+        - auditd.log.res
       ignore_failure: true
       ignore_missing: true
   - remove:
