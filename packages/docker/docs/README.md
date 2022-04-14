@@ -71,8 +71,10 @@ running Docker containers.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -185,8 +187,10 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -366,8 +370,10 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -466,8 +472,10 @@ The Docker `event` data stream collects docker events
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -546,8 +554,10 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -652,8 +662,10 @@ The Docker `image` data stream collects metrics on docker images
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -740,8 +752,10 @@ The Docker `info` data stream collects system-wide information based on the [Doc
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -820,8 +834,10 @@ The Docker `memory` data stream collects memory metrics from docker.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -945,8 +961,10 @@ The Docker `network` data stream collects network metrics.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
