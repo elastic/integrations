@@ -11,6 +11,13 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
+  - set:
+      field: event.category
+      value:
+        - network
+        - session
+      if: 'ctx.event?.category != null && ctx.event?.category == "network_session"'
+
   # IP Geolocation Lookup
   - geoip:
       if: ctx.source?.geo == null
