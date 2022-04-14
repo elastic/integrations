@@ -44,6 +44,7 @@ from containerd's metrics APIs.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| container.cpu.usage | Total CPU usage normalized by the number of CPU cores. | scaled_float | percent | gauge |
 | container.id | Unique container id. | keyword |  |  |
 | containerd.cpu.system.total | Total user and system CPU time spent in seconds. | double | s | gauge |
 | containerd.cpu.usage.cpu.\*.ns | CPU usage nanoseconds in this cpu. | object |  |  |
@@ -171,6 +172,7 @@ from containerd's metrics APIs.
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | container.id | Unique container id. | keyword |  |  |
+| container.memory.usage | Memory usage percentage. | scaled_float | percent | gauge |
 | containerd.memory.activeFiles | Total active file bytes. | long | byte | gauge |
 | containerd.memory.cache | Total cache bytes. | long | byte | gauge |
 | containerd.memory.inactiveFiles | Total inactive file bytes. | long | byte | gauge |
@@ -323,6 +325,8 @@ from containerd's metrics APIs.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| container.disk.read.bytes | Bytes read during the life of the container | long |  | counter |
+| container.disk.write.bytes | Bytes written during the life of the container | long | byte | counter |
 | container.id | Unique container id. | keyword |  |  |
 | containerd.blkio.device | Name of block device | keyword |  |  |
 | containerd.blkio.read.bytes | Bytes read during the life of the container | long | byte | gauge |
