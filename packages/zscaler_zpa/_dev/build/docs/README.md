@@ -13,7 +13,7 @@ ECS fields where applicable and the remaining fields are written under
 2. Configure the Zscaler LSS Log Receiver to send logs to the Elastic Agent
     that is running this integration. See [Setup Log Receiver](https://help.zscaler.com/zpa/configuring-log-receiver). Use the IP address/hostname of the Elastic Agent as the 'Log Receiver Domain or IP Address', and use the listening port of the Elastic Agent as the 'TCP Port' on the _Add Log Receiver_ configuration screen.
 
->  Note: Please make sure to use the provided response formats.
+<DocCallOut title="Note">Please make sure to use the provided response formats.</DocCallOut> the provided response formats.
 
 ## ZPA Log Receiver Setup
 
