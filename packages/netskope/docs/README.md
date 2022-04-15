@@ -2032,7 +2032,7 @@ user.email.6,,String
 | netskope.alerts.internal.collaborator.count | Count of internal collaborators on a file/folder. Supported for some apps. | long |
 | netskope.alerts.ip.protocol | N/A | keyword |
 | netskope.alerts.ipblock | IPblock that caused the alert. | keyword |
-| netskope.alerts.is_alert | Indicates whether alert is generated or not.Populated as yes for all alerts. | boolean |
+| netskope.alerts.is_alert | Indicates whether alert is generated or not. Populated as yes for all alerts. | boolean |
 | netskope.alerts.is_file_passwd_protected | Tells if the file is password protected. | boolean |
 | netskope.alerts.is_malicious | Only exists if some HTTP transaction belonging to the page event resulted in a malsite alert. | boolean |
 | netskope.alerts.is_two_factor_auth | N/A | keyword |
