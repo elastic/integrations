@@ -3,7 +3,7 @@ description: Pipeline for Zscaler web logs
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.2.0'
   - rename:
       field: message
       target_field: event.original
@@ -11,10 +11,16 @@ processors:
   - json:
       field: event.original
       target_field: resp
+      ignore_failure: true
+  - remove:
+      field: json
+      if: ctx?.input?.type == 'http_endpoint'
+      ignore_missing: true
   - rename:
       field: resp.event
       target_field: json
-  - remove: 
+      ignore_missing: true
+  - remove:
       field: resp
       ignore_missing: true
   - date:
@@ -25,8 +31,20 @@ processors:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-  - remove: 
-      field: json.time
+        - yyyy-MM-dd HH:mm:ss
+  - date:
+      field: json.datetime
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+  - remove:
+      field:
+        - json.time
+        - json.datetime
       ignore_missing: true
   - set:
       field: event.category
@@ -94,7 +112,7 @@ processors:
       target_field: http.response.status_code
       type: long
       ignore_failure: true
-  - remove: 
+  - remove:
       field: json.respcode
       ignore_missing: true
   - rename:
@@ -103,7 +121,7 @@ processors:
       ignore_missing: true
   - lowercase:
       field: network.protocol
-      ignore_missing: true      
+      ignore_missing: true
   - rename:
       field: json.rulelabel
       target_field: rule.name
@@ -116,7 +134,7 @@ processors:
       field: json.eurl
       remove_if_successful: true
       on_failure:
-      - set: 
+      - set:
           field: url.original
           value: "{{{json.eurl}}}"
           if: ctx?.json?.eurl != null
@@ -220,7 +238,7 @@ processors:
       field: json.devicehostname
       target_field: zscaler_zia.web.device.hostname
       ignore_missing: true
-  - append: 
+  - append:
       field: related.hosts
       value: "{{{zscaler_zia.web.device.hostname}}}"
       if: ctx?.zscaler_zia?.web?.device?.hostname != null

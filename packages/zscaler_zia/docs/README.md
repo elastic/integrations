@@ -1,36 +1,55 @@
 # Zscaler ZIA
 
-This integration is for Zscaler Internet Access logs. It can be used
-to receive logs sent by NSS log server on respective TCP ports.
+This integration is for Zscaler Internet Access logs. It can be used to receive logs sent by NSS feeds on TCP port or Cloud NSS on HTTP Endpoint input methods.
 
-The log message is expected to be in JSON format. The data is mapped to
-ECS fields where applicable and the remaining fields are written under
-`zscaler_zia.<data-stream-name>.*`.
+The log message is expected to be in JSON format. The data is mapped to ECS fields where applicable and the remaining fields are written under `zscaler_zia.<data-stream-name>.*`.
 
-## Setup steps
+## Steps for setting up NSS Feeds
 
 1. Enable the integration with the TCP input.
-2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. See [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) and [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscalar NSS Server and NSS Feeds follow the following steps.
-    - In the ZIA Admin Portal, add an NSS Server.
-        - Log in to the ZIA Admin Portal using your admin account. If you're unable to log in, contact Support.
-        - Add an NSS server. Refer to Adding NSS Servers to set up an [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) for Web and/or Firewall.
+2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. See [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) and [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscaler NSS Server and NSS Feeds follow the following steps.
+    - In the ZIA Admin Portal, add a NSS Server.
+        - Log in to the ZIA Admin Portal using your admin account.
+        - Add a NSS server. Refer to Adding NSS Servers to set up an [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) for Web and/or Firewall.
         - Verify that the state of the NSS Server is healthy.
             - In the ZIA Admin Portal, go to Administration > Nanolog Streaming Service > NSS Servers.
             - In the State column, confirm that the state of the NSS server is healthy.
             ![NSS server setup image](../img/nss_server.png?raw=true)
-    - In the ZIA Admin Portal, add an NSS Feed.
+    - In the ZIA Admin Portal, add a NSS Feed.
         - Refer to [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds) and select the type of feed you want to configure. The following fields require specific inputs:
             - **SIEM IP Address**: Enter the IP address of the [_Elastic agent_](https://www.elastic.co/guide/en/fleet/current/fleet-overview.html) you’ll be assigning the Zscaler integration to.
-            - **SIEM TCP Port**: Enter the port number, depending on the logs associated with the NSS Feed. You will need to create an NSS Feed for each log type.
+            - **SIEM TCP Port**: Enter the port number, depending on the logs associated with the NSS Feed. You will need to create a NSS Feed for each log type.
                 - **Alerts**: 9010
                 - **DNS**: 9011
                 - **Firewall**: 9012
                 - **Tunnel**: 9013
                 - **Web**: 9014
-            - **Feed Output Type**: Select Custom paste the appropriate response format as follows:
-            ![NSS feeds setup image](../img/nss_feeds.png?raw=true)  
+            - **Feed Output Type**: Select Custom in Feed output type and paste the appropriate response format in Feed output format as follows:
+            ![NSS Feeds setup image](../img/nss_feeds.png?raw=true)
 
-3. *Please make sure to use the given response formats.*
+
+## Steps for setting up Cloud NSS Feeds
+
+1. Enable the integration with the HTTP Endpoint input.
+2. Configure the Zscaler Cloud NSS Feeds to send logs to the Elastic Agent that is running this integration. Provide API URL to send logs to the Elastic Agent. To configure Zscaler Cloud NSS Feeds follow the following steps.
+    - In the ZIA Admin Portal, add a Cloud NSS Feed.
+        - Log in to the ZIA Admin Portal using your admin account.
+        - Add a Cloud NSS Feed. Refer to [_Add Cloud NSS Feed_](https://help.zscaler.com/zia/adding-cloud-nss-feeds).
+            - In the ZIA Admin Portal, go to Administration > Nanolog Streaming Service > Cloud NSS Feeds.
+            - Give Feed Name, change status to Enabled.
+            - Select NSS Type.
+            - Change SIEM Type to other.
+            - Add an API URL.
+            - Default ports:
+                - **DNS**: 9556
+                - **Firewall**: 9557
+                - **Tunnel**: 9558
+                - **Web**: 9559
+            - Select JSON as feed output type.
+            - Add appropriate HTTP headers.
+            ![Cloud NSS Feeds setup image](../img/cloud_nss_feeds.png?raw=true)
+
+**Please make sure to use the given response formats for NSS and Cloud NSS Feeds.**
 
 ## Compatibility
 
@@ -40,7 +59,7 @@ This package has been tested against `Zscaler Internet Access version 6.1`
 
 ### Alerts
 
-Default port: _9010_
+- Default port (NSS Feed): _9010_
 
 Vendor documentation: https://help.zscaler.com/zia/about-alerts
 
@@ -56,7 +75,8 @@ Sample Response:
 
 ### DNS Log
 
-Default port: _9011_
+- Default port (NSS Feed): _9011_
+- Default port (Cloud NSS Feed): _9556_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-dns-logs
 
@@ -72,7 +92,8 @@ Sample Response:
 
 ### Firewall Log
 
-Default port: _9012_
+- Default port (NSS Feed): _9012_
+- Default port (Cloud NSS Feed): _9557_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-firewall-logs
 
@@ -88,7 +109,8 @@ Sample Response:
 
 ### Tunnel Log
 
-Default port: _9013_
+- Default port (NSS Feed): _9013_
+- Default port (Cloud NSS Feed): _9558_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-tunnel-logs
 
@@ -117,8 +139,9 @@ Sample Response:
 
 ### Web Log
 
-Default port: _9014_  
-Add characters **"** and **\\** in **feed escape character** while configuring Web Log.  
+- Default port (NSS Feed): _9014_  
+- Default port (Cloud NSS Feed): _9559_
+- Add characters **"** and **\\** in **feed escape character** while configuring Web Log.  
 
 ![Escape feed setup image](../img/escape_feed.png?raw=true)  
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-web-logs
@@ -198,12 +221,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2022-12-10T13:40:32.000Z",
     "agent": {
-        "ephemeral_id": "8c093fcf-fb2f-4baa-b794-40edb011194d",
-        "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "ephemeral_id": "b7f77db9-92fe-4935-8387-b2cb545bcfc6",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "data_stream": {
         "dataset": "zscaler_zia.alerts",
@@ -216,24 +238,24 @@ An example event for `alerts` looks as following:
         "port": 9012
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "zscaler_zia.alerts",
-        "ingested": "2022-02-04T06:31:25Z"
+        "ingested": "2022-04-13T17:21:34Z"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:32902"
+            "address": "1.128.3.4:32902"
         },
         "syslog": {
             "priority": 114
@@ -351,12 +373,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "d288c261-b8db-45af-99c0-a673c3c6d8e1",
-        "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "ephemeral_id": "29f002d2-defe-484e-81f8-ec2dace901c3",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "client": {
         "geo": {
@@ -388,18 +409,18 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
         "dataset": "zscaler_zia.dns",
-        "ingested": "2022-02-04T06:32:56Z",
+        "ingested": "2022-04-13T17:25:57Z",
         "kind": "event",
         "type": [
             "info"
@@ -410,7 +431,7 @@ An example event for `dns` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:54202"
+            "address": "1.128.3.4:59018"
         }
     },
     "related": {
@@ -535,9 +556,9 @@ An example event for `dns` looks as following:
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | zscaler_zia.firewall.aggregate |  | keyword |
 | zscaler_zia.firewall.client.destination.ip | Client destination IP address. For aggregated sessions, this is the client destination IP address of the last session in the aggregate. | keyword |
-| zscaler_zia.firewall.client.destination.port | Client destination port. For aggregated sessions, this is the client destination port of the last session in the aggregate. | double |
+| zscaler_zia.firewall.client.destination.port | Client destination port. For aggregated sessions, this is the client destination port of the last session in the aggregate. | long |
 | zscaler_zia.firewall.client.source.ip | Client source IP address. For aggregated sessions, this is the client source IP address of the last session in the aggregate. | keyword |
-| zscaler_zia.firewall.client.source.port | Client source port. For aggregated sessions, this is the client source port of the last session in the aggregate. | double |
+| zscaler_zia.firewall.client.source.port | Client source port. For aggregated sessions, this is the client source port of the last session in the aggregate. | long |
 | zscaler_zia.firewall.department | Department of the user. | keyword |
 | zscaler_zia.firewall.duration.avg | Average session duration, in milliseconds, if the sessions were aggregated. | double |
 | zscaler_zia.firewall.duration.milliseconds | Session or request duration in milliseconds. | double |
@@ -546,15 +567,15 @@ An example event for `dns` looks as following:
 | zscaler_zia.firewall.location.name | Name of the location from which the session was initiated. | keyword |
 | zscaler_zia.firewall.nat | Indicates if the destination NAT policy was applied. | keyword |
 | zscaler_zia.firewall.server.destination.ip | Server Destination IP address. For aggregated sessions, this is the server destination IP address of the last session in the aggregate. | keyword |
-| zscaler_zia.firewall.server.destination.port | Server destination port. For aggregated sessions, this is the server destination port of the last session in the aggregate. | double |
+| zscaler_zia.firewall.server.destination.port | Server destination port. For aggregated sessions, this is the server destination port of the last session in the aggregate. | long |
 | zscaler_zia.firewall.server.source.ip | Server source IP address. For aggregated sessions, this is the server source IP address of the last session in the aggregate. | keyword |
-| zscaler_zia.firewall.server.source.port | Server source port. For aggregated sessions, this is the server source port of the last session in the aggregate. | double |
+| zscaler_zia.firewall.server.source.port | Server source port. For aggregated sessions, this is the server source port of the last session in the aggregate. | long |
 | zscaler_zia.firewall.session.count | Number of sessions that were aggregated. | double |
 | zscaler_zia.firewall.stateful |  | keyword |
 | zscaler_zia.firewall.threat.category | Category of the threat in the Firewall session by the IPS engine. | keyword |
 | zscaler_zia.firewall.threat.name | Name of the threat detected in the Firewall session by the IPS engine. | keyword |
 | zscaler_zia.firewall.tunnel.ip | Tunnel IP address of the client (source). For aggregated sessions, this is the client's tunnel IP address corresponding to the last session in the aggregate. | keyword |
-| zscaler_zia.firewall.tunnel.port | Tunnel port on the client side. For aggregated sessions, this is the client's tunnel port corresponding to the last session in the aggregate. | double |
+| zscaler_zia.firewall.tunnel.port | Tunnel port on the client side. For aggregated sessions, this is the client's tunnel port corresponding to the last session in the aggregate. | long |
 | zscaler_zia.firewall.tunnel.type | Traffic forwarding method used to send the traffic to the firewall. | keyword |
 
 
@@ -564,12 +585,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "41987f90-74dc-4b4b-9936-4347028cf558",
-        "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "ephemeral_id": "144c5748-0f0e-4cf6-845b-0b43cac1ca3c",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "client": {
         "bytes": 1734
@@ -580,19 +600,19 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "event": {
         "action": "drop",
         "agent_id_status": "verified",
         "category": "network",
         "dataset": "zscaler_zia.firewall",
-        "ingested": "2022-02-04T06:34:17Z",
+        "ingested": "2022-04-13T17:29:32Z",
         "kind": "event",
         "original": "{ \"sourcetype\" : \"zscalernss-fw\", \"event\" :{\"datetime\":\"Fri Dec 17 07:27:54 2021\",\"user\":\"some_user@example.com\",\"department\":\"Unknown\",\"locationname\":\"TestLoc%20DB\",\"cdport\":443,\"csport\":55018,\"sdport\":443,\"ssport\":0,\"csip\":\"0.0.0.0\",\"cdip\":\"0.0.0.0\",\"ssip\":\"0.0.0.0\",\"sdip\":\"0.0.0.0\",\"tsip\":\"0.0.0.0\",\"tunsport\":0,\"tuntype\":\"ZscalerClientConnector\",\"action\":\"Drop\",\"dnat\":\"No\",\"stateful\":\"Yes\",\"aggregate\":\"No\",\"nwsvc\":\"HTTPS\",\"nwapp\":\"http\",\"proto\":\"TCP\",\"ipcat\":\"Test Name\",\"destcountry\":\"Ireland\",\"avgduration\":486,\"rulelabel\":\"Access%20Blocked\",\"inbytes\":19052,\"outbytes\":1734,\"duration\":0,\"durationms\":486,\"numsessions\":1,\"ipsrulelabel\":\"None\",\"threatcat\":\"None\",\"threatname\":\"None\",\"deviceowner\":\"admin77\",\"devicehostname\":\"Machine9000\"}}",
         "type": "info"
@@ -605,7 +625,7 @@ An example event for `firewall` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:58194"
+            "address": "1.128.3.4:43634"
         }
     },
     "network": {
@@ -783,12 +803,11 @@ An example event for `tunnel` looks as following:
 {
     "@timestamp": "2021-12-30T11:20:12.000Z",
     "agent": {
-        "ephemeral_id": "63ac98b6-0ff6-4943-820e-8505eff15937",
-        "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "ephemeral_id": "74169044-8331-421b-8ea9-9e6bcc7c28f8",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "data_stream": {
         "dataset": "zscaler_zia.tunnel",
@@ -799,19 +818,19 @@ An example event for `tunnel` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
         "dataset": "zscaler_zia.tunnel",
         "id": "1111111111111111111",
-        "ingested": "2022-02-04T06:36:16Z",
+        "ingested": "2022-04-13T17:33:10Z",
         "kind": "event",
         "type": [
             "info"
@@ -822,7 +841,7 @@ An example event for `tunnel` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:44374"
+            "address": "1.128.3.4:58370"
         }
     },
     "related": {
@@ -1014,12 +1033,11 @@ An example event for `web` looks as following:
 {
     "@timestamp": "2021-12-17T07:04:57.000Z",
     "agent": {
-        "ephemeral_id": "ced1fd2e-2f17-4f67-b8b1-d38a1920abbb",
-        "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "ephemeral_id": "72bf9779-2cf7-4d9f-ad44-f36c04cf1cb1",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "client": {
         "ip": "81.2.69.193",
@@ -1036,19 +1054,19 @@ An example event for `web` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "event": {
         "action": "blocked",
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "zscaler_zia.web",
-        "ingested": "2022-02-04T08:48:57Z",
+        "ingested": "2022-04-13T17:36:45Z",
         "kind": "event",
         "risk_score": 0,
         "type": [
@@ -1072,7 +1090,7 @@ An example event for `web` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:48722"
+            "address": "1.128.3.4:37608"
         }
     },
     "network": {
