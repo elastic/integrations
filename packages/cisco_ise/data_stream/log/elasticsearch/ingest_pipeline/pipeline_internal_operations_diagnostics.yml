@@ -7,22 +7,22 @@ processors:
       field: event.type
       value: [info]
   - grok:
-      field: remaining_message
-      if: ctx.cisco_ise.log.segment.number == 0
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number == 0
       patterns: 
-        - "%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:cisco_ise.log.sequence_number} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
   - grok:
-      field: remaining_message
-      if: ctx.cisco_ise.log.segment.number > 0
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number > 0
       patterns: 
-        - "%{GREEDYDATA:cisco_ise.log.log_details},"
+        - "^%{GREEDYDATA:cisco_ise.log.log_details},"
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
       formats: 
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
-      timezone: "{{{event.timezone}}}"
+      timezone: '{{{event.timezone}}}'
       ignore_failure: true
   - script:
       lang: painless
@@ -47,8 +47,8 @@ processors:
         ctx.event.category = eventCategory;
   - kv:
       field: cisco_ise.log.log_details
-      field_split: ", "
-      value_split: "="
+      field_split: ', '
+      value_split: =
       ignore_failure: true
   - convert:
       field: ConfigVersionId

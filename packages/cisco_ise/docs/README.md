@@ -1,6 +1,6 @@
 # Cisco ISE
 
-The Cisco ISE integration collects and parses data from Cisco ISE using TCP/UDP.
+The Cisco ISE ([More info](https://www.cisco.com/c/en/us/products/security/identity-services-engine/index.html)) integration collects and parses data from Cisco ISE using TCP/UDP.
 
 ## Compatibility
 
@@ -24,6 +24,8 @@ This module has been tested against `Cisco ISE server version 3.1.0.518`.
 - It is recommended to have **8192** as Maximum Message Length. Segmentation for certain logs coming from Cisco ISE might cause issues with field mappings. 
 
 ## Logs
+
+Reference link for Cisco ISE Syslog: [Here](https://www.cisco.com/c/en/us/td/docs/security/ise/syslog/Cisco_ISE_Syslogs/m_SyslogsList.html) 
 
 ### log
 
@@ -314,7 +316,6 @@ An example event for `log` looks as following:
 | cisco_ise.log.selected.authentication.identity_stores |  | keyword |
 | cisco_ise.log.selected.authorization.profiles |  | keyword |
 | cisco_ise.log.sequence.number |  | long |
-| cisco_ise.log.sequence_number |  | keyword |
 | cisco_ise.log.server.name |  | keyword |
 | cisco_ise.log.server.type |  | keyword |
 | cisco_ise.log.service.argument |  | keyword |
@@ -376,6 +377,7 @@ An example event for `log` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -400,6 +402,7 @@ An example event for `log` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |

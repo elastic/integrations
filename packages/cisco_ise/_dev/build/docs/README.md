@@ -1,6 +1,6 @@
 # Cisco ISE
 
-The Cisco ISE integration collects and parses data from Cisco ISE using TCP/UDP.
+The Cisco ISE ([More info](https://www.cisco.com/c/en/us/products/security/identity-services-engine/index.html)) integration collects and parses data from Cisco ISE using TCP/UDP.
 
 ## Compatibility
 
@@ -24,6 +24,8 @@ This module has been tested against `Cisco ISE server version 3.1.0.518`.
 - It is recommended to have **8192** as Maximum Message Length. Segmentation for certain logs coming from Cisco ISE might cause issues with field mappings. 
 
 ## Logs
+
+Reference link for Cisco ISE Syslog: [Here](https://www.cisco.com/c/en/us/td/docs/security/ise/syslog/Cisco_ISE_Syslogs/m_SyslogsList.html) 
 
 ### log
 

@@ -11,9 +11,10 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:host.hostname} %{DATA:cisco_ise.log.category.name} %{DATA:cisco_ise.log.message.id} %{DATA:cisco_ise.log.segment.total:long} %{DATA:cisco_ise.log.segment.number:long} %{GREEDYDATA:remaining_message}"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{ISO8601_TIMEZONE:_tmp.timezone} %{DATA:host.hostname} %{DATA:cisco_ise.log.category.name} %{DATA:cisco_ise.log.message.id} %{DATA:cisco_ise.log.segment.total:long} %{DATA:cisco_ise.log.segment.number:long} %{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:host.hostname} %{DATA:cisco_ise.log.category.name} %{DATA:cisco_ise.log.message.id} %{DATA:cisco_ise.log.segment.total:long} %{DATA:cisco_ise.log.segment.number:long} %{GREEDYDATA:message}$"
   - trim:
-      field: remaining_message
+      field: message
       ignore_failure: true
   - convert: 
       field: host.hostname
@@ -25,22 +26,33 @@ processors:
       if: ctx?.host?.ip != null
   - append:
       field: related.ip
-      value: "{{{host.ip}}}"
-      if: ctx.host.ip != null
+      value: '{{{host.ip}}}'
+      if: ctx?.host?.ip != null
       ignore_failure: true
   - append:
       field: related.hosts
-      value: "{{{host.hostname}}}"
-      if: ctx.host.hostname != null
+      value: '{{{host.hostname}}}'
+      if: ctx?.host?.hostname != null
       ignore_failure: true
+  - rename:
+      field: _tmp.timezone
+      target_field: event.timezone
+      ignore_missing: true
   - date: 
       field: _tmp.timestamp
-      target_field: '@timestamp'
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
         - MMM d HH:mm:ss
       ignore_failure: true
+  - date: 
+      if: ctx?.event?.timezone != null
+      field: _tmp.timestamp
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
   - pipeline:
       name: '{{ IngestPipeline "pipeline_policy_diagnostics" }}'
       if: ctx?.cisco_ise?.log?.category?.name == "CISE_Policy_Diagnostics"
@@ -97,8 +109,7 @@ processors:
       copy_from: log.syslog.severity.name
       ignore_empty_value: true
   - remove: 
-      field: 
-        - remaining_message
+      field:
         - _tmp
       ignore_missing: true
   - remove:
@@ -125,4 +136,4 @@ processors:
 on_failure:
 - set:
     field: error.message
-    value: "{{{ _ingest.on_failure_message }}}"
+    value: '{{{_ingest.on_failure_message}}}'
