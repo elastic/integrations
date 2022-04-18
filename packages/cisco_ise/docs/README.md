@@ -35,73 +35,149 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-03T10:42:25.842Z",
+    "@timestamp": "2020-02-21T19:13:08.328Z",
     "agent": {
-        "ephemeral_id": "ee8c5c05-6c17-476c-af50-7e1aabb3d98d",
-        "id": "f81b0fc1-f2c5-45e6-8f5d-2e969313b9b4",
+        "ephemeral_id": "868c4a5a-ab3d-44f9-b28c-dd0da1bd08f8",
+        "id": "882c1c63-68d0-49f9-8411-0e89960d3b00",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "cisco_ise": {
         "log": {
-            "ad": {
-                "admin": "ise.host.local",
-                "domain": {
-                    "controller": "host.local",
-                    "name": "host.local"
-                },
-                "error": {
-                    "details": "The user account is invalid"
-                },
-                "forest": "host.local",
-                "hostname": "cisco-ise-host@host.local",
-                "ip": "89.160.20.156",
-                "log_id": "1645524126/47",
-                "site": "Default-First-Site-Name"
+            "acct": {
+                "request": {
+                    "flags": "Stop"
+                }
+            },
+            "acs": {
+                "session": {
+                    "id": "ldnnacpsn1/359344348/952729"
+                }
+            },
+            "authen_method": "TacacsPlus",
+            "avpair": {
+                "priv_lvl": 15,
+                "start_time": "2020-03-26T01:17:12.000Z",
+                "task_id": 2962,
+                "timezone": "GMT"
             },
             "category": {
-                "name": "CISE_AD_Connector"
+                "name": "CISE_TACACS_Accounting"
             },
-            "log_details": "AD-Admin=ise.host.local, AD-Domain=host.local, AD-Domain-Controller=host.local, AD-Error-Details=The user account is invalid, AD-Forest=host.local, AD-Hostname=cisco-ise-host@host.local, AD-IP-Address=89.160.20.156, AD-Log-Id=1645524126/47, AD-Organization-Unit=, AD-Site=Default-First-Site-Name",
+            "cmdset": "[ CmdAV=show mac-address-table \u003ccr\u003e ]",
+            "config_version": {
+                "id": 1829
+            },
+            "cpm": {
+                "session": {
+                    "id": "81.2.69.144Accounting306034364"
+                }
+            },
+            "device": {
+                "type": [
+                    "Device Type#All Device Types#Routers",
+                    "Device Type#All Device Types#Routers"
+                ]
+            },
+            "ipsec": [
+                "IPSEC#Is IPSEC Device",
+                "IPSEC#Is IPSEC Device"
+            ],
+            "location": [
+                "Location#All Locations#EMEA",
+                "Location#All Locations#EMEA"
+            ],
             "message": {
-                "code": "25012",
-                "description": "AD-Connector: Domain join failed",
-                "id": "0000083094"
+                "code": "3300",
+                "description": "Tacacs-Accounting: TACACS+ Accounting with Command",
+                "id": "0000000001"
+            },
+            "model": {
+                "name": "Unknown"
+            },
+            "network": {
+                "device": {
+                    "groups": [
+                        "Location#All Locations#EMEA",
+                        "Device Type#All Device Types#Routers",
+                        "IPSEC#Is IPSEC Device"
+                    ],
+                    "name": "wlnwan1",
+                    "profile": [
+                        "Cisco",
+                        "Cisco"
+                    ]
+                }
+            },
+            "port": "tty10",
+            "privilege": {
+                "level": 15
+            },
+            "request": {
+                "latency": 1
+            },
+            "response": {
+                "AcctReply-Status": "Success"
             },
             "segment": {
                 "number": 0,
-                "total": 1
+                "total": 4
             },
-            "sequence_number": "0000083161"
+            "selected": {
+                "access": {
+                    "service": "Device Admin - TACACS"
+                }
+            },
+            "service": {
+                "argument": "shell",
+                "name": "Login"
+            },
+            "software": {
+                "version": "Unknown"
+            },
+            "step": [
+                "13006",
+                "15049",
+                "15008",
+                "15048",
+                "13035"
+            ],
+            "type": "Accounting"
         }
+    },
+    "client": {
+        "ip": "81.2.69.144"
     },
     "data_stream": {
         "dataset": "cisco_ise.log",
         "namespace": "ep",
         "type": "logs"
     },
+    "destination": {
+        "ip": "81.2.69.144"
+    },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f81b0fc1-f2c5-45e6-8f5d-2e969313b9b4",
-        "snapshot": false,
-        "version": "8.0.0"
+        "id": "882c1c63-68d0-49f9-8411-0e89960d3b00",
+        "snapshot": true,
+        "version": "8.3.0"
     },
     "event": {
-        "action": "ad-connector",
+        "action": "tacacs-accounting",
         "agent_id_status": "verified",
         "category": [
-            "authentication"
+            "configuration"
         ],
         "dataset": "cisco_ise.log",
-        "ingested": "2022-03-15T10:03:12Z",
+        "ingested": "2022-04-15T15:33:23Z",
         "kind": "event",
+        "sequence": 18415781,
         "timezone": "+00:00",
         "type": [
-            "info",
-            "end"
+            "info"
         ]
     },
     "host": {
@@ -111,30 +187,36 @@ An example event for `log` looks as following:
         "type": "tcp"
     },
     "log": {
-        "level": "warn",
+        "level": "notice",
         "source": {
-            "address": "192.168.112.6:52648"
+            "address": "172.25.0.1:51632"
         },
         "syslog": {
-            "priority": 180,
+            "priority": 182,
             "severity": {
-                "name": "warn"
+                "name": "notice"
             }
         }
     },
+    "message": "2020-02-21 19:13:08.328 +00:00 0018415781 3300 NOTICE Tacacs-Accounting: TACACS+ Accounting with Command, ConfigVersionId=1829, Device IP Address=81.2.69.144, CmdSet=[ CmdAV=show mac-address-table \u003ccr\u003e ], RequestLatency=1, NetworkDeviceName=wlnwan1, Type=Accounting, Privilege-Level=15, Service=Login, User=psxvne, Port=tty10, Remote-Address=81.2.69.144, Authen-Method=TacacsPlus, AVPair.task_id=2962, AVPair.timezone=GMT, AVPair.start_time=1585185432, AVPair.priv-lvl=15, AcctRequest-Flags=Stop, Service-Argument=shell, AcsSessionID=ldnnacpsn1/359344348/952729, SelectedAccessService=Device Admin - TACACS, Step=13006, Step=15049, Step=15008, Step=15048, Step=13035, NetworkDeviceGroups=Location#All Locations#EMEA, NetworkDeviceGroups=Device Type#All Device Types#Routers, NetworkDeviceGroups=IPSEC#Is IPSEC Device, CPMSessionID=81.2.69.144Accounting306034364, Model Name=Unknown, Software Version=Unknown, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }, Network Device Profile=Cisco, Location=Location#All Locations#EMEA, Device Type=Device Type#All Device Types#Routers, IPSEC=IPSEC#Is IPSEC Device, Response={AcctReply-Status=Success; }",
     "related": {
         "hosts": [
-            "cisco-ise-host",
-            "cisco-ise-host@host.local"
+            "cisco-ise-host"
         ],
         "ip": [
-            "89.160.20.156"
+            "81.2.69.144"
+        ],
+        "user": [
+            "psxvne"
         ]
     },
     "tags": [
         "forwarded",
         "cisco_ise-log"
-    ]
+    ],
+    "user": {
+        "name": "psxvne"
+    }
 }
 ```
 
