@@ -52,10 +52,6 @@ processors:
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_ip != null"
-- set:
-    field: server.ip
-    value: '{{destination.ip}}'
-    ignore_empty_value: true
 - convert:
     field: sophos.xg.dst_port
     target_field: destination.port
@@ -63,32 +59,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_port != null"
-- set:
-    field: server.port
-    value: '{{destination.port}}'
-    ignore_empty_value: true
-- convert:
-    field: server.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-- convert:
-    field: sophos.xg.recv_bytes
-    target_field: destination.bytes
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.sophos?.xg?.recv_bytes != null"
-- set:
-    field: server.bytes
-    value: '{{destination.bytes}}'
-    ignore_empty_value: true
-- convert:
-    field: server.bytes
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.server?.bytes != null"
 - rename:
     field: sophos.xg.to_email_address
     target_field: destination.user.email
@@ -101,10 +71,6 @@ processors:
     field: sophos.xg.src_ip
     target_field: source.ip
     ignore_missing: true
-- set:
-    field: client.ip
-    value: '{{source.ip}}'
-    ignore_empty_value: true
 - convert:
     field: sophos.xg.src_port
     target_field: source.port
@@ -112,32 +78,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_port != null"
-- set:
-    field: client.port
-    value: '{{source.port}}'
-    ignore_empty_value: true
-- convert:
-    field: client.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-- convert:
-    field: sophos.xg.sent_bytes
-    target_field: source.bytes
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.sophos?.xg?.sent_bytes != null"
-- set:
-    field: client.bytes
-    value: '{{source.bytes}}'
-    ignore_empty_value: true
-- convert:
-    field: client.bytes
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.client?.bytes != null"
 - rename:
     field: sophos.xg.from_email_address
     target_field: source.user.email
@@ -231,9 +171,7 @@ processors:
 - remove:
     field:
     - sophos.xg.dst_port
-    - sophos.xg.recv_bytes
     - sophos.xg.src_port
-    - sophos.xg.sent_bytes
     ignore_missing: true
 on_failure:
 - set:

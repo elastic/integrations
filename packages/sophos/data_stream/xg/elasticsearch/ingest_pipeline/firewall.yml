@@ -60,10 +60,6 @@ processors:
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_ip != null"
-- set:
-    field: server.ip
-    value: '{{destination.ip}}'
-    if: "ctx.destination?.ip != null"
 - rename:
     field: sophos.xg.tran_dst_ip
     target_field: destination.nat.ip
@@ -81,17 +77,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_port != null"
-- set:
-    field: server.port
-    value: '{{destination.port}}'
-    if: "ctx.destination?.port != null"
-- convert:
-    field: server.port
-    target_field: server.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.server?.port != null"
 - convert:
     field: sophos.xg.tran_dst_port
     target_field: destination.nat.port
@@ -99,44 +84,11 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.tran_dst_port != null"
-- set:
-    field: server.nat.port
-    value: '{{destination.nat.port}}'
-    if: "ctx.destination?.nat?.port != null"
-- convert:
-    field: server.nat.port
-    target_field: server.nat.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.server?.nat?.port != null"
 - rename:
     field: sophos.xg.dst_mac
     target_field: destination.mac
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_mac != null"
-- set:
-    field: server.mac
-    value: '{{destination.mac}}'
-    if: "ctx.destination?.mac != null"
-- convert:
-    field: sophos.xg.recv_bytes
-    target_field: destination.bytes
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.sophos?.xg?.recv_bytes != null"
-- set:
-    field: server.bytes
-    value: '{{destination.bytes}}'
-    if: "ctx.destination?.bytes != null"
-- convert:
-    field: server.bytes
-    target_field: server.bytes
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.server?.bytes != null"
 - convert:
     field: sophos.xg.recv_pkts
     target_field: destination.packets
@@ -144,17 +96,13 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.recv_pkts !=null"
-- set:
-    field: server.packets
-    value: '{{destination.packets}}'
-    if: "ctx.destination?.packets != null"
 - convert:
-    field: server.packets
-    target_field: server.packets
+    field: sophos.xg.packets_received
+    target_field: destination.packets
     type: long
     ignore_failure: true
     ignore_missing: true
-    if: "ctx.server?.packets != null"
+    if: "ctx.sophos?.xg?.packets_received !=null"
 
 ###############################
 ## ECS Client/Source Mapping ##
@@ -164,15 +112,16 @@ processors:
     target_field: source.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_ip != null"
-- set:
-    field: client.ip
-    value: '{{source.ip}}'
-    if: "ctx.source?.ip != null"
 - rename:
     field: sophos.xg.tran_src_ip
     target_field: source.nat.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.tran_src_ip != null"
+- rename:
+    field: sophos.xg.src_trans_ip
+    target_field: source.nat.ip
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.src_trans_ip != null"
 - rename:
     field: sophos.xg.sourceip
     target_field: source.ip
@@ -185,17 +134,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_port != null"
-- set:
-    field: client.port
-    value: '{{source.port}}'
-    if: "ctx.source?.port != null"
-- convert:
-    field: client.port
-    target_field: client.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.client?.port != null"
 - convert:
     field: sophos.xg.tran_src_port
     target_field: source.nat.port
@@ -203,46 +141,17 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.tran_src_port != null"
-- set:
-    field: client.nat.port
-    value: '{{source.nat.port}}'
-    if: "ctx.source?.nat?.port != null"
-- convert:
-    field: client.nat.port
-    target_field: client.nat.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.client?.nat?.port != null"
 - rename:
     field: sophos.xg.src_mac
     target_field: source.mac
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_mac != null"
-- set:
-    field: client.mac
-    value: '{{source.mac}}'
-    if: "ctx.source?.mac != null"
-- convert:
-    field: sophos.xg.sent_bytes
-    target_field: source.bytes
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.sophos?.xg?.sent_bytes != null"
-- set:
-    field: client.bytes
-    value: '{{source.bytes}}'
-    if: "ctx.source?.bytes != null"
-- convert:
-    field: client.bytes
-    target_field: client.bytes
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.client?.bytes != null"
 - trim:
     field: sophos.xg.sent_pkts
+    ignore_missing: true
+- trim:
+    field: sophos.xg.packets_sent
+    ignore_missing: true
 - convert:
     field: sophos.xg.sent_pkts
     target_field: source.packets
@@ -250,17 +159,17 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.sent_pkts != null"
-- set:
-    field: client.packets
-    value: '{{source.packets}}'
-    if: "ctx.source?.packets != null"
 - convert:
-    field: client.packets
-    target_field: client.packets
+    field: sophos.xg.packets_sent
+    target_field: source.packets
     type: long
     ignore_failure: true
     ignore_missing: true
-    if: "ctx.client?.packets != null"
+    if: "ctx.sophos?.xg?.packets_sent != null"
+- set:
+    field: client.packets
+    copy_from: source.packets
+    ignore_empty_value: true
 - rename:
     field: sophos.xg.user_name
     target_field: source.user.name
@@ -441,12 +350,12 @@ processors:
     field:
     - sophos.xg.dst_port
     - sophos.xg.tran_dst_port
-    - sophos.xg.recv_bytes
     - sophos.xg.recv_pkts
     - sophos.xg.src_port
     - sophos.xg.tran_src_port
-    - sophos.xg.sent_bytes
     - sophos.xg.sent_pkts
+    - sophos.xg.packets_received
+    - sophos.xg.packets_sent
     ignore_missing: true
 on_failure:
 - set:

@@ -2,15 +2,14 @@
 description: Pipeline for parsing sophosxg firewall logs
 processors:
 - set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- set:
     field: ecs.version
     value: '8.0.0'
 - grok:
     field: message
     patterns:
     - '%{SYSLOG5424PRI}(%{SYSLOGTIMESTAMP} %{NOTSPACE} )?%{GREEDYDATA:event.original}$'
+    - '%{SYSLOG5424PRI}%{GREEDYDATA:event.original}$'
+    - '%{SYSLOGTIMESTAMP} %{HOSTNAME:observer.hostname} %{GREEDYDATA:event.original}$'
 
 # optimize fields / strings in event.original for KV processor
 - gsub:
@@ -37,6 +36,11 @@ processors:
     field: _temp_.time
     value: "{{sophos.xg.date}} {{sophos.xg.time}}"
     if: ctx?.sophos?.xg?.date != null && ctx?.sophos?.xg?.time != null
+- set:
+    field: _temp_.time
+    copy_from: sophos.xg.timestamp
+    ignore_empty_value: true
+    if: ctx._temp_?.time == null
 - date:
     if: "ctx.event.timezone == null"
     field: _temp_.time
@@ -134,6 +138,10 @@ processors:
     field: event.severity
     type: long
     ignore_missing: true
+- set:
+    field: log.level
+    copy_from: sophos.xg.severity
+    ignore_empty_value: true
 
 ##########################
 ## ECS Observer Mapping ##
@@ -152,6 +160,10 @@ processors:
     target_field: observer.serial_number
     ignore_missing: true
 - rename:
+    field: sophos.xg.device_serial_id
+    target_field: observer.serial_number
+    ignore_missing: true
+- rename:
     field: sophos.xg.out_interface
     target_field: observer.egress.interface.name
     ignore_missing: true
@@ -160,12 +172,28 @@ processors:
     target_field: observer.ingress.interface.name
     ignore_missing: true
 - rename:
-    field: sophos.xg.srczonetype
+    field: sophos.xg.srczone
     target_field: observer.ingress.zone
     ignore_missing: true
 - rename:
-    field: sophos.xg.dstzonetype
+    field: sophos.xg.src_zone
+    target_field: observer.ingress.zone
+    ignore_missing: true
+- rename:
+    field: sophos.xg.dstzone
     target_field: observer.egress.zone
+    ignore_missing: true
+- rename:
+    field: sophos.xg.dst_zone
+    target_field: observer.egress.zone
+    ignore_missing: true
+- rename:
+    field: sophos.xg.srczonetype
+    target_field: sophos.xg.src_zone_type
+    ignore_missing: true
+- rename:
+    field: sophos.xg.dstzonetype
+    target_field: sophos.xg.dst_zone_type
     ignore_missing: true
 
 # extract from log_id the new field "sophos.xg.message_id"
@@ -223,11 +251,10 @@ processors:
     - _conf
     - sophos.xg.date
     - sophos.xg.time
+    - sophos.xg.timestamp
     - sophos.xg.duration
     - sophos.xg.timezone
     - sophos.xg.dir_disp
-    - sophos.xg.srczone
-    - sophos.xg.dstzone
     - sophos.xg.log_occurrence
     - sophos.xg.nat_rule_id
     - sophos.xg.in_display_interface
@@ -240,6 +267,35 @@ processors:
     type: long
     ignore_missing: true
     ignore_failure: true
+    
+- convert:
+    field: sophos.xg.sent_bytes
+    target_field: source.bytes
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.sent_bytes != null"
+- convert:
+    field: sophos.xg.bytes_sent
+    target_field: source.bytes
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.bytes_sent != null"
+- convert:
+    field: sophos.xg.recv_bytes
+    target_field: destination.bytes
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.recv_bytes != null"
+- convert:
+    field: sophos.xg.bytes_received
+    target_field: destination.bytes
+    type: long
+    ignore_failure: true
+    ignore_missing: true
+    if: "ctx.sophos?.xg?.bytes_received != null"
 
 ###############################
 ## Product Specific Pipelines ##
@@ -277,6 +333,30 @@ processors:
 - pipeline:
     name: '{{ IngestPipeline "wifi" }}'
     if: "ctx.sophos?.xg?.log_type == 'Wireless Protection'"
+
+- set:
+    field: server
+    copy_from: destination
+    ignore_empty_value: true
+- set:
+    field: client
+    copy_from: source
+    ignore_empty_value: true
+#############
+## Cleanup ##
+#############
+- remove:
+    field:
+    - sophos.xg.recv_bytes
+    - sophos.xg.sent_bytes
+    - sophos.xg.bytes_sent
+    - sophos.xg.bytes_received
+    - sophos.xg.severity
+    - sophos.xg.dst_country
+    - sophos.xg.src_country
+    - sophos.xg.out_display_interface
+    - sophos.xg.in_display_interface
+    ignore_missing: true
 - remove:
     field: event.original
     if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"

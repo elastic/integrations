@@ -41,10 +41,6 @@ processors:
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_ip != null"
-- set:
-    field: server.ip
-    value: '{{destination.ip}}'
-    if: "ctx.destination?.ip != null"
 - convert:
     field: sophos.xg.dst_port
     target_field: destination.port
@@ -52,17 +48,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_port != null"
-- set:
-    field: server.port
-    value: '{{destination.port}}'
-    if: "ctx.destination?.port != null"
-- convert:
-    field: server.port
-    target_field: server.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.server?.port != null"
 
 ###############################
 ## ECS Client/Source Mapping ##
@@ -72,10 +57,6 @@ processors:
     target_field: source.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_ip != null"
-- set:
-    field: client.ip
-    value: '{{source.ip}}'
-    if: "ctx.source?.ip != null"
 - convert:
     field: sophos.xg.src_port
     target_field: source.port
@@ -83,17 +64,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_port != null"
-- set:
-    field: client.port
-    value: '{{source.port}}'
-    if: "ctx.source?.port != null"
-- convert:
-    field: client.port
-    target_field: client.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.client?.port != null"
 - rename:
     field: sophos.xg.user_name
     target_field: source.user.name
