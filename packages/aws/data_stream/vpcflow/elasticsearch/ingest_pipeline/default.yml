@@ -39,6 +39,10 @@ processors:
       field: event.original
       pattern: '%{aws.vpcflow.version} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.account_id} %{aws.vpcflow.type} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{aws.vpcflow.protocol} %{aws.vpcflow.bytes} %{aws.vpcflow.packets} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.log_status}'
       if: ctx?._temp_?.message_token_count == 21
+  - dissect:
+      field: event.original
+      pattern: '%{aws.vpcflow.version} %{aws.vpcflow.account_id} %{aws.vpcflow.interface_id} %{aws.vpcflow.srcaddr} %{aws.vpcflow.dstaddr} %{aws.vpcflow.srcport} %{aws.vpcflow.dstport} %{aws.vpcflow.protocol} %{aws.vpcflow.packets} %{aws.vpcflow.bytes} %{aws.vpcflow.start} %{aws.vpcflow.end} %{aws.vpcflow.action} %{aws.vpcflow.log_status} %{aws.vpcflow.vpc_id} %{aws.vpcflow.subnet_id} %{aws.vpcflow.instance_id} %{aws.vpcflow.tcp_flags} %{aws.vpcflow.type} %{aws.vpcflow.pkt_srcaddr} %{aws.vpcflow.pkt_dstaddr} %{cloud.region} %{cloud.availability_zone} %{aws.vpcflow.sublocation.type} %{aws.vpcflow.sublocation.id} %{aws.vpcflow.pkt_src_service} %{aws.vpcflow.pkt_dst_service} %{network.direction} %{aws.vpcflow.traffic_path}'
+      if: ctx?._temp_?.message_token_count == 29
 
   # Convert Unix epoch to timestamp
   - date:
