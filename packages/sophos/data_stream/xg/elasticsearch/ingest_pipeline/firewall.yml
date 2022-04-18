@@ -60,10 +60,6 @@ processors:
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_ip != null"
-- set:
-    field: server.ip
-    copy_from: destination.ip
-    ignore_empty_value: true
 - rename:
     field: sophos.xg.tran_dst_ip
     target_field: destination.nat.ip
@@ -81,10 +77,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_port != null"
-- set:
-    field: server.port
-    copy_from: destination.port
-    ignore_empty_value: true
 - convert:
     field: sophos.xg.tran_dst_port
     target_field: destination.nat.port
@@ -92,19 +84,11 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.tran_dst_port != null"
-- set:
-    field: server.nat.port
-    copy_from: destination.nat.port
-    ignore_empty_value: true
 - rename:
     field: sophos.xg.dst_mac
     target_field: destination.mac
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_mac != null"
-- set:
-    field: server.mac
-    copy_from: destination.mac
-    ignore_empty_value: true
 - convert:
     field: sophos.xg.recv_pkts
     target_field: destination.packets
@@ -119,10 +103,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.packets_received !=null"
-- set:
-    field: server.packets
-    copy_from: destination.packets
-    ignore_empty_value: true
 
 ###############################
 ## ECS Client/Source Mapping ##
@@ -132,10 +112,6 @@ processors:
     target_field: source.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_ip != null"
-- set:
-    field: client.ip
-    value: '{{source.ip}}'
-    if: "ctx.source?.ip != null"
 - rename:
     field: sophos.xg.tran_src_ip
     target_field: source.nat.ip
@@ -158,17 +134,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_port != null"
-- set:
-    field: client.port
-    value: '{{source.port}}'
-    if: "ctx.source?.port != null"
-- convert:
-    field: client.port
-    target_field: client.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.client?.port != null"
 - convert:
     field: sophos.xg.tran_src_port
     target_field: source.nat.port
@@ -176,26 +141,11 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.tran_src_port != null"
-- set:
-    field: client.nat.port
-    value: '{{source.nat.port}}'
-    if: "ctx.source?.nat?.port != null"
-- convert:
-    field: client.nat.port
-    target_field: client.nat.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
-    if: "ctx.client?.nat?.port != null"
 - rename:
     field: sophos.xg.src_mac
     target_field: source.mac
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_mac != null"
-- set:
-    field: client.mac
-    value: '{{source.mac}}'
-    if: "ctx.source?.mac != null"
 - trim:
     field: sophos.xg.sent_pkts
     ignore_missing: true

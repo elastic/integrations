@@ -282,10 +282,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.bytes_sent != null"
-- set:
-    field: client.bytes
-    copy_from: source.bytes
-    ignore_empty_value: true
 - convert:
     field: sophos.xg.recv_bytes
     target_field: destination.bytes
@@ -300,10 +296,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.bytes_received != null"
-- set:
-    field: server.bytes
-    copy_from: destination.bytes
-    ignore_empty_value: true
 
 ###############################
 ## Product Specific Pipelines ##
@@ -341,6 +333,15 @@ processors:
 - pipeline:
     name: '{{ IngestPipeline "wifi" }}'
     if: "ctx.sophos?.xg?.log_type == 'Wireless Protection'"
+
+- set:
+    field: server
+    copy_from: destination
+    ignore_empty_value: true
+- set:
+    field: client
+    copy_from: source
+    ignore_empty_value: true
 #############
 ## Cleanup ##
 #############

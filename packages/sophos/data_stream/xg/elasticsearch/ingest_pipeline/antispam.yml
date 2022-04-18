@@ -52,10 +52,6 @@ processors:
     target_field: destination.ip
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_ip != null"
-- set:
-    field: server.ip
-    value: '{{destination.ip}}'
-    ignore_empty_value: true
 - convert:
     field: sophos.xg.dst_port
     target_field: destination.port
@@ -63,15 +59,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_port != null"
-- set:
-    field: server.port
-    value: '{{destination.port}}'
-    ignore_empty_value: true
-- convert:
-    field: server.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
 - rename:
     field: sophos.xg.to_email_address
     target_field: destination.user.email
@@ -84,10 +71,6 @@ processors:
     field: sophos.xg.src_ip
     target_field: source.ip
     ignore_missing: true
-- set:
-    field: client.ip
-    value: '{{source.ip}}'
-    ignore_empty_value: true
 - convert:
     field: sophos.xg.src_port
     target_field: source.port
@@ -95,15 +78,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_port != null"
-- set:
-    field: client.port
-    value: '{{source.port}}'
-    ignore_empty_value: true
-- convert:
-    field: client.port
-    type: long
-    ignore_failure: true
-    ignore_missing: true
 - rename:
     field: sophos.xg.from_email_address
     target_field: source.user.email
