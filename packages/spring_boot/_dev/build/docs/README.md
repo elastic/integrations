@@ -37,3 +37,13 @@ This is the `audit_events` data stream.
 {{event "audit_events"}}
 
 {{fields "audit_events"}}
+
+### HTTP Trace logs
+
+This is the `http_trace` data stream.
+
+- This data stream displays HTTP trace information.
+
+{{event "http_trace"}}
+
+{{fields "http_trace"}}
