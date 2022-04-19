@@ -38,10 +38,10 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-08T15:05:38.181Z",
+    "@timestamp": "2022-04-19T04:04:12.292Z",
     "agent": {
-        "ephemeral_id": "e0b0ac58-9011-4ddd-ab62-850090808b05",
-        "id": "3802ef0b-f65b-47f0-a5d4-9f752cfa4293",
+        "ephemeral_id": "68805ae3-27d1-47af-9eec-9aa448ec563f",
+        "id": "edbfee44-6a55-4f3f-8125-9feda4bdedb9",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -55,7 +55,7 @@ An example event for `memory` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "3802ef0b-f65b-47f0-a5d4-9f752cfa4293",
+        "id": "edbfee44-6a55-4f3f-8125-9feda4bdedb9",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -63,8 +63,8 @@ An example event for `memory` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.memory",
-        "duration": 447298001,
-        "ingested": "2022-04-08T15:05:41Z",
+        "duration": 457070205,
+        "ingested": "2022-04-19T04:04:15Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -74,10 +74,10 @@ An example event for `memory` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.22.0.4"
+            "192.168.192.5"
         ],
         "mac": [
-            "02:42:ac:16:00:04"
+            "02:42:c0:a8:c0:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -103,8 +103,8 @@ An example event for `memory` looks as following:
             "buffer_pool": {
                 "direct": {
                     "count": 10,
-                    "memory_used": 81920,
-                    "total_capacity": 81920
+                    "total_capacity": 81920,
+                    "used": 81920
                 }
             }
         }
@@ -159,26 +159,24 @@ An example event for `memory` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| spring_boot.memory.buffer_pool.direct.count | Returns count of direct buffer pool memory | long |
-| spring_boot.memory.buffer_pool.direct.memory_used | Returns used memory of direct buffer pool | long |
-| spring_boot.memory.buffer_pool.direct.total_capacity | Returns total capacity of direct buffer pool memory | long |
-| spring_boot.memory.buffer_pool.mapped.count | Returns count of mapped buffer pool memory | long |
-| spring_boot.memory.buffer_pool.mapped.memory_used | Returns used memory of mapped buffer pool | long |
-| spring_boot.memory.buffer_pool.mapped.total_capacity | Returns total capacity of mapped buffer pool memory | long |
-| spring_boot.memory.memory.heap_memory_usage.committed | Returns committed heap memory usage of JVM | long |
-| spring_boot.memory.memory.heap_memory_usage.init | Returns init heap memory usage of JVM | long |
-| spring_boot.memory.memory.heap_memory_usage.max | Returns max heap memory usage of JVM | long |
-| spring_boot.memory.memory.heap_memory_usage.used | Returns used heap memory usage of JVM | long |
-| spring_boot.memory.memory.non_heap_memory_usage.committed | Returns committed non-heap memory usage of JVM | long |
-| spring_boot.memory.memory.non_heap_memory_usage.init | Returns init non-heap memory usage of JVM | long |
-| spring_boot.memory.memory.non_heap_memory_usage.max | Returns max non-heap memory usage of JVM | long |
-| spring_boot.memory.memory.non_heap_memory_usage.used | Returns used non-heap memory usage of JVM | long |
-| spring_boot.memory.memory.object_pending_finalization_count | Returns the approximate number of objects for which finalization is pending | long |
-| spring_boot.memory.memory.verbose | Tests if verbose output for the memory system is enabled | boolean |
-| spring_boot.memory.memory_manager.code_cache_manager.name | Name of the cacheManager to qualify the cache | keyword |
-| spring_boot.memory.memory_manager.code_cache_manager.valid | Return the validation | boolean |
-| spring_boot.memory.memory_manager.metaspace_manager.name | Name of the Metaspace Manager to qualify the cache | keyword |
-| spring_boot.memory.memory_manager.metaspace_manager.valid | Return the validation | boolean |
+| spring_boot.memory.buffer_pool.direct.count | Count of direct buffer pool memory | long |
+| spring_boot.memory.buffer_pool.direct.total_capacity | Total capacity of direct buffer pool memory | long |
+| spring_boot.memory.buffer_pool.direct.used | Used memory of direct buffer pool | long |
+| spring_boot.memory.buffer_pool.mapped.count | Count of mapped buffer pool memory | long |
+| spring_boot.memory.buffer_pool.mapped.total_capacity | Total capacity of mapped buffer pool memory | long |
+| spring_boot.memory.buffer_pool.mapped.used | Used memory of mapped buffer pool | long |
+| spring_boot.memory.heap.committed | Committed heap memory usage of JVM | long |
+| spring_boot.memory.heap.init | Init heap memory usage of JVM | long |
+| spring_boot.memory.heap.max | Max heap memory usage of JVM | long |
+| spring_boot.memory.heap.used | Used heap memory usage of JVM | long |
+| spring_boot.memory.manager.code_cache.name | Name of the cacheManager to qualify the cache | keyword |
+| spring_boot.memory.manager.code_cache.valid | Returns the validation | boolean |
+| spring_boot.memory.manager.metaspace.name | Name of the Metaspace Manager to qualify the cache | keyword |
+| spring_boot.memory.manager.metaspace.valid | Returns the validation | boolean |
+| spring_boot.memory.non_heap.committed | Committed non-heap memory usage of JVM | long |
+| spring_boot.memory.non_heap.init | Init non-heap memory usage of JVM | long |
+| spring_boot.memory.non_heap.max | Max non-heap memory usage of JVM | long |
+| spring_boot.memory.non_heap.used | Used non-heap memory usage of JVM | long |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
