@@ -54,7 +54,7 @@ This is the `http_trace` data stream.
 
 This is the `memory` data stream.
 
-- This data stream gives Memory information.
+- This data stream gives memory information.
 
 {{event "memory"}}
 
