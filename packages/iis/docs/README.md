@@ -1,4 +1,6 @@
-IIS (Internet Information Services) is a secure, reliable, and scalable Web server that provides an easy to manage platform for developing and hosting Web applications and services.
+# IIS (Internet Information Services)  integration
+
+IIS (Internet Information Services) is a secure, reliable, and scalable Web server that provides an easy to manage platform for developing and hosting Web applications and services. For more information, see: [IIS Logging](https://docs.microsoft.com/en-us/windows/win32/http/iis-logging).
 
 The `iis` package will periodically retrieve IIS related metrics using performance counters such as:
 
