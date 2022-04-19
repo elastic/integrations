@@ -1,7 +1,8 @@
 # Imperva integration
 
-This integration is for Imperva device's logs. It includes the following
+This integration is for [Imperva](https://docs.imperva.com/bundle/v13.6-database-activity-monitoring-user-guide/page/1660.htm) device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
+
 - `securesphere` dataset: supports Imperva SecureSphere logs.
 
 ### Securesphere
