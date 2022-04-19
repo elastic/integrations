@@ -1,6 +1,6 @@
 # Infoblox integration
 
-This integration is for Infoblox device's logs. It includes the following
+This integration is for [Infoblox](https://docs.infoblox.com/display/ILP/NIOS/) device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
 - `nios` dataset: supports Infoblox NIOS logs.
 
