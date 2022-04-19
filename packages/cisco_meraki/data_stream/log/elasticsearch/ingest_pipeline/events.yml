@@ -129,6 +129,11 @@ processors:
     field: cisco_meraki.multiple_dhcp_servers_detected.original_server_mac
     target_field: server.mac
     if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+- gsub:
+    field: server.mac
+    pattern: '[-:.]'
+    replacement: '-'
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
 - append:
     field: related.ip
     value: "{{{server.ip}}}"
