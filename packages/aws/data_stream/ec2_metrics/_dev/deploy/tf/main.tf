@@ -2,7 +2,17 @@ variable "TEST_RUN_ID" {
   default = "detached"
 }
 
-provider "aws" {}
+provider "aws" {
+  default_tags {
+    tags = {
+      Environment = "CI"
+      Owner       = "integrations"
+      Branch      = var.BRANCH_NAME
+      Build       = var.BUILD_ID
+      CreatedDate = var.CREATED_DATE
+    }
+  }
+}
 
 resource "aws_instance" "i" {
   ami           = data.aws_ami.latest-amzn.id
