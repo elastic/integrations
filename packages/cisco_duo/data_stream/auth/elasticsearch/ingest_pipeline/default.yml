@@ -45,13 +45,45 @@ processors:
       copy_from: json.reason
       ignore_failure: true
   - set: 
+      field: source.address
+      copy_from: json.access_device.ip
+  - dissect:
+      field: json.access_device.ip
+      pattern: "%{json.access_device.ip}:%{json.access_device.port}"
+      ignore_missing: true
+      ignore_failure: true
+      if: "ctx?.json?.access_device?.ip.contains(':')"
+  - convert:
+      field: json.access_device.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: json.access_device.port
+      type: long
+      ignore_missing: true
+  - set: 
       field: source.ip
       copy_from: json.access_device.ip
       ignore_failure: true
-  - set: 
-      field: source.address
-      copy_from: json.access_device.ip
+  - set:
+      field: source.port
+      copy_from: json.access_device.port
       ignore_failure: true
+
+  - dissect:
+      field: json.auth_device.ip
+      pattern: "%{json.auth_device.ip}:%{json.auth_device.port}"
+      ignore_missing: true
+      ignore_failure: true
+      if: "ctx?.json?.auth_device?.ip.contains(':')"
+  - convert:
+      field: json.auth_device.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: json.auth_device.port
+      type: long
+      ignore_missing: true
   - set: 
       field: source.address
       copy_from: json.access_device.hostname
@@ -185,6 +217,10 @@ processors:
       target_field: cisco_duo.auth.access_device.ip
       ignore_missing: true
   - rename:
+      field: json.access_device.port
+      target_field: cisco_duo.auth.access_device.port
+      ignore_missing: true
+  - rename:
       field: json.access_device.is_encryption_enabled
       target_field: cisco_duo.auth.access_device.is_encryption_enabled
       ignore_missing: true
@@ -239,6 +275,10 @@ processors:
   - rename:
       field: json.auth_device.ip
       target_field: cisco_duo.auth.auth_device.ip
+      ignore_missing: true
+  - rename:
+      field: json.auth_device.port
+      target_field: cisco_duo.auth.auth_device.port
       ignore_missing: true
   - rename:
       field: json.auth_device.location.city
