@@ -11,16 +11,6 @@ processors:
     - '%{SYSLOG5424PRI}%{GREEDYDATA:event.original}$'
     - '%{SYSLOGTIMESTAMP} %{HOSTNAME:observer.hostname} %{GREEDYDATA:event.original}$'
 
-# optimize fields / strings in event.original for KV processor
-- gsub:
-    field: event.original
-    pattern: "clients_conn_SSID"
-    replacement: 'clients_conn_ssid'
-- gsub:
-    field: event.original
-    pattern: "SysLog_SERVER_NAME"
-    replacement: 'syslog_server_name'
-
 # split Sophos-XG fields
 - kv:
     field: event.original
@@ -30,6 +20,17 @@ processors:
     ignore_missing: true
     ignore_failure: false
     trim_value: "\""
+
+- script:
+    description: Lowercase sophos.xg key name names.
+    tag: lowercase-sophos-keys
+    if: ctx?.sophos?.xg != null
+    source: |
+      def lowercaseMap = [:];
+      for(def entry : ctx.sophos.xg.entrySet()){
+        lowercaseMap.put(entry.getKey().toLowerCase(), entry.getValue());
+      }
+      ctx.sophos.xg = lowercaseMap;
 
 # Parse the date
 - set:
