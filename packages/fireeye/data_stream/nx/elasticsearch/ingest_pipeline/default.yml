@@ -2,9 +2,6 @@
 description: Pipeline for processing FireEye NX logs
 processors:
   - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-  - set:
       field: ecs.version
       value: "8.0.0"
   - set:
@@ -77,6 +74,23 @@ processors:
   - user_agent:
       field: user_agent.original
       ignore_missing: true
+
+  - append:
+      field: event.category
+      value: network
+      if: "['dns', 'flow', 'tls'].contains(ctx?.event?.type)"
+  - append:
+      field: event.category
+      value: [web, network]
+      if: ctx?.event?.type == 'http'
+  - append:
+      field: event.category
+      value: [file, network]
+      if: ctx?.event?.type == 'fileinfo'
+  - set:
+      field: event.type
+      value: [info]
+
   #
   # Normalize protocol names
   #
