@@ -1,6 +1,6 @@
 # Juniper integration
 
-This is an integration for ingesting data from the different Juniper products.
+This is an integration for ingesting data from the different [Juniper](https://www.juniper.net/documentation/) products.
 Currently it supports these datasets:
 - `srx` fileset: Supports Juniper SRX logs
 - `junos` dataset: supports Juniper JUNOS logs.
