@@ -58,6 +58,7 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cisco_meraki.8021x_auth |  | flattened |
 | cisco_meraki.8021x_deauth |  | flattened |
 | cisco_meraki.8021x_eap_failure |  | flattened |
 | cisco_meraki.8021x_eap_success |  | flattened |
@@ -72,11 +73,11 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.device_packet_flood |  | flattened |
 | cisco_meraki.device_type |  | keyword |
 | cisco_meraki.dfs_event |  | flattened |
-| cisco_meraki.dhcp_clash |  | flattened |
 | cisco_meraki.disassociation |  | flattened |
 | cisco_meraki.event_subtype |  | keyword |
 | cisco_meraki.event_type |  | keyword |
 | cisco_meraki.flows |  | flattened |
+| cisco_meraki.multiple_dhcp_servers_detected |  | flattened |
 | cisco_meraki.security.action |  | keyword |
 | cisco_meraki.security.decision |  | keyword |
 | cisco_meraki.security.dhost |  | keyword |
@@ -229,6 +230,7 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | server.registered_domain | The highest registered server domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | server.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
