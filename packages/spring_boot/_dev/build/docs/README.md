@@ -1,6 +1,6 @@
 # Spring Boot integration
 
-The Spring Boot integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+The Spring Boot integration is used to fetch observability data from [Spring Boot Actuator web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
 
 ## Compatibility
 
@@ -26,13 +26,35 @@ In order to ingest data from Spring Boot:
 </dependency>
 ```
 
+## Logs
+
+### Audit Events logs
+
+This is the `audit_events` data stream.
+
+- This data stream exposes audit events information for the current application.
+
+{{event "audit_events"}}
+
+{{fields "audit_events"}}
+
+### HTTP Trace logs
+
+This is the `http_trace` data stream.
+
+- This data stream displays HTTP trace information.
+
+{{event "http_trace"}}
+
+{{fields "http_trace"}}
+
 ## Metrics
 
 ### Memory Metrics
 
-This is the `memory` dataset.
+This is the `memory` data stream.
 
-- This dataset gives Memory information.
+- This data stream gives Memory information.
 
 {{event "memory"}}
 
