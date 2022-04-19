@@ -238,10 +238,10 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-19T13:34:07.821Z",
+    "@timestamp": "2022-04-19T14:00:43.778Z",
     "agent": {
-        "ephemeral_id": "a240cd36-1106-473e-b386-8dade2892272",
-        "id": "01c1afc8-ba17-4c3d-ae99-133d73fb066f",
+        "ephemeral_id": "71f24a1d-9ea7-439e-9bec-cbac4c0def02",
+        "id": "aa55f558-63ab-41dd-9e77-7313bd6ec098",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -255,7 +255,7 @@ An example event for `memory` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "01c1afc8-ba17-4c3d-ae99-133d73fb066f",
+        "id": "aa55f558-63ab-41dd-9e77-7313bd6ec098",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -263,8 +263,8 @@ An example event for `memory` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.memory",
-        "duration": 472647379,
-        "ingested": "2022-04-19T13:34:11Z",
+        "duration": 447607655,
+        "ingested": "2022-04-19T14:00:46Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -274,10 +274,10 @@ An example event for `memory` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.20.0.7"
+            "172.23.0.5"
         ],
         "mac": [
-            "02:42:ac:14:00:07"
+            "02:42:ac:17:00:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -301,16 +301,16 @@ An example event for `memory` looks as following:
     "spring_boot": {
         "memory": {
             "heap": {
-                "committed": 408944640,
+                "committed": 296222720,
                 "init": 96468992,
                 "max": 1350041600,
-                "used": 142322992
+                "used": 138345760
             },
             "non_heap": {
-                "committed": 61079552,
+                "committed": 61038592,
                 "init": 2555904,
                 "max": -1,
-                "used": 55802328
+                "used": 56775696
             }
         }
     }
