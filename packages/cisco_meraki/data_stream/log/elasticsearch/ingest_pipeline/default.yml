@@ -223,6 +223,15 @@ processors:
           type:
             - indicator
           action: ssid-spoofing-detected
+        "multiple_dhcp_servers_detected":
+          category:
+            - network
+          type:
+            - protocol
+        "dfs_event":
+          action: dynamic-frequency-selection-detected
+        "aps_association_reject":
+          action: association-rejected-for-load-balancing
     source: |-
          ctx.event.type = new ArrayList();
          ctx.event.category = new ArrayList();
@@ -235,7 +244,7 @@ processors:
          def eventMap = params.get('eventmap');
          def eventData = eventMap.get(eventSubtype);
          if (eventData == null) {
-           ctx.event.action = 'unknown-' + eventSubtype;
+           ctx.event.action = eventSubtype;
            ctx.event.category = ['network'];
            ctx.event.type = ['info'];
            return;
