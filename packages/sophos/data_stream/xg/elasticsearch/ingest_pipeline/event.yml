@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing sophos firewall logs (event pipeline)
+description: Pipeline for parsing Sophos XG firewall logs (authentication events pipeline).
 processors:
 #######################
 ## ECS Event Mapping ##
@@ -18,23 +18,23 @@ processors:
 - set:
     field: event.outcome
     value: success
-    if: 'ctx?.sophos?.xg?.log_subtype == "Admin" && ctx?.sophos?.xg?.status == "Successful" && ctx?.sophos?.xg?.message_id == "17507"'
+    if: 'ctx?.sophos?.xg?.log_subtype == "Admin" && ctx?.sophos?.xg?.status == "Successful" && ctx?.event?.code == "17507"'
 - set:
     field: event.outcome
     value: failure
-    if: 'ctx?.sophos?.xg?.log_subtype == "Admin" && ctx?.sophos?.xg?.status == "Failed" && ctx?.sophos?.xg?.message_id == "17507"'
+    if: 'ctx?.sophos?.xg?.log_subtype == "Admin" && ctx?.sophos?.xg?.status == "Failed" && ctx?.event?.code == "17507"'
 - append:
     field: event.type
     value:
     - user
     - start
-    if: "['17701', '17704', '17707', '17710', '17713'].contains(ctx.sophos?.xg?.message_id)"
+    if: "['17701', '17704', '17707', '17710', '17713'].contains(ctx?.event?.code)"
 - append:
     field: event.type
     value:
     - user
     - end
-    if: "['17703', '17706', '17709', '17712', '17715'].contains(ctx.sophos?.xg?.message_id)"
+    if: "['17703', '17706', '17709', '17712', '17715'].contains(ctx?.event?.code)"
 - append:
     field: event.type
     value: connection
@@ -50,18 +50,13 @@ processors:
 - append:
     field: event.type
     value: info
-    if: 'ctx?.sophos?.xg?.message_id == "17819"'
+    if: 'ctx?.event?.code == "17819"'
 - append:
     field: event.category
     value:
     - host
     - malware
-    if: 'ctx?.sophos?.xg?.message_id == "17819"'
-- rename:
-    field: sophos.xg.log_id
-    target_field: event.code
-    ignore_missing: true
-    if: "ctx.event?.code == null"
+    if: 'ctx?.event?.code == "17819"'
 
 ####################################
 ## ECS Server/Destination Mapping ##

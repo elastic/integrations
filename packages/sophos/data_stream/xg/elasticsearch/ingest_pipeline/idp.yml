@@ -20,18 +20,13 @@ processors:
     value:
       - intrusion_detection
       - network
-    if: '["06001", "06002", "07001", "07002"].contains(ctx.sophos?.xg?.message_id)'
+    if: '["06001", "06002", "07001", "07002"].contains(ctx?.event?.code)'
 - append:
     field: event.type
     value:
       - denied
       - connection
-    if: '["06001", "06002", "07001", "07002"].contains(ctx.sophos?.xg?.message_id)'
-- rename:
-    field: sophos.xg.log_id
-    target_field: event.code
-    ignore_missing: true
-    if: "ctx.sophos?.xg?.log_id != null"
+    if: '["06001", "06002", "07001", "07002"].contains(ctx?.event?.code)'
 
 ####################################
 ## ECS Server/Destination Mapping ##

@@ -20,18 +20,13 @@ processors:
     value:
       - intrusion_detection
       - network
-    if: '["18009", "18010"].contains(ctx.sophos?.xg?.message_id)'
+    if: '["18009", "18010"].contains(ctx?.event?.code)'
 - append:
     field: event.type
     value:
       - denied
       - connection
-    if: '["18009", "18010"].contains(ctx.sophos?.xg?.message_id)'
-- rename:
-    field: sophos.xg.log_id
-    target_field: event.code
-    ignore_missing: true
-    if: "ctx.event?.code == null"
+    if: '["18009", "18010"].contains(ctx?.event?.code)'
 - rename:
     field: sophos.xg.eventid
     target_field: event.id
@@ -87,6 +82,15 @@ processors:
      target_field: url.original
      ignore_missing: true
      if: "ctx.sophos?.xg?.url != null"
+- uri_parts:
+    if: ctx?.url?.original != null && ctx.url.original.contains("://")
+    field: url.original
+    target_field: url
+- set:
+    if: ctx?.url?.original != null && ctx.url.original.contains("://")
+    field: url.full
+    copy_from: url.original
+    ignore_empty_value: true
 
 #############################
 ## ECS Network/Geo Mapping ##

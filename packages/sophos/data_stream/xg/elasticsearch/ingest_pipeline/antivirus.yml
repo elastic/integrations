@@ -31,22 +31,17 @@ processors:
 - set:
     field: event.kind
     value: event
-    if: '["09002"].contains(ctx.sophos?.xg?.message_id)'
+    if: '["09002"].contains(ctx?.event?.code)'
 - append:
     field: event.type
     value:
       - allowed
       - connection
-    if: '["09002"].contains(ctx.sophos?.xg?.message_id)'
+    if: '["09002"].contains(ctx?.event?.code)'
 - append:
     field: event.category
     value: network
-    if: '["09002"].contains(ctx.sophos?.xg?.message_id)'
-- rename:
-    field: sophos.xg.log_id
-    target_field: event.code
-    ignore_missing: true
-    if: "ctx.event?.code == null"
+    if: '["09002"].contains(ctx?.event?.code)'
 
 ####################################
 ## ECS Server/Destination Mapping ##
@@ -68,6 +63,10 @@ processors:
     target_field: destination.user.email
     ignore_missing: true
     if: "ctx.sophos?.xg?.to_email_address != null"
+- rename:
+    field: sophos.xg.dstdomain
+    target_field: destination.domain
+    ignore_failure: true
 
 ###############################
 ## ECS Client/Source Mapping ##
@@ -112,21 +111,19 @@ processors:
      target_field: url.original
      ignore_missing: true
      if: "ctx.sophos?.xg?.url != null"
+- uri_parts:
+    if: ctx?.url?.original != null && ctx.url.original.contains("://")
+    field: url.original
+    target_field: url
+- set:
+    if: ctx?.url?.original != null && ctx.url.original.contains("://")
+    field: url.full
+    copy_from: url.original
+    ignore_empty_value: true
 - rename:
      field: sophos.xg.domainname
      target_field: url.domain
-     ignore_missing: true
-     if: "ctx.sophos?.xg?.domainname != null"
-- rename:
-     field: sophos.xg.dst_domainname
-     target_field: url.domain
-     ignore_missing: true
-     if: "ctx.sophos?.xg?.dst_domainname != null && ctx?.url?.domain == null"
-- rename:
-     field: sophos.xg.src_domainname
-     target_field: url.domain
-     ignore_missing: true
-     if: "ctx.sophos?.xg?.src_domainname != null"
+     ignore_failure: true
 
 ############################
 ## ECS User Agent Mapping ##
@@ -270,6 +267,7 @@ processors:
       ignore_failure: true
 - remove:
     field:
+    - sophos.xg.domainname
     - sophos.xg.dst_port
     - sophos.xg.src_port
     - sophos.xg.status_code
