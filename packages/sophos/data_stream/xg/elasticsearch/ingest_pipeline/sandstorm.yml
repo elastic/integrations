@@ -52,9 +52,15 @@ processors:
       - connection
     if: "ctx.sophos?.xg?.log_subtype == 'Denied'"
 
-###############################
-## ECS Client/Source Mapping ##
-###############################
+- rename:
+    if: ctx?.sophos?.xg?.log_component == "Web"
+    field: sophos.xg.source
+    target_field: url.domain
+    ignore_missing: true
+
+########################
+## ECS Source Mapping ##
+########################
 - rename:
     field: sophos.xg.src_ip
     target_field: source.ip
@@ -66,6 +72,20 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.user_name != null"
 
+#############################
+## ECS Destination Mapping ##
+#############################
+- convert:
+    field: url.domain
+    target_field: destination.ip
+    type: ip
+    ignore_missing: true
+    on_failure:
+      - set:
+          field: destination.domain
+          copy_from: url.domain
+          ignore_empty_value: true
+
 ######################
 ## ECS File Mapping ##
 ######################
@@ -73,7 +93,7 @@ processors:
     field: sophos.xg.filename
     target_field: file.name
     ignore_missing: true
-    if: "ctx.sopho?.xg?.filename != null"
+    if: ctx?.sophos?.xg?.filename != null
 - convert:
     field: sophos.xg.filesize
     target_field: file.size
@@ -100,6 +120,11 @@ processors:
     value: "{{source.ip}}"
     allow_duplicates: false
     if: "ctx.source?.ip != null"
+- append:
+    field: related.ip
+    value: "{{{destination.ip}}}"
+    allow_duplicates: false
+    if: "ctx.destination?.ip != null"
 - append:
     field: related.user
     value: "{{source.user.name}}"
