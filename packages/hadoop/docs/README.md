@@ -24,7 +24,7 @@ An example event for `application` looks as following:
         "id": "9944acc9-e39f-40e0-a02a-7529cf504db1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "data_stream": {
         "dataset": "hadoop.application",
@@ -32,12 +32,12 @@ An example event for `application` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
         "id": "9944acc9-e39f-40e0-a02a-7529cf504db1",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
