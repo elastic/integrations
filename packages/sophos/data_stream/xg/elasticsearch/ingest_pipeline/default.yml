@@ -288,6 +288,45 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.bytes_received != null"
 
+#############################
+## ECS Source/Destination MAC
+#############################
+- rename:
+    field: sophos.xg.src_mac
+    target_field: source.mac
+    ignore_failure: true
+- uppercase:
+    field: source.mac
+    ignore_missing: true
+- gsub:
+    field: source.mac
+    pattern: '[-:. ]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: source.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+
+- rename:
+    field: sophos.xg.dst_mac
+    target_field: destination.mac
+    ignore_failure: true
+- uppercase:
+    field: destination.mac
+    ignore_missing: true
+- gsub:
+    field: destination.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+- gsub:
+    field: destination.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+
 ###############################
 ## Product Specific Pipelines ##
 ###############################
