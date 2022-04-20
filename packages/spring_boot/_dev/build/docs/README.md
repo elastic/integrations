@@ -1,6 +1,6 @@
 # Spring Boot integration
 
-The Spring Boot integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+The Spring Boot integration is used to fetch observability data from [Spring Boot Actuator web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
 
 ## Compatibility
 
@@ -30,9 +30,9 @@ In order to ingest data from Spring Boot:
 
 ### Threading Metrics
 
-This is the `threading` dataset.
+This is the `threading` data stream.
 
-- This dataset gives details of threading.
+- This data stream gives metrics related to thread allocations, monitoring and CPU times.
 
 {{event "threading"}}
 
