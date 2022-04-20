@@ -24,7 +24,7 @@ An example event for `namenode` looks as following:
         "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "data_stream": {
         "dataset": "hadoop.namenode",
@@ -32,12 +32,12 @@ An example event for `namenode` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
         "id": "adf6847a-3726-4fe6-a202-147021ff3cbc",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
