@@ -43,9 +43,9 @@ processors:
       - connection
     if: "ctx.sophos?.xg?.log_subtype == 'Denied'"
 
-####################################
-## ECS Server/Destination Mapping ##
-####################################
+##########################
+## ECS Destination Mapping
+##########################
 - rename:
     field: sophos.xg.dst_ip
     target_field: destination.ip
@@ -59,9 +59,9 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_port != null"
 
-###############################
-## ECS Client/Source Mapping ##
-###############################
+#####################
+## ECS Source Mapping
+#####################
 - rename:
     field: sophos.xg.src_ip
     target_field: source.ip
@@ -142,6 +142,11 @@ processors:
     field: sophos.xg.protocol
     target_field: network.transport
     ignore_missing: true
+- set:
+    field: network.protocol
+    copy_from: url.scheme
+    override: false
+    ignore_empty_value: true
 
 #############
 ## Cleanup ##
