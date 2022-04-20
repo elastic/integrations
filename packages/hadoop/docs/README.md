@@ -24,7 +24,7 @@ An example event for `application` looks as following:
         "id": "9944acc9-e39f-40e0-a02a-7529cf504db1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "data_stream": {
         "dataset": "hadoop.application",
@@ -32,12 +32,12 @@ An example event for `application` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
         "id": "9944acc9-e39f-40e0-a02a-7529cf504db1",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -118,7 +118,7 @@ An example event for `cluster` looks as following:
         "id": "abf8f8c1-f293-4e16-a8f8-8cf48014d040",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "data_stream": {
         "dataset": "hadoop.cluster",
@@ -126,12 +126,12 @@ An example event for `cluster` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
         "id": "abf8f8c1-f293-4e16-a8f8-8cf48014d040",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
