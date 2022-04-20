@@ -410,6 +410,31 @@ processors:
     target_field: destination.as.organization.name
     ignore_missing: true
 
+##############
+## ECS Network
+##############
+- lowercase:
+    field: network.protocol
+    ignore_failure: true
+- lowercase:
+    field: network.transport
+    ignore_failure: true
+- script:
+    lang: painless
+    source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+    if: "ctx?.source?.bytes != null && ctx?.destination?.bytes != null"
+    ignore_failure: true
+- script:
+    lang: painless
+    source: "ctx.network.packets = ctx.source.packets + ctx.destination.packets"
+    if: "ctx?.source?.packets != null && ctx?.destination?.packets != null"
+    ignore_failure: true
+- community_id:
+    ignore_failure: true
+
+####################
+## ECS Client/Server
+####################
 - set:
     field: server
     copy_from: destination
@@ -418,11 +443,6 @@ processors:
     field: client
     copy_from: source
     ignore_empty_value: true
-
-- rename:
-    field: sophos.xg.reason
-    target_field: event.reason
-    ignore_failure: true
 
 #################
 ## ECS Related IP
@@ -474,12 +494,11 @@ processors:
 #############
 ## Cleanup ##
 #############
-- lowercase:
-    field: network.protocol
+- rename:
+    field: sophos.xg.reason
+    target_field: event.reason
     ignore_failure: true
-- lowercase:
-    field: network.transport
-    ignore_failure: true
+
 - remove:
     field:
       - sophos.xg.bytes_received
