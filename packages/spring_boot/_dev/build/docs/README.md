@@ -1,6 +1,6 @@
 # Spring Boot integration
 
-The Spring Boot integration is used to fetch observability data from [Spring Boot Actuators web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
+The Spring Boot integration is used to fetch observability data from [Spring Boot Actuator web endpoints](https://docs.spring.io/spring-boot/docs/2.6.3/actuator-api/htmlsingle/) and ingest it into Elasticsearch.
 
 ## Compatibility
 
@@ -30,9 +30,9 @@ In order to ingest data from Spring Boot:
 
 ### GC Metrics
 
-This is the `gc` dataset.
+This is the `gc` data stream.
 
-- This dataset gives data of GC Memory.
+- This data stream gives metrics related to Garbage Collector(GC) Memory.
 
 {{event "gc"}}
 
