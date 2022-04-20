@@ -419,10 +419,6 @@ processors:
     copy_from: source
     ignore_empty_value: true
 
-- lowercase:
-    field: network.transport
-    ignore_missing: true
-
 - rename:
     field: sophos.xg.reason
     target_field: event.reason
@@ -431,6 +427,12 @@ processors:
 #############
 ## Cleanup ##
 #############
+- lowercase:
+    field: network.protocol
+    ignore_failure: true
+- lowercase:
+    field: network.transport
+    ignore_failure: true
 - remove:
     field:
       - sophos.xg.bytes_received
