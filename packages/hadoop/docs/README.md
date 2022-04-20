@@ -32,7 +32,7 @@ An example event for `datanode` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "elastic_agent": {
         "id": "b712f448-71fa-4826-999f-6266019438db",
