@@ -1,6 +1,6 @@
 # Juniper JunOS integration
 
-This is an integration for ingesting logs from Juniper JunOS.
+This is an integration for ingesting logs from [Juniper JunOS](https://www.juniper.net/documentation/product/us/en/junos-os).
 
 ### Log
 
