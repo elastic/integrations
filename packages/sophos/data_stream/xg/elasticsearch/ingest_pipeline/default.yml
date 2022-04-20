@@ -424,6 +424,30 @@ processors:
     target_field: event.reason
     ignore_failure: true
 
+#################
+## ECS Related IP
+#################
+- append:
+    if: ctx?.source?.ip != null
+    field: related.ip
+    value: '{{{source.ip}}}'
+    allow_duplicates: false
+- append:
+    if: ctx?.destination?.ip != null
+    field: related.ip
+    value: '{{{destination.ip}}}'
+    allow_duplicates: false
+- append:
+    if: ctx?.source?.nat?.ip != null
+    field: related.ip
+    value: '{{{source.nat.ip}}}'
+    allow_duplicates: false
+- append:
+    if: ctx?.destination?.nat?.ip != null
+    field: related.ip
+    value: '{{{destination.nat.ip}}}'
+    allow_duplicates: false
+
 #############
 ## Cleanup ##
 #############
