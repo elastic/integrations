@@ -111,74 +111,76 @@ An example event for `auditd` looks as following:
 
 ```json
 {
-    "@timestamp": "2016-01-03T00:37:51.394Z",
+    "@timestamp": "2022-04-07T15:05:50.500Z",
     "agent": {
-        "ephemeral_id": "26e35ddc-258e-426f-87cf-40517f808d30",
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "ephemeral_id": "e0628fc4-1dd1-41be-bd91-933cab7a1f84",
+        "id": "0f196a51-65b8-4251-a335-71e4fb500136",
+        "name": "auditd-agent",
+        "type": "auditbeat",
+        "version": "8.2.0"
     },
     "auditd": {
-        "log": {
-            "proctitle": "bash",
-            "sequence": 194438
+        "data": {
+            "audit_backlog_wait_time": "0",
+            "old": "0",
+            "op": "set"
+        },
+        "message_type": "config_change",
+        "result": "success",
+        "sequence": 68938,
+        "summary": {
+            "actor": {
+                "primary": "unset"
+            },
+            "object": {
+                "primary": "set",
+                "type": "audit-config"
+            }
         }
     },
     "data_stream": {
-        "dataset": "auditd.log",
+        "dataset": "auditd_manager.auditd",
         "namespace": "ep",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
-        "snapshot": false,
-        "version": "8.0.0-beta1"
+        "id": "0f196a51-65b8-4251-a335-71e4fb500136",
+        "snapshot": true,
+        "version": "8.2.0"
     },
     "event": {
-        "action": "proctitle",
+        "action": "changed-audit-configuration",
         "agent_id_status": "verified",
-        "dataset": "auditd.log",
-        "ingested": "2021-12-24T01:30:55Z",
-        "kind": "event"
+        "category": [
+            "process",
+            "configuration"
+        ],
+        "dataset": "auditd_manager.auditd",
+        "ingested": "2022-04-07T15:05:53Z",
+        "kind": "event",
+        "module": "auditd",
+        "original": [
+            "type=CONFIG_CHANGE msg=audit(1649343950.500:68938): op=set audit_backlog_wait_time=0 old=0 auid=4294967295 ses=4294967295 res=1"
+        ],
+        "outcome": "success",
+        "type": [
+            "change"
+        ]
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "192.168.224.7"
-        ],
-        "mac": [
-            "02:42:c0:a8:e0:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-41-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
-            "type": "linux",
-            "version": "7 (Core)"
-        }
+        "name": "auditd-agent"
     },
-    "input": {
-        "type": "log"
-    },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/audit.log"
-        },
-        "offset": 1706
+    "service": {
+        "type": "auditd"
     },
     "tags": [
-        "auditd-log"
-    ]
+        "preserve_original_event",
+        "auditd_manager-auditd"
+    ],
+    "user": {}
 }
 ```
 
@@ -187,7 +189,102 @@ An example event for `auditd` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| auditd.data.a0 |  | keyword |
+| auditd.data.a1 |  | keyword |
+| auditd.data.a2 |  | keyword |
+| auditd.data.a3 |  | keyword |
+| auditd.data.arch |  | keyword |
+| auditd.data.argc |  | keyword |
+| auditd.data.audit_backlog_wait_time |  | keyword |
+| auditd.data.audit_pid |  | keyword |
+| auditd.data.auid |  | keyword |
+| auditd.data.exit |  | keyword |
+| auditd.data.fe |  | keyword |
+| auditd.data.fi |  | keyword |
+| auditd.data.fp |  | keyword |
+| auditd.data.frootid |  | keyword |
+| auditd.data.fver |  | keyword |
+| auditd.data.old |  | keyword |
+| auditd.data.old_pa |  | keyword |
+| auditd.data.old_pe |  | keyword |
+| auditd.data.old_pi |  | keyword |
+| auditd.data.old_pp |  | keyword |
+| auditd.data.op |  | keyword |
+| auditd.data.pa |  | keyword |
+| auditd.data.pe |  | keyword |
+| auditd.data.pi |  | keyword |
+| auditd.data.pp |  | keyword |
+| auditd.data.result |  | keyword |
+| auditd.data.ses |  | keyword |
+| auditd.data.socket.family |  | keyword |
+| auditd.data.socket.saddr |  | keyword |
+| auditd.data.syscall |  | keyword |
+| auditd.data.tty |  | keyword |
+| auditd.message_type |  | keyword |
+| auditd.paths |  | keyword |
+| auditd.result |  | keyword |
+| auditd.sequence |  | long |
+| auditd.summary.actor.primary |  | keyword |
+| auditd.summary.actor.secondary |  | keyword |
+| auditd.summary.how |  | keyword |
+| auditd.summary.object.primary |  | keyword |
+| auditd.summary.object.type |  | keyword |
+| container.name | Container name. | keyword |
+| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.module | Event module | constant_keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
+| group.name | Name of the group. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.pid | Process id. | long |
+| process.pid | Process id. | long |
+| process.working_directory | The working directory of the process. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| user.effective.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.effective.group.name | Name of the group. | keyword |
+| user.effective.id | Unique identifier of the user. | keyword |
+| user.effective.name | Short name or login of the user. | keyword |
+| user.filesystem.group.id |  | keyword |
+| user.filesystem.group.name |  | keyword |
+| user.filesystem.id |  | keyword |
+| user.filesystem.name |  | keyword |
+| user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.saved.group.id |  | keyword |
+| user.saved.group.name |  | keyword |
+| user.saved.id |  | keyword |
+| user.saved.name |  | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
 

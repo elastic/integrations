@@ -1,0 +1,18 @@
+version: '2.3'
+services:
+  auditd-agent:
+    hostname: auditd-agent
+    image: "docker.elastic.co/beats/elastic-agent-complete:8.2.0-SNAPSHOT"
+    pid: host
+    cap_add:
+      - AUDIT_CONTROL
+      - AUDIT_READ
+    user: root
+    healthcheck:
+      test: "elastic-agent status"
+      retries: 180
+      interval: 1s
+    environment:
+      FLEET_ENROLL: "1"
+      FLEET_INSECURE: "1"
+      FLEET_URL: "http://fleet-server:8220"

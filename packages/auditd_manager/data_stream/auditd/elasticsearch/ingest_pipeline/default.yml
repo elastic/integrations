@@ -1,15 +1,95 @@
 ---
-description: Pipeline for processing auditd events
+description: Pipeline for parsing Linux auditd logs
 processors:
   - set:
       field: ecs.version
-      value: 8.2.0
+      value: '8.2.0'
+  - join:
+      field: event.original
+      separator: "\n"
+      ignore_failure: true
+  # User fields
+  - rename:
+      field: user.auid
+      target_field: auditd.user.audit.id
+      ignore_failure: true
+  - rename:
+      field: user.uid
+      target_field: user.id
+      ignore_failure: true
+  - rename:
+      field: user.fsuid
+      target_field: auditd.user.filesystem.id
+      ignore_failure: true
+  - rename:
+      field: user.suid
+      target_field: auditd.user.saved.id
+      ignore_failure: true
+  - rename:
+      field: user.gid
+      target_field: user.group.id
+      ignore_failure: true
+  - rename:
+      field: user.sgid
+      target_field: auditd.user.saved.group.id
+      ignore_failure: true
+  - rename:
+      field: user.fsgid
+      target_field: auditd.user.filesystem.group.id
+      ignore_failure: true
+  - rename:
+      field: user.name_map.auid
+      target_field: auditd.user.audit.name
+      ignore_failure: true
+  - rename:
+      field: user.name_map.uid
+      target_field: user.name
+      ignore_failure: true
+  - rename:
+      field: user.name_map.fsuid
+      target_field: auditd.user.filesystem.name
+      ignore_failure: true
+  - rename:
+      field: user.name_map.suid
+      target_field: auditd.user.saved.name
+      ignore_failure: true
+  - rename:
+      field: user.name_map.gid
+      target_field: user.group.name
+      ignore_failure: true
+  - rename:
+      field: user.name_map.sgid
+      target_field: auditd.user.saved.group.name
+      ignore_failure: true
+  - rename:
+      field: user.name_map.fsgid
+      target_field: auditd.user.filesystem.group.name
+      ignore_failure: true
+  - rename:
+      field: user.selinux
+      target_field: auditd.user.selinux
+      ignore_failure: true
+  # Process fields
+  - rename:
+      field: process.cwd
+      target_field: process.working_directory
+      ignore_failure: true
+  # Source fields
+  - rename:
+      field: source.path
+      target_field: source.address
+      ignore_failure: true
+  # Destination fields
+  - rename:
+      field: destination.path
+      target_field: destination.address
+      ignore_failure: true
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
