@@ -238,10 +238,10 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-20T10:52:52.524Z",
+    "@timestamp": "2022-04-20T13:03:45.533Z",
     "agent": {
-        "ephemeral_id": "b42354bc-af27-477d-88b0-82950dba6f5f",
-        "id": "b26c6d45-fef8-41d6-96f4-b625b891224f",
+        "ephemeral_id": "c9cba3ad-ab82-4f17-95b1-a92257a086b0",
+        "id": "f7cd0ea7-4d35-4573-956a-021aa2718bbe",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -255,7 +255,7 @@ An example event for `memory` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "b26c6d45-fef8-41d6-96f4-b625b891224f",
+        "id": "f7cd0ea7-4d35-4573-956a-021aa2718bbe",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -263,8 +263,8 @@ An example event for `memory` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.memory",
-        "duration": 520662354,
-        "ingested": "2022-04-20T10:52:55Z",
+        "duration": 498219023,
+        "ingested": "2022-04-20T13:03:48Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -274,10 +274,10 @@ An example event for `memory` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.80.7"
+            "192.168.144.4"
         ],
         "mac": [
-            "02:42:c0:a8:50:07"
+            "02:42:c0:a8:90:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -301,16 +301,16 @@ An example event for `memory` looks as following:
     "spring_boot": {
         "memory": {
             "heap": {
-                "committed": 300941312,
+                "committed": 303038464,
                 "init": 96468992,
                 "max": 1350041600,
-                "used": 138209424
+                "used": 135078232
             },
             "non_heap": {
-                "committed": 61079552,
+                "committed": 60882944,
                 "init": 2555904,
                 "max": -1,
-                "used": 56434560
+                "used": 55917256
             }
         }
     }
@@ -328,11 +328,9 @@ An example event for `memory` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | spring_boot.memory.buffer_pool.direct.count | Count of direct buffer pool memory | long |
