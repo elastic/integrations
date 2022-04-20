@@ -43,9 +43,9 @@ processors:
     value: network
     if: '["09002"].contains(ctx?.event?.code)'
 
-####################################
-## ECS Server/Destination Mapping ##
-####################################
+#############################
+## ECS Destination Mapping ##
+#############################
 - rename:
     field: sophos.xg.dst_ip
     target_field: destination.ip
@@ -67,10 +67,14 @@ processors:
     field: sophos.xg.dstdomain
     target_field: destination.domain
     ignore_failure: true
+- rename:
+    field: sophos.xg.dst_domainname
+    target_field: destination.domain
+    ignore_failure: true
 
-###############################
-## ECS Client/Source Mapping ##
-###############################
+########################
+## ECS Source Mapping ##
+########################
 - rename:
     field: sophos.xg.src_ip
     target_field: source.ip
@@ -93,6 +97,10 @@ processors:
     target_field: source.user.email
     ignore_missing: true
     if: "ctx.sophos?.xg?.from_email_address != null"
+- rename:
+    field: sophos.xg.src_domainname
+    target_field: source.domain
+    ignore_failure: true
 
 ######################
 ## ECS Rule Mapping ##
