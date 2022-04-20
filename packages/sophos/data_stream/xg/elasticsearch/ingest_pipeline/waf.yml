@@ -48,6 +48,21 @@ processors:
       - connection
     if: 'ctx.sophos?.xg?.reason != "-"'
 
+- convert:
+    field: sophos.xg.responsetime
+    type: long
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.responsetime
+- script:
+    description: Convert microseconds to nanoseconds.
+    lang: painless
+    source: |
+      if (ctx?.sophos?.xg?.responsetime != null && ctx.sophos.xg.responsetime > 0) {
+        ctx.event.duration = ctx.sophos.xg.responsetime * 1000; 
+      }
+
 ####################################
 ## ECS Server/Destination Mapping ##
 ####################################
@@ -151,6 +166,7 @@ processors:
      - sophos.xg.bytesrcv
      - sophos.xg.bytessent
      - sophos.xg.httpstatus
+     - sophos.xg.responsetime
     ignore_missing: true
 on_failure:
 - set:
