@@ -99,6 +99,10 @@ func TestReadGithubOwners(t *testing.T) {
 			codeownersPath: "testdata/CODEOWNERS-invalid-override",
 			valid:          false,
 		},
+		{
+			codeownersPath: "testdata/CODEOWNERS-invalid-override-wildcard",
+			valid:          false,
+		},
 	}
 
 	for _, c := range cases {

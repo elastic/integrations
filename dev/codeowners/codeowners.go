@@ -103,6 +103,13 @@ func (codeowners *githubOwners) checkSingleField(field string) error {
 			if matches || strings.HasPrefix(field, path) {
 				return fmt.Errorf("%q would remove owners for %q", field, path)
 			}
+
+			if strings.HasPrefix(path, field) {
+				_, err := filepath.Rel(field, path)
+				if err == nil {
+					return fmt.Errorf("%q would remove owners for %q", field, path)
+				}
+			}
 		}
 
 		// Excluding other files is fine.
