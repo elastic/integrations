@@ -176,6 +176,7 @@ Fields published for AMQP packets.
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -927,6 +928,11 @@ Fields published for DNS packets.
 | dns.additionals.type | The type of data contained in this resource record. | keyword |
 | dns.additionals_count | The number of resource records contained in the `dns.additionals` field. The `dns.additionals` field may or may not be included depending on the configuration of Packetbeat. | long |
 | dns.answers | An array containing an object for each answer section returned by the server. The main keys that should be present in these objects are defined by ECS. Records that have more information may contain more keys than what ECS defines. Not all DNS data sources give all details about DNS answers. At minimum, answer objects must contain the `data` key. If more information is available, map as much of it to ECS as possible, and add any additional fields to the answer objects as custom fields. | object |
+| dns.answers.class | The class of DNS data contained in this resource record. | keyword |
+| dns.answers.data | The data describing the resource. The meaning of this data depends on the type and class of the resource record. | keyword |
+| dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
+| dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
+| dns.answers.type | The type of data contained in this resource record. | keyword |
 | dns.answers_count | The number of resource records contained in the `dns.answers` field. | long |
 | dns.authorities | An array containing a dictionary for each authority section from the answer. | object |
 | dns.authorities.class | The class of DNS data contained in this resource record. | keyword |
@@ -1686,11 +1692,13 @@ Fields published for Memcached packets.
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
@@ -2366,6 +2374,7 @@ Fields published for NFS packets.
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
@@ -2809,11 +2818,13 @@ Fields published for Redis packets.
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
@@ -3012,11 +3023,16 @@ Fields published for SIP packets.
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
+| event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | flow.final | Indicates if event is last event in flow. If final is false, the event reports an intermediate flow state only. | boolean |
@@ -3628,36 +3644,44 @@ Fields published for TLS packets.
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
+| tls.client.certificate | PEM-encoded stand-alone certificate offered by the client. This is usually mutually-exclusive of `client.certificate_chain` since this value also exists in that list. | keyword |
+| tls.client.certificate_chain | Array of PEM-encoded certificates that make up the certificate chain offered by the client. This is usually mutually-exclusive of `client.certificate` since that value should be the first certificate in the chain. | keyword |
+| tls.client.hash.md5 | Certificate fingerprint using the MD5 digest of DER-encoded version of certificate offered by the client. For consistency with other hash values, this value should be formatted as an uppercase hash. | keyword |
+| tls.client.hash.sha1 | Certificate fingerprint using the SHA1 digest of DER-encoded version of certificate offered by the client. For consistency with other hash values, this value should be formatted as an uppercase hash. | keyword |
+| tls.client.hash.sha256 | Certificate fingerprint using the SHA256 digest of DER-encoded version of certificate offered by the client. For consistency with other hash values, this value should be formatted as an uppercase hash. | keyword |
+| tls.client.issuer | Distinguished name of subject of the issuer of the x.509 certificate presented by the client. | keyword |
 | tls.client.ja3 | A hash that identifies clients based on how they perform an SSL/TLS handshake. | keyword |
+| tls.client.not_after | Date/Time indicating when client certificate is no longer considered valid. | date |
+| tls.client.not_before | Date/Time indicating when client certificate is first considered valid. | date |
 | tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
+| tls.client.subject | Distinguished name of subject of the x.509 certificate presented by the client. | keyword |
 | tls.client.supported_ciphers | Array of ciphers offered by the client during the client hello. | keyword |
-| tls.client.x509.issuer.province | Province or region within country. | keyword |
-| tls.client.x509.subject.province | Province or region within country. | keyword |
-| tls.client.x509.version | Version of x509 format. | keyword |
+| tls.client.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
+| tls.client.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
+| tls.client.x509.issuer.country | List of country (C) codes | keyword |
+| tls.client.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
+| tls.client.x509.issuer.locality | List of locality names (L) | keyword |
+| tls.client.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
+| tls.client.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
+| tls.client.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| tls.client.x509.not_after | Time at which the certificate is no longer considered valid. | date |
+| tls.client.x509.not_before | Time at which the certificate is first considered valid. | date |
+| tls.client.x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
+| tls.client.x509.public_key_curve | The curve used by the elliptic curve public key algorithm. This is algorithm specific. | keyword |
+| tls.client.x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
+| tls.client.x509.public_key_size | The size of the public key space in bits. | long |
+| tls.client.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
+| tls.client.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
+| tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| tls.client.x509.subject.country | List of country (C) code | keyword |
+| tls.client.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
+| tls.client.x509.subject.locality | List of locality names (L) | keyword |
+| tls.client.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| tls.client.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| tls.client.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| tls.client.x509.version_number | Version of x509 format. | keyword |
+| tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.detailed.alert_types | An array containing the TLS alert type for every alert received. | keyword |
-| tls.detailed.client_certificate.alternative_names | Subject Alternative Names for this certificate. | keyword |
-| tls.detailed.client_certificate.issuer.common_name | Name or host name identified by the certificate. | keyword |
-| tls.detailed.client_certificate.issuer.country | Country code. | keyword |
-| tls.detailed.client_certificate.issuer.distinguished_name | Distinguished name (DN) of the certificate issuer entity. | keyword |
-| tls.detailed.client_certificate.issuer.locality | Locality. | keyword |
-| tls.detailed.client_certificate.issuer.organization | Organization name. | keyword |
-| tls.detailed.client_certificate.issuer.organizational_unit | Unit within organization. | keyword |
-| tls.detailed.client_certificate.issuer.province | Province or region within country. | keyword |
-| tls.detailed.client_certificate.not_after | Date after which the certificate expires. | date |
-| tls.detailed.client_certificate.not_before | Date before which the certificate is not valid. | date |
-| tls.detailed.client_certificate.public_key_algorithm | The algorithm used for this certificate's public key. One of RSA, DSA or ECDSA. | keyword |
-| tls.detailed.client_certificate.public_key_size | Size of the public key. | long |
-| tls.detailed.client_certificate.serial_number | The certificate's serial number. | keyword |
-| tls.detailed.client_certificate.signature_algorithm | The algorithm used for the certificate's signature. | keyword |
-| tls.detailed.client_certificate.subject.common_name | Name or host name identified by the certificate. | keyword |
-| tls.detailed.client_certificate.subject.country | Country code. | keyword |
-| tls.detailed.client_certificate.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
-| tls.detailed.client_certificate.subject.locality | Locality. | keyword |
-| tls.detailed.client_certificate.subject.organization | Organization name. | keyword |
-| tls.detailed.client_certificate.subject.organizational_unit | Unit within organization. | keyword |
-| tls.detailed.client_certificate.subject.province | Province or region within country. | keyword |
-| tls.detailed.client_certificate.version | X509 format version. | long |
-| tls.detailed.client_certificate.version_number | Version of x509 format. | keyword |
 | tls.detailed.client_certificate_chain | Chain of trust for the client certificate. | array |
 | tls.detailed.client_certificate_requested | Whether the server has requested the client to authenticate itself using a client certificate. | boolean |
 | tls.detailed.client_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
@@ -3677,31 +3701,6 @@ Fields published for TLS packets.
 | tls.detailed.client_hello.version | The version of the TLS protocol by which the client wishes to communicate during this session. | keyword |
 | tls.detailed.ocsp_response | The result of an OCSP request. | keyword |
 | tls.detailed.resumption_method | If the session has been resumed, the underlying method used. One of "id" for TLS session ID or "ticket" for TLS ticket extension. | keyword |
-| tls.detailed.server_certificate.alternative_names | Subject Alternative Names for this certificate. | keyword |
-| tls.detailed.server_certificate.issuer.common_name | Name or host name identified by the certificate. | keyword |
-| tls.detailed.server_certificate.issuer.country | Country code. | keyword |
-| tls.detailed.server_certificate.issuer.distinguished_name | Distinguished name (DN) of the certificate issuer entity. | keyword |
-| tls.detailed.server_certificate.issuer.locality | Locality. | keyword |
-| tls.detailed.server_certificate.issuer.organization | Organization name. | keyword |
-| tls.detailed.server_certificate.issuer.organizational_unit | Unit within organization. | keyword |
-| tls.detailed.server_certificate.issuer.province | Province or region within country. | keyword |
-| tls.detailed.server_certificate.issuer.state_or_province | Province or region within country. | keyword |
-| tls.detailed.server_certificate.not_after | Date after which the certificate expires. | date |
-| tls.detailed.server_certificate.not_before | Date before which the certificate is not valid. | date |
-| tls.detailed.server_certificate.public_key_algorithm | The algorithm used for this certificate's public key. One of RSA, DSA or ECDSA. | keyword |
-| tls.detailed.server_certificate.public_key_size | Size of the public key. | long |
-| tls.detailed.server_certificate.serial_number | The certificate's serial number. | keyword |
-| tls.detailed.server_certificate.signature_algorithm | The algorithm used for the certificate's signature. | keyword |
-| tls.detailed.server_certificate.subject.common_name | Name or host name identified by the certificate. | keyword |
-| tls.detailed.server_certificate.subject.country | Country code. | keyword |
-| tls.detailed.server_certificate.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
-| tls.detailed.server_certificate.subject.locality | Locality. | keyword |
-| tls.detailed.server_certificate.subject.organization | Organization name. | keyword |
-| tls.detailed.server_certificate.subject.organizational_unit | Unit within organization. | keyword |
-| tls.detailed.server_certificate.subject.province | Province or region within country. | keyword |
-| tls.detailed.server_certificate.subject.state_or_province | Province or region within country. | keyword |
-| tls.detailed.server_certificate.version | X509 format version. | long |
-| tls.detailed.server_certificate.version_number | Version of x509 format. | keyword |
 | tls.detailed.server_certificate_chain | Chain of trust for the server certificate. | array |
 | tls.detailed.server_hello.extensions._unparsed_ | List of extensions that were left unparsed by Packetbeat. | keyword |
 | tls.detailed.server_hello.extensions.application_layer_protocol_negotiation | Negotiated application layer protocol | keyword |
@@ -3715,10 +3714,42 @@ Fields published for TLS packets.
 | tls.detailed.server_hello.version | The version of the TLS protocol that is used for this session. It is the highest version supported by the server not exceeding the version requested in the client hello. | keyword |
 | tls.detailed.version | The version of the TLS protocol used. | keyword |
 | tls.established | Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel. | boolean |
+| tls.next_protocol | String indicating the protocol being tunneled. Per the values in the IANA registry (https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#alpn-protocol-ids), this string should be lower case. | keyword |
 | tls.resumed | Boolean flag indicating if this TLS connection was resumed from an existing TLS negotiation. | boolean |
-| tls.server.x509.issuer.province | Province or region within country. | keyword |
-| tls.server.x509.subject.province | Province or region within country. | keyword |
-| tls.server.x509.version | Version of x509 format. | keyword |
+| tls.server.certificate | PEM-encoded stand-alone certificate offered by the server. This is usually mutually-exclusive of `server.certificate_chain` since this value also exists in that list. | keyword |
+| tls.server.certificate_chain | Array of PEM-encoded certificates that make up the certificate chain offered by the server. This is usually mutually-exclusive of `server.certificate` since that value should be the first certificate in the chain. | keyword |
+| tls.server.hash.md5 | Certificate fingerprint using the MD5 digest of DER-encoded version of certificate offered by the server. For consistency with other hash values, this value should be formatted as an uppercase hash. | keyword |
+| tls.server.hash.sha1 | Certificate fingerprint using the SHA1 digest of DER-encoded version of certificate offered by the server. For consistency with other hash values, this value should be formatted as an uppercase hash. | keyword |
+| tls.server.hash.sha256 | Certificate fingerprint using the SHA256 digest of DER-encoded version of certificate offered by the server. For consistency with other hash values, this value should be formatted as an uppercase hash. | keyword |
+| tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | keyword |
+| tls.server.ja3s | A hash that identifies servers based on how they perform an SSL/TLS handshake. | keyword |
+| tls.server.not_after | Timestamp indicating when server certificate is no longer considered valid. | date |
+| tls.server.not_before | Timestamp indicating when server certificate is first considered valid. | date |
+| tls.server.subject | Subject of the x.509 certificate presented by the server. | keyword |
+| tls.server.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
+| tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.country | List of country (C) codes | keyword |
+| tls.server.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.locality | List of locality names (L) | keyword |
+| tls.server.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
+| tls.server.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| tls.server.x509.not_after | Time at which the certificate is no longer considered valid. | date |
+| tls.server.x509.not_before | Time at which the certificate is first considered valid. | date |
+| tls.server.x509.public_key_algorithm | Algorithm used to generate the public key. | keyword |
+| tls.server.x509.public_key_curve | The curve used by the elliptic curve public key algorithm. This is algorithm specific. | keyword |
+| tls.server.x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
+| tls.server.x509.public_key_size | The size of the public key space in bits. | long |
+| tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
+| tls.server.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
+| tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
+| tls.server.x509.subject.country | List of country (C) code | keyword |
+| tls.server.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
+| tls.server.x509.subject.locality | List of locality names (L) | keyword |
+| tls.server.x509.subject.organization | List of organizations (O) of subject. | keyword |
+| tls.server.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
+| tls.server.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
+| tls.server.x509.version_number | Version of x509 format. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
 | type | The type of the transaction (for example, HTTP, MySQL, Redis, or RUM) or "flow" in case of flows. | keyword |
