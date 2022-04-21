@@ -18,11 +18,11 @@ processors:
 - set:
     field: event.kind
     value: alert
-    if: '["03001", "05001", "05151", "00003", "00004"].contains(ctx?.event?.code)'
+    if: '["03001", "05001", "05151", "00003", "00004"].contains(ctx.event?.code)'
 - append:
     field: event.category
     value: intrusion_detection
-    if: '["03001", "05001", "05151", "00003", "00004"].contains(ctx?.event?.code)'
+    if: '["03001", "05001", "05151", "00003", "00004"].contains(ctx.event?.code)'
 - append:
     field: event.category
     value: network
@@ -195,19 +195,19 @@ processors:
 - set:
     field: network.direction
     value: inbound
-    if: "['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx?.observer?.egress?.zone) && ctx?.observer?.ingress?.zone == 'WAN'"
+    if: "['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx.observer?.egress?.zone) && ctx.observer?.ingress?.zone == 'WAN'"
 - set:
     field: network.direction
     value: outbound
-    if: "['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx?.observer?.ingress?.zone) && ctx?.observer?.egress?.zone == 'WAN'"
+    if: "['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx.observer?.ingress?.zone) && ctx.observer?.egress?.zone == 'WAN'"
 - set:
     field: network.direction
     value: internal
-    if: "['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx?.observer?.ingress?.zone) && ['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx?.observer?.egress?.zone)"
+    if: "['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx.observer?.ingress?.zone) && ['LAN', 'DMZ', 'VPN', 'WiFi'].contains(ctx.observer?.egress?.zone)"
 - set:
     field: network.direction
     value: external
-    if: "ctx?.observer?.ingress?.zone == 'WAN' && ctx?.observer?.egress?.zone == 'WAN'"
+    if: "ctx.observer?.ingress?.zone == 'WAN' && ctx.observer?.egress?.zone == 'WAN'"
 
 #############
 ## Cleanup ##

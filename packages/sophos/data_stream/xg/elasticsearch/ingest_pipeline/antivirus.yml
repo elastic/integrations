@@ -31,17 +31,17 @@ processors:
 - set:
     field: event.kind
     value: event
-    if: '["09002"].contains(ctx?.event?.code)'
+    if: '["09002"].contains(ctx.event?.code)'
 - append:
     field: event.type
     value:
       - allowed
       - connection
-    if: '["09002"].contains(ctx?.event?.code)'
+    if: '["09002"].contains(ctx.event?.code)'
 - append:
     field: event.category
     value: network
-    if: '["09002"].contains(ctx?.event?.code)'
+    if: '["09002"].contains(ctx.event?.code)'
 
 #############################
 ## ECS Destination Mapping ##
@@ -120,11 +120,11 @@ processors:
      ignore_missing: true
      if: "ctx.sophos?.xg?.url != null"
 - uri_parts:
-    if: ctx?.url?.original != null && ctx.url.original.contains("://")
+    if: ctx.url?.original != null && ctx.url.original.contains("://")
     field: url.original
     target_field: url
 - set:
-    if: ctx?.url?.original != null && ctx.url.original.contains("://")
+    if: ctx.url?.original != null && ctx.url.original.contains("://")
     field: url.full
     copy_from: url.original
     ignore_empty_value: true

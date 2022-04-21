@@ -30,7 +30,7 @@ processors:
 - script:
     description: Lowercase sophos.xg key name names.
     tag: lowercase-sophos-keys
-    if: ctx?.sophos?.xg != null
+    if: ctx.sophos?.xg != null
     source: |
       def lowercaseMap = [:];
       for(def entry : ctx.sophos.xg.entrySet()){
@@ -42,14 +42,14 @@ processors:
 - set:
     field: _temp_.time
     value: "{{sophos.xg.date}} {{sophos.xg.time}}"
-    if: ctx?.sophos?.xg?.date != null && ctx?.sophos?.xg?.time != null
+    if: ctx.sophos?.xg?.date != null && ctx.sophos?.xg?.time != null
 - set:
     field: _temp_.time
     copy_from: sophos.xg.timestamp
     ignore_empty_value: true
-    if: ctx?._temp_?.time == null
+    if: ctx._temp_?.time == null
 - date:
-    if: ctx?._temp_?.time != null && ctx?.event?.timezone == null
+    if: ctx._temp_?.time != null && ctx.event?.timezone == null
     field: _temp_.time
     target_field: "@timestamp"
     formats:
@@ -58,7 +58,7 @@ processors:
     - yyyy-MM-dd HH:mm:ss z
     - ISO8601
 - date:
-    if: ctx?._temp_?.time != null && ctx?.event?.timezone != null
+    if: ctx._temp_?.time != null && ctx.event?.timezone != null
     timezone: "{{ event.timezone }}"
     field: _temp_.time
     target_field: "@timestamp"
@@ -71,7 +71,7 @@ processors:
 # Sets starts, end and duration when start and duration is known
 - script:
     lang: painless
-    if: ctx?.sophos?.xg?.duration != null
+    if: ctx.sophos?.xg?.duration != null
     source: >-
       ctx.event.duration = Integer.parseInt(ctx.sophos.xg.duration) * 1000000000L;
       ctx.event.start = ctx['@timestamp'];
@@ -89,7 +89,7 @@ processors:
         - "-"
         - "N/A"
     source: >-
-      ctx?.sophos?.xg.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
+      ctx.sophos?.xg.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
 
 #######################
 ## ECS Event Mapping ##
@@ -124,35 +124,35 @@ processors:
 ## ECS Log Mapping ##
 #####################
 - set:
-    if: ctx?.event?.severity == 0
+    if: ctx.event?.severity == 0
     field: log.level
     value: unknown
 - set:
-    if: ctx?.event?.severity == 1
+    if: ctx.event?.severity == 1
     field: log.level
     value: alert
 - set:
-    if: ctx?.event?.severity == 2
+    if: ctx.event?.severity == 2
     field: log.level
     value: critical
 - set:
-    if: ctx?.event?.severity == 3
+    if: ctx.event?.severity == 3
     field: log.level
     value: error
 - set:
-    if: ctx?.event?.severity == 4
+    if: ctx.event?.severity == 4
     field: log.level
     value: warning
 - set:
-    if: ctx?.event?.severity == 5
+    if: ctx.event?.severity == 5
     field: log.level
     value: notification
 - set:
-    if: ctx?.event?.severity == 6
+    if: ctx.event?.severity == 6
     field: log.level
     value: informational
 - set:
-    if: ctx?.event?.severity == 7
+    if: ctx.event?.severity == 7
     field: log.level
     value: debug
 
@@ -219,7 +219,7 @@ processors:
 ###################
 - script:
     lang: painless
-    if: ctx?.observer?.serial_number != null
+    if: ctx.observer?.serial_number != null
     source: >-
         def conf = ctx['_conf'];
         if (conf == null) return;
@@ -233,7 +233,7 @@ processors:
             break;
           }
         }
-        if (ctx?.host == null) {
+        if (ctx.host == null) {
           ctx.host = new HashMap();
         }
         ctx.host.name = name;
@@ -446,7 +446,7 @@ processors:
     ignore_failure: true
 - set:
     description: Rename pops network.protocol to pop3s.
-    if: ctx?.network?.protocol == "pops"
+    if: ctx.network?.protocol == "pops"
     field: network.protocol
     value: pop3s
 - lowercase:
@@ -455,12 +455,12 @@ processors:
 - script:
     lang: painless
     source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
-    if: "ctx?.source?.bytes != null && ctx?.destination?.bytes != null"
+    if: "ctx.source?.bytes != null && ctx.destination?.bytes != null"
     ignore_failure: true
 - script:
     lang: painless
     source: "ctx.network.packets = ctx.source.packets + ctx.destination.packets"
-    if: "ctx?.source?.packets != null && ctx?.destination?.packets != null"
+    if: "ctx.source?.packets != null && ctx.destination?.packets != null"
     ignore_failure: true
 - community_id:
     ignore_failure: true
@@ -469,22 +469,22 @@ processors:
 ## ECS Related Hosts
 ####################
 - append:
-    if: ctx?.host?.name != null
+    if: ctx.host?.name != null
     field: related.hosts
     value: '{{{host.name}}}'
     allow_duplicates: false
 - append:
-    if: ctx?.url?.domain != null
+    if: ctx.url?.domain != null
     field: related.hosts
     value: '{{{url.domain}}}'
     allow_duplicates: false
 - append:
-    if: ctx?.source?.domain != null
+    if: ctx.source?.domain != null
     field: related.hosts
     value: '{{{source.domain}}}'
     allow_duplicates: false
 - append:
-    if: ctx?.destination?.domain != null
+    if: ctx.destination?.domain != null
     field: related.hosts
     value: '{{{destination.domain}}}'
     allow_duplicates: false
@@ -493,22 +493,22 @@ processors:
 ## ECS Related IP
 #################
 - append:
-    if: ctx?.source?.ip != null
+    if: ctx.source?.ip != null
     field: related.ip
     value: '{{{source.ip}}}'
     allow_duplicates: false
 - append:
-    if: ctx?.destination?.ip != null
+    if: ctx.destination?.ip != null
     field: related.ip
     value: '{{{destination.ip}}}'
     allow_duplicates: false
 - append:
-    if: ctx?.source?.nat?.ip != null
+    if: ctx.source?.nat?.ip != null
     field: related.ip
     value: '{{{source.nat.ip}}}'
     allow_duplicates: false
 - append:
-    if: ctx?.destination?.nat?.ip != null
+    if: ctx.destination?.nat?.ip != null
     field: related.ip
     value: '{{{destination.nat.ip}}}'
     allow_duplicates: false
@@ -517,7 +517,7 @@ processors:
 ## ECS Related User
 ###################
 - append:
-    if: ctx?.source?.user?.name != null
+    if: ctx.source?.user?.name != null
     field: related.user
     value: "{{{source.user.name}}}"
     allow_duplicates: false
@@ -526,12 +526,12 @@ processors:
 ## ECS Related Hash
 ###################
 - append:
-    if: ctx?.file?.hash?.sha1 != null
+    if: ctx.file?.hash?.sha1 != null
     field: related.hash
     value: "{{{file.hash.sha1}}}"
     allow_duplicates: false
 - append:
-    if: ctx?.file?.hash?.sha256 != null
+    if: ctx.file?.hash?.sha256 != null
     field: related.hash
     value: "{{{file.hash.sha256}}}"
     allow_duplicates: false
@@ -558,7 +558,7 @@ processors:
     ignore_missing: true
 - remove:
     field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
     ignore_failure: true
     ignore_missing: true
 on_failure:
