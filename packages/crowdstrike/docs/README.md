@@ -836,7 +836,7 @@ for more details.
 | process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
 | process.parent.name.text | Multi-field of `process.parent.name`. | match_only_text |
-| process.pgid | Deprecated for removal in next major version release. This field is superseded by  `process.group_leader.pid`. Identifier of the group of processes the process belongs to. | long |
+| process.pgid | Deprecated for removal in next major version release. This field is superseded by `process.group_leader.pid`. Identifier of the group of processes the process belongs to. | long |
 | process.pid | Process id. | long |
 | process.start | The time the process started. | date |
 | process.thread.id | Thread ID. | long |

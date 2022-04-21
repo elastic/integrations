@@ -4,7 +4,7 @@ processors:
   # Generic event/ecs fields we always want to populated
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.2.0"
   - rename:
       field: message
       target_field: event.original
@@ -22,9 +22,6 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ssZ
 
   ###
-
-  # Convert 'mimecast.auditType' to a bone-cased event action.
-  # ie: User Log On -> user-log-on
   - rename:
       field: mimecast.userEmailAddress
       target_field: user.email
@@ -53,10 +50,11 @@ processors:
       field: mimecast.messageId
       target_field: email.message_id
       ignore_missing: true
-  - rename:
-      field: mimecast.fromUserEmailAddress
-      target_field: email.from.address
-      ignore_missing: true
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.fromUserEmailAddress}}}"
+      if: "ctx?.mimecast?.fromUserEmailAddress != null"
+      ignore_failure: true
   - rename:
       field: mimecast.sendingIp
       target_field: source.ip
@@ -93,6 +91,16 @@ processors:
       value: "{{user.email}}"
       allow_duplicates: false
       if: 'ctx?.user?.email !=null'
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true  
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
@@ -101,6 +109,7 @@ processors:
         - user.parts
         - user.parts.0
         - user.parts.1
+        - mimecast.fromUserEmailAddress
       ignore_missing: true
   - remove:
       description: Remove 'event.original' if 'preserve_original_event' is not set.
