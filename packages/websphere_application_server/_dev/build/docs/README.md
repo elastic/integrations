@@ -1,11 +1,13 @@
 # WebSphere Application Server
 
-This integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics as follows:
+This integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics and logs as follows:
 
-   - JDBC Metrics
-   - ThreadPool Metrics
-   - Servlet Metrics
-   - Session Manager Metrics
+   - JDBC metrics
+   - ThreadPool metrics
+   - Servlet metrics
+   - Session Manager metrics
+   - JVM metrics
+   - HPEL logs.
 
 This integration uses Prometheus to collect above metrics.
 
@@ -13,7 +15,7 @@ To open Prometheus endpoint read following [instructions](https://www.ibm.com/do
 
 ## JDBC
 
-This data stream collects JDBC Metrics.
+This data stream collects JDBC metrics.
 
 {{event "jdbc"}}
 
