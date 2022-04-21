@@ -4,14 +4,14 @@ processors:
       field: event.kind
       value: event
   - grok:
-      field: remaining_message
+      field: cisco_esa.log.message
       patterns:
-        - "CEF:%{NUMBER:cisco_esa.log.cef_format_version}\\|%{WORD:cisco_esa.log.appliance.vendor}\\|%{DATA:cisco_esa.log.appliance.product}\\|%{DATA:cisco_esa.log.appliance.version}\\|%{DATA:cisco_esa.log.event_class_id}\\|%{DATA:cisco_esa.log.event.name}\\|%{WORD:event.severity}\\|%{GREEDYDATA:details} endTime=%{DATA:event.end} ESADLPVerdict=%{WORD:cisco_esa.log.esa.dlp_verdict} dvc=%{IP:cisco_esa.log.data.ip} ESAAttachmentDetails=\\{%{GREEDYDATA:cisco_esa.log.esa.attachment_details}\\} ESAFriendlyFrom=%{GREEDYDATA:cisco_esa.log.esa.friendly_from} ESAGMVerdict=%{WORD:cisco_esa.log.esa.graymail_verdict} startTime=%{DATA:event.start} deviceInboundInterface=%{WORD:email.direction} deviceDirection=%{NUMBER:cisco_esa.log.device_direction:long} ESAMailFlowPolicy=%{WORD:cisco_esa.log.esa.mail_flow_policy} suser=%{DATA:email.from.address} cs1Label=%{WORD:cisco_esa.log.cs1_label} cs1=%{WORD:cisco_esa.log.cs1} ESAMFVerdict=%{WORD:cisco_esa.log.esa.mf_verdict} act=%{WORD:cisco_esa.log.act} ESAFinalActionDetails=%{DATA:cisco_esa.log.esa.final_action_details} cs4Label=%{GREEDYDATA:cisco_esa.log.cs4_label} cs4='<%{DATA:cisco_esa.log.cs4}>' ESAMsgSize=%{NUMBER:cisco_esa.log.esa.msg_size:long} ESAOFVerdict=%{WORD:cisco_esa.log.esa.outbreak_filter_verdict} duser=%{DATA:email.to.address} ESAHeloIP=%{IP:cisco_esa.log.esa.helo.ip} cfp1Label=%{WORD:cisco_esa.log.cfp1_label} cfp1=%{WORD:cisco_esa.log.cfp1} ESASDRDomainAge=%{DATA:cisco_esa.log.esa.sdr_consolidated_domain_age} cs3Label=%{WORD:cisco_esa.log.cs3_label} cs3=%{DATA:cisco_esa.log.cs3} cs6Label=%{DATA:cisco_esa.log.cs6_label} cs6=%{DATA:cisco_esa.log.cs6} ESASPFVerdict=%{DATA:cisco_esa.log.esa.spf_verdict} sourceHostName=%{DATA:source.domain} ESASenderGroup=%{DATA:cisco_esa.log.esa.sender_group} sourceAddress=%{IP:source.ip} msg=%{GREEDYDATA:email.subject}"
-        - "%{DATA:timestamp} CEF:%{NUMBER:cisco_esa.log.cef_format_version}\\|%{WORD:cisco_esa.log.appliance.vendor}\\|%{DATA:cisco_esa.log.appliance.product}\\|%{DATA:cisco_esa.log.appliance.version}\\|%{DATA:cisco_esa.log.event_class_id}\\|%{DATA:cisco_esa.log.event.name}\\|%{WORD:event.severity}\\|%{GREEDYDATA:details} endTime=%{DATA:event.end} ESADLPVerdict=%{WORD:cisco_esa.log.esa.dlp_verdict} dvc=%{IP:cisco_esa.log.data.ip} ESAAttachmentDetails=\\{%{GREEDYDATA:cisco_esa.log.esa.attachment_details}\\} ESAFriendlyFrom=%{GREEDYDATA:cisco_esa.log.esa.friendly_from} ESAGMVerdict=%{WORD:cisco_esa.log.esa.graymail_verdict} startTime=%{DATA:event.start} deviceInboundInterface=%{WORD:email.direction} deviceDirection=%{NUMBER:cisco_esa.log.device_direction:long} ESAMailFlowPolicy=%{WORD:cisco_esa.log.esa.mail_flow_policy} suser=%{DATA:email.from.address} cs1Label=%{WORD:cisco_esa.log.cs1_label} cs1=%{WORD:cisco_esa.log.cs1} ESAMFVerdict=%{WORD:cisco_esa.log.esa.mf_verdict} act=%{WORD:cisco_esa.log.act} ESAFinalActionDetails=%{DATA:cisco_esa.log.esa.final_action_details} cs4Label=%{GREEDYDATA:cisco_esa.log.cs4_label} cs4='<%{DATA:cisco_esa.log.cs4}>' ESAMsgSize=%{NUMBER:cisco_esa.log.esa.msg_size:long} ESAOFVerdict=%{WORD:cisco_esa.log.esa.outbreak_filter_verdict} duser=%{DATA:email.to.address} ESAHeloIP=%{IP:cisco_esa.log.esa.helo.ip} cfp1Label=%{WORD:cisco_esa.log.cfp1_label} cfp1=%{WORD:cisco_esa.log.cfp1} ESASDRDomainAge=%{DATA:cisco_esa.log.esa.sdr_consolidated_domain_age} cs3Label=%{WORD:cisco_esa.log.cs3_label} cs3=%{DATA:cisco_esa.log.cs3} cs6Label=%{DATA:cisco_esa.log.cs6_label} cs6=%{DATA:cisco_esa.log.cs6} ESASPFVerdict=%{DATA:cisco_esa.log.esa.spf_verdict} sourceHostName=%{DATA:source.domain} ESASenderGroup=%{DATA:cisco_esa.log.esa.sender_group} sourceAddress=%{IP:source.ip} msg=%{GREEDYDATA:email.subject}"
-        - "%{GREEDYDATA:cisco_esa.log.message}"
+        - "^CEF:%{NUMBER:cisco_esa.log.cef_format_version}\\|%{WORD:cisco_esa.log.appliance.vendor}\\|%{DATA:cisco_esa.log.appliance.product}\\|%{DATA:cisco_esa.log.appliance.version}\\|%{DATA:cisco_esa.log.event_class_id}\\|%{DATA:cisco_esa.log.event.name}\\|%{WORD:event.severity}\\|%{GREEDYDATA:_tmp.details} endTime=%{DATA:event.end} ESADLPVerdict=%{WORD:cisco_esa.log.esa.dlp_verdict} dvc=%{IP:cisco_esa.log.data.ip} ESAAttachmentDetails=\\{%{GREEDYDATA:cisco_esa.log.esa.attachment_details}\\} ESAFriendlyFrom=%{GREEDYDATA:cisco_esa.log.esa.friendly_from} ESAGMVerdict=%{WORD:cisco_esa.log.esa.graymail_verdict} startTime=%{DATA:event.start} (deviceInboundInterface||deviceOutboundInterface)=%{WORD:cisco_esa.log.listener.name} deviceDirection=%{DATA:cisco_esa.log.device_direction} ESAMailFlowPolicy=%{WORD:cisco_esa.log.esa.mail_flow_policy} suser=%{DATA:email.from.address} cs1Label=%{WORD:cisco_esa.log.cs1_label} cs1=%{WORD:cisco_esa.log.cs1} ESAMFVerdict=%{WORD:cisco_esa.log.esa.mf_verdict} act=%{WORD:cisco_esa.log.act} ESAFinalActionDetails=%{DATA:cisco_esa.log.esa.final_action_details} cs4Label=%{GREEDYDATA:cisco_esa.log.cs4_label} cs4='<%{DATA:cisco_esa.log.cs4}>' ESAMsgSize=%{NUMBER:cisco_esa.log.esa.msg_size:long} ESAOFVerdict=%{WORD:cisco_esa.log.esa.outbreak_filter_verdict} duser=%{DATA:email.to.address} ESAHeloIP=%{IP:cisco_esa.log.esa.helo.ip} cfp1Label=%{WORD:cisco_esa.log.cfp1_label} cfp1=%{WORD:cisco_esa.log.cfp1} ESASDRDomainAge=%{DATA:cisco_esa.log.esa.sdr_consolidated_domain_age} cs3Label=%{WORD:cisco_esa.log.cs3_label} cs3=%{DATA:cisco_esa.log.cs3} cs6Label=%{DATA:cisco_esa.log.cs6_label} cs6=%{DATA:cisco_esa.log.cs6} ESASPFVerdict=%{DATA:cisco_esa.log.esa.spf_verdict} sourceHostName=%{DATA:source.domain} ESASenderGroup=%{DATA:cisco_esa.log.esa.sender_group} sourceAddress=%{IP:source.ip} msg=%{GREEDYDATA:email.subject}"
+        - "^%{DATA:_tmp.timestamp} CEF:%{NUMBER:cisco_esa.log.cef_format_version}\\|%{WORD:cisco_esa.log.appliance.vendor}\\|%{DATA:cisco_esa.log.appliance.product}\\|%{DATA:cisco_esa.log.appliance.version}\\|%{DATA:cisco_esa.log.event_class_id}\\|%{DATA:cisco_esa.log.event.name}\\|%{WORD:event.severity}\\|%{GREEDYDATA:_tmp.details} endTime=%{DATA:event.end} ESADLPVerdict=%{WORD:cisco_esa.log.esa.dlp_verdict} dvc=%{IP:cisco_esa.log.data.ip} ESAAttachmentDetails=\\{%{GREEDYDATA:cisco_esa.log.esa.attachment_details}\\} ESAFriendlyFrom=%{GREEDYDATA:cisco_esa.log.esa.friendly_from} ESAGMVerdict=%{WORD:cisco_esa.log.esa.graymail_verdict} startTime=%{DATA:event.start} (deviceInboundInterface||deviceOutboundInterface)=%{WORD:cisco_esa.log.listener.name} deviceDirection=%{DATA:cisco_esa.log.device_direction} ESAMailFlowPolicy=%{WORD:cisco_esa.log.esa.mail_flow_policy} suser=%{DATA:email.from.address} cs1Label=%{WORD:cisco_esa.log.cs1_label} cs1=%{WORD:cisco_esa.log.cs1} ESAMFVerdict=%{WORD:cisco_esa.log.esa.mf_verdict} act=%{WORD:cisco_esa.log.act} ESAFinalActionDetails=%{DATA:cisco_esa.log.esa.final_action_details} cs4Label=%{GREEDYDATA:cisco_esa.log.cs4_label} cs4='<%{DATA:cisco_esa.log.cs4}>' ESAMsgSize=%{NUMBER:cisco_esa.log.esa.msg_size:long} ESAOFVerdict=%{WORD:cisco_esa.log.esa.outbreak_filter_verdict} duser=%{DATA:email.to.address} ESAHeloIP=%{IP:cisco_esa.log.esa.helo.ip} cfp1Label=%{WORD:cisco_esa.log.cfp1_label} cfp1=%{WORD:cisco_esa.log.cfp1} ESASDRDomainAge=%{DATA:cisco_esa.log.esa.sdr_consolidated_domain_age} cs3Label=%{WORD:cisco_esa.log.cs3_label} cs3=%{DATA:cisco_esa.log.cs3} cs6Label=%{DATA:cisco_esa.log.cs6_label} cs6=%{DATA:cisco_esa.log.cs6} ESASPFVerdict=%{DATA:cisco_esa.log.esa.spf_verdict} sourceHostName=%{DATA:source.domain} ESASenderGroup=%{DATA:cisco_esa.log.esa.sender_group} sourceAddress=%{IP:source.ip} msg=%{GREEDYDATA:email.subject}"
+        - "^%{GREEDYDATA:cisco_esa.log.message}"
   - kv:
-      field: details
-      if: ctx?.details != null
+      field: _tmp.details
+      if: ctx?._tmp?.details != null
       field_split: "  | "
       value_split: "="
       ignore_failure: true
@@ -33,6 +33,26 @@ processors:
       value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
       allow_duplicates: false
+      ignore_failure: true
+  - set:
+      field: email.direction
+      value: inbound
+      if: ctx?.cisco_esa?.log?.listener?.name == "Incomingmail"
+      ignore_failure: true
+  - set:
+      field: email.direction
+      value: outbound
+      if: ctx?.cisco_esa?.log?.listener?.name == "Outcomingmail"
+      ignore_failure: true
+  - set:
+      field: cisco_esa.log.device_direction
+      value: incoming
+      if: ctx?.cisco_esa?.log?.device_direction == "0"
+      ignore_failure: true
+  - set:
+      field: cisco_esa.log.device_direction
+      value: outgoing
+      if: ctx?.cisco_esa?.log?.device_direction == "1"
       ignore_failure: true
   - rename:
       field: deviceExternalId
@@ -63,8 +83,13 @@ processors:
       field: ESACFVerdict
       target_field: cisco_esa.log.esa.content_filter_verdict
       ignore_missing: true
+  - gsub:
+      field: email.subject
+      pattern: \'
+      replacement: ""
+      ignore_failure: true
   - date:
-      field: timestamp
+      field: _tmp.timestamp
       target_field: "@timestamp"
       formats:
         - E MMM dd HH:mm:ss yyyy
@@ -73,7 +98,6 @@ processors:
       ignore_failure: true
   - remove:
       field:
-        - details
-        - timestamp
+        - _tmp
       ignore_failure: true
       ignore_missing: true

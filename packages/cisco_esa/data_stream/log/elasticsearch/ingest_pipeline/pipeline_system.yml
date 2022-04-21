@@ -4,14 +4,14 @@ processors:
       field: event.kind
       value: event
   - grok:
-      field: remaining_message
+      field: cisco_esa.log.message
       patterns:
-        - "PID %{NUMBER:process.pid:long}: User %{USERNAME:user.name} commit changes:%{GREEDYDATA:cisco_esa.log.commit_changes}"
-        - "%{GREEDYDATA:cisco_esa.log.name}: qname:%{DATA:cisco_esa.log.qname} ns_name:%{DATA:cisco_esa.log.ns_name} zone:%{DATA:cisco_esa.log.zone} ref_zone:%{DATA:cisco_esa.log.ref_zone} referrals:%{GREEDYDATA:cisco_esa.log.referrals}"
-        - "%{GREEDYDATA:cisco_esa.log.subject}\\. %{GREEDYDATA:cisco_esa.log.description}"
-        - "%{GREEDYDATA:cisco_esa.log.subject} to '%{GREEDYDATA:cisco_esa.log.description} ' '"
-        - "%{GREEDYDATA:cisco_esa.log.subject}: %{GREEDYDATA:cisco_esa.log.description}"
-        - "%{GREEDYDATA:cisco_esa.log.message}"
+        - "^PID %{NUMBER:process.pid:long}: User %{USERNAME:user.name} commit changes:%{GREEDYDATA:cisco_esa.log.commit_changes}"
+        - "^%{GREEDYDATA:cisco_esa.log.name}: qname:%{DATA:cisco_esa.log.qname} ns_name:%{DATA:cisco_esa.log.ns_name} zone:%{DATA:cisco_esa.log.zone} ref_zone:%{DATA:cisco_esa.log.ref_zone} referrals:%{GREEDYDATA:cisco_esa.log.referrals}"
+        - "^%{GREEDYDATA:cisco_esa.log.subject}\\. %{GREEDYDATA:cisco_esa.log.description}"
+        - "^%{GREEDYDATA:cisco_esa.log.subject} to '%{GREEDYDATA:cisco_esa.log.description} ' '"
+        - "^%{GREEDYDATA:cisco_esa.log.subject}: %{GREEDYDATA:cisco_esa.log.description}"
+        - "^%{GREEDYDATA:cisco_esa.log.message}"
   - append:
       field: related.user
       value: "{{{user.name}}}"

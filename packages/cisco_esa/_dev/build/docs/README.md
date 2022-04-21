@@ -1,6 +1,6 @@
 # Cisco ESA
 
-The Cisco ESA integration collects and parses data from Cisco ESA using TCP/UDP and logfile.
+The [Cisco Email Security Appliance](https://www.cisco.com/c/en/us/products/security/email-security/index.html) integration collects and parses data from Cisco ESA using TCP/UDP and logfile.
 
 ## Compatibility
 
@@ -34,9 +34,9 @@ This module has been tested against **Cisco ESA server version 14.0.0 Virtual Ga
   - **FTP Push to Remote Server** for the below categories:  
     AMP Engine Logs, Anti-Spam Logs, Anti-Spam Logs, Authentication Logs, Bounce Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs, System Logs  
   - **Syslog Push** for the below categories:  
-	AMP Engine Logs, Anti-Spam Logs, Anti-Spam Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs, System Logs
+	  AMP Engine Logs, Anti-Spam Logs, Anti-Spam Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs, System Logs
 
-## Log samples 
+## [Sample Logs](https://www.cisco.com/c/en/us/td/docs/security/ces/user_guide/esa_user_guide_14-0/b_ESA_Admin_Guide_ces_14-0/b_ESA_Admin_Guide_12_1_chapter_0100111.html) 
 Below are the samples logs of respective category:
 
 ## AMP Engine Logs:

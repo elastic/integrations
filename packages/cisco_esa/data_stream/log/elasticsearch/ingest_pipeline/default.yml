@@ -5,14 +5,14 @@ processors:
       field: ecs.version
       value: "8.2.0"
   - set:
-      field: filepath
+      field: _tmp.filepath
       value: "{{{log.file.path}}}"
       if: ctx?.log?.file?.path != null
   - grok:
-      field: filepath
+      field: _tmp.filepath
       if: ctx?.log?.file?.path != null
       patterns:
-        - "%{DATA}/%{WORD:cisco_esa.log.category.name}.@%{GREEDYDATA}.s"
+        - "^%{DATA}/%{WORD:cisco_esa.log.category.name}.@%{GREEDYDATA}.s"
   - rename:
       field: message
       target_field: event.original
@@ -20,10 +20,10 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:cisco_esa.log.category.name}: %{WORD:log.level}: %{GREEDYDATA:remaining_message}"
-        - "<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:cisco_esa.log.category.name}: %{GREEDYDATA:remaining_message}"
-        - "%{DATA:_tmp.timestamp} %{WORD:log.level}: %{GREEDYDATA:remaining_message}"
-        - "%{GREEDYDATA:remaining_message}"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:cisco_esa.log.category.name}: %{WORD:log.level}: %{GREEDYDATA:cisco_esa.log.message}"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp} %{DATA:cisco_esa.log.category.name}: %{GREEDYDATA:cisco_esa.log.message}"
+        - "^%{DATA:_tmp.timestamp} %{WORD:log.level}: %{GREEDYDATA:cisco_esa.log.message}"
+        - "^%{GREEDYDATA:cisco_esa.log.message}"
   - lowercase:
       field: log.level
       ignore_failure: true
@@ -73,9 +73,7 @@ processors:
       if: ctx?.cisco_esa?.log?.category?.name == "consolidated_event"
   - remove:
       field:
-        - remaining_message
         - _tmp
-        - filepath
       ignore_missing: true
   - remove:
       field: event.original

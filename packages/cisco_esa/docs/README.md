@@ -1,6 +1,6 @@
 # Cisco ESA
 
-The Cisco ESA integration collects and parses data from Cisco ESA using TCP/UDP and logfile.
+The [Cisco Email Security Appliance](https://www.cisco.com/c/en/us/products/security/email-security/index.html) integration collects and parses data from Cisco ESA using TCP/UDP and logfile.
 
 ## Compatibility
 
@@ -34,9 +34,9 @@ This module has been tested against **Cisco ESA server version 14.0.0 Virtual Ga
   - **FTP Push to Remote Server** for the below categories:  
     AMP Engine Logs, Anti-Spam Logs, Anti-Spam Logs, Authentication Logs, Bounce Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs, System Logs  
   - **Syslog Push** for the below categories:  
-	AMP Engine Logs, Anti-Spam Logs, Anti-Spam Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs, System Logs
+	  AMP Engine Logs, Anti-Spam Logs, Anti-Spam Logs, Consolidated Event Logs, Content Scanner Logs, HTTP Logs, IronPort Text Mail Logs, Text Mail Logs, Status Logs, System Logs
 
-## Log samples 
+## [Sample Logs](https://www.cisco.com/c/en/us/td/docs/security/ces/user_guide/esa_user_guide_14-0/b_ESA_Admin_Guide_ces_14-0/b_ESA_Admin_Guide_12_1_chapter_0100111.html) 
 Below are the samples logs of respective category:
 
 ## AMP Engine Logs:
@@ -200,24 +200,20 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2003-01-29T00:06:30.000Z",
+    "@timestamp": "2022-03-17T18:24:37.000Z",
     "agent": {
-        "ephemeral_id": "3d31dc43-0538-4e20-85ae-6288a6f37a33",
-        "id": "e522ef67-fb43-425e-be62-0b2f55547c94",
+        "ephemeral_id": "065686af-596b-4208-b15b-1944e0cedfc6",
+        "id": "c76f222e-45b5-4a7a-bff9-9bf8cd2989ae",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.1.0"
     },
     "cisco_esa": {
         "log": {
-            "bounce_type": "Bounced",
             "category": {
-                "name": "bounces"
+                "name": "amp"
             },
-            "delivery_connection_id": "2",
-            "error_code": "5.1.0",
-            "recipient_id": "0",
-            "response": "'550', ['5.1.1 The email account that you tried to reach does not exist. Please try', \"5.1.1 double-checking the recipient's email address for typos or\", '5.1.1 unnecessary spaces. Learn more at', '5.1.1  xxxxx ay44si12078156oib.94 - gsmtp']"
+            "message": "File reputation query initiating. File Name = 'mod-6.exe', MID = 5, File Size = 1673216 bytes, File Type = application/x-dosexec"
         }
     },
     "data_stream": {
@@ -229,35 +225,37 @@ An example event for `log` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "e522ef67-fb43-425e-be62-0b2f55547c94",
+        "id": "c76f222e-45b5-4a7a-bff9-9bf8cd2989ae",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.1.0"
     },
     "email": {
-        "from": {
-            "address": "example.com"
+        "attachments": {
+            "file": {
+                "name": "mod-6.exe",
+                "size": 1673216
+            }
         },
-        "message_id": "15232",
-        "to": {
-            "address": "example.com"
-        }
+        "content_type": "application/x-dosexec",
+        "message_id": "5"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_esa.log",
-        "ingested": "2022-04-08T06:28:57Z",
-        "kind": "event",
-        "reason": "Unknown address error"
+        "ingested": "2022-04-21T12:26:09Z",
+        "kind": "event"
     },
     "input": {
-        "type": "log"
+        "type": "udp"
     },
     "log": {
-        "file": {
-            "path": "/tmp/service_logs/bounces.@123456789.s"
-        },
         "level": "info",
-        "offset": 0
+        "source": {
+            "address": "172.18.0.1:42219"
+        },
+        "syslog": {
+            "priority": 166
+        }
     },
     "tags": [
         "forwarded",
@@ -327,14 +325,13 @@ An example event for `log` looks as following:
 | cisco_esa.log.destination |  | text |
 | cisco_esa.log.destination_memory | Number of destination objects in memory. | long |
 | cisco_esa.log.details | Additional information. | text |
-| cisco_esa.log.device_direction |  | long |
+| cisco_esa.log.device_direction |  | keyword |
 | cisco_esa.log.disk_io | Disk I/O Utilization. | long |
 | cisco_esa.log.disposition |  | keyword |
 | cisco_esa.log.dns.hard_bounces | DNS Hard Bounces. | long |
 | cisco_esa.log.dns.requests | DNS Requests. | long |
 | cisco_esa.log.dropped_messages | Dropped Messages. | long |
 | cisco_esa.log.encryption_queue | Messages in the Encryption Queue. | long |
-| cisco_esa.log.end_time |  | keyword |
 | cisco_esa.log.error_code |  | keyword |
 | cisco_esa.log.esa.amp_verdict |  | keyword |
 | cisco_esa.log.esa.as_verdict |  | keyword |
@@ -368,7 +365,6 @@ An example event for `log` looks as following:
 | cisco_esa.log.event.name |  | keyword |
 | cisco_esa.log.event_class_id |  | keyword |
 | cisco_esa.log.expired_hard_bounces | Expired Hard Bounces. | long |
-| cisco_esa.log.file.size |  | keyword |
 | cisco_esa.log.filter_hard_bounces | Filter Hard Bounces. | long |
 | cisco_esa.log.generated_bounce_recipients | Generated Bounce Recipients. | long |
 | cisco_esa.log.global_unsubscribe_hits | Global Unsubscribe Hits. | long |
@@ -378,6 +374,7 @@ An example event for `log` looks as following:
 | cisco_esa.log.injected.recipients | Injected Recipients. | long |
 | cisco_esa.log.injection_connection_id | Injection Connection ID. This is a numerical identifier for an individual SMTP connection to the system, over which 1 to thousands of individual messages may be sent. | keyword |
 | cisco_esa.log.interface |  | keyword |
+| cisco_esa.log.listener.name |  | keyword |
 | cisco_esa.log.log_available | Amount of disk space available for log files. | keyword |
 | cisco_esa.log.log_used | Percent of log partition used. | long |
 | cisco_esa.log.malware | The name of the malware threat. | keyword |
@@ -405,7 +402,6 @@ An example event for `log` looks as following:
 | cisco_esa.log.ram.used | Allocated memory in bytes. | long |
 | cisco_esa.log.ram.utilization | RAM Utilization. | long |
 | cisco_esa.log.read_bytes |  | long |
-| cisco_esa.log.reason |  | text |
 | cisco_esa.log.recepients |  | keyword |
 | cisco_esa.log.recipient_id | Recipient ID. | keyword |
 | cisco_esa.log.ref_zone |  | keyword |
@@ -434,7 +430,6 @@ An example event for `log` looks as following:
 | cisco_esa.log.swapped.out | Memory swapped out. | long |
 | cisco_esa.log.swapped.page.in | Memory paged in. | long |
 | cisco_esa.log.swapped.page.out | Memory paged out. | long |
-| cisco_esa.log.timestamp |  | keyword |
 | cisco_esa.log.total_ld | Total CPU consumption. | long |
 | cisco_esa.log.type |  | keyword |
 | cisco_esa.log.unattempted_recipients | Unattempted Recipients. | long |
@@ -467,6 +462,7 @@ An example event for `log` looks as following:
 | destination.port | Port of the destination. | long |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
 | email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
 | email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | email.attachments.file.size | Attachment file size in bytes. | long |
@@ -475,6 +471,7 @@ An example event for `log` looks as following:
 | email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
 | email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
 | email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
@@ -482,7 +479,6 @@ An example event for `log` looks as following:
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | filepath |  | keyword |
-| hash.sha256 | SHA256 hash. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -496,13 +492,14 @@ An example event for `log` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
-| input.type | Input type | keyword |
+| input.type |  | keyword |
 | log.file.path | File path from which the log event was read / sent from. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
@@ -520,10 +517,14 @@ An example event for `log` looks as following:
 | type | Input type. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
 | user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
