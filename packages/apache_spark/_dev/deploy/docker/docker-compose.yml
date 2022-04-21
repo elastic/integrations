@@ -1,9 +1,28 @@
-version: '2'
+version: '2.3'
 services:
   apache_spark:
     hostname: apache-spark-main
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: docker.io/bitnami/spark@sha256:cb19b1bdebc0bc9dc20ea13f2109763be6a73b357b144a01efd94902540f6d27
     ports:
       - 7777
+      - 7779
+      - 7780
+    environment:
+      - SPARK_MAIN_URL=spark://apache-spark-main:7077
+      - SPARK_WORKER_MEMORY=1024G
+      - SPARK_WORKER_CORES=8
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+    volumes:
+      - ./jolokia-agent:/usr/share/java/
+      - ./application:/opt/bitnami/spark/examples/src/main/python/
+      - ./jolokia-configs:/spark/conf/
+      - ./docker-entrypoint/docker-entrypoint.sh:/opt/bitnami/scripts/spark/docker-entrypoint.sh
+    healthcheck:
+      interval: 1s
+      retries: 120
+      timeout: 120s
+      test: |-
+        curl -f -s http://localhost:7777/jolokia/version -o /dev/null
+    entrypoint: /opt/bitnami/scripts/spark/docker-entrypoint.sh /opt/bitnami/scripts/spark/run.sh
