@@ -159,17 +159,6 @@ processors:
     if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
 
 ####################################################
-# Set device_type based on log message subtype
-####################################################
-- set:
-    field: cisco_meraki.device_type
-    value: MX
-    if: ctx?.cisco_meraki?.event_subtype == "Site-to-Site VPN" || ctx?.cisco_meraki?.event_subtype == "vpn_connectivity_change"
-- set:
-    field: cisco_meraki.device_type
-    value: MR
-    if: ctx?.cisco_meraki?.event_subtype == 'dfs_event' || ['association', 'disassociation', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood', 'aps_association_reject', 'multiple_dhcp_servers_detected'].contains(ctx.cisco_meraki.event_subtype)
-####################################################
 # IP Geolocation Lookup (source)
 ####################################################
 - geoip:
