@@ -54,6 +54,15 @@ processors:
       field: email.to.address
       value: ["{{{mimecast.userEmailAddress}}}"]
       if: "ctx?.mimecast?.userEmailAddress != null"
+  - set:
+      field: user.email
+      value: ["{{{mimecast.userEmailAddress}}}"]
+      if: "ctx?.mimecast?.userEmailAddress != null"
+  - append:
+      field: related.user
+      value: "{{{mimecast.userEmailAddress}}}"
+      allow_duplicates: false
+      if: 'ctx?.mimecast?.userEmailAddress !=null'
       ignore_failure: true
   - rename:
       field: mimecast.sendingIp
