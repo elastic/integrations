@@ -1,7 +1,8 @@
 # Squid integration
 
-This integration is for Squid device's logs. It includes the following
+This integration is for [Squid](https://wiki.squid-cache.org/SquidFaq/SquidLogs) device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
+
 - `log` dataset: supports Squid logs.
 
 ### Log
