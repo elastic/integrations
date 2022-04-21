@@ -47,6 +47,9 @@ processors:
         - json.datetime
       ignore_missing: true
   - set:
+      field: network.protocol
+      value: dns
+  - append:
       field: event.category
       value: network
   - set:
@@ -57,24 +60,32 @@ processors:
       value: info
   - rename:
       field: json.clt_sip
-      target_field: client.ip
+      target_field: source.ip
       ignore_missing: true
   - geoip:
-      field: client.ip
-      target_field: client.geo
+      field: source.ip
+      target_field: source.geo
       ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
-      field: client.ip
-      target_field: client.as
+      field: source.ip
+      target_field: source.as
       properties:
         - asn
         - organization_name
       ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{client.ip}}}"
-      if: ctx?.client?.ip != null
+      value: "{{{source.ip}}}"
+      if: ctx?.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -91,29 +102,37 @@ processors:
       ignore_missing: true
   - rename:
       field: json.srv_dip
-      target_field: server.ip
+      target_field: destination.ip
       ignore_missing: true
   - geoip:
-      field: server.ip
-      target_field: server.geo
+      field: destination.ip
+      target_field: destination.geo
       ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
-      field: server.ip
-      target_field: server.as
+      field: destination.ip
+      target_field: destination.as
       properties:
         - asn
         - organization_name
       ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true      
   - append:
       field: related.ip
-      value: "{{{server.ip}}}"
-      if: ctx?.server?.ip != null
+      value: "{{{destination.ip}}}"
+      if: ctx?.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.srv_dport
-      target_field: server.port
+      target_field: destination.port
       type: long
       ignore_failure: true
   - remove:
@@ -213,6 +232,11 @@ processors:
         for (Map.Entry m : ctx.json.entrySet()) {
           ctx.zscaler_zia.dns[m.getKey()] = m.getValue();
         }
+  - script:
+      lang: painless
+      if: ctx?.zscaler_zia?.dns?.duration?.milliseconds != null
+      source: |
+        ctx.event.duration = ctx?.zscaler_zia?.dns?.duration?.milliseconds * 1000000;
   - remove:
       field: json
       ignore_failure: true

@@ -46,7 +46,7 @@ processors:
         - json.time
         - json.datetime
       ignore_missing: true
-  - set:
+  - append:
       field: event.category
       value: network
   - set:
@@ -191,6 +191,18 @@ processors:
       field: json.tunneltype
       target_field: zscaler_zia.tunnel.type
       ignore_missing: true
+  - set:
+      field: network.transport
+      copy_from: zscaler_zia.tunnel.type
+      ignore_failure: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - set:
+      field: network.iana_number
+      value: "47"
+      if: ctx?.network?.transport == "gre"
+      ignore_failure: true
   - rename:
       field: json.vendorname
       target_field: zscaler_zia.tunnel.vendor.name
@@ -279,6 +291,15 @@ processors:
       field: json.dpdrec
       target_field: zscaler_zia.tunnel.dpd_packets
       ignore_missing: true
+  - community_id:
+      source_ip: source.ip
+      source_port: source.port
+      destination_ip: destination.ip
+      destination_port: destination.port
+      transport: network.transport
+      iana_number: network.iana_number
+      target_field: network.community_id
+      ignore_failure: true
   - script:
       description: Drops null/empty values recursively
       lang: painless

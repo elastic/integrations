@@ -23,13 +23,13 @@ processors:
   - remove:
       field: resp
       ignore_missing: true
-  - set:
+  - append:
       field: event.category
       value: network
   - set:
       field: event.kind
       value: event
-  - set:
+  - append:
       field: event.type
       value: info
   - date:
@@ -57,7 +57,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.outbytes
-      target_field: client.bytes
+      target_field: source.bytes
       type: long
       ignore_failure: true
   - remove:
@@ -106,7 +106,7 @@ processors:
       ignore_missing: true
   - convert: 
       field: json.inbytes
-      target_field: server.bytes
+      target_field: destination.bytes
       type: long
       ignore_failure: true
   - remove:
@@ -114,7 +114,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.destcountry
-      target_field: server.geo.country_name
+      target_field: destination.geo.country_name
       ignore_missing: true
   - urldecode:
       field: json.user
@@ -151,7 +151,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.csport
-      target_field: zscaler_zia.firewall.client.source.port
+      target_field: source.port
       type: long
       ignore_failure: true
   - remove:
@@ -159,7 +159,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.sdport
-      target_field: zscaler_zia.firewall.server.destination.port
+      target_field: destination.port
       type: long
       ignore_failure: true
   - remove:
@@ -181,7 +181,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.csip
-      target_field: zscaler_zia.firewall.client.source.ip
+      target_field: source.ip
       ignore_missing: true
   - append:
       field: related.ip
@@ -211,7 +211,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.sdip
-      target_field: zscaler_zia.firewall.server.destination.ip
+      target_field: destination.ip
       ignore_missing: true
   - append:
       field: related.ip
@@ -260,24 +260,18 @@ processors:
       ignore_missing: true
   - convert:
       field: json.avgduration
-      type: double
+      type: long
       target_field: zscaler_zia.firewall.duration.avg
       ignore_failure: true
   - remove:
-      field: json.avgduration
-      ignore_missing: true
-  - convert:
-      field: json.duration
-      target_field: zscaler_zia.firewall.duration.seconds
-      type: double
-      ignore_failure: true
-  - remove:
-      field: json.duration
+      field: 
+        - json.avgduration
+        - json.duration
       ignore_missing: true
   - convert:
       field: json.durationms
       target_field: zscaler_zia.firewall.duration.milliseconds
-      type: double
+      type: long
       ignore_failure: true
   - remove:
       field: json.durationms
@@ -298,6 +292,14 @@ processors:
       field: json.threatname
       target_field: zscaler_zia.firewall.threat.name
       ignore_missing: true
+  - community_id:
+      source_ip: source.ip
+      source_port: source.port
+      destination_ip: destination.ip
+      destination_port: destination.port
+      transport: network.transport
+      target_field: network.community_id
+      ignore_failure: true
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -323,6 +325,11 @@ processors:
         for (Map.Entry m : ctx.json.entrySet()) {
           ctx.zscaler_zia.firewall[m.getKey()] = m.getValue();
         }
+  - script:
+      lang: painless
+      if: ctx?.zscaler_zia?.firewall?.duration?.milliseconds != null
+      source: |
+        ctx.event.duration = ctx?.zscaler_zia?.firewall?.duration?.milliseconds * 1000000;
   - remove:
       field: json
       ignore_missing: true

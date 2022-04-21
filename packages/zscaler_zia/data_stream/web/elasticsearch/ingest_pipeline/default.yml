@@ -46,7 +46,7 @@ processors:
         - json.time
         - json.datetime
       ignore_missing: true
-  - set:
+  - append:
       field: event.category
       value: web
   - set:
@@ -57,27 +57,28 @@ processors:
       value: info
   - rename:
       field: json.cip
-      target_field: client.ip
+      target_field: source.nat.ip
+      if: ctx?.json?.cip != ctx?.json?.cintip
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{client.ip}}}"
-      if: ctx?.client?.ip != null
+      value: "{{{source.nat.ip}}}"
+      if: ctx?.source?.nat?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.sip
-      target_field: client.nat.ip
+      target_field: destination.ip
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{client.nat.ip}}}"
-      if: ctx?.client?.nat?.ip != null
+      value: "{{{destination.ip}}}"
+      if: ctx?.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.deviceowner
-      target_field: client.user.name
+      target_field: source.user.name
       ignore_missing: true
   - convert:
       field: json.reqsize
@@ -250,12 +251,12 @@ processors:
       ignore_missing: true
   - rename:
       field: json.cintip
-      target_field: zscaler_zia.web.client.internet.ip
+      target_field: source.ip
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{zscaler_zia.web.client.internet.ip}}}"
-      if: ctx?.zscaler_zia?.web?.client?.internet?.ip != null
+      value: "{{{source.ip}}}"
+      if: ctx?.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
