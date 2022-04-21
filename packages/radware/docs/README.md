@@ -1,6 +1,6 @@
 # Radware integration
 
-This integration is for Radware device's logs. It includes the following
+This integration is for [Radware](https://support.radware.com/app/answers/answer_view/a_id/19907/related/1) device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
 - `defensepro` dataset: supports Radware DefensePro logs.
 
