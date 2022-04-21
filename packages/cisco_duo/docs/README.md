@@ -314,6 +314,7 @@ An example event for `auth` looks as following:
 | cisco_duo.auth.access_device.location.city | The city name of the access device using geoip location. | keyword |
 | cisco_duo.auth.access_device.location.country | The country of the access device using geoip location. | keyword |
 | cisco_duo.auth.access_device.location.state | The state name of the access device using geoip location. | keyword |
+| cisco_duo.auth.access_device.port | The access device's port number. | long |
 | cisco_duo.auth.access_device.security_agents | Reports the security agents present on the endpoint as detected by the Duo Device Health app. | keyword |
 | cisco_duo.auth.alias | The username alias used to log in. | keyword |
 | cisco_duo.auth.application.key | The application's integration_key. | keyword |
@@ -332,6 +333,7 @@ An example event for `auth` looks as following:
 | cisco_duo.auth.auth_device.location.country | The country of the authentication device using geoip location. | keyword |
 | cisco_duo.auth.auth_device.location.state | The state name of the authentication device using geoip location. | keyword |
 | cisco_duo.auth.auth_device.name | The name of the authentication device. | keyword |
+| cisco_duo.auth.auth_device.port | The network port of the authentication device. | long |
 | cisco_duo.auth.email | The email address of the user, if known to Duo, otherwise none. | keyword |
 | cisco_duo.auth.event_type | The type of activity logged. | keyword |
 | cisco_duo.auth.factor | The authentication factor. | keyword |
@@ -399,6 +401,7 @@ An example event for `auth` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
 | source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |

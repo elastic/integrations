@@ -45,13 +45,58 @@ processors:
       copy_from: json.reason
       ignore_failure: true
   - set: 
+      field: source.address
+      copy_from: json.access_device.ip
+  - grok:
+      field: json.access_device.ip
+      patterns:
+        - "^%{IPV4:json.access_device.ip}:%{NUMBER:json.access_device.port}$"
+        - "^\\[%{IPV6:json.access_device.ip}\\]:%{NUMBER:json.access_device.port}$"
+        - "^%{IPV6NOCOMPRESS:json.access_device.ip}:%{NUMBER:json.access_device.port}$"
+        - "^%{IPV6:json.access_device.ip}%{IPV6PORTSEP}%{NUMBER:json.access_device.port}$"
+        - "^%{IPV6:json.access_device.ip}%{IPV6PORTSEP}%{POSINT:json.access_device.port}$"
+      pattern_definitions:
+        IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+        IPV6PORTSEP: '(?: port |[p#.])'
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.access_device.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: json.access_device.port
+      type: long
+      ignore_missing: true
+  - set: 
       field: source.ip
       copy_from: json.access_device.ip
       ignore_failure: true
-  - set: 
-      field: source.address
-      copy_from: json.access_device.ip
+  - set:
+      field: source.port
+      copy_from: json.access_device.port
       ignore_failure: true
+  - grok:
+      field: json.auth_device.ip
+      patterns:
+        - "^%{IPV4:json.auth_device.ip}:%{NUMBER:json.auth_device.port}$"
+        - "^\\[%{IPV6:json.auth_device.ip}\\]:%{NUMBER:json.auth_device.port}$"
+        - "^%{IPV6NOCOMPRESS:json.auth_device.ip}:%{NUMBER:json.auth_device.port}$"
+        - "^%{IPV6:json.auth_device.ip}%{IPV6PORTSEP}%{NUMBER:json.auth_device.port}$"
+        - "^%{IPV6:json.auth_device.ip}%{IPV6PORTSEP}%{POSINT:json.auth_device.port}$"
+      pattern_definitions:
+        IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+        IPV6PORTSEP: '(?: port |[p#.])'
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.auth_device.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: json.auth_device.port
+      type: long
+      ignore_missing: true
   - set: 
       field: source.address
       copy_from: json.access_device.hostname
@@ -185,6 +230,10 @@ processors:
       target_field: cisco_duo.auth.access_device.ip
       ignore_missing: true
   - rename:
+      field: json.access_device.port
+      target_field: cisco_duo.auth.access_device.port
+      ignore_missing: true
+  - rename:
       field: json.access_device.is_encryption_enabled
       target_field: cisco_duo.auth.access_device.is_encryption_enabled
       ignore_missing: true
@@ -239,6 +288,10 @@ processors:
   - rename:
       field: json.auth_device.ip
       target_field: cisco_duo.auth.auth_device.ip
+      ignore_missing: true
+  - rename:
+      field: json.auth_device.port
+      target_field: cisco_duo.auth.auth_device.port
       ignore_missing: true
   - rename:
       field: json.auth_device.location.city
