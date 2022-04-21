@@ -1,7 +1,8 @@
 # Proofpoint integration
 
-This integration is for Proofpoint device's logs. It includes the following
+This integration is for [Proofpoint](https://help.proofpoint.com/Threat_Insight_Dashboard/API_Documentation/SIEM_API) device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
+
 - `emailsecurity` dataset: supports Proofpoint Email Security logs.
 
 ### Emailsecurity
