@@ -31,26 +31,21 @@ processors:
 - set:
     field: event.kind
     value: event
-    if: '["09002"].contains(ctx.sophos?.xg?.message_id)'
+    if: '["09002"].contains(ctx.event?.code)'
 - append:
     field: event.type
     value:
       - allowed
       - connection
-    if: '["09002"].contains(ctx.sophos?.xg?.message_id)'
+    if: '["09002"].contains(ctx.event?.code)'
 - append:
     field: event.category
     value: network
-    if: '["09002"].contains(ctx.sophos?.xg?.message_id)'
-- rename:
-    field: sophos.xg.log_id
-    target_field: event.code
-    ignore_missing: true
-    if: "ctx.event?.code == null"
+    if: '["09002"].contains(ctx.event?.code)'
 
-####################################
-## ECS Server/Destination Mapping ##
-####################################
+#############################
+## ECS Destination Mapping ##
+#############################
 - rename:
     field: sophos.xg.dst_ip
     target_field: destination.ip
@@ -68,10 +63,18 @@ processors:
     target_field: destination.user.email
     ignore_missing: true
     if: "ctx.sophos?.xg?.to_email_address != null"
+- rename:
+    field: sophos.xg.dstdomain
+    target_field: destination.domain
+    ignore_failure: true
+- rename:
+    field: sophos.xg.dst_domainname
+    target_field: destination.domain
+    ignore_failure: true
 
-###############################
-## ECS Client/Source Mapping ##
-###############################
+########################
+## ECS Source Mapping ##
+########################
 - rename:
     field: sophos.xg.src_ip
     target_field: source.ip
@@ -94,6 +97,10 @@ processors:
     target_field: source.user.email
     ignore_missing: true
     if: "ctx.sophos?.xg?.from_email_address != null"
+- rename:
+    field: sophos.xg.src_domainname
+    target_field: source.domain
+    ignore_failure: true
 
 ######################
 ## ECS Rule Mapping ##
@@ -112,21 +119,19 @@ processors:
      target_field: url.original
      ignore_missing: true
      if: "ctx.sophos?.xg?.url != null"
+- uri_parts:
+    if: ctx.url?.original != null && ctx.url.original.contains("://")
+    field: url.original
+    target_field: url
+- set:
+    if: ctx.url?.original != null && ctx.url.original.contains("://")
+    field: url.full
+    copy_from: url.original
+    ignore_empty_value: true
 - rename:
      field: sophos.xg.domainname
      target_field: url.domain
-     ignore_missing: true
-     if: "ctx.sophos?.xg?.domainname != null"
-- rename:
-     field: sophos.xg.dst_domainname
-     target_field: url.domain
-     ignore_missing: true
-     if: "ctx.sophos?.xg?.dst_domainname != null && ctx?.url?.domain == null"
-- rename:
-     field: sophos.xg.src_domainname
-     target_field: url.domain
-     ignore_missing: true
-     if: "ctx.sophos?.xg?.src_domainname != null"
+     ignore_failure: true
 
 ############################
 ## ECS User Agent Mapping ##
@@ -165,103 +170,18 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.file_path != null"
 
-#############################
-## ECS Network/Geo Mapping ##
-#############################
+######################
+## ECS Network Mapping
+######################
 - rename:
     field: sophos.xg.protocol
     target_field: network.transport
     ignore_missing: true
-    if: "ctx.sophos?.xg?.protocol != null"
-- geoip:
-    field: source.ip
-    target_field: source.geo
-    ignore_missing: true
-    if: "ctx.source?.geo == null"
-- geoip:
-    field: destination.ip
-    target_field: destination.geo
-    ignore_missing: true
-    if: "ctx.destination?.geo == null"
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: source.ip
-    target_field: source.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: destination.ip
-    target_field: destination.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-- geoip:
-    field: source.nat.ip
-    target_field: source.geo
-    ignore_missing: true
-    if: "ctx.source?.geo == null"
-- geoip:
-    field: destination.nat.ip
-    target_field: destination.geo
-    ignore_missing: true
-    if: "ctx.destination?.geo == null"
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: source.nat.ip
-    target_field: source.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-    if: "ctx.source?.as == null"
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: destination.nat.ip
-    target_field: destination.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-    if: "ctx.destination?.as == null"
-- rename:
-    field: source.as.asn
-    target_field: source.as.number
-    ignore_missing: true
-- rename:
-    field: source.as.organization_name
-    target_field: source.as.organization.name
-    ignore_missing: true
-- rename:
-    field: destination.as.asn
-    target_field: destination.as.number
-    ignore_missing: true
-- rename:
-    field: destination.as.organization_name
-    target_field: destination.as.organization.name
+- lowercase:
+    field: sophos.xg.log_component
+    target_field: network.protocol
     ignore_missing: true
 
-#########################
-## ECS Related Mapping ##
-#########################
-- append:
-    field: related.ip
-    value: '{{source.ip}}'
-    allow_duplicates: false
-    if: 'ctx?.source?.ip != null'
-- append:
-    field: related.ip
-    value: '{{destination.ip}}'
-    allow_duplicates: false
-    if: 'ctx?.destination?.ip != null'
-- append:
-    field: related.user
-    value: "{{source.user.name}}"
-    allow_duplicates: false
-    if: "ctx.source?.user?.name != null"
 #############
 ## Cleanup ##
 #############
@@ -270,6 +190,7 @@ processors:
       ignore_failure: true
 - remove:
     field:
+    - sophos.xg.domainname
     - sophos.xg.dst_port
     - sophos.xg.src_port
     - sophos.xg.status_code

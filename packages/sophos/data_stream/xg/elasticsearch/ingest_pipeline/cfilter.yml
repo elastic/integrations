@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing sophos firewall logs (cfilter pipeline)
+description: Pipeline for parsing sophos firewall logs (Content Filtering pipeline)
 processors:
 #######################
 ## ECS Event Mapping ##
@@ -42,15 +42,10 @@ processors:
       - denied
       - connection
     if: "ctx.sophos?.xg?.log_subtype == 'Denied'"
-- rename:
-    field: sophos.xg.log_id
-    target_field: event.code
-    ignore_missing: true
-    if: "ctx.event?.code == null"
 
-####################################
-## ECS Server/Destination Mapping ##
-####################################
+##########################
+## ECS Destination Mapping
+##########################
 - rename:
     field: sophos.xg.dst_ip
     target_field: destination.ip
@@ -64,9 +59,9 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_port != null"
 
-###############################
-## ECS Client/Source Mapping ##
-###############################
+#####################
+## ECS Source Mapping
+#####################
 - rename:
     field: sophos.xg.src_ip
     target_field: source.ip
@@ -140,113 +135,22 @@ processors:
     target_field: user_agent
     ignore_missing: true
 
-#############################
-## ECS Network/Geo Mapping ##
-#############################
+######################
+## ECS Network Mapping
+######################
 - rename:
     field: sophos.xg.protocol
     target_field: network.transport
     ignore_missing: true
-    if: "ctx.sophos?.xg?.protocol != null"
-- geoip:
-    field: source.ip
-    target_field: source.geo
-    ignore_missing: true
-    if: "ctx.source?.geo == null"
-- geoip:
-    field: destination.ip
-    target_field: destination.geo
-    ignore_missing: true
-    if: "ctx.destination?.geo == null"
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: source.ip
-    target_field: source.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: destination.ip
-    target_field: destination.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-- geoip:
-    field: source.nat.ip
-    target_field: source.geo
-    ignore_missing: true
-    if: "ctx.source?.geo == null"
-- geoip:
-    field: destination.nat.ip
-    target_field: destination.geo
-    ignore_missing: true
-    if: "ctx.destination?.geo == null"
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: source.nat.ip
-    target_field: source.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-    if: "ctx.source?.as == null"
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: destination.nat.ip
-    target_field: destination.as
-    properties:
-    - asn
-    - organization_name
-    ignore_missing: true
-    if: "ctx.destination?.as == null"
-- rename:
-    field: source.as.asn
-    target_field: source.as.number
-    ignore_missing: true
-- rename:
-    field: source.as.organization_name
-    target_field: source.as.organization.name
-    ignore_missing: true
-- rename:
-    field: destination.as.asn
-    target_field: destination.as.number
-    ignore_missing: true
-- rename:
-    field: destination.as.organization_name
-    target_field: destination.as.organization.name
-    ignore_missing: true
-
-#########################
-## ECS Related Mapping ##
-#########################
-- append:
-    field: related.ip
-    value: '{{source.ip}}'
-    allow_duplicates: false
-    if: 'ctx?.source?.ip != null'
-- append:
-    field: related.ip
-    value: '{{destination.ip}}'
-    allow_duplicates: false
-    if: 'ctx?.destination?.ip != null'
-- append:
-    field: related.user
-    value: "{{source.user.name}}"
-    allow_duplicates: false
-    if: "ctx.source?.user?.name != null"
+- set:
+    field: network.protocol
+    copy_from: url.scheme
+    override: false
+    ignore_empty_value: true
 
 #############
 ## Cleanup ##
 #############
-- lowercase:
-      field: network.protocol
-      ignore_failure: true
-- lowercase:
-      field: network.transport
-      ignore_failure: true
 - lowercase:
       field: event.action
       ignore_failure: true
