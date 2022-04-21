@@ -946,12 +946,29 @@ An example event for `xg` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| client.as.organization.name | Organization name. | keyword |
+| client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| client.nat.ip | Translated IP of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | ip |
 | client.nat.port | Translated port of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | long |
 | client.packets | Packets sent from the client to the server. | long |
 | client.port | Port of the client. | long |
+| client.user.email | User email address. | keyword |
+| client.user.group.name | Name of the group. | keyword |
+| client.user.name | Short name or login of the user. | keyword |
+| client.user.name.text | Multi-field of `client.user.name`. | match_only_text |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -1052,6 +1069,7 @@ An example event for `xg` looks as following:
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| observer.hostname | Hostname of the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.product | The product name of the observer. | keyword |
@@ -1066,12 +1084,25 @@ An example event for `xg` looks as following:
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
+| server.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| server.as.organization.name | Organization name. | keyword |
+| server.as.organization.name.text | Multi-field of `server.as.organization.name`. | match_only_text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| server.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
 | server.nat.port | Translated port of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | long |
 | server.packets | Packets sent from the server to the client. | long |
 | server.port | Port of the server. | long |
+| server.user.email | User email address. | keyword |
 | sophos.xg.Configuration | Configuration | float |
 | sophos.xg.FTP_direction | Direction of FTP transfer: Upload or Download | keyword |
 | sophos.xg.FTP_url | FTP URL from which virus was downloaded | keyword |
@@ -1084,7 +1115,13 @@ An example event for `xg` looks as following:
 | sophos.xg.action | Event Action | keyword |
 | sophos.xg.activityname | Web policy activity that matched and caused the policy result. | keyword |
 | sophos.xg.ap | ap | keyword |
+| sophos.xg.app_category | Name of the category under which application falls | keyword |
+| sophos.xg.app_filter_policy_id | Application filter policy ID applied on the traffic | keyword |
 | sophos.xg.app_is_cloud | Application is Cloud | keyword |
+| sophos.xg.app_name | Application name | keyword |
+| sophos.xg.app_resolved_by | Application is resolved by signature or synchronized application | keyword |
+| sophos.xg.app_risk | Risk level assigned to the application | keyword |
+| sophos.xg.app_technology | Technology of the application | keyword |
 | sophos.xg.appfilter_policy_id | Application Filter policy applied on the traffic | integer |
 | sophos.xg.application | Application name | keyword |
 | sophos.xg.application_category | Application is resolved by signature or synchronized application | keyword |
@@ -1105,12 +1142,14 @@ An example event for `xg` looks as following:
 | sophos.xg.client_physical_address | Client physical address | keyword |
 | sophos.xg.clients_conn_ssid | clients connection ssid | keyword |
 | sophos.xg.collisions | collisions | long |
+| sophos.xg.con_event | Event Start/Stop | keyword |
 | sophos.xg.con_id | Unique identifier of connection | integer |
 | sophos.xg.conn_id | Unique identifier of connection | integer |
 | sophos.xg.connectionname | Connectionname | keyword |
 | sophos.xg.connectiontype | Connectiontype | keyword |
 | sophos.xg.connevent | Event on which this log is generated | keyword |
 | sophos.xg.connid | Connection ID | keyword |
+| sophos.xg.content_type | Type of the content | keyword |
 | sophos.xg.contenttype | Type of the content | keyword |
 | sophos.xg.context_match | Context Match | keyword |
 | sophos.xg.context_prefix | Content Prefix | keyword |
@@ -1120,6 +1159,7 @@ An example event for `xg` looks as following:
 | sophos.xg.destinationip | Original destination IP address of traffic | ip |
 | sophos.xg.device | device | keyword |
 | sophos.xg.device_id | Serial number of the device | keyword |
+| sophos.xg.device_model | Model number of the device | keyword |
 | sophos.xg.device_name | Model number of the device | keyword |
 | sophos.xg.dictionary_name | Dictionary Name | keyword |
 | sophos.xg.dir_disp | TPacket direction. Possible values:“org”, “reply”, “” | keyword |
@@ -1131,9 +1171,8 @@ An example event for `xg` looks as following:
 | sophos.xg.dst_domainname | Receiver domain name | keyword |
 | sophos.xg.dst_ip | Original destination IP address of traffic | ip |
 | sophos.xg.dst_port | Original destination port of TCP and UDP traffic | integer |
+| sophos.xg.dst_zone_type | Type of destination zone | keyword |
 | sophos.xg.dstdomain | Destination Domain | keyword |
-| sophos.xg.dstzone | Name of destination zone | keyword |
-| sophos.xg.dstzonetype | Type of destination zone, e.g., WAN | keyword |
 | sophos.xg.duration | Durability of traffic (seconds) | long |
 | sophos.xg.email_subject | Email Subject | keyword |
 | sophos.xg.ep_uuid | Endpoint UUID | keyword |
@@ -1154,8 +1193,12 @@ An example event for `xg` looks as following:
 | sophos.xg.from_email_address | Sender email address | keyword |
 | sophos.xg.ftpcommand | FTP command used when virus was found | keyword |
 | sophos.xg.fw_rule_id | Firewall Rule ID which is applied on the traffic | integer |
+| sophos.xg.fw_rule_type | Firewall rule type which is applied on the traffic | keyword |
 | sophos.xg.hb_health | Heartbeat status | keyword |
+| sophos.xg.hb_status | Heartbeat status | keyword |
 | sophos.xg.host | Host | keyword |
+| sophos.xg.http_category | HTTP Category | keyword |
+| sophos.xg.http_category_type | HTTP Category Type | keyword |
 | sophos.xg.httpresponsecode | code of HTTP response | long |
 | sophos.xg.iap | Internet Access policy ID applied on the traffic | keyword |
 | sophos.xg.icmp_code | ICMP code of ICMP traffic | keyword |
@@ -1167,17 +1210,20 @@ An example event for `xg` looks as following:
 | sophos.xg.interface | interface | keyword |
 | sophos.xg.ipaddress | Ipaddress | keyword |
 | sophos.xg.ips_policy_id | IPS policy ID applied on the traffic | integer |
+| sophos.xg.lease_time | Lease Time | keyword |
 | sophos.xg.localgateway | Localgateway | keyword |
 | sophos.xg.localnetwork | Localnetwork | keyword |
 | sophos.xg.log_component | Component responsible for logging e.g. Firewall rule | keyword |
 | sophos.xg.log_id | Unique 12 characters code (0101011) | keyword |
 | sophos.xg.log_subtype | Sub type of event | keyword |
 | sophos.xg.log_type | Type of event e.g. firewall event | keyword |
+| sophos.xg.log_version | Log Version | keyword |
 | sophos.xg.login_user | ATP login user | keyword |
 | sophos.xg.mailid | mailid | keyword |
 | sophos.xg.mailsize | mailsize | integer |
 | sophos.xg.message | Message | keyword |
 | sophos.xg.message_id | Message ID | keyword |
+| sophos.xg.nat_rule_id | NAT Rule ID | keyword |
 | sophos.xg.newversion | Newversion | keyword |
 | sophos.xg.oldversion | Oldversion | keyword |
 | sophos.xg.out_interface | Interface for outgoing traffic, e.g., Port B | keyword |
@@ -1188,6 +1234,7 @@ An example event for `xg` looks as following:
 | sophos.xg.policy_type | Policy type applied to the traffic | keyword |
 | sophos.xg.priority | Severity level of traffic | keyword |
 | sophos.xg.protocol | Protocol number of traffic | keyword |
+| sophos.xg.qualifier | Qualifier | keyword |
 | sophos.xg.quarantine | Path and filename of the file quarantined | keyword |
 | sophos.xg.quarantine_reason | Quarantine reason | keyword |
 | sophos.xg.querystring | querystring | keyword |
@@ -1202,6 +1249,8 @@ An example event for `xg` looks as following:
 | sophos.xg.referer | Referer | keyword |
 | sophos.xg.remote_ip | Remote IP | ip |
 | sophos.xg.remotenetwork | remotenetwork | keyword |
+| sophos.xg.reported_host | Reported Host | keyword |
+| sophos.xg.reported_ip | Reported IP | keyword |
 | sophos.xg.responsetime | Responsetime | long |
 | sophos.xg.rule_priority | Priority of IPS policy | keyword |
 | sophos.xg.sent_bytes | Total number of bytes sent | long |
@@ -1221,8 +1270,7 @@ An example event for `xg` looks as following:
 | sophos.xg.src_ip | Original source IP address of traffic | ip |
 | sophos.xg.src_mac | Original source MAC address of traffic | keyword |
 | sophos.xg.src_port | Original source port of TCP and UDP traffic | integer |
-| sophos.xg.srczone | Name of source zone | keyword |
-| sophos.xg.srczonetype | Type of source zone, e.g., LAN | keyword |
+| sophos.xg.src_zone_type | Type of source zone | keyword |
 | sophos.xg.ssid | ssid | keyword |
 | sophos.xg.start_time | Start time | date |
 | sophos.xg.starttime | Starttime | date |
@@ -1252,6 +1300,7 @@ An example event for `xg` looks as following:
 | sophos.xg.upload_file_type | Upload file type | keyword |
 | sophos.xg.url | URL from which virus was downloaded | keyword |
 | sophos.xg.used | used | integer |
+| sophos.xg.used_quota | Used Quota | keyword |
 | sophos.xg.user | User | keyword |
 | sophos.xg.user_cpu | system | float |
 | sophos.xg.user_gp | Group name to which the user belongs. | keyword |
@@ -1260,6 +1309,7 @@ An example event for `xg` looks as following:
 | sophos.xg.users | users | keyword |
 | sophos.xg.vconn_id | Connection ID of the master connection | integer |
 | sophos.xg.virus | virus name | keyword |
+| sophos.xg.web_policy_id | Web policy ID | keyword |
 | sophos.xg.website | Website | keyword |
 | sophos.xg.xss | related XSS caught by the WAF | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
