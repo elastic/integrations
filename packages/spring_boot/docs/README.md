@@ -344,9 +344,9 @@ An example event for `memory` looks as following:
 | spring_boot.memory.heap.max | Max heap memory usage of JVM | long |
 | spring_boot.memory.heap.used | Used heap memory usage of JVM | long |
 | spring_boot.memory.manager.code_cache.name | Name of the cacheManager to qualify the cache | keyword |
-| spring_boot.memory.manager.code_cache.valid | Returns the validation | boolean |
+| spring_boot.memory.manager.code_cache.valid | Validation of code cache | boolean |
 | spring_boot.memory.manager.metaspace.name | Name of the Metaspace Manager to qualify the cache | keyword |
-| spring_boot.memory.manager.metaspace.valid | Returns the validation | boolean |
+| spring_boot.memory.manager.metaspace.valid | Validation of metaspace manager | boolean |
 | spring_boot.memory.non_heap.committed | Committed non-heap memory usage of JVM | long |
 | spring_boot.memory.non_heap.init | Init non-heap memory usage of JVM | long |
 | spring_boot.memory.non_heap.max | Max non-heap memory usage of JVM | long |
