@@ -35,7 +35,7 @@ An example event for `dataproc` looks as following:
             "cluster": {
                 "hdfs": {
                     "datanodes": {
-                        "value": 15
+                        "count": 15
                     }
                 }
             }
