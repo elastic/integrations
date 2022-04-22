@@ -3,7 +3,7 @@ description: Pipeline for parsing JDBC metrics
 processors:
   - set:
       field: ecs.version
-      value: '8.1.0'
+      value: '8.2.0'
   - rename:
       field: prometheus.metrics.was_connectionpool_jdbcOperation_time_seconds_total
       target_field: websphere_application_server.jdbc.connection.total_operations_seconds
@@ -103,6 +103,11 @@ processors:
       field: prometheus.labels.instance
       target_field: server.address
       ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: web
+      ignore_empty_value: true
       ignore_failure: true
   - set:
       field: event.kind

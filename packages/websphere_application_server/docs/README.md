@@ -1,13 +1,8 @@
 # WebSphere Application Server
 
-This integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics and logs as follows:
+This elastic integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics as follows:
 
    - JDBC metrics
-   - ThreadPool metrics
-   - Servlet metrics
-   - Session Manager metrics
-   - JVM metrics
-   - HPEL logs.
 
 This integration uses Prometheus to collect above metrics.
 
@@ -21,10 +16,10 @@ An example event for `jdbc` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-11T10:14:50.628Z",
+    "@timestamp": "2022-04-22T08:37:45.273Z",
     "agent": {
-        "ephemeral_id": "4605e9de-c77e-47d3-a03c-4094132bf9a2",
-        "id": "0901d04f-c651-4202-8403-ab97ad8d348e",
+        "ephemeral_id": "add1889c-ae8c-4c6b-928f-047be04c7887",
+        "id": "3d0b5b96-e9ff-4560-8cd8-9261ded61509",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -35,18 +30,19 @@ An example event for `jdbc` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "0901d04f-c651-4202-8403-ab97ad8d348e",
+        "id": "3d0b5b96-e9ff-4560-8cd8-9261ded61509",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": "web",
         "dataset": "websphere_application_server.jdbc",
-        "duration": 131275629,
-        "ingested": "2022-04-11T10:14:53Z",
+        "duration": 239432765,
+        "ingested": "2022-04-22T08:37:48Z",
         "kind": "metric",
         "module": "websphere_application_server",
         "type": "info"
@@ -56,10 +52,10 @@ An example event for `jdbc` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.64.6"
+            "172.30.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:40:06"
+            "02:42:ac:1e:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -125,6 +121,7 @@ An example event for `jdbc` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
