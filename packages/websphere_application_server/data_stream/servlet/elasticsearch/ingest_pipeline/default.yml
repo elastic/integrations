@@ -3,7 +3,7 @@ description: Pipeline for parsing Servlet metrics
 processors:
   - set:
       field: ecs.version
-      value: '8.1.0'
+      value: '8.2.0'
   - rename: 
       field: prometheus.metrics.was_servlet_requests_total
       target_field: websphere_application_server.servlet.requests_processed
@@ -93,6 +93,11 @@ processors:
       field: prometheus.labels.instance
       target_field: server.address
       ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: web
+      ignore_empty_value: true
       ignore_failure: true
   - set:
       field: event.kind

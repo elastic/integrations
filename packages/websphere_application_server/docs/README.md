@@ -1,13 +1,8 @@
 # WebSphere Application Server
 
-This integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics and logs as follows:
+This elastic integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics as follows:
 
-   - JDBC metrics
-   - ThreadPool metrics
    - Servlet metrics
-   - Session Manager metrics
-   - JVM metrics
-   - HPEL logs.
 
 This integration uses Prometheus to collect above metrics.
 
@@ -21,10 +16,10 @@ An example event for `servlet` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-13T06:36:03.789Z",
+    "@timestamp": "2022-04-22T09:17:36.290Z",
     "agent": {
-        "ephemeral_id": "257a977b-fd39-408f-8fd2-8c06a2ad0fb2",
-        "id": "3b4f87be-0cdb-4f64-9ec7-92fc2bc69f92",
+        "ephemeral_id": "92afaec7-277c-48ca-bc74-1e9827c4ba02",
+        "id": "9b88da1e-6314-4974-9e53-032e334b9305",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -35,18 +30,19 @@ An example event for `servlet` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "3b4f87be-0cdb-4f64-9ec7-92fc2bc69f92",
+        "id": "9b88da1e-6314-4974-9e53-032e334b9305",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": "web",
         "dataset": "websphere_application_server.servlet",
-        "duration": 1799891013,
-        "ingested": "2022-04-13T06:36:06Z",
+        "duration": 122318164,
+        "ingested": "2022-04-22T09:17:39Z",
         "kind": "metric",
         "module": "websphere_application_server",
         "type": "info"
@@ -56,10 +52,10 @@ An example event for `servlet` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.23.0.6"
+            "192.168.16.5"
         ],
         "mac": [
-            "02:42:ac:17:00:06"
+            "02:42:c0:a8:10:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -91,15 +87,8 @@ An example event for `servlet` looks as following:
     "websphere_application_server": {
         "servlet": {
             "appname": "ibmasyncrsp#ibmasyncrsp.war",
-            "async_context": {
-                "response_time_seconds": 0,
-                "total_responses": 0
-            },
-            "concurrent_requests": 0,
-            "errors": 0,
-            "requests_processed": 0,
-            "response_time_seconds": 0,
-            "responses_processed": 0
+            "loaded": 0,
+            "reloaded": 0
         }
     }
 }
@@ -114,6 +103,7 @@ An example event for `servlet` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
@@ -123,20 +113,20 @@ An example event for `servlet` looks as following:
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
-| websphere_application_server.servlet.appname | Application name | keyword |
+| websphere_application_server.servlet.appname | Application name. | keyword |
 | websphere_application_server.servlet.async_context.response_time_seconds | The total time spent(in seconds) per servlet for the AsyncContext response to complete. | double |
-| websphere_application_server.servlet.async_context.total_responses | The total number of AsyncContext responses for the specified URL | long |
-| websphere_application_server.servlet.concurrent_requests | Number of concurrent requests sent to the servlet | long |
-| websphere_application_server.servlet.errors | Number of errors that were generated while responding to a request | long |
-| websphere_application_server.servlet.loaded | The number of servlets that were loaded | long |
-| websphere_application_server.servlet.reloaded | The number of servlets that were reloaded | long |
-| websphere_application_server.servlet.requests_processed | The total number of requests that a servlet processed | long |
+| websphere_application_server.servlet.async_context.total_responses | The total number of AsyncContext responses for the specified URL. | long |
+| websphere_application_server.servlet.concurrent_requests | Number of concurrent requests sent to the servlet. | long |
+| websphere_application_server.servlet.errors | Number of errors that were generated while responding to a request. | long |
+| websphere_application_server.servlet.loaded | The number of servlets that were loaded. | long |
+| websphere_application_server.servlet.reloaded | The number of servlets that were reloaded. | long |
+| websphere_application_server.servlet.requests_processed | The total number of requests that a servlet processed. | long |
 | websphere_application_server.servlet.response_time_seconds | The total response time (in seconds) to process servlet requests. | double |
-| websphere_application_server.servlet.responses_processed | The total number of responses that a servlet processed | long |
+| websphere_application_server.servlet.responses_processed | The total number of responses that a servlet processed. | long |
 | websphere_application_server.servlet.uri.async_context.response_time_seconds | The total time spent(in seconds) per URL for the AsyncContext response to complete. | double |
 | websphere_application_server.servlet.uri.async_context.total_responses | The total number of AsyncContext responses for the specified URL. | long |
 | websphere_application_server.servlet.uri.concurrent_requests | The number of requests that were concurrently processed for the specified URL. | long |
-| websphere_application_server.servlet.uri.response_time_seconds | The total response time (in seconds) to process the requests for the specified URL . | double |
+| websphere_application_server.servlet.uri.response_time_seconds | The total response time (in seconds) to process the requests for the specified URL. | double |
 | websphere_application_server.servlet.uri.total_requests | total number of requests that a servlet processed for the specified URL. | long |
 | websphere_application_server.servlet.uri.total_responses | The total number of responses for the specified URL. | long |
 
