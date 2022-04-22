@@ -1,6 +1,6 @@
 # ZeroFox Cloud Platform Integration
 
-The ZeroFox Platform integration collects and parses data from the the ZeroFox Alert APIs.
+The ZeroFox Platform integration collects and parses data from the the [ZeroFox](https://www.zerofox.com/) Alert APIs.
 
 ## Compatibility
 
