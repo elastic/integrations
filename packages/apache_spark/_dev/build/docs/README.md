@@ -77,3 +77,11 @@ This is the `nodes` data stream.
 {{event "nodes"}}
 
 {{fields "nodes"}}
+
+### Driver
+
+This is the `driver` data stream.
+
+{{event "driver"}}
+
+{{fields "driver"}}
