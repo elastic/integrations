@@ -24,13 +24,13 @@ be set and containerd daemon needs to be restarted.
 
 ## Integration-specific configuration notes
 
-For cpu data stream if `Calculate cpu usage percentage` setting is set to true, cpu usage percentages will be calculated
-and more specifically fields `containerd.cpu.usage.total.pct`, `containerd.cpu.usage.kernel.pct`, `containerd.cpu.usage.user.pct`.
-Default value is true.
+For cpu data stream, if `Calculate cpu usage percentage` setting is set to `true`, cpu usage percentages will be calculated
+and, more specifically, fields `containerd.cpu.usage.total.pct`, `containerd.cpu.usage.kernel.pct`, `containerd.cpu.usage.user.pct`.
+Default value is `true`.
 
-For memory data stream if `Calculate memory usage percentage` setting is set to true, memory usage percentages will be calculated
-and more specifically fields `containerd.memory.usage.pct` and  `containerd.memory.workingset.pct`.
-Default value is true.
+For memory data stream, if `Calculate memory usage percentage` setting is set to `true`, memory usage percentages will be calculated,
+and, more specifically, fields `containerd.memory.usage.pct` and  `containerd.memory.workingset.pct`.
+Default value is `true`.
 
 ## Metrics
 

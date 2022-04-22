@@ -1,4 +1,4 @@
-# Apache Spark
+# Apache Spark Integration
 
 The Apache Spark integration collects and parses data using the Jolokia Metricbeat Module.
 
@@ -62,6 +62,30 @@ Restart Spark master.
 Follow the same set of steps for Spark Worker, Driver and Executor.
 
 ## Metrics
+
+### Application
+
+This is the `application` data stream.
+
+{{event "application"}}
+
+{{fields "application"}}
+
+### Driver
+
+This is the `driver` data stream.
+
+{{event "driver"}}
+
+{{fields "driver"}}
+
+### Executor
+
+This is the `executor` data stream.
+
+{{event "executor"}}
+
+{{fields "executor"}}
 
 ### Node
 
