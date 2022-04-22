@@ -12,7 +12,7 @@ request.timeout: {{http_client_timeout}}
 request.transforms:
   - set:
       target: url.params.startTime
-      value: "[[.cursor.last_execution_datetime]]"
+      value: '[[if eq .last_response.page 0]][[.cursor.last_execution_datetime]][[else]][[.last_response.url.params.Get "startTime"]][[end]]'
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
 response.split:
   target: body.items

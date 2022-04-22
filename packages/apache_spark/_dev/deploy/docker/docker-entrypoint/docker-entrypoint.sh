@@ -7,6 +7,7 @@ echo '*.sink.jmx.class=org.apache.spark.metrics.sink.JmxSink' >> "/opt/bitnami/s
 echo '*.source.jvm.class=org.apache.spark.metrics.source.JvmSource' >> "/opt/bitnami/spark/conf/metrics.properties"
 
 echo 'spark.driver.extraJavaOptions   -javaagent:/usr/share/java/jolokia-agent.jar=config=/spark/conf/jolokia-driver.properties' >> "/opt/bitnami/spark/conf/spark-defaults.conf"
+echo 'spark.executor.extraJavaOptions   -javaagent:/usr/share/java/jolokia-agent.jar=config=/spark/conf/jolokia-executor.properties' >> "/opt/bitnami/spark/conf/spark-defaults.conf" 
 
 # shellcheck disable=SC1091
 
