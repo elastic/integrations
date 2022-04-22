@@ -1,6 +1,6 @@
 # Zscaler ZIA
 
-This integration is for Zscaler Internet Access logs. It can be used
+This integration is for [Zscaler](https://help.zscaler.com/zia/documentation-knowledgebase/authentication-administration) Internet Access logs. It can be used
 to receive logs sent by NSS log server on respective TCP ports.
 
 The log message is expected to be in JSON format. The data is mapped to
@@ -10,17 +10,17 @@ ECS fields where applicable and the remaining fields are written under
 ## Setup steps
 
 1. Enable the integration with the TCP input.
-2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. See [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) and [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscalar NSS Server and NSS Feeds follow the following steps.
+2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. See [Add NSS Server](https://help.zscaler.com/zia/adding-nss-servers) and [Add NSS Feeds](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscalar NSS Server and NSS Feeds follow the following steps.
     - In the ZIA Admin Portal, add an NSS Server.
         - Log in to the ZIA Admin Portal using your admin account. If you're unable to log in, contact Support.
-        - Add an NSS server. Refer to Adding NSS Servers to set up an [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) for Web and/or Firewall.
+        - Add an NSS server. Refer to Adding NSS Servers to set up an [Add NSS Server](https://help.zscaler.com/zia/adding-nss-servers) for Web and/or Firewall.
         - Verify that the state of the NSS Server is healthy.
             - In the ZIA Admin Portal, go to Administration > Nanolog Streaming Service > NSS Servers.
             - In the State column, confirm that the state of the NSS server is healthy.
             ![NSS server setup image](../img/nss_server.png?raw=true)
     - In the ZIA Admin Portal, add an NSS Feed.
-        - Refer to [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds) and select the type of feed you want to configure. The following fields require specific inputs:
-            - **SIEM IP Address**: Enter the IP address of the [_Elastic agent_](https://www.elastic.co/guide/en/fleet/current/fleet-overview.html) you’ll be assigning the Zscaler integration to.
+        - Refer to [Add NSS Feeds](https://help.zscaler.com/zia/adding-nss-feeds) and select the type of feed you want to configure. The following fields require specific inputs:
+            - **SIEM IP Address**: Enter the IP address of the [Elastic agent](https://www.elastic.co/guide/en/fleet/current/fleet-overview.html) you’ll be assigning the Zscaler integration to.
             - **SIEM TCP Port**: Enter the port number, depending on the logs associated with the NSS Feed. You will need to create an NSS Feed for each log type.
                 - **Alerts**: 9010
                 - **DNS**: 9011
@@ -42,7 +42,7 @@ This package has been tested against `Zscaler Internet Access version 6.1`
 
 Default port: _9010_
 
-Vendor documentation: https://help.zscaler.com/zia/about-alerts
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/about-alerts)
 
 Zscaler response format:  
 ```
@@ -58,7 +58,7 @@ Sample Response:
 
 Default port: _9011_
 
-Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-dns-logs
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-dns-logs)
 
 Zscaler response format:  
 ```
@@ -74,7 +74,7 @@ Sample Response:
 
 Default port: _9012_
 
-Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-firewall-logs
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-firewall-logs)
 
 Zscaler response format:  
 ```
@@ -90,7 +90,7 @@ Sample Response:
 
 Default port: _9013_
 
-Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-tunnel-logs
+See: [Zscaler Vendor documentation]( https://help.zscaler.com/zia/nss-feed-output-format-tunnel-logs)
 
 Zscaler response format:
 - Tunnel Event:
@@ -121,7 +121,7 @@ Default port: _9014_
 Add characters **"** and **\\** in **feed escape character** while configuring Web Log.  
 
 ![Escape feed setup image](../img/escape_feed.png?raw=true)  
-Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-web-logs
+See: [Zscaler Vendor documentation](https://help.zscaler.com/zia/nss-feed-output-format-web-logs)
 
 Zscaler response format:  
 ```
