@@ -70,13 +70,6 @@ This is the `application` data stream.
 {{event "application"}}
 
 {{fields "application"}}
-### Nodes
-
-This is the `nodes` data stream.
-
-{{event "nodes"}}
-
-{{fields "nodes"}}
 
 ### Driver
 
@@ -85,3 +78,19 @@ This is the `driver` data stream.
 {{event "driver"}}
 
 {{fields "driver"}}
+
+### Executor
+
+This is the `executor` data stream.
+
+{{event "executor"}}
+
+{{fields "executor"}}
+
+### Nodes
+
+This is the `nodes` data stream.
+
+{{event "nodes"}}
+
+{{fields "nodes"}}
