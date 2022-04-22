@@ -15,13 +15,32 @@
                             "key": "event.dataset",
                             "negate": false,
                             "params": {
-                                "query": "apache_spark.driver"
+                                "query": "apache_spark.node"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "event.dataset": "apache_spark.driver"
+                                "event.dataset": "apache_spark.node"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "apache_spark.node.main.applications.waiting",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "apache_spark.node.main.applications.waiting"
                             }
                         }
                     }
@@ -33,7 +52,7 @@
                 }
             }
         },
-        "title": "[ Apache Spark ] Number of killed tasks",
+        "title": "Number of Applications waiting [Metrics Apache Spark]",
         "uiStateJSON": {},
         "version": 1,
         "visState": {
@@ -42,11 +61,15 @@
                     "enabled": true,
                     "id": "1",
                     "params": {
-                        "customLabel": "Number of killed tasks",
-                        "field": "apache_spark.driver.tasks.killed"
+                        "aggregate": "concat",
+                        "customLabel": "Waiting Applications",
+                        "field": "apache_spark.node.main.applications.waiting",
+                        "size": 1,
+                        "sortField": "@timestamp",
+                        "sortOrder": "desc"
                     },
                     "schema": "metric",
-                    "type": "max"
+                    "type": "top_hits"
                 }
             ],
             "params": {
@@ -69,7 +92,7 @@
                     "style": {
                         "bgColor": false,
                         "bgFill": "#000",
-                        "fontSize": 60,
+                        "fontSize": 30,
                         "labelColor": false,
                         "subText": ""
                     },
@@ -77,12 +100,12 @@
                 },
                 "type": "metric"
             },
-            "title": "[ Apache Spark ] Number of killed tasks",
+            "title": "Number of Applications waiting [Metrics Apache Spark]",
             "type": "metric"
         }
     },
     "coreMigrationVersion": "8.1.0",
-    "id": "apache_spark-dfc6d7e0-9ee6-11ec-adb3-438cf5ea2616",
+    "id": "apache_spark-d7fb12e0-c16b-11ec-97dc-abb2b7efe8a8",
     "migrationVersion": {
         "visualization": "8.0.0"
     },
@@ -95,6 +118,11 @@
         {
             "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         }
     ],

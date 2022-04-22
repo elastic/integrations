@@ -24,6 +24,25 @@
                                 "event.dataset": "apache_spark.node"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "apache_spark.node.main.workers.count",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "apache_spark.node.main.workers.count"
+                            }
+                        }
                     }
                 ],
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
@@ -33,7 +52,7 @@
                 }
             }
         },
-        "title": "[ Apache Spark ] Total memory used",
+        "title": "Total Workers [Metrics Apache Spark]",
         "uiStateJSON": {},
         "version": 1,
         "visState": {
@@ -41,87 +60,52 @@
                 {
                     "enabled": true,
                     "id": "1",
-                    "params": {},
-                    "schema": "metric",
-                    "type": "count"
-                },
-                {
-                    "enabled": true,
-                    "id": "2",
                     "params": {
-                        "customLabel": "Total memory used",
-                        "field": "apache_spark.node.worker.memory.used",
-                        "missingBucket": false,
-                        "missingBucketLabel": "Missing",
-                        "order": "desc",
-                        "orderBy": "1",
-                        "otherBucket": false,
-                        "otherBucketLabel": "Other",
-                        "size": 5
+                        "aggregate": "concat",
+                        "customLabel": "Total Workers",
+                        "field": "apache_spark.node.main.workers.count",
+                        "size": 1,
+                        "sortField": "@timestamp",
+                        "sortOrder": "desc"
                     },
-                    "schema": "group",
-                    "type": "terms"
+                    "schema": "metric",
+                    "type": "top_hits"
                 }
             ],
             "params": {
-                "addLegend": true,
+                "addLegend": false,
                 "addTooltip": true,
-                "gauge": {
-                    "alignment": "automatic",
-                    "backStyle": "Full",
+                "metric": {
                     "colorSchema": "Green to Red",
                     "colorsRange": [
                         {
                             "from": 0,
-                            "to": 50
-                        },
-                        {
-                            "from": 50,
-                            "to": 75
-                        },
-                        {
-                            "from": 75,
-                            "to": 100
+                            "to": 10000
                         }
                     ],
-                    "extendRange": true,
-                    "gaugeColorMode": "Labels",
-                    "gaugeStyle": "Full",
-                    "gaugeType": "Arc",
                     "invertColors": false,
                     "labels": {
-                        "color": "black",
                         "show": true
                     },
-                    "orientation": "vertical",
+                    "metricColorMode": "None",
                     "percentageMode": false,
-                    "scale": {
-                        "color": "rgba(105,112,125,0.2)",
-                        "labels": false,
-                        "show": true
-                    },
                     "style": {
-                        "bgColor": true,
-                        "bgFill": "rgba(105,112,125,0.2)",
-                        "bgMask": false,
-                        "bgWidth": 0.9,
-                        "fontSize": 60,
-                        "mask": false,
-                        "maskBars": 50,
-                        "subText": "",
-                        "width": 0.9
+                        "bgColor": false,
+                        "bgFill": "#000",
+                        "fontSize": 30,
+                        "labelColor": false,
+                        "subText": ""
                     },
-                    "type": "meter"
+                    "useRanges": false
                 },
-                "isDisplayWarning": false,
-                "type": "gauge"
+                "type": "metric"
             },
-            "title": "[ Apache Spark ] Total memory used",
-            "type": "gauge"
+            "title": "Total Workers [Metrics Apache Spark]",
+            "type": "metric"
         }
     },
     "coreMigrationVersion": "8.1.0",
-    "id": "apache_spark-6a16c390-a074-11ec-8d4f-4fe3367a4156",
+    "id": "apache_spark-10522390-c16c-11ec-97dc-abb2b7efe8a8",
     "migrationVersion": {
         "visualization": "8.0.0"
     },
@@ -134,6 +118,11 @@
         {
             "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         }
     ],

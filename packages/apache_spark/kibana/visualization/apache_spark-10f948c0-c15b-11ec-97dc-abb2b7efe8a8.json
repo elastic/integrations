@@ -1,0 +1,262 @@
+{
+    "attributes": {
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "event.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "apache_spark.driver"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.dataset": "apache_spark.driver"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "apache_spark.driver.tasks.completed",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "apache_spark.driver.tasks.completed"
+                            }
+                        }
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "title": "Number of Tasks over time [Metrics Apache Spark]",
+        "uiStateJSON": {
+            "vis": {
+                "colors": {
+                    "Completed": "#54b399",
+                    "Failed": "#d36086"
+                }
+            }
+        },
+        "version": 1,
+        "visState": {
+            "aggs": [
+                {
+                    "enabled": true,
+                    "id": "2",
+                    "params": {
+                        "customLabel": "Timestamp",
+                        "drop_partials": false,
+                        "extended_bounds": {},
+                        "field": "@timestamp",
+                        "interval": "auto",
+                        "min_doc_count": 1,
+                        "scaleMetricValues": false,
+                        "timeRange": {
+                            "from": "2022-04-22T09:30:00.000Z",
+                            "to": "2022-04-22T10:00:00.000Z"
+                        },
+                        "useNormalizedEsInterval": true,
+                        "used_interval": "30s"
+                    },
+                    "schema": "segment",
+                    "type": "date_histogram"
+                },
+                {
+                    "enabled": true,
+                    "id": "3",
+                    "params": {
+                        "customLabel": "Failed",
+                        "field": "apache_spark.driver.tasks.failed"
+                    },
+                    "schema": "metric",
+                    "type": "max"
+                },
+                {
+                    "enabled": true,
+                    "id": "4",
+                    "params": {
+                        "customLabel": "Skipped",
+                        "field": "apache_spark.driver.tasks.skipped"
+                    },
+                    "schema": "metric",
+                    "type": "max"
+                },
+                {
+                    "enabled": true,
+                    "id": "5",
+                    "params": {
+                        "customLabel": "Completed",
+                        "field": "apache_spark.driver.tasks.completed"
+                    },
+                    "schema": "metric",
+                    "type": "max"
+                }
+            ],
+            "params": {
+                "addLegend": true,
+                "addTimeMarker": false,
+                "addTooltip": true,
+                "categoryAxes": [
+                    {
+                        "id": "CategoryAxis-1",
+                        "labels": {
+                            "filter": true,
+                            "show": true,
+                            "truncate": 100
+                        },
+                        "position": "bottom",
+                        "scale": {
+                            "type": "linear"
+                        },
+                        "show": true,
+                        "style": {},
+                        "title": {},
+                        "type": "category"
+                    }
+                ],
+                "detailedTooltip": true,
+                "fittingFunction": "linear",
+                "grid": {
+                    "categoryLines": false
+                },
+                "labels": {},
+                "legendPosition": "top",
+                "maxLegendLines": 1,
+                "palette": {
+                    "name": "default",
+                    "type": "palette"
+                },
+                "radiusRatio": 9,
+                "seriesParams": [
+                    {
+                        "circlesRadius": 1,
+                        "data": {
+                            "id": "3",
+                            "label": "Failed"
+                        },
+                        "drawLinesBetweenPoints": true,
+                        "interpolate": "linear",
+                        "lineWidth": 2,
+                        "mode": "normal",
+                        "show": true,
+                        "showCircles": true,
+                        "type": "area",
+                        "valueAxis": "ValueAxis-1"
+                    },
+                    {
+                        "circlesRadius": 1,
+                        "data": {
+                            "id": "4",
+                            "label": "Skipped"
+                        },
+                        "drawLinesBetweenPoints": true,
+                        "interpolate": "linear",
+                        "lineWidth": 2,
+                        "mode": "normal",
+                        "show": true,
+                        "showCircles": true,
+                        "type": "area",
+                        "valueAxis": "ValueAxis-1"
+                    },
+                    {
+                        "circlesRadius": 1,
+                        "data": {
+                            "id": "5",
+                            "label": "Completed"
+                        },
+                        "drawLinesBetweenPoints": true,
+                        "interpolate": "linear",
+                        "lineWidth": 2,
+                        "mode": "normal",
+                        "show": true,
+                        "showCircles": true,
+                        "type": "area",
+                        "valueAxis": "ValueAxis-1"
+                    }
+                ],
+                "thresholdLine": {
+                    "color": "#E7664C",
+                    "show": false,
+                    "style": "full",
+                    "value": 10,
+                    "width": 1
+                },
+                "times": [],
+                "truncateLegend": true,
+                "type": "area",
+                "valueAxes": [
+                    {
+                        "id": "ValueAxis-1",
+                        "labels": {
+                            "filter": true,
+                            "rotate": 0,
+                            "show": true,
+                            "truncate": 100
+                        },
+                        "name": "LeftAxis-1",
+                        "position": "left",
+                        "scale": {
+                            "mode": "normal",
+                            "type": "linear"
+                        },
+                        "show": true,
+                        "style": {},
+                        "title": {
+                            "text": "Tasks"
+                        },
+                        "type": "value"
+                    }
+                ]
+            },
+            "title": "Number of Tasks over time [Metrics Apache Spark]",
+            "type": "area"
+        }
+    },
+    "coreMigrationVersion": "8.1.0",
+    "id": "apache_spark-10f948c0-c15b-11ec-97dc-abb2b7efe8a8",
+    "migrationVersion": {
+        "visualization": "8.0.0"
+    },
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "visualization"
+}

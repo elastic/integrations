@@ -15,13 +15,32 @@
                             "key": "event.dataset",
                             "negate": false,
                             "params": {
-                                "query": "apache_spark.executor"
+                                "query": "apache_spark.driver"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "event.dataset": "apache_spark.executor"
+                                "event.dataset": "apache_spark.driver"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "apache_spark.driver.stages.completed_count",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "apache_spark.driver.stages.completed_count"
                             }
                         }
                     }
@@ -33,7 +52,7 @@
                 }
             }
         },
-        "title": "[ Apache Spark ] Total Number of Written Bytes",
+        "title": "Number of stages completed [Metrics Apache Spark]",
         "uiStateJSON": {},
         "version": 1,
         "visState": {
@@ -42,11 +61,15 @@
                     "enabled": true,
                     "id": "1",
                     "params": {
-                        "customLabel": "Total Number of Written Bytes",
-                        "field": "apache_spark.executor.bytes.written"
+                        "aggregate": "concat",
+                        "customLabel": "Number of Stages Completed",
+                        "field": "apache_spark.driver.stages.completed_count",
+                        "size": 1,
+                        "sortField": "@timestamp",
+                        "sortOrder": "desc"
                     },
                     "schema": "metric",
-                    "type": "max"
+                    "type": "top_hits"
                 }
             ],
             "params": {
@@ -69,7 +92,7 @@
                     "style": {
                         "bgColor": false,
                         "bgFill": "#000",
-                        "fontSize": 60,
+                        "fontSize": 30,
                         "labelColor": false,
                         "subText": ""
                     },
@@ -77,12 +100,12 @@
                 },
                 "type": "metric"
             },
-            "title": "[ Apache Spark ] Total Number of Written Bytes",
+            "title": "Number of stages completed [Metrics Apache Spark]",
             "type": "metric"
         }
     },
     "coreMigrationVersion": "8.1.0",
-    "id": "apache_spark-c0f037a0-9f93-11ec-ad96-2777f937e4eb",
+    "id": "apache_spark-a6bac910-c156-11ec-97dc-abb2b7efe8a8",
     "migrationVersion": {
         "visualization": "8.0.0"
     },
@@ -95,6 +118,11 @@
         {
             "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         }
     ],

@@ -24,6 +24,25 @@
                                 "event.dataset": "apache_spark.driver"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "apache_spark.driver.stages.skipped_count",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "apache_spark.driver.stages.skipped_count"
+                            }
+                        }
                     }
                 ],
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
@@ -33,7 +52,7 @@
                 }
             }
         },
-        "title": "[ Apache Spark ] Number of skipped staged",
+        "title": "Number of stages skipped [Metrics Apache Spark]",
         "uiStateJSON": {},
         "version": 1,
         "visState": {
@@ -42,11 +61,15 @@
                     "enabled": true,
                     "id": "1",
                     "params": {
-                        "customLabel": "Number of skipped staged",
-                        "field": "apache_spark.driver.stages.skipped_count"
+                        "aggregate": "concat",
+                        "customLabel": "Number of Stages Skipped",
+                        "field": "apache_spark.driver.stages.skipped_count",
+                        "size": 1,
+                        "sortField": "@timestamp",
+                        "sortOrder": "desc"
                     },
                     "schema": "metric",
-                    "type": "max"
+                    "type": "top_hits"
                 }
             ],
             "params": {
@@ -69,7 +92,7 @@
                     "style": {
                         "bgColor": false,
                         "bgFill": "#000",
-                        "fontSize": 60,
+                        "fontSize": 30,
                         "labelColor": false,
                         "subText": ""
                     },
@@ -77,7 +100,7 @@
                 },
                 "type": "metric"
             },
-            "title": "[ Apache Spark ] Number of skipped staged",
+            "title": "Number of stages skipped [Metrics Apache Spark]",
             "type": "metric"
         }
     },
@@ -95,6 +118,11 @@
         {
             "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         }
     ],
