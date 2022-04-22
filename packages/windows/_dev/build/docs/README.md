@@ -1,6 +1,6 @@
 # Windows Integration
 
-The Windows package allows you to monitor the Windows os, services, applications etc. Because the Windows integration
+The Windows package allows you to monitor the [Windows](https://docs.microsoft.com) os, services, applications etc. Because the Windows integration
 always applies to the local server, the `hosts` config option is not needed. Note that for 7.11, `security`, `application` and `system` logs have been moved to the system package.
 
 ## Compatibility
@@ -16,7 +16,7 @@ This integration offers the ability to seamlessly ingest data from a Splunk Ente
 These integrations work by using the [httpjson input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
 The raw event is then processed via the Elastic Agent.
 The Splunk search is customizable and the interval between searches is customizable.
-For more information on the Splunk API integration please see [here](https://www.elastic.co/guide/en/observability/current/ingest-splunk.html).
+See the [Splunk API integration documentation](https://www.elastic.co/guide/en/observability/current/ingest-splunk.html) for more information.
 
 This integration requires Windows Events from Splunk to be in XML format.
 To achieve this, `renderXml` needs to be set to `1` in your [inputs.conf](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
