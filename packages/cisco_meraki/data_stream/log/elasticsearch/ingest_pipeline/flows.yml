@@ -15,12 +15,16 @@ processors:
     field: event.original
     pattern: "%{} flows %{cisco_meraki.flows.op} %{*src}=%{&src} %{*dst}=%{&dst} %{*mac}=%{&mac} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport}"
     if: ctx._temp.token.startsWith("src=") == false
-- rename:
+- convert:
+    type: ip
     field: src
     target_field: source.ip
-- rename:
+    ignore_failure: true
+- convert:
+    type: ip
     field: dst
     target_field: destination.ip
+    ignore_failure: true
 - rename:
     field: protocol
     target_field: network.protocol
