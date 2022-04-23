@@ -2,7 +2,7 @@
 
 Cisco Meraki offers a centralized cloud management platform for all Meraki devices such as MX Security Appliances, MR Access Points and so on. Its out-of-band cloud architecture creates secure, scalable and easy-to-deploy networks that can be managed from anywhere. This can be done from almost any device using web-based Meraki Dashboard and Meraki Mobile App. Each Meraki network generates its own events.
 
-Cisco Meraki offers [several methods for device reporting](https://documentation.meraki.com/General_Administration/Monitoring_and_Reporting/Meraki_Device_Reporting_-_Syslog%2C_SNMP%2C_and_API). This integration supports gathering events via the Cisco Meraki Syslog events and API reporting (via Webhooks). The integration package allows you to search, observe and visualize the events through Elasticsearch. 
+Cisco Meraki offers [several methods for device reporting](https://documentation.meraki.com/General_Administration/Monitoring_and_Reporting/Meraki_Device_Reporting_-_Syslog%2C_SNMP%2C_and_API). This integration supports gathering events via the Cisco Meraki syslog and via API reporting webhooks. The integration package allows you to search, observe, and visualize the events through Elasticsearch. 
 
 ## Compatibility
 
@@ -189,7 +189,7 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
-| input.type | Type of Filebeat input. | keyword |
+| input.type | Input type. | keyword |
 | log.file.path | Full path to the log file this event came from. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
