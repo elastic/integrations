@@ -10,9 +10,9 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 
 This integration is for Oracle Weblogic Admin Server logs. It includes the following datasets for receiving logs from a file:
 
-### Admin Server Logs
+### Admin Server logs
 
-The `admin_server` dataset collects  Admin Server logs from Adminserver.log.
+The `admin_server` data stream collects Admin Server logs from Adminserver.log.
 
 An example event for `admin_server` looks as following:
 
@@ -20,8 +20,8 @@ An example event for `admin_server` looks as following:
 {
     "@timestamp": "2022-03-24T10:29:51.865Z",
     "agent": {
-        "ephemeral_id": "27933d31-d949-4186-81f5-df4faf62d6fc",
-        "id": "36a40463-92bb-4f38-b014-e52012f4a0b0",
+        "ephemeral_id": "fa0d7593-52ff-4f64-8c67-0e008b2aac3d",
+        "id": "8861457a-da11-4d30-a787-50a796c9f3ce",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -32,10 +32,10 @@ An example event for `admin_server` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "36a40463-92bb-4f38-b014-e52012f4a0b0",
+        "id": "8861457a-da11-4d30-a787-50a796c9f3ce",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -45,7 +45,7 @@ An example event for `admin_server` looks as following:
             "log"
         ],
         "dataset": "oracle_weblogic.admin_server",
-        "ingested": "2022-04-11T12:24:33Z",
+        "ingested": "2022-04-23T09:54:13Z",
         "kind": "event",
         "module": "oracle_weblogic",
         "original": "####\u003cMar 24, 2022 10:29:51,865 AM GMT\u003e \u003cInfo\u003e \u003cServer\u003e \u003cwlsadmin\u003e \u003c\u003e \u003cThread-11\u003e \u003c\u003e \u003c\u003e \u003c\u003e \u003c1648117791865\u003e \u003c[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] \u003e \u003cBEA-002622\u003e \u003cThe protocol \"admin\" is now configured.\u003e ",
@@ -56,10 +56,10 @@ An example event for `admin_server` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.6"
+            "192.168.96.7"
         ],
         "mac": [
-            "02:42:c0:a8:d0:06"
+            "02:42:c0:a8:60:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -108,11 +108,11 @@ An example event for `admin_server` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| input.type | Input type | keyword |
+| input.type | Input type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| log.offset | Log offset | long |
+| log.offset | Log offset. | long |
 | oracle_weblogic.admin_server.diagnostic_context_id | Context information to correlate messages coming from a specific request or application. | keyword |
 | oracle_weblogic.admin_server.machine_name | Machine Name is the DNS name of the computer that hosts the server instance. | keyword |
 | oracle_weblogic.admin_server.message_id | A unique six-digit identifier. | keyword |

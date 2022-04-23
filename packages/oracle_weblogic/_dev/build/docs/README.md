@@ -10,9 +10,9 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 
 This integration is for Oracle Weblogic Admin Server logs. It includes the following datasets for receiving logs from a file:
 
-### Admin Server Logs
+### Admin Server logs
 
-The `admin_server` dataset collects  Admin Server logs from Adminserver.log.
+The `admin_server` data stream collects Admin Server logs from Adminserver.log.
 
 {{event "admin_server"}}
 
