@@ -12,7 +12,7 @@ This integration is for Oracle Weblogic Managed Server logs. It includes the fol
 
 ### Managed Server Logs
 
-The `managed_server` dataset collects Managed Server logs from ManagedServer.log.
+The `managed_server` data stream collects Managed Server logs from ManagedServer.log.
 
 {{event "managed_server"}}
 
