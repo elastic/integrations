@@ -1,6 +1,6 @@
 # Cisco ISE
 
-The Cisco ISE ([More info](https://www.cisco.com/c/en/us/products/security/identity-services-engine/index.html)) integration collects and parses data from Cisco ISE using TCP/UDP.
+The Cisco ISE integration collects and parses data from [Cisco Identity Services Engine](https://www.cisco.com/c/en/us/products/security/identity-services-engine/index.html) (ISE) using TCP/UDP.
 
 ## Compatibility
 
