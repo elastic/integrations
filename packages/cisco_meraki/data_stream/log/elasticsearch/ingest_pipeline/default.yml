@@ -11,15 +11,8 @@ processors:
     description: Extract syslog words
     field: event.original
     pattern: "%{} %{_temp.ts_nano} %{observer.hostname} %{cisco_meraki.event_type} %{}"
-- grok:
-    description: Reduce precision from nanos to millis and set timestamp
-    field: _temp.ts_nano
-    patterns:
-      - '%{TSMILLIS}'
-    pattern_definitions:
-      TSMILLIS: (?<_temp.ts_millis>\d{1,10}\.\d{1,6})(?:\d{3})
 - date:
-    field: _temp.ts_millis
+    field: _temp.ts_nano
     formats:
       - UNIX
     timezone: '{{{_conf.tz_offset}}}'
