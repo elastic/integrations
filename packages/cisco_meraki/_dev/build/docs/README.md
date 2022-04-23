@@ -2,7 +2,7 @@
 
 Cisco Meraki offers a centralized cloud management platform for all Meraki devices such as MX Security Appliances, MR Access Points and so on. Its out-of-band cloud architecture creates secure, scalable and easy-to-deploy networks that can be managed from anywhere. This can be done from almost any device using web-based Meraki Dashboard and Meraki Mobile App. Each Meraki network generates its own events.
 
-Cisco Meraki offers [several methods for device reporting](https://documentation.meraki.com/General_Administration/Monitoring_and_Reporting/Meraki_Device_Reporting_-_Syslog%2C_SNMP%2C_and_API). This integration supports gathering events via the Cisco Meraki Syslog events and API reporting (via Webhooks). The integration package allows you to search, observe and visualize the events through Elasticsearch. 
+Cisco Meraki offers [several methods for device reporting](https://documentation.meraki.com/General_Administration/Monitoring_and_Reporting/Meraki_Device_Reporting_-_Syslog%2C_SNMP%2C_and_API). This integration supports gathering events via the Cisco Meraki syslog and via API reporting webhooks. The integration package allows you to search, observe, and visualize the events through Elasticsearch. 
 
 ## Compatibility
 
