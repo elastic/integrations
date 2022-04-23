@@ -37,6 +37,12 @@ processors:
 - pipeline:
     name: '{{ IngestPipeline "urls" }}'
     if: ctx.cisco_meraki.event_type == 'urls'
+- append:
+    field: event.category
+    value: ["network"]
+- append:
+    field: event.type
+    value: ["info"]
 - script:
     lang: painless
     description: The script sets event type, action and category based on type and sub-type fields
@@ -46,33 +52,25 @@ processors:
         "vpn_connectivity_change":
           category:
             - session
-            - network
           type:
             - connection
           action: vpn-connectivity-change
         "dhcp_offer":
-          category:
-            - network
           type:
             - access
             - allowed
           action: dhcp-offer
         "dhcp_no_offer":
-          category:
-            - network
           type:
             - access
             - denied
           action: dhcp-no-offer
         "Site-to-Site VPN":
-          category:
-            - network
           type:
             - access
           action: site-to-site-vpn
         "client_vpn_connect":
           category:
-            - network
             - session
           type:
             - access
@@ -80,22 +78,16 @@ processors:
             - start
           action: site-to-site-vpn
         "ip_session_initiated":
-          category:
-            - network
           type:
             - access
             - start
           action: ip-session-initiated
         "flow_allowed":
-          category:
-            - network
           type:
             - connection
             - start
           action: layer3-firewall-allowed-flow
         "flow_denied":
-          category:
-            - network
           type:
             - access
             - denied
@@ -135,15 +127,12 @@ processors:
             - info
           action: issued-retrospective-malicious-disposition
         "association":
-          category:
-            - network
           type:
             - access
             - connection
           action: wifi-association-request
         "disassociation":
           category:
-            - network
             - session
           type:
             - access
@@ -152,14 +141,12 @@ processors:
         "wpa_auth":
           category:
             - authentication
-            - network
           type:
             - start
             - access
           action: wifi-wpa-authentication
         "wpa_deauth":
           category:
-            - network
             - authentication
           type:
             - end
@@ -167,7 +154,6 @@ processors:
           action: wifi-wpa-failed-auth-or-deauth
         "8021x_eap_failure":
           category:
-            - network
             - authentication
           type:
             - end
@@ -175,7 +161,6 @@ processors:
           action: wifi-8021x-failed-authentication-attempt
         "8021x_deauth":
           category:
-            - network
             - authentication
           type:
             - end
@@ -183,14 +168,12 @@ processors:
           action: wifi-8021x-failed-auth-or-deauth
         "8021x_eap_success":
           category:
-            - network
             - authentication
           type:
             - start
           action: wifi-8021x-auth
         "splash_auth":
           category:
-            - network
             - authentication
           type:
             - start
@@ -214,44 +197,36 @@ processors:
             - indicator
           action: ssid-spoofing-detected
         "multiple_dhcp_servers_detected":
-          category:
-            - network
           type:
             - protocol
         "dfs_event":
           action: dynamic-frequency-selection-detected
         "aps_association_reject":
           action: association-rejected-for-load-balancing
+    if: ctx?.cisco_meraki?.event_subtype != null
     source: |-
-         ctx.event.type = new ArrayList();
-         ctx.event.category = new ArrayList();
-         ctx.event.action = '';
-
-         def eventSubtype = ctx.cisco_meraki.event_subtype;
-         if (eventSubtype == null) {
-           return;
-         }
          def eventMap = params.get('eventmap');
-         def eventData = eventMap.get(eventSubtype);
+         def eventData = eventMap.get(ctx.cisco_meraki.event_subtype);
          if (eventData == null) {
-           ctx.event.action = eventSubtype;
-           ctx.event.category = ['network'];
-           ctx.event.type = ['info'];
+           ctx.event.action = ctx.cisco_meraki.event_subtype;
            return;
          }
          def eventCategory = eventData.get('category');
          def eventType = eventData.get('type');
          def eventAction = eventData.get('action');
          if (eventType != null) {
-           ctx.event.type = new ArrayList(eventType);
+           for (def t : eventType) {
+             ctx.event.type.add(t);
+           }
          }
          if (eventCategory != null) {
-           ctx.event.category = new ArrayList(eventCategory);
+           for (def c : eventCategory) {
+             ctx.event.category.add(c);
+           }
          }
          if (eventAction != null) {
            ctx.event.action = eventAction;
          }
-
 ##
 # Clean up
 ##

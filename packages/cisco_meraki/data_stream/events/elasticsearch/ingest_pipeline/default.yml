@@ -217,13 +217,12 @@ processors:
         "uplink_ip6_conflict":
           type:
             - protocol
+    if: ctx?.json?.alertTypeId != null
     source: |-
          def alertTypeId = ctx.json.alertTypeId;
-         if (alertTypeId == null) {
-           return;
-         }
          def eventMap = params.get('eventmap');
          def eventData = eventMap.get(alertTypeId);
+         ctx.event.action = ctx.json.alertType;
          if (eventData == null) {
            // Unclassified events
            // - geofencing_in, critical_temperature
@@ -231,7 +230,6 @@ processors:
            // - motion_alert, usage_alert
            // - new_splash_signup, rps_base_supply_up
            // - rps_backup, vpn_connectivity_change
-           ctx.event.action = ctx.json.alertType;
            return;
          }
          def eventCategory = eventData.get('category');
@@ -240,16 +238,12 @@ processors:
              ctx.event.category.add(c);
            }
          }
-
          def eventType = eventData.get('type');
          if (eventType != null) {
            for (def t : eventType) {
              ctx.event.type.add(t);
            }
          }
-         ctx.event.action = ctx.json.alertType;
-         return;
-
 - rename:
     field: json
     target_field: cisco_meraki.event
