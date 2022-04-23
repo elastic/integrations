@@ -20,8 +20,8 @@ An example event for `admin_server` looks as following:
 {
     "@timestamp": "2022-03-24T10:29:51.865Z",
     "agent": {
-        "ephemeral_id": "fa0d7593-52ff-4f64-8c67-0e008b2aac3d",
-        "id": "8861457a-da11-4d30-a787-50a796c9f3ce",
+        "ephemeral_id": "34cbdd58-1123-4ed2-a097-950b4c988765",
+        "id": "f08e6e4c-1fa9-4a82-94d9-264708d1cfc3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -35,7 +35,7 @@ An example event for `admin_server` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "8861457a-da11-4d30-a787-50a796c9f3ce",
+        "id": "f08e6e4c-1fa9-4a82-94d9-264708d1cfc3",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -45,7 +45,7 @@ An example event for `admin_server` looks as following:
             "log"
         ],
         "dataset": "oracle_weblogic.admin_server",
-        "ingested": "2022-04-23T09:54:13Z",
+        "ingested": "2022-04-23T10:11:24Z",
         "kind": "event",
         "module": "oracle_weblogic",
         "original": "####\u003cMar 24, 2022 10:29:51,865 AM GMT\u003e \u003cInfo\u003e \u003cServer\u003e \u003cwlsadmin\u003e \u003c\u003e \u003cThread-11\u003e \u003c\u003e \u003c\u003e \u003c\u003e \u003c1648117791865\u003e \u003c[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] \u003e \u003cBEA-002622\u003e \u003cThe protocol \"admin\" is now configured.\u003e ",
@@ -56,10 +56,10 @@ An example event for `admin_server` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.96.7"
+            "192.168.160.7"
         ],
         "mac": [
-            "02:42:c0:a8:60:07"
+            "02:42:c0:a8:a0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -94,7 +94,7 @@ An example event for `admin_server` looks as following:
         }
     },
     "tags": [
-        "oracle-weblogic-admin_server-logs"
+        "oracle_weblogic-admin_server"
     ]
 }
 ```
