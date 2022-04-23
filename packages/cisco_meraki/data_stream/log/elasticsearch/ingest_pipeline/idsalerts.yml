@@ -26,7 +26,12 @@ processors:
     target_field: network.protocol
 - dissect:
     field: src
-    pattern: "%{source.ip}:%{sport}"
+    pattern: "%{_temp.src_ip}:%{sport}"
+- convert:
+    type: ip
+    field: _temp.src_ip
+    target_field: source.ip
+    ignore_failure: true
 - convert:
     field: sport
     target_field: source.port
