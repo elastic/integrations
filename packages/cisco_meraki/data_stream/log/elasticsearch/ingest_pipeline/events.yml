@@ -157,30 +157,3 @@ processors:
     field: event.original
     pattern: "%{} events client_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} connected from %{client.ip}"
     if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
-
-####################################################
-# IP Geolocation Lookup (source)
-####################################################
-- geoip:
-    field: client.ip
-    target_field: client.geo
-    ignore_missing: true
-    if: ctx.client?.geo == null && ctx?.client?.ip != null
-# IP Autonomous System (AS) Lookup
-- geoip:
-    database_file: GeoLite2-ASN.mmdb
-    field: client.ip
-    target_field: client.as
-    properties:
-        - asn
-        - organization_name
-    ignore_missing: true
-    if: ctx?.client?.ip != null
-- rename:
-    field: client.as.asn
-    target_field: client.as.number
-    ignore_missing: true
-- rename:
-    field: client.as.organization_name
-    target_field: client.as.organization.name
-    ignore_missing: true
