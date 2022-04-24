@@ -62,19 +62,17 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.8021x_deauth |  | flattened |
 | cisco_meraki.8021x_eap_failure |  | flattened |
 | cisco_meraki.8021x_eap_success |  | flattened |
-| cisco_meraki.airmarshal.bssid |  | keyword |
-| cisco_meraki.airmarshal.channel |  | keyword |
-| cisco_meraki.airmarshal.fc_subtype |  | keyword |
-| cisco_meraki.airmarshal.fc_type |  | keyword |
-| cisco_meraki.airmarshal.ssid |  | keyword |
-| cisco_meraki.airmarshal.vap |  | keyword |
 | cisco_meraki.aps_association_reject |  | flattened |
 | cisco_meraki.association |  | flattened |
+| cisco_meraki.bssid |  | keyword |
+| cisco_meraki.channel |  | keyword |
 | cisco_meraki.device_packet_flood |  | flattened |
 | cisco_meraki.dfs_event |  | flattened |
 | cisco_meraki.disassociation |  | flattened |
 | cisco_meraki.event_subtype |  | keyword |
 | cisco_meraki.event_type |  | keyword |
+| cisco_meraki.fc_subtype |  | keyword |
+| cisco_meraki.fc_type |  | keyword |
 | cisco_meraki.flows |  | flattened |
 | cisco_meraki.multiple_dhcp_servers_detected |  | flattened |
 | cisco_meraki.security.action |  | keyword |
@@ -86,7 +84,9 @@ The `cisco_meraki.log` dataset provides events from the configured syslog server
 | cisco_meraki.site_to_site_vpn.connectivity_change |  | flattened |
 | cisco_meraki.site_to_site_vpn.raw |  | text |
 | cisco_meraki.splash_auth |  | flattened |
+| cisco_meraki.ssid |  | keyword |
 | cisco_meraki.urls.mac |  | keyword |
+| cisco_meraki.vap |  | keyword |
 | cisco_meraki.wpa_auth |  | flattened |
 | cisco_meraki.wpa_deauth |  | flattened |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
