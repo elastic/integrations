@@ -16,10 +16,10 @@ An example event for `servlet` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-22T09:17:36.290Z",
+    "@timestamp": "2022-04-25T09:27:40.126Z",
     "agent": {
-        "ephemeral_id": "92afaec7-277c-48ca-bc74-1e9827c4ba02",
-        "id": "9b88da1e-6314-4974-9e53-032e334b9305",
+        "ephemeral_id": "243284b6-e124-4c90-bab8-0c82b6888d68",
+        "id": "867d3b11-9361-45a3-94d9-c7cd601ef74f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -33,7 +33,7 @@ An example event for `servlet` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "9b88da1e-6314-4974-9e53-032e334b9305",
+        "id": "867d3b11-9361-45a3-94d9-c7cd601ef74f",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -41,8 +41,8 @@ An example event for `servlet` looks as following:
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "websphere_application_server.servlet",
-        "duration": 122318164,
-        "ingested": "2022-04-22T09:17:39Z",
+        "duration": 263614769,
+        "ingested": "2022-04-25T09:27:43Z",
         "kind": "metric",
         "module": "websphere_application_server",
         "type": "info"
@@ -52,10 +52,10 @@ An example event for `servlet` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.16.5"
+            "192.168.176.7"
         ],
         "mac": [
-            "02:42:c0:a8:10:05"
+            "02:42:c0:a8:b0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -86,9 +86,16 @@ An example event for `servlet` looks as following:
     ],
     "websphere_application_server": {
         "servlet": {
-            "appname": "ibmasyncrsp#ibmasyncrsp.war",
-            "loaded": 0,
-            "reloaded": 0
+            "app_name": "ibmasyncrsp#ibmasyncrsp.war",
+            "async_context": {
+                "response_time_seconds": 0,
+                "total_responses": 0
+            },
+            "concurrent_requests": 0,
+            "errors": 0,
+            "requests_processed": 0,
+            "response_time_seconds": 0,
+            "responses_processed": 0
         }
     }
 }
@@ -113,7 +120,7 @@ An example event for `servlet` looks as following:
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
-| websphere_application_server.servlet.appname | Application name. | keyword |
+| websphere_application_server.servlet.app_name | Application name. | keyword |
 | websphere_application_server.servlet.async_context.response_time_seconds | The total time spent(in seconds) per servlet for the AsyncContext response to complete. | double |
 | websphere_application_server.servlet.async_context.total_responses | The total number of AsyncContext responses for the specified URL. | long |
 | websphere_application_server.servlet.concurrent_requests | Number of concurrent requests sent to the servlet. | long |
