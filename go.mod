@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.46.0
+	github.com/elastic/elastic-package v0.47.0
 	github.com/elastic/package-registry v1.8.0
 	github.com/magefile/mage v1.13.0
 	github.com/pkg/errors v0.9.1
@@ -146,17 +146,17 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	helm.sh/helm/v3 v3.8.1 // indirect
+	helm.sh/helm/v3 v3.8.2 // indirect
 	howett.net/plist v0.0.0-20201203080718-1454fab16a06 // indirect
-	k8s.io/api v0.23.5 // indirect
-	k8s.io/apiextensions-apiserver v0.23.4 // indirect
-	k8s.io/apimachinery v0.23.5 // indirect
-	k8s.io/cli-runtime v0.23.5 // indirect
-	k8s.io/client-go v0.23.5 // indirect
-	k8s.io/component-base v0.23.4 // indirect
+	k8s.io/api v0.23.6 // indirect
+	k8s.io/apiextensions-apiserver v0.23.5 // indirect
+	k8s.io/apimachinery v0.23.6 // indirect
+	k8s.io/cli-runtime v0.23.6 // indirect
+	k8s.io/client-go v0.23.6 // indirect
+	k8s.io/component-base v0.23.5 // indirect
 	k8s.io/klog/v2 v2.30.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
-	k8s.io/kubectl v0.23.4 // indirect
+	k8s.io/kubectl v0.23.5 // indirect
 	k8s.io/utils v0.0.0-20211208161948-7d6a63dca704 // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/kustomize/api v0.10.1 // indirect
