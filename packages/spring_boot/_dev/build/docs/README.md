@@ -47,3 +47,15 @@ This is the `http_trace` data stream.
 {{event "http_trace"}}
 
 {{fields "http_trace"}}
+
+## Metrics
+
+### Memory Metrics
+
+This is the `memory` data stream.
+
+- This data stream gives metrics related to heap and non-heap memory, buffer pool and manager.
+
+{{event "memory"}}
+
+{{fields "memory"}}

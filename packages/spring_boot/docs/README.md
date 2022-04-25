@@ -225,3 +225,129 @@ An example event for `http_trace` looks as following:
 | spring_boot.http_trace.session | Session associated with the exchange | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 
+
+## Metrics
+
+### Memory Metrics
+
+This is the `memory` data stream.
+
+- This data stream gives metrics related to heap and non-heap memory, buffer pool and manager.
+
+An example event for `memory` looks as following:
+
+```json
+{
+    "@timestamp": "2022-04-20T13:03:45.533Z",
+    "agent": {
+        "ephemeral_id": "c9cba3ad-ab82-4f17-95b1-a92257a086b0",
+        "id": "f7cd0ea7-4d35-4573-956a-021aa2718bbe",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.1.0"
+    },
+    "data_stream": {
+        "dataset": "spring_boot.memory",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.1.0"
+    },
+    "elastic_agent": {
+        "id": "f7cd0ea7-4d35-4573-956a-021aa2718bbe",
+        "snapshot": false,
+        "version": "8.1.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "database",
+        "dataset": "spring_boot.memory",
+        "duration": 498219023,
+        "ingested": "2022-04-20T13:03:48Z",
+        "kind": "metric",
+        "module": "spring_boot",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "192.168.144.4"
+        ],
+        "mac": [
+            "02:42:c0:a8:90:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.3 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "jmx",
+        "period": 60000
+    },
+    "service": {
+        "address": "http://springboot:8090/actuator/jolokia",
+        "type": "jolokia"
+    },
+    "spring_boot": {
+        "memory": {
+            "heap": {
+                "committed": 303038464,
+                "init": 96468992,
+                "max": 1350041600,
+                "used": 135078232
+            },
+            "non_heap": {
+                "committed": 60882944,
+                "init": 2555904,
+                "max": -1,
+                "used": 55917256
+            }
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| spring_boot.memory.buffer_pool.direct.count | Count of direct buffer pool memory | long |
+| spring_boot.memory.buffer_pool.direct.total_capacity | Total capacity of direct buffer pool memory | long |
+| spring_boot.memory.buffer_pool.direct.used | Used memory of direct buffer pool | long |
+| spring_boot.memory.buffer_pool.mapped.count | Count of mapped buffer pool memory | long |
+| spring_boot.memory.buffer_pool.mapped.total_capacity | Total capacity of mapped buffer pool memory | long |
+| spring_boot.memory.buffer_pool.mapped.used | Used memory of mapped buffer pool | long |
+| spring_boot.memory.heap.committed | Committed heap memory usage of JVM | long |
+| spring_boot.memory.heap.init | Init heap memory usage of JVM | long |
+| spring_boot.memory.heap.max | Max heap memory usage of JVM | long |
+| spring_boot.memory.heap.used | Used heap memory usage of JVM | long |
+| spring_boot.memory.manager.code_cache.name | Name of the cacheManager to qualify the cache | keyword |
+| spring_boot.memory.manager.code_cache.valid | Validation of code cache | boolean |
+| spring_boot.memory.manager.metaspace.name | Name of the Metaspace Manager to qualify the cache | keyword |
+| spring_boot.memory.manager.metaspace.valid | Validation of metaspace manager | boolean |
+| spring_boot.memory.non_heap.committed | Committed non-heap memory usage of JVM | long |
+| spring_boot.memory.non_heap.init | Init non-heap memory usage of JVM | long |
+| spring_boot.memory.non_heap.max | Max non-heap memory usage of JVM | long |
+| spring_boot.memory.non_heap.used | Used non-heap memory usage of JVM | long |
