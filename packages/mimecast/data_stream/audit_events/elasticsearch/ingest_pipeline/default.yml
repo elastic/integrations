@@ -144,7 +144,14 @@ processors:
       pattern: "[%{?key} : %{mimecast.export_type},%{?key} :%{mimecast.export_name},%{?key} :%{user.email},%{?key} :%{mimecast.weekday} %{mimecast.month} %{mimecast.monthday} %{mimecast.time} %{mimecast.timezone} %{mimecast.year},%{?key} :%{client.ip},%{?key} :%{mimecast.columns_exported},%{?key} : %{file.name},%{?key}: %{file.size},%{?key} : %{file.extension}], %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
       if: 'ctx?.event?.action=="page-data-exports"'
       ignore_missing: true
-      ignore_failure: true    
+      ignore_failure: true
+  - grok:
+      field: mimecast.eventInfo
+      patterns:
+        - "%{IP:mimecast.event_info_parts.IP}"
+      ignore_missing: true
+      ignore_failure: true
+      if: 'ctx?.event?.action=="user-logged-on"'
   - set:
       field: email.from.address
       value: ["{{{email.from.address}}}"]
@@ -252,6 +259,9 @@ processors:
       value: "{{user.email}}"
       allow_duplicates: false
       if: ctx?.user?.email != null
+  - lowercase:
+      field: email.direction
+      ignore_missing: true
   # Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
