@@ -44,7 +44,6 @@ processors:
       - connection
     if: '["13001", "13002", "13004", "13005", "13006", "13009", "13012", "13014", "14001", "14002", "15001", "15002"].contains(ctx.event?.code)'
 
-
 ####################################
 ## ECS Destination Mapping
 ####################################
@@ -60,10 +59,6 @@ processors:
     ignore_failure: true
     ignore_missing: true
     if: "ctx.sophos?.xg?.dst_port != null"
-- rename:
-    field: sophos.xg.to_email_address
-    target_field: destination.user.email
-    ignore_missing: true
 
 ###############################
 ## ECS Source Mapping
@@ -80,13 +75,37 @@ processors:
     ignore_missing: true
     if: "ctx.sophos?.xg?.src_port != null"
 - rename:
-    field: sophos.xg.from_email_address
-    target_field: source.user.email
-    ignore_missing: true
-- rename:
      field: sophos.xg.src_domainname
      target_field: source.domain
      ignore_missing: true
+
+#######################
+## ECS Email Mapping ##
+#######################
+- rename:
+      field: sophos.xg.from_email_address
+      target_field: source.user.email
+      ignore_missing: true
+- rename:
+      field: sophos.xg.to_email_address
+      target_field: destination.user.email
+      ignore_missing: true
+- append:
+    field: email.from.address
+    value: "{{{source.user.email}}}"
+    if: "ctx?.source?.user?.email != null"
+- append:
+    field: email.to.address
+    value: "{{{destination.user.email}}}"
+    if: "ctx?.destination?.user?.email != null"
+- set:
+    field: email.subject
+    copy_from: sophos.xg.email_subject
+    if: "ctx?.sophos.xg?.email_subject != null"
+- set:
+    field: email.subject
+    copy_from: sophos.xg.subject
+    if: "ctx?.sophos.xg?.subject != null && ctx.email?.subject == null"
 
 ######################
 ## ECS Network Mapping
@@ -107,6 +126,8 @@ processors:
     field:
     - sophos.xg.dst_port
     - sophos.xg.src_port
+    - sophos.xg.from_email_address
+    - sophos.xg.to_email_address
     ignore_missing: true
 on_failure:
 - set:
