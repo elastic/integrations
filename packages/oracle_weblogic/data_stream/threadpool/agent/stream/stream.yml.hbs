@@ -1,0 +1,49 @@
+metricsets: ["jmx"]
+namespace: "metrics"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+http_method: "GET"
+path: {{path}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+username: {{username}}
+password: {{password}}
+period: {{period}}
+jmx.mappings:
+  - mbean: 'com.bea:ServerRuntime=*,Name=ThreadPoolRuntime,Type=ThreadPoolRuntime'
+    attributes:
+    - attr: PendingUserRequestCount
+      field: threadpool.requests.pending
+    - attr: HoggingThreadCount
+      field: threadpool.threads.hogging
+    - attr: SharedCapacityForWorkManagers
+      field: threadpool.work_manager.capacity.shared
+    - attr: StandbyThreadCount
+      field: threadpool.threads.standby
+    - attr: ExecuteThreadTotalCount
+      field: threadpool.threads.execute.total
+    - attr: OverloadRejectedRequestsCount
+      field: threadpool.requests.overload.rejected
+    - attr: QueueLength
+      field: threadpool.queue.length
+    - attr: Throughput
+      field: threadpool.throughput
+    - attr: ExecuteThreadIdleCount
+      field: threadpool.threads.execute.idle
+    - attr: CompletedRequestCount
+      field: threadpool.requests.completed
+    - attr: StuckThreadCount
+      field: threadpool.threads.stuck  
+  - mbean: 'java.lang:type=Threading'
+    attributes:
+    - attr: ThreadCount
+      field: threadpool.threads.total
+    - attr: DaemonThreadCount
+      field: threadpool.threads.daemon
