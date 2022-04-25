@@ -1645,7 +1645,7 @@ The `log` dataset collects netflow logs.
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.pid | Process id. | long |
-| process.pgid | Identifier of the group of processes the process belongs to. | long |
+| process.pgid | Deprecated for removal in next major version release. This field is superseded by `process.group_leader.pid`. Identifier of the group of processes the process belongs to. | long |
 | process.pid | Process id. | long |
 | process.start | The time the process started. | date |
 | process.thread.id | Thread ID. | long |
