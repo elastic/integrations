@@ -1,6 +1,6 @@
 # WebSphere Application Server
 
-This elastic integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics as follows:
+This Elastic integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics as follows:
 
    - JDBC metrics
 
@@ -10,7 +10,7 @@ To open Prometheus endpoint read following [instructions](https://www.ibm.com/do
 
 ## JDBC
 
-This data stream collects JDBC metrics.
+This data stream collects JDBC (Java Database Connectivity) related metrics.
 
 An example event for `jdbc` looks as following:
 
