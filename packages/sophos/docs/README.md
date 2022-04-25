@@ -1067,8 +1067,6 @@ An example event for `xg` looks as following:
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
-| server.bytes | Bytes sent from the server to the client. | long |
-| server.port | Port of the server. | long |
 | sophos.xg.action | Event Action | keyword |
 | sophos.xg.activityname | Web policy activity that matched and caused the policy result. | keyword |
 | sophos.xg.ap | Access Point Serial ID or LocalWifi0 or LocalWifi1. | keyword |
