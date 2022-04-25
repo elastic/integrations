@@ -3,7 +3,7 @@ description: Pipeline for parsing fortinet firewall logs
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.2.0'
   - rename:
       field: message
       target_field: event.original
@@ -131,6 +131,15 @@ processors:
       field: fortinet.firewall.level
       target_field: log.level
       ignore_missing: true
+  - append:
+      field: email.cc.address
+      value: "{{{fortinet.firewall.cc}}}"
+      if: "ctx?.fortinet?.cc?.address != null"
+  - set:
+      field: email.subject
+      copy_from: fortinet.firewall.subject
+      if: "ctx?.fortinet?.firewall?.subject != null"
+
   # Handle interface-based network directionality
   - set:
       field: network.direction

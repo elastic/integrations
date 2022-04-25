@@ -70,10 +70,10 @@ processors:
     type: long
     ignore_failure: true
     ignore_missing: true
-- rename:
-    field: fortinet.firewall.dstcollectedemail
-    target_field: destination.user.email
-    ignore_missing: true
+- append:
+    field: email.to.address
+    value: "{{fortinet.firewall.dstcollectedemail}}"
+    if: "ctx?.fortinet?.firewall?.dstcollectedemail != null"
 - rename:
     field: fortinet.firewall.dstname
     target_field: destination.address
@@ -119,10 +119,10 @@ processors:
     target_field: source.user.name
     ignore_missing: true
     if: "ctx.source?.user?.name == null"
-- rename:
-    field: fortinet.firewall.collectedemail
-    target_field: source.user.email
-    ignore_missing: true
+- append:
+    field: email.from.address
+    value: "{{fortinet.firewall.collectedemail}}"
+    if: "ctx?.fortinet?.firewall?.collectedemail != null"
 - convert:
     field: fortinet.firewall.sentpkt
     target_field: source.packets
