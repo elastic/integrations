@@ -5,8 +5,11 @@
 pipeline {
   agent { label 'ubuntu-20 && immutable' }
   environment {
+    BRANCH_NAME_LOWER_CASE = "${env.BRANCH_NAME.toLowerCase()}"
+    CREATED_DATE = "${new Date().getTime()}"
+    ENVIRONMENT = "ci"
     REPO = 'integrations'
-    BASE_DIR="src/github.com/elastic/${REPO}"
+    BASE_DIR = "src/github.com/elastic/${REPO}"
     GITHUB_TOKEN_CREDENTIALS = "2a9602aa-ab9f-4e52-baf3-b71ca88469c7"
     JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
     PACKAGE_STORAGE_BASE_DIR = "src/github.com/elastic/package-storage"
@@ -259,13 +262,7 @@ def withCloudTestEnv(Closure body) {
     [var: "AWS_SECRET_ACCESS_KEY", password: aws.secret_key],
   ])
   withEnvMask(vars: maskedVars) {
-    withEnv(["TF_VAR_BRANCH=${env.BRANCH_NAME.toLowerCase()}",
-             "TF_VAR_BUILD_ID=${BUILD_ID}",
-             "TF_VAR_CREATED_DATE=${new Date().getTime()}",
-             "TF_VAR_ENVIRONMENT=ci",
-             "TF_VAR_REPO=${env.REPO}"]) {
-      body()
-    }
+    body()
   }
 }
 
