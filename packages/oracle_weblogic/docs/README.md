@@ -10,9 +10,9 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 
 This integration is for Oracle Weblogic Domain logs. It includes the following datasets for receiving logs from a file:
 
-### Domain Logs
+### Domain logs
 
-The `domain` dataset collects Domain logs from Domain.log.
+The `domain` data stream collects Domain logs from Domain.log.
 
 An example event for `domain` looks as following:
 
@@ -20,8 +20,8 @@ An example event for `domain` looks as following:
 {
     "@timestamp": "2022-03-24T10:30:27.263Z",
     "agent": {
-        "ephemeral_id": "2b5e0920-5b42-4714-b371-95a4bddb0e12",
-        "id": "36a40463-92bb-4f38-b014-e52012f4a0b0",
+        "ephemeral_id": "70d14d35-0bc1-41ff-bcd8-657b0268cf68",
+        "id": "b3262216-90d5-4a15-8c61-627ba597f68a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -32,10 +32,10 @@ An example event for `domain` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "36a40463-92bb-4f38-b014-e52012f4a0b0",
+        "id": "b3262216-90d5-4a15-8c61-627ba597f68a",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -45,7 +45,7 @@ An example event for `domain` looks as following:
             "log"
         ],
         "dataset": "oracle_weblogic.domain",
-        "ingested": "2022-04-11T12:25:11Z",
+        "ingested": "2022-04-25T08:04:00Z",
         "kind": "event",
         "module": "oracle_weblogic",
         "original": "####\u003cMar 24, 2022 10:30:27,263 AM GMT\u003e \u003cWarning\u003e \u003cSocket\u003e \u003cwlsadmin\u003e \u003cAdminServer\u003e \u003c[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)'\u003e \u003c\u003cWLS Kernel\u003e\u003e \u003c\u003e \u003c38f025ff-7924-471b-bac8-a419692aabf9-00000018\u003e \u003c1648117827263\u003e \u003c[severity-value: 16] [rid: 0] [partition-id: 0] [partition-name: DOMAIN] \u003e \u003cBEA-000449\u003e \u003cClosing the socket, as no data read from it on 172.18.0.1:41,972 during the configured idle timeout of 5 seconds.\u003e ",
@@ -56,10 +56,10 @@ An example event for `domain` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.6"
+            "172.20.0.5"
         ],
         "mac": [
-            "02:42:c0:a8:d0:06"
+            "02:42:ac:14:00:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -95,7 +95,7 @@ An example event for `domain` looks as following:
         }
     },
     "tags": [
-        "oracle-weblogic-domain-logs"
+        "oracle_weblogic-domain"
     ],
     "transaction": {
         "id": "38f025ff-7924-471b-bac8-a419692aabf9-00000018"
@@ -113,11 +113,11 @@ An example event for `domain` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | host.ip | Host ip addresses. | ip |
-| input.type | Input type | keyword |
+| input.type | Input type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| log.offset | Log offset | long |
+| log.offset | Log offset. | long |
 | oracle_weblogic.domain.diagnostic_context_id | Context information to correlate messages coming from a specific request or application. | keyword |
 | oracle_weblogic.domain.machine_name | Machine Name is the DNS name of the computer that hosts the server instance. | keyword |
 | oracle_weblogic.domain.message_id | A unique six-digit identifier. | keyword |

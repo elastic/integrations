@@ -10,9 +10,9 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 
 This integration is for Oracle Weblogic Domain logs. It includes the following datasets for receiving logs from a file:
 
-### Domain Logs
+### Domain logs
 
-The `domain` dataset collects Domain logs from Domain.log.
+The `domain` data stream collects Domain logs from Domain.log.
 
 {{event "domain"}}
 
