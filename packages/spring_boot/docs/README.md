@@ -363,10 +363,10 @@ An example event for `threading` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-20T11:42:11.404Z",
+    "@timestamp": "2022-04-25T12:18:52.159Z",
     "agent": {
-        "ephemeral_id": "14adc5b5-698c-41a2-a988-cac42457c181",
-        "id": "874f5030-4e15-4b08-9934-fd1df85257f8",
+        "ephemeral_id": "7ed5cc7d-231f-4a7b-87d5-87fff4ebdbd0",
+        "id": "c1fe6e40-35fc-4f7a-9139-128bfc5de5e0",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -380,7 +380,7 @@ An example event for `threading` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "874f5030-4e15-4b08-9934-fd1df85257f8",
+        "id": "c1fe6e40-35fc-4f7a-9139-128bfc5de5e0",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -388,8 +388,8 @@ An example event for `threading` looks as following:
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "spring_boot.threading",
-        "duration": 93470677,
-        "ingested": "2022-04-20T11:42:14Z",
+        "duration": 96659309,
+        "ingested": "2022-04-25T12:18:55Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -399,10 +399,10 @@ An example event for `threading` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.112.7"
+            "192.168.128.4"
         ],
         "mac": [
-            "02:42:c0:a8:70:07"
+            "02:42:c0:a8:80:04"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -439,10 +439,10 @@ An example event for `threading` looks as following:
                 "supported": true
             },
             "current_thread": {
-                "allocated_bytes": 1044528,
-                "cpu_time": 463388970,
+                "allocated_bytes": 30781120,
+                "cpu_time": 587018137,
                 "cpu_time_supported": true,
-                "user_time": 460000000
+                "user_time": 570000000
             },
             "daemon_thread_count": 16,
             "object_monitor_usage_supported": true,
