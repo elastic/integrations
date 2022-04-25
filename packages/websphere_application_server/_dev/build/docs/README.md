@@ -1,6 +1,6 @@
 # WebSphere Application Server
 
-This elastic integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics as follows:
+This Elastic integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics as follows:
 
    - Servlet metrics
 
@@ -10,7 +10,7 @@ To open Prometheus endpoint read following [instructions](https://www.ibm.com/do
 
 ## Servlet
 
-This data stream collects Servlet metrics.
+This data stream collects Servlet related metrics.
 
 {{event "servlet"}}
 
