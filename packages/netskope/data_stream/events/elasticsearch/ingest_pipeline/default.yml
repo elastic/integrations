@@ -96,102 +96,102 @@ processors:
   - set: 
       field: netskope.events.managed_app
       value: true
-      if: ctx?.netskope?.events?.managed_app?.toString()?.toLowerCase() == "yes"
+      if: "['yes', 'true'].contains(ctx?.netskope?.events?.managed_app?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.managed_app
       value: false
-      if: ctx?.netskope?.events?.managed_app?.toString()?.toLowerCase() == "no"
+      if: "['no', 'false'].contains(ctx?.netskope?.events?.managed_app?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.is_bypass_traffic
       value: true
-      if: ctx?.netskope?.events?.is_bypass_traffic?.toString()?.toLowerCase() == "yes"
+      if: "['yes', 'true'].contains(ctx?.netskope?.events?.is_bypass_traffic?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.is_bypass_traffic
       value: false
-      if: ctx?.netskope?.events?.is_bypass_traffic?.toString()?.toLowerCase() == "no"
+      if: "['no', 'false'].contains(ctx?.netskope?.events?.is_bypass_traffic?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.is_unique_count
       value: true
-      if: ctx?.netskope?.events?.is_unique_count?.toString()?.toLowerCase() == "yes"
+      if: "['yes', 'true'].contains(ctx?.netskope?.events?.is_unique_count?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.is_unique_count
       value: false
-      if: ctx?.netskope?.events?.is_unique_count?.toString()?.toLowerCase() == "no"
+      if: "['no', 'false'].contains(ctx?.netskope?.events?.is_unique_count?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.user.is_aggregated
       value: true
-      if: ctx?.netskope?.events?.user?.is_aggregated?.toString()?.toLowerCase() == "yes"
+      if: "['yes', 'true'].contains(ctx?.netskope?.events?.user?.is_aggregated?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.user.is_aggregated
       value: false
-      if: ctx?.netskope?.events?.user?.is_aggregated?.toString()?.toLowerCase() == "no"
+      if: "['no', 'false'].contains(ctx?.netskope?.events?.user?.is_aggregated?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.alert.is_present
       value: true
-      if: ctx?.netskope?.events?.alert?.is_present?.toString()?.toLowerCase() == "yes"
+      if: "['yes', 'true'].contains(ctx?.netskope?.events?.alert?.is_present?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.alert.is_present
       value: false
-      if: ctx?.netskope?.events?.alert?.is_present?.toString()?.toLowerCase() == "no"
+      if: "['no', 'false'].contains(ctx?.netskope?.events?.alert?.is_present?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.user.generated
       value: true
-      if: ctx?.netskope?.events?.user?.generated?.toString()?.toLowerCase() == "true"
+      if: "['yes', 'true'].contains(ctx?.netskope?.events?.user?.generated?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.user.generated
       value: false
-      if: ctx?.netskope?.events?.user?.generated?.toString()?.toLowerCase() == "false"
+      if: "['no', 'false'].contains(ctx?.netskope?.events?.user?.generated?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.ack
       value: true
-      if: ctx?.netskope?.events?.ack?.toString()?.toLowerCase() == "true"
+      if: "['yes', 'true'].contains(ctx?.netskope?.events?.ack?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.ack
       value: false
-      if: ctx?.netskope?.events?.ack?.toString()?.toLowerCase() == "false"
+      if: "['no', 'false'].contains(ctx?.netskope?.events?.ack?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.is_malicious
       value: true
-      if: ctx?.netskope?.events?.is_malicious?.toString()?.toLowerCase() == "true"
+      if: "['yes', 'true'].contains(ctx?.netskope?.events?.is_malicious?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.is_malicious
       value: false
-      if: ctx?.netskope?.events?.is_malicious?.toString()?.toLowerCase() == "false"
+      if: "['no', 'false'].contains(ctx?.netskope?.events?.is_malicious?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.obfuscate
       value: true
-      if: ctx?.netskope?.events?.obfuscate?.toString()?.toLowerCase() == "true"
+      if: "['yes', 'true'].contains(ctx?.netskope?.events?.obfuscate?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.obfuscate
       value: false
-      if: ctx?.netskope?.events?.obfuscate?.toString()?.toLowerCase() == "false"
+      if: "['no', 'false'].contains(ctx?.netskope?.events?.obfuscate?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.shared.is_shared
       value: true
-      if: ctx?.netskope?.events?.shared?.is_shared?.toString()?.toLowerCase() == "true"
+      if: "['yes', 'true'].contains(ctx?.netskope?.events?.shared?.is_shared?.toString()?.toLowerCase())"
       ignore_failure: true
   - set: 
       field: netskope.events.shared.is_shared
       value: false
-      if: ctx?.netskope?.events?.shared?.is_shared?.toString()?.toLowerCase() == "false"
+      if: "['no', 'false'].contains(ctx?.netskope?.events?.shared?.is_shared?.toString()?.toLowerCase())"
       ignore_failure: true
   - date:
       field: netskope.events.modified_at
@@ -242,6 +242,11 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
 - set:
     field: error.message
