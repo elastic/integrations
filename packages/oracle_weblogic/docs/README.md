@@ -10,9 +10,9 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 
 This integration is for Oracle Weblogic Access logs . It includes the following datasets for receiving logs from a file:
 
-### Access Logs
+### Access logs
 
-The `access` dataset collects Access logs form access.log.
+The `access` data stream collects Access logs form access.log.
 
 An example event for `access` looks as following:
 
@@ -20,8 +20,8 @@ An example event for `access` looks as following:
 {
     "@timestamp": "2022-03-26T18:10:04.000Z",
     "agent": {
-        "ephemeral_id": "0fd40032-42b0-4d02-bfb2-156ddccb992f",
-        "id": "36a40463-92bb-4f38-b014-e52012f4a0b0",
+        "ephemeral_id": "803b783e-44fb-41f8-ba17-08c31c34aae8",
+        "id": "d17bdd23-2a9d-4013-abe7-0652f306d69d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -32,10 +32,10 @@ An example event for `access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "36a40463-92bb-4f38-b014-e52012f4a0b0",
+        "id": "d17bdd23-2a9d-4013-abe7-0652f306d69d",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -45,7 +45,7 @@ An example event for `access` looks as following:
             "log"
         ],
         "dataset": "oracle_weblogic.access",
-        "ingested": "2022-04-11T12:23:51Z",
+        "ingested": "2022-04-25T06:53:32Z",
         "kind": "event",
         "module": "oracle_weblogic",
         "original": "172.17.32.1 - - [26/Mar/2022:23:40:04 +0530] \"GET /medrec/start.xhtml HTTP/1.1\" 200 8876 ",
@@ -57,7 +57,7 @@ An example event for `access` looks as following:
         "hostname": "docker-fleet-agent",
         "ip": "172.17.32.1",
         "mac": [
-            "02:42:c0:a8:d0:06"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -97,7 +97,7 @@ An example event for `access` looks as following:
         }
     },
     "tags": [
-        "oracle-weblogic-access-log"
+        "oracle_weblogic-access"
     ]
 }
 ```
@@ -117,11 +117,11 @@ An example event for `access` looks as following:
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
-| input.type | Input type | keyword |
+| input.type | Input type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| log.offset | Log offset | long |
+| log.offset | Log offset. | long |
 | oracle_weblogic.access.authuser | The User identity allowing them access to an online service, connected device, or other resource | keyword |
 | oracle_weblogic.access.host_address | The physical address of a computer in a network | keyword |
 | tags | List of keywords used to tag each event. | keyword |

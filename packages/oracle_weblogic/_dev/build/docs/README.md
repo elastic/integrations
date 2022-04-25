@@ -10,9 +10,9 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 
 This integration is for Oracle Weblogic Access logs . It includes the following datasets for receiving logs from a file:
 
-### Access Logs
+### Access logs
 
-The `access` dataset collects Access logs form access.log.
+The `access` data stream collects Access logs form access.log.
 
 {{event "access"}}
 
