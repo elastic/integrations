@@ -13,10 +13,17 @@ In order to ingest data from Oracle WebLogic:
 - Add default path for jolokia.
 - Configuring Jolokia for Weblogic
 
-    User need to [download](https://jolokia.org/download.html) and add jar file and set env variables for jolokia
+    User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment
+     variables for jolokia.
 
     ```
      -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>
+    ``` 
+
+    (Optional) User can run Jolokia on https by configuring following [paramters](https://jolokia.org/reference/html/agents.html#:~:text=Table%C2%A03.6.-,JVM%20agent%20configuration%20options,-Parameter).
+
+    ```
+     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
     ```
 
 ## Metrics

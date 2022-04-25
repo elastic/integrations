@@ -13,10 +13,17 @@ In order to ingest data from Oracle WebLogic:
 - Add default path for jolokia.
 - Configuring Jolokia for Weblogic
 
-    User need to [download](https://jolokia.org/download.html) and add jar file and set env variables for jolokia
+    User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment
+     variables for jolokia.
 
     ```
      -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>
+    ``` 
+
+    (Optional) User can run Jolokia on https by configuring following [paramters](https://jolokia.org/reference/html/agents.html#:~:text=Table%C2%A03.6.-,JVM%20agent%20configuration%20options,-Parameter).
+
+    ```
+     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
     ```
 
 ## Metrics
@@ -29,10 +36,10 @@ An example event for `deployed_application` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-18T05:13:37.988Z",
+    "@timestamp": "2022-04-25T13:04:53.499Z",
     "agent": {
-        "ephemeral_id": "51dbac58-4f35-4a39-9668-035268d92a34",
-        "id": "8fba0284-d0ba-4d62-bde7-b6efb0191fc9",
+        "ephemeral_id": "c50a9fac-8093-4e03-ac7b-c6b45b8c705f",
+        "id": "e47a1950-c44f-4799-a2a2-37a601358e3d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -43,10 +50,10 @@ An example event for `deployed_application` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.1.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "8fba0284-d0ba-4d62-bde7-b6efb0191fc9",
+        "id": "e47a1950-c44f-4799-a2a2-37a601358e3d",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -54,8 +61,8 @@ An example event for `deployed_application` looks as following:
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "oracle_weblogic.deployed_application",
-        "duration": 1783900,
-        "ingested": "2022-04-18T05:13:41Z",
+        "duration": 2645736,
+        "ingested": "2022-04-25T13:04:56Z",
         "kind": "metric",
         "module": "oracle_weblogic",
         "type": "info"
@@ -65,16 +72,16 @@ An example event for `deployed_application` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.25.0.7"
+            "192.168.0.7"
         ],
         "mac": [
-            "02:42:ac:19:00:07"
+            "02:42:c0:a8:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "5.4.0-107-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -100,14 +107,17 @@ An example event for `deployed_application` looks as following:
                 }
             },
             "single_threaded_servlet_pool_size": 5,
-            "source_info": "bea_wls_internal.war",
+            "source_info": "bea_wls_deployment_internal.war",
             "status": "DEPLOYED"
         }
     },
     "service": {
         "address": "http://elastic-package-service_oracle_weblogic_1:8010/jolokia",
         "type": "jolokia"
-    }
+    },
+    "tags": [
+        "oracle_weblogic-deployed_application"
+    ]
 }
 ```
 
@@ -139,4 +149,5 @@ An example event for `deployed_application` looks as following:
 | oracle_weblogic.deployed_application.status | Status of the deployment. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
