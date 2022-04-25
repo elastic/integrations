@@ -62,6 +62,10 @@ processors:
       target_field: email.to.address
       ignore_missing: true
       if: 'ctx?.mimecast?.Rcpt !=null'
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.Rcpt}}}"
+      if: "ctx?.mimecast?.Rcpt != null"
   - rename:
       field: mimecast.headerFrom
       target_field: email.header_from
@@ -154,6 +158,10 @@ processors:
       target_field: email.to.address
       ignore_missing: true  
       if: 'ctx?.mimecast?.Recipient !=null'
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.Recipient}}}"
+      if: "ctx?.mimecast?.Recipient != null"
   - rename:
       field: mimecast.SenderDomain
       target_field: source.domain
@@ -218,6 +226,10 @@ processors:
       target_field: email.to.address
       ignore_missing: true
       if: 'ctx?.mimecast?.recipient !=null'
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.recipient}}}"
+      if: "ctx?.mimecast?.recipient != null"
   - rename:
       field: mimecast.route
       target_field: email.direction
@@ -308,6 +320,21 @@ processors:
       field: event.outcome
       value: "unknown"
       if: 'ctx?.event?.outcome ==null'
+  - lowercase:
+      field: email.direction
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
   - dissect:
        field: email.from.address
        pattern: "<%{email.from.address}>"
@@ -317,7 +344,8 @@ processors:
        field: email.to.address
        pattern: "<%{email.to.address}>"
        ignore_missing: true
-       ignore_failure: true  
+       ignore_failure: true
+
   # Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.

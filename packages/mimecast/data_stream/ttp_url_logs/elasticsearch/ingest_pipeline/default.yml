@@ -23,10 +23,6 @@ processors:
 
   ###
   - rename:
-      field: mimecast.userEmailAddress
-      target_field: user.email
-      ignore_missing: true
-  - rename:
       field: mimecast.url
       target_field: url.original
       ignore_missing: true
@@ -50,10 +46,23 @@ processors:
       field: mimecast.messageId
       target_field: email.message_id
       ignore_missing: true
-  - append:
+  - set:
       field: email.from.address
-      value: "{{{mimecast.fromUserEmailAddress}}}"
+      value: ["{{{mimecast.fromUserEmailAddress}}}"]
       if: "ctx?.mimecast?.fromUserEmailAddress != null"
+  - set:
+      field: email.to.address
+      value: ["{{{mimecast.userEmailAddress}}}"]
+      if: "ctx?.mimecast?.userEmailAddress != null"
+  - set:
+      field: user.email
+      value: ["{{{mimecast.userEmailAddress}}}"]
+      if: "ctx?.mimecast?.userEmailAddress != null"
+  - append:
+      field: related.user
+      value: "{{{mimecast.userEmailAddress}}}"
+      allow_duplicates: false
+      if: 'ctx?.mimecast?.userEmailAddress !=null'
       ignore_failure: true
   - rename:
       field: mimecast.sendingIp
@@ -63,34 +72,11 @@ processors:
       field: event.created
       value: "{{mimecast.date}}"
       if: 'ctx?.mimecast?.date != null'
-  - split:
-      field: user.email
-      separator: "@"
-      target_field: user.parts
-      if: 'ctx?.user?.email != null'
-  - set:
-      field: user.name
-      copy_from: user.parts.0
-      if: 'ctx?.user?.parts !=null && ctx?.user?.parts.length > 1'
-  - set:
-      field: user.domain
-      copy_from: user.parts.1
-      if: 'ctx?.user?.parts !=null && ctx?.user?.parts.length > 1'
   - append:
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
       if: 'ctx?.source?.ip !=null'
-  - append:
-      field: related.user
-      value: "{{user.name}}"
-      allow_duplicates: false
-      if: 'ctx?.user?.name !=null'
-  - append:
-      field: related.user
-      value: "{{user.email}}"
-      allow_duplicates: false
-      if: 'ctx?.user?.email !=null'
   - dissect:
        field: email.from.address
        pattern: "<%{email.from.address}>"
@@ -106,10 +92,8 @@ processors:
       description: Cleanup of repeated/unwanted/temporary fields.
       field: 
         - mimecast.date
-        - user.parts
-        - user.parts.0
-        - user.parts.1
         - mimecast.fromUserEmailAddress
+        - mimecast.userEmailAddress
       ignore_missing: true
   - remove:
       description: Remove 'event.original' if 'preserve_original_event' is not set.
