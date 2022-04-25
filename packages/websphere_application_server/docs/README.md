@@ -1,6 +1,6 @@
 # WebSphere Application Server
 
-This elastic integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics and logs as follows:
+This Elastic integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics and logs as follows:
 
    - ThreadPool metrics
 
