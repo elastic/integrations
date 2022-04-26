@@ -1,10 +1,10 @@
-# Carbon Black Cloud
+# VMware Carbon Black Cloud
 
-The Carbon Black Cloud integration collects and parses data from the Carbon Black Cloud REST APIs and AWS S3 bucket.
+The VMware Carbon Black Cloud integration collects and parses data from the Carbon Black Cloud REST APIs and AWS S3 bucket.
 
 ## Compatibility
 
-This module has been tested against `Alerts API(v6)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
+This module has been tested against `Alerts API (v6)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
 
 ## Requirements
 
