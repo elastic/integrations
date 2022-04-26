@@ -1,0 +1,106 @@
+- name: proofpoint_tap
+  type: group
+  fields:
+    - name: guid
+      type: keyword
+      description: The ID of the message within PPS. It can be used to identify the message in PPS and is guaranteed to be unique.
+    - name: message_delivered
+      type: group
+      fields:
+        - name: cluster
+          type: keyword
+          description: The name of the PPS cluster which processed the message.
+        - name: completely_rewritten
+          type: keyword
+          description: The rewrite status of the message. If value is 'true', all instances of URL threats within the message were successfully rewritten. If the value is 'false', at least one instance of the a threat URL was not rewritten. If the value is 'na', the message did not contain any URL-based threats.
+        - name: header
+          type: group
+          fields:
+            - name: from
+              type: keyword
+              description: 'The full content of the From: header, including any friendly name.'
+            - name: replyto
+              type: keyword
+              description: 'If present, the full content of the Reply-To: header, including any friendly names.'
+        - name: impostor_score
+          type: double
+          description: The impostor score of the message. Higher scores indicate higher certainty.
+        - name: malware_score
+          type: long
+          description: The malware score of the message. Higher scores indicate higher certainty.
+        - name: message_parts
+          type: group
+          fields:
+            - name: disposition
+              type: keyword
+              description: If the value is "inline," the messagePart is a message body. If the value is "attached," the messagePart is an attachment.
+            - name: o_content_type
+              type: keyword
+              description: The declared Content-Type of the messagePart.
+            - name: sandbox_status
+              type: keyword
+              description: The verdict returned by the sandbox during the scanning process. If the value is "unsupported", the messagePart is not supported by Attachment Defense and was not scanned. If the value is "clean", the sandbox returned a clean verdict. If the value is "threat", the sandbox returned a malicious verdict. If the value is "prefilter", the messagePart contained no active content, and was therefore not sent to the sandboxing service. If the value is "uploaded," the message was uploaded by PPS to the sandboxing service, but did not yet have a verdict at the time the message was processed. If the value is "inprogress," the attachment had been uploaded and was awaiting scanning at the time the message was processed. If the verdict is "uploaddisabled," the attachment was eligible for scanning, but was not uploaded because of PPS policy.
+        - name: message_size
+          type: long
+          description: The size in bytes of the message, including headers and attachments.
+        - name: modules_run
+          type: keyword
+          description: The list of PPS modules which processed the message.
+        - name: phish_score
+          type: long
+          description: The phish score of the message. Higher scores indicate higher certainty.
+        - name: policy_routes
+          type: keyword
+          description: The policy routes that the message matched during processing by PPS.
+        - name: qid
+          type: keyword
+          description: The queue ID of the message within PPS. It can be used to identify the message in PPS and is not unique.
+        - name: quarantine
+          type: group
+          fields:
+            - name: folder
+              type: keyword
+              description: The name of the folder which contains the quarantined message. This appears only for messagesBlocked.
+            - name: rule
+              type: keyword
+              description: The name of the rule which quarantined the message. This appears only for messagesBlocked events.
+        - name: recipient
+          type: keyword
+          description: An array containing the email addresses of the SMTP (envelope) recipients.
+        - name: spam_score
+          type: long
+          description: The spam score of the message. Higher scores indicate higher certainty.
+        - name: threat_info_map
+          type: group
+          description: An array of structures which contain details about detected threats within the message. There may be more than one threat per message.
+          fields:
+            - name: campaign_id
+              type: keyword
+              description: An identifier for the campaign of which the threat is a member, if available at the time of the query. Threats can be linked to campaigns even after these events are retrieved.
+            - name: classification
+              type: keyword
+              description: The category of threat found in the message.
+            - name: threat
+              type: group
+              fields:
+                - name: artifact
+                  type: keyword
+                  description: The artifact which was condemned by Proofpoint. The malicious URL, hash of the attachment threat, or email address of the impostor sender.
+                - name: id
+                  type: keyword
+                  description: The unique identifier associated with this threat. It can be used to query the forensics and campaign endpoints.
+                - name: status
+                  type: keyword
+                  description: The current state of the threat.
+                - name: time
+                  type: date
+                  description: Proofpoint assigned the threatStatus at this time.
+                - name: type
+                  type: keyword
+                  description: Whether the threat was an attachment, URL, or message type.
+                - name: url
+                  type: keyword
+                  description: A link to the entry about the threat on the TAP Dashboard.
+        - name: to_addresses
+          type: keyword
+          description: 'A list of email addresses contained within the To: header, excluding friendly names.'
