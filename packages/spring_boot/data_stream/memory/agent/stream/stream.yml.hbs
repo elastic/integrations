@@ -1,0 +1,47 @@
+metricsets: ["jmx"]
+namespace: "metrics"
+hosts: {{hosts}}
+http_method: "GET"
+path: {{path}}
+username: {{username}}
+password: {{password}}
+period: {{period}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+jmx.mappings:
+  - mbean: 'java.lang:type=Memory'
+    attributes:
+    - attr: HeapMemoryUsage
+      field: heap
+    - attr: NonHeapMemoryUsage
+      field: non_heap
+  - mbean: 'java.nio:name=direct,type=BufferPool'
+    attributes:
+    - attr: TotalCapacity
+      field: buffer_pool.direct.total_capacity
+    - attr: MemoryUsed
+      field: buffer_pool.direct.used
+    - attr: Count
+      field: buffer_pool.direct.count    
+  - mbean: 'java.nio:name=mapped,type=BufferPool'
+    attributes:
+    - attr: TotalCapacity
+      field: buffer_pool.mapped.total_capacity
+    - attr: MemoryUsed
+      field: buffer_pool.mapped.used
+    - attr: Count
+      field: buffer_pool.mapped.count
+  - mbean: 'java.lang:name=CodeCacheManager,type=MemoryManager'
+    attributes:      
+    - attr: Valid
+      field: manager.code_cache.valid
+    - attr: Name
+      field: manager.code_cache.name
+  - mbean: 'java.lang:name=Metaspace Manager,type=MemoryManager'
+    attributes:
+    - attr: Valid
+      field: manager.metaspace.valid
+    - attr: Name
+      field: manager.metaspace.name
+      
