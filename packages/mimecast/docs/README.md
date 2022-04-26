@@ -21,12 +21,12 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2021-11-16T12:01:37.000Z",
     "agent": {
-        "ephemeral_id": "fa35babb-45a8-4537-b7e9-037256a9d3e5",
+        "ephemeral_id": "3126099e-107b-4959-b9e0-62ad3c5740ca",
         "hostname": "docker-fleet-agent",
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
     "data_stream": {
         "dataset": "mimecast.audit_events",
@@ -34,20 +34,20 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "event": {
         "action": "search-action",
         "agent_id_status": "verified",
-        "created": "2022-02-22T15:33:36.764Z",
+        "created": "2022-04-21T08:23:36.847Z",
         "dataset": "mimecast.audit_events",
         "id": "eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK1o",
-        "ingested": "2022-02-22T15:33:37Z",
+        "ingested": "2022-04-21T08:23:37Z",
         "original": "{\"auditType\":\"Search Action\",\"category\":\"case_review_logs\",\"eventInfo\":\"Inspected Review Set Messages - Source: Review Set - Supervision - hot words, Case - GDPR/CCPA, Message Status: Pending, Date: 2021-11-16, Time: 12:01:37+0000, IP: 8.8.8.8, Application: mimecast-case-review\",\"eventTime\":\"2021-11-16T12:01:37+0000\",\"id\":\"eNqrVipOTS4tSs1MUbJSSg_xMDJPNkisSDdISQ00j0gzz44wDAtL89c2DXZ1C3eP9AyvijKL9I7Rd_WOzC0ztMg2dzFM1M73s6w09CqoDA1T0lFKLE3JLMnJTwcZaGxoaWFsYmhkoaOUXFpckp-bWpScn5IKtMnZxMzR3BSovCy1qDgzP0_JyrAWAAjKK1o\",\"user\":\"johndoe@example.com\"}"
     },
     "input": {
@@ -169,12 +169,12 @@ An example event for `dlp` looks as following:
 {
     "@timestamp": "2021-11-18T21:41:18.000Z",
     "agent": {
-        "ephemeral_id": "351662e4-0671-45fc-978c-613243b6b7fe",
+        "ephemeral_id": "f05546e4-1114-4375-9f2a-6a0b35c3c0f1",
         "hostname": "docker-fleet-agent",
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
     "data_stream": {
         "dataset": "mimecast.dlp_logs",
@@ -182,22 +182,26 @@ An example event for `dlp` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "email": {
         "direction": "inbound",
         "from": {
-            "address": "\u003c\u003e"
+            "address": [
+                "\u003c\u003e"
+            ]
         },
         "message_id": "\u003c20211118214115.B346F10021D@mail.emailsec.ninja\u003e",
         "subject": "Undelivered Mail Returned to Sender",
         "to": {
-            "address": "johndoe@example.com"
+            "address": [
+                "johndoe@example.com"
+            ]
         }
     },
     "event": {
@@ -205,7 +209,7 @@ An example event for `dlp` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-18T21:41:18+0000",
         "dataset": "mimecast.dlp_logs",
-        "ingested": "2022-02-22T15:34:19Z",
+        "ingested": "2022-04-21T08:24:23Z",
         "original": "{\"action\":\"notification\",\"eventTime\":\"2021-11-18T21:41:18+0000\",\"messageId\":\"\\u003c20211118214115.B346F10021D@mail.emailsec.ninja\\u003e\",\"policy\":\"Content Inspection - Watermark\",\"recipientAddress\":\"johndoe@example.com\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Undelivered Mail Returned to Sender\"}"
     },
     "input": {
@@ -295,11 +299,12 @@ An example event for `siem` looks as following:
 {
     "@timestamp": "2021-11-12T12:15:46.000Z",
     "agent": {
-        "ephemeral_id": "c29702e9-3a8f-4e5f-8f99-398c9bf9f434",
-        "id": "15e6751a-71c9-4027-995c-58dcd862c21d",
+        "ephemeral_id": "0b5e6c25-a29e-45ad-8404-414211bf781f",
+        "hostname": "docker-fleet-agent",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "7.16.0"
     },
     "data_stream": {
         "dataset": "mimecast.siem_logs",
@@ -307,17 +312,19 @@ An example event for `siem` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "15e6751a-71c9-4027-995c-58dcd862c21d",
-        "snapshot": false,
-        "version": "8.0.0"
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "email": {
-        "direction": "Internal",
+        "direction": "internal",
         "from": {
-            "address": "johndoe@example.com"
+            "address": [
+                "johndoe@example.com"
+            ]
         },
         "local_id": "fjihpfEgM_iRwemxhe3t_w",
         "to": {
@@ -328,7 +335,7 @@ An example event for `siem` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-12T12:15:46+0000",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2022-02-24T09:22:06Z",
+        "ingested": "2022-04-21T08:25:02Z",
         "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
         "outcome": "unknown"
     },
@@ -460,7 +467,19 @@ An example event for `siem` looks as following:
 | mimecast.msgid | The internet message id of the email. | keyword |
 | mimecast.urlCategory | The category of the URL that was clicked. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
+| source.as.asn | Client ASN number. | long |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.as.organization_name | Client Organization name. | keyword |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
@@ -481,12 +500,12 @@ An example event for `ttp_ip` looks as following:
 {
     "@timestamp": "2021-11-12T15:27:04.000Z",
     "agent": {
-        "ephemeral_id": "c3429d44-3582-45ff-9a45-240e99753ecc",
+        "ephemeral_id": "923dd3fb-0685-4b8f-9f21-90fc828587b1",
         "hostname": "docker-fleet-agent",
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_ip_logs",
@@ -494,21 +513,25 @@ An example event for `ttp_ip` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "email": {
         "from": {
-            "address": "johndoe@example.com"
+            "address": [
+                "johndoe@example.com"
+            ]
         },
         "message_id": "\u003cMN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\u003e",
         "subject": "Don't read, just fill out!",
         "to": {
-            "address": "johndoe@example.com"
+            "address": [
+                "johndoe@example.com"
+            ]
         }
     },
     "event": {
@@ -517,7 +540,7 @@ An example event for `ttp_ip` looks as following:
         "created": "2021-11-12T15:27:04+0000",
         "dataset": "mimecast.ttp_ip_logs",
         "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8",
-        "ingested": "2022-02-22T15:37:59Z",
+        "ingested": "2022-04-21T08:28:03Z",
         "original": "{\"action\":\"none\",\"definition\":\"IP - 1 hit (Tag email)\",\"eventTime\":\"2021-11-12T15:27:04+0000\",\"hits\":1,\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8\",\"identifiers\":[\"internal_user_name\"],\"impersonationResults\":[{\"checkerResult\":\"hit\",\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe \\u003cjohndoe_cdw@example.com\\u003e\",\"stringSimilarToDomain\":\"John Doe\"}],\"messageId\":\"\\u003cMN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\\u003e\",\"recipientAddress\":\"johndoe@example.com\",\"senderAddress\":\"johndoe@example.com\",\"senderIpAddress\":\"8.8.8.8\",\"subject\":\"Don't read, just fill out!\",\"taggedExternal\":false,\"taggedMalicious\":true}"
     },
     "input": {
@@ -643,12 +666,12 @@ An example event for `ttp_ap` looks as following:
 {
     "@timestamp": "2021-11-24T11:54:27.000Z",
     "agent": {
-        "ephemeral_id": "04477e86-6c35-45fb-84c1-3369e6841252",
+        "ephemeral_id": "51899d24-0340-41eb-b0aa-1e2e9def2460",
         "hostname": "docker-fleet-agent",
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_ap_logs",
@@ -656,12 +679,12 @@ An example event for `ttp_ap` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "email": {
         "attachments": {
@@ -674,12 +697,16 @@ An example event for `ttp_ap` looks as following:
         },
         "direction": "inbound",
         "from": {
-            "address": "\u003c\u003e"
+            "address": [
+                "\u003c\u003e"
+            ]
         },
         "message_id": "\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\u003e",
         "subject": "Test Files",
         "to": {
-            "address": "johndoe@emample.com"
+            "address": [
+                "johndoe@emample.com"
+            ]
         }
     },
     "event": {
@@ -687,7 +714,7 @@ An example event for `ttp_ap` looks as following:
         "agent_id_status": "verified",
         "created": "2021-11-24T11:54:27+0000",
         "dataset": "mimecast.ttp_ap_logs",
-        "ingested": "2022-02-22T15:37:02Z",
+        "ingested": "2022-04-21T08:27:16Z",
         "original": "{\"actionTriggered\":\"user release, none\",\"date\":\"2021-11-24T11:54:27+0000\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\",\"details\":\"Safe                                              \\r\\nTime taken: 0 hrs, 0 min, 7 sec\",\"fileHash\":\"cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254\",\"fileName\":\"Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf\",\"fileType\":\"application/pdf\",\"messageId\":\"\\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\\u003e\",\"recipientAddress\":\"johndoe@emample.com\",\"result\":\"safe\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Test Files\"}"
     },
     "input": {
@@ -796,12 +823,12 @@ An example event for `ttp_url` looks as following:
 {
     "@timestamp": "2021-11-10T03:49:53.000Z",
     "agent": {
-        "ephemeral_id": "32e43233-fc59-4b6d-97c4-bc2d0647f8a0",
+        "ephemeral_id": "e183b143-0352-44a0-a59f-5a9288714e8b",
         "hostname": "docker-fleet-agent",
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_url_logs",
@@ -809,27 +836,34 @@ An example event for `ttp_url` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "email": {
         "direction": "inbound",
         "from": {
-            "address": "googlealerts-noreply@google.com"
+            "address": [
+                "googlealerts-noreply@google.com"
+            ]
         },
         "message_id": "\u003c000000000000a02a0a05d0671c06@google.com\u003e",
-        "subject": "Google Alert - china"
+        "subject": "Google Alert - china",
+        "to": {
+            "address": [
+                "johndoe@example.com"
+            ]
+        }
     },
     "event": {
         "action": "Continue",
         "agent_id_status": "verified",
         "created": "2021-11-10T03:49:53+0000",
         "dataset": "mimecast.ttp_url_logs",
-        "ingested": "2022-02-22T15:38:37Z",
+        "ingested": "2022-04-21T08:28:44Z",
         "original": "{\"action\":\"allow\",\"actions\":\"Allow\",\"adminOverride\":\"N/A\",\"category\":\"Search Engines \\u0026 Portals\",\"creationMethod\":\"User Click\",\"date\":\"2021-11-10T03:49:53+0000\",\"emailPartsDescription\":[\"Body\"],\"fromUserEmailAddress\":\"googlealerts-noreply@google.com\",\"messageId\":\"\\u003c000000000000a02a0a05d0671c06@google.com\\u003e\",\"route\":\"inbound\",\"scanResult\":\"clean\",\"sendingIp\":\"8.8.8.8\",\"subject\":\"Google Alert - china\",\"ttpDefinition\":\"Inbound URL 'Aggressive'\",\"url\":\"https://www.google.co.za/alerts/share?hl=en\\u0026gl=US\\u0026ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224\\u0026ss=tw\\u0026rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ\\u0026cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw\\u0026ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg\",\"userAwarenessAction\":\"Continue\",\"userEmailAddress\":\"johndoe@example.com\",\"userOverride\":\"None\"}"
     },
     "input": {
@@ -850,10 +884,6 @@ An example event for `ttp_url` looks as following:
     "related": {
         "ip": [
             "8.8.8.8"
-        ],
-        "user": [
-            "johndoe",
-            "johndoe@example.com"
         ]
     },
     "rule": {
@@ -869,11 +899,6 @@ An example event for `ttp_url` looks as following:
     ],
     "url": {
         "original": "https://www.google.co.za/alerts/share?hl=en\u0026gl=US\u0026ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224\u0026ss=tw\u0026rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ\u0026cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw\u0026ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg"
-    },
-    "user": {
-        "domain": "example.com",
-        "email": "johndoe@example.com",
-        "name": "johndoe"
     }
 }
 ```
@@ -906,6 +931,7 @@ An example event for `ttp_url` looks as following:
 | email.message_id.text | Multi-field of `email.message_id`. | text |
 | email.subject | A brief summary of the topic of the message | keyword |
 | email.subject.text | Multi-field of `email.subject`. | text |
+| email.to.address | Stores the from email address to the RFC5322 From - header field. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
@@ -953,10 +979,7 @@ An example event for `ttp_url` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
-| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ### Threat Intel Feed Malware: Customer
@@ -969,12 +992,12 @@ An example event for `threat_intel_malware_customer` looks as following:
 {
     "@timestamp": "2021-11-19T01:28:37.099Z",
     "agent": {
-        "ephemeral_id": "ed2b1a30-7f2d-4dee-a2c1-2d8cf54981ef",
+        "ephemeral_id": "350131de-71cb-4dba-9001-75ff27fc2e0f",
         "hostname": "docker-fleet-agent",
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_customer",
@@ -982,19 +1005,19 @@ An example event for `threat_intel_malware_customer` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-02-22T15:35:42.813Z",
+        "created": "2022-04-21T08:25:44.963Z",
         "dataset": "mimecast.threat_intel_malware_customer",
-        "ingested": "2022-02-22T15:35:43Z",
+        "ingested": "2022-04-21T08:25:45Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
         "type": "indicator"
@@ -1115,12 +1138,12 @@ An example event for `threat_intel_malware_grid` looks as following:
 {
     "@timestamp": "2021-11-19T01:28:37.099Z",
     "agent": {
-        "ephemeral_id": "1cf099da-bb55-4fba-8b4d-d4cc5a3c3c72",
+        "ephemeral_id": "2c512f3d-fe8b-4751-a5a0-df442fcba073",
         "hostname": "docker-fleet-agent",
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "7.16.0"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_grid",
@@ -1128,19 +1151,19 @@ An example event for `threat_intel_malware_grid` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "1e76e2b6-7664-4905-9a0b-11e1d4dc6fa9",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-02-22T15:36:21.369Z",
+        "created": "2022-04-21T08:26:32.512Z",
         "dataset": "mimecast.threat_intel_malware_grid",
-        "ingested": "2022-02-22T15:36:22Z",
+        "ingested": "2022-04-21T08:26:33Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
         "type": "indicator"

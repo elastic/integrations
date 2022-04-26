@@ -17,7 +17,7 @@ ECS fields where applicable and the remaining fields are written under
         - Verify that the state of the NSS Server is healthy.
             - In the ZIA Admin Portal, go to Administration > Nanolog Streaming Service > NSS Servers.
             - In the State column, confirm that the state of the NSS server is healthy.
-            ![NSS server setup image](../../../img/nss_server.png?raw=true)
+            ![NSS server setup image](../img/nss_server.png?raw=true)
     - In the ZIA Admin Portal, add an NSS Feed.
         - Refer to [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds) and select the type of feed you want to configure. The following fields require specific inputs:
             - **SIEM IP Address**: Enter the IP address of the [_Elastic agent_](https://www.elastic.co/guide/en/fleet/current/fleet-overview.html) you’ll be assigning the Zscaler integration to.
@@ -28,7 +28,7 @@ ECS fields where applicable and the remaining fields are written under
                 - **Tunnel**: 9013
                 - **Web**: 9014
             - **Feed Output Type**: Select Custom paste the appropriate response format as follows:
-            ![NSS feeds setup image](../../../img/nss_feeds.png?raw=true)  
+            ![NSS feeds setup image](../img/nss_feeds.png?raw=true)  
 
 3. *Please make sure to use the given response formats.*
 
@@ -120,7 +120,7 @@ Sample Response:
 Default port: _9014_  
 Add characters **"** and **\\** in **feed escape character** while configuring Web Log.  
 
-![Escape feed setup image](../../../img/escape_feed.png?raw=true)  
+![Escape feed setup image](../img/escape_feed.png?raw=true)  
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-web-logs
 
 Zscaler response format:  
@@ -216,7 +216,7 @@ An example event for `alerts` looks as following:
         "port": 9012
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -388,7 +388,7 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -580,7 +580,7 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -799,7 +799,7 @@ An example event for `tunnel` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -1036,7 +1036,7 @@ An example event for `web` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
