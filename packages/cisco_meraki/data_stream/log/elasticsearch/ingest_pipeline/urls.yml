@@ -5,33 +5,49 @@ processors:
     description: Determine the security event type
     field: event.original
     pattern: "%{} urls %{*src}=%{&src} %{*dst}=%{&dst} %{*mac}=%{&mac} request: %{http.request.method} %{url.original}"
-- dissect:
+# src processing
+- grok:
     field: src
-    pattern: "%{_temp.src_ip}:%{sport}"
-- dissect:
-    field: dst
-    pattern: "%{_temp.dst_ip}:%{dport}"
+    patterns:
+      - "^%{IPV4:_temp.src_ip}:%{PORT:sport}$"
+      - "^\\[%{IPV6:_temp.src_ip}\\]:%{PORT:sport}$"
+      - "^%{IPV6NOCOMPRESS:_temp.src_ip}:%{PORT:sport}$"
+      - "^%{IPV6:_temp.src_ip}%{IPV6PORTSEP}%{PORT:sport}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+      IPV6PORTSEP: '(?: port |[p#.])'
+      PORT: '[0-9]+'
 - convert:
     type: ip
     field: _temp.src_ip
     target_field: source.ip
+- convert:
+    type: long
+    field: sport
+    target_field: source.port
     ignore_failure: true
+# dst processing
+- grok:
+    field: dst
+    patterns:
+      - "^%{IPV4:_temp.dst_ip}:%{PORT:dport}$"
+      - "^\\[%{IPV6:_temp.dst_ip}\\]:%{PORT:dport}$"
+      - "^%{IPV6NOCOMPRESS:_temp.dst_ip}:%{PORT:dport}$"
+      - "^%{IPV6:_temp.dst_ip}%{IPV6PORTSEP}%{PORT:dport}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+      IPV6PORTSEP: '(?: port |[p#.])'
+      PORT: '[0-9]+'
 - convert:
     type: ip
     field: _temp.dst_ip
     target_field: destination.ip
     ignore_failure: true
 - convert:
-    field: sport
-    target_field: source.port
     type: long
-    if: ctx?.sport != "0" 
-    ignore_failure: true
-- convert:
     field: dport
     target_field: destination.port
-    type: long
-    if: ctx?.dport != "0" 
+    if: ctx?.dport != "0" && ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change'
     ignore_failure: true
 - gsub:
     field: mac

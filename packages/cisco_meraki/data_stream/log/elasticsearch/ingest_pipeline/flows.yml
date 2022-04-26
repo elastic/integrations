@@ -15,11 +15,29 @@ processors:
     field: event.original
     pattern: "%{} flows %{cisco_meraki.flows.op} %{*src}=%{&src} %{*dst}=%{&dst} %{*mac}=%{&mac} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport}"
     if: ctx._temp.token.startsWith("src=") == false
+- grok:
+    field: src
+    patterns:
+      - "^%{IPV4:src}$"
+      - "^%{IPV6NOCOMPRESS:src}$"
+      - "^%{IPV6:src}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+    if: ctx?.src != null
 - convert:
     type: ip
     field: src
     target_field: source.ip
     ignore_failure: true
+- grok:
+    field: dst
+    patterns:
+      - "^%{IPV4:dst}$"
+      - "^%{IPV6NOCOMPRESS:dst}$"
+      - "^%{IPV6:dst}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+    if: ctx?.dst != null
 - convert:
     type: ip
     field: dst

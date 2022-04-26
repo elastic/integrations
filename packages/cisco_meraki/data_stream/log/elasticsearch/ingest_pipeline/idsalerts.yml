@@ -24,9 +24,18 @@ processors:
 - lowercase:
     field: protocol
     target_field: network.protocol
-- dissect:
+- grok:
     field: src
-    pattern: "%{_temp.src_ip}:%{sport}"
+    patterns:
+      - "^%{IPV4:_temp.src_ip}:%{PORT:sport}$"
+      - "^\\[%{IPV6:_temp.src_ip}\\]:%{PORT:sport}$"
+      - "^%{IPV6NOCOMPRESS:_temp.src_ip}:%{PORT:sport}$"
+      - "^%{IPV6:_temp.src_ip}%{IPV6PORTSEP}%{PORT:sport}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+      IPV6PORTSEP: '(?: port |[p#.])'
+      PORT: '[0-9]+'
+    if: ctx?.src != null
 - convert:
     type: ip
     field: _temp.src_ip

@@ -16,13 +16,15 @@ processors:
     pattern: "%{} ip_flow_end %{*src}=%{&src} %{*dst}=%{&dst} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport} %{*tsi_or_tdi}=%{&tsi_or_tdi} %{*tp}=%{&tp}"
     if: ctx._temp.event_type == 'ip_flow_end' && ctx._temp.token.startsWith("src=") == true
 # source field IP:port handling
-- set:
-    field: source.ip
-    copy_from: translated_src_ip
+- convert:
+    type: ip
+    field: translated_src_ip
+    target_field: source.ip
     if: ctx?.translated_src_ip != null
-- set:
-    field: source.ip
-    copy_from: src
+- convert:
+    type: ip
+    field: src
+    target_field: source.ip
     if: ctx?.translated_src_ip == null && ctx?.src != null
 - convert:
     field: translated_port
@@ -35,13 +37,15 @@ processors:
     type: long
     if: ctx?.translated_src_ip == null && ctx?.sport != null
 # destination field IP:port handling
-- set:
-    field: destination.ip
-    copy_from: translated_dst_ip
+- convert:
+    type: ip
+    field: translated_dst_ip
+    target_field: destination.ip
     if: ctx?.translated_dst_ip != null
-- set:
-    field: destination.ip
-    copy_from: dst
+- convert:
+    type: ip
+    field: dst
+    target_field: destination.ip
     if: ctx?.translated_dst_ip == null && ctx?.dst != null
 - convert:
     field: translated_port
@@ -56,4 +60,3 @@ processors:
 - rename:
     field: protocol
     target_field: network.protocol
-

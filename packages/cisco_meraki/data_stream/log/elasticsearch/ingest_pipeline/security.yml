@@ -99,15 +99,24 @@ processors:
     field: action
     target_field: cisco_meraki.security.action
     if: ctx?.cisco_meraki?.event_subtype == 'security_filtering_file_scanned' || ctx?.cisco_meraki?.event_subtype == 'security_filtering_disposition_change'
-
 # fields common to more than one event type
-- dissect:
+# src processing
+- grok:
     field: src
-    pattern: "%{source.ip}:%{sport}"
-    if: ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change'
-- dissect:
-    field: dst
-    pattern: "%{destination.ip}:%{dport}"
+    patterns:
+      - "^%{IPV4:_temp.src_ip}:%{PORT:sport}$"
+      - "^\\[%{IPV6:_temp.src_ip}\\]:%{PORT:sport}$"
+      - "^%{IPV6NOCOMPRESS:_temp.src_ip}:%{PORT:sport}$"
+      - "^%{IPV6:_temp.src_ip}%{IPV6PORTSEP}%{PORT:sport}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+      IPV6PORTSEP: '(?: port |[p#.])'
+      PORT: '[0-9]+'
+    if: ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change' && ctx?.src != null
+- convert:
+    type: ip
+    field: _temp.src_ip
+    target_field: source.ip
     if: ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change'
 - convert:
     field: sport
@@ -115,6 +124,25 @@ processors:
     type: long
     if: ctx?.sport != "0" && ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change'
     ignore_failure: true
+# dst processing
+- grok:
+    field: dst
+    patterns:
+      - "^%{IPV4:_temp.dst_ip}:%{PORT:dport}$"
+      - "^\\[%{IPV6:_temp.dst_ip}\\]:%{PORT:dport}$"
+      - "^%{IPV6NOCOMPRESS:_temp.dst_ip}:%{PORT:dport}$"
+      - "^%{IPV6:_temp.dst_ip}%{IPV6PORTSEP}%{PORT:dport}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+      IPV6PORTSEP: '(?: port |[p#.])'
+      PORT: '[0-9]+'
+    if: ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change' && ctx?.dst != null
+- convert:
+    type: ip
+    field: _temp.dst_ip
+    target_field: destination.ip
+    ignore_failure: true
+    if: ctx?.cisco_meraki?.event_subtype != 'security_filtering_disposition_change'
 - convert:
     field: dport
     target_field: destination.port

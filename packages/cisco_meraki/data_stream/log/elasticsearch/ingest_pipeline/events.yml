@@ -44,7 +44,7 @@ processors:
     if: ctx?.msgtype.toLowerCase() == "dhcp"
 - dissect:
     field: event.original
-    pattern: "%{} events dhcp lease of ip %{client.ip} from %{} mac %{server.mac} for client mac %{client.mac} %{}"
+    pattern: "%{} events dhcp lease of ip %{_temp.client_ip} from %{} mac %{server.mac} for client mac %{client.mac} %{}"
     if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'lease'
 - dissect:
     field: event.original
@@ -122,10 +122,6 @@ processors:
     value: dhcp
     if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
 - rename:
-    field: cisco_meraki.multiple_dhcp_servers_detected.original_server_ip
-    target_field: server.ip
-    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
-- rename:
     field: cisco_meraki.multiple_dhcp_servers_detected.original_server_mac
     target_field: server.mac
     if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
@@ -134,9 +130,44 @@ processors:
     pattern: '[-:.]'
     replacement: '-'
     if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+# process original_server_ip
+- grok:
+    field: cisco_meraki.multiple_dhcp_servers_detected.original_server_ip
+    patterns:
+      - "^%{IPV4:cisco_meraki.multiple_dhcp_servers_detected.original_server_ip}$"
+      - "^%{IPV6NOCOMPRESS:cisco_meraki.multiple_dhcp_servers_detected.original_server_ip}$"
+      - "^%{IPV6:cisco_meraki.multiple_dhcp_servers_detected.original_server_ip}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+    ignore_failure: true
+- convert:
+    type: ip
+    field: cisco_meraki.multiple_dhcp_servers_detected.original_server_ip
+    target_field: server.ip
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+    ignore_failure: true
+# cleanup only if the conversion was successful
+- remove:
+    field: cisco_meraki.multiple_dhcp_servers_detected.original_server_ip
+    if: ctx?.server?.ip != null
 - append:
     field: related.ip
     value: "{{{server.ip}}}"
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+# process server_ip (the other dhcp server ip)
+- grok:
+    field: cisco_meraki.multiple_dhcp_servers_detected.server_ip
+    patterns:
+      - "^%{IPV4:cisco_meraki.multiple_dhcp_servers_detected.server_ip}$"
+      - "^%{IPV6NOCOMPRESS:cisco_meraki.multiple_dhcp_servers_detected.server_ip}$"
+      - "^%{IPV6:cisco_meraki.multiple_dhcp_servers_detected.server_ip}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
+- convert:
+    type: ip
+    field: cisco_meraki.multiple_dhcp_servers_detected.server_ip
     if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
 - append:
     field: related.ip
@@ -155,5 +186,26 @@ processors:
 ####################################################
 - dissect:
     field: event.original
-    pattern: "%{} events client_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} connected from %{client.ip}"
+    pattern: "%{} events client_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} connected from %{_temp.client_ip}"
     if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
+
+####################################################
+# parse dissected IP values and convert to IP type
+# common case for DHCP lease and client_vpn_connect
+####################################################
+- grok:
+    field: _temp.client_ip
+    patterns:
+      - "^%{IPV4:_temp.client_ip}$"
+      - "^%{IPV6NOCOMPRESS:_temp.client_ip}$"
+      - "^%{IPV6:_temp.client_ip}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+    if: ctx?._temp?.client_ip != null
+    ignore_failure: true
+- convert:
+    type: ip
+    field: _temp.client_ip
+    target_field: client.ip
+    if: ctx?._temp?.client_ip != null
+    ignore_failure: true
