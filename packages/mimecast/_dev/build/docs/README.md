@@ -8,8 +8,8 @@ Authorization parameters for the Mimecast API (`Application Key`, `Application
 ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast
 representative for this integration. Under `Advanced options` you can set the
 time interval between two API requests as well as the API URL. A Mimecast
-representative should also be able to give you with this information in case you
-need to change the defaults.
+representative should also be able to give you this information in case you need
+to change the defaults.
 
 Note that rate limit quotas may require you to set up different credentials for
 the different available log types.
