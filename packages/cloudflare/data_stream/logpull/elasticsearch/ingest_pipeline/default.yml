@@ -16,6 +16,11 @@ processors:
 - set:
     field: observer.type
     value: proxy
+- fingerprint:
+    fields: 
+        - event.original
+    target_field: "_id"
+    ignore_missing: true
 - pipeline:
     name: '{{ IngestPipeline "http" }}'
     if: "ctx.json?.EdgeRequestHost != null"
