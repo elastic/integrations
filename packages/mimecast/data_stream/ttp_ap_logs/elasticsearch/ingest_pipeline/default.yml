@@ -1,7 +1,7 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Mimecast ttp_ap_logs.
 processors:
-  # Generic event/ecs fields we always want to populated
+  # Generic event/ecs fields we always want to populate.
   - set:
       field: ecs.version
       value: "8.2.0"
@@ -82,9 +82,9 @@ processors:
       if: 'ctx?.mimecast?.definition !=null'
   - rename:
       field: mimecast.fileHash
-      target_field: email.attachments.hash
+      target_field: email.attachments.file.hash.sha256
       ignore_missing: true
-      if: 'ctx?.mimecast?.fileHash !=null'
+      if: 'ctx.mimecast?.fileHash != null && ctx.mimecast.fileHash.length() == 64'
   - rename:
       field: mimecast.fileType
       target_field: email.attachments.file.mime_type
@@ -106,9 +106,9 @@ processors:
       if: 'ctx?.file?.parts !=null && ctx?.file?.parts.length > 1'
   - append:
       field: related.hash
-      value: "{{email.attachments.hash}}"
+      value: "{{{email.attachments.file.hash.sha256}}}"
       allow_duplicates: false
-      if: 'ctx?.email?.attachments?.hash !=null'
+      if: ctx.email?.attachments?.file?.hash?.sha256 != null
   - lowercase:
       field: email.direction
       ignore_missing: true
