@@ -26,8 +26,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2020-09-06T12:07:55.32Z",
     "agent": {
-        "ephemeral_id": "73d632b1-bafb-4800-b431-b8180297db7d",
-        "id": "b4a8802d-e9ee-4bd6-9364-9d68f840d4e0",
+        "ephemeral_id": "1ebfd048-e749-4ff2-96be-5b4aeb0f86e3",
+        "id": "a7b26a39-38e4-4f22-91d4-c27b8a1f18b2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -44,7 +44,7 @@ An example event for `log` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "b4a8802d-e9ee-4bd6-9364-9d68f840d4e0",
+        "id": "a7b26a39-38e4-4f22-91d4-c27b8a1f18b2",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -59,7 +59,7 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-09-06T12:04:00Z",
         "id": "faf8edc936-85f8-a603-b800-08d8525cf099",
-        "ingested": "2022-03-22T08:22:25Z",
+        "ingested": "2022-04-26T07:37:34Z",
         "kind": "alert",
         "provider": "OfficeATP",
         "severity": 1,
