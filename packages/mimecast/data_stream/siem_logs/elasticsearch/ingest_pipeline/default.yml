@@ -65,10 +65,12 @@ processors:
   - append:
       field: email.to.address
       value: "{{{mimecast.Rcpt}}}"
+      allow_duplicates: false
       if: "ctx?.mimecast?.Rcpt != null"
   - append:
       field: email.from.address
       value: '{{{mimecast.headerFrom}}}'
+      allow_duplicates: false
       if: ctx.mimecast?.headerFrom != null
   - rename:
       field: mimecast.RejCode
@@ -88,6 +90,7 @@ processors:
   - append:
       field: email.from.address
       value: "{{{mimecast.Sender}}}"
+      allow_duplicates: false
       if: "ctx?.mimecast?.Sender != null"
   - rename:
       field: mimecast.Subject
@@ -232,6 +235,7 @@ processors:
   - append:
       field: email.from.address
       value: "{{{mimecast.sender}}}"
+      allow_duplicates: false
       if: "ctx?.mimecast?.sender != null"
   - rename:
       field: mimecast.senderDomain
