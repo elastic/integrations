@@ -2,7 +2,7 @@
 
 This is an integration to parse certain logs from PFsense and OPNsense firewalls. It parses logs
 received over the network via syslog (UDP/TCP/TLS). pfSense natively only supports UDP. OPNsense supports all 3 transports.
-Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, and PHP-FPM (Authentication) logs.  All other events will be dropped.
+Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, Squid, and PHP-FPM (Authentication) logs.  All other events will be dropped.
 The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration.  Install the HAPrxoy integration assets to utilize them.
 
 **pfSense Setup**  
@@ -11,7 +11,7 @@ The HAProxy logs are setup to be compatible with the dashboards from the HAProxy
 3. (Optional) Select a specific interface to use for forwarding
 4. Input the agent IP address and port as set via the integration config into the field _Remote log servers_ (e.g. 192.168.100.50:5140)
 5. Under _Remote Syslog Contents_ select what logs to forward to the agent
-   * Select _Everything_ to forward all logs to the agent or select the individual services to forward. Any log entry not in the list above will be dropped. This will cause additional data to be sent to the agent and Elasticsearch. The firewall, VPN, DHCP, DNS, and Authentication (PHP-FPM) logs are able to be individually selected. In order to collect HAProxy or other "package" logs, the _Everything_ option must be selected.
+   * Select _Everything_ to forward all logs to the agent or select the individual services to forward. Any log entry not in the list above will be dropped. This will cause additional data to be sent to the agent and Elasticsearch. The firewall, VPN, DHCP, DNS, and Authentication (PHP-FPM) logs are able to be individually selected. In order to collect HAProxy and Squid or other "package" logs, the _Everything_ option must be selected.
 
 **OPNsense Setup**
 1. Navigate to _System -> Settings -> Logging/Targets_
@@ -302,6 +302,7 @@ An example event for `log` looks as following:
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
+| http.response.mime_type | Mime type of the body of the response. This value must only be populated based on the content of the response body, not on the `Content-Type` header. Comparing the mime type of a response with the response's Content-Type header can be helpful in detecting misconfigured servers. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | input.type | Type of Filebeat input. | keyword |
@@ -326,13 +327,13 @@ An example event for `log` looks as following:
 | pfsense.dhcp.hostname | Hostname of DHCP client | keyword |
 | pfsense.icmp.code | ICMP code. | long |
 | pfsense.icmp.destination.ip | Original destination address of the connection that caused this notification | ip |
-| pfsense.icmp.id | ICMP ID. | long |
+| pfsense.icmp.id | ID of the echo request/reply | long |
 | pfsense.icmp.mtu | MTU to use for subsequent data to this destination | long |
 | pfsense.icmp.otime | Originate Timestamp | date |
 | pfsense.icmp.parameter | ICMP parameter. | long |
 | pfsense.icmp.redirect | ICMP redirect address. | ip |
 | pfsense.icmp.rtime | Receive Timestamp | date |
-| pfsense.icmp.seq | ICMP sequence number. | long |
+| pfsense.icmp.seq | Sequence number of the echo request/reply | long |
 | pfsense.icmp.ttime | Transmit Timestamp | date |
 | pfsense.icmp.type | ICMP type. | keyword |
 | pfsense.icmp.unreachable.iana_number | Protocol ID number that was unreachable | long |
@@ -386,6 +387,8 @@ An example event for `log` looks as following:
 | source.user.full_name | User's full name, if available. | keyword |
 | source.user.full_name.text | Multi-field of `source.user.full_name`. | match_only_text |
 | source.user.id | Unique identifier of the user. | keyword |
+| squid.hierarchy_status | The proxy hierarchy route; the route Content Gateway used to retrieve the object. | keyword |
+| squid.request_status | The cache result code; how the cache responded to the request: HIT, MISS, and so on. Cache result codes are described [here](https://www.websense.com/content/support/library/web/v773/wcg_help/cachrslt.aspx#596301). | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |

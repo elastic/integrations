@@ -2,7 +2,7 @@
 
 This is an integration to parse certain logs from PFsense and OPNsense firewalls. It parses logs
 received over the network via syslog (UDP/TCP/TLS). pfSense natively only supports UDP. OPNsense supports all 3 transports.
-Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, and PHP-FPM (Authentication) logs.  All other events will be dropped.
+Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, Squid, and PHP-FPM (Authentication) logs.  All other events will be dropped.
 The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration.  Install the HAPrxoy integration assets to utilize them.
 
 **pfSense Setup**  
@@ -11,7 +11,7 @@ The HAProxy logs are setup to be compatible with the dashboards from the HAProxy
 3. (Optional) Select a specific interface to use for forwarding
 4. Input the agent IP address and port as set via the integration config into the field _Remote log servers_ (e.g. 192.168.100.50:5140)
 5. Under _Remote Syslog Contents_ select what logs to forward to the agent
-   * Select _Everything_ to forward all logs to the agent or select the individual services to forward. Any log entry not in the list above will be dropped. This will cause additional data to be sent to the agent and Elasticsearch. The firewall, VPN, DHCP, DNS, and Authentication (PHP-FPM) logs are able to be individually selected. In order to collect HAProxy or other "package" logs, the _Everything_ option must be selected.
+   * Select _Everything_ to forward all logs to the agent or select the individual services to forward. Any log entry not in the list above will be dropped. This will cause additional data to be sent to the agent and Elasticsearch. The firewall, VPN, DHCP, DNS, and Authentication (PHP-FPM) logs are able to be individually selected. In order to collect HAProxy and Squid or other "package" logs, the _Everything_ option must be selected.
 
 **OPNsense Setup**
 1. Navigate to _System -> Settings -> Logging/Targets_
