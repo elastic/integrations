@@ -862,7 +862,7 @@ An example event for `xg` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "dee3c982-4bd2-4c06-b207-fe0ce9ef19c5",
@@ -982,6 +982,10 @@ An example event for `xg` looks as following:
 | destination.port | Port of the destination. | long |
 | destination.user.email | User email address. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
@@ -1232,7 +1236,7 @@ An example event for `xg` looks as following:
 | sophos.xg.status | Ultimate status of traffic – Allowed or Denied | keyword |
 | sophos.xg.status_code | Status code | keyword |
 | sophos.xg.subject | Email subject | keyword |
-| sophos.xg.syslog_server_name | Syslog server name. | keyword |
+| sophos.xg.syslog_server_name | Syslog server name | keyword |
 | sophos.xg.system_cpu | system | float |
 | sophos.xg.target | Platform of the traffic. | keyword |
 | sophos.xg.temp | Temp | float |
