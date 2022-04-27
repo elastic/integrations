@@ -163,18 +163,23 @@ processors:
         def newparams = new HashMap(); 
         def oldparams = ctx.o365audit.ModifiedProperties;
         for (int i = 0; i < oldparams.length; ++i) {
-          if (oldparams[i]["OldValue"] != null && oldparams[i]["NewValue"] != null) {
+          if (oldparams[i] instanceof Map && oldparams[i]["OldValue"] != null && oldparams[i]["NewValue"] != null) {
             def validname = oldparams[i]["Name"].replace(" ","_").replace(".","_");
             newparams[validname] = new HashMap();
             newparams[validname]["NewValue"] = oldparams[i]["NewValue"];
             newparams[validname]["OldValue"] = oldparams[i]["OldValue"];
           }
+          if (oldparams[i] instanceof String) {
+            def validname = oldparams[i].replace(" ","_").replace(".","_");
+            newparams[validname] = new HashMap();
+          }
         }
-        if (newparams == null) {
+        if (newparams.isEmpty()) {
           ctx.o365audit.remove("ModifiedProperties");
           return;
         }
         ctx.o365audit.ModifiedProperties = newparams;
+
   - rename:
       field: o365audit.ModifiedProperties
       target_field: o365audit.ModifiedProperties._raw
