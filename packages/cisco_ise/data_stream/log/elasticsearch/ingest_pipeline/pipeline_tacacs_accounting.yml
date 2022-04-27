@@ -1,0 +1,245 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: [configuration]
+  - append:
+      field: event.type
+      value: [info]
+  - gsub:
+      field: message
+      pattern: 'AVPair='
+      replacement: 'AVPair.'
+      ignore_missing: true
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number == 0
+      patterns: 
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number > 0
+      patterns: 
+        - "^%{GREEDYDATA:cisco_ise.log.log_details},"
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats: 
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+      timezone: '{{{event.timezone}}}'
+      ignore_failure: true
+  - kv: 
+      field: cisco_ise.log.log_details
+      field_split: ', '
+      value_split: =
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx?.cisco_ise?.log?.message?.description != null
+      source:
+        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+  - convert:
+      field: ConfigVersionId
+      target_field: cisco_ise.log.config_version.id
+      type: long
+      ignore_failure: true
+  - convert:
+      field: Device IP Address
+      target_field: client.ip
+      type: ip 
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}' 
+      if: ctx?.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: CmdSet
+      target_field: cisco_ise.log.cmdset
+      ignore_missing: true
+  - convert:
+      field: RequestLatency
+      target_field: cisco_ise.log.request.latency
+      type: long
+      ignore_failure: true
+  - rename:
+      field: NetworkDeviceName
+      target_field: cisco_ise.log.network.device.name
+      ignore_missing: true
+  - rename:
+      field: Type
+      target_field: cisco_ise.log.type
+      ignore_missing: true
+  - convert:
+      field: Privilege-Level
+      target_field: cisco_ise.log.privilege.level
+      type: long
+      ignore_failure: true
+  - rename:
+      field: Service
+      target_field: cisco_ise.log.service.name
+      ignore_missing: true
+  - rename:
+      field: User
+      target_field: user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: Port
+      target_field: cisco_ise.log.port
+      ignore_missing: true
+  - convert:
+      field: Remote-Address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx?.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: Authen-Method
+      target_field: cisco_ise.log.authen_method
+      ignore_missing: true
+  - convert:
+      field: AVPair.task_id
+      target_field: cisco_ise.log.avpair.task_id
+      type: long
+      ignore_missing: true
+  - rename:
+      field: AVPair.timezone
+      target_field: cisco_ise.log.avpair.timezone
+      ignore_missing: true
+  - date: 
+      field: AVPair.start_time
+      target_field: cisco_ise.log.avpair.start_time
+      if: ctx?.AVPair?.start_time != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - convert:
+      field: AVPair.priv-lvl
+      target_field: cisco_ise.log.avpair.priv_lvl
+      type: long
+      ignore_failure: true
+  - convert:
+      field: AVPair.disc-cause
+      target_field: cisco_ise.log.avpair.disc.cause
+      type: long
+      ignore_failure: true
+  - convert:
+      field: AVPair.disc-cause-ext
+      target_field: cisco_ise.log.avpair.disc.cause_ext
+      type: long
+      ignore_failure: true
+  - convert:
+      field: AVPair.pre-session-time
+      target_field: cisco_ise.log.avpair.pre_session_time
+      type: long
+      ignore_failure: true
+  - convert:
+      field: AVPair.elapsed_time
+      target_field: cisco_ise.log.avpair.elapsed_time
+      type: long
+      ignore_failure: true
+  - date: 
+      field: AVPair.stop_time
+      target_field: cisco_ise.log.avpair.stop_time
+      if: ctx?.cisco_ise?.log?.avPair?.stop_time != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - rename:
+      field: AcctRequest-Flags
+      target_field: cisco_ise.log.acct.request.flags
+      ignore_missing: true
+  - rename:
+      field: Service-Argument
+      target_field: cisco_ise.log.service.argument
+      ignore_missing: true
+  - rename:
+      field: AcsSessionID
+      target_field: cisco_ise.log.acs.session.id
+      ignore_missing: true
+  - rename:
+      field: SelectedAccessService
+      target_field: cisco_ise.log.selected.access.service
+      ignore_missing: true
+  - rename:
+      field: NetworkDeviceGroups
+      target_field: cisco_ise.log.network.device.groups
+      ignore_missing: true
+  - rename:
+      field: CPMSessionID
+      target_field: cisco_ise.log.cpm.session.id
+      ignore_missing: true
+  - rename:
+      field: Model Name
+      target_field: cisco_ise.log.model.name
+      ignore_missing: true
+  - rename:
+      field: Software Version
+      target_field: cisco_ise.log.software.version
+      ignore_missing: true
+  - rename:
+      field: Network Device Profile
+      target_field: cisco_ise.log.network.device.profile
+      ignore_missing: true
+  - rename:
+      field: Location
+      target_field: cisco_ise.log.location
+      ignore_missing: true
+  - rename:
+      field: Device Type
+      target_field: cisco_ise.log.device.type
+      ignore_missing: true
+  - rename:
+      field: IPSEC
+      target_field: cisco_ise.log.ipsec
+      ignore_missing: true
+  - rename:
+      field: Step
+      target_field: cisco_ise.log.step
+      ignore_missing: true
+  - dissect:
+      field: Response
+      pattern: "{%{_tmp.response}}"
+      ignore_failure: true
+  - kv:
+      field: _tmp.response
+      target_field: cisco_ise.log.response
+      field_split: '; '
+      value_split: =
+      ignore_failure: true
+  - remove:
+      field:
+        - _tmp
+        - ConfigVersionId
+        - Device IP Address
+        - Remote-Address
+        - Response
+        - RequestLatency
+        - Privilege-Level
+        - cisco_ise.log.log_details
+        - AVPair.start_time
+        - AVPair.priv-lvl
+        - AVPair.disc-cause
+        - AVPair.disc-cause-ext
+        - AVPair.pre-session-time
+        - AVPair.elapsed_time
+        - AVPair.stop_time
+        - AVPair.task_id
+        - AVPair
+      ignore_missing: true
