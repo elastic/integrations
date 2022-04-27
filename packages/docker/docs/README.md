@@ -939,8 +939,8 @@ The Docker `network` data stream collects network metrics.
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
-| container.network.egress.bytes | ECS container field for network outbound bytes | long |  |
-| container.network.ingress.bytes | ECS container field for network inbound bytes | long |  |
+| container.network.egress.bytes | Total number of outgoing bytes. | long | counter |
+| container.network.ingress.bytes | Total number of incoming bytes. | long | counter |
 | container.runtime | Runtime managing this container. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
