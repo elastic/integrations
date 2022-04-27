@@ -1,0 +1,72 @@
+---
+description: Pipeline for Cisco Meraki flows message type
+processors:
+- dissect:
+    description: Determine if the token is src= or operation
+    field: event.original
+    pattern: "%{} %{} %{} %{} %{_temp.token} %{}"
+- dissect:
+    description: Case for src= follows flows keyword
+    field: event.original
+    pattern: "%{} flows %{*src}=%{&src} %{*dst}=%{&dst} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport} %{}"
+    if: ctx._temp.token.startsWith("src=") == true
+- dissect:
+    description: Case for firewall action prepends src=
+    field: event.original
+    pattern: "%{} flows %{cisco_meraki.flows.op} %{*src}=%{&src} %{*dst}=%{&dst} %{*mac}=%{&mac} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport}"
+    if: ctx._temp.token.startsWith("src=") == false
+- grok:
+    field: src
+    patterns:
+      - "^%{IPV4:src}$"
+      - "^%{IPV6:src}$"
+    if: ctx?.src != null
+- convert:
+    type: ip
+    field: src
+    target_field: source.ip
+    ignore_failure: true
+- grok:
+    field: dst
+    patterns:
+      - "^%{IPV4:dst}$"
+      - "^%{IPV6:dst}$"
+    if: ctx?.dst != null
+- convert:
+    type: ip
+    field: dst
+    target_field: destination.ip
+    ignore_failure: true
+- rename:
+    field: protocol
+    target_field: network.protocol
+- convert:
+    field: sport
+    target_field: source.port
+    type: long
+    if: ctx?.sport != "0"
+    ignore_failure: true
+- convert:
+    field: dport
+    target_field: destination.port
+    type: long
+    if: ctx?.dport != "0"
+    ignore_failure: true
+- gsub:
+    field: mac
+    target_field: source.mac
+    pattern: '[-:.]'
+    replacement: '-'
+    if: ctx._temp.token.startsWith("src=") == false
+- set:
+    field: cisco_meraki.event_subtype
+    value: "ip_session_initiated"
+    if: ctx._temp.token.startsWith("src=") == true
+- set:
+    field: cisco_meraki.event_subtype
+    value: "flow_allowed"
+    if: ctx._temp.token.startsWith("src=") == false && ctx?.cisco_meraki?.flows?.op == 'allow'
+- set:
+    field: cisco_meraki.event_subtype
+    value: "flow_denied"
+    if: ctx._temp.token.startsWith("src=") == false && ctx?.cisco_meraki?.flows?.op == 'deny'
