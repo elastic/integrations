@@ -1,0 +1,327 @@
+---
+description: Pipeline for JAMF Compliance Reporter audit logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.2.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - convert:
+      field: json._event_score
+      target_field: jamf_compliance_reporter.event_score
+      type: long
+      ignore_failure: true
+  - convert:
+      field: json.header.event_id
+      target_field: event.id
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.header.event_modifier
+      target_field: jamf_compliance_reporter.audit.header.event_modifier
+      type: string
+      ignore_failure: true
+  - rename:
+      field: json.header.event_name
+      target_field: jamf_compliance_reporter.header.event_name
+      ignore_missing: true
+  - convert:
+      field: json.header.time_milliseconds_offset
+      target_field: jamf_compliance_reporter.audit.header.time_milliseconds_offset
+      type: long
+      ignore_failure: true
+  - date: 
+      field: json.header.time_seconds_epoch
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - convert:
+      field: json.header.version
+      target_field: jamf_compliance_reporter.audit.header.version
+      type: string
+      ignore_failure: true
+  - rename:
+      field: json.host_info.host_name
+      target_field: host.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx?.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.host_info.host_uuid
+      target_field: host.id
+      ignore_missing: true
+  - rename:
+      field: json.host_info.osversion
+      target_field: host.os.version
+      ignore_missing: true
+  - rename:
+      field: json.host_info.primary_mac_address
+      target_field: host.mac
+      ignore_missing: true
+  - gsub:
+      field: host.mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - rename:
+      field: json.host_info.serial_number
+      target_field: jamf_compliance_reporter.host_info.serial_number
+      ignore_missing: true
+  - rename:
+      field: json.return.description
+      target_field: jamf_compliance_reporter.audit.return.description
+      ignore_missing: true
+  - convert:
+      field: json.return.error
+      target_field: error.code
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.return.return_value
+      target_field: jamf_compliance_reporter.audit.return.value
+      type: long
+      ignore_failure: true
+  - convert:
+      field: json.subject.audit_id
+      target_field: jamf_compliance_reporter.audit.subject.audit.id
+      type: string
+      ignore_failure: true
+  - rename:
+      field: json.subject.audit_user_name
+      target_field: jamf_compliance_reporter.audit.subject.audit.user.name
+      ignore_missing: true
+  - convert:
+      field: json.subject.effective_group_id
+      target_field: jamf_compliance_reporter.audit.subject.effective.group.id
+      type: string
+      ignore_failure: true
+  - rename:
+      field: json.subject.effective_group_name
+      target_field: jamf_compliance_reporter.audit.subject.effective.group.name
+      ignore_missing: true
+  - convert:
+      field: json.subject.effective_user_id
+      target_field: jamf_compliance_reporter.audit.subject.effective.user.id
+      type: string
+      ignore_failure: true
+  - append:
+      field: user.name
+      value: '{{{json.subject.effective_user_name}}}'
+      if: ctx?.json?.subject?.effective_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{json.subject.effective_user_name}}}'
+      if: ctx?.json?.subject?.effective_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.subject.effective_user_name
+      target_field: jamf_compliance_reporter.audit.effective.user.name
+      ignore_missing: true
+  - convert:
+      field: json.subject.group_id
+      target_field: group.id
+      type: string
+      ignore_failure: true
+  - rename:
+      field: json.subject.group_name
+      target_field: group.name
+      ignore_missing: true
+  - rename:
+      field: json.subject.process_hash
+      target_field: process.hash.sha1
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{process.hash.sha1}}}'
+      if: ctx?.process?.hash?.sha1 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.subject.process_id
+      target_field: process.pid
+      type: long
+      ignore_failure: true
+  - rename:
+      field: json.subject.process_name
+      target_field: process.name
+      ignore_missing: true
+  - convert:
+      field: json.subject.session_id
+      target_field: jamf_compliance_reporter.audit.subject.session_id
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.subject.terminal_id.addr
+      target_field: jamf_compliance_reporter.audit.subject.terminal_id.addr
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.subject.terminal_id.ip_address
+      target_field: jamf_compliance_reporter.audit.subject.terminal_id.ip_address
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{jamf_compliance_reporter.audit.subject.terminal_id.ip_address}}}'
+      if: ctx?.jamf_compliance_reporter?.audit?.subject?.terminal_id?.ip_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.subject.terminal_id.port
+      target_field: jamf_compliance_reporter.audit.subject.terminal_id.port
+      type: long
+      ignore_failure: true
+  - convert:
+      field: json.subject.terminal_id.type
+      target_field: jamf_compliance_reporter.audit.subject.terminal_id.type
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.subject.user_id
+      target_field: user.id
+      type: string
+      ignore_failure: true
+  - append:
+      field: user.name
+      value: '{{{json.subject.user_name}}}'
+      if: ctx?.json?.subject?.user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{json.subject.user_name}}}'
+      if: ctx?.json?.subject?.user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [authentication]
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_accept" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_ACCEPT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_auth" }}'
+      if: '["AUE_auth_user", "AUE_ssauthorize", "AUE_ssauthmech"].contains(ctx?.jamf_compliance_reporter?.header?.event_name)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_bind_and_aue_connect" }}'
+      if: '["AUE_BIND", "AUE_CONNECT"].contains(ctx?.jamf_compliance_reporter?.header?.event_name)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_chdir" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_CHDIR'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_chroot" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_CHROOT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_execve" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_EXECVE'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_exit" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_EXIT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_kill" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_KILL'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_mount" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_MOUNT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_posix_spawn" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_POSIX_SPAWN'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_remove_from_group_and_aue_mac_set_proc" }}'
+      if: '["AUE_remove_from_group", "AUE_MAC_SET_PROC"].contains(ctx?.jamf_compliance_reporter?.header?.event_name)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_session" }}'
+      if: '["AUE_SESSION_END", "AUE_SESSION_UPDATE", "AUE_SESSION_CLOSE", "AUE_SESSION_START"].contains(ctx?.jamf_compliance_reporter?.header?.event_name)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_arguments" }}'
+      if: '["AUE_SETSOCKOPT", "AUE_SHUTDOWN"].contains(ctx?.jamf_compliance_reporter?.header?.event_name)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_ssauthint" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_ssauthint'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_tasknameforpid" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_TASKNAMEFORPID'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_unmount" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_UNMOUNT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_fork" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_FORK'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
+      if: '["AUE_GETAUID", "AUE_lw_login", "AUE_SETTIMEOFDAY"].contains(ctx?.jamf_compliance_reporter?.header?.event_name)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_listen" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_LISTEN'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_logout" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_logout'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_pidfortask" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_PIDFORTASK'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_ptrace" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_PTRACE'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_setpriority" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_SETPRIORITY'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_socketpair" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_SOCKETPAIR'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_taskforpid" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_TASKFORPID'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_aue_wait4" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_WAIT4'
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: 
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);  
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

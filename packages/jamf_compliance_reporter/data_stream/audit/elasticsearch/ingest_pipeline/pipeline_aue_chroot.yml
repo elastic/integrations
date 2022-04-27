@@ -1,0 +1,49 @@
+---
+description: Pipeline for JAMF Compliance Reporter aue_chroot audit logs.
+processors:
+  - convert:
+      field: json.attributes.device
+      target_field: jamf_compliance_reporter.audit.attributes.device
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.attributes.file_access_mode
+      target_field: jamf_compliance_reporter.audit.attributes.file.access_mode
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.attributes.file_system_id
+      target_field: jamf_compliance_reporter.audit.attributes.file.system.id
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.attributes.node_id
+      target_field: jamf_compliance_reporter.audit.attributes.node.id
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.attributes.owner_group_id
+      target_field: jamf_compliance_reporter.audit.attributes.owner.group.id
+      type: string
+      ignore_failure: true
+  - rename:
+      field: json.attributes.owner_group_name
+      target_field: jamf_compliance_reporter.audit.attributes.owner.group.name
+      ignore_missing: true
+  - convert:
+      field: json.attributes.owner_user_id
+      target_field: jamf_compliance_reporter.audit.attributes.owner.user.id
+      type: string
+      ignore_failure: true
+  - rename:
+      field: json.attributes.owner_user_name
+      target_field: jamf_compliance_reporter.audit.attributes.owner.user.name
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
+  - rename:
+      field: json.path
+      target_field: jamf_compliance_reporter.audit.path
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'

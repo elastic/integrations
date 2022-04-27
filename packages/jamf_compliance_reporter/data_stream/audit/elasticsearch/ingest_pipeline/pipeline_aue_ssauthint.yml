@@ -1,0 +1,21 @@
+---
+description: Pipeline for JAMF Compliance Reporter aue_ssauthint audit logs.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
+  - rename:
+      field: json.texts
+      target_field: jamf_compliance_reporter.audit.texts
+      ignore_missing: true
+  - convert:
+      field: json.arguments.known_UID_
+      target_field: jamf_compliance_reporter.audit.arguments.known_uid
+      type: string
+      ignore_failure: true
+  - remove:
+      field: json.arguments.known_UID_
+      ignore_missing: true
+  - rename:
+      field: json.arguments
+      target_field: jamf_compliance_reporter.audit.arguments.flattened
+      ignore_missing: true

@@ -1,0 +1,34 @@
+---
+description: Pipeline for JAMF Compliance Reporter aue_posix_spawn audit logs.
+processors:
+  - convert:
+      field: json.arguments.child_PID
+      target_field: jamf_compliance_reporter.audit.arguments.child.pid
+      type: long
+      ignore_failure: true
+  - rename:
+      field: json.exec_args.args
+      target_field: jamf_compliance_reporter.audit.exec_args.args
+      ignore_missing: true
+  - rename:
+      field: json.exec_args.args_compiled
+      target_field: jamf_compliance_reporter.audit.exec_args.args_compiled
+      ignore_missing: true
+  - rename:
+      field: json.exec_env.env.XPC_FLAGS
+      target_field: jamf_compliance_reporter.audit.exec_env.env.xpc_flags
+      ignore_missing: true
+  - rename:
+      field: json.exec_env.env_compiled
+      target_field: jamf_compliance_reporter.audit.exec_env.env.compiled
+      ignore_missing: true
+  - rename:
+      field: json.path
+      target_field: jamf_compliance_reporter.audit.path
+      ignore_missing: true
+  - rename:
+      field: json.exec_chain_parent.uuid
+      target_field: jamf_compliance_reporter.audit.exec_chain_parent.uuid
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'

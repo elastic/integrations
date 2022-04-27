@@ -1,0 +1,150 @@
+---
+description: Pipeline for JAMF Compliance Reporter event logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.2.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [process]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.type
+      value: [info]
+      if: '!["UNIFIED_LOG_EVENT","XPROTECT_EVENT_LOG"].contains(ctx.json.header.event_name)'
+  - convert:
+      field: json._event_score
+      target_field: jamf_compliance_reporter.event_score
+      type: long
+      ignore_failure: true
+  - rename:
+      field: json.header.event_name
+      target_field: jamf_compliance_reporter.header.event_name
+      ignore_missing: true
+  - date:
+      field: json.header.time_seconds_epoch
+      target_field: '@timestamp'
+      if: ctx?.json?.header?.time_seconds_epoch != 0
+      ignore_failure: true
+      formats:
+        - UNIX
+  - rename:
+      field: json.host_info.host_name
+      target_field: host.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx?.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.host_info.host_uuid
+      target_field: host.id
+      ignore_missing: true
+  - rename:
+      field: json.host_info.osversion
+      target_field: host.os.version
+      ignore_missing: true
+  - append:
+      field: host.mac
+      value: '{{{json.host_info.primary_mac_address}}}'
+      if: ctx?.json?.host_info?.primary_mac_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - gsub:
+      field: host.mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - rename:
+      field: json.host_info.serial_number
+      target_field: jamf_compliance_reporter.host_info.serial_number
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_audio_video_device_event" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUDIO_VIDEO_DEVICE_EVENT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_audit_class_verification_event" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUDIT_CLASS_VERIFICATION_EVENT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_compliance_reporter_tamper_event_and_file_event_info" }}'
+      if: '["COMPLIANCEREPORTER_TAMPER_EVENT", "FILE_EVENT"].contains(ctx?.jamf_compliance_reporter?.header?.event_name)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_gatekeeper_info_event" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'GATEKEEPER_INFO_EVENT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_gatekeeper_manual_overrides" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'GATEKEEPER_MANUAL_OVERRIDES'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_gatekeeper_quarantine_log" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'GATEKEEPER_QUARANTINE_LOG'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_hardware_event" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'HARDWARE_EVENT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_license_info_event" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'LICENSE_INFO_EVENT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_preference_list_event" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'PREFERENCE_LIST_EVENT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_print_event_information" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'PRINT_EVENT_INFORMATION'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_prohibited_app_blocked" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'PROHIBITED_APP_BLOCKED'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_signal_event" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'SIGNAL_EVENT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_unified_log_event" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'UNIFIED_LOG_EVENT'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_xprotect_definitions_version_info" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'XPROTECT_DEFINITIONS_VERSION_INFO'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_xprotect_event_log" }}'
+      if: ctx?.jamf_compliance_reporter?.header?.event_name == 'XPROTECT_EVENT_LOG'
+  - remove:
+      field: event.original
+      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: 
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

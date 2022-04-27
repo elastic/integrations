@@ -1,0 +1,41 @@
+---
+description: Pipeline for JAMF Compliance Reporter aue_bind and aue_connect audit logs.
+processors:
+  - convert:
+      field: json.socket_inet.addr
+      target_field: jamf_compliance_reporter.audit.socket.inet.addr
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.arguments.fd
+      target_field: jamf_compliance_reporter.audit.arguments.fd
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.socket_inet.family
+      target_field: jamf_compliance_reporter.audit.socket.inet.family
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.socket_inet.id
+      target_field: jamf_compliance_reporter.audit.socket.inet.id
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.socket_inet.ip_address
+      target_field: jamf_compliance_reporter.audit.socket.inet.ip.address
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{jamf_compliance_reporter.audit.socket.inet.ip.address}}}'
+      if: ctx?.jamf_compliance_reporter?.audit?.socket_inet?.ip?.address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.socket_inet.port
+      target_field: jamf_compliance_reporter.audit.socket.inet.port
+      type: long
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
