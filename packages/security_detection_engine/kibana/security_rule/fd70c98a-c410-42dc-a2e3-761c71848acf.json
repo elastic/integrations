@@ -14,6 +14,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious CertUtil Commands",
+        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
         "query": "process where event.type == \"start\" and\n  (process.name : \"certutil.exe\" or process.pe.original_file_name == \"CertUtil.exe\") and \n  process.args : (\"?decode\", \"?encode\", \"?urlcache\", \"?verifyctl\", \"?encodehex\", \"?decodehex\", \"?exportPFX\")\n",
         "references": [
             "https://twitter.com/Moriarty_Meng/status/984380793383370752",
@@ -50,7 +51,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 10
+        "version": 13
     },
     "id": "fd70c98a-c410-42dc-a2e3-761c71848acf",
     "type": "security-rule"
