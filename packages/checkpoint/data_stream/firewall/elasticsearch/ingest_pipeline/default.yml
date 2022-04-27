@@ -3,7 +3,7 @@ description: Pipeline for parsing checkpoint firewall logs
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.2.0'
   - rename:
       field: message
       target_field: event.original
@@ -172,10 +172,6 @@ processors:
       target_field: source.mac
       ignore_missing: true
   - rename:
-      field: checkpoint.from
-      target_field: source.user.email
-      ignore_missing: true
-  - rename:
       field: checkpoint.src_machine_name
       target_field: source.domain
       ignore_missing: true
@@ -269,9 +265,53 @@ processors:
       value: "{{checkpoint.file_sha256}}"
       if: ctx.checkpoint?.file_sha256 != null
   - rename:
+      field: checkpoint.from
+      target_field: source.user.email
+      ignore_missing: true
+  - rename:
       field: checkpoint.to
       target_field: destination.user.email
       ignore_missing: true
+  - set:
+      field: email.from.address
+      value: ["{{{destination.user.email}}}"]
+      if: "ctx?.destination?.user?.email != null"
+  - set:
+      field: email.to.address
+      value: ["{{{destination.user.email}}}"]
+      if: "ctx?.destination?.user?.email != null"
+  - append:
+      field: email.from.address
+      value: "{{{checkpoint.mime_from}}}"
+      if: "ctx?.checkpoint?.mime_from != null"
+  - append:
+      field: email.to.address
+      value: "{{{checkpoint.mime_to}}}"
+      if: "ctx?.checkpoint?.mime_to != null"
+  - set:
+      field: email.subject
+      copy_from: checkpoint.email_subject
+      if: "ctx?.checkpoint?.email_subject != null"
+  - append:
+      field: email.bcc.address
+      value: "{{{checkpoint.bcc}}}"
+      if: "ctx?.checkpoint?.bcc != null"
+  - append:
+      field: email.cc.address
+      value: "{{{checkpoint.cc}}}"
+      if: "ctx?.checkpoint?.cc != null"
+  - set:
+      field: email.delivery_timestamp
+      copy_from: checkpoint.delivery_time
+      if: "ctx?.checkpoint?.delivery_time != null"
+  - set:
+      field: email.message_id
+      copy_from: checkpoint.email_message_id
+      if: "ctx?.checkpoint?.email_message_id != null"
+  - set:
+      field: email.local_id
+      copy_from: checkpoint.email_queue_id
+      if: "ctx?.checkpoint?.email_queue_id != null"
   - rename:
       field: checkpoint.usercheck_incident_uid
       target_field: destination.user.id
