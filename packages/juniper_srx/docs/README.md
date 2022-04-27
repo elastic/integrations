@@ -576,7 +576,7 @@ The following processes and tags are supported:
 | process.parent.pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
 | process.parent.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | process.parent.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| process.parent.pgid | Identifier of the group of processes the process belongs to. | long |
+| process.parent.pgid | Deprecated for removal in next major version release. This field is superseded by `process.group_leader.pid`. Identifier of the group of processes the process belongs to. | long |
 | process.parent.pid | Process id. | long |
 | process.parent.start | The time the process started. | date |
 | process.parent.thread.id | Thread ID. | long |
@@ -593,7 +593,7 @@ The following processes and tags are supported:
 | process.pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
 | process.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | process.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| process.pgid | Identifier of the group of processes the process belongs to. | long |
+| process.pgid | Deprecated for removal in next major version release. This field is superseded by `process.group_leader.pid`. Identifier of the group of processes the process belongs to. | long |
 | process.pid | Process id. | long |
 | process.start | The time the process started. | date |
 | process.thread.id | Thread ID. | long |
