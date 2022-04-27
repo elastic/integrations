@@ -1,5 +1,7 @@
 # Kibana
 
+The Kibana integration collects events from your [Kibana](https://www.elastic.co/guide/en/kibana/current/introduction.html) instance.
+
 ## Configuration parameters
 
 If the Kibana instance is using a basepath in its URL, you must set the `basepath` setting for this integration with the same value.
@@ -65,7 +67,9 @@ UI in Kibana. To enable this usage, set `xpack.enabled: true` on the package con
 | kibana.space_id | The id of the space associated with this event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 
 
 ## Metrics
