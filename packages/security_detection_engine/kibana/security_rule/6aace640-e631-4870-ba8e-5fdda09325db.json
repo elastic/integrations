@@ -16,6 +16,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Exporting Exchange Mailbox via PowerShell",
+        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
         "query": "process where event.type in (\"start\", \"process_started\") and\n  process.name: (\"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\") and process.args : \"New-MailboxExportRequest*\"\n",
         "references": [
             "https://www.volexity.com/blog/2020/12/14/dark-halo-leverages-solarwinds-compromise-to-breach-organizations/",
@@ -41,6 +42,11 @@
                 },
                 "technique": [
                     {
+                        "id": "T1005",
+                        "name": "Data from Local System",
+                        "reference": "https://attack.mitre.org/techniques/T1005/"
+                    },
+                    {
                         "id": "T1114",
                         "name": "Email Collection",
                         "reference": "https://attack.mitre.org/techniques/T1114/",
@@ -51,18 +57,13 @@
                                 "reference": "https://attack.mitre.org/techniques/T1114/002/"
                             }
                         ]
-                    },
-                    {
-                        "id": "T1005",
-                        "name": "Data from Local System",
-                        "reference": "https://attack.mitre.org/techniques/T1005/"
                     }
                 ]
             }
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 6
+        "version": 7
     },
     "id": "6aace640-e631-4870-ba8e-5fdda09325db",
     "type": "security-rule"
