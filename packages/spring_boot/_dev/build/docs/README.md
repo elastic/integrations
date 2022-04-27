@@ -21,12 +21,54 @@ In order to ingest data from Spring Boot:
 - For access of jolokia add below dependency in `pom.xml` of Spring Boot Application.
 ```
 <dependency>
-	<groupId>org.jolokia</groupId>
-	<artifactId>jolokia-core</artifactId>
+    <groupId>org.jolokia</groupId>
+    <artifactId>jolokia-core</artifactId>
 </dependency>
 ```
 
+## Logs
+
+### Audit Events logs
+
+This is the `audit_events` data stream.
+
+- This data stream exposes audit events information for the current application.
+
+{{event "audit_events"}}
+
+{{fields "audit_events"}}
+
+### HTTP Trace logs
+
+This is the `http_trace` data stream.
+
+- This data stream displays HTTP trace information.
+
+{{event "http_trace"}}
+
+{{fields "http_trace"}}
+
 ## Metrics
+
+### Memory Metrics
+
+This is the `memory` data stream.
+
+- This data stream gives metrics related to heap and non-heap memory, buffer pool and manager.
+
+{{event "memory"}}
+
+{{fields "memory"}}
+
+### Threading Metrics
+
+This is the `threading` data stream.
+
+- This data stream gives metrics related to thread allocations, monitoring and CPU times.
+
+{{event "threading"}}
+
+{{fields "threading"}}
 
 ### GC Metrics
 
