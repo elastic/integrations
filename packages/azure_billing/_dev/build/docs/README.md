@@ -1,6 +1,6 @@
 # Azure Billing Integration
 
-The [Azure Billing](https://docs.microsoft.com/en-us/azure/cost-management-billing/ ) Integration allows users to retrieve usage details and forecast information of the subscription configured.
+The [Azure Billing](https://docs.microsoft.com/en-us/azure/cost-management-billing/) Integration allows users to retrieve usage details and forecast information of the subscription configured.
 
 ### Integration level configuration options
 
