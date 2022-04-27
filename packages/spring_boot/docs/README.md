@@ -363,10 +363,10 @@ An example event for `threading` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-26T06:41:13.646Z",
+    "@timestamp": "2022-04-27T05:15:58.803Z",
     "agent": {
-        "ephemeral_id": "6ba8f84c-d18e-4834-b1d3-216c4a8d2a1e",
-        "id": "7f19c9c5-8b91-4e64-8282-76a393d90be0",
+        "ephemeral_id": "f4f1cd9b-9005-4325-a961-3275ac6d72ea",
+        "id": "d0841fd3-9fa3-477f-bdee-1308cbf51371",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -380,7 +380,7 @@ An example event for `threading` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "7f19c9c5-8b91-4e64-8282-76a393d90be0",
+        "id": "d0841fd3-9fa3-477f-bdee-1308cbf51371",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -388,8 +388,8 @@ An example event for `threading` looks as following:
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "spring_boot.threading",
-        "duration": 95063710,
-        "ingested": "2022-04-26T06:41:16Z",
+        "duration": 99822322,
+        "ingested": "2022-04-27T05:16:01Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -399,10 +399,10 @@ An example event for `threading` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.21.0.6"
+            "172.29.0.7"
         ],
         "mac": [
-            "02:42:ac:15:00:06"
+            "02:42:ac:1d:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -425,30 +425,18 @@ An example event for `threading` looks as following:
     },
     "spring_boot": {
         "threading": {
-            "allocated_memory": {
-                "enabled": true,
-                "supported": true
-            },
-            "contention_monitoring": {
-                "enabled": false,
-                "supported": true
-            },
-            "count": 20,
-            "cpu_time": {
-                "enabled": true,
-                "supported": true
-            },
-            "current_thread": {
-                "allocated_bytes": 30497344,
-                "cpu_time": 487040078,
-                "cpu_time_supported": true,
-                "user_time": 470000000
-            },
-            "daemon": 16,
-            "object_monitor_usage_supported": true,
-            "peak": 20,
-            "synchronizer_usage_supported": true,
-            "total_started": 23
+            "threads": {
+                "count": 20,
+                "current": {
+                    "allocated_bytes": 430512,
+                    "time": {
+                        "cpu": 185403326,
+                        "user": 180000000
+                    }
+                },
+                "daemon": 16,
+                "started": 23
+            }
         }
     }
 }
@@ -470,20 +458,10 @@ An example event for `threading` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| spring_boot.threading.allocated_memory.enabled | Allocated memory for threads. | boolean |
-| spring_boot.threading.allocated_memory.supported | Allocated memory support for threads. | boolean |
-| spring_boot.threading.contention_monitoring.enabled | Shows thread contention monitoring is enabled. | boolean |
-| spring_boot.threading.contention_monitoring.supported | Shows the Java virtual machine supports thread contention monitoring. | boolean |
-| spring_boot.threading.count | Current number of live threads including both daemon and non-daemon threads. | long |
-| spring_boot.threading.cpu_time.enabled | Shows thread CPU time measurement is enabled. | boolean |
-| spring_boot.threading.cpu_time.supported | Shows the Java virtual machine implementation supports CPU time measurement for any thread. | boolean |
-| spring_boot.threading.current_thread.allocated_bytes | Allocated bytes for the current thread. | double |
-| spring_boot.threading.current_thread.cpu_time | CPU time for the current thread in nanoseconds. | long |
-| spring_boot.threading.current_thread.cpu_time_supported | Shows the Java virtual machine supports CPU time measurement for the current thread. | boolean |
-| spring_boot.threading.current_thread.user_time | User time for the current thread. | long |
-| spring_boot.threading.daemon | Current number of live daemon threads. | long |
-| spring_boot.threading.object_monitor_usage_supported | Object monitor usage support. | boolean |
-| spring_boot.threading.peak | Peak thread count to the current number of live threads. | long |
-| spring_boot.threading.synchronizer_usage_supported | Show the synchronizer usage support. | boolean |
-| spring_boot.threading.total_started | Total number of threads created and also started since the Java virtual machine started. | long |
+| spring_boot.threading.threads.count | Current number of live threads including both daemon and non-daemon threads. | long |
+| spring_boot.threading.threads.current.allocated_bytes | Allocated bytes for the current thread. | double |
+| spring_boot.threading.threads.current.time.cpu | CPU time for the current thread in nanoseconds. | long |
+| spring_boot.threading.threads.current.time.user | User time for the current thread. | long |
+| spring_boot.threading.threads.daemon | Current number of live daemon threads. | long |
+| spring_boot.threading.threads.started | Total number of threads created and also started since the Java virtual machine started. | long |
 
