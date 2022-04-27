@@ -202,11 +202,12 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-03-17T18:24:37.000Z",
     "agent": {
-        "ephemeral_id": "065686af-596b-4208-b15b-1944e0cedfc6",
-        "id": "c76f222e-45b5-4a7a-bff9-9bf8cd2989ae",
+        "ephemeral_id": "76b54e2f-6051-4831-a042-28f1eabce453",
+        "hostname": "docker-fleet-agent",
+        "id": "4ab79874-377f-4d22-87e0-fc0522d5a90a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "7.17.0"
     },
     "cisco_esa": {
         "log": {
@@ -225,9 +226,9 @@ An example event for `log` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c76f222e-45b5-4a7a-bff9-9bf8cd2989ae",
+        "id": "4ab79874-377f-4d22-87e0-fc0522d5a90a",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "7.17.0"
     },
     "email": {
         "attachments": {
@@ -242,7 +243,7 @@ An example event for `log` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_esa.log",
-        "ingested": "2022-04-21T12:26:09Z",
+        "ingested": "2022-04-27T07:21:12Z",
         "kind": "event"
     },
     "input": {
@@ -251,7 +252,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "info",
         "source": {
-            "address": "172.18.0.1:42219"
+            "address": "172.19.0.1:52733"
         },
         "syslog": {
             "priority": 166
@@ -290,7 +291,7 @@ An example event for `log` looks as following:
 | cisco_esa.log.case_ld | Percent CPU used by CASE scanning. | long |
 | cisco_esa.log.category.name |  | keyword |
 | cisco_esa.log.cef_format_version |  | keyword |
-| cisco_esa.log.cfp1 |  | keyword |
+| cisco_esa.log.cfp1 |  | double |
 | cisco_esa.log.cfp1_label |  | keyword |
 | cisco_esa.log.cmrkld |  | long |
 | cisco_esa.log.command |  | text |
