@@ -3,7 +3,7 @@
 > Warning: This integration is deprecated. Please use one of the other Cisco integrations
 > that are specific to a Cisco product.
 
-This integration is for [Cisco network devices](https://developer.cisco.com/docs/)' logs. It includes the following datasets for receiving logs over syslog or read from a file:
+This integration is for [Cisco network devices](https://developer.cisco.com/docs/) logs. It includes the following datasets for receiving logs over syslog or read from a file:
 
 - `asa` dataset: supports Cisco ASA firewall logs.
 - `ftd` dataset: supports Cisco Firepower Threat Defense logs.
