@@ -1,20 +1,21 @@
-## Azure Spring Cloud Logs
+# Azure Spring Cloud Logs
 
-The Azure Spring Cloud Logs integration provides system and application information for Azure Spring Cloud resources.
+The Azure Logs integration retrieves different types of log data from Azure.
 
-There are several requirements before using the integration since the logs will have to be read from an azure event hub.
+There are several requirements before using the integration since the logs will actually be read from azure event hubs.
 
-   * the logs have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
-   * to export activity logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export
-   * to export audit and sign-in logs to event hubs users can follow the steps here https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub
+- The logs have to be [exported first to the event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled).
+- To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
+- To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
 
-Users opting for Elastic Cloud native Azure integration can stream the Azure Spring Cloud logs directly to their partner solution clusters, more information and steps can be found here https://www.elastic.co/guide/en/observability/current/monitor-azure.html
+Users opting for Elastic Cloud native Azure integration can stream the Azure Spring Cloud logs directly to their partner solution clusters, more information and steps can be found [here](https://www.elastic.co/guide/en/observability/current/monitor-azure.html
+).
 
-### Credentials
+## Settings
 
 `eventhub` :
   _string_
-Is the fully managed, real-time data ingestion service.
+It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the name, and the integration will adjust the settings when required.
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -39,15 +40,26 @@ The storage account key, this key will be used to authorize access to data in yo
 `resource_manager_endpoint` :
 _string_
 Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
-Ex:
-https://management.chinacloudapi.cn/ for azure ChinaCloud
-https://management.microsoftazure.de/ for azure GermanCloud
-https://management.azure.com/ for azure PublicCloud
-https://management.usgovcloudapi.net/ for azure USGovernmentCloud
-Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
 
+Resource manager endpoints:
 
-### springcloudlogs
+```text
+# Azure ChinaCloud
+https://management.chinacloudapi.cn/
+
+# Azure GermanCloud
+https://management.microsoftazure.de/
+
+# Azure PublicCloud 
+https://management.azure.com/
+
+# Azure USGovernmentCloud
+https://management.usgovcloudapi.net/
+```
+
+## Reference
+
+### springcloudlogs Data Stream
 
 This is the `springcloudlogs` data stream of the Azure Logs package. It will collect any Spring Cloud logs that have been streamed through an azure event hub.
 
@@ -244,3 +256,4 @@ An example event for `springcloudlogs` looks as following:
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+
