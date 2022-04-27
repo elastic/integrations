@@ -351,3 +351,117 @@ An example event for `memory` looks as following:
 | spring_boot.memory.non_heap.init | Init non-heap memory usage of JVM | long |
 | spring_boot.memory.non_heap.max | Max non-heap memory usage of JVM | long |
 | spring_boot.memory.non_heap.used | Used non-heap memory usage of JVM | long |
+
+
+### Threading Metrics
+
+This is the `threading` data stream.
+
+- This data stream gives metrics related to thread allocations, monitoring and CPU times.
+
+An example event for `threading` looks as following:
+
+```json
+{
+    "@timestamp": "2022-04-27T05:15:58.803Z",
+    "agent": {
+        "ephemeral_id": "f4f1cd9b-9005-4325-a961-3275ac6d72ea",
+        "id": "d0841fd3-9fa3-477f-bdee-1308cbf51371",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.1.0"
+    },
+    "data_stream": {
+        "dataset": "spring_boot.threading",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.1.0"
+    },
+    "elastic_agent": {
+        "id": "d0841fd3-9fa3-477f-bdee-1308cbf51371",
+        "snapshot": false,
+        "version": "8.1.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "web",
+        "dataset": "spring_boot.threading",
+        "duration": 99822322,
+        "ingested": "2022-04-27T05:16:01Z",
+        "kind": "metric",
+        "module": "spring_boot",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.29.0.7"
+        ],
+        "mac": [
+            "02:42:ac:1d:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.3 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "jmx",
+        "period": 60000
+    },
+    "service": {
+        "address": "http://springboot:8090/actuator/jolokia",
+        "type": "jolokia"
+    },
+    "spring_boot": {
+        "threading": {
+            "threads": {
+                "count": 20,
+                "current": {
+                    "allocated_bytes": 430512,
+                    "time": {
+                        "cpu": 185403326,
+                        "user": 180000000
+                    }
+                },
+                "daemon": 16,
+                "started": 23
+            }
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| spring_boot.threading.threads.count | Current number of live threads including both daemon and non-daemon threads. | long |
+| spring_boot.threading.threads.current.allocated_bytes | Allocated bytes for the current thread. | double |
+| spring_boot.threading.threads.current.time.cpu | CPU time for the current thread in nanoseconds. | long |
+| spring_boot.threading.threads.current.time.user | User time for the current thread. | long |
+| spring_boot.threading.threads.daemon | Current number of live daemon threads. | long |
+| spring_boot.threading.threads.started | Total number of threads created and also started since the Java virtual machine started. | long |
+
