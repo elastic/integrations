@@ -1,10 +1,10 @@
 ---
-description: Pipeline for processing Confluence Cloud Audit logs
+description: Pipeline for processing Atlassian Confluence Cloud audit logs.
 processors:
-- set:
-    field: _tmp.timestamp
-    copy_from: json.creationDate
-    if: ctx.json?.creationDate != null
+- date:
+    field: json.creationDate
+    formats:
+      - UNIX_MS
 - rename:
     field: json.remoteAddress
     target_field: source.address

@@ -1,14 +1,19 @@
 ---
-description: Pipeline for processing Confluence Self Hosted Audit logs
+description: Pipeline for processing self-hosted Atlassian Confluence audit logs.
 processors:
 - set:
     field: _tmp.timestamp
     copy_from: json.timestamp
-    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
+    if: ctx.json?.timestamp != null && ctx.json.timestamp instanceof String
 - set:
     field: _tmp.timestamp
-    value: "{{json.timestamp.epochSecond}}.{{json.timestamp.nano}}"
-    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
+    value: "{{{json.timestamp.epochSecond}}}.{{{json.timestamp.nano}}}"
+    if: ctx.json?.timestamp != null && ctx.json.timestamp instanceof Map && ctx.json.timestamp?.epochSecond != null && ctx.json.timestamp?.nano != null
+- date:
+    field: _tmp.timestamp
+    formats:
+      - UNIX
+      - ISO8601
 - rename:
     field: json.source
     target_field: source.address
