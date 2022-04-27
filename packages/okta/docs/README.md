@@ -43,7 +43,7 @@ An example event for `system` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "dd014e06-ac12-40b1-a20a-4453a5f99c84",
