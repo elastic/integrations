@@ -48,7 +48,7 @@ Examples:
 * https://login.microsoftonline.us for azure GermanCloud
 * https://login.chinacloudapi.cn for azure PublicCloud
 * https://login.microsoftonline.de for azure USGovernmentCloud
-* 
+
 ## Data streams
 
  `monitor`
