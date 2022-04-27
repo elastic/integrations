@@ -6,7 +6,7 @@ The [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/
 
 `Application ID`:: (_[]string_) ID of the application. This is Application ID from the API Access settings blade in the Azure portal.
 
-`Api Key`:: (_[]string_) The API key which will be generated., See [Azure Monitor Log Analytics API Overview](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID) for more information.
+`Api Key`:: (_[]string_) The API key which will be generated. See [Azure Monitor Log Analytics API Overview](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID) for more information.
 
 
 The integration contains the following data streams:
