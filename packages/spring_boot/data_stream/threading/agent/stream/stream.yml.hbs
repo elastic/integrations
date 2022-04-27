@@ -1,0 +1,27 @@
+metricsets: ["jmx"]
+namespace: "metrics"
+hosts: {{hosts}}
+http_method: "GET"
+path: {{path}}
+username: {{username}}
+password: {{password}}
+period: {{period}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+jmx.mappings:
+  - mbean: 'java.lang:type=Threading'
+    attributes:
+    - attr: ThreadCount
+      field: threads.count
+    - attr: CurrentThreadAllocatedBytes
+      field: threads.current.allocated_bytes
+    - attr: CurrentThreadCpuTime
+      field: threads.current.time.cpu
+    - attr: CurrentThreadUserTime
+      field: threads.current.time.user
+    - attr: DaemonThreadCount
+      field: threads.daemon
+    - attr: TotalStartedThreadCount
+      field: threads.started
+      
