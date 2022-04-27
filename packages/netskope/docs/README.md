@@ -2032,13 +2032,13 @@ user.email.6,,String
 | netskope.alerts.internal.collaborator.count | Count of internal collaborators on a file/folder. Supported for some apps. | long |
 | netskope.alerts.ip.protocol | N/A | keyword |
 | netskope.alerts.ipblock | IPblock that caused the alert. | keyword |
-| netskope.alerts.is_alert | Indicates whether alert is generated or not.Populated as yes for all alerts. | keyword |
+| netskope.alerts.is_alert | Indicates whether alert is generated or not. Populated as yes for all alerts. | boolean |
 | netskope.alerts.is_file_passwd_protected | Tells if the file is password protected. | boolean |
 | netskope.alerts.is_malicious | Only exists if some HTTP transaction belonging to the page event resulted in a malsite alert. | boolean |
 | netskope.alerts.is_two_factor_auth | N/A | keyword |
 | netskope.alerts.is_universal_connector | N/A | keyword |
 | netskope.alerts.is_user_generated | Tells whether it is user generated page event. | boolean |
-| netskope.alerts.is_web_universal_connector | N/A | keyword |
+| netskope.alerts.is_web_universal_connector | N/A | boolean |
 | netskope.alerts.isp | N/A | keyword |
 | netskope.alerts.item.id | N/A | keyword |
 | netskope.alerts.justification.reason | Justification reason provided by user. For following policies, justification events are raised. User is displayed a notification popup, user enters justification and can select to proceed or block: useralert policy, dlp block policy, block policy with custom template which contains justification text box. | keyword |
@@ -2299,11 +2299,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2021-12-23T16:27:09.000Z",
     "agent": {
-        "ephemeral_id": "c5c5b470-ab70-42a6-a8c5-4798a09637b6",
-        "id": "7c94c361-a013-4d9f-bab5-8b3e1b2b69e6",
+        "ephemeral_id": "f6ea30bb-70ab-4ae9-b338-b103657dd749",
+        "id": "52d90929-98ee-4480-9b14-fe07637d0bbe",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "netskope.alerts",
@@ -2330,14 +2330,14 @@ An example event for `alerts` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7c94c361-a013-4d9f-bab5-8b3e1b2b69e6",
-        "snapshot": false,
-        "version": "8.0.0"
+        "id": "52d90929-98ee-4480-9b14-fe07637d0bbe",
+        "snapshot": true,
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
         "id": "f621f259f5fbde850ad5593a",
-        "ingested": "2022-02-23T07:49:31Z",
+        "ingested": "2022-04-14T11:24:23Z",
         "original": "{\"event\":{\"id\":\"f621f259f5fbde850ad5593a\"},\"netskope\":{\"alerts\":{\"insertion_epoch_timestamp\":1640277131,\"access_method\":\"API Connector\",\"acked\":\"false\",\"action\":\"block\",\"activity\":{\"name\":\"Login Successful\"},\"is_alert\":\"yes\",\"alert\":{\"name\":\"policy-alert\",\"type\":\"nspolicy\"},\"app\":{\"name\":\"SomeApp\",\"category\":\"Cloud Storage\"},\"category\":{\"name\":\"Cloud Storage\"},\"cci\":\"81\",\"ccl\":\"high\",\"count\":1,\"device\":{\"name\":\"Other\"},\"destination\":{\"geoip_src\":2},\"exposure\":\"organization_wide_link\",\"file\":{\"lang\":\"ENGLISH\"},\"instance\":{\"name\":\"example.com\",\"id\":\"example.com\"},\"modified\":{\"timestamp\":1613760236},\"object\":{\"name\":\"HjBuUvDLWgpudzQr\",\"id\":\"GxyjNjJxKg14W3Mb57aLY9_klcxToPEyqIoNAcF82rGg\",\"type\":\"File\"},\"organization\":{\"unit\":\"example.local\\\\\\\\/example\\\\\\\\/Active Users\"},\"other\":{\"categories\":\"null\"},\"owner\":\"foobar\",\"policy\":{\"name\":\"Some Policy\"},\"request\":{\"id\":\"9262245914980288500\"},\"scan\":{\"type\":\"Ongoing\"},\"shared\":{\"with\":\"none\"},\"site\":\"Example\",\"source\":{\"geoip_src\":2},\"suppression\":{\"key\":\"Tenant Migration across MPs\"},\"traffic\":{\"type\":\"CloudApp\"},\"type\":\"policy\",\"url\":\"http:\\\\\\\\/\\\\\\\\/www.example.com\\\\\\\\/open?id=WLb5Mc7aPGx914gEyYNjJxTo32yjF8xKAcqIoN_klrGg\"}},\"user_agent\":{\"name\":\"unknown\",\"os\":{\"name\":\"unknown\"}},\"destination\":{\"geo\":{\"country_iso_code\":\"NL\",\"location\":{\"lat\":52.3759,\"lon\":4.8975},\"city_name\":\"Amsterdam\",\"region_name\":\"North Holland\",\"postal_code\":\"1012\"},\"address\":\"81.2.69.143\",\"ip\":\"81.2.69.143\"},\"file\":{\"path\":\"\\\\\\\\/My Drive\\\\\\\\/Clickhouse\\\\\\\\/Tenant Migration across MPs\",\"size\":196869,\"mime_type\":{\"1\":\"application\\\\\\\\/vnd.apps.document\",\"2\":\"application\\\\\\\\/vnd.apps.document\"},\"hash\":{\"md5\":\"4bb5d9501bf7685ecaed55e3eda9ca01\"}},\"source\":{\"geo\":{\"country_iso_code\":\"NL\",\"location\":{\"lat\":52.3759,\"lon\":4.8975},\"city_name\":\"Amsterdam\",\"region_name\":\"North Holland\",\"postal_code\":\"1012\"},\"address\":\"81.2.69.143\",\"ip\":\"81.2.69.143\"},\"@timestamp\":\"2021-12-23T16:27:09.000Z\",\"user\":{\"email\":{\"1\":\"test@example.com\",\"2\":\"test@example.com\",\"3\":\"test@example.com\"},\"group\":{\"name\":\"null\"}}}"
     },
     "file": {
@@ -2355,7 +2355,7 @@ An example event for `alerts` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.5:34210"
+            "address": "192.168.224.1:57542"
         }
     },
     "netskope": {
@@ -2395,7 +2395,7 @@ An example event for `alerts` looks as following:
                 "id": "example.com",
                 "name": "example.com"
             },
-            "is_alert": "yes",
+            "is_alert": true,
             "modified": {
                 "timestamp": 1613760236
             },
@@ -2860,11 +2860,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2021-12-24T00:29:56.000Z",
     "agent": {
-        "ephemeral_id": "a09270c0-b599-4e20-8ec2-b39d0a2f8511",
-        "id": "7c94c361-a013-4d9f-bab5-8b3e1b2b69e6",
+        "ephemeral_id": "3cabd78f-ac92-4719-87ff-e1dd82c3162a",
+        "id": "52d90929-98ee-4480-9b14-fe07637d0bbe",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "netskope.events",
@@ -2875,14 +2875,14 @@ An example event for `events` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "7c94c361-a013-4d9f-bab5-8b3e1b2b69e6",
-        "snapshot": false,
-        "version": "8.0.0"
+        "id": "52d90929-98ee-4480-9b14-fe07637d0bbe",
+        "snapshot": true,
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "netskope.events",
-        "ingested": "2022-02-23T07:51:42Z",
+        "ingested": "2022-04-14T09:24:43Z",
         "original": "{\"@timestamp\":\"2021-12-24T00:29:56.000Z\",\"event.id\":\"613ee55ec9d868fc47654a73\",\"netskope\":{\"events\":{\"event_type\":\"infrastructure\",\"severity\":{\"level\":\"high\"},\"alarm\":{\"name\":\"No_events_from_device\",\"description\":\"Events from device not received in the last 24 hours\"},\"device\":{\"name\":\"device-1\"},\"metric_value\":43831789,\"serial\":\"FFFFFFFFFFFFFFFF\",\"supporting_data\":\"abc\"}}}"
     },
     "event.id": "613ee55ec9d868fc47654a73",
@@ -2891,7 +2891,7 @@ An example event for `events` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.5:43942"
+            "address": "192.168.224.1:46522"
         }
     },
     "netskope": {
