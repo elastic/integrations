@@ -1,0 +1,81 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: [info]
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number == 0
+      patterns: 
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number > 0
+      patterns: 
+        - "^%{GREEDYDATA:cisco_ise.log.log_details},"
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats: 
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+      timezone: '{{{event.timezone}}}'
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx?.cisco_ise?.log?.message?.description != null
+      source:
+        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+  - script:
+      lang: painless
+      if: ctx?.cisco_ise?.log?.message?.code != null
+      source: |
+        def eventCategory = new ArrayList();
+        def categoryReferenceTable = [
+          ["messageCodeArray": ["34120"], "name": "authentication"],
+          ["messageCodeArray": ["32025","34126","34127"], "name": "configuration"]
+        ];
+        for (entry in categoryReferenceTable) {
+          if (entry.messageCodeArray.contains(ctx.cisco_ise.log.message.code)) {
+            eventCategory.add(entry.name);
+          }
+        }
+        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+        ctx.event.category = eventCategory;
+  - kv:
+      field: cisco_ise.log.log_details
+      field_split: ', '
+      value_split: =
+      ignore_failure: true
+  - convert:
+      field: ConfigVersionId
+      target_field: cisco_ise.log.config_version.id
+      type: long
+      ignore_failure: true
+  - convert:
+      field: DestinationPort
+      target_field: destination.port
+      type: long
+      ignore_failure: true
+  - rename:
+      field: LoggerName
+      target_field: cisco_ise.log.logger.name
+      ignore_missing: true
+  - rename:
+      field: LogFileName
+      target_field: cisco_ise.log.file.name
+      ignore_missing: true
+  - rename:
+      field: LogErrorMessage
+      target_field: cisco_ise.log.error.message
+      ignore_missing: true
+  - remove:
+      field:
+        - _tmp
+        - ConfigVersionId
+        - DestinationPort
+        - cisco_ise.log.log_details
+      ignore_missing: true
