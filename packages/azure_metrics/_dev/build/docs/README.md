@@ -13,10 +13,10 @@ All the tasks executed against the Azure Monitor REST API will use the Azure Res
 Therefore, all requests must be authenticated with Azure Active Directory (Azure AD).
 One approach to authenticate the client application is to create an Azure AD service principal and retrieve the authentication (JWT) token.
 For a more detailed walk-through, see:
-* [Create an Azure service principal with Azure PowerShell]( https://docs.microsoft.com/en-us/powershell/azure/create-azure-service-principal-azureps?view=azps-2.7.0.)
-* [Use the portal to create an Azure AD application and service principal that can access resources]( https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal).
+* [Create an Azure service principal with Azure PowerShell](https://docs.microsoft.com/en-us/powershell/azure/create-azure-service-principal-azureps?view=azps-2.7.0.)
+* [Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal).
 
-Users will have to make sure the roles assigned to the application contain at least reading permissions to the monitor data. See: [Azure built-in roles]( https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles).
+Users will have to make sure the roles assigned to the application contain at least reading permissions to the monitor data. See: [Azure built-in roles](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles).
 
 Required credentials for the `azure` resource metrics integration:
 
@@ -48,6 +48,7 @@ Examples:
 * https://login.microsoftonline.us for azure GermanCloud
 * https://login.chinacloudapi.cn for azure PublicCloud
 * https://login.microsoftonline.de for azure USGovernmentCloud
+* 
 ## Data streams
 
  `monitor`
@@ -101,6 +102,6 @@ so the `period` for `database_account` should be `300s` or multiples of `300s`.
 ## Additional notes about metrics and costs
 
 Costs: Metric queries are charged based on the number of standard API calls. 
-See: [Azure Monitor pricing]( https://azure.microsoft.com/en-gb/pricing/details/monitor/).
+See: [Azure Monitor pricing](https://azure.microsoft.com/en-gb/pricing/details/monitor/).
 
 Authentication: We are handling authentication on our side (creating/renewing the authentication token), so we advise users to use dedicated credentials for metricbeat only.
