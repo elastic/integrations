@@ -1,0 +1,72 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: [malware]
+  - append:
+      field: event.type
+      value: [info]
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number == 0
+      patterns: 
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number > 0
+      patterns: 
+        - "^%{GREEDYDATA:cisco_ise.log.log_details},"
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats: 
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+      timezone: '{{{event.timezone}}}'
+      ignore_failure: true
+  - kv: 
+      field: cisco_ise.log.log_details
+      field_split: ', '
+      value_split: =
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx?.cisco_ise?.log?.message?.description != null
+      source:
+        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+  - convert:
+      field: ConfigVersionId
+      target_field: cisco_ise.log.config_version.id
+      type: long
+      ignore_failure: true
+  - rename:
+      field: OperationID
+      target_field: cisco_ise.log.operation.id
+      ignore_missing: true
+  - rename:
+      field: OperationType
+      target_field: cisco_ise.log.operation.type
+      ignore_missing: true
+  - rename:
+      field: OperationStatus
+      target_field: cisco_ise.log.operation.status
+      ignore_missing: true
+  - rename:
+      field: AdminName
+      target_field: client.user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{client.user.name}}}'
+      if: ctx?.client?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field:
+        - _tmp
+        - ConfigVersionId
+        - cisco_ise.log.log_details
+      ignore_missing: true
