@@ -10,8 +10,26 @@ ECS fields where applicable and the remaining fields are written under
 ## Setup steps
 
 1. Enable the integration with the TCP input.
-2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent
-that is running this integration. See [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) and [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address/hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen.
+2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. See [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) and [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscalar NSS Server and NSS Feeds follow the following steps.
+    - In the ZIA Admin Portal, add an NSS Server.
+        - Log in to the ZIA Admin Portal using your admin account. If you're unable to log in, contact Support.
+        - Add an NSS server. Refer to Adding NSS Servers to set up an [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) for Web and/or Firewall.
+        - Verify that the state of the NSS Server is healthy.
+            - In the ZIA Admin Portal, go to Administration > Nanolog Streaming Service > NSS Servers.
+            - In the State column, confirm that the state of the NSS server is healthy.
+            ![NSS server setup image](../img/nss_server.png?raw=true)
+    - In the ZIA Admin Portal, add an NSS Feed.
+        - Refer to [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds) and select the type of feed you want to configure. The following fields require specific inputs:
+            - **SIEM IP Address**: Enter the IP address of the [_Elastic agent_](https://www.elastic.co/guide/en/fleet/current/fleet-overview.html) you’ll be assigning the Zscaler integration to.
+            - **SIEM TCP Port**: Enter the port number, depending on the logs associated with the NSS Feed. You will need to create an NSS Feed for each log type.
+                - **Alerts**: 9010
+                - **DNS**: 9011
+                - **Firewall**: 9012
+                - **Tunnel**: 9013
+                - **Web**: 9014
+            - **Feed Output Type**: Select Custom paste the appropriate response format as follows:
+            ![NSS feeds setup image](../img/nss_feeds.png?raw=true)  
+
 3. *Please make sure to use the given response formats.*
 
 ## Compatibility
@@ -99,8 +117,10 @@ Sample Response:
 
 ### Web Log
 
-Default port: _9014_
+Default port: _9014_  
+Add characters **"** and **\\** in **feed escape character** while configuring Web Log.  
 
+![Escape feed setup image](../img/escape_feed.png?raw=true)  
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-web-logs
 
 Zscaler response format:  
@@ -157,6 +177,7 @@ Sample Response:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -195,7 +216,7 @@ An example event for `alerts` looks as following:
         "port": 9012
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -287,6 +308,7 @@ An example event for `alerts` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -311,6 +333,7 @@ An example event for `alerts` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | zscaler_zia.dns.department | Department of the user. | keyword |
 | zscaler_zia.dns.dom.category | URL Category of the FQDN in the DNS request. | keyword |
 | zscaler_zia.dns.duration.milliseconds | Duration of the DNS request in milliseconds. | long |
@@ -365,7 +388,7 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -492,6 +515,7 @@ An example event for `dns` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -508,6 +532,7 @@ An example event for `dns` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | zscaler_zia.firewall.aggregate |  | keyword |
 | zscaler_zia.firewall.client.destination.ip | Client destination IP address. For aggregated sessions, this is the client destination IP address of the last session in the aggregate. | keyword |
 | zscaler_zia.firewall.client.destination.port | Client destination port. For aggregated sessions, this is the client destination port of the last session in the aggregate. | double |
@@ -555,7 +580,7 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -711,6 +736,7 @@ An example event for `firewall` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -725,6 +751,7 @@ An example event for `firewall` looks as following:
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | zscaler_zia.tunnel.action.type | Type of the record. Possible values [ WL_TUNNEL_IPSECPHASE1, WL_TUNNEL_IPSECPHASE2, WL_TUNNEL_EVENT, WL_TUNNEL_SAMPLES ]. | keyword |
 | zscaler_zia.tunnel.authentication.algorithm | Authentication algorithm. | keyword |
 | zscaler_zia.tunnel.authentication.type | Authentication type. | keyword |
@@ -772,7 +799,7 @@ An example event for `tunnel` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -880,6 +907,7 @@ An example event for `tunnel` looks as following:
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.nat.ip | Translated IP of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | ip |
 | client.user.name | Short name or login of the user. | keyword |
+| client.user.name.text | Multi-field of `client.user.name`. | match_only_text |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -914,6 +942,7 @@ An example event for `tunnel` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -936,6 +965,7 @@ An example event for `tunnel` looks as following:
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.password | Password of the request. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
@@ -946,8 +976,11 @@ An example event for `tunnel` looks as following:
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
 | user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 | zscaler_zia.web.app.class | The web application class of the application that was accessed. Equivalent to module. | keyword |
@@ -1003,7 +1036,7 @@ An example event for `web` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",

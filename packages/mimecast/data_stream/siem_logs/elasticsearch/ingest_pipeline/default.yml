@@ -1,10 +1,10 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Mimecast siem_logs.
 processors:
-  # Generic event/ecs fields we always want to populated
+  # Generic event/ecs fields we always want to populate.
   - set:
       field: ecs.version
-      value: "1.12.0"
+      value: "8.2.0"
   - rename:
       field: message
       target_field: event.original
@@ -62,11 +62,16 @@ processors:
       target_field: email.to.address
       ignore_missing: true
       if: 'ctx?.mimecast?.Rcpt !=null'
-  - rename:
-      field: mimecast.headerFrom
-      target_field: email.header_from
-      ignore_missing: true
-      if: 'ctx?.mimecast?.headerFrom !=null'
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.Rcpt}}}"
+      allow_duplicates: false
+      if: "ctx?.mimecast?.Rcpt != null"
+  - append:
+      field: email.from.address
+      value: '{{{mimecast.headerFrom}}}'
+      allow_duplicates: false
+      if: ctx.mimecast?.headerFrom != null
   - rename:
       field: mimecast.RejCode
       target_field: error.code
@@ -82,11 +87,11 @@ processors:
       target_field: error.type
       ignore_missing: true
       if: 'ctx?.mimecast?.RejType !=null'
-  - rename:
-      field: mimecast.Sender
-      target_field: email.from.address
-      ignore_missing: true
-      if: 'ctx?.mimecast?.Sender !=null'
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.Sender}}}"
+      allow_duplicates: false
+      if: "ctx?.mimecast?.Sender != null"
   - rename:
       field: mimecast.Subject
       target_field: email.subject
@@ -113,12 +118,7 @@ processors:
       target_field: event.reason
       ignore_missing: true
       if: 'ctx?.mimecast?.Hld !=null'
-  - rename:
-      field: mimecast.MsgSize
-      target_field: email.message_size
-      ignore_missing: true
-      if: 'ctx?.mimecast?.MsgSize !=null'
-    ### DELIVERY LOGS 
+    ### DELIVERY LOGS
   - rename:
       field: mimecast.Err
       target_field: error.message
@@ -147,7 +147,7 @@ processors:
       if: 'ctx?.mimecast?.fileMime !=null'
   - rename:
       field: mimecast.md5
-      target_field: email.attachments.hash.md5
+      target_field: email.attachments.file.hash.md5
       ignore_missing: true
       if: 'ctx?.mimecast?.md5 !=null'
   - rename:
@@ -155,6 +155,10 @@ processors:
       target_field: email.to.address
       ignore_missing: true  
       if: 'ctx?.mimecast?.Recipient !=null'
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.Recipient}}}"
+      if: "ctx?.mimecast?.Recipient != null"
   - rename:
       field: mimecast.SenderDomain
       target_field: source.domain
@@ -162,12 +166,12 @@ processors:
       if: 'ctx?.mimecast?.SenderDomain !=null'
   - rename:
       field: mimecast.sha1
-      target_field: email.attachments.hash.sha1
+      target_field: email.attachments.file.hash.sha1
       ignore_missing: true
       if: 'ctx?.mimecast?.sha1 !=null'
   - rename:
       field: mimecast.sha256
-      target_field: email.attachments.hash.sha256
+      target_field: email.attachments.file.hash.sha256
       ignore_missing: true
       if: 'ctx?.mimecast?.sha256 !=null'
   - rename:
@@ -219,16 +223,20 @@ processors:
       target_field: email.to.address
       ignore_missing: true
       if: 'ctx?.mimecast?.recipient !=null'
+  - append:
+      field: email.to.address
+      value: "{{{mimecast.recipient}}}"
+      if: "ctx?.mimecast?.recipient != null"
   - rename:
       field: mimecast.route
       target_field: email.direction
       ignore_missing: true
       if: 'ctx?.mimecast?.route !=null'
-  - rename:
-      field: mimecast.sender
-      target_field: email.from.address
-      ignore_missing: true
-      if: 'ctx?.mimecast?.sender !=null'
+  - append:
+      field: email.from.address
+      value: "{{{mimecast.sender}}}"
+      allow_duplicates: false
+      if: "ctx?.mimecast?.sender != null"
   - rename:
       field: mimecast.senderDomain
       target_field: source.domain
@@ -310,6 +318,40 @@ processors:
       field: event.outcome
       value: "unknown"
       if: 'ctx?.event?.outcome ==null'
+  - lowercase:
+      field: email.direction
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - dissect:
+       field: email.from.address
+       pattern: "<%{email.from.address}>"
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: email.to.address
+       pattern: "<%{email.to.address}>"
+       ignore_missing: true
+       ignore_failure: true
+
   # Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.
@@ -317,9 +359,12 @@ processors:
         - mimecast.eventTime
         - mimecast.Content-Disposition
         - mimecast.datetime
+        - mimecast.headerFrom
         - mimecast.log_type_part1
         - mimecast.log_type_part2
         - mimecast.log_type_parts
+        - mimecast.sender
+        - mimecast.Sender
       ignore_missing: true
   - remove:
       description: Remove 'mimecast.RecieptApk' if null
