@@ -13,7 +13,8 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Svchost spawning Cmd",
-        "query": "process where event.type in (\"start\", \"process_started\") and\n  process.parent.name : \"svchost.exe\" and process.name : \"cmd.exe\" and \n  not (process.pe.original_file_name == \"Cmd.Exe\" and process.args : \"?:\\\\Program Files\\\\Npcap\\\\CheckStatus.bat??\")\n",
+        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "query": "process where event.type == \"start\" and\n  process.parent.name : \"svchost.exe\" and process.name : \"cmd.exe\" and \n  not (process.pe.original_file_name : \"cmd.exe\" and process.args : (\n    \"??:\\\\Program Files\\\\Npcap\\\\CheckStatus.bat?\",\n    \"?:\\\\Program Files\\\\Npcap\\\\CheckStatus.bat\",\n    \"\\\\system32\\\\cleanmgr.exe\",\n    \"?:\\\\Windows\\\\system32\\\\silcollector.cmd\",\n    \"\\\\system32\\\\AppHostRegistrationVerifier.exe\",\n    \"\\\\system32\\\\ServerManagerLauncher.exe\"))\n",
         "risk_score": 21,
         "rule_id": "fd7a6052-58fa-4397-93c3-4795249ccfa2",
         "severity": "low",
@@ -43,7 +44,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 8
+        "version": 11
     },
     "id": "fd7a6052-58fa-4397-93c3-4795249ccfa2",
     "type": "security-rule"
