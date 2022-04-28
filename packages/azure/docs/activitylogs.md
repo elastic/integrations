@@ -163,10 +163,14 @@ An example event for `activitylogs` looks as following:
 | azure.activitylogs.identity.claims_initiated_by_user.name | Name | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.schema | Schema | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.surname | Surname | keyword |
+| azure.activitylogs.identity_name | identity name | keyword |
+| azure.activitylogs.level | Level | long |
 | azure.activitylogs.operation_name | Operation name | keyword |
+| azure.activitylogs.operation_version | Operation version | keyword |
 | azure.activitylogs.properties | Event properties | flattened |
 | azure.activitylogs.result_signature | Result signature | keyword |
 | azure.activitylogs.result_type | Result type | keyword |
+| azure.activitylogs.tenant_id | Tenant ID | keyword |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
