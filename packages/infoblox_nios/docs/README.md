@@ -310,7 +310,6 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dns.message |  | text |
 | infoblox_nios.log.dns.version |  | text |
 | infoblox_nios.log.dns.view_name |  | text |
-| infoblox_nios.log.message |  | text |
 | infoblox_nios.log.service_name |  | keyword |
 | infoblox_nios.log.type |  | keyword |
 | input.type | Input type | keyword |
@@ -318,6 +317,7 @@ An example event for `log` looks as following:
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | process.pid | Process id. | long |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |

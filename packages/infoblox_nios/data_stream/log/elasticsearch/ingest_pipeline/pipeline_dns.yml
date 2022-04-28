@@ -2,7 +2,7 @@
 description: Pipeline for parsing Infoblox NIOS DNS logs.
 processors:
   - grok:
-      field: syslog_message
+      field: message
       patterns:
         - "^zone %{DATA:dns.question.name}/%{DATA:dns.question.class}: notify from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}' from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
@@ -20,14 +20,14 @@ processors:
         - "^%{GREEDYDATA:infoblox_nios.log.dns.message}$"
   - date:
       field: timestamp
-      if: ctx?.timestamp != null
+      if: ctx.timestamp != null
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSS'Z'
       ignore_failure: true
   - split:
       field: repeat_message
-      if: ctx?.repeat_message != null
+      if: ctx.repeat_message != null
       separator: ';'
       ignore_missing: true
   - trim:
@@ -36,10 +36,10 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      if: ctx?.repeat_message != null
+      if: ctx.repeat_message != null
       source: 
         Map map = new HashMap();
-        def arr = ctx?.repeat_message;
+        def arr = ctx.repeat_message;
         map.put("name", new ArrayList());
         map.put("ttl", new ArrayList());
         map.put("class", new ArrayList());
@@ -60,23 +60,13 @@ processors:
       type: long
       ignore_missing: true
       ignore_failure: true
-  - convert:
-      field: client.ip
-      type: ip
-      ignore_missing: true
-      ignore_failure: true
-  - convert:
-      field: server.ip
-      type: ip
-      ignore_missing: true
-      ignore_failure: true
   - lowercase:
       field: network.transport
       ignore_missing: true
       ignore_failure: true
   - foreach:
       field: dns.answers.data
-      if: ctx?.dns?.answers?.data != null
+      if: ctx.dns?.answers?.data != null
       processor:
         grok: 
           field: '_ingest._value'
@@ -87,24 +77,24 @@ processors:
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
-      if: ctx?.client?.ip != null
+      if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.ip
       value: '{{{server.ip}}}'
-      if: ctx?.server?.ip != null
+      if: ctx.server?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.hosts
       value: '{{{client.domain}}}'
-      if: ctx?.client?.domain != null
+      if: ctx.client?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - foreach:
       field: dns.answers.name
-      if: ctx?.dns?.answers?.name != null
+      if: ctx.dns?.answers?.name != null
       processor:
         append:
           field: related.hosts
@@ -114,7 +104,7 @@ processors:
   - append:
       field: related.hosts
       value: '{{{dns.question.name}}}'
-      if: ctx?.dns?.question?.name != null
+      if: ctx.dns?.question?.name != null
       allow_duplicates: false
       ignore_failure: true
   - remove:

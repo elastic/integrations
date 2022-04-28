@@ -11,9 +11,9 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{NOTSPACE:host.domain}\\s+%{IP:host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:syslog_message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+(%{IP:host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:syslog_message}$"
-        - "^%{GREEDYDATA:syslog_message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{NOTSPACE:host.domain}\\s+%{IP:host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+(%{IP:host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^%{GREEDYDATA:message}$"
   - date:
       field: event.created
       target_field: event.created
@@ -26,59 +26,46 @@ processors:
   - set:
       field: infoblox_nios.log.type
       value: 'DHCP'
-      if: ctx?.infoblox_nios?.log?.service_name == "dhcpd"
+      if: ctx.infoblox_nios?.log?.service_name == "dhcpd"
   - set:
       field: infoblox_nios.log.type
       value: 'DNS'
-      if: ctx?.infoblox_nios?.log?.service_name == "named"
+      if: ctx.infoblox_nios?.log?.service_name == "named"
   - set:
       field: infoblox_nios.log.type
       value: 'AUDIT'
-      if: ctx?.infoblox_nios?.log?.service_name == "httpd"
+      if: ctx.infoblox_nios?.log?.service_name == "httpd"
   - pipeline:
       name: '{{ IngestPipeline "pipeline_audit" }}'
-      if: ctx?.infoblox_nios?.log?.type == "AUDIT"
+      if: ctx.infoblox_nios?.log?.type == "AUDIT"
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dhcp" }}'
-      if: ctx?.infoblox_nios?.log?.type == "DHCP"
+      if: ctx.infoblox_nios?.log?.type == "DHCP"
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dns" }}'
-      if: ctx?.infoblox_nios?.log?.type == "DNS"
-  - convert:
-      field: host.ip
-      type: ip
-      ignore_missing: true
-      ignore_failure: true
+      if: ctx.infoblox_nios?.log?.type == "DNS"
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
-      if: ctx?.host?.ip != null
+      if: ctx.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.hosts
       value: '{{{host.domain}}}'
-      if: ctx?.host?.domain != null
+      if: ctx.host?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: host.ip
       value: '{{{host.ip}}}'
-      if: ctx?.host?.ip != null
+      if: ctx.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - lowercase:
       field: event.action
-      if: ctx?.event?.action != null
+      if: ctx.event?.action != null
       ignore_failure: true
-  - rename:
-        field: syslog_message
-        target_field: infoblox_nios.log.message
-        ignore_missing: true
-        if: '!["DHCP", "DNS", "AUDIT"].contains(ctx?.infoblox_nios?.log?.type)'
-  - remove:
-      field: syslog_message
-      ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
@@ -98,7 +85,7 @@ processors:
         drop(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

@@ -2,22 +2,22 @@
 description: Pipeline for parsing Infoblox NIOS Audit logs.
 processors:
   - grok: 
-      field: syslog_message
-      if: ctx.syslog_message.contains("Created") || ctx.syslog_message.contains("Modified") || ctx.syslog_message.contains("Deleted")
+      field: message
+      if: ctx.message.contains("Created") || ctx.message.contains("Modified") || ctx.message.contains("Deleted")
       patterns: 
         - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{DATA:infoblox_nios.log.audit.object.name} %{DATA:infoblox_nios.log.audit.object.value}:? %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.audit.message}$"
   - grok: 
-      field: syslog_message
-      if: ctx.syslog_message.contains("Called") 
+      field: message
+      if: ctx.message.contains("Called") 
       patterns: 
         - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - %{WORD:infoblox_nios.log.audit.object.name}:? %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.audit.message}$"
   - grok:
-      field: syslog_message
-      if: ctx?.event?.action == null
+      field: message
+      if: ctx.event?.action == null
       patterns:
         - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - - %{GREEDYDATA:details}$"
         - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{GREEDYDATA:infoblox_nios.log.audit.message}$"
@@ -38,55 +38,55 @@ processors:
       ignore_missing: true
   - lowercase:
       field: event.action
-      if: ctx?.event?.action != null
+      if: ctx.event?.action != null
       ignore_failure: true
   - set:
       field: event.outcome
-      if: ctx?.event?.action == "login_allowed"
+      if: ctx.event?.action == "login_allowed"
       value: 'success'
       ignore_failure: true
-  - set:
+  - append:
       field: event.type
-      if: ctx?.event?.action == "login_allowed"
+      if: ctx.event?.action == "login_allowed"
       value: 'start'
       ignore_failure: true
-  - set:
+  - append:
       field: event.category
-      if: ctx?.event?.action == "login_allowed"
+      if: ctx.event?.action == "login_allowed"
       value: 'authentication'
       ignore_failure: true
   - set:
       field: event.outcome
-      if: ctx?.event?.action == "login_denied"
+      if: ctx.event?.action == "login_denied"
       value: 'failure'
       ignore_failure: true
-  - set:
+  - append:
       field: event.category
-      if: ctx?.event?.action == "login_denied"
+      if: ctx.event?.action == "login_denied"
       value: 'authentication'
       ignore_failure: true
-  - set:
+  - append:
       field: event.type
-      if: ctx?.event?.action == "logout"
+      if: ctx.event?.action == "logout"
       value: 'end'
       ignore_failure: true
-  - set:
+  - append:
       field: event.category
-      if: ctx?.event?.action == "logout"
+      if: ctx.event?.action == "logout"
       value: 'authentication'
       ignore_failure: true
   - script:
       description: Add kv fields under the infoblox_nios.log.audit.
       lang: painless
-      if: ctx?.audit != null
+      if: ctx.audit != null
       source: |
-        if (ctx?.infoblox_nios == null) {
+        if (ctx.infoblox_nios == null) {
           ctx["infoblox_nios"] = new HashMap();
         }
-        if (ctx?.infoblox_nios?.log == null) {
+        if (ctx.infoblox_nios?.log == null) {
           ctx.infoblox_nios["log"] = new HashMap();
         }
-        if (ctx?.infoblox_nios?.log?.audit == null) {
+        if (ctx.infoblox_nios?.log?.audit == null) {
           ctx.infoblox_nios.log["audit"] = new HashMap();
         }
         for (Map.Entry m : ctx.audit.entrySet()) {
@@ -99,7 +99,7 @@ processors:
   - append:
       field: related.ip
       value: '{{{infoblox_nios.log.audit.ip}}}'
-      if: ctx?.infoblox_nios?.log?.audit?.ip != null
+      if: ctx.infoblox_nios?.log?.audit?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - gsub:
@@ -116,6 +116,6 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
