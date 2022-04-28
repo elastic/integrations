@@ -151,11 +151,12 @@ An example event for `powershell` looks as following:
 {
     "@timestamp": "2020-05-13T13:21:43.183Z",
     "agent": {
-        "ephemeral_id": "db81e0aa-51b2-4036-9ece-f3c8979be9f8",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "9c05a45c-02bf-4437-9447-8591244dbdca",
+        "hostname": "docker-fleet-agent",
+        "id": "0d57cbc7-6410-455a-840c-08fd44507a26",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "data_stream": {
         "dataset": "windows.powershell",
@@ -166,17 +167,17 @@ An example event for `powershell` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "0d57cbc7-6410-455a-840c-08fd44507a26",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "process",
         "code": "600",
-        "created": "2022-01-12T05:24:01.636Z",
+        "created": "2022-03-31T08:41:12.816Z",
         "dataset": "windows.powershell",
-        "ingested": "2022-01-12T05:24:02Z",
+        "ingested": "2022-03-31T08:41:16Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T13:21:43.183180900Z'/\u003e\u003cEventRecordID\u003e1089\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eCertificate\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=35\n\n\tHostName=Windows PowerShell ISE Host\n\tHostVersion=5.1.17763.1007\n\tHostId=86edc16f-6943-469e-8bd8-ef1857080206\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell_ise.exe C:\\Users\\vagrant\\Desktop\\lateral.ps1\n\tEngineVersion=5.1.17763.1007\n\tRunspaceId=9d21da0b-e402-40e1-92ff-98c5ab1137a9\n\tPipelineId=15\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e\n\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T13:25:04.656426900Z'/\u003e\u003cEventRecordID\u003e1266\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eRegistry\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Registry\n\tNewProviderState=Started\n\n\tSequenceNumber=1\n\n\tHostName=ConsoleHost\n\tHostVersion=5.1.17763.1007\n\tHostId=44b8d66c-f5a2-4abb-ac7d-6db73990a6d3\n\tHostApplication=C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -noexit -command 'C:\\Gopath\\src\\github.com\\elastic\\beats'\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e\n\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='PowerShell'/\u003e\u003cEventID Qualifiers='0'\u003e600\u003c/EventID\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e6\u003c/Task\u003e\u003cKeywords\u003e0x80000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-06-04T07:25:04.857430200Z'/\u003e\u003cEventRecordID\u003e18640\u003c/EventRecordID\u003e\u003cChannel\u003eWindows PowerShell\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData\u003eCertificate\u003c/Data\u003e\u003cData\u003eStarted\u003c/Data\u003e\u003cData\u003e\tProviderName=Certificate\n\tNewProviderState=Started\n\n\tSequenceNumber=8\n\n\tHostName=ConsoleHost\n\tHostVersion=2.0\n\tHostId=99a16837-7392-463d-afe5-5f3ed24bd358\n\tEngineVersion=\n\tRunspaceId=\n\tPipelineId=\n\tCommandName=\n\tCommandType=\n\tScriptName=\n\tCommandPath=\n\tCommandLine=\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "PowerShell",
@@ -493,11 +494,12 @@ An example event for `powershell_operational` looks as following:
 {
     "@timestamp": "2020-05-13T09:04:04.755Z",
     "agent": {
-        "ephemeral_id": "bbdc83ce-5df6-4729-b8e9-0185b6ab66f6",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "d531ecae-45f4-4f96-a334-2c851a45469a",
+        "hostname": "docker-fleet-agent",
+        "id": "0d57cbc7-6410-455a-840c-08fd44507a26",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "data_stream": {
         "dataset": "windows.powershell_operational",
@@ -508,17 +510,17 @@ An example event for `powershell_operational` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "0d57cbc7-6410-455a-840c-08fd44507a26",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "process",
         "code": "4105",
-        "created": "2022-01-12T05:24:36.653Z",
+        "created": "2022-03-31T08:41:48.560Z",
         "dataset": "windows.powershell_operational",
-        "ingested": "2022-01-12T05:24:37Z",
+        "ingested": "2022-03-31T08:41:49Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-PowerShell' Guid='{a0c1853b-5c40-4b15-8766-3cf1c58f985a}'/\u003e\u003cEventID\u003e4105\u003c/EventID\u003e\u003cVersion\u003e1\u003c/Version\u003e\u003cLevel\u003e5\u003c/Level\u003e\u003cTask\u003e102\u003c/Task\u003e\u003cOpcode\u003e15\u003c/Opcode\u003e\u003cKeywords\u003e0x0\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2020-05-13T09:04:04.755232500Z'/\u003e\u003cEventRecordID\u003e790\u003c/EventRecordID\u003e\u003cCorrelation ActivityID='{dd68516a-2930-0000-5962-68dd3029d601}'/\u003e\u003cExecution ProcessID='4204' ThreadID='1476'/\u003e\u003cChannel\u003eMicrosoft-Windows-PowerShell/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-21-1350058589-2282154016-2764056528-1000'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='ScriptBlockId'\u003ef4a378ab-b74f-41a7-a5ef-6dd55562fdb9\u003c/Data\u003e\u003cData Name='RunspaceId'\u003e9c031e5c-8d5a-4b91-a12e-b3624970b623\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-PowerShell",
@@ -828,11 +830,12 @@ An example event for `sysmon_operational` looks as following:
 {
     "@timestamp": "2019-07-18T03:34:01.261Z",
     "agent": {
-        "ephemeral_id": "864e1771-93da-4224-b75b-92560b085f41",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "0670a96e-1852-42bc-b667-66e022ab1c89",
+        "hostname": "docker-fleet-agent",
+        "id": "0d57cbc7-6410-455a-840c-08fd44507a26",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "data_stream": {
         "dataset": "windows.sysmon_operational",
@@ -868,9 +871,9 @@ An example event for `sysmon_operational` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "0d57cbc7-6410-455a-840c-08fd44507a26",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -880,7 +883,7 @@ An example event for `sysmon_operational` looks as following:
         "code": "22",
         "created": "2019-07-18T03:34:02.025Z",
         "dataset": "windows.sysmon_operational",
-        "ingested": "2022-01-12T05:25:16Z",
+        "ingested": "2022-03-31T08:42:26Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Sysmon' Guid='{5770385f-c22a-43e0-bf4c-06f5698ffbd9}'/\u003e\u003cEventID\u003e22\u003c/EventID\u003e\u003cVersion\u003e5\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e22\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-07-18T03:34:02.025237700Z'/\u003e\u003cEventRecordID\u003e67\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='2828' ThreadID='1684'/\u003e\u003cChannel\u003eMicrosoft-Windows-Sysmon/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant-2016\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-18'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='RuleName'\u003e\u003c/Data\u003e\u003cData Name='UtcTime'\u003e2019-07-18 03:34:01.261\u003c/Data\u003e\u003cData Name='ProcessGuid'\u003e{fa4a0de6-e8a9-5d2f-0000-001053699900}\u003c/Data\u003e\u003cData Name='ProcessId'\u003e2736\u003c/Data\u003e\u003cData Name='QueryName'\u003ewww.msn.com\u003c/Data\u003e\u003cData Name='QueryStatus'\u003e0\u003c/Data\u003e\u003cData Name='QueryResults'\u003etype:  5 www-msn-com.a-0003.a-msedge.net;type:  5 a-0003.a-msedge.net;::ffff:204.79.197.203;\u003c/Data\u003e\u003cData Name='Image'\u003eC:\\Program Files (x86)\\Internet Explorer\\iexplore.exe\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
         "provider": "Microsoft-Windows-Sysmon",
