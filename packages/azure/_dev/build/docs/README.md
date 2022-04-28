@@ -34,7 +34,7 @@ Will retrieve Azure Spring Cloud system and application logs.
 
 `eventhub` :
 _string_
-It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the name, and the integration will adjust the settings when required.
+It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets).
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -78,27 +78,27 @@ https://management.usgovcloudapi.net/
 
 Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
 
-## Reference
+## Logs
 
-### activitylogs Data Stream
+### activitylogs
 
 {{event "activitylogs"}}
 
 {{fields "activitylogs"}}
 
-### platformlogs Data Stream
+### platformlogs
 
 {{event "platformlogs"}}
 
 {{fields "platformlogs"}}
 
-### auditlogs Data Stream
+### auditlogs
 
 {{event "auditlogs"}}
 
 {{fields "auditlogs"}}
 
-### signinlogs Data Stream
+### signinlogs
 
 {{event "signinlogs"}}
 

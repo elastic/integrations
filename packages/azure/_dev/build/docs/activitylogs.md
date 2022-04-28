@@ -12,7 +12,7 @@ There are several requirements before using the integration since the logs will 
 
 `eventhub` :
   _string_
-It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the name, and the integration will adjust the settings when required.
+It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets).
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -22,7 +22,7 @@ Default value: `$Default`
 
 `connection_string` :
 _string_
-The connection string required to communicate with Event Hubs, steps here https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string.
+The connection string required to communicate with Event Hubs, steps [here](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).
 
 A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the filebeat azure module it can start back up at the spot that it stopped processing messages.
 
@@ -54,9 +54,9 @@ https://management.azure.com/
 https://management.usgovcloudapi.net/
 ```
 
-## Reference
+## Logs
 
-### activitylogs Data Stream
+### activitylogs
 
 The `activitylogs` data stream of the Azure Logs package will collect any activity events that have been streamed through an azure event hub.
 

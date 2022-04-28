@@ -18,7 +18,7 @@ Audit logs – Information about changes applied to your tenant such as users an
 
 `eventhub` :
   _string_
-It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the name, and the integration will adjust the settings when required.
+It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets).
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -60,9 +60,9 @@ https://management.azure.com/
 https://management.usgovcloudapi.net/
 ```
 
-## Reference
+## Logs
 
-### auditlogs Data Stream
+### auditlogs
 
 The `auditlogs` dataset of the Azure Logs package will collect any audit events that have been streamed through an azure event hub.
 
