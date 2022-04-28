@@ -1,18 +1,15 @@
 # Zscaler ZIA
 
-This integration is for Zscaler Internet Access logs. It can be used
-to receive logs sent by NSS log server on respective TCP ports.
+This integration is for Zscaler Internet Access logs. It can be used to receive logs sent by NSS feeds on TCP port or Cloud NSS on HTTP Endpoint input methods.
 
-The log message is expected to be in JSON format. The data is mapped to
-ECS fields where applicable and the remaining fields are written under
-`zscaler_zia.<data-stream-name>.*`.
+The log message is expected to be in JSON format. The data is mapped to ECS fields where applicable and the remaining fields are written under `zscaler_zia.<data-stream-name>.*`.
 
-## Setup steps
+## Steps for setting up NSS Feeds
 
 1. Enable the integration with the TCP input.
-2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. See [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) and [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscalar NSS Server and NSS Feeds follow the following steps.
+2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. See [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) and [_Add NSS Feeds_](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscaler NSS Server and NSS Feeds follow the following steps.
     - In the ZIA Admin Portal, add an NSS Server.
-        - Log in to the ZIA Admin Portal using your admin account. If you're unable to log in, contact Support.
+        - Log in to the ZIA Admin Portal using your admin account.
         - Add an NSS server. Refer to Adding NSS Servers to set up an [_Add NSS Server_](https://help.zscaler.com/zia/adding-nss-servers) for Web and/or Firewall.
         - Verify that the state of the NSS Server is healthy.
             - In the ZIA Admin Portal, go to Administration > Nanolog Streaming Service > NSS Servers.
@@ -27,10 +24,32 @@ ECS fields where applicable and the remaining fields are written under
                 - **Firewall**: 9012
                 - **Tunnel**: 9013
                 - **Web**: 9014
-            - **Feed Output Type**: Select Custom paste the appropriate response format as follows:
-            ![NSS feeds setup image](../img/nss_feeds.png?raw=true)  
+            - **Feed Output Type**: Select Custom in Feed output type and paste the appropriate response format in Feed output format as follows:
+            ![NSS Feeds setup image](../img/nss_feeds.png?raw=true)
 
-3. *Please make sure to use the given response formats.*
+## Steps for setting up Cloud NSS Feeds
+
+1. Enable the integration with the HTTP Endpoint input.
+2. Configure the Zscaler Cloud NSS Feeds to send logs to the Elastic Agent that is running this integration. Provide API URL to send logs to the Elastic Agent. To configure Zscaler Cloud NSS Feeds follow the following steps.
+    - In the ZIA Admin Portal, add a Cloud NSS Feed.
+        - Log in to the ZIA Admin Portal using your admin account.
+        - Add a Cloud NSS Feed. Refer to [_Add Cloud NSS Feed_](https://help.zscaler.com/zia/adding-cloud-nss-feeds).  
+          - In the ZIA Admin Portal, go to Administration > Nanolog Streaming Service > Cloud NSS Feeds.  
+          - Give Feed Name, change status to Enabled.  
+          - Select NSS Type.  
+          - Change SIEM Type to other.  
+          - Add an API URL.  
+          - Default ports:  
+              - **DNS**: 9556  
+              - **Firewall**: 9557  
+              - **Tunnel**: 9558  
+              - **Web**: 9559  
+          - Select JSON as feed output type.  
+          - Add appropriate HTTP headers.  
+          ![Cloud NSS Feeds setup image](../img/cloud_nss_feeds.png?raw=true)
+3. Repeat step 2 for each log type.
+
+**Please make sure to use the given response formats for NSS and Cloud NSS Feeds.**
 
 ## Compatibility
 
@@ -40,7 +59,7 @@ This package has been tested against `Zscaler Internet Access version 6.1`
 
 ### Alerts
 
-Default port: _9010_
+- Default port (NSS Feed): _9010_
 
 Vendor documentation: https://help.zscaler.com/zia/about-alerts
 
@@ -56,7 +75,8 @@ Sample Response:
 
 ### DNS Log
 
-Default port: _9011_
+- Default port (NSS Feed): _9011_
+- Default port (Cloud NSS Feed): _9556_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-dns-logs
 
@@ -72,7 +92,8 @@ Sample Response:
 
 ### Firewall Log
 
-Default port: _9012_
+- Default port (NSS Feed): _9012_
+- Default port (Cloud NSS Feed): _9557_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-firewall-logs
 
@@ -88,7 +109,8 @@ Sample Response:
 
 ### Tunnel Log
 
-Default port: _9013_
+- Default port (NSS Feed): _9013_
+- Default port (Cloud NSS Feed): _9558_
 
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-tunnel-logs
 
@@ -117,8 +139,9 @@ Sample Response:
 
 ### Web Log
 
-Default port: _9014_  
-Add characters **"** and **\\** in **feed escape character** while configuring Web Log.  
+- Default port (NSS Feed): _9014_  
+- Default port (Cloud NSS Feed): _9559_
+- Add characters **"** and **\\** in **feed escape character** while configuring Web Log.  
 
 ![Escape feed setup image](../img/escape_feed.png?raw=true)  
 Vendor documentation: https://help.zscaler.com/zia/nss-feed-output-format-web-logs
@@ -198,12 +221,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2022-12-10T13:40:32.000Z",
     "agent": {
-        "ephemeral_id": "8c093fcf-fb2f-4baa-b794-40edb011194d",
-        "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "ephemeral_id": "b7f77db9-92fe-4935-8387-b2cb545bcfc6",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "data_stream": {
         "dataset": "zscaler_zia.alerts",
@@ -219,21 +241,21 @@ An example event for `alerts` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "638019f9-173e-4c24-9e28-64b128c92162",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "zscaler_zia.alerts",
-        "ingested": "2022-02-04T06:31:25Z"
+        "ingested": "2022-04-13T17:21:34Z"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:32902"
+            "address": "1.128.3.4:32902"
         },
         "syslog": {
             "priority": 114
@@ -265,14 +287,6 @@ An example event for `alerts` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.geo.city_name | City name. | keyword |
-| client.geo.continent_name | Name of the continent. | keyword |
-| client.geo.country_iso_code | Country ISO code. | keyword |
-| client.geo.country_name | Country name. | keyword |
-| client.geo.location | Longitude and latitude. | geo_point |
-| client.geo.region_iso_code | Region ISO code. | keyword |
-| client.geo.region_name | Region name. | keyword |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -289,11 +303,24 @@ An example event for `alerts` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -315,18 +342,20 @@ An example event for `alerts` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
-| server.geo.city_name | City name. | keyword |
-| server.geo.continent_name | Name of the continent. | keyword |
-| server.geo.country_iso_code | Country ISO code. | keyword |
-| server.geo.country_name | Country name. | keyword |
-| server.geo.location | Longitude and latitude. | geo_point |
-| server.geo.region_iso_code | Region ISO code. | keyword |
-| server.geo.region_name | Region name. | keyword |
-| server.ip | IP address of the server (IPv4 or IPv6). | ip |
-| server.port | Port of the server. | long |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
@@ -351,32 +380,38 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "d288c261-b8db-45af-99c0-a673c3c6d8e1",
-        "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "ephemeral_id": "88d27df6-beee-4299-bf35-56742db35e98",
+        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
-    },
-    "client": {
-        "geo": {
-            "city_name": "London",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "location": {
-                "lat": 51.5142,
-                "lon": -0.0931
-            },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
-        },
-        "ip": "81.2.69.193"
+        "version": "8.1.2"
     },
     "data_stream": {
         "dataset": "zscaler_zia.dns",
         "namespace": "ep",
         "type": "logs"
+    },
+    "destination": {
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.156",
+        "port": 8080
     },
     "dns": {
         "answers": {
@@ -391,15 +426,18 @@ An example event for `dns` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "network",
+        "category": [
+            "network"
+        ],
         "dataset": "zscaler_zia.dns",
-        "ingested": "2022-02-04T06:32:56Z",
+        "duration": 123456000000,
+        "ingested": "2022-04-20T06:45:24Z",
         "kind": "event",
         "type": [
             "info"
@@ -410,33 +448,41 @@ An example event for `dns` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:54202"
+            "address": "1.128.3.4:32902"
         }
+    },
+    "network": {
+        "protocol": "dns"
     },
     "related": {
         "hosts": [
             "Machine9000"
         ],
         "ip": [
-            "81.2.69.193",
-            "81.2.69.144"
+            "89.160.20.112",
+            "89.160.20.156"
         ]
     },
-    "server": {
-        "geo": {
-            "city_name": "London",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "location": {
-                "lat": 51.5142,
-                "lon": -0.0931
-            },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
+    "source": {
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
         },
-        "ip": "81.2.69.144",
-        "port": 8080
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.112"
     },
     "tags": [
         "forwarded",
@@ -481,7 +527,6 @@ An example event for `dns` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.bytes | Bytes sent from the client to the server. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -498,9 +543,14 @@ An example event for `dns` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.country_name | Country name. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.module | Event module | constant_keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -523,38 +573,36 @@ An example event for `dns` looks as following:
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| server.bytes | Bytes sent from the server to the client. | long |
-| server.geo.country_name | Country name. | keyword |
+| source.bytes | Bytes sent from the source to the destination. | long |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | zscaler_zia.firewall.aggregate |  | keyword |
 | zscaler_zia.firewall.client.destination.ip | Client destination IP address. For aggregated sessions, this is the client destination IP address of the last session in the aggregate. | keyword |
-| zscaler_zia.firewall.client.destination.port | Client destination port. For aggregated sessions, this is the client destination port of the last session in the aggregate. | double |
-| zscaler_zia.firewall.client.source.ip | Client source IP address. For aggregated sessions, this is the client source IP address of the last session in the aggregate. | keyword |
-| zscaler_zia.firewall.client.source.port | Client source port. For aggregated sessions, this is the client source port of the last session in the aggregate. | double |
+| zscaler_zia.firewall.client.destination.port | Client destination port. For aggregated sessions, this is the client destination port of the last session in the aggregate. | long |
 | zscaler_zia.firewall.department | Department of the user. | keyword |
-| zscaler_zia.firewall.duration.avg | Average session duration, in milliseconds, if the sessions were aggregated. | double |
-| zscaler_zia.firewall.duration.milliseconds | Session or request duration in milliseconds. | double |
-| zscaler_zia.firewall.duration.seconds | Session or request duration in seconds. | double |
+| zscaler_zia.firewall.duration.avg | Average session duration, in milliseconds, if the sessions were aggregated. | long |
+| zscaler_zia.firewall.duration.milliseconds | Session or request duration in milliseconds. | long |
+| zscaler_zia.firewall.duration.seconds | Average session duration, in milliseconds, if the sessions were aggregated. | long |
 | zscaler_zia.firewall.ip_category | URL category that corresponds to the server IP address. | keyword |
 | zscaler_zia.firewall.location.name | Name of the location from which the session was initiated. | keyword |
 | zscaler_zia.firewall.nat | Indicates if the destination NAT policy was applied. | keyword |
-| zscaler_zia.firewall.server.destination.ip | Server Destination IP address. For aggregated sessions, this is the server destination IP address of the last session in the aggregate. | keyword |
-| zscaler_zia.firewall.server.destination.port | Server destination port. For aggregated sessions, this is the server destination port of the last session in the aggregate. | double |
 | zscaler_zia.firewall.server.source.ip | Server source IP address. For aggregated sessions, this is the server source IP address of the last session in the aggregate. | keyword |
-| zscaler_zia.firewall.server.source.port | Server source port. For aggregated sessions, this is the server source port of the last session in the aggregate. | double |
+| zscaler_zia.firewall.server.source.port | Server source port. For aggregated sessions, this is the server source port of the last session in the aggregate. | long |
 | zscaler_zia.firewall.session.count | Number of sessions that were aggregated. | double |
 | zscaler_zia.firewall.stateful |  | keyword |
 | zscaler_zia.firewall.threat.category | Category of the threat in the Firewall session by the IPS engine. | keyword |
 | zscaler_zia.firewall.threat.name | Name of the threat detected in the Firewall session by the IPS engine. | keyword |
 | zscaler_zia.firewall.tunnel.ip | Tunnel IP address of the client (source). For aggregated sessions, this is the client's tunnel IP address corresponding to the last session in the aggregate. | keyword |
-| zscaler_zia.firewall.tunnel.port | Tunnel port on the client side. For aggregated sessions, this is the client's tunnel port corresponding to the last session in the aggregate. | double |
+| zscaler_zia.firewall.tunnel.port | Tunnel port on the client side. For aggregated sessions, this is the client's tunnel port corresponding to the last session in the aggregate. | long |
 | zscaler_zia.firewall.tunnel.type | Traffic forwarding method used to send the traffic to the firewall. | keyword |
 
 
@@ -562,40 +610,48 @@ An example event for `firewall` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-17T07:27:54.000Z",
+    "@timestamp": "2021-12-31T07:08:09.000Z",
     "agent": {
-        "ephemeral_id": "41987f90-74dc-4b4b-9936-4347028cf558",
-        "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "ephemeral_id": "2c292e52-b6ea-4ca0-bfc7-692dadde1a7d",
+        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
-    },
-    "client": {
-        "bytes": 1734
+        "version": "8.1.2"
     },
     "data_stream": {
         "dataset": "zscaler_zia.firewall",
         "namespace": "ep",
         "type": "logs"
     },
+    "destination": {
+        "bytes": 19052,
+        "geo": {
+            "country_name": "Ireland"
+        },
+        "ip": "0.0.0.0",
+        "port": 443
+    },
     "ecs": {
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "event": {
         "action": "drop",
         "agent_id_status": "verified",
-        "category": "network",
+        "category": [
+            "network"
+        ],
         "dataset": "zscaler_zia.firewall",
-        "ingested": "2022-02-04T06:34:17Z",
+        "duration": 486000000,
+        "ingested": "2021-12-31T05:06:07Z",
         "kind": "event",
-        "original": "{ \"sourcetype\" : \"zscalernss-fw\", \"event\" :{\"datetime\":\"Fri Dec 17 07:27:54 2021\",\"user\":\"some_user@example.com\",\"department\":\"Unknown\",\"locationname\":\"TestLoc%20DB\",\"cdport\":443,\"csport\":55018,\"sdport\":443,\"ssport\":0,\"csip\":\"0.0.0.0\",\"cdip\":\"0.0.0.0\",\"ssip\":\"0.0.0.0\",\"sdip\":\"0.0.0.0\",\"tsip\":\"0.0.0.0\",\"tunsport\":0,\"tuntype\":\"ZscalerClientConnector\",\"action\":\"Drop\",\"dnat\":\"No\",\"stateful\":\"Yes\",\"aggregate\":\"No\",\"nwsvc\":\"HTTPS\",\"nwapp\":\"http\",\"proto\":\"TCP\",\"ipcat\":\"Test Name\",\"destcountry\":\"Ireland\",\"avgduration\":486,\"rulelabel\":\"Access%20Blocked\",\"inbytes\":19052,\"outbytes\":1734,\"duration\":0,\"durationms\":486,\"numsessions\":1,\"ipsrulelabel\":\"None\",\"threatcat\":\"None\",\"threatname\":\"None\",\"deviceowner\":\"admin77\",\"devicehostname\":\"Machine9000\"}}",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "hostname": "Machine9000"
@@ -605,11 +661,12 @@ An example event for `firewall` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:58194"
+            "address": "1.128.3.4:43634"
         }
     },
     "network": {
         "application": "http",
+        "community_id": "1:hQwW1HWTOUYlk7y4+T2D+UPDU1c=",
         "protocol": "https",
         "transport": "tcp"
     },
@@ -624,11 +681,10 @@ An example event for `firewall` looks as following:
             "None"
         ]
     },
-    "server": {
-        "bytes": 19052,
-        "geo": {
-            "country_name": "Ireland"
-        }
+    "source": {
+        "bytes": 1734,
+        "ip": "0.0.0.0",
+        "port": 55018
     },
     "tags": [
         "forwarded",
@@ -645,17 +701,12 @@ An example event for `firewall` looks as following:
                 "destination": {
                     "ip": "0.0.0.0",
                     "port": 443
-                },
-                "source": {
-                    "ip": "0.0.0.0",
-                    "port": 55018
                 }
             },
             "department": "Unknown",
             "duration": {
                 "avg": 486,
-                "milliseconds": 486,
-                "seconds": 0
+                "milliseconds": 486
             },
             "ip_category": "Test Name",
             "location": {
@@ -663,10 +714,6 @@ An example event for `firewall` looks as following:
             },
             "nat": "No",
             "server": {
-                "destination": {
-                    "ip": "0.0.0.0",
-                    "port": 443
-                },
                 "source": {
                     "ip": "0.0.0.0",
                     "port": 0
@@ -743,6 +790,9 @@ An example event for `firewall` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
@@ -781,14 +831,13 @@ An example event for `tunnel` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-30T11:20:12.000Z",
+    "@timestamp": "2021-12-31T11:12:13.000Z",
     "agent": {
-        "ephemeral_id": "63ac98b6-0ff6-4943-820e-8505eff15937",
-        "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "ephemeral_id": "b187ac54-dab8-4e34-b72d-36772d818767",
+        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "data_stream": {
         "dataset": "zscaler_zia.tunnel",
@@ -802,16 +851,18 @@ An example event for `tunnel` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "network",
+        "category": [
+            "network"
+        ],
         "dataset": "zscaler_zia.tunnel",
         "id": "1111111111111111111",
-        "ingested": "2022-02-04T06:36:16Z",
+        "ingested": "2021-12-31T05:06:07Z",
         "kind": "event",
         "type": [
             "info"
@@ -822,8 +873,11 @@ An example event for `tunnel` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:44374"
+            "address": "1.128.3.4:58370"
         }
+    },
+    "network": {
+        "transport": "ipsec ikev 1"
     },
     "related": {
         "ip": [
@@ -904,10 +958,6 @@ An example event for `tunnel` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
-| client.nat.ip | Translated IP of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | ip |
-| client.user.name | Short name or login of the user. | keyword |
-| client.user.name.text | Multi-field of `client.user.name`. | match_only_text |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -924,6 +974,7 @@ An example event for `tunnel` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.dataset | Event dataset | constant_keyword |
@@ -960,6 +1011,10 @@ An example event for `tunnel` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
+| source.user.name | Short name or login of the user. | keyword |
+| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
@@ -986,7 +1041,6 @@ An example event for `tunnel` looks as following:
 | zscaler_zia.web.app.class | The web application class of the application that was accessed. Equivalent to module. | keyword |
 | zscaler_zia.web.app.name | Cloud application name. | keyword |
 | zscaler_zia.web.bandwidth_throttle | Indicates whether the transaction was throttled due to a configured bandwidth policy. | keyword |
-| zscaler_zia.web.client.internet.ip | The client Internet (NATted Public) IP address. This is different from the cip value if the internal IP address is visible. Otherwise, same as cip. | keyword |
 | zscaler_zia.web.ctime | The time from when the first byte of the request hits the ZEN to the time in which the last byte of the response is sent from the ZEN back to the browser. | long |
 | zscaler_zia.web.department | Department of the user. | keyword |
 | zscaler_zia.web.device.hostname | The obfuscated version of the device owner. This field must be changed manually. | keyword |
@@ -1014,41 +1068,36 @@ An example event for `web` looks as following:
 {
     "@timestamp": "2021-12-17T07:04:57.000Z",
     "agent": {
-        "ephemeral_id": "ced1fd2e-2f17-4f67-b8b1-d38a1920abbb",
-        "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "ephemeral_id": "6f164483-9eb8-4219-bb09-cd2ff3532390",
+        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
-    },
-    "client": {
-        "ip": "81.2.69.193",
-        "nat": {
-            "ip": "81.2.69.145"
-        },
-        "user": {
-            "name": "administrator1"
-        }
+        "version": "8.1.2"
     },
     "data_stream": {
         "dataset": "zscaler_zia.web",
         "namespace": "ep",
         "type": "logs"
     },
+    "destination": {
+        "ip": "81.2.69.145"
+    },
     "ecs": {
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.1.2"
     },
     "event": {
         "action": "blocked",
         "agent_id_status": "verified",
-        "category": "web",
+        "category": [
+            "web"
+        ],
         "dataset": "zscaler_zia.web",
-        "ingested": "2022-02-04T08:48:57Z",
+        "ingested": "2021-12-31T05:06:07Z",
         "kind": "event",
         "risk_score": 0,
         "type": [
@@ -1072,7 +1121,7 @@ An example event for `web` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:48722"
+            "address": "1.128.3.4:37608"
         }
     },
     "network": {
@@ -1090,6 +1139,14 @@ An example event for `web` looks as following:
     "rule": {
         "name": "Zscaler Proxy Traffic",
         "ruleset": "FwFilter"
+    },
+    "source": {
+        "nat": {
+            "ip": "81.2.69.193"
+        },
+        "user": {
+            "name": "administrator1"
+        }
     },
     "tags": [
         "forwarded",

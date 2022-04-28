@@ -11,10 +11,16 @@ processors:
   - json:
       field: event.original
       target_field: resp
+      ignore_failure: true
+  - remove:
+      field: json
+      if: ctx?.input?.type == 'http_endpoint'
+      ignore_missing: true
   - rename:
       field: resp.event
       target_field: json
-  - remove: 
+      ignore_missing: true
+  - remove:
       field: resp
       ignore_missing: true
   - date:
@@ -25,10 +31,25 @@ processors:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+  - date:
+      field: json.time
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
   - remove:
-      field: json.datetime
+      field:
+        - json.time
+        - json.datetime
       ignore_missing: true
   - set:
+      field: network.protocol
+      value: dns
+  - append:
       field: event.category
       value: network
   - set:
@@ -37,78 +58,94 @@ processors:
   - append:
       field: event.type
       value: info
-  - rename: 
+  - rename:
       field: json.clt_sip
-      target_field: client.ip
+      target_field: source.ip
       ignore_missing: true
   - geoip:
-      field: client.ip
-      target_field: client.geo
+      field: source.ip
+      target_field: source.geo
       ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
-      field: client.ip
-      target_field: client.as
+      field: source.ip
+      target_field: source.as
       properties:
         - asn
         - organization_name
       ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{client.ip}}}"
-      if: ctx?.client?.ip != null
+      value: "{{{source.ip}}}"
+      if: ctx?.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - rename: 
+  - rename:
       field: json.dns_resp
       target_field: dns.answers.name
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.dns_req
       target_field: dns.question.name
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.dns_reqtype
       target_field: dns.question.type
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.srv_dip
-      target_field: server.ip
+      target_field: destination.ip
       ignore_missing: true
   - geoip:
-      field: server.ip
-      target_field: server.geo
+      field: destination.ip
+      target_field: destination.geo
       ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
-      field: server.ip
-      target_field: server.as
+      field: destination.ip
+      target_field: destination.as
       properties:
         - asn
         - organization_name
       ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true      
   - append:
       field: related.ip
-      value: "{{{server.ip}}}"
-      if: ctx?.server?.ip != null
+      value: "{{{destination.ip}}}"
+      if: ctx?.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - convert: 
+  - convert:
       field: json.srv_dport
-      target_field: server.port
+      target_field: destination.port
       type: long
       ignore_failure: true
   - remove:
       field: json.srv_dport
       ignore_missing: true
-  - urldecode: 
+  - urldecode:
       field: json.user
       target_field: user.email
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.user
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.deviceowner
       target_field: user.name
       ignore_missing: true
@@ -116,14 +153,14 @@ processors:
       field: json.department
       target_field: zscaler_zia.dns.department
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.department
       ignore_missing: true
   - urldecode:
       field: json.location
       target_field: zscaler_zia.dns.location
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.location
       ignore_missing: true
   - rename:
@@ -138,14 +175,14 @@ processors:
       field: json.reqrulelabel
       target_field: zscaler_zia.dns.request.rule.label
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.reqrulelabel
       ignore_missing: true
   - urldecode:
       field: json.resrulelabel
       target_field: zscaler_zia.dns.response.rule.label
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.resrulelabel
       ignore_missing: true
   - convert:
@@ -195,7 +232,12 @@ processors:
         for (Map.Entry m : ctx.json.entrySet()) {
           ctx.zscaler_zia.dns[m.getKey()] = m.getValue();
         }
-  - remove: 
+  - script:
+      lang: painless
+      if: ctx?.zscaler_zia?.dns?.duration?.milliseconds != null
+      source: |
+        ctx.event.duration = ctx?.zscaler_zia?.dns?.duration?.milliseconds * 1000000;
+  - remove:
       field: json
       ignore_failure: true
   - remove:

@@ -11,10 +11,16 @@ processors:
   - json:
       field: event.original
       target_field: resp
+      ignore_failure: true
+  - remove:
+      field: json
+      if: ctx?.input?.type == 'http_endpoint'
+      ignore_missing: true
   - rename:
       field: resp.event
       target_field: json
-  - remove: 
+      ignore_missing: true
+  - remove:
       field: resp
       ignore_missing: true
   - date:
@@ -25,10 +31,22 @@ processors:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
-  - remove: 
-      field: json.time
+        - yyyy-MM-dd HH:mm:ss
+  - date:
+      field: json.datetime
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+  - remove:
+      field:
+        - json.time
+        - json.datetime
       ignore_missing: true
-  - set:
+  - append:
       field: event.category
       value: web
   - set:
@@ -39,27 +57,28 @@ processors:
       value: info
   - rename:
       field: json.cip
-      target_field: client.ip
+      target_field: source.nat.ip
+      if: ctx?.json?.cip != ctx?.json?.cintip
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{client.ip}}}"
-      if: ctx?.client?.ip != null
+      value: "{{{source.nat.ip}}}"
+      if: ctx?.source?.nat?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.sip
-      target_field: client.nat.ip
+      target_field: destination.ip
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{client.nat.ip}}}"
-      if: ctx?.client?.nat?.ip != null
+      value: "{{{destination.ip}}}"
+      if: ctx?.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.deviceowner
-      target_field: client.user.name
+      target_field: source.user.name
       ignore_missing: true
   - convert:
       field: json.reqsize
@@ -94,7 +113,7 @@ processors:
       target_field: http.response.status_code
       type: long
       ignore_failure: true
-  - remove: 
+  - remove:
       field: json.respcode
       ignore_missing: true
   - rename:
@@ -103,7 +122,7 @@ processors:
       ignore_missing: true
   - lowercase:
       field: network.protocol
-      ignore_missing: true      
+      ignore_missing: true
   - rename:
       field: json.rulelabel
       target_field: rule.name
@@ -116,7 +135,7 @@ processors:
       field: json.eurl
       remove_if_successful: true
       on_failure:
-      - set: 
+      - set:
           field: url.original
           value: "{{{json.eurl}}}"
           if: ctx?.json?.eurl != null
@@ -220,7 +239,7 @@ processors:
       field: json.devicehostname
       target_field: zscaler_zia.web.device.hostname
       ignore_missing: true
-  - append: 
+  - append:
       field: related.hosts
       value: "{{{zscaler_zia.web.device.hostname}}}"
       if: ctx?.zscaler_zia?.web?.device?.hostname != null
@@ -232,12 +251,12 @@ processors:
       ignore_missing: true
   - rename:
       field: json.cintip
-      target_field: zscaler_zia.web.client.internet.ip
+      target_field: source.ip
       ignore_missing: true
   - append:
       field: related.ip
-      value: "{{{zscaler_zia.web.client.internet.ip}}}"
-      if: ctx?.zscaler_zia?.web?.client?.internet?.ip != null
+      value: "{{{source.ip}}}"
+      if: ctx?.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:

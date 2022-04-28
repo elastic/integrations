@@ -11,9 +11,15 @@ processors:
   - json:
       field: event.original
       target_field: resp
+      ignore_failure: true
+  - remove:
+      field: json
+      if: ctx?.input?.type == 'http_endpoint'
+      ignore_missing: true
   - rename:
       field: resp.event
       target_field: json
+      ignore_missing: true
   - remove: 
       field: resp
       ignore_missing: true
@@ -25,10 +31,22 @@ processors:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+  - date:
+      field: json.time
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
   - remove:
-      field: json.datetime
+      field:
+        - json.time
+        - json.datetime
       ignore_missing: true
-  - set:
+  - append:
       field: event.category
       value: network
   - set:
@@ -53,7 +71,7 @@ processors:
       field: json.destinationip
       target_field: destination.ip
       ignore_missing: true
-  - append: 
+  - append:
       field: related.ip
       value: "{{{destination.ip}}}"
       if: ctx?.destination?.ip != null
@@ -71,7 +89,7 @@ processors:
       field: json.sourceip
       target_field: source.ip
       ignore_missing: true
-  - append: 
+  - append:
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
@@ -89,26 +107,34 @@ processors:
       field: json.user
       target_field: user.name
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.user
       ignore_missing: true
-  - append: 
+  - append:
       field: related.user
       value: "{{{user.name}}}"
       if: ctx?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
+  - convert:
       field: json.rxbytes
       target_field: destination.bytes
+      type: long
+      ignore_missing: true
+  - remove:
+      field: json.rxbytes
       ignore_missing: true
   - rename:
       field: json.rxpackets
       target_field: destination.packets
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.txbytes
       target_field: source.bytes
+      type: long
+      ignore_missing: true
+  - remove:
+      field: json.txbytes
       ignore_missing: true
   - rename:
       field: json.txpackets
@@ -122,7 +148,7 @@ processors:
       field: json.location
       target_field: zscaler_zia.tunnel.location.name
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.location
       ignore_missing: true
   - convert:
@@ -130,7 +156,7 @@ processors:
       target_field: zscaler_zia.tunnel.life.time
       type: long
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.lifetime
       ignore_missing: true
   - convert:
@@ -138,7 +164,7 @@ processors:
       target_field: zscaler_zia.tunnel.ike.version
       type: integer
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.ikeversion
       ignore_missing: true
   - rename:
@@ -165,6 +191,18 @@ processors:
       field: json.tunneltype
       target_field: zscaler_zia.tunnel.type
       ignore_missing: true
+  - set:
+      field: network.transport
+      copy_from: zscaler_zia.tunnel.type
+      ignore_failure: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - set:
+      field: network.iana_number
+      value: "47"
+      if: ctx?.network?.transport == "gre"
+      ignore_failure: true
   - rename:
       field: json.vendorname
       target_field: zscaler_zia.tunnel.vendor.name
@@ -174,7 +212,7 @@ processors:
       target_field: zscaler_zia.tunnel.source.start.port
       type: long
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.sourceportstart
       ignore_missing: true
   - convert:
@@ -182,14 +220,14 @@ processors:
       target_field: zscaler_zia.tunnel.destination.start.port
       type: long
       ignore_missing: true
-  - remove: 
+  - remove:
       field: json.destinationportstart
       ignore_missing: true
   - rename:
       field: json.srcipstart
       target_field: zscaler_zia.tunnel.source.start.ip
       ignore_missing: true
-  - append: 
+  - append:
       field: related.ip
       value: "{{{zscaler_zia.tunnel.source.start.ip}}}"
       if: ctx?.zscaler_zia?.tunnel?.source?.start?.ip != null
@@ -199,7 +237,7 @@ processors:
       field: json.srcipend
       target_field: zscaler_zia.tunnel.source.end.ip
       ignore_missing: true
-  - append: 
+  - append:
       field: related.ip
       value: "{{{zscaler_zia.tunnel.source.end.ip}}}"
       if: ctx?.zscaler_zia?.tunnel?.source?.end?.ip != null
@@ -209,7 +247,7 @@ processors:
       field: json.destinationipstart
       target_field: zscaler_zia.tunnel.destination.start.ip
       ignore_missing: true
-  - append: 
+  - append:
       field: related.ip
       value: "{{{zscaler_zia.tunnel.destination.start.ip}}}"
       if: ctx?.zscaler_zia?.tunnel?.destination?.start?.ip != null
@@ -219,7 +257,7 @@ processors:
       field: json.destinationipend
       target_field: zscaler_zia.tunnel.destination.end.ip
       ignore_missing: true
-  - append: 
+  - append:
       field: related.ip
       value: "{{{zscaler_zia.tunnel.destination.end.ip}}}"
       if: ctx?.zscaler_zia?.tunnel?.destination?.end?.ip != null
@@ -253,6 +291,8 @@ processors:
       field: json.dpdrec
       target_field: zscaler_zia.tunnel.dpd_packets
       ignore_missing: true
+  - community_id:
+      ignore_failure: true
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -278,7 +318,7 @@ processors:
         for (Map.Entry m : ctx.json.entrySet()) {
           ctx.zscaler_zia.tunnel[m.getKey()] = m.getValue();
         }
-  - remove: 
+  - remove:
       field: json
       ignore_missing: true
   - remove:
