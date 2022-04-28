@@ -1,6 +1,6 @@
 # Cisco FTD Integration
 
-This integration is for [Cisco](https://www.cisco.com/c/en/us/support/security/index.html) Firepower Threat Defence (FTD) device's logs. The package processes syslog messages from a Cisco Firepower devices 
+This integration is for [Cisco](https://www.cisco.com/c/en/us/support/security/index.html) Firepower Threat Defence (FTD) device's logs. The package processes syslog messages from Cisco Firepower devices 
 
 It includes the following datasets for receiving logs over syslog or read from a file:
 
