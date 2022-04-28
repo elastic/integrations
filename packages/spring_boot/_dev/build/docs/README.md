@@ -74,7 +74,7 @@ This is the `threading` data stream.
 
 This is the `gc` data stream.
 
-- This data stream gives metrics related to Garbage Collector(GC) Memory.
+- This data stream gives metrics related to Garbage Collector (GC) Memory.
 
 {{event "gc"}}
 

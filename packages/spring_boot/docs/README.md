@@ -470,7 +470,7 @@ An example event for `threading` looks as following:
 
 This is the `gc` data stream.
 
-- This data stream gives metrics related to Garbage Collector(GC) Memory.
+- This data stream gives metrics related to Garbage Collector (GC) Memory.
 
 An example event for `gc` looks as following:
 
