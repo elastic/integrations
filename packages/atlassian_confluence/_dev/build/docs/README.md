@@ -6,7 +6,7 @@ The Confluence integration collects [audit logs](https://confluence.atlassian.co
 
 ### Audit
 
-The Confluence integration collects audit logs from the audit log files or the audit API from self hosted Confluence Data Center. It has been tested with Confluence 7.14.2 but is expected to work with newer versions. This has not been tested with Confluence Cloud and is not expected to work.
+The Confluence integration collects audit logs from the audit log files or the audit API from self hosted Confluence Data Center. It has been tested with Confluence 7.14.2 but is expected to work with newer versions. As of version 1.2.0, this integration added experimental support for Atlassian Confluence Cloud.  JIRA Cloud only supports Basic Auth using username and a Personal Access Token.
 
 {{fields "audit"}}
 

@@ -1,7 +1,11 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "GET"
+{{#if atlassian_cloud}}
+request.url: {{api_url}}/rest/api/3/auditing/record
+{{else}}
 request.url: {{api_url}}/rest/auditing/1.0/events
+{{/if}}
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
@@ -21,6 +25,31 @@ auth.basic.password: {{password}}
 {{/unless}}
 
 request.transforms:
+  - set:
+      target: url.params.limit
+      value: {{ limit }}
+{{#if atlassian_cloud}}
+  - set:
+      target: url.params.from
+      value: "[[.cursor.last_timestamp]]"
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.999"]]'
+  - set:
+      target: url.params.to
+      value: '[[formatDate (now) "2006-01-02T15:04:05.999"]]'
+  - set:
+      target: url.params.offset
+      value: '0'
+response.split:
+  target: body.records
+response.pagination:
+  - set:
+      target: url.value
+      value: '[[sprintf "%s/rest/api/3/auditing/record?from=%s&to=%s&offset=%d&limit=%s" "{{api_url}}" (.last_response.url.params.Get "from") (.last_response.url.params.Get "to") (add (toInt .last_response.body.offset) (toInt "{{ limit }}")) "{{ limit }}"]]'
+      fail_on_template_error: true
+cursor:
+  last_timestamp:
+    value: "[[.first_event.created]]"
+{{else}}
 {{#unless username}}
 {{#unless password}}
 {{#if token}}
@@ -37,11 +66,6 @@ request.transforms:
   - set:
       target: url.params.to
       value: '[[formatDate now]]'
-  - set:
-      target: url.params.limit
-      value: {{ limit }}
-
-
 response.split:
   target: body.entities
 response.pagination:
@@ -53,6 +77,7 @@ response.pagination:
 cursor:
   last_timestamp:
     value: "[[.first_event.timestamp]]"
+{{/if}}
 
 tags:
 {{#if preserve_original_event}}
@@ -61,10 +86,19 @@ tags:
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+
+{{#if atlassian_cloud}}
+fields_under_root: true
+fields:
+  _config:
+    atlassian_cloud: true
+{{/if}}
+
 {{#if processors}}
 processors:
 {{processors}}
-{{/if}}
+{{/if}} 
