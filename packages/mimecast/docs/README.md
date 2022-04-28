@@ -4,16 +4,24 @@ The Mimecast integration collects events from the Mimecast API.
 
 ## Configuration
 
-Authorization parameters for the Mimecast API (`Application Key`, `Application ID`, `Access Key`, and `Secret Key`), should be provided by a Mimecast representative for this integration.
-Under `Advanced options` you can set the time interval between two API requests as well as the API URL. A Mimecast representative should also be able to give you with this information in case you need to change the defaults. 
+Authorization parameters for the Mimecast API (`Application Key`, `Application
+ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast
+representative for this integration. Under `Advanced options` you can set the
+time interval between two API requests as well as the API URL. A Mimecast
+representative should also be able to give you this information in case you need
+to change the defaults.
 
-Note that rate limit quotas may require you to set up different credentials for the different available log types.
+Note that rate limit quotas may require you to set up different credentials for
+the different available log types.
 
 ## Logs
 
 ### Audit Events
 
-This is the `mimecast.audit_events` dataset. These logs contain Mimecast audit events with the following details: audit type, event category and detailed information about the event. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
+This is the `mimecast.audit_events` dataset. These logs contain Mimecast audit
+events with the following details: audit type, event category, and detailed
+information about the event. More information about these logs [here]
+(https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
 
 An example event for `audit_events` looks as following:
 
@@ -81,11 +89,9 @@ An example event for `audit_events` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.as.asn | Client ASN number. | long |
 | client.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | client.as.organization.name | Organization name. | keyword |
 | client.as.organization.name.text | Multi-field of `client.as.organization.name`. | match_only_text |
-| client.as.organization_name | Client Organization name. | keyword |
 | client.geo.city_name | City name. | keyword |
 | client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
@@ -111,16 +117,18 @@ An example event for `audit_events` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
-| email.origination_timestamp | The date and time the email message was composed. Many email clients will fill this in automatically when the message is sent by a user. | date |
-| email.subject | A brief summary of the topic of the message | keyword |
-| email.subject.text | Multi-field of `email.subject`. | text |
-| email.to.address | The email address(es) of the message recipient(s) | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.origination_timestamp | The date and time the email message was composed. Many email clients will fill in this value automatically when the message is sent by a user. | date |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
@@ -161,7 +169,10 @@ An example event for `audit_events` looks as following:
 
 ### DLP Logs
 
-This is the `mimecast.dlp_logs` dataset. These logs contain information about messages that triggered a DLP or Content Examination policy. More information about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
+This is the `mimecast.dlp_logs` dataset. These logs contain information about
+messages that triggered a DLP or Content Examination policy. More information
+about these logs [here]
+(https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/).
 
 An example event for `dlp` looks as following:
 
@@ -248,14 +259,14 @@ An example event for `dlp` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| email.direction | Direction of the message based on the sending and receiving domains | keyword |
-| email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
-| email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
-| email.message_id.text | Multi-field of `email.message_id`. | text |
-| email.subject | A brief summary of the topic of the message | keyword |
-| email.subject.text | Multi-field of `email.subject`. | text |
-| email.to.address | The email address(es) of the message recipient(s) | keyword |
+| email.direction | The direction of the message based on the sending and receiving domains. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
@@ -278,20 +289,16 @@ An example event for `dlp` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| mimecast.action | The action taken against the message. | keyword |
-| mimecast.messageId | The message-id value of the message. | keyword |
-| mimecast.policy | The name of a DLP or Content Examination configuration that triggered the message. | keyword |
-| mimecast.recipientAddress | Email address of the recipient. | keyword |
-| mimecast.route | The message direction. Possible values are inbound, outbound or internal. | keyword |
-| mimecast.senderAddress | Email address of the sender. | keyword |
-| mimecast.subject | The message subject. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 
 
 ### SIEM Logs
 
-This is the `mimecast.siem_logs` dataset. These logs contain information about messages that contains MTA logs (MTA = message transfer agent) – all Inbound, outbound and internal messages. More about these logs [here](https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
+This is the `mimecast.siem_logs` dataset. These logs contain information about
+messages that contains MTA (message transfer agent) log – all inbound,
+outbound, and internal messages. More about these logs
+[here](https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
 
 An example event for `siem` looks as following:
 
@@ -379,26 +386,24 @@ An example event for `siem` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
-| email.attachments.file.mime_type | MIME type of the attachment file. | keyword |
-| email.attachments.file.name | Name of the attachment file including the extension. | keyword |
+| email.attachments.file.hash.md5 | MD5 hash. | keyword |
+| email.attachments.file.hash.sha1 | SHA1 hash. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | email.attachments.file.size | Attachment file size in bytes. | long |
-| email.attachments.hash.md5 | MD5 hash of the file attachment. | keyword |
-| email.attachments.hash.sha1 | SHA-1 hash of the file attachment. | keyword |
-| email.attachments.hash.sha256 | SHA-256 hash of the file attachment. | keyword |
-| email.direction | Direction of the message based on the sending and receiving domains. | keyword |
-| email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
-| email.header_from | The sender address found in the from header of the email. | keyword |
-| email.local_id | Unique identifier given to the email by the source (MTA, gateway, etc.) that created the event and is not persistent across hops (for example, the X-MS-Exchange-Organization-Network-Message-Id id). | keyword |
-| email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
-| email.message_id.text | Multi-field of `email.message_id`. | text |
-| email.message_size | The total size of the email.The total size of the email. | long |
-| email.subject | A brief summary of the topic of the message | keyword |
-| email.subject.text | Multi-field of `email.subject`. | text |
-| email.to.address | The email address(es) of the message recipient(s). | keyword |
+| email.direction | The direction of the message based on the sending and receiving domains. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.local_id | Unique identifier given to the email by the source that created the event. Identifier is not persistent across hops. | keyword |
+| email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
 | error.code | Error code describing the error. | keyword |
 | error.message | Error message. | match_only_text |
 | error.type | The type of the error, for example the class name of the exception. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.module | Event module | constant_keyword |
@@ -467,11 +472,9 @@ An example event for `siem` looks as following:
 | mimecast.msgid | The internet message id of the email. | keyword |
 | mimecast.urlCategory | The category of the URL that was clicked. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| source.as.asn | Client ASN number. | long |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
-| source.as.organization_name | Client Organization name. | keyword |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -490,9 +493,483 @@ An example event for `siem` looks as following:
 | user.email | User email address. | keyword |
 
 
+### Threat Intel Feed Malware: Customer
+
+This is the `mimecast.threat_intel_malware_customer` dataset. These logs contain
+information about messages that return identified malware threats at a customer
+level. More about these logs
+[here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
+
+An example event for `threat_intel_malware_customer` looks as following:
+
+```json
+{
+    "@timestamp": "2021-11-19T01:28:37.099Z",
+    "agent": {
+        "ephemeral_id": "350131de-71cb-4dba-9001-75ff27fc2e0f",
+        "hostname": "docker-fleet-agent",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
+    "data_stream": {
+        "dataset": "mimecast.threat_intel_malware_customer",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "threat",
+        "created": "2022-04-21T08:25:44.963Z",
+        "dataset": "mimecast.threat_intel_malware_customer",
+        "ingested": "2022-04-21T08:25:45Z",
+        "kind": "enrichment",
+        "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
+        "type": "indicator"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "mimecast": {
+        "id": "indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd",
+        "labels": [
+            "malicious-activity"
+        ],
+        "pattern": "[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']",
+        "type": "indicator"
+    },
+    "related": {
+        "hash": [
+            "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "mimecast-threat-intel-feed-malware-customer",
+        "malicious-activity"
+    ],
+    "threat": {
+        "indicator": {
+            "file": {
+                "hash": {
+                    "sha256": "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+                }
+            },
+            "first_seen": "2021-11-19T01:28:37.099Z",
+            "modified_at": "2021-11-19T01:28:37.099Z",
+            "type": "file"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| mimecast.created | When the indicator was last created. | date |
+| mimecast.hashtype | The hash type. | keyword |
+| mimecast.id | The ID of the indicator. | keyword |
+| mimecast.labels | The labels related to the indicator. | keyword |
+| mimecast.log_type | String to get type of Threat intel feed. | keyword |
+| mimecast.modified | When the indicator was last modified. | date |
+| mimecast.name | Name of the file. | keyword |
+| mimecast.pattern | The pattern. | keyword |
+| mimecast.relationship_type | Type of the relationship. | keyword |
+| mimecast.source_ref | Source of the reference. | keyword |
+| mimecast.target_ref | Reference target. | keyword |
+| mimecast.type | The indicator type, can for example be "domain, email, FileHash-SHA256". | keyword |
+| mimecast.valid_from | The valid from date. | date |
+| mimecast.value | The value of the indicator. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
+| threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
+| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+
+
+### Threat Intel Feed Malware: Grid
+
+This is the `mimecast.threat_intel_malware_grid` dataset. These logs contain
+information about messages that return identified malware threats at a regional
+grid level. More about these logs
+[here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
+
+An example event for `threat_intel_malware_grid` looks as following:
+
+```json
+{
+    "@timestamp": "2021-11-19T01:28:37.099Z",
+    "agent": {
+        "ephemeral_id": "2c512f3d-fe8b-4751-a5a0-df442fcba073",
+        "hostname": "docker-fleet-agent",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
+    "data_stream": {
+        "dataset": "mimecast.threat_intel_malware_grid",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "threat",
+        "created": "2022-04-21T08:26:32.512Z",
+        "dataset": "mimecast.threat_intel_malware_grid",
+        "ingested": "2022-04-21T08:26:33Z",
+        "kind": "enrichment",
+        "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
+        "type": "indicator"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "mimecast": {
+        "id": "indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd",
+        "labels": [
+            "malicious-activity"
+        ],
+        "pattern": "[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']",
+        "type": "indicator"
+    },
+    "related": {
+        "hash": [
+            "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "mimecast-threat-intel-feed-malware-grid",
+        "malicious-activity"
+    ],
+    "threat": {
+        "indicator": {
+            "file": {
+                "hash": {
+                    "sha256": "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
+                }
+            },
+            "first_seen": "2021-11-19T01:28:37.099Z",
+            "modified_at": "2021-11-19T01:28:37.099Z",
+            "type": "file"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| mimecast.created | When the indicator was last created. | date |
+| mimecast.hashtype | The hash type. | keyword |
+| mimecast.id | The ID of the indicator. | keyword |
+| mimecast.labels | The labels related to the indicator. | keyword |
+| mimecast.log_type | String to get type of Threat intel feed. | keyword |
+| mimecast.modified | When the indicator was last modified. | date |
+| mimecast.name | Name of the file. | keyword |
+| mimecast.pattern | The pattern. | keyword |
+| mimecast.relationship_type | Type of the relationship. | keyword |
+| mimecast.source_ref | Source of the reference. | keyword |
+| mimecast.target_ref | Reference target. | keyword |
+| mimecast.type | The indicator type, can for example be "domain, email, FileHash-SHA256". | keyword |
+| mimecast.valid_from | The valid from date. | date |
+| mimecast.value | The value of the indicator. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
+| threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
+| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+
+
+### TTP Attachment Logs
+
+This is the `mimecast.ttp_ap_logs` dataset. These logs contain Mimecast TTP
+attachment protection logs with the following details: result of attachment
+analysis (if it is malicious or not etc.), date when file is released, sender
+and recipient address, filename and type, action triggered for the attachment,
+the route of the original email containing the attachment and details. Learn
+more about these logs [here]
+(https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
+
+An example event for `ttp_ap` looks as following:
+
+```json
+{
+    "@timestamp": "2021-11-24T11:54:27.000Z",
+    "agent": {
+        "ephemeral_id": "51899d24-0340-41eb-b0aa-1e2e9def2460",
+        "hostname": "docker-fleet-agent",
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.16.0"
+    },
+    "data_stream": {
+        "dataset": "mimecast.ttp_ap_logs",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "01800603-1f81-46c1-b412-764819259d1b",
+        "snapshot": true,
+        "version": "7.16.0"
+    },
+    "email": {
+        "attachments": {
+            "file": {
+                "extension": "pdf",
+                "hash": {
+                    "sha256": "cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254"
+                },
+                "mime_type": "application/pdf",
+                "name": "Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf"
+            }
+        },
+        "direction": "inbound",
+        "from": {
+            "address": [
+                "\u003c\u003e"
+            ]
+        },
+        "message_id": "\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\u003e",
+        "subject": "Test Files",
+        "to": {
+            "address": [
+                "johndoe@emample.com"
+            ]
+        }
+    },
+    "event": {
+        "action": "user_release_none",
+        "agent_id_status": "verified",
+        "created": "2021-11-24T11:54:27+0000",
+        "dataset": "mimecast.ttp_ap_logs",
+        "ingested": "2022-04-21T08:27:16Z",
+        "original": "{\"actionTriggered\":\"user release, none\",\"date\":\"2021-11-24T11:54:27+0000\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\",\"details\":\"Safe                                              \\r\\nTime taken: 0 hrs, 0 min, 7 sec\",\"fileHash\":\"cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254\",\"fileName\":\"Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf\",\"fileType\":\"application/pdf\",\"messageId\":\"\\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\\u003e\",\"recipientAddress\":\"johndoe@emample.com\",\"result\":\"safe\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Test Files\"}"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "mimecast": {
+        "details": "Safe                                              \r\nTime taken: 0 hrs, 0 min, 7 sec",
+        "result": "safe"
+    },
+    "related": {
+        "hash": [
+            "cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254"
+        ]
+    },
+    "rule": {
+        "name": "Inbound - Safe file with On-Demand Sandbox"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "mimecast-ttp-ap"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.attachments.file.mime_type | The MIME media type of the attachment. This value will typically be extracted from the `Content-Type` MIME header field. | keyword |
+| email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
+| email.direction | The direction of the message based on the sending and receiving domains. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| mimecast.actionTriggered | The action triggered for the attachment. | keyword |
+| mimecast.definition | The definition. | keyword |
+| mimecast.details | Detailed output of the attachment sandbox processing. | keyword |
+| mimecast.fileHash | The hash of the attachment. | keyword |
+| mimecast.fileName | The file name of the original attachment. | keyword |
+| mimecast.fileType | The file type of the attachment. | keyword |
+| mimecast.messageId | The internet message id of the email. | keyword |
+| mimecast.recipientAddress | The address of the user that received the attachment. | keyword |
+| mimecast.result | The result of the attachment analysis - clean, malicious, unknown, or timeout. | keyword |
+| mimecast.route | The route of the original email containing the attachment, either - inbound, outbound, internal, or external. | keyword |
+| mimecast.senderAddress | The sender of the attachment. | keyword |
+| mimecast.subject | The subject of the email. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+
+
 ### TTP Impersonation Logs
 
-This is the `mimecast.ttp_ip_logs` dataset. These logs contain information about messages containing information flagged by an Impersonation Protection configuration. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/). 
+This is the `mimecast.ttp_ip_logs` dataset. These logs contain information about
+messages containing information flagged by an Impersonation Protection
+configuration. Learn more about these logs [here]
+(https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/).
 
 An example event for `ttp_ip` looks as following:
 
@@ -603,13 +1080,13 @@ An example event for `ttp_ip` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
-| email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
-| email.message_id.text | Multi-field of `email.message_id`. | text |
-| email.subject | A brief summary of the topic of the message | keyword |
-| email.subject.text | Multi-field of `email.subject`. | text |
-| email.to.address | The email address(es) of the message recipient(s) | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.module | Event module | constant_keyword |
@@ -656,166 +1133,18 @@ An example event for `ttp_ip` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 
 
-### TTP Attachment Logs
-
-This is the `mimecast.ttp_ap_logs` dataset. These logs contain Mimecast TTP attachment protection logs with the following details: result of attachment analysis (if it is malicious or not etc.), date when file is released, sender and recipient address, filename and type, action triggered for the attachment, the route of the original email containing the attachment and details. Learn more about these logs [here] (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
-
-An example event for `ttp_ap` looks as following:
-
-```json
-{
-    "@timestamp": "2021-11-24T11:54:27.000Z",
-    "agent": {
-        "ephemeral_id": "51899d24-0340-41eb-b0aa-1e2e9def2460",
-        "hostname": "docker-fleet-agent",
-        "id": "01800603-1f81-46c1-b412-764819259d1b",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "7.16.0"
-    },
-    "data_stream": {
-        "dataset": "mimecast.ttp_ap_logs",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.2.0"
-    },
-    "elastic_agent": {
-        "id": "01800603-1f81-46c1-b412-764819259d1b",
-        "snapshot": true,
-        "version": "7.16.0"
-    },
-    "email": {
-        "attachments": {
-            "file": {
-                "extension": "pdf",
-                "mime_type": "application/pdf",
-                "name": "Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf"
-            },
-            "hash": "cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254"
-        },
-        "direction": "inbound",
-        "from": {
-            "address": [
-                "\u003c\u003e"
-            ]
-        },
-        "message_id": "\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\u003e",
-        "subject": "Test Files",
-        "to": {
-            "address": [
-                "johndoe@emample.com"
-            ]
-        }
-    },
-    "event": {
-        "action": "user_release_none",
-        "agent_id_status": "verified",
-        "created": "2021-11-24T11:54:27+0000",
-        "dataset": "mimecast.ttp_ap_logs",
-        "ingested": "2022-04-21T08:27:16Z",
-        "original": "{\"actionTriggered\":\"user release, none\",\"date\":\"2021-11-24T11:54:27+0000\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\",\"details\":\"Safe                                              \\r\\nTime taken: 0 hrs, 0 min, 7 sec\",\"fileHash\":\"cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254\",\"fileName\":\"Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf\",\"fileType\":\"application/pdf\",\"messageId\":\"\\u003cCAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\\u003e\",\"recipientAddress\":\"johndoe@emample.com\",\"result\":\"safe\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Test Files\"}"
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "mimecast": {
-        "details": "Safe                                              \r\nTime taken: 0 hrs, 0 min, 7 sec",
-        "result": "safe"
-    },
-    "related": {
-        "hash": [
-            "cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254"
-        ]
-    },
-    "rule": {
-        "name": "Inbound - Safe file with On-Demand Sandbox"
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "mimecast-ttp-ap"
-    ]
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
-| email.attachments.file.mime_type | MIME type of the attachment file. | keyword |
-| email.attachments.file.name | Name of the attachment file including the extension. | keyword |
-| email.attachments.hash | File hash. | keyword |
-| email.direction | Direction of the message based on the sending and receiving domains | keyword |
-| email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
-| email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
-| email.message_id.text | Multi-field of `email.message_id`. | text |
-| email.subject | A brief summary of the topic of the message | keyword |
-| email.subject.text | Multi-field of `email.subject`. | text |
-| email.to.address | The email address(es) of the message recipient(s) | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
-| mimecast.actionTriggered | The action triggered for the attachment. | keyword |
-| mimecast.definition | The definition. | keyword |
-| mimecast.details | Detailed output of the attachment sandbox processing. | keyword |
-| mimecast.fileHash | The hash of the attachment. | keyword |
-| mimecast.fileName | The file name of the original attachment. | keyword |
-| mimecast.fileType | The file type of the attachment. | keyword |
-| mimecast.messageId | The internet message id of the email. | keyword |
-| mimecast.recipientAddress | The address of the user that received the attachment. | keyword |
-| mimecast.result | The result of the attachment analysis - clean, malicious, unknown, or timeout. | keyword |
-| mimecast.route | The route of the original email containing the attachment, either - inbound, outbound, internal, or external. | keyword |
-| mimecast.senderAddress | The sender of the attachment. | keyword |
-| mimecast.subject | The subject of the email. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| rule.name | The name of the rule or signature generating the event. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-
-
 ### TTP URL Logs
 
-This is the `mimecast.ttp_url_logs` dataset. These logs contain Mimecast TTP attachment protection logs with the following details: the category of the URL clicked, the email address of the user who clicked the link, the url clicked, the action taken by the user if user awareness was applied, the route of the email that contained the link, the action defined by the administrator for the URL, the date that the URL was clicked, url scan result, the action that was taken for the click, the description of the definition that triggered the URL to be rewritten by Mimecast, the action requested by the user, an array of components of the message where the URL was found. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/). 
+This is the `mimecast.ttp_url_logs` dataset. These logs contain Mimecast TTP
+attachment protection logs with the following details: the category of the URL
+clicked, the email address of the user who clicked the link, the url clicked,
+the action taken by the user if user awareness was applied, the route of the
+email that contained the link, the action defined by the administrator for the
+URL, the date that the URL was clicked, url scan result, the action that was
+taken for the click, the description of the definition that triggered the URL to
+be rewritten by Mimecast, the action requested by the user, an array of
+components of the message where the URL was found. More about these logs
+[here](https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/).
 
 An example event for `ttp_url` looks as following:
 
@@ -925,14 +1254,14 @@ An example event for `ttp_url` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| email.direction | Direction of the message based on the sending and receiving domains | keyword |
-| email.from.address | Stores the from email address from the RFC5322 From - header field. | keyword |
-| email.message_id | Identifier from the RFC5322 Message-ID - header field that refers to a particular version of a particular message. | wildcard |
-| email.message_id.text | Multi-field of `email.message_id`. | text |
-| email.subject | A brief summary of the topic of the message | keyword |
-| email.subject.text | Multi-field of `email.subject`. | text |
-| email.to.address | Stores the from email address to the RFC5322 From - header field. | keyword |
+| email.direction | The direction of the message based on the sending and receiving domains. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
@@ -981,294 +1310,3 @@ An example event for `ttp_url` looks as following:
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | user.email | User email address. | keyword |
 
-
-### Threat Intel Feed Malware: Customer
-
-This is the `mimecast.threat_intel_malware_customer` dataset. These logs contain information about messages that return identified malware threats at a customer level. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/). 
-
-An example event for `threat_intel_malware_customer` looks as following:
-
-```json
-{
-    "@timestamp": "2021-11-19T01:28:37.099Z",
-    "agent": {
-        "ephemeral_id": "350131de-71cb-4dba-9001-75ff27fc2e0f",
-        "hostname": "docker-fleet-agent",
-        "id": "01800603-1f81-46c1-b412-764819259d1b",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "7.16.0"
-    },
-    "data_stream": {
-        "dataset": "mimecast.threat_intel_malware_customer",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.2.0"
-    },
-    "elastic_agent": {
-        "id": "01800603-1f81-46c1-b412-764819259d1b",
-        "snapshot": true,
-        "version": "7.16.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": "threat",
-        "created": "2022-04-21T08:25:44.963Z",
-        "dataset": "mimecast.threat_intel_malware_customer",
-        "ingested": "2022-04-21T08:25:45Z",
-        "kind": "enrichment",
-        "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
-        "type": "indicator"
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "mimecast": {
-        "id": "indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd",
-        "labels": [
-            "malicious-activity"
-        ],
-        "pattern": "[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']",
-        "type": "indicator"
-    },
-    "related": {
-        "hash": [
-            "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
-        ]
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "mimecast-threat-intel-feed-malware-customer",
-        "malicious-activity"
-    ],
-    "threat": {
-        "indicator": {
-            "file": {
-                "hash": {
-                    "sha256": "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
-                }
-            },
-            "first_seen": "2021-11-19T01:28:37.099Z",
-            "modified_at": "2021-11-19T01:28:37.099Z",
-            "type": "file"
-        }
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| mimecast.created | When the indicator was last created. | date |
-| mimecast.hashtype | The hash type. | keyword |
-| mimecast.id | The ID of the indicator. | keyword |
-| mimecast.labels | The labels related to the indicator. | keyword |
-| mimecast.log_type | String to get type of Threat intel feed. | keyword |
-| mimecast.modified | When the indicator was last modified. | date |
-| mimecast.name | Name of the file. | keyword |
-| mimecast.pattern | The pattern. | keyword |
-| mimecast.relationship_type | Type of the relationship. | keyword |
-| mimecast.source_ref | Source of the reference. | keyword |
-| mimecast.target_ref | Reference target. | keyword |
-| mimecast.type | The indicator type, can for example be "domain, email, FileHash-SHA256". | keyword |
-| mimecast.valid_from | The valid from date. | date |
-| mimecast.value | The value of the indicator. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
-| threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
-| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
-| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
-| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
-
-
-### Threat Intel Feed Malware: Grid
-
-This is the `mimecast.threat_intel_malware_grid` dataset. These logs contain information about messages that return identified malware threats at a regional grid level. More about these logs [here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/). 
-
-An example event for `threat_intel_malware_grid` looks as following:
-
-```json
-{
-    "@timestamp": "2021-11-19T01:28:37.099Z",
-    "agent": {
-        "ephemeral_id": "2c512f3d-fe8b-4751-a5a0-df442fcba073",
-        "hostname": "docker-fleet-agent",
-        "id": "01800603-1f81-46c1-b412-764819259d1b",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "7.16.0"
-    },
-    "data_stream": {
-        "dataset": "mimecast.threat_intel_malware_grid",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.2.0"
-    },
-    "elastic_agent": {
-        "id": "01800603-1f81-46c1-b412-764819259d1b",
-        "snapshot": true,
-        "version": "7.16.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "category": "threat",
-        "created": "2022-04-21T08:26:32.512Z",
-        "dataset": "mimecast.threat_intel_malware_grid",
-        "ingested": "2022-04-21T08:26:33Z",
-        "kind": "enrichment",
-        "original": "{\"created\":\"2021-11-19T01:28:37.099Z\",\"id\":\"indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd\",\"labels\":[\"malicious-activity\"],\"modified\":\"2021-11-19T01:28:37.099Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']\",\"type\":\"indicator\",\"valid_from\":\"2021-11-19T01:28:37.099Z\"}",
-        "type": "indicator"
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "mimecast": {
-        "id": "indicator--456ac916-4c4e-43be-b7a9-6678f6a845cd",
-        "labels": [
-            "malicious-activity"
-        ],
-        "pattern": "[file:hashes.'SHA-256' = 'ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be']",
-        "type": "indicator"
-    },
-    "related": {
-        "hash": [
-            "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
-        ]
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "mimecast-threat-intel-feed-malware-grid",
-        "malicious-activity"
-    ],
-    "threat": {
-        "indicator": {
-            "file": {
-                "hash": {
-                    "sha256": "ec5a6c52acdc187fc6c1187f14cd685c686c2b283503a023c4a9d3a977b491be"
-                }
-            },
-            "first_seen": "2021-11-19T01:28:37.099Z",
-            "modified_at": "2021-11-19T01:28:37.099Z",
-            "type": "file"
-        }
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| mimecast.created | When the indicator was last created. | date |
-| mimecast.hashtype | The hash type. | keyword |
-| mimecast.id | The ID of the indicator. | keyword |
-| mimecast.labels | The labels related to the indicator. | keyword |
-| mimecast.log_type | String to get type of Threat intel feed. | keyword |
-| mimecast.modified | When the indicator was last modified. | date |
-| mimecast.name | Name of the file. | keyword |
-| mimecast.pattern | The pattern. | keyword |
-| mimecast.relationship_type | Type of the relationship. | keyword |
-| mimecast.source_ref | Source of the reference. | keyword |
-| mimecast.target_ref | Reference target. | keyword |
-| mimecast.type | The indicator type, can for example be "domain, email, FileHash-SHA256". | keyword |
-| mimecast.valid_from | The valid from date. | date |
-| mimecast.value | The value of the indicator. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| threat.indicator.file.hash.md5 | MD5 hash. | keyword |
-| threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
-| threat.indicator.file.hash.sha256 | SHA256 hash. | keyword |
-| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
-| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
