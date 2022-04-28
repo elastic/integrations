@@ -476,10 +476,10 @@ An example event for `gc` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-27T11:24:29.864Z",
+    "@timestamp": "2022-04-28T07:41:25.295Z",
     "agent": {
-        "ephemeral_id": "362c1bfe-715b-4208-ac40-bebc2892d2bb",
-        "id": "fd5fc138-8ce3-4428-a0d5-a95f578ebe8e",
+        "ephemeral_id": "d39c814b-c55e-49b8-b341-bdeb81405909",
+        "id": "bcdac209-2a2d-4257-87f9-7349e612a566",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -493,7 +493,7 @@ An example event for `gc` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "fd5fc138-8ce3-4428-a0d5-a95f578ebe8e",
+        "id": "bcdac209-2a2d-4257-87f9-7349e612a566",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -501,8 +501,8 @@ An example event for `gc` looks as following:
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "spring_boot.gc",
-        "duration": 99488795,
-        "ingested": "2022-04-27T11:24:32Z",
+        "duration": 98470985,
+        "ingested": "2022-04-28T07:41:28Z",
         "kind": "metric",
         "module": "spring_boot",
         "type": "info"
@@ -512,10 +512,10 @@ An example event for `gc` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.23.0.4"
+            "172.28.0.7"
         ],
         "mac": [
-            "02:42:ac:17:00:04"
+            "02:42:ac:1c:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -543,34 +543,34 @@ An example event for `gc` looks as following:
                 "memory_usage": {
                     "after": {
                         "code_cache": {
-                            "committed": 11862016,
+                            "committed": 13762560,
                             "init": 2555904,
                             "max": 251658240,
-                            "used": 11765120
+                            "used": 13670080
                         },
                         "compressed_class_space": {
                             "committed": 4980736,
                             "init": 0,
                             "max": 1073741824,
-                            "used": 4447928
+                            "used": 4449008
                         },
                         "metaspace": {
                             "committed": 36265984,
                             "init": 0,
                             "max": -1,
-                            "used": 33733320
+                            "used": 33791064
                         },
                         "ps_eden_space": {
-                            "committed": 255328256,
+                            "committed": 333447168,
                             "init": 24641536,
                             "max": 482344960,
                             "used": 0
                         },
                         "ps_old_gen": {
-                            "committed": 86507520,
+                            "committed": 62390272,
                             "init": 64487424,
                             "max": 1012400128,
-                            "used": 14994376
+                            "used": 15062472
                         },
                         "ps_survivor_space": {
                             "committed": 9961472,
@@ -581,48 +581,48 @@ An example event for `gc` looks as following:
                     },
                     "before": {
                         "code_cache": {
-                            "committed": 11862016,
+                            "committed": 13762560,
                             "init": 2555904,
                             "max": 251658240,
-                            "used": 11765120
+                            "used": 13670080
                         },
                         "compressed_class_space": {
                             "committed": 4980736,
                             "init": 0,
                             "max": 1073741824,
-                            "used": 4447928
+                            "used": 4449008
                         },
                         "metaspace": {
                             "committed": 36265984,
                             "init": 0,
                             "max": -1,
-                            "used": 33733320
+                            "used": 33791064
                         },
                         "ps_eden_space": {
-                            "committed": 255328256,
+                            "committed": 333447168,
                             "init": 24641536,
                             "max": 482344960,
                             "used": 0
                         },
                         "ps_old_gen": {
-                            "committed": 54001664,
+                            "committed": 45088768,
                             "init": 64487424,
                             "max": 1012400128,
-                            "used": 8577832
+                            "used": 9755264
                         },
                         "ps_survivor_space": {
                             "committed": 9961472,
                             "init": 3670016,
                             "max": 9961472,
-                            "used": 9568320
+                            "used": 9719904
                         }
                     }
                 },
                 "thread_count": 4,
                 "time": {
-                    "duration": 81,
-                    "end": 9828,
-                    "start": 9747
+                    "duration": 134,
+                    "end": 6895,
+                    "start": 6761
                 }
             },
             "name": "PS MarkSweep"
