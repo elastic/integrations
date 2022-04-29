@@ -3,7 +3,7 @@
         "author": [
             "Elastic"
         ],
-        "description": "Detects attempts to exploit privilege escalation vulnerabilities related to the Print Spooler service including CVE-2020-1048 and CVE-2020-1337. .",
+        "description": "Detects the creation or modification of a print driver with an unusual file name. This may indicate attempts to exploit privilege escalation vulnerabilities related to the Print Spooler service. For more information refer to CVE-2021-34527 and verify that the impacted system is investigated.",
         "from": "now-9m",
         "index": [
             "winlogbeat-*",
@@ -12,14 +12,14 @@
         ],
         "language": "eql",
         "license": "Elastic License v2",
-        "name": "Suspicious PrintSpooler SPL File Created",
-        "note": "## Threat intel\n\nRefer to CVEs, CVE-2020-1048 and CVE-2020-1337 for further information on the vulnerability and exploit. Verify that the relevant system is patched.",
-        "query": "file where event.type != \"deletion\" and\n  file.extension : \"spl\" and\n  file.path : \"?:\\\\Windows\\\\System32\\\\spool\\\\PRINTERS\\\\*\" and\n  not process.name : (\"spoolsv.exe\",\n                      \"printfilterpipelinesvc.exe\",\n                      \"PrintIsolationHost.exe\",\n                      \"splwow64.exe\",\n                      \"msiexec.exe\",\n                      \"poqexec.exe\")\n",
+        "name": "Potential PrintNightmare File Modification",
+        "query": "/* This rule is compatible with both Sysmon and Elastic Endpoint */\n\nfile where process.name : \"spoolsv.exe\" and \n file.name : (\"kernelbase.dll\", \"ntdll.dll\", \"kernel32.dll\", \"winhttp.dll\", \"user32.dll\") and\n file.path : \"?:\\\\Windows\\\\System32\\\\spool\\\\drivers\\\\x64\\\\3\\\\*\"\n",
         "references": [
-            "https://safebreach.com/Post/How-we-bypassed-CVE-2020-1048-Patch-and-got-CVE-2020-1337"
+            "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2021-34527",
+            "https://github.com/afwu/PrintNightmare"
         ],
         "risk_score": 73,
-        "rule_id": "a7ccae7b-9d2c-44b2-a061-98e5946971fa",
+        "rule_id": "5e87f165-45c2-4b80-bfa5-52822552c997",
         "severity": "high",
         "tags": [
             "Elastic",
@@ -47,8 +47,8 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 4
+        "version": 1
     },
-    "id": "a7ccae7b-9d2c-44b2-a061-98e5946971fa",
+    "id": "5e87f165-45c2-4b80-bfa5-52822552c997",
     "type": "security-rule"
 }
