@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "1c27890e-f153-4984-8c2f-6004a3779f71": {
+                            "columnOrder": [
+                                "eb8375d7-8836-43bb-840a-88c8c2f11b43"
+                            ],
+                            "columns": {
+                                "eb8375d7-8836-43bb-840a-88c8c2f11b43": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Count",
+                                    "operationType": "unique_count",
+                                    "scale": "ratio",
+                                    "sourceField": "sentinel_one.threat.id"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "indexRefName": "filter-index-pattern-0",
+                        "key": "sentinel_one.threat.mitigation.status",
+                        "negate": false,
+                        "params": {
+                            "query": "mitigated"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "sentinel_one.threat.mitigation.status": "mitigated"
+                        }
+                    }
+                },
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "indexRefName": "filter-index-pattern-1",
+                        "key": "sentinel_one.threat.incident.status",
+                        "negate": true,
+                        "params": {
+                            "query": "resolved"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "sentinel_one.threat.incident.status": "resolved"
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": "data_stream.dataset : \"sentinel_one.threat\""
+            },
+            "visualization": {
+                "accessor": "eb8375d7-8836-43bb-840a-88c8c2f11b43",
+                "layerId": "1c27890e-f153-4984-8c2f-6004a3779f71",
+                "layerType": "data"
+            }
+        },
+        "title": "Mitigated Threats [Logs SentinelOne]",
+        "visualizationType": "lnsMetric"
+    },
+    "coreMigrationVersion": "7.17.0",
+    "id": "sentinel_one-72b8f2b0-bbb9-11ec-82b7-8fcb232e9538",
+    "migrationVersion": {
+        "lens": "7.16.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-layer-1c27890e-f153-4984-8c2f-6004a3779f71",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "filter-index-pattern-0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "filter-index-pattern-1",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}

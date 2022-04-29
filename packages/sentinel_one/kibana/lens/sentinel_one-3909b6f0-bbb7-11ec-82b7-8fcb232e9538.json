@@ -1,0 +1,122 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "9767cd3d-c1a5-443e-9e79-64f2be92d73e": {
+                            "columnOrder": [
+                                "91f47b2b-9e63-4958-9aeb-5d46537caaaa",
+                                "f35cbfab-8158-4a67-b1ea-b4142fe750b4"
+                            ],
+                            "columns": {
+                                "91f47b2b-9e63-4958-9aeb-5d46537caaaa": {
+                                    "dataType": "string",
+                                    "isBucketed": true,
+                                    "label": "Filters",
+                                    "operationType": "filters",
+                                    "params": {
+                                        "filters": [
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "sentinel_one.agent.is_up_to_date : true "
+                                                },
+                                                "label": "Up To Date Agents"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "sentinel_one.agent.is_up_to_date : false "
+                                                },
+                                                "label": "Out Dated Agents"
+                                            }
+                                        ]
+                                    },
+                                    "scale": "ordinal"
+                                },
+                                "f35cbfab-8158-4a67-b1ea-b4142fe750b4": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Count",
+                                    "operationType": "unique_count",
+                                    "scale": "ratio",
+                                    "sourceField": "host.id"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "indexRefName": "filter-index-pattern-0",
+                        "key": "sentinel_one.agent.is_up_to_date",
+                        "negate": false,
+                        "type": "exists"
+                    },
+                    "query": {
+                        "exists": {
+                            "field": "sentinel_one.agent.is_up_to_date"
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": "data_stream.dataset : \"sentinel_one.agent\""
+            },
+            "visualization": {
+                "layers": [
+                    {
+                        "categoryDisplay": "default",
+                        "groups": [
+                            "91f47b2b-9e63-4958-9aeb-5d46537caaaa"
+                        ],
+                        "layerId": "9767cd3d-c1a5-443e-9e79-64f2be92d73e",
+                        "layerType": "data",
+                        "legendDisplay": "default",
+                        "metric": "f35cbfab-8158-4a67-b1ea-b4142fe750b4",
+                        "nestedLegend": false,
+                        "numberDisplay": "percent"
+                    }
+                ],
+                "shape": "pie"
+            }
+        },
+        "title": "Distribution of Agents by Up To Date Agents Status [Logs SentinelOne]",
+        "visualizationType": "lnsPie"
+    },
+    "coreMigrationVersion": "7.17.0",
+    "id": "sentinel_one-3909b6f0-bbb7-11ec-82b7-8fcb232e9538",
+    "migrationVersion": {
+        "lens": "7.16.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-layer-9767cd3d-c1a5-443e-9e79-64f2be92d73e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "filter-index-pattern-0",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}

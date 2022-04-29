@@ -1,0 +1,122 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "ddc8b7d7-81b9-4d85-a686-7e723fc02c52": {
+                            "columnOrder": [
+                                "76f65f2c-80e0-41fe-a2cf-d470ec579540",
+                                "42960489-8884-48d3-89d4-f7e6ac04e3c8"
+                            ],
+                            "columns": {
+                                "42960489-8884-48d3-89d4-f7e6ac04e3c8": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Count",
+                                    "operationType": "unique_count",
+                                    "scale": "ratio",
+                                    "sourceField": "host.id"
+                                },
+                                "76f65f2c-80e0-41fe-a2cf-d470ec579540": {
+                                    "dataType": "string",
+                                    "isBucketed": true,
+                                    "label": "Filters",
+                                    "operationType": "filters",
+                                    "params": {
+                                        "filters": [
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "sentinel_one.agent.firewall_enabled : true "
+                                                },
+                                                "label": "Enabled"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "sentinel_one.agent.firewall_enabled: false "
+                                                },
+                                                "label": "Disabled"
+                                            }
+                                        ]
+                                    },
+                                    "scale": "ordinal"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "indexRefName": "filter-index-pattern-0",
+                        "key": "sentinel_one.agent.firewall_enabled",
+                        "negate": false,
+                        "type": "exists"
+                    },
+                    "query": {
+                        "exists": {
+                            "field": "sentinel_one.agent.firewall_enabled"
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": "data_stream.dataset : \"sentinel_one.agent\""
+            },
+            "visualization": {
+                "layers": [
+                    {
+                        "categoryDisplay": "default",
+                        "groups": [
+                            "76f65f2c-80e0-41fe-a2cf-d470ec579540"
+                        ],
+                        "layerId": "ddc8b7d7-81b9-4d85-a686-7e723fc02c52",
+                        "layerType": "data",
+                        "legendDisplay": "default",
+                        "metric": "42960489-8884-48d3-89d4-f7e6ac04e3c8",
+                        "nestedLegend": false,
+                        "numberDisplay": "percent"
+                    }
+                ],
+                "shape": "pie"
+            }
+        },
+        "title": "Distribution of Agents by Firewall Status [Logs SentinelOne]",
+        "visualizationType": "lnsPie"
+    },
+    "coreMigrationVersion": "7.17.0",
+    "id": "sentinel_one-b7dc3720-bbb5-11ec-82b7-8fcb232e9538",
+    "migrationVersion": {
+        "lens": "7.16.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-layer-ddc8b7d7-81b9-4d85-a686-7e723fc02c52",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "filter-index-pattern-0",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}

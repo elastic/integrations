@@ -1,0 +1,122 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "65fd11fd-a0e7-4507-ad95-82593ace9d23": {
+                            "columnOrder": [
+                                "dbe1fa00-5bae-49e9-9f6a-82a367d0f73d",
+                                "337ab9f4-ba31-4b10-97c2-37a90555ebbf"
+                            ],
+                            "columns": {
+                                "337ab9f4-ba31-4b10-97c2-37a90555ebbf": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Count",
+                                    "operationType": "unique_count",
+                                    "scale": "ratio",
+                                    "sourceField": "host.id"
+                                },
+                                "dbe1fa00-5bae-49e9-9f6a-82a367d0f73d": {
+                                    "dataType": "string",
+                                    "isBucketed": true,
+                                    "label": "Filters",
+                                    "operationType": "filters",
+                                    "params": {
+                                        "filters": [
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "sentinel_one.agent.is_pending_uninstall : true "
+                                                },
+                                                "label": "Pending Uninstall"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "sentinel_one.agent.is_pending_uninstall: false "
+                                                },
+                                                "label": "Not Pending Uninstall"
+                                            }
+                                        ]
+                                    },
+                                    "scale": "ordinal"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "indexRefName": "filter-index-pattern-0",
+                        "key": "sentinel_one.agent.is_pending_uninstall",
+                        "negate": false,
+                        "type": "exists"
+                    },
+                    "query": {
+                        "exists": {
+                            "field": "sentinel_one.agent.is_pending_uninstall"
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": "data_stream.dataset : \"sentinel_one.agent\""
+            },
+            "visualization": {
+                "layers": [
+                    {
+                        "categoryDisplay": "default",
+                        "groups": [
+                            "dbe1fa00-5bae-49e9-9f6a-82a367d0f73d"
+                        ],
+                        "layerId": "65fd11fd-a0e7-4507-ad95-82593ace9d23",
+                        "layerType": "data",
+                        "legendDisplay": "default",
+                        "metric": "337ab9f4-ba31-4b10-97c2-37a90555ebbf",
+                        "nestedLegend": false,
+                        "numberDisplay": "percent"
+                    }
+                ],
+                "shape": "pie"
+            }
+        },
+        "title": "Distribution of Agents by Pending Uninstall Status [Logs SentinelOne]",
+        "visualizationType": "lnsPie"
+    },
+    "coreMigrationVersion": "7.17.0",
+    "id": "sentinel_one-711df240-bbb7-11ec-82b7-8fcb232e9538",
+    "migrationVersion": {
+        "lens": "7.16.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-layer-65fd11fd-a0e7-4507-ad95-82593ace9d23",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "filter-index-pattern-0",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}
