@@ -15,13 +15,13 @@
                             "key": "event.dataset",
                             "negate": false,
                             "params": {
-                                "query": "spring_boot.http_trace"
+                                "query": "spring_boot.threading"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "event.dataset": "spring_boot.http_trace"
+                                "event.dataset": "spring_boot.threading"
                             }
                         }
                     },
@@ -33,16 +33,14 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "http.response.status_code",
-                            "negate": true,
-                            "params": {
-                                "query": "200"
-                            },
-                            "type": "phrase"
+                            "key": "spring_boot.threading.threads.count",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
                         },
                         "query": {
-                            "match_phrase": {
-                                "http.response.status_code": "200"
+                            "exists": {
+                                "field": "spring_boot.threading.threads.count"
                             }
                         }
                     }
@@ -53,7 +51,7 @@
                 }
             }
         },
-        "title": "Total failed requests [Logs Spring Boot]",
+        "title": "Total count of started threads in system [Metrics Spring Boot]",
         "uiStateJSON": {},
         "version": 1,
         "visState": {
@@ -64,18 +62,11 @@
                 "axis_scale": "normal",
                 "background_color_rules": [
                     {
-                        "color": "rgba(255,0,0,1)",
-                        "id": "2e6a3e00-9adc-11ec-b9d9-c5d83040ea02",
-                        "operator": "gte",
-                        "value": 0
+                        "id": "28e080c0-9ae6-11ec-b9d9-c5d83040ea02"
                     }
                 ],
                 "drop_last_bucket": 0,
-                "filter": {
-                    "language": "kuery",
-                    "query": ""
-                },
-                "id": "9f1c56ed-ea9d-4aff-87d4-1ab29b439871",
+                "id": "10bff06e-d988-4e62-9d28-e5083455a45b",
                 "index_pattern_ref_name": "metrics_0_index_pattern",
                 "interval": "",
                 "isModelInvalid": false,
@@ -87,13 +78,19 @@
                         "color": "#68BC00",
                         "fill": 0.5,
                         "formatter": "default",
-                        "id": "90d49259-32d3-4b60-a337-80bdebec59c6",
-                        "label": "",
+                        "hidden": false,
+                        "id": "ca2f1735-a872-4fca-863a-5dd9f81b4a9a",
+                        "label": " ",
                         "line_width": 1,
                         "metrics": [
                             {
-                                "id": "361e82a3-3e77-4047-aa39-0d4c0c44bda0",
-                                "type": "count"
+                                "agg_with": "avg",
+                                "field": "spring_boot.threading.threads.count",
+                                "id": "597c9f63-1c3b-4056-8012-e691e28aa468",
+                                "order": "desc",
+                                "order_by": "@timestamp",
+                                "size": 1,
+                                "type": "top_hit"
                             }
                         ],
                         "override_index_pattern": 0,
@@ -118,28 +115,28 @@
                 "type": "metric",
                 "use_kibana_indexes": true
             },
-            "title": "Total failed requests [Logs Spring Boot]",
+            "title": "Total count of started threads in system [Metrics Spring Boot]",
             "type": "metrics"
         }
     },
     "coreMigrationVersion": "8.1.0",
-    "id": "spring_boot-9797ef10-a074-11ec-8c55-29ce547262ad",
+    "id": "spring_boot-89735010-c7b0-11ec-9c82-4b3dfe36a746",
     "migrationVersion": {
         "visualization": "8.0.0"
     },
     "references": [
         {
-            "id": "logs-*",
+            "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
+            "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
-            "id": "logs-*",
+            "id": "metrics-*",
             "name": "metrics_0_index_pattern",
             "type": "index-pattern"
         }

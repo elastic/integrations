@@ -15,13 +15,13 @@
                             "key": "event.dataset",
                             "negate": false,
                             "params": {
-                                "query": "spring_boot.memory"
+                                "query": "spring_boot.http_trace"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "event.dataset": "spring_boot.memory"
+                                "event.dataset": "spring_boot.http_trace"
                             }
                         }
                     },
@@ -33,14 +33,16 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "spring_boot.memory.non_heap.used",
+                            "key": "http.response.status_code",
                             "negate": false,
-                            "type": "exists",
-                            "value": "exists"
+                            "params": {
+                                "query": "200"
+                            },
+                            "type": "phrase"
                         },
                         "query": {
-                            "exists": {
-                                "field": "spring_boot.memory.non_heap.used"
+                            "match_phrase": {
+                                "http.response.status_code": "200"
                             }
                         }
                     }
@@ -51,7 +53,7 @@
                 }
             }
         },
-        "title": "Used memory for non heap memory [Metrics Spring Boot]",
+        "title": "Total successful requests [Logs Spring Boot]",
         "uiStateJSON": {},
         "version": 1,
         "visState": {
@@ -62,11 +64,18 @@
                 "axis_scale": "normal",
                 "background_color_rules": [
                     {
-                        "id": "dffceaa0-a068-11ec-9e88-9f64c2803771"
+                        "color": null,
+                        "id": "1046c690-9ad8-11ec-b9d9-c5d83040ea02",
+                        "operator": "gte",
+                        "value": 0
                     }
                 ],
                 "drop_last_bucket": 0,
-                "id": "4aee546a-f724-456b-a9b5-7163c08593ac",
+                "filter": {
+                    "language": "kuery",
+                    "query": ""
+                },
+                "id": "4cfdb81e-b787-45c8-80fa-c30cf7e49c13",
                 "index_pattern_ref_name": "metrics_0_index_pattern",
                 "interval": "",
                 "isModelInvalid": false,
@@ -77,19 +86,14 @@
                         "chart_type": "line",
                         "color": "#68BC00",
                         "fill": 0.5,
-                        "formatter": "bytes",
-                        "id": "e60c1465-0098-40bb-87b7-b1945c184504",
-                        "label": "Memory",
+                        "formatter": "default",
+                        "id": "a4c5d6a4-1429-4524-a68a-00d05e627200",
+                        "label": " ",
                         "line_width": 1,
                         "metrics": [
                             {
-                                "agg_with": "avg",
-                                "field": "spring_boot.memory.non_heap.used",
-                                "id": "a4eabfdb-9e53-43fd-9d59-1e1eed0d9c02",
-                                "order": "desc",
-                                "order_by": "@timestamp",
-                                "size": 1,
-                                "type": "top_hit"
+                                "id": "33d5752a-898b-46be-8317-9c97067858cb",
+                                "type": "count"
                             }
                         ],
                         "override_index_pattern": 0,
@@ -114,28 +118,28 @@
                 "type": "metric",
                 "use_kibana_indexes": true
             },
-            "title": "Used memory for non heap memory [Metrics Spring Boot]",
+            "title": "Total successful requests [Logs Spring Boot]",
             "type": "metrics"
         }
     },
     "coreMigrationVersion": "8.1.0",
-    "id": "spring_boot-c383d490-a074-11ec-8c55-29ce547262ad",
+    "id": "spring_boot-5c2d31c0-c7b0-11ec-9c82-4b3dfe36a746",
     "migrationVersion": {
         "visualization": "8.0.0"
     },
     "references": [
         {
-            "id": "metrics-*",
+            "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
+            "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
-            "id": "metrics-*",
+            "id": "logs-*",
             "name": "metrics_0_index_pattern",
             "type": "index-pattern"
         }
