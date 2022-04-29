@@ -11,7 +11,7 @@ The Elastic agent running this integration interacts with the Cloudflare infrast
 ### Enabling the integration in Elastic
 
 1. In Kibana go to **Management > Integrations**
-2. In "Search for integrations" search bar type **Cloudflare**
+2. In the "Search for integrations" search bar type **Cloudflare**.
 3. Click on "Cloudflare" integration from the search results.
 4. Click on **Add Cloudflare** button to add Cloudflare integration.
 
@@ -21,13 +21,13 @@ Enter values "Auth Email", "Auth Key" and "Account ID".
 
 1. **Auth Email** is the email address associated with your account. 
 2. [**Auth Key**](https://developers.cloudflare.com/api/keys/) is the API key generated on the "My Account" page.
-3. **Account ID** can be found on Cloudflare dashboard. Follow the navigation documentation from [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/)
+3. **Account ID** can be found on the Cloudflare dashboard. Follow the navigation documentation from [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
-NOTE: Look for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
+NOTE: See for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
 
 ### Configure Cloudflare logs
 
-These logs contain data related to the connecting client, the request path through the Cloudflare network, and the response from the origin web server. For more information look [here](https://developers.cloudflare.com/logs/logpull/).
+These logs contain data related to the connecting client, the request path through the Cloudflare network, and the response from the origin web server. For more information see [here](https://developers.cloudflare.com/logs/logpull/).
 
 The integration can retrieve Cloudflare logs using -
 
@@ -42,9 +42,9 @@ Enter values "Auth Email", "Auth Key" and "Zone ID".
 
 1. **Auth Email** is the email address associated with your account. 
 2. [**Auth Key**](https://developers.cloudflare.com/api/keys/) is the API key generated on the "My Account" page.
-3. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/)
+3. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
-NOTE: Look for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
+NOTE: See for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
 
 #### Configure using API Token
 
@@ -55,13 +55,13 @@ For the Cloudflare integration to be able to successfully get logs the following
 - Account.Access: Audit Logs: Read
 
 1. [**API Tokens**](https://developers.cloudflare.com/api/tokens/) allow for more granular permission settings. 
-2. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/)
+2. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
 ## Logs
 
 ### Audit
 
-Audit logs summarize the history of changes made within your Cloudflare account.  Audit logs include account level actions like login and logout, as well as setting changes to DNS, Crypto, Firewall, Speed, Caching, Page Rules, Network, and Traffic features, etc.
+Audit logs summarize the history of changes made within your Cloudflare account.  Audit logs include account-level actions like login and logout, as well as setting changes to DNS, Crypto, Firewall, Speed, Caching, Page Rules, Network, and Traffic features, etc.
 
 **Exported fields**
 
@@ -233,7 +233,7 @@ An example event for `audit` looks as following:
 
 ### Logpull
 
-These logs contain data related to the connecting client, the request path through the Cloudflare network, and the response from the origin web server. For more information look [here](https://developers.cloudflare.com/logs/logpull/).
+These logs contain data related to the connecting client, the request path through the Cloudflare network, and the response from the origin web server. For more information see [here](https://developers.cloudflare.com/logs/logpull/).
 
 **Exported fields**
 
