@@ -1,0 +1,75 @@
+metricsets: ["jmx"]
+namespace: "metrics"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+http_method: "GET"
+path: {{path}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+username: {{username}}
+password: {{password}}
+period: {{period}}
+jmx.mappings:
+  - mbean: 'com.bea:ApplicationRuntime=*,ConnectorComponentRuntime=*,Name=*,ServerRuntime=*,Type=ConnectorConnectionPoolRuntime'
+    attributes:
+    - attr: CurrentCapacity
+      field: connections.capacity.current
+    - attr: InitialCapacity
+      field: connections.capacity.initial
+    - attr: MaxCapacity
+      field: connections.capacity.max
+    - attr: ActiveConnectionsCurrentCount
+      field: connections.active.current
+    - attr: ActiveConnectionsHighCount
+      field: connections.active.high
+    - attr: ConnectionsCreatedTotalCount
+      field: connections.created.total
+    - attr: ConnectionsDestroyedByErrorTotalCount
+      field: connections.destroyed.by_error
+    - attr: ConnectionsDestroyedByShrinkingTotalCount
+      field: connections.destroyed.by_shrinking
+    - attr: ConnectionsDestroyedTotalCount
+      field: connections.destroyed.total
+    - attr: ConnectionsMatchedTotalCount
+      field: connections.matched.total
+    - attr: FreeConnectionsCurrentCount
+      field: connections.free.current
+    - attr: ConnectionsRejectedTotalCount
+      field: connections.rejected.total
+    - attr: Name
+      field: connections.name
+    - attr: State
+      field: connections.state
+    - attr: Type
+      field: connections.type
+  - mbean: 'com.bea:ServerRuntime=*,Name=*,Type=ServerChannelRuntime'
+    attributes:
+    - attr: ConnectionsCount
+      field: connections.channel.connections.count
+    - attr: MessagesReceivedCount
+      field: connections.channel.messages.received
+    - attr: BytesReceivedCount
+      field: connections.channel.bytes.received
+    - attr: AcceptCount
+      field: connections.channel.sockets.accepted
+    - attr: BytesSentCount
+      field: connections.channel.bytes.sent
+    - attr: MessagesSentCount
+      field: connections.channel.messages.sent
+  - mbean: 'com.bea:Name=*,Type=ServerRuntime'
+    attributes:
+    - attr: OpenSocketsCurrentCount
+      field: connections.sockets.open.current
+  - mbean: 'com.bea:Name=*,Type=Server'
+    attributes:
+    - attr: ThreadPoolPercentSocketReaders
+      field: connections.sockets.threadpool_readers_percent
+    - attr: MaxOpenSockCount
+      field: connections.sockets.open.max
