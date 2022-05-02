@@ -116,7 +116,7 @@ An example event for `managed_server` looks as following:
 | log.offset | Log offset. | long |
 | oracle_weblogic.managed_server.diagnostic_context_id | Context information to correlate messages coming from a specific request or application. | keyword |
 | oracle_weblogic.managed_server.machine_name | Machine Name is the DNS name of the computer that hosts the server instance. | keyword |
-| oracle_weblogic.managed_server.message_id | A unique six-digit identifier. | keyword |
+| oracle_weblogic.managed_server.message_id | A unique identifier for the message. | keyword |
 | oracle_weblogic.managed_server.message_text | A description of the event or condition. | keyword |
 | oracle_weblogic.managed_server.meta | Meta information for the event. | keyword |
 | oracle_weblogic.managed_server.server_name | Server Name is the name of the WebLogic Server instance on which the message was generated. | keyword |
