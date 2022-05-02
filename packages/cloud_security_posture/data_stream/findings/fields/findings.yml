@@ -10,6 +10,7 @@
     - name: keyword
       type: keyword
       ignore_above: 1024
+  # deprecated - the new field is under the resource obj
 - name: resource_id
   type: text
   multi_fields:
@@ -36,15 +37,19 @@
   type: group
   fields:
     - name: type
+      type: keyword
+      ignore_above: 256
+    - name: id
       type: text
-      description: Source type of the resource
-      multi_fields:
-        - name: keyword
-          type: keyword
-          ignore_above: 1024
-    - name: filename
+      ignore_above: 256
+    - name: raw
+      type: object
+      enabled: false
+    - name: name
       type: text
-      description: Resource filename
+      ignore_above: 1024
+    - name: sub_type
+      type: text
       multi_fields:
         - name: keyword
           type: keyword
