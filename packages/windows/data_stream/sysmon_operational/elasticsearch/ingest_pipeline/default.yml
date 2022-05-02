@@ -1154,8 +1154,9 @@ processors:
         HKU: "HKU"
       source: |-
         ctx.registry = new HashMap();
-        Pattern qwordRegex = /(?i)QWORD \(((0x\d{8})-(0x\d{8}))\)/;
-        Pattern dwordRegex = /(?i)DWORD \((0x\d{8})\)/;
+        Pattern qwordRegex = /(?i)QWORD \(((0x[0-9A-F]{8})-(0x[0-9A-F]{8}))\)/;
+        Pattern dwordRegex = /(?i)DWORD \((0x[0-9A-F]{8})\)/;
+        Pattern binDataRegex = /Binary Data/;
 
         def path = ctx.winlog.event_data.TargetObject;
         ctx.registry.path = path;
@@ -1184,24 +1185,43 @@ processors:
             if (!Double.isNaN(parsedHighByte) && !Double.isNaN(parsedLowByte)) {
               dataType = "SZ_QWORD";
               dataValue = Long.toString(((parsedHighByte << 8) + parsedLowByte));
+              ctx.registry.data = [
+                "strings": [dataValue],
+                "type": dataType
+              ];
             }
-          } else {
-            matcher = dwordRegex.matcher(data);
-            if (matcher.matches()) {
-              def parsedValue = Long.parseLong(matcher.group(1).substring(prefixLen), 16);
-              if (!Double.isNaN(parsedValue)) {
-                dataType = "SZ_DWORD";
-                dataValue = matcher.group(1);
-              }
-            }
+            return;
           }
 
-          if (dataType != "") {
-            ctx.registry.data = [
-              "strings": [dataValue],
-              "type": dataType
-            ];
+          matcher = dwordRegex.matcher(data);
+          if (matcher.matches()) {
+            def parsedValue = Long.parseLong(matcher.group(1).substring(prefixLen), 16);
+            if (!Double.isNaN(parsedValue)) {
+              dataType = "SZ_DWORD";
+              dataValue = Long.toString(parsedValue);
+              ctx.registry.data = [
+                "strings": [dataValue],
+                "type": dataType
+              ];
+            }
+            return;
           }
+
+          matcher = binDataRegex.matcher(data);
+          if (matcher.matches()) {
+            // Data type could be REG_BINARY or REG_MULTI_SZ
+            ctx.registry.data = [
+              "strings": [data],
+              "type": "REG_BINARY"
+            ];
+            return;
+          }
+
+          // REG_SZ or REG_EXPAND_SZ
+          ctx.registry.data = [
+            "strings": [data],
+            "type": "REG_SZ"
+          ];
         }
 
 ## Cleanup
