@@ -19,7 +19,8 @@ Access logs collects the Apache access logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache.access.ssl.cipher | SSL cipher name. | keyword |
+| apache.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
+| apache.access.ssl.cipher | SSL cipher name. - name: nginx.access | keyword |
 | apache.access.ssl.protocol | SSL protocol version. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -75,6 +76,7 @@ Access logs collects the Apache access logs.
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
