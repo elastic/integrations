@@ -120,9 +120,8 @@ An example event for `access` looks as following:
 | input.type | Input type. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Flags for the log file. | keyword |
-| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset. | long |
-| oracle_weblogic.access.authuser | The User identity allowing them access to an online service, connected device, or other resource | keyword |
-| oracle_weblogic.access.host_address | The physical address of a computer in a network | keyword |
+| oracle_weblogic.access.authuser | The User identity allowing them access to an online service, connected device, or other resource. | keyword |
+| oracle_weblogic.access.host_address | The physical address of a computer in a network. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 
