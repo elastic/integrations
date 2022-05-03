@@ -1,0 +1,11 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - grok:
+      field: cisco_secure_email_gateway.log.message
+      patterns:
+        - "^PF: %{WORD:cisco_secure_email_gateway.log.vendor_action} %{WORD:cisco_secure_email_gateway.log.object} %{GREEDYDATA:cisco_secure_email_gateway.log.object_category}"
+        - "^PF: %{WORD:cisco_secure_email_gateway.log.vendor_action} %{GREEDYDATA:cisco_secure_email_gateway.log.object_category} \\(pid=%{NUMBER:process.pid:long}\\)"
+        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}"

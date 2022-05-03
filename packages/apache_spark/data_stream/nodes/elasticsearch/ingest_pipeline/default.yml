@@ -1,0 +1,26 @@
+---
+description: Pipeline for parsing Apache Spark nodes metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.1.0'
+  - rename:
+      field: jolokia.metrics
+      target_field: apache_spark
+      ignore_missing: true
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.module
+      value: apache_spark
+  - remove:
+      field: apache_spark.nodes.mbean
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

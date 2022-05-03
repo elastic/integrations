@@ -1,0 +1,24 @@
+bucket_arn: {{bucket_arn}}
+number_of_workers: {{number_of_workers}}
+bucket_list_interval: {{interval}}
+access_key_id: {{access_key_id}}
+secret_access_key: {{secret_access_key}}
+bucket_list_prefix: {{bucket_list_prefix}}
+expand_event_list_from_field: Records
+{{#if proxy_url}}
+proxy_url: {{proxy_url}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
