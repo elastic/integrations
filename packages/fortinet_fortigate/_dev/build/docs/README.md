@@ -1,4 +1,4 @@
-# Fortinet Integration
+# Fortinet FortiGate Integration
 
 This integration is for Fortinet FortiGate logs sent in the syslog format.
 
