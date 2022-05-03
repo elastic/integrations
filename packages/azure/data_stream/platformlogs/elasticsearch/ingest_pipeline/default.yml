@@ -118,9 +118,14 @@ processors:
       field: azure.platformlogs.level
       target_field: log.level
       ignore_missing: true
-  - rename:
+  - convert:
       field: azure.platformlogs.durationMs
       target_field: event.duration
+      type: integer
+      ignore_missing: true
+      if: "ctx?.azure?.platformlogs?.durationMs != null && ctx?.azure?.platformlogs?.durationMs instanceof String"
+  - remove:
+      field: azure.platformlogs.durationMs
       ignore_missing: true
   - script:
       lang: painless
@@ -252,6 +257,10 @@ processors:
   - pipeline:
       if: "ctx?.azure_log_forwarder?.resource_type != null && (ctx?.azure_log_forwarder?.resource_type == 'Microsoft.AppPlatform/Spring'|| ctx?.azure_log_forwarder?.resource_type == 'MICROSOFT.APPPLATFORM/SPRING')"
       name: '{{ IngestPipeline "springcloudlogs-inner-pipeline" }}'
+  - rename:
+      field: azure.platformlogs.resultDescription
+      target_field: azure.platformlogs.result_description
+      ignore_missing: true
 on_failure:
 - set:
     field: error.message
