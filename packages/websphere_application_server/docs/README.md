@@ -1,6 +1,6 @@
 # WebSphere Application Server
 
-This Elastic integration is used to collect [WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics as follows:
+This Elastic integration is used to collect [IBM WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics as follows:
 
    - JDBC metrics
 
