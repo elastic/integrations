@@ -133,6 +133,7 @@ An example event for `platformlogs` looks as following:
 | azure.platformlogs.event_category | Event Category | keyword |
 | azure.platformlogs.operation_name | Operation name | keyword |
 | azure.platformlogs.properties | Event properties | flattened |
+| azure.platformlogs.result_description | Result description | keyword |
 | azure.platformlogs.result_signature | Result signature | keyword |
 | azure.platformlogs.result_type | Result type | keyword |
 | azure.platformlogs.status | Status | keyword |
@@ -193,6 +194,7 @@ An example event for `platformlogs` looks as following:
 | geo.country_iso_code | Country ISO code. | keyword |
 | geo.country_name | Country name. | keyword |
 | geo.location | Longitude and latitude. | geo_point |
+| geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
