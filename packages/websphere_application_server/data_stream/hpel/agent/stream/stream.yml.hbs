@@ -1,0 +1,23 @@
+paths:
+{{#each paths as |path i|}}
+  - {{path}}
+{{/each}}
+multiline.type: pattern
+multiline.pattern: '^\[[0-9]{1}\/[0-9]{1,2}\/'
+multiline.negate: true
+multiline.match: after
+include_lines: ['^\[']
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

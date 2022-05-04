@@ -1,0 +1,17 @@
+version: '3.4'
+services:
+  websphere_application_server:
+    image: ibmcom/websphere-traditional:9.0.5.10
+    user: root
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9080/metrics"]
+      interval: 15s
+      timeout: 30s
+      retries: 40
+    ports:
+      - 9080
+    volumes:
+      - ./files/PASSWORD:/tmp/PASSWORD
+      - ./files/init.jython:/home/scripts/init.jython
+      - ./files/start_server.sh:/work/start_server.sh
+      - ${SERVICE_LOGS_DIR}/server1:/opt/IBM/WebSphere/AppServer/profiles/AppSrv01/logs/server1
