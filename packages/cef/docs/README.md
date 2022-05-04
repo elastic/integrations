@@ -62,8 +62,8 @@ Check Point CEF extensions are mapped as follows:
 | requestCookies             | -                           | -                        | checkpoint.cookie              |
 | sourceNtDomain             | -                           | dns.question.name        | -                              |
 | Signature                  | -                           | vulnerability.id         | -                              |
-| Recipient                  | -                           | destination.user.email   | -                              |
-| Sender                     | -                           | source.user.email        | -                              |
+| Recipient                  | -                           | email.to.address         | -                              |
+| Sender                     | -                           | email.from.address       | -                              |
 | deviceCustomFloatingPoint1 | update version              | observer.version         | -                              |
 | deviceCustomIPv6Address2   | source ipv6 address         | source.ip                | -                              |
 | deviceCustomIPv6Address3   | destination ipv6 address    | destination.ip           | -                              |
@@ -80,7 +80,7 @@ Check Point CEF extensions are mapped as follows:
 | deviceCustomString1        | dlp rule name               | rule.name                | -                              |
 | deviceCustomString1        | email id                    | -                        | checkpoint.email_id            |
 | deviceCustomString2        | category                    | -                        | checkpoint.category            |
-| deviceCustomString2        | email subject               | -                        | checkpoint.email_subject       |
+| deviceCustomString2        | email subject               | email.subject            | checkpoint.email_subject       |
 | deviceCustomString2        | sensor mode                 | -                        | checkpoint.sensor_mode         |
 | deviceCustomString2        | protection id               | -                        | checkpoint.protection_id       |
 | deviceCustomString2        | scan invoke type            | -                        | checkpoint.integrity_av_invoke_type |
@@ -108,7 +108,7 @@ Check Point CEF extensions are mapped as follows:
 | deviceCustomString5        | matched category            | rule.category            | -                              |
 | deviceCustomString5        | vlan id                     | network.vlan.id          | -                              |
 | deviceCustomString5        | authentication method       | -                        | checkpoint.auth_method         |
-| deviceCustomString5        | email session id            | -                        | checkpoint.email_session_id    |
+| deviceCustomString5        | email session id            | email.message_id         | checkpoint.email_session_id    |
 | deviceCustomDate2          | subscription expiration     | -                        | checkpoint.subs_exp            |
 | deviceFlexNumber1          | confidence                  | -                        | checkpoint.confidence_level    |
 | deviceFlexNumber2          | performance impact          | -                        | checkpoint.performance_impact  |
@@ -160,7 +160,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "4ef3d20e-66f0-4723-b86d-512327135b90",
@@ -378,6 +378,10 @@ An example event for `log` looks as following:
 | destination.user.name | Short name or login of the user. | keyword |
 | destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
