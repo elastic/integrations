@@ -1,0 +1,89 @@
+- name: carbon_black_cloud.watchlist_hit
+  type: group
+  fields:
+    - name: device
+      type: group
+      fields:
+        - name: os
+          type: keyword
+          description: OS Type of device (Windows/OSX/Linux).
+        - name: internal_ip
+          type: ip
+          description: Internal IP of the device.
+        - name: external_ip
+          type: ip
+          description: External IP of the device.
+    - name: ioc
+      type: group
+      fields:
+        - name: field
+          type: keyword
+          description: Field the IOC hit contains.
+        - name: hit
+          type: keyword
+          description: IOC field value, or IOC query that matches.
+        - name: id
+          type: keyword
+          description: ID of the IOC that caused the hit.
+    - name: organization_key
+      type: keyword
+      description: The organization key associated with the console instance.
+    - name: process
+      type: group
+      fields:
+        - name: parent
+          type: group
+          fields:
+            - name: publisher
+              type: group
+              description: signature entry for the process as reported by the endpoint.
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the publisher.
+                - name: state
+                  type: keyword
+                  description: The state of the publisher.
+            - name: reputation
+              type: keyword
+              description: Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud.
+            - name: username
+              type: keyword
+              description: The username associated with the user context that this process was started under.
+        - name: publisher
+          type: group
+          description: signature entry for the process as reported by the endpoint.
+        - name: reputation
+          type: keyword
+          description: Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud.
+        - name: username
+          type: keyword
+          description: The username associated with the user context that this process was started under.
+    - name: report
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: ID of the watchlist report(s) that detected a hit on the process.
+        - name: name
+          type: keyword
+          description: Name of the watchlist report(s) that detected a hit on the process.
+        - name: tags
+          type: keyword
+          description: List of tags associated with the report(s) that detected a hit on the process.
+    - name: schema
+      type: long
+      description: Schema version.
+    - name: type
+      type: keyword
+      description: The watchlist hit type.
+    - name: watchlists
+      type: group
+      description: List of watchlists that contain the report of the ioc hit.
+      fields:
+        - name: id
+          type: keyword
+          description: The ID of the watchlists.
+        - name: name
+          type: keyword
+          description: The name of the watchlists.

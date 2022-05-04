@@ -1,0 +1,12 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - grok:
+      field: cisco_secure_email_gateway.log.message
+      patterns:
+        - "^case %{GREEDYDATA:cisco_secure_email_gateway.log.object_category} \\(%{NUMBER:cisco_secure_email_gateway.log.case_id}\\) : case-daemon: all %{DATA:cisco_secure_email_gateway.log.object} killed, %{GREEDYDATA:cisco_secure_email_gateway.log.result}"
+        - "^case %{GREEDYDATA:cisco_secure_email_gateway.log.object_category} \\(%{NUMBER:cisco_secure_email_gateway.log.case_id}\\) : case-daemon: %{DATA:cisco_secure_email_gateway.log.object} killed by %{DATA:cisco_secure_email_gateway.log.command}, %{GREEDYDATA:cisco_secure_email_gateway.log.result}"
+        - "^case %{GREEDYDATA:cisco_secure_email_gateway.log.object_category} \\(%{NUMBER:cisco_secure_email_gateway.log.case_id}\\) : case-daemon: %{GREEDYDATA:cisco_secure_email_gateway.log.result}"
+        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}"
