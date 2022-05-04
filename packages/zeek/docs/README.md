@@ -3732,6 +3732,7 @@ syslog messages.
 | log.offset | Offset of the entry in the log file. | long |
 | log.syslog.facility.name | The Syslog text-based facility of the log event, if available. | keyword |
 | log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
@@ -3753,7 +3754,7 @@ syslog messages.
 | tags | List of keywords used to tag each event. | keyword |
 | zeek.session_id | A unique identifier of the session | keyword |
 | zeek.syslog.facility | Syslog facility for the message. | keyword |
-| zeek.syslog.message | The plain text message. | keyword |
+| zeek.syslog.msg | The plain text message. | keyword |
 | zeek.syslog.severity | Syslog severity for the message. | keyword |
 
 
