@@ -1,6 +1,7 @@
 # Cloudflare Integration
 
 The Cloudflare integration collects events from the [Cloudflare API](https://api.cloudflare.com/).
+
 Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudflare/) use Cloudflare services for the purposes of increasing security and performance of their web sites and services. 
 
 Cloudflare integration uses [Cloudflare's API](https://api.cloudflare.com/) to retrieve Audit events and network traffic logs from Cloudflare and ingest them into Elasticsearch. This allows you to search, observe and visualize the Cloudflare log events through Elasticsearch.
@@ -62,8 +63,7 @@ For the Cloudflare integration to be able to successfully get logs the following
 
 ### Audit
 
-The Cloudflare Audit records all events related to your Cloudflare account. 
-To use this integration, you must have the `Account.Access: Audit Logs: Read` permission and you must use your email and your Global API Key (not an API Token).
+Audit logs summarize the history of changes made within your Cloudflare account.  Audit logs include account-level actions like login and logout, as well as setting changes to DNS, Crypto, Firewall, Speed, Caching, Page Rules, Network, and Traffic features, etc.
 
 **Exported fields**
 
@@ -235,7 +235,7 @@ An example event for `audit` looks as following:
 
 ### Logpull
 
-The Cloudflare Logpull records network events related to your organization in order to provide an audit trail that can be used to understand platform activity and to diagnose problems. This module is implemented using the httpjson input.
+These logs contain data related to the connecting client, the request path through the Cloudflare network, and the response from the origin web server. For more information see [here](https://developers.cloudflare.com/logs/logpull/).
 
 **Exported fields**
 
