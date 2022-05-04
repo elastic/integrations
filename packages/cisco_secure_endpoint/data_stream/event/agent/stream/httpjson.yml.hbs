@@ -32,6 +32,7 @@ response.pagination:
 - set:
     target: url.value
     value: '[[ .last_response.body.metadata.links.next ]]'
+    fail_on_template_error: true
 
 cursor:
   timestamp:
@@ -48,7 +49,7 @@ tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#contains tags "forwarded"}}
+{{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
 {{#if processors}}

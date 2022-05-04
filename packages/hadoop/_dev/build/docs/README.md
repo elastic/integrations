@@ -18,3 +18,18 @@ This data stream collects Application metrics.
 
 {{fields "application"}}
 
+## cluster
+
+This data stream collects Cluster metrics.
+
+{{event "cluster"}}
+
+{{fields "cluster"}}
+
+## datanode
+
+This data stream collects Datanode metrics.
+
+{{event "datanode"}}
+
+{{fields "datanode"}}
