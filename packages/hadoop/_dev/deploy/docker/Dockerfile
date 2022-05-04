@@ -18,7 +18,6 @@ RUN sudo yum install openssh-server openssh-clients -y;\
     cat environment.sh >> /opt/hadoop/etc/hadoop/hadoop-env.sh;\
     sudo chmod 0555 /opt/hadoop/start.sh
 
-
-EXPOSE 8088
+EXPOSE 8088 9864
 ENTRYPOINT /opt/hadoop/start.sh
 HEALTHCHECK --interval=1s --retries=90 CMD curl -f http://localhost:8042/jmx

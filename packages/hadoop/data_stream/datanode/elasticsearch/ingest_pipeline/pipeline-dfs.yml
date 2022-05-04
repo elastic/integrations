@@ -1,0 +1,17 @@
+---
+description: Pipeline for parsing Hadoop Datanode Dfs metrics
+processors:
+  - rename:
+      field: hadoop.datanode.temp.BytesRead
+      target_field: hadoop.datanode.bytes.read
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: hadoop.datanode.temp.BytesWritten
+      target_field: hadoop.datanode.bytes.written
+      ignore_missing: true
+      ignore_failure: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
