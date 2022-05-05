@@ -45,7 +45,7 @@ processors:
   - append:
       field: related.hash
       value: '{{{process.hash.sha1}}}'
-      if: ctx?.process?.hash?.sha1 != null
+      if: ctx.process?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -159,7 +159,7 @@ processors:
   - append:
       field: related.user
       value: '{{{user.full_name}}}'
-      if: ctx?.user?.full_name != null
+      if: ctx.user?.full_name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -169,7 +169,7 @@ processors:
   - append:
       field: related.user
       value: '{{{sentinel_one.activity.data.user.name}}}'
-      if: ctx?.sentinel_one?.activity?.data?.user?.name != null
+      if: ctx.sentinel_one?.activity?.data?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -209,7 +209,7 @@ processors:
       field: json.data.ipAddress
       target_field: host.geo
       ignore_missing: true
-      if: ctx?.host?.geo == null
+      if: ctx.host?.geo == null
   - append:
       field: host.ip
       value: '{{{json.data.ipAddress}}}'
@@ -223,13 +223,13 @@ processors:
   - append:
       field: related.ip
       value: '{{{json.data.ipAddress}}}'
-      if: ctx?.json?.data?.ipAddress != null
+      if: ctx.json?.data?.ipAddress != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.ip
       value: '{{{json.data.externalIp}}}'
-      if: ctx?.json?.data?.externalIp != null
+      if: ctx.json?.data?.externalIp != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -251,7 +251,7 @@ processors:
   - append:
       field: related.hosts
       value: '{{{host.name}}}'
-      if: ctx?.host?.name != null
+      if: ctx.host?.name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -288,7 +288,7 @@ processors:
   - append:
       field: related.hash
       value: '{{{file.hash.sha1}}}'
-      if: ctx?.file?.hash?.sha1 != null
+      if: ctx.file?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -382,7 +382,7 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
   - script:

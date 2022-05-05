@@ -82,7 +82,7 @@ processors:
   - append:
       field: related.hosts
       value: '{{{host.name}}}'
-      if: ctx?.host?.name != null
+      if: ctx.host?.name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -120,7 +120,7 @@ processors:
   - append:
       field: related.hosts
       value: '{{{host.domain}}}'
-      if: ctx?.host?.domain != null
+      if: ctx.host?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -136,7 +136,7 @@ processors:
       field: json.externalIp
       target_field: host.geo
       ignore_missing: true
-      if: ctx?.json?.externalIp != null && ctx?.json?.externalIp != ''
+      if: ctx.json?.externalIp != null && ctx.json?.externalIp != ''
   - convert:
       field: json.externalIp
       target_field: host.ip
@@ -145,7 +145,7 @@ processors:
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
-      if: ctx?.host?.ip != null
+      if: ctx.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -234,7 +234,7 @@ processors:
   - append:
       field: related.ip
       value: '{{{sentinel_one.agent.last_ip_to_mgmt}}}'
-      if: ctx?.sentinel_one?.agent?.last_ip_to_mgmt != null
+      if: ctx.sentinel_one?.agent?.last_ip_to_mgmt != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -244,7 +244,7 @@ processors:
   - append:
       field: related.user
       value: '{{{sentinel_one.agent.last_logged_in_user_name}}}'
-      if: ctx?.sentinel_one?.agent?.last_logged_in_user_name != null
+      if: ctx.sentinel_one?.agent?.last_logged_in_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -289,7 +289,7 @@ processors:
           type: ip
           ignore_failure: true
       ignore_failure: true
-      if: ctx?.json?.networkInterfaces != null && ctx?.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -299,7 +299,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
       ignore_failure: true
-      if: ctx?.json?.networkInterfaces != null && ctx?.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -309,7 +309,7 @@ processors:
           replacement: '-'
           ignore_missing: true
       ignore_failure: true
-      if: ctx?.json?.networkInterfaces != null && ctx?.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -318,7 +318,7 @@ processors:
           target_field: _ingest._value.gateway.mac
           ignore_missing: true
       ignore_failure: true
-      if: ctx?.json?.networkInterfaces != null && ctx?.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -327,7 +327,7 @@ processors:
           type: ip
           ignore_failure: true
       ignore_failure: true
-      if: ctx?.json?.networkInterfaces != null && ctx?.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -341,7 +341,7 @@ processors:
               ignore_failure: true
           ignore_failure: true
       ignore_failure: true
-      if: ctx?.json?.networkInterfaces != null && ctx?.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -350,7 +350,7 @@ processors:
           type: ip
           ignore_failure: true
       ignore_failure: true
-      if: ctx?.json?.networkInterfaces != null && ctx?.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -364,7 +364,7 @@ processors:
               ignore_failure: true
           ignore_failure: true
       ignore_failure: true
-      if: ctx?.json?.networkInterfaces != null && ctx?.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -373,7 +373,7 @@ processors:
           value: "{{{_ingest._value.physical}}}"
           ignore_failure: true
       ignore_failure: true
-      if: ctx?.json?.networkInterfaces != null && ctx?.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - foreach:
       field: json.networkInterfaces
       processor:
@@ -384,7 +384,7 @@ processors:
             - _ingest._value.gatewayIp
           ignore_missing: true
       ignore_failure: true
-      if: ctx?.json?.networkInterfaces != null && ctx?.json?.networkInterfaces instanceof List
+      if: ctx.json?.networkInterfaces != null && ctx.json?.networkInterfaces instanceof List
   - gsub:
       field: host.mac
       pattern: '[-:.]'
@@ -443,7 +443,7 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - date: 
@@ -550,7 +550,7 @@ processors:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx?.sentinel_one?.agent?.tags != null && ctx?.sentinel_one?.agent?.tags instanceof List
+      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one?.agent?.tags instanceof List
   - foreach:
       field: sentinel_one.agent.tags
       processor:
@@ -559,7 +559,7 @@ processors:
           target_field: _ingest._value.assigned_by
           ignore_missing: true
       ignore_failure: true
-      if: ctx?.sentinel_one?.agent?.tags != null && ctx?.sentinel_one?.agent?.tags instanceof List
+      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one?.agent?.tags instanceof List
   - foreach:
       field: sentinel_one.agent.tags
       processor:
@@ -568,7 +568,7 @@ processors:
           target_field: _ingest._value.assigned_by_id
           ignore_missing: true
       ignore_failure: true
-      if: ctx?.sentinel_one?.agent?.tags != null && ctx?.sentinel_one?.agent?.tags instanceof List
+      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one?.agent?.tags instanceof List
   - foreach:
       field: sentinel_one.agent.tags
       processor:
@@ -577,10 +577,10 @@ processors:
             - _ingest._value.assignedAt
           ignore_missing: true
       ignore_failure: true
-      if: ctx?.sentinel_one?.agent?.tags != null && ctx?.sentinel_one?.agent?.tags instanceof List
+      if: ctx.sentinel_one?.agent?.tags != null && ctx.sentinel_one?.agent?.tags instanceof List
   - remove:
       field: event.original
-      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
   - remove:

@@ -179,18 +179,18 @@ An example event for `activity` looks as following:
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
-| sentinel_one.activity.account.id | Related account id (If applicable). | keyword |
+| sentinel_one.activity.account.id | Related account ID (If applicable). | keyword |
 | sentinel_one.activity.account.name | Related account name (If applicable). | keyword |
 | sentinel_one.activity.agent.id | Related agent (If applicable). | keyword |
 | sentinel_one.activity.comments | Comments. | keyword |
-| sentinel_one.activity.data.account.id | Related account id (If applicable). | keyword |
+| sentinel_one.activity.data.account.id | Related account ID (If applicable). | keyword |
 | sentinel_one.activity.data.account.name | Related account name (If applicable). | keyword |
 | sentinel_one.activity.data.attr | Attribute. | keyword |
 | sentinel_one.activity.data.changed_keys | Changed keys. | keyword |
 | sentinel_one.activity.data.confidence.level | Confidence level. | keyword |
 | sentinel_one.activity.data.created_at | Created time. | date |
 | sentinel_one.activity.data.description | Description. | keyword |
-| sentinel_one.activity.data.downloaded.url | Downloaded url. | keyword |
+| sentinel_one.activity.data.downloaded.url | Downloaded URL. | keyword |
 | sentinel_one.activity.data.flattened | Extra activity specific data. | flattened |
 | sentinel_one.activity.data.fullscope.details | fullscope details. | keyword |
 | sentinel_one.activity.data.fullscope.details_path | fullscope details path. | keyword |
@@ -224,11 +224,11 @@ An example event for `activity` looks as following:
 | sentinel_one.activity.description.primary | Primary description. | keyword |
 | sentinel_one.activity.description.secondary | Secondary description. | keyword |
 | sentinel_one.activity.id | Activity ID. | keyword |
-| sentinel_one.activity.site.id | Related site id (If applicable). | keyword |
+| sentinel_one.activity.site.id | Related site ID (If applicable). | keyword |
 | sentinel_one.activity.site.name | Related site name (If applicable). | keyword |
-| sentinel_one.activity.threat.id | Related threat (If applicable). | keyword |
+| sentinel_one.activity.threat.id | Related threat ID (If applicable). | keyword |
 | sentinel_one.activity.type | Activity type. | long |
-| sentinel_one.activity.updated_at | Activity last updated tme (UTC). | date |
+| sentinel_one.activity.updated_at | Activity last updated time (UTC). | date |
 | tags | List of keywords used to tag each event. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
@@ -516,10 +516,10 @@ An example event for `agent` looks as following:
 | sentinel_one.agent.created_at | Created at. | date |
 | sentinel_one.agent.detection_state | Detection State. | keyword |
 | sentinel_one.agent.encrypted_application | Disk encryption status. | boolean |
-| sentinel_one.agent.external.id | External id set by customer. | keyword |
+| sentinel_one.agent.external.id | External ID set by customer. | keyword |
 | sentinel_one.agent.firewall_enabled | Firewall enabled. | boolean |
 | sentinel_one.agent.first_full_mode_time | Date of the first time the Agent moved to full or slim detection modes. | date |
-| sentinel_one.agent.group.ip | IP Address subnet. | keyword |
+| sentinel_one.agent.group.ip | Group subnet address. | keyword |
 | sentinel_one.agent.group.updated_at | Group updated at. | date |
 | sentinel_one.agent.in_remote_shell_session | Is the Agent in a remote shell session. | boolean |
 | sentinel_one.agent.infected | Indicates if the Agent has active threats. | boolean |
@@ -530,7 +530,7 @@ An example event for `agent` looks as following:
 | sentinel_one.agent.is_uninstalled | Indicates if Agent was removed from the device. | boolean |
 | sentinel_one.agent.is_up_to_date | Indicates if the agent version is up to date. | boolean |
 | sentinel_one.agent.last_active_date | Last active date. | date |
-| sentinel_one.agent.last_ip_to_mgmt | The last ip used to connect to the Management console. | ip |
+| sentinel_one.agent.last_ip_to_mgmt | The last IP used to connect to the Management console. | ip |
 | sentinel_one.agent.last_logged_in_user_name | Last logged in user name. | keyword |
 | sentinel_one.agent.license.key | License key. | keyword |
 | sentinel_one.agent.location.enabled | Location enabled. | boolean |
@@ -552,7 +552,7 @@ An example event for `agent` looks as following:
 | sentinel_one.agent.network_status | Agent's network connectivity status. | keyword |
 | sentinel_one.agent.operational_state | Agent operational state. | keyword |
 | sentinel_one.agent.operational_state_expiration | Agent operational state expiration. | keyword |
-| sentinel_one.agent.os.arch | Os arch. | keyword |
+| sentinel_one.agent.os.arch | OS arch. | keyword |
 | sentinel_one.agent.os.start_time | Last boot time. | date |
 | sentinel_one.agent.policy.updated_at | Policy updated at. | date |
 | sentinel_one.agent.ranger.status | Is Agent disabled as a Ranger. | keyword |
@@ -570,11 +570,11 @@ An example event for `agent` looks as following:
 | sentinel_one.agent.storage.type | Storage type. | keyword |
 | sentinel_one.agent.tags.assigned_at | When tag assigned to the agent. | date |
 | sentinel_one.agent.tags.assigned_by | full user name who assigned the tag to the agent. | keyword |
-| sentinel_one.agent.tags.assigned_by_id | user ID who assigned the tag to the agent. | keyword |
+| sentinel_one.agent.tags.assigned_by_id | User ID who assigned the tag to the agent. | keyword |
 | sentinel_one.agent.tags.id | Tag ID. | keyword |
 | sentinel_one.agent.tags.key | Tag key. | keyword |
 | sentinel_one.agent.tags.value | Tag value. | keyword |
-| sentinel_one.agent.threat_reboot_required | Has at least one threat with at least one mitigation action that is pending reboot to succeed. | boolean |
+| sentinel_one.agent.threat_reboot_required | Flag representing if the Agent has at least one threat with at least one mitigation action that is pending reboot to succeed. | boolean |
 | sentinel_one.agent.total_memory | Memory size (MB). | long |
 | sentinel_one.agent.user_action_needed | A list of pending user actions. | keyword |
 | sentinel_one.agent.uuid | Agent's universally unique identifier. | keyword |
@@ -971,7 +971,7 @@ An example event for `alert` looks as following:
 | sentinel_one.alert.container.info.labels | Container info labels. | keyword |
 | sentinel_one.alert.dv_event.id | DV event id. | keyword |
 | sentinel_one.alert.info.dns.response | IP address, DNS, type, etc. in response. | keyword |
-| sentinel_one.alert.info.hit.type | type of hit reported from agent. | keyword |
+| sentinel_one.alert.info.hit.type | Type of hit reported from agent. | keyword |
 | sentinel_one.alert.info.indicator.category | Indicator categories for this process. | keyword |
 | sentinel_one.alert.info.indicator.description | Indicator_description. | keyword |
 | sentinel_one.alert.info.indicator.name | Indicator names for this process. | keyword |
@@ -982,7 +982,7 @@ An example event for `alert` looks as following:
 | sentinel_one.alert.info.registry.old_value | Registry previous value (in case of modification). | keyword |
 | sentinel_one.alert.info.registry.old_value_type | Registry previous value type (in case of modification). | keyword |
 | sentinel_one.alert.info.reported_at | Timestamp of alert creation in STAR. | date |
-| sentinel_one.alert.info.source | source reported from agent. | keyword |
+| sentinel_one.alert.info.source | Source reported from agent. | keyword |
 | sentinel_one.alert.info.status | Incident status. | keyword |
 | sentinel_one.alert.info.ti_indicator.comparison_method | The comparison method used by SentinelOne to trigger the event. | keyword |
 | sentinel_one.alert.info.ti_indicator.source | The value of the identified Threat Intelligence indicator. | keyword |
@@ -1531,9 +1531,9 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.agent.network_interface.name | Device's network interfaces IPv4 Name. | keyword |
 | sentinel_one.threat.agent.network_status | Network status. | keyword |
 | sentinel_one.threat.agent.operational_state | Agent operational state. | keyword |
-| sentinel_one.threat.agent.os.version | Os revision. | keyword |
+| sentinel_one.threat.agent.os.version | OS revision. | keyword |
 | sentinel_one.threat.agent.reboot_required | A reboot is required on the endpoint for at least one acton on the threat. | boolean |
-| sentinel_one.threat.agent.scan.aborted_at | Abort tme of last scan (If applicable). | keyword |
+| sentinel_one.threat.agent.scan.aborted_at | Abort time of last scan (If applicable). | keyword |
 | sentinel_one.threat.agent.scan.finished_at | Finish time of last scan (If applicable). | keyword |
 | sentinel_one.threat.agent.scan.started_at | Start time of last scan. | keyword |
 | sentinel_one.threat.agent.scan.status | Scan status. | keyword |
@@ -1542,7 +1542,7 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.agent.storage.name | Storage Name. | keyword |
 | sentinel_one.threat.agent.storage.type | Storage Type. | keyword |
 | sentinel_one.threat.agent.user_action_needed | A list of pending user actions. List items possible values: "none, reboot_needed, user_acton_needed, upgrade_needed, incompatible_os, unprotected, user_acton_needed_fda, user_acton_needed_rs_fda,user_acton_needed_network, rebootless_without_dynamic_detection, extended_exclusions_partially_accepted, user_action_needed_bluetooth_per". | keyword |
-| sentinel_one.threat.agent.uuid | Uuid. | keyword |
+| sentinel_one.threat.agent.uuid | UUID. | keyword |
 | sentinel_one.threat.analysis.description | Analyst verdict description. | keyword |
 | sentinel_one.threat.analysis.verdict | Analyst verdict. | keyword |
 | sentinel_one.threat.automatically_resolved | Automatically resolved. | boolean |
@@ -1564,8 +1564,8 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.detection.agent.ipv6 | Orig agent ipv6. | ip |
 | sentinel_one.threat.detection.agent.last_logged_in.upn | UPN of last logged in user. | keyword |
 | sentinel_one.threat.detection.agent.mitigation_mode | Agent mitigation mode policy. | keyword |
-| sentinel_one.threat.detection.agent.os.name | Orig agent os name. | keyword |
-| sentinel_one.threat.detection.agent.os.version | Orig agent os revision. | keyword |
+| sentinel_one.threat.detection.agent.os.name | Orig agent OS name. | keyword |
+| sentinel_one.threat.detection.agent.os.version | Orig agent OS revision. | keyword |
 | sentinel_one.threat.detection.agent.registered_at | Time of first registration to management console. | date |
 | sentinel_one.threat.detection.agent.site.id | Orig site id. | keyword |
 | sentinel_one.threat.detection.agent.site.name | Orig site name. | keyword |
@@ -1619,7 +1619,7 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.mitigation_status.last_update | Timestamp of last mitigation status update. | keyword |
 | sentinel_one.threat.mitigation_status.latest_report | Report download URL. If None, there is no report. | keyword |
 | sentinel_one.threat.mitigation_status.mitigation_ended_at | The time the Agent finished the mitigation. | keyword |
-| sentinel_one.threat.mitigation_status.mitigation_started_at | The tme the Agent started the mitigation. | keyword |
+| sentinel_one.threat.mitigation_status.mitigation_started_at | The time the Agent started the mitigation. | keyword |
 | sentinel_one.threat.mitigation_status.status | Status. | keyword |
 | sentinel_one.threat.name | Threat name. | keyword |
 | sentinel_one.threat.originator_process | Originator process. | keyword |
