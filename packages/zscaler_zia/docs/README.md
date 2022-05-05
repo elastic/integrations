@@ -1210,4 +1210,3 @@ An example event for `web` looks as following:
     }
 }
 ```
-
