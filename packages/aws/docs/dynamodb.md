@@ -74,6 +74,14 @@ An example event for `dynamodb` looks as following:
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
+| aws.dimensions.DelegatedOperation | This dimension limits the data to operations DynamoDB performs on your behalf. | keyword |
+| aws.dimensions.GlobalSecondaryIndexName | This dimension limits the data to a global secondary index on a table. | keyword |
+| aws.dimensions.Operation | This dimension limits the data to one of the DynamoDB operations, such as PutItem, DeleteItem, UpdateItem, etc. | keyword |
+| aws.dimensions.OperationType | This dimension limits the data to operation type Read and Write. | keyword |
+| aws.dimensions.ReceivingRegion | This dimension limits the data to a particular AWS region. | keyword |
+| aws.dimensions.StreamLabel | This dimension limits the data to a specific stream label. | keyword |
+| aws.dimensions.TableName | This dimension limits the data to a specific table. | keyword |
+| aws.dimensions.Verb | This dimension limits the data to one of the DynamoDB PartiQL verbs. | keyword |
 | aws.dynamodb.metrics.AccountMaxReads.max | The maximum number of read capacity units that can be used by an account. This limit does not apply to on-demand tables or global secondary indexes. | long |
 | aws.dynamodb.metrics.AccountMaxTableLevelReads.max | The maximum number of read capacity units that can be used by a table or global secondary index of an account. For on-demand tables this limit caps the maximum read request units a table or a global secondary index can use. | long |
 | aws.dynamodb.metrics.AccountMaxTableLevelWrites.max | The maximum number of write capacity units that can be used by a table or global secondary index of an account. For on-demand tables this limit caps the maximum write request units a table or a global secondary index can use. | long |
@@ -106,7 +114,7 @@ An example event for `dynamodb` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
