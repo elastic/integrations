@@ -13,8 +13,7 @@ In order to ingest data from Oracle WebLogic:
 - Add default path for jolokia.
 - Configuring Jolokia for Weblogic
 
-    User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment
-     variables for jolokia.
+    User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment variables for jolokia.
 
     ```
      -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>
@@ -36,10 +35,10 @@ An example event for `console` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-03T10:37:17.247Z",
+    "@timestamp": "2022-05-05T06:58:01.791Z",
     "agent": {
-        "ephemeral_id": "2a5b9c95-5338-47c9-99b7-328d0e2837a9",
-        "id": "7f8988b2-76db-4e89-a343-44074c850c98",
+        "ephemeral_id": "3f5bf92e-f51f-4335-8c37-d865940853e7",
+        "id": "ae4feb0c-1754-468b-84aa-ddfd22b991a2",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -53,7 +52,7 @@ An example event for `console` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "7f8988b2-76db-4e89-a343-44074c850c98",
+        "id": "ae4feb0c-1754-468b-84aa-ddfd22b991a2",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -61,8 +60,8 @@ An example event for `console` looks as following:
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "oracle_weblogic.console",
-        "duration": 3159009,
-        "ingested": "2022-05-03T10:37:20Z",
+        "duration": 6219455,
+        "ingested": "2022-05-05T06:58:05Z",
         "kind": "metric",
         "module": "oracle_weblogic",
         "type": "info"
@@ -72,10 +71,10 @@ An example event for `console` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.22.0.7"
+            "172.27.0.7"
         ],
         "mac": [
-            "02:42:ac:16:00:07"
+            "02:42:ac:1b:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
