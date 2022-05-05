@@ -78,28 +78,11 @@ https://management.usgovcloudapi.net/
 
 Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
 
-## Logs
+## Sample Event and Exported Fields
 
-### activitylogs
+For sample event and exported fields, review documentation provided for each integration:
 
-{{event "activitylogs"}}
-
-{{fields "activitylogs"}}
-
-### platformlogs
-
-{{event "platformlogs"}}
-
-{{fields "platformlogs"}}
-
-### auditlogs
-
-{{event "auditlogs"}}
-
-{{fields "auditlogs"}}
-
-### signinlogs
-
-{{event "signinlogs"}}
-
-{{fields "signinlogs"}}
+- Azure Activity Logs
+- Active Directory Logs (contains sign-in and audit logs)
+- Azure Platform Logs
+- Azure Spring Cloud Logs
