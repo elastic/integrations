@@ -4,7 +4,13 @@ processors:
   - rename:
       field: json.process.audit_user_name
       target_field: jamf_compliance_reporter.audit.process.audit_user_name
-      ignore_missing: true       
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{jamf_compliance_reporter.audit.process.audit_user_name}}}'
+      if: ctx?.jamf_compliance_reporter?.audit?.process?.audit_user_name != null
+      allow_duplicates: false
+      ignore_failure: true       
   - convert:
       field: json.process.audit_id
       target_field: jamf_compliance_reporter.audit.process.audit_id
@@ -25,15 +31,25 @@ processors:
       type: string
       ignore_failure: true
   - append:
-      field: user.name
-      value: '{{{json.process.effective_user_name}}}'
-      if: ctx?.json?.process?.effective?.user_name != null
+      field: user.effective.id
+      value: '{{{json.process.effective_user_id}}}'
+      if: ctx?.json?.process?.effective_user_id != null
       allow_duplicates: false
       ignore_failure: true
   - append:
-      field: related.user
+      field: user.effective.name
       value: '{{{json.process.effective_user_name}}}'
-      if: ctx?.json?.process?.effective?.user_name != null
+      if: ctx?.json?.process?.effective_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.process.effective_user_name
+      target_field: jamf_compliance_reporter.audit.process.effective.user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{jamf_compliance_reporter.audit.process.effective.user.name}}}'
+      if: ctx?.jamf_compliance_reporter?.audit?.process?.effective?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -106,3 +122,9 @@ processors:
       field: json.process.user_name
       target_field: jamf_compliance_reporter.audit.process.user.name
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{jamf_compliance_reporter.audit.process.user.name}}}'
+      if: ctx?.jamf_compliance_reporter?.audit?.process?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true

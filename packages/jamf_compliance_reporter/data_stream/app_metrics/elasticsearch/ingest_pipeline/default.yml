@@ -19,8 +19,8 @@ processors:
       field: event.kind
       value: event
   - set:
-      field: event.action
-      value: app-metrics
+      field: host.os.type
+      value: macos
   - append:
       field: event.category
       value: process
@@ -63,6 +63,13 @@ processors:
       field: json.header.event_name
       target_field: jamf_compliance_reporter.header.event_name
       ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: jamf_compliance_reporter.header.event_name
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
   - date:
       field: json.header.time_seconds_epoch
       target_field: '@timestamp'
@@ -77,7 +84,7 @@ processors:
   - append:
       field: related.hosts
       value: '{{{host.hostname}}}'
-      if: ctx.host.hostname != null
+      if: ctx?.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - rename:

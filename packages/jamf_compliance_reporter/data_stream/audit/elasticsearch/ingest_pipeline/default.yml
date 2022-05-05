@@ -19,7 +19,7 @@ processors:
       ignore_failure: true
   - convert:
       field: json.header.event_id
-      target_field: event.id
+      target_field: event.code
       type: string
       ignore_failure: true
   - convert:
@@ -31,17 +31,24 @@ processors:
       field: json.header.event_name
       target_field: jamf_compliance_reporter.header.event_name
       ignore_missing: true
-  - convert:
-      field: json.header.time_milliseconds_offset
-      target_field: jamf_compliance_reporter.audit.header.time_milliseconds_offset
-      type: long
+  - set:
+      field: event.action
+      copy_from: jamf_compliance_reporter.header.event_name
       ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx?.json?.header?.time_seconds_epoch != null
+      source: |
+        ctx.json.time_milliseconds = (long)ctx?.json?.header?.time_seconds_epoch * 1000 + (long)ctx?.json?.header?.time_milliseconds_offset;
   - date: 
-      field: json.header.time_seconds_epoch
+      field: json.time_milliseconds
       target_field: '@timestamp'
       ignore_failure: true
       formats: 
-        - UNIX
+        - UNIX_MS
   - convert:
       field: json.header.version
       target_field: jamf_compliance_reporter.audit.header.version
@@ -65,10 +72,12 @@ processors:
       field: json.host_info.osversion
       target_field: host.os.version
       ignore_missing: true
-  - rename:
-      field: json.host_info.primary_mac_address
-      target_field: host.mac
-      ignore_missing: true
+  - append:
+      field: host.mac
+      value: '{{{json.host_info.primary_mac_address}}}'
+      if: ctx?.json?.host_info?.primary_mac_address != null
+      allow_duplicates: false
+      ignore_failure: true
   - gsub:
       field: host.mac
       pattern: '[-:.]'
@@ -90,15 +99,29 @@ processors:
       target_field: error.code
       type: string
       ignore_failure: true
+  - set:
+      field: event.outcome
+      value: 'success'
+      if: ctx?.error?.code == '0' 
+  - set:
+      field: event.outcome
+      value: 'failure'
+      if: ctx?.error?.code != '0'  
   - convert:
       field: json.return.return_value
-      target_field: jamf_compliance_reporter.audit.return.value
+      target_field: process.exit_code
       type: long
       ignore_failure: true
   - convert:
       field: json.subject.audit_id
       target_field: jamf_compliance_reporter.audit.subject.audit.id
       type: string
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{json.subject.audit_user_name}}}'
+      if: ctx?.json?.subject?.audit_user_name != null
+      allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.subject.audit_user_name
@@ -115,8 +138,12 @@ processors:
       ignore_missing: true
   - convert:
       field: json.subject.effective_user_id
-      target_field: jamf_compliance_reporter.audit.subject.effective.user.id
+      target_field: user.effective.id
       type: string
+      ignore_failure: true
+  - set:
+      field: jamf_compliance_reporter.audit.subject.effective.user.id
+      copy_from: user.effective.id
       ignore_failure: true
   - append:
       field: user.name
@@ -132,16 +159,20 @@ processors:
       ignore_failure: true
   - rename:
       field: json.subject.effective_user_name
-      target_field: jamf_compliance_reporter.audit.effective.user.name
+      target_field: user.effective.name
       ignore_missing: true
+  - set:
+      field: jamf_compliance_reporter.audit.subject.effective.user.name
+      copy_from: user.effective.name
+      ignore_failure: true
   - convert:
       field: json.subject.group_id
-      target_field: group.id
+      target_field: user.group.id
       type: string
       ignore_failure: true
   - rename:
       field: json.subject.group_name
-      target_field: group.name
+      target_field: user.group.name
       ignore_missing: true
   - rename:
       field: json.subject.process_hash
@@ -174,13 +205,19 @@ processors:
       ignore_failure: true
   - convert:
       field: json.subject.terminal_id.ip_address
-      target_field: jamf_compliance_reporter.audit.subject.terminal_id.ip_address
+      target_field: json.subject.terminal_id.ip_address
       type: ip
       ignore_failure: true
   - append:
+      field: host.ip
+      value: '{{{json.subject.terminal_id.ip_address}}}'
+      if: ctx?.json?.subject?.terminal_id?.ip_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
       field: related.ip
-      value: '{{{jamf_compliance_reporter.audit.subject.terminal_id.ip_address}}}'
-      if: ctx?.jamf_compliance_reporter?.audit?.subject?.terminal_id?.ip_address != null
+      value: '{{{json.subject.terminal_id.ip_address}}}'
+      if: ctx?.json?.subject?.terminal_id?.ip_address != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -219,6 +256,9 @@ processors:
   - set:
       field: event.category
       value: [authentication]
+  - set:
+      field: host.os.type
+      value: macos
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_accept" }}'
       if: ctx?.jamf_compliance_reporter?.header?.event_name == 'AUE_ACCEPT'

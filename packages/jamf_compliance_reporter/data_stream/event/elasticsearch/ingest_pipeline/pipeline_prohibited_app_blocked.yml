@@ -95,21 +95,25 @@ processors:
       ignore_failure: true
   - rename:
       field: json.subject.audit_user_name
-      target_field: jamf_compliance_reporter.event.subject.audit.user_name
+      target_field: jamf_compliance_reporter.event.subject.audit.user.name
       ignore_missing: true
   - convert:
       field: json.subject.effective_group_id
-      target_field: jamf_compliance_reporter.event.subject.effective.group_id
+      target_field: jamf_compliance_reporter.event.subject.effective.group.id
       type: string
       ignore_failure: true
   - rename:
       field: json.subject.effective_group_name
-      target_field: jamf_compliance_reporter.event.subject.effective.group_name
+      target_field: jamf_compliance_reporter.event.subject.effective.group.name
       ignore_missing: true
   - convert:
       field: json.subject.effective_user_id
-      target_field: jamf_compliance_reporter.event.subject.effective.user_id
+      target_field: user.effective.id
       type: string
+      ignore_failure: true
+  - set:
+      field: jamf_compliance_reporter.event.subject.effective.user.id
+      copy_from: user.effective.id
       ignore_failure: true
   - append:
       field: user.name
@@ -125,16 +129,20 @@ processors:
       ignore_failure: true
   - rename:
       field: json.subject.effective_user_name
-      target_field: jamf_compliance_reporter.event.effective.user.name
+      target_field: user.effective.name
       ignore_missing: true
+  - set:
+      field: jamf_compliance_reporter.event.subject.effective.user.name
+      copy_from: user.effective.name
+      ignore_failure: true
   - convert:
       field: json.subject.group_id
-      target_field: group.id
+      target_field: user.group.id
       type: string
       ignore_failure: true
   - rename:
       field: json.subject.group_name
-      target_field: group.name
+      target_field: user.group.name
       ignore_missing: true
   - rename:
       field: json.subject.process_hash
@@ -153,7 +161,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.subject.process_information
-      target_field: jamf_compliance_reporter.event.subject.process_information
+      target_field: jamf_compliance_reporter.event.subject.process.information
       ignore_missing: true
   - rename:
       field: json.subject.process_name
@@ -161,27 +169,33 @@ processors:
       ignore_missing: true
   - convert:
       field: json.subject.responsible_process_id
-      target_field: jamf_compliance_reporter.event.subject.responsible_process.id
+      target_field: jamf_compliance_reporter.event.subject.responsible.process.id
       type: string
       ignore_failure: true
   - rename:
       field: json.subject.responsible_process_name
-      target_field: jamf_compliance_reporter.event.subject.responsible_process.name
+      target_field: jamf_compliance_reporter.event.subject.responsible.process.name
       ignore_missing: true
   - convert:
       field: json.subject.session_id
-      target_field: jamf_compliance_reporter.event.subject.session_id
+      target_field: jamf_compliance_reporter.event.subject.session.id
       type: string
       ignore_failure: true
   - convert:
       field: json.subject.terminal_id.ip_address
-      target_field: jamf_compliance_reporter.event.subject.terminal_id.ip.address
+      target_field: json.subject.terminal_id.ip_address
       type: ip
       ignore_failure: true
   - append:
+      field: host.ip
+      value: '{{{json.subject.terminal_id.ip_address}}}'
+      if: ctx?.json?.subject?.terminal_id?.ip_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
       field: related.ip
-      value: '{{{jamf_compliance_reporter.event.subject.terminal_id.ip.address}}}'
-      if: ctx?.jamf_compliance_reporter?.event?.subject?.terminal_id.ip?.address != null
+      value: '{{{json.subject.terminal_id.ip_address}}}'
+      if: ctx?.json?.subject?.terminal_id?.ip_address != null
       allow_duplicates: false
       ignore_failure: true
   - convert:

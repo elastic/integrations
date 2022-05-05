@@ -1,108 +1,21 @@
 # JAMF Compliance Reporter
 
 The [JAMF Compliance Reporter](https://docs.jamf.com/compliance-reporter/documentation/Compliance_Reporter_Overview.html) Integration collects and parses data received from JAMF Compliance Reporter using TLS or HTTP Endpoint.  
-Reference link for setting up JAMF Compliance Reporter: [Here](https://docs.jamf.com/compliance-reporter/documentation/Setting_Up_Compliance_Reporter.html)
+
 ## Requirements
 - Enable the Integration with the TLS or HTTP Endpoint input.
 - Configure JAMF Compliance Reporter to send logs to the Elastic Agent.
 
-## Steps for generating remote endpoint logging certificates for Compliance Reporter
-##### This process is only for initial configuration. After validating settings, you can use a configuration profile in Jamf Pro to deploy certificates to endpoints in production.
-1. In Terminal, execute the following to get the full output to the certificate file.
+## Setup Steps
 
-   ```
-   echo -n | openssl s_client -showcerts -connect HOSTNAME:PORT
-   ```
+- After validating settings, you can use a configuration profile in JAMF Pro to deploy certificates to endpoints in production.
 
-2. Copy the certificate text, including the BEGIN CERTIFICATE and END CERTIFICATE lines to separate .txt files.
+- Reference link for generating [REST Endpoint Remote logging](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html) for Compliance Reporter.
 
-3. Rename the .txt file to a .pem file and double-click to import the file into the system keychain.
-The output should be similar to the following.
-   ```
-   $ ls -la certs.d
-   server-leaf-cert.pem
-   intermediate-ca.pem
-   root-ca.pem
-   $ cat server-leaf-cert.pem
-   -----BEGIN CERTIFICATE-----
-   MIIFazCCBFOgAwIBAgISBIuX8OD2k1mBKORs6oCdBeaFMA0GCSqGSIb3DQEBCwUA
-   MEoxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYDVQQD
-   ... (truncated for readability)
-   -----END CERTIFICATE-----
-   ```
-
-## Steps for setting up Compliance Reporter
-1. In Jamf Pro, click **Computers** at the top of the sidebar.
-
-2. Click **Configuration Profiles** in the sidebar.
-
-3. Click **New**.
-
-4. Use the General payload to configure basic settings, including the level at which to apply the profile and the distribution method.
-
-5. Use the Application & Custom Settings payload to configure Jamf Applications.
-
-6. Click **Add**.
-
-7. Select **com.jamf.compliancereporter** from the **Jamf Application Domain** pop-up menu.
-
-8. Select a version of the preference domain you want to configure.
-
-9. Select **ComplianceReporter.json** from the **Variant** pop-up menu.
-
-10. Configure the **Compliance Reporter** settings.
-    - To enable remote logging, you must configure the following general preference keys.
-    
-      ```
-      <key>LogRemoteEndpointEnabled</key>
-      <true/>
-      ```
-
-      ```
-      <key>LogRemoteEndpointURL</key>
-      <string>https://server.address.com:9093</string>
-      ```
-
-      ```
-      <key>LogRemoteEndpointType</key>
-      <string>Server Name</string>
-      ```
-
-      Use one of the following based on the aggregation server you are using.
-        - TLS: "TLS"
-        - REST Endpoint: "REST"
-
-    - Configure the following preference keys for REST endpoint remote logging in Compliance Reporter.
-      ```
-      <key>LogRemoteEndpointREST</key>
-      <dict></dict>
-      ```
-
-      ```
-      <key>PublicKeyHash</key>
-      <string>e838SOLK9Yu+brDTxM4s0HatE2UdoSBtNDU=</string>
-      ```
-
-    - Configure the following preference keys for TLS remote logging in Compliance Reporter.
-      ```
-      <key>LogRemoteEndpointTLS</key>
-      <dict></dict>
-      ```
-
-      ```
-      <key>TLSServerCertificate</key>
-      <array>
-         <string>server_name.company.com</string>
-         <string>Let's Encrypt Authority X3</string>
-         <string>DST Root CA X3</string>
-      </array>
-      ```
-
-11. Click the **Scope tab** and configure the scope of the profile.
-12. Click **Save**.
+- Reference link for [Creating a Configuration Profile](https://docs.jamf.com/compliance-reporter/documentation/Configuring_Compliance_Reporter_Properties_Using_Jamf_Pro.html) using JAMF Pro.
 
 ## Compatibility
-This package has been tested for Compliance Reporter against JAMF pro version 10.18.0
+This package has been tested for Compliance Reporter against JAMF pro version 10.18.0.
 
 ## Logs
 
@@ -133,8 +46,8 @@ An example event for `app` looks as following:
 {
     "@timestamp": "2019-10-15T18:30:27.000Z",
     "agent": {
-        "ephemeral_id": "2eb93662-cf60-4ef3-98ad-39a4732feb64",
-        "id": "cce50b14-3661-48c7-b68a-c9b978426776",
+        "ephemeral_id": "ad79d8c7-0bd2-4dfd-84a2-dd9838f1f6c1",
+        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.3"
@@ -148,18 +61,18 @@ An example event for `app` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "cce50b14-3661-48c7-b68a-c9b978426776",
+        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
         "snapshot": false,
         "version": "8.1.3"
     },
     "event": {
-        "action": "app-metrics",
+        "action": "app_metrics",
         "agent_id_status": "verified",
         "category": [
             "process"
         ],
         "dataset": "jamf_compliance_reporter.app_metrics",
-        "ingested": "2022-04-27T07:23:50Z",
+        "ingested": "2022-05-03T11:11:14Z",
         "kind": "event",
         "type": [
             "info"
@@ -175,6 +88,7 @@ An example event for `app` looks as following:
             "XX-XX-XX-XX-XX-XX"
         ],
         "os": {
+            "type": "macos",
             "version": "Version 10.15 (Build 19A582a)"
         }
     },
@@ -202,7 +116,7 @@ An example event for `app` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.30.0.5:54514"
+            "address": "172.30.0.6:45712"
         }
     },
     "related": {
@@ -212,7 +126,7 @@ An example event for `app` looks as following:
     },
     "tags": [
         "forwarded",
-        "jamf_compliance_reporter-app_metrics"
+        "jamf_compliance_reporter_app_metrics"
     ]
 }
 ```
@@ -262,6 +176,7 @@ An example event for `app` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
@@ -288,10 +203,10 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2019-10-02T16:21:03.000Z",
+    "@timestamp": "2019-10-02T16:21:03.400Z",
     "agent": {
-        "ephemeral_id": "96471fd4-cc68-4176-b366-a4e6b10f40d3",
-        "id": "cce50b14-3661-48c7-b68a-c9b978426776",
+        "ephemeral_id": "b41a9742-7f21-400d-980c-231113b66ad0",
+        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.3"
@@ -305,7 +220,7 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "cce50b14-3661-48c7-b68a-c9b978426776",
+        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
         "snapshot": false,
         "version": "8.1.3"
     },
@@ -313,27 +228,31 @@ An example event for `audit` looks as following:
         "code": "0"
     },
     "event": {
+        "action": "aue_fork",
         "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
+        "code": "2",
         "dataset": "jamf_compliance_reporter.audit",
-        "id": "2",
-        "ingested": "2022-04-27T07:25:55Z",
+        "ingested": "2022-05-03T11:13:18Z",
         "kind": "event",
+        "outcome": "success",
         "type": [
             "info"
         ]
     },
-    "group": {
-        "id": "20",
-        "name": "staff"
-    },
     "host": {
         "hostname": "Dan_macbook_pro",
         "id": "3F6E4B3A-9285-4E7E-9A0C-C3B62DC379DF",
-        "mac": "38-X9-X8-15-5X-82",
+        "ip": [
+            "0.0.0.0"
+        ],
+        "mac": [
+            "38-X9-X8-15-5X-82"
+        ],
         "os": {
+            "type": "macos",
             "version": "Version 10.14.6 (Build 18G95)"
         }
     },
@@ -347,17 +266,11 @@ An example event for `audit` looks as following:
                     "pid": 72350
                 }
             },
-            "effective": {
-                "user": {
-                    "name": "dan"
-                }
-            },
             "exec_chain_parent": {
                 "uuid": "78788648-9035-4BBD-BE36-C622E0A5EDE7"
             },
             "header": {
                 "event_modifier": "0",
-                "time_milliseconds_offset": 400,
                 "version": "11"
             },
             "identity": {
@@ -373,8 +286,7 @@ An example event for `audit` looks as following:
                 }
             },
             "return": {
-                "description": "success",
-                "value": 72350
+                "description": "success"
             },
             "subject": {
                 "audit": {
@@ -387,9 +299,6 @@ An example event for `audit` looks as following:
                     "group": {
                         "id": "20",
                         "name": "staff"
-                    },
-                    "user": {
-                        "id": "502"
                     }
                 },
                 "session_id": "100011",
@@ -397,7 +306,6 @@ An example event for `audit` looks as following:
                     "addr": [
                         "0"
                     ],
-                    "ip_address": "0.0.0.0",
                     "port": 50331650,
                     "type": "0"
                 }
@@ -413,10 +321,11 @@ An example event for `audit` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.30.0.5:37174"
+            "address": "172.30.0.6:45072"
         }
     },
     "process": {
+        "exit_code": 72350,
         "hash": {
             "sha1": "F38903FE2AEBEDD2F07704FAE89A405AF57023F2"
         },
@@ -440,9 +349,17 @@ An example event for `audit` looks as following:
     },
     "tags": [
         "forwarded",
-        "jamf_compliance_reporter-audit"
+        "jamf_compliance_reporter_audit"
     ],
     "user": {
+        "effective": {
+            "id": "502",
+            "name": "dan"
+        },
+        "group": {
+            "id": "20",
+            "name": "staff"
+        },
         "id": "502",
         "name": [
             "dan"
@@ -474,15 +391,13 @@ An example event for `audit` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.code | Error code describing the error. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
-| event.id | Unique ID to describe the event. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -498,6 +413,7 @@ An example event for `audit` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
@@ -534,7 +450,6 @@ An example event for `audit` looks as following:
 | jamf_compliance_reporter.audit.attributes.owner.group.name |  | keyword |
 | jamf_compliance_reporter.audit.attributes.owner.user.id |  | keyword |
 | jamf_compliance_reporter.audit.attributes.owner.user.name |  | keyword |
-| jamf_compliance_reporter.audit.effective.user.name |  | keyword |
 | jamf_compliance_reporter.audit.event_score |  | long |
 | jamf_compliance_reporter.audit.exec_args.args |  | flattened |
 | jamf_compliance_reporter.audit.exec_args.args_compiled |  | keyword |
@@ -568,6 +483,7 @@ An example event for `audit` looks as following:
 | jamf_compliance_reporter.audit.process.effective.group.id |  | keyword |
 | jamf_compliance_reporter.audit.process.effective.group.name |  | keyword |
 | jamf_compliance_reporter.audit.process.effective.user.id |  | keyword |
+| jamf_compliance_reporter.audit.process.effective.user.name |  | keyword |
 | jamf_compliance_reporter.audit.process.group.id |  | keyword |
 | jamf_compliance_reporter.audit.process.group.name |  | keyword |
 | jamf_compliance_reporter.audit.process.name |  | keyword |
@@ -580,7 +496,6 @@ An example event for `audit` looks as following:
 | jamf_compliance_reporter.audit.process.user.id |  | keyword |
 | jamf_compliance_reporter.audit.process.user.name |  | keyword |
 | jamf_compliance_reporter.audit.return.description |  | keyword |
-| jamf_compliance_reporter.audit.return.value |  | long |
 | jamf_compliance_reporter.audit.socket.inet.addr |  | keyword |
 | jamf_compliance_reporter.audit.socket.inet.family |  | keyword |
 | jamf_compliance_reporter.audit.socket.inet.id |  | keyword |
@@ -593,9 +508,9 @@ An example event for `audit` looks as following:
 | jamf_compliance_reporter.audit.subject.effective.group.id |  | keyword |
 | jamf_compliance_reporter.audit.subject.effective.group.name |  | keyword |
 | jamf_compliance_reporter.audit.subject.effective.user.id |  | keyword |
+| jamf_compliance_reporter.audit.subject.effective.user.name |  | keyword |
 | jamf_compliance_reporter.audit.subject.session_id |  | keyword |
 | jamf_compliance_reporter.audit.subject.terminal_id.addr |  | keyword |
-| jamf_compliance_reporter.audit.subject.terminal_id.ip_address |  | ip |
 | jamf_compliance_reporter.audit.subject.terminal_id.port |  | long |
 | jamf_compliance_reporter.audit.subject.terminal_id.type |  | keyword |
 | jamf_compliance_reporter.audit.texts |  | keyword |
@@ -604,6 +519,7 @@ An example event for `audit` looks as following:
 | jamf_compliance_reporter.host_info.serial_number |  | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
 | process.hash.sha1 | SHA1 hash. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
@@ -613,6 +529,11 @@ An example event for `audit` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.effective.id | Unique identifier of the user. | keyword |
+| user.effective.name | Short name or login of the user. | keyword |
+| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
+| user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.group.name | Name of the group. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
@@ -628,8 +549,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2019-10-02T16:17:08.000Z",
     "agent": {
-        "ephemeral_id": "75577556-4fe0-40be-8267-407caeedaf76",
-        "id": "cce50b14-3661-48c7-b68a-c9b978426776",
+        "ephemeral_id": "5fca1652-07e4-4738-adf4-8872c47af7eb",
+        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.3"
@@ -643,17 +564,18 @@ An example event for `event` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "cce50b14-3661-48c7-b68a-c9b978426776",
+        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
         "snapshot": false,
         "version": "8.1.3"
     },
     "event": {
+        "action": "preference_list_event",
         "agent_id_status": "verified",
         "category": [
             "process"
         ],
         "dataset": "jamf_compliance_reporter.event",
-        "ingested": "2022-04-27T07:27:58Z",
+        "ingested": "2022-05-03T11:15:24Z",
         "kind": "event",
         "type": [
             "info"
@@ -666,6 +588,7 @@ An example event for `event` looks as following:
             "38-F9-X8-15-5X-82"
         ],
         "os": {
+            "type": "macos",
             "version": "Version 10.14.6 (Build 18G95)"
         }
     },
@@ -736,7 +659,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.30.0.5:33584"
+            "address": "172.30.0.6:48300"
         }
     },
     "related": {
@@ -749,7 +672,7 @@ An example event for `event` looks as following:
     },
     "tags": [
         "forwarded",
-        "jamf_compliance_reporter-event"
+        "jamf_compliance_reporter_event"
     ],
     "user": {
         "email": "dan@email.com"
@@ -791,8 +714,6 @@ An example event for `event` looks as following:
 | file.hash.sha1 | SHA1 hash. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
-| group.id | Unique identifier for the group on the system/platform. | keyword |
-| group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -808,6 +729,7 @@ An example event for `event` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
@@ -828,7 +750,6 @@ An example event for `event` looks as following:
 | jamf_compliance_reporter.event.compliancereporter_license_info.time |  | date |
 | jamf_compliance_reporter.event.compliancereporter_license_info.type |  | keyword |
 | jamf_compliance_reporter.event.compliancereporter_license_info.version |  | keyword |
-| jamf_compliance_reporter.event.effective.user.name |  | keyword |
 | jamf_compliance_reporter.event.event_attributes.activity_identifier |  | keyword |
 | jamf_compliance_reporter.event.event_attributes.assessments_enabled |  | long |
 | jamf_compliance_reporter.event.event_attributes.attributes.ctime |  | date |
@@ -962,15 +883,15 @@ An example event for `event` looks as following:
 | jamf_compliance_reporter.event.identity.team.id_truncated |  | keyword |
 | jamf_compliance_reporter.event.signal_event_info.signal |  | long |
 | jamf_compliance_reporter.event.subject.audit.id |  | keyword |
-| jamf_compliance_reporter.event.subject.audit.user_name |  | keyword |
-| jamf_compliance_reporter.event.subject.effective.group_id |  | keyword |
-| jamf_compliance_reporter.event.subject.effective.group_name |  | keyword |
-| jamf_compliance_reporter.event.subject.effective.user_id |  | keyword |
+| jamf_compliance_reporter.event.subject.audit.user.name |  | keyword |
+| jamf_compliance_reporter.event.subject.effective.group.id |  | keyword |
+| jamf_compliance_reporter.event.subject.effective.group.name |  | keyword |
+| jamf_compliance_reporter.event.subject.effective.user.id |  | keyword |
+| jamf_compliance_reporter.event.subject.effective.user.name |  | keyword |
 | jamf_compliance_reporter.event.subject.process_information |  | keyword |
-| jamf_compliance_reporter.event.subject.responsible_process.id |  | keyword |
-| jamf_compliance_reporter.event.subject.responsible_process.name |  | keyword |
-| jamf_compliance_reporter.event.subject.session_id |  | keyword |
-| jamf_compliance_reporter.event.subject.terminal_id.ip.address |  | ip |
+| jamf_compliance_reporter.event.subject.responsible.process.id |  | keyword |
+| jamf_compliance_reporter.event.subject.responsible.process.name |  | keyword |
+| jamf_compliance_reporter.event.subject.session.id |  | keyword |
 | jamf_compliance_reporter.event.subject.terminal_id.port |  | long |
 | jamf_compliance_reporter.event.subject.terminal_id.type |  | keyword |
 | jamf_compliance_reporter.event.texts |  | keyword |
@@ -988,7 +909,12 @@ An example event for `event` looks as following:
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.effective.id | Unique identifier of the user. | keyword |
+| user.effective.name | Short name or login of the user. | keyword |
+| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
 | user.email | User email address. | keyword |
+| user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.group.name | Name of the group. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |

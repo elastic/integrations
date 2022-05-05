@@ -39,6 +39,12 @@ processors:
       field: json.attributes.owner_user_name
       target_field: jamf_compliance_reporter.audit.attributes.owner.user.name
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{jamf_compliance_reporter.audit.attributes.owner.user.name}}}'
+      if: ctx?.jamf_compliance_reporter?.audit?.attributes?.owner?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
   - rename:
