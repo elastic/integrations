@@ -29,9 +29,9 @@ An example event for `clicks_blocked` looks as following:
 {
     "@timestamp": "2022-03-30T10:11:12.000Z",
     "agent": {
-        "ephemeral_id": "72f1c23e-d243-44d8-96b4-28fccb16a654",
+        "ephemeral_id": "536a9cc8-e18b-4a26-83fd-17e4257f771b",
         "hostname": "docker-fleet-agent",
-        "id": "b4d5ae61-f5a7-4657-b9f5-ef1729aaa5f0",
+        "id": "364f0854-fae9-4ef4-afaa-dcb66a0c5cb5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -66,7 +66,7 @@ An example event for `clicks_blocked` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "b4d5ae61-f5a7-4657-b9f5-ef1729aaa5f0",
+        "id": "364f0854-fae9-4ef4-afaa-dcb66a0c5cb5",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -84,12 +84,12 @@ An example event for `clicks_blocked` looks as following:
         "category": [
             "email"
         ],
-        "created": "2022-04-22T09:00:36.737Z",
+        "created": "2022-05-04T19:52:41.054Z",
         "dataset": "proofpoint_tap.clicks_blocked",
-        "id": "a5c9f8bb-1476-43a7-8333-d9c8c6461f29",
-        "ingested": "2022-04-22T09:00:40Z",
+        "id": "a5c9f8bb-1234-1234-1234-dx9xxx2xx9xxx",
+        "ingested": "2022-05-04T19:52:44Z",
         "kind": "event",
-        "original": "{\"GUID\":\"ZcVyFyLf-H9pgzhQFh61d1MA2bTcxDV4\",\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"malware\",\"clickIP\":\"89.160.20.112\",\"clickTime\":\"2022-03-30T10:11:12.000Z\",\"id\":\"a5c9f8bb-1476-43a7-8333-d9c8c6461f29\",\"messageID\":\"12345678912345.12345.mail@example.com\",\"recipient\":\"9c52aa64228824247c48df69b066e5a7@example.com\",\"sender\":\"abc123@example.com\",\"senderIP\":\"81.2.69.143\",\"threatID\":\"502b70513b6cebce3908208da042771c730eba9945f7ffb5daec6bd7fc699d5f\",\"threatStatus\":\"active\",\"threatTime\":\"2022-03-21T14:40:31.000Z\",\"threatURL\":\"https://threatinsight.proofpoint.com/a2abc123-1234-1234-1234-babcded1234/threat/email/502xxxxxxxxxcebxxxxxxxxxxa04277xxxxx5dxc6xxxxxxxxx5f\",\"url\":\"https://www.example.com/abcdabcd123?query=0\",\"userAgent\":\"Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/199.0.427504638 Mobile/15E148 Safari/604.1\"}",
+        "original": "{\"GUID\":\"ZcxxxxVxyxFxyxLxxxDxVxx4xxxxx\",\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"malware\",\"clickIP\":\"89.160.20.112\",\"clickTime\":\"2022-03-30T10:11:12.000Z\",\"id\":\"a5c9f8bb-1234-1234-1234-dx9xxx2xx9xxx\",\"messageID\":\"12345678912345.12345.mail@example.com\",\"recipient\":\"9c52aa64228824247c48df69b066e5a7@example.com\",\"sender\":\"abc123@example.com\",\"senderIP\":\"81.2.69.143\",\"threatID\":\"502b7xxxx0x5x1x3xb6xcxexbxxxxxxxcxxexc6xbxxxxxxdx7fxcx6x9xxxx9xdxxxxxxxx5f\",\"threatStatus\":\"active\",\"threatTime\":\"2022-03-21T14:40:31.000Z\",\"threatURL\":\"https://threatinsight.proofpoint.com/a2abc123-1234-1234-1234-babcded1234/threat/email/502xxxxxxxxxcebxxxxxxxxxxa04277xxxxx5dxc6xxxxxxxxx5f\",\"url\":\"https://www.example.com/abcdabcd123?query=0\",\"userAgent\":\"Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/199.0.427504638 Mobile/15E148 Safari/604.1\"}",
         "type": [
             "denied"
         ]
@@ -102,13 +102,13 @@ An example event for `clicks_blocked` looks as following:
             "campaign_id": "46x01x8x-x899-404x-xxx9-111xx393d1x7",
             "classification": "malware",
             "threat": {
-                "id": "502b70513b6cebce3908208da042771c730eba9945f7ffb5daec6bd7fc699d5f",
+                "id": "502b7xxxx0x5x1x3xb6xcxexbxxxxxxxcxxexc6xbxxxxxxdx7fxcx6x9xxxx9xdxxxxxxxx5f",
                 "status": "active",
                 "time": "2022-03-21T14:40:31.000Z",
                 "url": "https://threatinsight.proofpoint.com/a2abc123-1234-1234-1234-babcded1234/threat/email/502xxxxxxxxxcebxxxxxxxxxxa04277xxxxx5dxc6xxxxxxxxx5f"
             }
         },
-        "guid": "ZcVyFyLf-H9pgzhQFh61d1MA2bTcxDV4"
+        "guid": "ZcxxxxVxyxFxyxLxxxDxVxx4xxxxx"
     },
     "related": {
         "ip": [
@@ -152,7 +152,7 @@ An example event for `clicks_blocked` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
@@ -161,7 +161,7 @@ An example event for `clicks_blocked` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
+| container.id | Unique container ID. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
@@ -194,8 +194,8 @@ An example event for `clicks_blocked` looks as following:
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
@@ -255,9 +255,9 @@ An example event for `clicks_permitted` looks as following:
 {
     "@timestamp": "2022-03-21T20:39:37.000Z",
     "agent": {
-        "ephemeral_id": "fb4fdc0c-eb78-4d2d-9e07-1cadb50b67dd",
+        "ephemeral_id": "08678819-8f0f-42fe-9b42-2e80df78e5ca",
         "hostname": "docker-fleet-agent",
-        "id": "b4d5ae61-f5a7-4657-b9f5-ef1729aaa5f0",
+        "id": "364f0854-fae9-4ef4-afaa-dcb66a0c5cb5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -292,7 +292,7 @@ An example event for `clicks_permitted` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "b4d5ae61-f5a7-4657-b9f5-ef1729aaa5f0",
+        "id": "364f0854-fae9-4ef4-afaa-dcb66a0c5cb5",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -310,12 +310,12 @@ An example event for `clicks_permitted` looks as following:
         "category": [
             "email"
         ],
-        "created": "2022-04-22T09:01:38.659Z",
+        "created": "2022-05-04T19:53:36.180Z",
         "dataset": "proofpoint_tap.clicks_permitted",
-        "id": "de7eef56-607d-498f-90d2-54c0e8e29f7d",
-        "ingested": "2022-04-22T09:01:42Z",
+        "id": "de7eef56-1234-1234-1234-5xxfx7xxxdxxxx",
+        "ingested": "2022-05-04T19:53:39Z",
         "kind": "event",
-        "original": "{\"GUID\":\"cTp7jHxBkwsKoAree0h64R6Mt2Bz784w\",\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"phish\",\"clickIP\":\"89.160.20.112\",\"clickTime\":\"2022-03-21T20:39:37.000Z\",\"id\":\"de7eef56-607d-498f-90d2-54c0e8e29f7d\",\"messageID\":\"12345678912345.12345.mail@example.com\",\"recipient\":\"abc@example.com\",\"sender\":\"abc123@example.com\",\"senderIP\":\"81.2.69.143\",\"threatID\":\"92c17aaxxxxxxxxxx07xx7xxxx9xexcx3x3xxxxxx8xx3xxxx\",\"threatStatus\":\"active\",\"threatTime\":\"2022-03-30T10:05:57.000Z\",\"threatURL\":\"https://threatinsight.proofpoint.com/a2abc123-1234-1234-1234-babcded1234/threat/email/92c17aaxxxxxxxxxx07xx7xxxx9xexcx3x3xxxxxx8xx3xxxx\",\"url\":\"https://example.com/collab/?id=x4x3x6xsx1xxxx8xEdxexnxxxaxX\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36 Edg/99.0.1150.46\"}",
+        "original": "{\"GUID\":\"cTxxxxxxzx7xxxxxxxxxx8x4xwxx\",\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"phish\",\"clickIP\":\"89.160.20.112\",\"clickTime\":\"2022-03-21T20:39:37.000Z\",\"id\":\"de7eef56-1234-1234-1234-5xxfx7xxxdxxxx\",\"messageID\":\"12345678912345.12345.mail@example.com\",\"recipient\":\"abc@example.com\",\"sender\":\"abc123@example.com\",\"senderIP\":\"81.2.69.143\",\"threatID\":\"92c17aaxxxxxxxxxx07xx7xxxx9xexcx3x3xxxxxx8xx3xxxx\",\"threatStatus\":\"active\",\"threatTime\":\"2022-03-30T10:05:57.000Z\",\"threatURL\":\"https://threatinsight.proofpoint.com/a2abc123-1234-1234-1234-babcded1234/threat/email/92c17aaxxxxxxxxxx07xx7xxxx9xexcx3x3xxxxxx8xx3xxxx\",\"url\":\"https://example.com/collab/?id=x4x3x6xsx1xxxx8xEdxexnxxxaxX\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36 Edg/99.0.1150.46\"}",
         "type": [
             "allowed"
         ]
@@ -334,7 +334,7 @@ An example event for `clicks_permitted` looks as following:
                 "url": "https://threatinsight.proofpoint.com/a2abc123-1234-1234-1234-babcded1234/threat/email/92c17aaxxxxxxxxxx07xx7xxxx9xexcx3x3xxxxxx8xx3xxxx"
             }
         },
-        "guid": "cTp7jHxBkwsKoAree0h64R6Mt2Bz784w"
+        "guid": "cTxxxxxxzx7xxxxxxxxxx8x4xwxx"
     },
     "related": {
         "ip": [
@@ -378,7 +378,7 @@ An example event for `clicks_permitted` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
@@ -387,7 +387,7 @@ An example event for `clicks_permitted` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
+| container.id | Unique container ID. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
@@ -420,8 +420,8 @@ An example event for `clicks_permitted` looks as following:
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
@@ -479,11 +479,11 @@ An example event for `message_blocked` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-22T09:02:38.852Z",
+    "@timestamp": "2022-05-04T19:54:29.625Z",
     "agent": {
-        "ephemeral_id": "7613827a-d4a7-4c66-86cc-87621c04e720",
+        "ephemeral_id": "a9b7d70d-a7cb-41a9-9e39-1ffd8ee67d30",
         "hostname": "docker-fleet-agent",
-        "id": "b4d5ae61-f5a7-4657-b9f5-ef1729aaa5f0",
+        "id": "364f0854-fae9-4ef4-afaa-dcb66a0c5cb5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -497,7 +497,7 @@ An example event for `message_blocked` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "b4d5ae61-f5a7-4657-b9f5-ef1729aaa5f0",
+        "id": "364f0854-fae9-4ef4-afaa-dcb66a0c5cb5",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -506,8 +506,8 @@ An example event for `message_blocked` looks as following:
             {
                 "file": {
                     "hash": {
-                        "md5": "008x5926xx861023x1x2x36653xx88x1",
-                        "sha256": "85738x8x9x7x1x04x5329x590xxxx9x425925x6x0984089x43x022xx4x19x123"
+                        "md5": "b10a8db164e0754105b7a99be72e3fe5",
+                        "sha256": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
                     },
                     "mime_type": "text/plain",
                     "name": "text.txt"
@@ -516,8 +516,8 @@ An example event for `message_blocked` looks as following:
             {
                 "file": {
                     "hash": {
-                        "md5": "5873c7d3008x5926xx861023x1x2x36653xx88x17608e0d49bcaa6f32b6c731f",
-                        "sha256": "85738x8x9x7x1x04x5329x590xxxx9x425925x6x0984089x43x022xx4x19x281"
+                        "md5": "b10a8db164e0754105b7a99be72e3fe5",
+                        "sha256": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
                     },
                     "mime_type": "application/pdf",
                     "name": "text.pdf"
@@ -551,11 +551,11 @@ An example event for `message_blocked` looks as following:
         "category": [
             "email"
         ],
-        "created": "2022-04-22T09:02:38.852Z",
+        "created": "2022-05-04T19:54:29.625Z",
         "dataset": "proofpoint_tap.message_blocked",
-        "ingested": "2022-04-22T09:02:42Z",
+        "ingested": "2022-05-04T19:54:33Z",
         "kind": "event",
-        "original": "{\"GUID\":\"x11xxxx1-12f9-111x-x12x-1x1x123456xx\",\"QID\":\"x2XXxXXX111111\",\"ccAddresses\":[\"abc@example.com\"],\"clusterId\":\"pharmtech_hosted\",\"completelyRewritten\":\"true\",\"fromAddress\":\"abc@example.com\",\"headerCC\":\"\\\"Example Abc\\\" \\u003cabc@example.com\\u003e\",\"headerFrom\":\"\\\"A. Bc\\\" \\u003cabc@example.com\\u003e\",\"headerReplyTo\":null,\"headerTo\":\"\\\"Aa Bb\\\" \\u003caa.bb@example.com\\u003e; \\\"Hey Hello\\\" \\u003chey.hello@example.com\\u003e\",\"impostorScore\":0,\"malwareScore\":100,\"messageID\":\"12345678912345.12345.mail@example.com\",\"messageParts\":[{\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"filename\":\"text.txt\",\"md5\":\"008x5926xx861023x1x2x36653xx88x1\",\"oContentType\":\"text/plain\",\"sandboxStatus\":\"unsupported\",\"sha256\":\"85738x8x9x7x1x04x5329x590xxxx9x425925x6x0984089x43x022xx4x19x123\"},{\"contentType\":\"application/pdf\",\"disposition\":\"attached\",\"filename\":\"text.pdf\",\"md5\":\"5873c7d3008x5926xx861023x1x2x36653xx88x17608e0d49bcaa6f32b6c731f\",\"oContentType\":\"application/pdf\",\"sandboxStatus\":\"threat\",\"sha256\":\"85738x8x9x7x1x04x5329x590xxxx9x425925x6x0984089x43x022xx4x19x281\"}],\"messageTime\":\"2021-11-25T09:10:00.050Z\",\"modulesRun\":[\"pdr\",\"sandbox\",\"spam\",\"urldefense\"],\"phishScore\":46,\"policyRoutes\":[\"default_inbound\",\"executives\"],\"quarantineFolder\":\"Attachment Defense\",\"quarantineRule\":\"module.sandbox.threat\",\"recipient\":[\"example.abc@example.com\",\"hey.hello@example.com\"],\"replyToAddress\":null,\"sender\":\"x99x7x5580193x6x51x597xx2x0210@example.com\",\"senderIP\":\"175.16.199.1\",\"spamScore\":4,\"subject\":\"Please find a totally safe invoice attached.\",\"threatsInfoMap\":[{\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"MALWARE\",\"threat\":\"2xxx740x143xx1xx4x1xx0146d334x5593x1428x6x062x2x406x5efe8xxx95xx\",\"threatId\":\"2xxx740f143fc1aa4c1cd0146d334x5593b1428x6x062b2c406e5efe8xxx95xx\",\"threatStatus\":\"active\",\"threatTime\":\"2021-11-25T09:10:00.050Z\",\"threatType\":\"ATTACHMENT\",\"threatUrl\":\"https://www.example.com/?name=john\"},{\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"MALWARE\",\"threat\":\"example.com\",\"threatId\":\"3xx97xx852c66a7xx761450xxxxxx9f4ffab74715b591294f78b5e37a76481xx\",\"threatTime\":\"2021-07-20T05:00:00.050Z\",\"threatType\":\"URL\",\"threatUrl\":\"https://www.example.com/?name=john\"}],\"toAddresses\":[\"example.abc@example.com\",\"hey.hello@example.com\"],\"xmailer\":\"Spambot v2.5\"}",
+        "original": "{\"GUID\":\"x11xxxx1-12f9-111x-x12x-1x1x123456xx\",\"QID\":\"x2XXxXXX111111\",\"ccAddresses\":[\"abc@example.com\"],\"clusterId\":\"pharmtech_hosted\",\"completelyRewritten\":\"true\",\"fromAddress\":\"abc@example.com\",\"headerCC\":\"\\\"Example Abc\\\" \\u003cabc@example.com\\u003e\",\"headerFrom\":\"\\\"A. Bc\\\" \\u003cabc@example.com\\u003e\",\"headerReplyTo\":null,\"headerTo\":\"\\\"Aa Bb\\\" \\u003caa.bb@example.com\\u003e; \\\"Hey Hello\\\" \\u003chey.hello@example.com\\u003e\",\"impostorScore\":0,\"malwareScore\":100,\"messageID\":\"12345678912345.12345.mail@example.com\",\"messageParts\":[{\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"filename\":\"text.txt\",\"md5\":\"b10a8db164e0754105b7a99be72e3fe5\",\"oContentType\":\"text/plain\",\"sandboxStatus\":\"unsupported\",\"sha256\":\"a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e\"},{\"contentType\":\"application/pdf\",\"disposition\":\"attached\",\"filename\":\"text.pdf\",\"md5\":\"b10a8db164e0754105b7a99be72e3fe5\",\"oContentType\":\"application/pdf\",\"sandboxStatus\":\"threat\",\"sha256\":\"a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e\"}],\"messageTime\":\"2021-11-25T09:10:00.050Z\",\"modulesRun\":[\"pdr\",\"sandbox\",\"spam\",\"urldefense\"],\"phishScore\":46,\"policyRoutes\":[\"default_inbound\",\"executives\"],\"quarantineFolder\":\"Attachment Defense\",\"quarantineRule\":\"module.sandbox.threat\",\"recipient\":[\"example.abc@example.com\",\"hey.hello@example.com\"],\"replyToAddress\":null,\"sender\":\"x99x7x5580193x6x51x597xx2x0210@example.com\",\"senderIP\":\"175.16.199.1\",\"spamScore\":4,\"subject\":\"Please find a totally safe invoice attached.\",\"threatsInfoMap\":[{\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"MALWARE\",\"threat\":\"a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e\",\"threatId\":\"2xxx740f143fc1aa4c1cd0146d334x5593b1428x6x062b2c406e5efe8xxx95xx\",\"threatStatus\":\"active\",\"threatTime\":\"2021-11-25T09:10:00.050Z\",\"threatType\":\"ATTACHMENT\",\"threatUrl\":\"https://www.example.com/?name=john\"},{\"campaignId\":\"46x01x8x-x899-404x-xxx9-111xx393d1x7\",\"classification\":\"MALWARE\",\"threat\":\"example.com\",\"threatId\":\"3xx97xx852c66a7xx761450xxxxxx9f4ffab74715b591294f78b5e37a76481xx\",\"threatTime\":\"2021-07-20T05:00:00.050Z\",\"threatType\":\"URL\",\"threatUrl\":\"https://www.example.com/?name=john\"}],\"toAddresses\":[\"example.abc@example.com\",\"hey.hello@example.com\"],\"xmailer\":\"Spambot v2.5\"}",
         "type": [
             "denied"
         ]
@@ -569,7 +569,7 @@ An example event for `message_blocked` looks as following:
             "completely_rewritten": "true",
             "header": {
                 "cc": "\"Example Abc\" \u003cabc@example.com\u003e",
-                "from": "\"A. Bc\" \u003cabc@example.com\u003e",
+                "from": "\"A. Bc\" abc@example.com",
                 "to": "\"Aa Bb\" \u003caa.bb@example.com\u003e; \"Hey Hello\" \u003chey.hello@example.com\u003e"
             },
             "impostor_score": 0,
@@ -612,7 +612,7 @@ An example event for `message_blocked` looks as following:
                     "campaign_id": "46x01x8x-x899-404x-xxx9-111xx393d1x7",
                     "classification": "MALWARE",
                     "threat": {
-                        "artifact": "2xxx740x143xx1xx4x1xx0146d334x5593x1428x6x062x2x406x5efe8xxx95xx",
+                        "artifact": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
                         "status": "active",
                         "time": "2021-11-25T09:10:00.050Z",
                         "type": "ATTACHMENT",
@@ -640,10 +640,8 @@ An example event for `message_blocked` looks as following:
     },
     "related": {
         "hash": [
-            "008x5926xx861023x1x2x36653xx88x1",
-            "5873c7d3008x5926xx861023x1x2x36653xx88x17608e0d49bcaa6f32b6c731f",
-            "85738x8x9x7x1x04x5329x590xxxx9x425925x6x0984089x43x022xx4x19x123",
-            "85738x8x9x7x1x04x5329x590xxxx9x425925x6x0984089x43x022xx4x19x281"
+            "b10a8db164e0754105b7a99be72e3fe5",
+            "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e"
         ],
         "ip": [
             "175.16.199.1"
@@ -677,7 +675,7 @@ An example event for `message_blocked` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
@@ -686,7 +684,7 @@ An example event for `message_blocked` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
+| container.id | Unique container ID. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
@@ -720,8 +718,8 @@ An example event for `message_blocked` looks as following:
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
@@ -789,11 +787,11 @@ An example event for `message_delivered` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-22T09:03:34.600Z",
+    "@timestamp": "2022-05-04T19:55:21.238Z",
     "agent": {
-        "ephemeral_id": "0e2f90b6-a17b-43ad-8d49-dbef241a57f4",
+        "ephemeral_id": "cfaba540-5faf-42e6-91bb-915e6d234a43",
         "hostname": "docker-fleet-agent",
-        "id": "b4d5ae61-f5a7-4657-b9f5-ef1729aaa5f0",
+        "id": "364f0854-fae9-4ef4-afaa-dcb66a0c5cb5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -807,7 +805,7 @@ An example event for `message_delivered` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "b4d5ae61-f5a7-4657-b9f5-ef1729aaa5f0",
+        "id": "364f0854-fae9-4ef4-afaa-dcb66a0c5cb5",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -824,12 +822,12 @@ An example event for `message_delivered` looks as following:
         "category": [
             "email"
         ],
-        "created": "2022-04-22T09:03:34.600Z",
+        "created": "2022-05-04T19:55:21.238Z",
         "dataset": "proofpoint_tap.message_delivered",
         "id": "2hsvbU-i8abc123-12345-xxxxx12",
-        "ingested": "2022-04-22T09:03:38Z",
+        "ingested": "2022-05-04T19:55:24Z",
         "kind": "event",
-        "original": "{\"GUID\":\"NhsvbUi8abc256bUi8abc256hsvbUic256WBOj\",\"QID\":null,\"ccAddresses\":null,\"cluster\":\"pharmtech_hosted\",\"completelyRewritten\":true,\"fromAddress\":null,\"headerFrom\":null,\"headerReplyTo\":null,\"id\":\"2hsvbU-i8abc123-12345-xxxxx12\",\"impostorScore\":0,\"malwareScore\":0,\"messageID\":\"\",\"messageParts\":null,\"messageSize\":0,\"messageTime\":\"2022-01-01T00:00:00.000Z\",\"modulesRun\":null,\"phishScore\":0,\"policyRoutes\":null,\"quarantineFolder\":null,\"quarantineRule\":null,\"recipient\":[\"fxxxxhxsxxvxbcx2xx5xxx6x3xx26@example.com\"],\"replyToAddress\":null,\"sender\":\"\",\"senderIP\":\"89.160.20.112\",\"spamScore\":0,\"subject\":null,\"threatsInfoMap\":[{\"campaignID\":null,\"classification\":\"spam\",\"threat\":\"http://zbcd123456x0.example.com\",\"threatID\":\"b7exxxxxxxx0d10xxxxxxe2xxxxxxxxxxxx81cxxxxxx034ac9cxxxxxxxxxxxxb\",\"threatStatus\":\"active\",\"threatTime\":\"2021-11-25T13:02:58.640Z\",\"threatType\":\"url\",\"threatUrl\":\"https://threatinsight.proofpoint.com/aaabcdef-1234-b1abcdefghe/threat/email/b7exxxxxxxx0d10xxxxxxe2xxxxxxxxxxxx81cxxxxxx034ac9cxxxxxxxxxxxxb\"},{\"campaignID\":null,\"classification\":\"phish\",\"threat\":\"http://zbcd123456x0.example.com\",\"threatID\":\"aaabcdefg123456f009971a9c193abcdefg123456bf5abcdefg1234566\",\"threatStatus\":\"active\",\"threatTime\":\"2021-07-19T10:28:15.100Z\",\"threatType\":\"url\",\"threatUrl\":\"https://threatinsight.proofpoint.com/aaabcdef-1234-b1abcdefghe/threat/email/b7exxxxxxxx0d10xxxxxxe2xxxxxxxxxxxx81cxxxxxx034ac9cxxxxxxxxxxxxb\"}],\"toAddresses\":null,\"xmailer\":null}",
+        "original": "{\"GUID\":\"NxxxsxvxbxUxixcx2xxxxx5x6xWxBxOxxxxxjxx\",\"QID\":null,\"ccAddresses\":null,\"cluster\":\"pharmtech_hosted\",\"completelyRewritten\":true,\"fromAddress\":null,\"headerFrom\":null,\"headerReplyTo\":null,\"id\":\"2hsvbU-i8abc123-12345-xxxxx12\",\"impostorScore\":0,\"malwareScore\":0,\"messageID\":\"\",\"messageParts\":null,\"messageSize\":0,\"messageTime\":\"2022-01-01T00:00:00.000Z\",\"modulesRun\":null,\"phishScore\":0,\"policyRoutes\":null,\"quarantineFolder\":null,\"quarantineRule\":null,\"recipient\":[\"fxxxxhxsxxvxbcx2xx5xxx6x3xx26@example.com\"],\"replyToAddress\":null,\"sender\":\"\",\"senderIP\":\"89.160.20.112\",\"spamScore\":0,\"subject\":null,\"threatsInfoMap\":[{\"campaignID\":null,\"classification\":\"spam\",\"threat\":\"http://zbcd123456x0.example.com\",\"threatID\":\"b7exxxxxxxx0d10xxxxxxe2xxxxxxxxxxxx81cxxxxxx034ac9cxxxxxxxxxxxxb\",\"threatStatus\":\"active\",\"threatTime\":\"2021-11-25T13:02:58.640Z\",\"threatType\":\"url\",\"threatUrl\":\"https://threatinsight.proofpoint.com/aaabcdef-1234-b1abcdefghe/threat/email/b7exxxxxxxx0d10xxxxxxe2xxxxxxxxxxxx81cxxxxxx034ac9cxxxxxxxxxxxxb\"},{\"campaignID\":null,\"classification\":\"phish\",\"threat\":\"http://zbcd123456x0.example.com\",\"threatID\":\"aaabcdefg123456f009971a9c193abcdefg123456bf5abcdefg1234566\",\"threatStatus\":\"active\",\"threatTime\":\"2021-07-19T10:28:15.100Z\",\"threatType\":\"url\",\"threatUrl\":\"https://threatinsight.proofpoint.com/aaabcdef-1234-b1abcdefghe/threat/email/b7exxxxxxxx0d10xxxxxxe2xxxxxxxxxxxx81cxxxxxx034ac9cxxxxxxxxxxxxb\"}],\"toAddresses\":null,\"xmailer\":null}",
         "type": [
             "info"
         ]
@@ -838,7 +836,7 @@ An example event for `message_delivered` looks as following:
         "type": "httpjson"
     },
     "proofpoint_tap": {
-        "guid": "NhsvbUi8abc256bUi8abc256hsvbUic256WBOj",
+        "guid": "NxxxsxvxbxUxixcx2xxxxx5x6xWxBxOxxxxxjxx",
         "message_delivered": {
             "cluster": "pharmtech_hosted",
             "completely_rewritten": "true",
@@ -915,7 +913,7 @@ An example event for `message_delivered` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
@@ -924,7 +922,7 @@ An example event for `message_delivered` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
+| container.id | Unique container ID. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
@@ -958,8 +956,8 @@ An example event for `message_delivered` looks as following:
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
