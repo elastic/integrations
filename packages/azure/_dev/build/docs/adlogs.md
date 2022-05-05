@@ -8,7 +8,7 @@ There are several requirements before using the integration since the logs will 
 - To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
 - To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
 
-Azure Active Directory logs contain:
+Azure Active Directory Logs contain:
 
 Sign-in logs – Information about sign-ins and how your resources are used by your users.
 
@@ -72,7 +72,7 @@ The `auditlogs` dataset of the Azure Logs package will collect any audit events 
 
 ### signinlogs
 
-The `signinlogs` dataset of the Kubernetes package will collect any sign-in events that have been streamed through an azure event hub.
+The `signinlogs` dataset of the Azure Logs package will collect any sign-in events that have been streamed through an Azure Event Hub.
 
 {{event "signinlogs"}}
 
