@@ -1,0 +1,65 @@
+metricsets: ["jmx"]
+namespace: "metrics"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+http_method: "GET"
+path: {{path}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+username: {{username}}
+password: {{password}}
+period: {{period}}
+jmx.mappings:  
+  - mbean: 'com.bea:ApplicationRuntime=*,Name=*,ServerRuntime=*,Type=WorkManagerRuntime'
+    attributes:
+    - attr: CompletedRequests
+      field: console.work_manager.requests.total.completed
+    - attr: PendingRequests
+      field: console.work_manager.requests.total.pending
+    - attr: CompletedDaemonRequests
+      field: console.work_manager.requests.daemon.completed
+    - attr: PendingDaemonRequests
+      field: console.work_manager.requests.daemon.pending
+    - attr: StuckThreadCount
+      field: console.work_manager.stuck_thread_count
+    - attr: Name
+      field: console.work_manager.name
+  - mbean: 'com.bea:ServerRuntime=*,Name=*,ApplicationRuntime=*,Type=ServletRuntime,WebAppComponentRuntime=*'
+    attributes:
+    - attr: ExecutionTimeHigh
+      field: console.servlet.execution_time.high
+    - attr: InvocationTotalCount
+      field: console.servlet.invocation.total
+    - attr: ReloadTotalCount
+      field: console.servlet.reload.total
+    - attr: ExecutionTimeLow
+      field: console.servlet.execution_time.low
+    - attr: PoolMaxCapacity
+      field: console.servlet.pool_max_capacity
+    - attr: Name
+      field: console.servlet.name
+    - attr: ExecutionTimeAverage
+      field: console.servlet.execution_time.average
+    - attr: ExecutionTimeTotal
+      field: console.servlet.execution_time.total
+  - mbean: 'com.bea:ServerRuntime=*,Name=*,Type=JVMRuntime'
+    attributes:
+    - attr: HeapSizeMax
+      field: console.jvm.heap.size.max
+    - attr: HeapFreePercent
+      field: console.jvm.heap.free.current.percent
+    - attr: HeapFreeCurrent
+      field: console.jvm.heap.free.current.bytes
+    - attr: HeapSizeCurrent
+      field: console.jvm.heap.size.current
+    - attr: Uptime
+      field: console.jvm.uptime
+    - attr: Name
+      field: console.jvm.server_name

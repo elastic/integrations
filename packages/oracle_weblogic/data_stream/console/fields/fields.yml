@@ -1,0 +1,105 @@
+- name: oracle_weblogic
+  type: group
+  fields:
+    - name: console
+      type: group
+      fields:
+        - name: jvm
+          type: group
+          fields:
+            - name: heap
+              type: group
+              fields:
+                - name: free
+                  type: group
+                  fields:
+                    - name: current
+                      type: group
+                      fields:
+                        - name: bytes
+                          type: long
+                          description: Current amount of memory, in bytes, that is available in the JVM heap.
+                        - name: percent
+                          type: long
+                          description: Current percentage of the JVM heap that is free.
+                - name: size
+                  type: group
+                  fields:
+                    - name: current
+                      type: long
+                      description: Current size, in bytes, of the JVM heap.
+                    - name: max
+                      type: long
+                      description: Maximum size, in bytes, of the JVM heap.
+            - name: server_name
+              type: keyword
+              description: Server Name.
+            - name: uptime
+              type: long
+              description: Number of milliseconds that the virtual machine has been running.
+        - name: servlet
+          type: group
+          fields:
+            - name: execution_time
+              type: group
+              fields:
+                - name: average
+                  type: long
+                  description: Time, in milliseconds, it took to execute all invocations of the servlet since it was most recently deployed.
+                - name: high
+                  type: long
+                  description: Time, in milliseconds, that the single longest invocation of the servlet has executed since it was most recently deployed.
+                - name: low
+                  type: long
+                  description: Time, in milliseconds, that the single shortest invocation of the servlet has executed since it was most recently deployed.
+                - name: total
+                  type: long
+                  description: Time, in milliseconds, that all invocations of the servlet have executed since it was most recently deployed.
+            - name: invocation
+              type: group
+              fields:
+                - name: total
+                  type: long
+                  description: Total number of times the servlet has been invoked since WebLogic Server started.
+            - name: name
+              type: keyword
+              description: Servlet name.
+            - name: pool_max_capacity
+              type: long
+              description: Maximum capacity of this servlet for single thread model servlets.
+            - name: reload
+              type: group
+              fields:
+                - name: total
+                  type: long
+                  description: Total number of times WebLogic Server has reloaded the servlet since it was last deployed. WebLogic Server typically reloads a servlet if it has been modified.
+        - name: work_manager
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Work manager name.
+            - name: requests
+              type: group
+              fields:
+                - name: daemon
+                  type: group
+                  fields:
+                    - name: completed
+                      type: long
+                      description: Number of daemon requests that have been processed.
+                    - name: pending
+                      type: long
+                      description: Number of waiting daemon requests in the queue.
+                - name: total
+                  type: group
+                  fields:
+                    - name: completed
+                      type: long
+                      description: Total number of requests that have been processed.
+                    - name: pending
+                      type: long
+                      description: Total number of waiting requests in the queue.
+            - name: stuck_thread_count
+              type: long
+              description: Number of stuck threads in the thread pool.
