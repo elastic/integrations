@@ -1,4 +1,7 @@
-# Infoblox integration
+# Infoblox integration (Deprecated)
+
+_This integration is deprecated. Please use one of the other Infoblox
+integrations that are specific to an Infoblox product._
 
 This integration is for Infoblox device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
