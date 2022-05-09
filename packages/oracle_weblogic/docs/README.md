@@ -12,7 +12,7 @@ This integration is for Oracle Weblogic Managed Server logs. It includes the fol
 
 ### Managed Server Logs
 
-The `managed_server` data stream collects Managed Server logs from ManagedServer.log.
+The `managed_server` data stream collects Managed Server logs from `Managedserver.log`.
 
 An example event for `managed_server` looks as following:
 
@@ -20,8 +20,8 @@ An example event for `managed_server` looks as following:
 {
     "@timestamp": "2022-03-24T10:29:56.637Z",
     "agent": {
-        "ephemeral_id": "b07971f4-d23c-4e36-a105-a9efb0a2f773",
-        "id": "afb15bf0-8009-4f54-8966-5e558f73e945",
+        "ephemeral_id": "fc2f1df6-97a1-42bf-9f6b-904a765041e3",
+        "id": "e27eb192-b14d-4af1-8861-fd7cbadb3643",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -35,7 +35,7 @@ An example event for `managed_server` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "afb15bf0-8009-4f54-8966-5e558f73e945",
+        "id": "e27eb192-b14d-4af1-8861-fd7cbadb3643",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -45,7 +45,7 @@ An example event for `managed_server` looks as following:
             "log"
         ],
         "dataset": "oracle_weblogic.managed_server",
-        "ingested": "2022-04-23T10:34:15Z",
+        "ingested": "2022-05-09T11:59:45Z",
         "kind": "event",
         "module": "oracle_weblogic",
         "original": "####\u003cMar 24, 2022 10:29:56,637 AM GMT\u003e \u003cInfo\u003e \u003cManagement\u003e \u003c5565e043d1b0\u003e \u003c\u003e \u003cThread-12\u003e \u003c\u003e \u003c\u003e \u003c\u003e \u003c1648117796637\u003e \u003c[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] \u003e \u003cBEA-141307\u003e \u003cUnable to connect to the Administration Server. Waiting 5 second(s) to retry (attempt number 2 of 3).\u003e ",
@@ -56,16 +56,16 @@ An example event for `managed_server` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.192.7"
+            "172.21.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:c0:07"
+            "02:42:ac:15:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-107-generic",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -82,12 +82,12 @@ An example event for `managed_server` looks as following:
         "level": "Info",
         "offset": 0
     },
+    "message": "Unable to connect to the Administration Server. Waiting 5 second(s) to retry (attempt number 2 of 3).",
     "oracle_weblogic": {
         "managed_server": {
             "diagnostic_context_id": "1648117796637",
             "machine_name": "5565e043d1b0",
             "message_id": "BEA-141307",
-            "message_text": "Unable to connect to the Administration Server. Waiting 5 second(s) to retry (attempt number 2 of 3).",
             "meta": "[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] ",
             "subsystem": "Management",
             "thread_id": "Thread-12"
@@ -114,10 +114,10 @@ An example event for `managed_server` looks as following:
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset. | long |
+| message | A description of the event or condition. | keyword |
 | oracle_weblogic.managed_server.diagnostic_context_id | Context information to correlate messages coming from a specific request or application. | keyword |
 | oracle_weblogic.managed_server.machine_name | Machine Name is the DNS name of the computer that hosts the server instance. | keyword |
 | oracle_weblogic.managed_server.message_id | A unique identifier for the message. | keyword |
-| oracle_weblogic.managed_server.message_text | A description of the event or condition. | keyword |
 | oracle_weblogic.managed_server.meta | Meta information for the event. | keyword |
 | oracle_weblogic.managed_server.server_name | Server Name is the name of the WebLogic Server instance on which the message was generated. | keyword |
 | oracle_weblogic.managed_server.subsystem | Indicates the subsystem of WebLogic Server that was the source of the message; for example, Enterprise Java Bean (EJB) container or Java Messaging Service (JMS). | keyword |
