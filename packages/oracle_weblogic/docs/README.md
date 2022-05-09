@@ -12,7 +12,7 @@ This integration is for Oracle Weblogic Admin Server logs. It includes the follo
 
 ### Admin Server logs
 
-The `admin_server` data stream collects Admin Server logs from Adminserver.log.
+The `admin_server` data stream collects Admin Server logs from `Adminserver.log`.
 
 An example event for `admin_server` looks as following:
 
@@ -20,8 +20,8 @@ An example event for `admin_server` looks as following:
 {
     "@timestamp": "2022-03-24T10:29:51.865Z",
     "agent": {
-        "ephemeral_id": "34cbdd58-1123-4ed2-a097-950b4c988765",
-        "id": "f08e6e4c-1fa9-4a82-94d9-264708d1cfc3",
+        "ephemeral_id": "1e785926-cb16-442e-9599-91e10ef5228d",
+        "id": "2c65d5b2-0806-4fb1-96c2-b9852c73afd0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -35,7 +35,7 @@ An example event for `admin_server` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "f08e6e4c-1fa9-4a82-94d9-264708d1cfc3",
+        "id": "2c65d5b2-0806-4fb1-96c2-b9852c73afd0",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -45,7 +45,7 @@ An example event for `admin_server` looks as following:
             "log"
         ],
         "dataset": "oracle_weblogic.admin_server",
-        "ingested": "2022-04-23T10:11:24Z",
+        "ingested": "2022-05-09T11:20:10Z",
         "kind": "event",
         "module": "oracle_weblogic",
         "original": "####\u003cMar 24, 2022 10:29:51,865 AM GMT\u003e \u003cInfo\u003e \u003cServer\u003e \u003cwlsadmin\u003e \u003c\u003e \u003cThread-11\u003e \u003c\u003e \u003c\u003e \u003c\u003e \u003c1648117791865\u003e \u003c[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] \u003e \u003cBEA-002622\u003e \u003cThe protocol \"admin\" is now configured.\u003e ",
@@ -56,16 +56,16 @@ An example event for `admin_server` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.160.7"
+            "172.19.0.6"
         ],
         "mac": [
-            "02:42:c0:a8:a0:07"
+            "02:42:ac:13:00:06"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-107-generic",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -82,12 +82,12 @@ An example event for `admin_server` looks as following:
         "level": "Info",
         "offset": 0
     },
+    "message": "The protocol \"admin\" is now configured.",
     "oracle_weblogic": {
         "admin_server": {
             "diagnostic_context_id": "1648117791865",
             "machine_name": "wlsadmin",
             "message_id": "BEA-002622",
-            "message_text": "The protocol \"admin\" is now configured.",
             "meta": "[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] ",
             "subsystem": "Server",
             "thread_id": "Thread-11"
@@ -113,10 +113,10 @@ An example event for `admin_server` looks as following:
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset. | long |
+| message | A description of the event or condition. | keyword |
 | oracle_weblogic.admin_server.diagnostic_context_id | Context information to correlate messages coming from a specific request or application. | keyword |
 | oracle_weblogic.admin_server.machine_name | Machine Name is the DNS name of the computer that hosts the server instance. | keyword |
 | oracle_weblogic.admin_server.message_id | A unique identifier for the message. | keyword |
-| oracle_weblogic.admin_server.message_text | A description of the event or condition. | keyword |
 | oracle_weblogic.admin_server.meta | Meta information for the event. | keyword |
 | oracle_weblogic.admin_server.server_name | Server Name is the name of the WebLogic Server instance on which the message was generated. | keyword |
 | oracle_weblogic.admin_server.subsystem | Indicates the subsystem of WebLogic Server that was the source of the message; for example, Enterprise Java Bean (EJB) container or Java Messaging Service (JMS). | keyword |

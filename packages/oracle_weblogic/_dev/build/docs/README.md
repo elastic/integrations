@@ -12,7 +12,7 @@ This integration is for Oracle Weblogic Admin Server logs. It includes the follo
 
 ### Admin Server logs
 
-The `admin_server` data stream collects Admin Server logs from Adminserver.log.
+The `admin_server` data stream collects Admin Server logs from `Adminserver.log`.
 
 {{event "admin_server"}}
 
