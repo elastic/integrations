@@ -253,11 +253,30 @@ processors:
     target_field: nagios_xi.host.long_output
     ignore_missing: true
     ignore_failure: true
-- rename:
-    field: json.current_state
-    target_field: nagios_xi.host.current_state
-    ignore_missing: true
+- set:
+    field: nagios_xi.host.current_state
+    value: Up/Pending
+    ignore_empty_value: true
     ignore_failure: true
+    if: ctx?.json?.current_state?.contains("0")
+- set:
+    field: nagios_xi.host.current_state
+    value: Warning
+    ignore_empty_value: true
+    ignore_failure: true
+    if: ctx?.json?.current_state?.contains("1")
+- set:
+    field: nagios_xi.host.current_state
+    value: Critical
+    ignore_empty_value: true
+    ignore_failure: true
+    if: ctx?.json?.current_state?.contains("2")
+- set:
+    field: nagios_xi.host.current_state
+    value: Unknown
+    ignore_empty_value: true
+    ignore_failure: true
+    if: ctx?.json?.current_state?.contains("3")
 - rename:
     field: json.has_been_checked
     target_field: nagios_xi.host.has_been_checked
