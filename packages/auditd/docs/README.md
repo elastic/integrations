@@ -183,7 +183,6 @@ An example event for `log` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
