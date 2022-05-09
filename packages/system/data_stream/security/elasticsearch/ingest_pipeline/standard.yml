@@ -3342,22 +3342,46 @@ processors:
       if: |-
         ctx?.event?.code != null &&
         ["5140", "5145"].contains(ctx.event.code) &&
-        ctx?.winlog?.event_data?.RelativeTargetName != null
+        ctx?.winlog?.event_data?.RelativeTargetName != null &&
+        ctx?.winlog?.event_data?.RelativeTargetName != ""
   - set:
-      field: file.path
+      field: file.directory
       copy_from: winlog.event_data.ShareLocalPath
       if: |-
         ctx?.event?.code != null &&
         ["5140", "5145"].contains(ctx.event.code) &&
-        ctx?.winlog?.event_data?.ShareLocalPath != null
+        ctx?.winlog?.event_data?.ShareLocalPath != null &&
+        ctx?.winlog?.event_data?.ShareLocalPath != ""
   - set:
-      field: file.target_path
-      copy_from: winlog.event_data.ShareName
+      field: file.path
+      value: "{{file.directory}}\\{{file.name}}"
+      if: ctx.file?.name != null && ctx.file?.directory != null
+  - set:
+      field: file.directory
+      copy_from: winlog.event_data.ShareLocalPath
       if: |-
         ctx?.event?.code != null &&
         ["5140", "5145"].contains(ctx.event.code) &&
-        ctx?.winlog?.event_data?.ShareName != null
-
+        ctx?.winlog?.event_data?.ShareLocalPath != null &&
+        ctx?.winlog?.event_data?.ShareLocalPath != ""
+  - set:
+      field: file.target_path
+      value: "{{winlog.event_data.ShareName}}\\{{file.name}}"
+      if: |-
+        ctx?.event?.code != null &&
+        ["5140", "5145"].contains(ctx.event.code) &&
+        ctx?.winlog?.event_data?.ShareName != null &&
+        ctx?.winlog?.event_data?.ShareName != "" &&
+        ctx.file?.name != null
+  - script:
+      description: Adds file information.
+      lang: painless
+      if: ctx?.file?.name != null
+      source: |-
+        def extIdx = ctx.file.name.lastIndexOf(".");
+        if (extIdx > -1) {
+            ctx.file.extension = ctx.file.name.substring(extIdx+1);
+        }
 on_failure:
   - set:
       field: error.message
