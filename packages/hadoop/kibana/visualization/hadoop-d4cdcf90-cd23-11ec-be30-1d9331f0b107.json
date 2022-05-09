@@ -12,14 +12,52 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "hadoop.namenode.files_total",
+                            "key": "hadoop.cluster.applications.running",
                             "negate": false,
                             "type": "exists",
                             "value": "exists"
                         },
                         "query": {
                             "exists": {
-                                "field": "hadoop.namenode.files_total"
+                                "field": "hadoop.cluster.applications.running"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "hadoop.cluster.applications.pending",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "hadoop.cluster.applications.pending"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "hadoop.cluster.applications.failed",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "hadoop.cluster.applications.failed"
                             }
                         }
                     }
@@ -31,7 +69,7 @@
                 }
             }
         },
-        "title": "Total files and directories over time [Metrics Hadoop]",
+        "title": "Number of applications over time [Metrics Hadoop]",
         "uiStateJSON": {},
         "version": 1,
         "visState": {
@@ -40,11 +78,15 @@
                     "enabled": true,
                     "id": "1",
                     "params": {
-                        "customLabel": "Total Number of Files and Directories",
-                        "field": "hadoop.namenode.files_total"
+                        "aggregate": "concat",
+                        "customLabel": "Running",
+                        "field": "hadoop.cluster.applications.running",
+                        "size": 1,
+                        "sortField": "@timestamp",
+                        "sortOrder": "desc"
                     },
                     "schema": "metric",
-                    "type": "max"
+                    "type": "top_hits"
                 },
                 {
                     "enabled": true,
@@ -58,14 +100,42 @@
                         "min_doc_count": 1,
                         "scaleMetricValues": false,
                         "timeRange": {
-                            "from": "now-15m",
-                            "to": "now"
+                            "from": "2022-05-06T09:42:18.539Z",
+                            "to": "2022-05-06T09:55:47.036Z"
                         },
                         "useNormalizedEsInterval": true,
                         "used_interval": "30s"
                     },
                     "schema": "segment",
                     "type": "date_histogram"
+                },
+                {
+                    "enabled": true,
+                    "id": "3",
+                    "params": {
+                        "aggregate": "concat",
+                        "customLabel": "Pending",
+                        "field": "hadoop.cluster.applications.pending",
+                        "size": 1,
+                        "sortField": "@timestamp",
+                        "sortOrder": "desc"
+                    },
+                    "schema": "metric",
+                    "type": "top_hits"
+                },
+                {
+                    "enabled": true,
+                    "id": "4",
+                    "params": {
+                        "aggregate": "concat",
+                        "customLabel": "Failed",
+                        "field": "hadoop.cluster.applications.failed",
+                        "size": 1,
+                        "sortField": "@timestamp",
+                        "sortOrder": "desc"
+                    },
+                    "schema": "metric",
+                    "type": "top_hits"
                 }
             ],
             "params": {
@@ -108,12 +178,42 @@
                         "circlesRadius": 1,
                         "data": {
                             "id": "1",
-                            "label": "Total Number of Files and Directories"
+                            "label": "Running"
                         },
                         "drawLinesBetweenPoints": true,
                         "interpolate": "linear",
                         "lineWidth": 2,
-                        "mode": "stacked",
+                        "mode": "normal",
+                        "show": true,
+                        "showCircles": true,
+                        "type": "area",
+                        "valueAxis": "ValueAxis-1"
+                    },
+                    {
+                        "circlesRadius": 1,
+                        "data": {
+                            "id": "3",
+                            "label": "Pending"
+                        },
+                        "drawLinesBetweenPoints": true,
+                        "interpolate": "linear",
+                        "lineWidth": 2,
+                        "mode": "normal",
+                        "show": true,
+                        "showCircles": true,
+                        "type": "area",
+                        "valueAxis": "ValueAxis-1"
+                    },
+                    {
+                        "circlesRadius": 1,
+                        "data": {
+                            "id": "4",
+                            "label": "Failed"
+                        },
+                        "drawLinesBetweenPoints": true,
+                        "interpolate": "linear",
+                        "lineWidth": 2,
+                        "mode": "normal",
                         "show": true,
                         "showCircles": true,
                         "type": "area",
@@ -134,7 +234,7 @@
                     {
                         "id": "ValueAxis-1",
                         "labels": {
-                            "filter": false,
+                            "filter": true,
                             "rotate": 0,
                             "show": true,
                             "truncate": 100
@@ -148,18 +248,18 @@
                         "show": true,
                         "style": {},
                         "title": {
-                            "text": "Total Number of Files and Directories"
+                            "text": "Applications"
                         },
                         "type": "value"
                     }
                 ]
             },
-            "title": "Total files and directories over time [Metrics Hadoop]",
+            "title": "Number of applications over time [Metrics Hadoop]",
             "type": "area"
         }
     },
     "coreMigrationVersion": "8.1.0",
-    "id": "hadoop-6258ffd0-9d7f-11ec-a51d-5da436601bd6",
+    "id": "hadoop-d4cdcf90-cd23-11ec-be30-1d9331f0b107",
     "migrationVersion": {
         "visualization": "8.0.0"
     },
@@ -172,6 +272,16 @@
         {
             "id": "metrics-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         }
     ],
