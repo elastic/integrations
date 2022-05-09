@@ -12,7 +12,7 @@ This integration is for Oracle Weblogic Access logs . It includes the following 
 
 ### Access logs
 
-The `access` data stream collects Access logs form access.log.
+The `access` data stream collects Access logs form `access.log`.
 
 An example event for `access` looks as following:
 
