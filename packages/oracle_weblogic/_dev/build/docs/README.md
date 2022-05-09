@@ -12,7 +12,7 @@ This integration is for Oracle Weblogic Domain logs. It includes the following d
 
 ### Domain logs
 
-The `domain` data stream collects Domain logs from Domain.log.
+The `domain` data stream collects Domain logs from `Domain.log`.
 
 {{event "domain"}}
 
