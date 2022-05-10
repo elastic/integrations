@@ -327,7 +327,7 @@ An example event for `log` looks as following:
 | pfsense.dhcp.hostname | Hostname of DHCP client | keyword |
 | pfsense.icmp.code | ICMP code. | long |
 | pfsense.icmp.destination.ip | Original destination address of the connection that caused this notification | ip |
-| pfsense.icmp.id | ID of the echo request/reply | long |
+| pfsense.icmp.id | ICMP ID. | long |
 | pfsense.icmp.mtu | MTU to use for subsequent data to this destination | long |
 | pfsense.icmp.otime | Originate Timestamp | date |
 | pfsense.icmp.parameter | ICMP parameter. | long |
