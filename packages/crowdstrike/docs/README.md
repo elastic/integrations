@@ -182,7 +182,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Path to the log file. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
@@ -227,11 +227,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2020-02-12T21:29:10.710Z",
     "agent": {
-        "ephemeral_id": "9060b4e5-b568-47b0-9a7b-62121df53ec9",
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "ephemeral_id": "cc9fb403-5b26-4fe7-aefc-41666b9f4575",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "crowdstrike": {
         "event": {
@@ -281,9 +281,9 @@ An example event for `falcon` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -291,7 +291,7 @@ An example event for `falcon` looks as following:
             "authentication"
         ],
         "dataset": "crowdstrike.falcon",
-        "ingested": "2021-12-30T05:13:25Z",
+        "ingested": "2022-05-09T16:35:19Z",
         "kind": "event",
         "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success",
@@ -837,7 +837,7 @@ and/or `session_token`.
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
-| process.end |  | date |
+| process.end | The time the process ended. | date |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -903,11 +903,11 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "33b3f217-19d7-4071-bb17-5dd3176d549d",
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "ephemeral_id": "8cb3a21e-5542-440a-a909-8a2f161001ba",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "crowdstrike": {
         "ConfigStateHash": "1763245019",
@@ -936,9 +936,9 @@ An example event for `fdr` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "event": {
         "action": "RansomwareOpenFile",
@@ -949,7 +949,7 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2021-12-30T05:14:09Z",
+        "ingested": "2022-05-09T16:39:37Z",
         "kind": "alert",
         "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
