@@ -99,17 +99,6 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | http.request.referer | Referrer for this HTTP request. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
-| labels.captive_portal |  | boolean |
-| labels.container_page |  | boolean |
-| labels.http_proxy |  | boolean |
-| labels.ipv6_session |  | boolean |
-| labels.nat_translated |  | boolean |
-| labels.pcap_included |  | boolean |
-| labels.ssl_decrypted |  | boolean |
-| labels.symmetric_return |  | boolean |
-| labels.temporary_match |  | boolean |
-| labels.url_filter_denied |  | boolean |
-| labels.x_forwarded_for |  | boolean |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
