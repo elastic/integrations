@@ -51,7 +51,7 @@ An example event for `log` looks as following:
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "data_stream": {
         "dataset": "pfsense.log",
@@ -81,7 +81,7 @@ An example event for `log` looks as following:
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "event": {
         "action": "block",
@@ -90,8 +90,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "pfsense.log",
-        "id": "72237",
-        "ingested": "2022-02-03T09:44:29Z",
+        "ingested": "2022-05-09T17:35:12Z",
         "kind": "event",
         "original": "\u003c134\u003e1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale\n",
         "provider": "filterlog",
@@ -107,7 +106,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.7:54953"
+            "address": "172.18.0.4:58663"
         },
         "syslog": {
             "priority": 134
@@ -131,7 +130,9 @@ An example event for `log` looks as following:
                 "id": "12"
             }
         },
-        "name": "pfSense.example.com"
+        "name": "pfSense.example.com",
+        "type": "firewall",
+        "vendor": "netgate"
     },
     "pfsense": {
         "ip": {
@@ -153,6 +154,10 @@ An example event for `log` looks as following:
             ],
             "window": 64240
         }
+    },
+    "process": {
+        "name": "filterlog",
+        "pid": 72237
     },
     "related": {
         "ip": [
@@ -333,7 +338,7 @@ An example event for `log` looks as following:
 | pfsense.icmp.parameter | ICMP parameter. | long |
 | pfsense.icmp.redirect | ICMP redirect address. | ip |
 | pfsense.icmp.rtime | Receive Timestamp | date |
-| pfsense.icmp.seq | Sequence number of the echo request/reply | long |
+| pfsense.icmp.seq | ICMP sequence number. | long |
 | pfsense.icmp.ttime | Transmit Timestamp | date |
 | pfsense.icmp.type | ICMP type. | keyword |
 | pfsense.icmp.unreachable.iana_number | Protocol ID number that was unreachable | long |
