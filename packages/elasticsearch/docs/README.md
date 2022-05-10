@@ -50,17 +50,123 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | elasticsearch.node.id | ID of the node | keyword |
 | elasticsearch.node.name | Name of the node | keyword |
 | elasticsearch.shard.id | Id of the shard | keyword |
-| http | Fields related to HTTP activity. Use the `url` field set to store the url of the request. | group |
+| http.request.body.bytes | Size in bytes of the request body. | long |
 | http.request.body.content | The full HTTP request body. | wildcard |
 | http.request.body.content.text | Multi-field of `http.request.body.content`. | match_only_text |
-| source | Source fields capture details about the sender of a network exchange/packet. These fields are populated from a network event, packet, or other event containing details of a network transaction. Source fields are usually populated in conjunction with destination fields. The source and destination fields are considered the baseline and should always be filled if an event contains source and destination details from a network transaction. If the event also contains identification of the client and server roles, then the client and server fields should also be populated. | group |
+| http.request.bytes | Total size in bytes of the request (body and headers). | long |
+| http.request.id | A unique identifier for each HTTP request to correlate logs between clients and servers in transactions. The id may be contained in a non-standard HTTP header, such as `X-Request-ID` or `X-Correlation-ID`. | keyword |
+| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.mime_type | Mime type of the body of the request. This value must only be populated based on the content of the request body, not on the `Content-Type` header. Comparing the mime type of a request with the request's Content-Type header can be helpful in detecting threats or misconfigured clients. | keyword |
+| http.request.referrer | Referrer for this HTTP request. | keyword |
+| http.response.body.bytes | Size in bytes of the response body. | long |
+| http.response.body.content | The full HTTP response body. | wildcard |
+| http.response.body.content.text | Multi-field of `http.response.body.content`. | match_only_text |
+| http.response.bytes | Total size in bytes of the response (body and headers). | long |
+| http.response.mime_type | Mime type of the body of the response. This value must only be populated based on the content of the response body, not on the `Content-Type` header. Comparing the mime type of a response with the response's Content-Type header can be helpful in detecting misconfigured servers. | keyword |
+| http.response.status_code | HTTP response status code. | long |
+| http.version | HTTP version. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.bytes | Bytes sent from the source to the destination. | long |
+| source.domain | Source domain. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_code | Two-letter code representing continent's name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| source.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| url | URL fields provide support for complete or partial URLs, and supports the breaking down into scheme, domain, path, and so on. | group |
+| source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
+| source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
+| source.packets | Packets sent from the source to the destination. | long |
+| source.port | Port of the source. | long |
+| source.registered_domain | The highest registered source domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| source.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| source.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| source.user.email | User email address. | keyword |
+| source.user.full_name | User's full name, if available. | keyword |
+| source.user.full_name.text | Multi-field of `source.user.full_name`. | match_only_text |
+| source.user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| source.user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| source.user.group.name | Name of the group. | keyword |
+| source.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| source.user.id | Unique identifier of the user. | keyword |
+| source.user.name | Short name or login of the user. | keyword |
+| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
+| source.user.roles | Array of user roles at the time of the event. | keyword |
+| url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
-| user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |
+| url.password | Password of the request. | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| url.username | Username of the request. | keyword |
+| user.changes.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.changes.email | User email address. | keyword |
+| user.changes.full_name | User's full name, if available. | keyword |
+| user.changes.full_name.text | Multi-field of `user.changes.full_name`. | match_only_text |
+| user.changes.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.changes.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.changes.group.name | Name of the group. | keyword |
+| user.changes.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.changes.id | Unique identifier of the user. | keyword |
+| user.changes.name | Short name or login of the user. | keyword |
+| user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
+| user.changes.roles | Array of user roles at the time of the event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.effective.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.effective.email | User email address. | keyword |
+| user.effective.full_name | User's full name, if available. | keyword |
+| user.effective.full_name.text | Multi-field of `user.effective.full_name`. | match_only_text |
+| user.effective.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.effective.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.effective.group.name | Name of the group. | keyword |
+| user.effective.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.effective.id | Unique identifier of the user. | keyword |
+| user.effective.name | Short name or login of the user. | keyword |
+| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
+| user.effective.roles | Array of user roles at the time of the event. | keyword |
+| user.email | User email address. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
+| user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.group.name | Name of the group. | keyword |
+| user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.roles | Array of user roles at the time of the event. | keyword |
+| user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.full_name | User's full name, if available. | keyword |
+| user.target.full_name.text | Multi-field of `user.target.full_name`. | match_only_text |
+| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
+| user.target.roles | Array of user roles at the time of the event. | keyword |
 
 
 ### Deprecation

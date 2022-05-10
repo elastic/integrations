@@ -185,9 +185,54 @@ An example event for `connection` looks as following:
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |
+| user.changes.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.changes.email | User email address. | keyword |
+| user.changes.full_name | User's full name, if available. | keyword |
+| user.changes.full_name.text | Multi-field of `user.changes.full_name`. | match_only_text |
+| user.changes.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.changes.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.changes.group.name | Name of the group. | keyword |
+| user.changes.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.changes.id | Unique identifier of the user. | keyword |
+| user.changes.name | Short name or login of the user. | keyword |
+| user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
+| user.changes.roles | Array of user roles at the time of the event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.effective.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.effective.email | User email address. | keyword |
+| user.effective.full_name | User's full name, if available. | keyword |
+| user.effective.full_name.text | Multi-field of `user.effective.full_name`. | match_only_text |
+| user.effective.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.effective.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.effective.group.name | Name of the group. | keyword |
+| user.effective.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.effective.id | Unique identifier of the user. | keyword |
+| user.effective.name | Short name or login of the user. | keyword |
+| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
+| user.effective.roles | Array of user roles at the time of the event. | keyword |
+| user.email | User email address. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
+| user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.group.name | Name of the group. | keyword |
+| user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.roles | Array of user roles at the time of the event. | keyword |
+| user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.full_name | User's full name, if available. | keyword |
+| user.target.full_name.text | Multi-field of `user.target.full_name`. | match_only_text |
+| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
+| user.target.roles | Array of user roles at the time of the event. | keyword |
 
 
 ### Exchange Metrics
@@ -281,9 +326,54 @@ An example event for `exchange` looks as following:
 | rabbitmq.vhost | Virtual host name with non-ASCII characters escaped as in C. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| user | The user fields describe information about the user that is relevant to the event. Fields can have one entry or multiple entries. If a user has more than one id, provide an array that includes all of them. | group |
+| user.changes.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.changes.email | User email address. | keyword |
+| user.changes.full_name | User's full name, if available. | keyword |
+| user.changes.full_name.text | Multi-field of `user.changes.full_name`. | match_only_text |
+| user.changes.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.changes.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.changes.group.name | Name of the group. | keyword |
+| user.changes.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.changes.id | Unique identifier of the user. | keyword |
+| user.changes.name | Short name or login of the user. | keyword |
+| user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
+| user.changes.roles | Array of user roles at the time of the event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.effective.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.effective.email | User email address. | keyword |
+| user.effective.full_name | User's full name, if available. | keyword |
+| user.effective.full_name.text | Multi-field of `user.effective.full_name`. | match_only_text |
+| user.effective.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.effective.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.effective.group.name | Name of the group. | keyword |
+| user.effective.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.effective.id | Unique identifier of the user. | keyword |
+| user.effective.name | Short name or login of the user. | keyword |
+| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
+| user.effective.roles | Array of user roles at the time of the event. | keyword |
+| user.email | User email address. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
+| user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.group.name | Name of the group. | keyword |
+| user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.roles | Array of user roles at the time of the event. | keyword |
+| user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.target.email | User email address. | keyword |
+| user.target.full_name | User's full name, if available. | keyword |
+| user.target.full_name.text | Multi-field of `user.target.full_name`. | match_only_text |
+| user.target.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
+| user.target.group.name | Name of the group. | keyword |
+| user.target.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| user.target.id | Unique identifier of the user. | keyword |
+| user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
+| user.target.roles | Array of user roles at the time of the event. | keyword |
 
 
 ### Node Metrics

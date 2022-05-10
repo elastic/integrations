@@ -340,29 +340,60 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | awsfargate.task_stats.network.\*.outbound.errors | Total errors on incoming packets. | long |
 | awsfargate.task_stats.network.\*.outbound.packets | Total number of incoming packets. | long |
 | awsfargate.task_stats.task_name | ECS task name | keyword |
-| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.origin.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.origin.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
+| cloud.origin.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.origin.instance.id | Instance ID of the host machine. | keyword |
+| cloud.origin.instance.name | Instance name of the host machine. | keyword |
+| cloud.origin.machine.type | Machine type of the host machine. | keyword |
+| cloud.origin.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
+| cloud.origin.project.name | The cloud project name. Examples: Google Cloud Project name, Azure Project name. | keyword |
+| cloud.origin.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.origin.region | Region in which this host, resource, or service is located. | keyword |
+| cloud.origin.service.name | The cloud service name is intended to distinguish services running on different platforms within a provider, eg AWS EC2 vs Lambda, GCP GCE vs App Engine, Azure VM vs App Server. Examples: app engine, app service, cloud run, fargate, lambda. | keyword |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
+| cloud.project.name | The cloud project name. Examples: Google Cloud Project name, Azure Project name. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |
-| container | Container fields are used for meta information about the specific container that is the source of information. These fields help correlate data based containers from any runtime. | group |
+| cloud.service.name | The cloud service name is intended to distinguish services running on different platforms within a provider, eg AWS EC2 vs Lambda, GCP GCE vs App Engine, Azure VM vs App Server. Examples: app engine, app service, cloud run, fargate, lambda. | keyword |
+| cloud.target.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.target.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
+| cloud.target.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.target.instance.id | Instance ID of the host machine. | keyword |
+| cloud.target.instance.name | Instance name of the host machine. | keyword |
+| cloud.target.machine.type | Machine type of the host machine. | keyword |
+| cloud.target.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
+| cloud.target.project.name | The cloud project name. Examples: Google Cloud Project name, Azure Project name. | keyword |
+| cloud.target.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.target.region | Region in which this host, resource, or service is located. | keyword |
+| cloud.target.service.name | The cloud service name is intended to distinguish services running on different platforms within a provider, eg AWS EC2 vs Lambda, GCP GCE vs App Engine, Azure VM vs App Server. Examples: app engine, app service, cloud run, fargate, lambda. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
+| container.image.tag | Container image tags. | keyword |
+| container.labels | Image labels. | object |
 | container.labels.com_amazonaws_ecs_cluster | ECS Cluster name | keyword |
 | container.labels.com_amazonaws_ecs_container-name | ECS container name | keyword |
 | container.labels.com_amazonaws_ecs_task-arn | ECS task ARN | keyword |
 | container.labels.com_amazonaws_ecs_task-definition-family | ECS task definition family | keyword |
 | container.labels.com_amazonaws_ecs_task-definition-version | ECS task definition version | keyword |
 | container.name | Container name. | keyword |
+| container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
+| error.code | Error code describing the error. | keyword |
+| error.id | Unique identifier for the error. | keyword |
 | error.message | Error message. | match_only_text |
+| error.stack_trace | The stack trace of this error in plain text. | wildcard |
+| error.stack_trace.text | Multi-field of `error.stack_trace`. | match_only_text |
+| error.type | The type of the error, for example the class name of the exception. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 

@@ -356,11 +356,157 @@ An example event for `info` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| os | The OS fields contain information about the operating system. | group |
+| os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | os.full | Operating system name, including the version or code name. | keyword |
 | os.full.text | Multi-field of `os.full`. | match_only_text |
-| process | These fields contain information about a process. These fields can help you correlate metrics information with a process id/name from a log message.  The `process.pid` often stays in the metric itself and is copied to the global field for correlation. | group |
+| os.kernel | Operating system kernel version as a raw string. | keyword |
+| os.name | Operating system name, without the version. | keyword |
+| os.name.text | Multi-field of `os.name`. | match_only_text |
+| os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| os.version | Operating system version as a raw string. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.code_signature.digest_algorithm | The hashing algorithm used to sign the process. This value can distinguish signatures when a file is signed multiple times by the same signer but with a different digest algorithm. | keyword |
+| process.code_signature.exists | Boolean to capture if a signature is present. | boolean |
+| process.code_signature.signing_id | The identifier used to sign the process. This is used to identify the application manufactured by a software vendor. The field is relevant to Apple \*OS only. | keyword |
+| process.code_signature.status | Additional information about the certificate status. This is useful for logging cryptographic errors with the certificate validity or trust status. Leave unpopulated if the validity or trust of the certificate was unchecked. | keyword |
+| process.code_signature.subject_name | Subject name of the code signer | keyword |
+| process.code_signature.team_id | The team identifier used to sign the process. This is used to identify the team or vendor of a software product. The field is relevant to Apple \*OS only. | keyword |
+| process.code_signature.timestamp | Date and time when the code signature was generated and signed. | date |
+| process.code_signature.trusted | Stores the trust status of the certificate chain. Validating the trust of the certificate chain may be complicated, and this field should only be populated by tools that actively check the status. | boolean |
+| process.code_signature.valid | Boolean to capture if the digital signature is verified against the binary content. Leave unpopulated if a certificate was unchecked. | boolean |
+| process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
+| process.elf.architecture | Machine architecture of the ELF file. | keyword |
+| process.elf.byte_order | Byte sequence of ELF file. | keyword |
+| process.elf.cpu_type | CPU type of the ELF file. | keyword |
+| process.elf.creation_date | Extracted when possible from the file's metadata. Indicates when it was built or compiled. It can also be faked by malware creators. | date |
+| process.elf.exports | List of exported element names and types. | flattened |
+| process.elf.header.abi_version | Version of the ELF Application Binary Interface (ABI). | keyword |
+| process.elf.header.class | Header class of the ELF file. | keyword |
+| process.elf.header.data | Data table of the ELF header. | keyword |
+| process.elf.header.entrypoint | Header entrypoint of the ELF file. | long |
+| process.elf.header.object_version | "0x1" for original ELF files. | keyword |
+| process.elf.header.os_abi | Application Binary Interface (ABI) of the Linux OS. | keyword |
+| process.elf.header.type | Header type of the ELF file. | keyword |
+| process.elf.header.version | Version of the ELF header. | keyword |
+| process.elf.imports | List of imported element names and types. | flattened |
+| process.elf.sections | An array containing an object for each section of the ELF file. The keys that should be present in these objects are defined by sub-fields underneath `elf.sections.\*`. | nested |
+| process.elf.sections.chi2 | Chi-square probability distribution of the section. | long |
+| process.elf.sections.entropy | Shannon entropy calculation from the section. | long |
+| process.elf.sections.flags | ELF Section List flags. | keyword |
+| process.elf.sections.name | ELF Section List name. | keyword |
+| process.elf.sections.physical_offset | ELF Section List offset. | keyword |
+| process.elf.sections.physical_size | ELF Section List physical size. | long |
+| process.elf.sections.type | ELF Section List type. | keyword |
+| process.elf.sections.virtual_address | ELF Section List virtual address. | long |
+| process.elf.sections.virtual_size | ELF Section List virtual size. | long |
+| process.elf.segments | An array containing an object for each segment of the ELF file. The keys that should be present in these objects are defined by sub-fields underneath `elf.segments.\*`. | nested |
+| process.elf.segments.sections | ELF object segment sections. | keyword |
+| process.elf.segments.type | ELF object segment type. | keyword |
+| process.elf.shared_libraries | List of shared libraries used by this ELF object. | keyword |
+| process.elf.telfhash | telfhash symbol hash for ELF file. | keyword |
+| process.end | The time the process ended. | date |
+| process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
+| process.hash.md5 | MD5 hash. | keyword |
+| process.hash.sha1 | SHA1 hash. | keyword |
+| process.hash.sha256 | SHA256 hash. | keyword |
+| process.hash.sha512 | SHA512 hash. | keyword |
+| process.hash.ssdeep | SSDEEP hash. | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.parent.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.parent.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
+| process.parent.code_signature.digest_algorithm | The hashing algorithm used to sign the process. This value can distinguish signatures when a file is signed multiple times by the same signer but with a different digest algorithm. | keyword |
+| process.parent.code_signature.exists | Boolean to capture if a signature is present. | boolean |
+| process.parent.code_signature.signing_id | The identifier used to sign the process. This is used to identify the application manufactured by a software vendor. The field is relevant to Apple \*OS only. | keyword |
+| process.parent.code_signature.status | Additional information about the certificate status. This is useful for logging cryptographic errors with the certificate validity or trust status. Leave unpopulated if the validity or trust of the certificate was unchecked. | keyword |
+| process.parent.code_signature.subject_name | Subject name of the code signer | keyword |
+| process.parent.code_signature.team_id | The team identifier used to sign the process. This is used to identify the team or vendor of a software product. The field is relevant to Apple \*OS only. | keyword |
+| process.parent.code_signature.timestamp | Date and time when the code signature was generated and signed. | date |
+| process.parent.code_signature.trusted | Stores the trust status of the certificate chain. Validating the trust of the certificate chain may be complicated, and this field should only be populated by tools that actively check the status. | boolean |
+| process.parent.code_signature.valid | Boolean to capture if the digital signature is verified against the binary content. Leave unpopulated if a certificate was unchecked. | boolean |
+| process.parent.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.parent.command_line.text | Multi-field of `process.parent.command_line`. | match_only_text |
+| process.parent.elf.architecture | Machine architecture of the ELF file. | keyword |
+| process.parent.elf.byte_order | Byte sequence of ELF file. | keyword |
+| process.parent.elf.cpu_type | CPU type of the ELF file. | keyword |
+| process.parent.elf.creation_date | Extracted when possible from the file's metadata. Indicates when it was built or compiled. It can also be faked by malware creators. | date |
+| process.parent.elf.exports | List of exported element names and types. | flattened |
+| process.parent.elf.header.abi_version | Version of the ELF Application Binary Interface (ABI). | keyword |
+| process.parent.elf.header.class | Header class of the ELF file. | keyword |
+| process.parent.elf.header.data | Data table of the ELF header. | keyword |
+| process.parent.elf.header.entrypoint | Header entrypoint of the ELF file. | long |
+| process.parent.elf.header.object_version | "0x1" for original ELF files. | keyword |
+| process.parent.elf.header.os_abi | Application Binary Interface (ABI) of the Linux OS. | keyword |
+| process.parent.elf.header.type | Header type of the ELF file. | keyword |
+| process.parent.elf.header.version | Version of the ELF header. | keyword |
+| process.parent.elf.imports | List of imported element names and types. | flattened |
+| process.parent.elf.sections | An array containing an object for each section of the ELF file. The keys that should be present in these objects are defined by sub-fields underneath `elf.sections.\*`. | nested |
+| process.parent.elf.sections.chi2 | Chi-square probability distribution of the section. | long |
+| process.parent.elf.sections.entropy | Shannon entropy calculation from the section. | long |
+| process.parent.elf.sections.flags | ELF Section List flags. | keyword |
+| process.parent.elf.sections.name | ELF Section List name. | keyword |
+| process.parent.elf.sections.physical_offset | ELF Section List offset. | keyword |
+| process.parent.elf.sections.physical_size | ELF Section List physical size. | long |
+| process.parent.elf.sections.type | ELF Section List type. | keyword |
+| process.parent.elf.sections.virtual_address | ELF Section List virtual address. | long |
+| process.parent.elf.sections.virtual_size | ELF Section List virtual size. | long |
+| process.parent.elf.segments | An array containing an object for each segment of the ELF file. The keys that should be present in these objects are defined by sub-fields underneath `elf.segments.\*`. | nested |
+| process.parent.elf.segments.sections | ELF object segment sections. | keyword |
+| process.parent.elf.segments.type | ELF object segment type. | keyword |
+| process.parent.elf.shared_libraries | List of shared libraries used by this ELF object. | keyword |
+| process.parent.elf.telfhash | telfhash symbol hash for ELF file. | keyword |
+| process.parent.end | The time the process ended. | date |
+| process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
+| process.parent.executable | Absolute path to the process executable. | keyword |
+| process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
+| process.parent.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
+| process.parent.hash.md5 | MD5 hash. | keyword |
+| process.parent.hash.sha1 | SHA1 hash. | keyword |
+| process.parent.hash.sha256 | SHA256 hash. | keyword |
+| process.parent.hash.sha512 | SHA512 hash. | keyword |
+| process.parent.hash.ssdeep | SSDEEP hash. | keyword |
+| process.parent.name | Process name. Sometimes called program name or similar. | keyword |
+| process.parent.name.text | Multi-field of `process.parent.name`. | match_only_text |
+| process.parent.pe.architecture | CPU architecture target for the file. | keyword |
+| process.parent.pe.company | Internal company name of the file, provided at compile-time. | keyword |
+| process.parent.pe.description | Internal description of the file, provided at compile-time. | keyword |
+| process.parent.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
+| process.parent.pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
+| process.parent.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
+| process.parent.pe.product | Internal product name of the file, provided at compile-time. | keyword |
+| process.parent.pgid | Identifier of the group of processes the process belongs to. | long |
+| process.parent.pid | Process id. | long |
+| process.parent.start | The time the process started. | date |
+| process.parent.thread.id | Thread ID. | long |
+| process.parent.thread.name | Thread name. | keyword |
+| process.parent.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
+| process.parent.title.text | Multi-field of `process.parent.title`. | match_only_text |
+| process.parent.uptime | Seconds the process has been up. | long |
+| process.parent.working_directory | The working directory of the process. | keyword |
+| process.parent.working_directory.text | Multi-field of `process.parent.working_directory`. | match_only_text |
+| process.pe.architecture | CPU architecture target for the file. | keyword |
+| process.pe.company | Internal company name of the file, provided at compile-time. | keyword |
+| process.pe.description | Internal description of the file, provided at compile-time. | keyword |
+| process.pe.file_version | Internal version of the file, provided at compile-time. | keyword |
+| process.pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
+| process.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
+| process.pe.product | Internal product name of the file, provided at compile-time. | keyword |
+| process.pgid | Identifier of the group of processes the process belongs to. | long |
 | process.pid | Process id. | long |
+| process.start | The time the process started. | date |
+| process.thread.id | Thread ID. | long |
+| process.thread.name | Thread name. | keyword |
+| process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
+| process.title.text | Multi-field of `process.title`. | match_only_text |
+| process.uptime | Seconds the process has been up. | long |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | redis.info.clients.biggest_input_buf | Biggest input buffer among current client connections (replaced by max_input_buffer). | long |
 | redis.info.clients.blocked | Number of clients pending on a blocking call (BLPOP, BRPOP, BRPOPLPUSH). | long |
 | redis.info.clients.connected | Number of client connections (excluding connections from slaves). | long |

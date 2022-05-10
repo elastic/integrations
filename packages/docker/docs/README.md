@@ -61,11 +61,31 @@ running Docker containers.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |  |
+| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |  |
+| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.geo.city_name | City name. | keyword |  |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |  |
+| host.geo.continent_name | Name of the continent. | keyword |  |
+| host.geo.country_iso_code | Country ISO code. | keyword |  |
+| host.geo.country_name | Country name. | keyword |  |
+| host.geo.location | Longitude and latitude. | geo_point |  |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |
+| host.geo.region_iso_code | Region ISO code. | keyword |  |
+| host.geo.region_name | Region name. | keyword |  |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
@@ -73,8 +93,22 @@ running Docker containers.
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| host.uptime | Seconds the host has been up. | long |  |
+| host.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| host.user.email | User email address. | keyword |  |
+| host.user.full_name | User's full name, if available. | keyword |  |
+| host.user.full_name.text | Multi-field of `host.user.full_name`. | match_only_text |  |
+| host.user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| host.user.group.id | Unique identifier for the group on the system/platform. | keyword |  |
+| host.user.group.name | Name of the group. | keyword |  |
+| host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |  |
+| host.user.id | Unique identifier of the user. | keyword |  |
+| host.user.name | Short name or login of the user. | keyword |  |
+| host.user.name.text | Multi-field of `host.user.name`. | match_only_text |  |
+| host.user.roles | Array of user roles at the time of the event. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
@@ -178,11 +212,31 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |  |  |
+| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |  |  |
+| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.geo.city_name | City name. | keyword |  |  |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |  |  |
+| host.geo.continent_name | Name of the continent. | keyword |  |  |
+| host.geo.country_iso_code | Country ISO code. | keyword |  |  |
+| host.geo.country_name | Country name. | keyword |  |  |
+| host.geo.location | Longitude and latitude. | geo_point |  |  |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |  |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |  |
+| host.geo.region_iso_code | Region ISO code. | keyword |  |  |
+| host.geo.region_name | Region name. | keyword |  |  |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |  |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |  |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |  |  |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
@@ -190,8 +244,22 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | host.os.name | Operating system name, without the version. | keyword |  |  |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| host.uptime | Seconds the host has been up. | long |  |  |
+| host.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |  |
+| host.user.email | User email address. | keyword |  |  |
+| host.user.full_name | User's full name, if available. | keyword |  |  |
+| host.user.full_name.text | Multi-field of `host.user.full_name`. | match_only_text |  |  |
+| host.user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |  |
+| host.user.group.id | Unique identifier for the group on the system/platform. | keyword |  |  |
+| host.user.group.name | Name of the group. | keyword |  |  |
+| host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |  |  |
+| host.user.id | Unique identifier of the user. | keyword |  |  |
+| host.user.name | Short name or login of the user. | keyword |  |  |
+| host.user.name.text | Multi-field of `host.user.name`. | match_only_text |  |  |
+| host.user.roles | Array of user roles at the time of the event. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
@@ -363,11 +431,31 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |  |  |
+| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |  |  |
+| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.geo.city_name | City name. | keyword |  |  |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |  |  |
+| host.geo.continent_name | Name of the continent. | keyword |  |  |
+| host.geo.country_iso_code | Country ISO code. | keyword |  |  |
+| host.geo.country_name | Country name. | keyword |  |  |
+| host.geo.location | Longitude and latitude. | geo_point |  |  |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |  |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |  |
+| host.geo.region_iso_code | Region ISO code. | keyword |  |  |
+| host.geo.region_name | Region name. | keyword |  |  |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |  |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |  |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |  |  |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
@@ -375,8 +463,22 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | host.os.name | Operating system name, without the version. | keyword |  |  |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| host.uptime | Seconds the host has been up. | long |  |  |
+| host.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |  |
+| host.user.email | User email address. | keyword |  |  |
+| host.user.full_name | User's full name, if available. | keyword |  |  |
+| host.user.full_name.text | Multi-field of `host.user.full_name`. | match_only_text |  |  |
+| host.user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |  |
+| host.user.group.id | Unique identifier for the group on the system/platform. | keyword |  |  |
+| host.user.group.name | Name of the group. | keyword |  |  |
+| host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |  |  |
+| host.user.id | Unique identifier of the user. | keyword |  |  |
+| host.user.name | Short name or login of the user. | keyword |  |  |
+| host.user.name.text | Multi-field of `host.user.name`. | match_only_text |  |  |
+| host.user.roles | Array of user roles at the time of the event. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
@@ -465,11 +567,31 @@ The Docker `event` data stream collects docker events
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |
+| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |
+| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.geo.city_name | City name. | keyword |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |
+| host.geo.continent_name | Name of the continent. | keyword |
+| host.geo.country_iso_code | Country ISO code. | keyword |
+| host.geo.country_name | Country name. | keyword |
+| host.geo.location | Longitude and latitude. | geo_point |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |
+| host.geo.region_iso_code | Region ISO code. | keyword |
+| host.geo.region_name | Region name. | keyword |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.full | Operating system name, including the version or code name. | keyword |
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
@@ -477,8 +599,22 @@ The Docker `event` data stream collects docker events
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| host.uptime | Seconds the host has been up. | long |
+| host.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| host.user.email | User email address. | keyword |
+| host.user.full_name | User's full name, if available. | keyword |
+| host.user.full_name.text | Multi-field of `host.user.full_name`. | match_only_text |
+| host.user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| host.user.group.id | Unique identifier for the group on the system/platform. | keyword |
+| host.user.group.name | Name of the group. | keyword |
+| host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |
+| host.user.id | Unique identifier of the user. | keyword |
+| host.user.name | Short name or login of the user. | keyword |
+| host.user.name.text | Multi-field of `host.user.name`. | match_only_text |
+| host.user.roles | Array of user roles at the time of the event. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
@@ -547,11 +683,31 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |  |
+| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |  |
+| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.geo.city_name | City name. | keyword |  |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |  |
+| host.geo.continent_name | Name of the continent. | keyword |  |
+| host.geo.country_iso_code | Country ISO code. | keyword |  |
+| host.geo.country_name | Country name. | keyword |  |
+| host.geo.location | Longitude and latitude. | geo_point |  |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |
+| host.geo.region_iso_code | Region ISO code. | keyword |  |
+| host.geo.region_name | Region name. | keyword |  |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
@@ -559,8 +715,22 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| host.uptime | Seconds the host has been up. | long |  |
+| host.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| host.user.email | User email address. | keyword |  |
+| host.user.full_name | User's full name, if available. | keyword |  |
+| host.user.full_name.text | Multi-field of `host.user.full_name`. | match_only_text |  |
+| host.user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| host.user.group.id | Unique identifier for the group on the system/platform. | keyword |  |
+| host.user.group.name | Name of the group. | keyword |  |
+| host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |  |
+| host.user.id | Unique identifier of the user. | keyword |  |
+| host.user.name | Short name or login of the user. | keyword |  |
+| host.user.name.text | Multi-field of `host.user.name`. | match_only_text |  |
+| host.user.roles | Array of user roles at the time of the event. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
@@ -655,11 +825,31 @@ The Docker `image` data stream collects metrics on docker images
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |  |
+| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |  |
+| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.geo.city_name | City name. | keyword |  |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |  |
+| host.geo.continent_name | Name of the continent. | keyword |  |
+| host.geo.country_iso_code | Country ISO code. | keyword |  |
+| host.geo.country_name | Country name. | keyword |  |
+| host.geo.location | Longitude and latitude. | geo_point |  |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |
+| host.geo.region_iso_code | Region ISO code. | keyword |  |
+| host.geo.region_name | Region name. | keyword |  |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
@@ -667,8 +857,22 @@ The Docker `image` data stream collects metrics on docker images
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| host.uptime | Seconds the host has been up. | long |  |
+| host.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| host.user.email | User email address. | keyword |  |
+| host.user.full_name | User's full name, if available. | keyword |  |
+| host.user.full_name.text | Multi-field of `host.user.full_name`. | match_only_text |  |
+| host.user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| host.user.group.id | Unique identifier for the group on the system/platform. | keyword |  |
+| host.user.group.name | Name of the group. | keyword |  |
+| host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |  |
+| host.user.id | Unique identifier of the user. | keyword |  |
+| host.user.name | Short name or login of the user. | keyword |  |
+| host.user.name.text | Multi-field of `host.user.name`. | match_only_text |  |
+| host.user.roles | Array of user roles at the time of the event. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
@@ -746,11 +950,31 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |  |
+| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |  |
+| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.geo.city_name | City name. | keyword |  |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |  |
+| host.geo.continent_name | Name of the continent. | keyword |  |
+| host.geo.country_iso_code | Country ISO code. | keyword |  |
+| host.geo.country_name | Country name. | keyword |  |
+| host.geo.location | Longitude and latitude. | geo_point |  |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |
+| host.geo.region_iso_code | Region ISO code. | keyword |  |
+| host.geo.region_name | Region name. | keyword |  |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
@@ -758,8 +982,22 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| host.uptime | Seconds the host has been up. | long |  |
+| host.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| host.user.email | User email address. | keyword |  |
+| host.user.full_name | User's full name, if available. | keyword |  |
+| host.user.full_name.text | Multi-field of `host.user.full_name`. | match_only_text |  |
+| host.user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| host.user.group.id | Unique identifier for the group on the system/platform. | keyword |  |
+| host.user.group.name | Name of the group. | keyword |  |
+| host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |  |
+| host.user.id | Unique identifier of the user. | keyword |  |
+| host.user.name | Short name or login of the user. | keyword |  |
+| host.user.name.text | Multi-field of `host.user.name`. | match_only_text |  |
+| host.user.roles | Array of user roles at the time of the event. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
@@ -829,11 +1067,31 @@ The Docker `memory` data stream collects memory metrics from docker.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |  |  |
+| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |  |  |
+| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.geo.city_name | City name. | keyword |  |  |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |  |  |
+| host.geo.continent_name | Name of the continent. | keyword |  |  |
+| host.geo.country_iso_code | Country ISO code. | keyword |  |  |
+| host.geo.country_name | Country name. | keyword |  |  |
+| host.geo.location | Longitude and latitude. | geo_point |  |  |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |  |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |  |
+| host.geo.region_iso_code | Region ISO code. | keyword |  |  |
+| host.geo.region_name | Region name. | keyword |  |  |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |  |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |  |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |  |  |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
@@ -841,8 +1099,22 @@ The Docker `memory` data stream collects memory metrics from docker.
 | host.os.name | Operating system name, without the version. | keyword |  |  |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| host.uptime | Seconds the host has been up. | long |  |  |
+| host.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |  |
+| host.user.email | User email address. | keyword |  |  |
+| host.user.full_name | User's full name, if available. | keyword |  |  |
+| host.user.full_name.text | Multi-field of `host.user.full_name`. | match_only_text |  |  |
+| host.user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |  |
+| host.user.group.id | Unique identifier for the group on the system/platform. | keyword |  |  |
+| host.user.group.name | Name of the group. | keyword |  |  |
+| host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |  |  |
+| host.user.id | Unique identifier of the user. | keyword |  |  |
+| host.user.name | Short name or login of the user. | keyword |  |  |
+| host.user.name.text | Multi-field of `host.user.name`. | match_only_text |  |  |
+| host.user.roles | Array of user roles at the time of the event. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
@@ -958,11 +1230,31 @@ The Docker `network` data stream collects network metrics.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | event.dataset | Event dataset | constant_keyword |  |
 | event.module | Event module | constant_keyword |  |
-| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |  |
+| host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |  |
+| host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
+| host.geo.city_name | City name. | keyword |  |
+| host.geo.continent_code | Two-letter code representing continent's name. | keyword |  |
+| host.geo.continent_name | Name of the continent. | keyword |  |
+| host.geo.country_iso_code | Country ISO code. | keyword |  |
+| host.geo.country_name | Country name. | keyword |  |
+| host.geo.location | Longitude and latitude. | geo_point |  |
+| host.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |  |
+| host.geo.postal_code | Postal code associated with the location. Values appropriate for this field may also be known as a postcode or ZIP code and will vary widely from country to country. | keyword |  |
+| host.geo.region_iso_code | Region ISO code. | keyword |  |
+| host.geo.region_name | Region name. | keyword |  |
+| host.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |  |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
 | host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
@@ -970,8 +1262,22 @@ The Docker `network` data stream collects network metrics.
 | host.os.name | Operating system name, without the version. | keyword |  |
 | host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
+| host.uptime | Seconds the host has been up. | long |  |
+| host.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| host.user.email | User email address. | keyword |  |
+| host.user.full_name | User's full name, if available. | keyword |  |
+| host.user.full_name.text | Multi-field of `host.user.full_name`. | match_only_text |  |
+| host.user.group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |  |
+| host.user.group.id | Unique identifier for the group on the system/platform. | keyword |  |
+| host.user.group.name | Name of the group. | keyword |  |
+| host.user.hash | Unique user hash to correlate information for a user in anonymized form. Useful if `user.id` or `user.name` contain confidential information and cannot be used. | keyword |  |
+| host.user.id | Unique identifier of the user. | keyword |  |
+| host.user.name | Short name or login of the user. | keyword |  |
+| host.user.name.text | Multi-field of `host.user.name`. | match_only_text |  |
+| host.user.roles | Array of user roles at the time of the event. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 
