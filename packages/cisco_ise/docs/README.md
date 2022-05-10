@@ -406,7 +406,7 @@ An example event for `log` looks as following:
 | cisco_ise.log.session.timeout |  | long |
 | cisco_ise.log.severity.level |  | long |
 | cisco_ise.log.software.version |  | keyword |
-| cisco_ise.log.state |  | text |
+| cisco_ise.log.state |  | keyword |
 | cisco_ise.log.static.assignment |  | boolean |
 | cisco_ise.log.status |  | keyword |
 | cisco_ise.log.step |  | keyword |
