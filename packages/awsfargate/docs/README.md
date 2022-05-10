@@ -377,11 +377,6 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.image.tag | Container image tags. | keyword |
 | container.labels | Image labels. | object |
-| container.labels.com_amazonaws_ecs_cluster | ECS Cluster name | keyword |
-| container.labels.com_amazonaws_ecs_container-name | ECS container name | keyword |
-| container.labels.com_amazonaws_ecs_task-arn | ECS task ARN | keyword |
-| container.labels.com_amazonaws_ecs_task-definition-family | ECS task definition family | keyword |
-| container.labels.com_amazonaws_ecs_task-definition-version | ECS task definition version | keyword |
 | container.name | Container name. | keyword |
 | container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
