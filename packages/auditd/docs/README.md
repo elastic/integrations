@@ -183,9 +183,17 @@ An example event for `log` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
+| container.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. | scaled_float |
+| container.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |
+| container.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |
+| container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
+| container.image.tag | Container image tags. | keyword |
 | container.labels | Image labels. | object |
+| container.memory.usage | Memory usage percentage and it ranges from 0 to 1. Scaling factor: 1000. | scaled_float |
 | container.name | Container name. | keyword |
+| container.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the container since the last metric collection. | long |
+| container.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the container since the last metric collection. | long |
 | container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

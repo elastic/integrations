@@ -17,6 +17,14 @@ The `cloudfront` dataset collects standard logs(also called access logs) from AW
 | aws.cloudfront.edge_result_type | How the server classified the response after the last byte left the server. In some cases, the result type can change between the time that the server is ready to send the response and the time that it finishes sending the response.  See also the x-edge-response-result-type field. For example, in HTTP streaming, suppose the server finds a segment of the stream in the cache. In that scenario, the value of this field would ordinarily be Hit.  However, if the viewer closes the connection before the server has delivered the entire segment, the final result type (and the value of this field) is Error. WebSocket connections will have a value of Miss for this field because the content is not cacheable and is proxied directly to the origin. | keyword |
 | aws.cloudfront.time_to_first_byte | The number of seconds between receiving the request and writing the first byte of the response, as measured on the server. | float |
 | aws.edge_location | The edge location that served the request. Each edge location is identified by a three-letter code and an arbitrarily assigned number (for example, DFW3). The three-letter code typically corresponds with the International Air Transport Association (IATA) airport code for an airport near the edge location’s geographic location. | alias |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |

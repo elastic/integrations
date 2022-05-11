@@ -19,38 +19,14 @@ The `waf` dataset is specifically for WAF logs. Export logs from Kinesis Data Fi
 | aws.waf.source.name | The source of the request. Possible values: CF for Amazon CloudFront, APIGW for Amazon API Gateway, ALB for Application Load Balancer, and APPSYNC for AWS AppSync. | keyword |
 | aws.waf.terminating_rule_match_details | Detailed information about the terminating rule that matched the request. A terminating rule has an action that ends the inspection process against a web request. Possible actions for a terminating rule are ALLOW and BLOCK. This is only populated for SQL injection and cross-site scripting (XSS) match rule statements. As with all rule statements that inspect for more than one thing, AWS WAF applies the action on the first match and stops inspecting the web request. A web request with a terminating action could contain other threats, in addition to the one reported in the log. | nested |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.origin.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.origin.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.origin.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.origin.instance.id | Instance ID of the host machine. | keyword |
-| cloud.origin.instance.name | Instance name of the host machine. | keyword |
-| cloud.origin.machine.type | Machine type of the host machine. | keyword |
-| cloud.origin.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
-| cloud.origin.project.name | The cloud project name. Examples: Google Cloud Project name, Azure Project name. | keyword |
-| cloud.origin.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.origin.region | Region in which this host, resource, or service is located. | keyword |
-| cloud.origin.service.name | The cloud service name is intended to distinguish services running on different platforms within a provider, eg AWS EC2 vs Lambda, GCP GCE vs App Engine, Azure VM vs App Server. Examples: app engine, app service, cloud run, fargate, lambda. | keyword |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
-| cloud.project.name | The cloud project name. Examples: Google Cloud Project name, Azure Project name. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| cloud.service.name | The cloud service name is intended to distinguish services running on different platforms within a provider, eg AWS EC2 vs Lambda, GCP GCE vs App Engine, Azure VM vs App Server. Examples: app engine, app service, cloud run, fargate, lambda. | keyword |
-| cloud.target.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.target.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.target.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.target.instance.id | Instance ID of the host machine. | keyword |
-| cloud.target.instance.name | Instance name of the host machine. | keyword |
-| cloud.target.machine.type | Machine type of the host machine. | keyword |
-| cloud.target.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
-| cloud.target.project.name | The cloud project name. Examples: Google Cloud Project name, Azure Project name. | keyword |
-| cloud.target.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.target.region | Region in which this host, resource, or service is located. | keyword |
-| cloud.target.service.name | The cloud service name is intended to distinguish services running on different platforms within a provider, eg AWS EC2 vs Lambda, GCP GCE vs App Engine, Azure VM vs App Server. Examples: app engine, app service, cloud run, fargate, lambda. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
