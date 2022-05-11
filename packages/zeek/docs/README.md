@@ -1420,6 +1420,15 @@ contains kerberos data.
 | zeek.session_id | A unique identifier of the session | keyword |
 
 
+### known_hosts
+
+The `known_hosts` dataset captures information about SSL/TLS certificates seen on the local network.
+
+**Exported fields**
+
+(no fields available)
+
+
 ### modbus
 
 The `modbus` dataset collects the Zeek modbus.log file, which contains

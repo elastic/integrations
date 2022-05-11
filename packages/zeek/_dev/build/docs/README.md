@@ -110,6 +110,12 @@ contains kerberos data.
 
 {{fields "kerberos"}}
 
+### known_hosts
+
+The `known_hosts` dataset captures information about SSL/TLS certificates seen on the local network.
+
+{{fields "known_hosts"}}
+
 ### modbus
 
 The `modbus` dataset collects the Zeek modbus.log file, which contains
