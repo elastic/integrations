@@ -6,8 +6,13 @@ services:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  cisco-ftd-tcp:
+    image: docker.elastic.co/observability/stream:v0.6.2
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=tcp /sample_logs/cisco-ftd.log
   cisco-ftd-udp:
-    image: docker.elastic.co/observability/stream:v0.5.0
+    image: docker.elastic.co/observability/stream:v0.6.2
     volumes:
       - ./sample_logs:/sample_logs:ro
     command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9514 -p=udp /sample_logs/cisco-ftd.log
