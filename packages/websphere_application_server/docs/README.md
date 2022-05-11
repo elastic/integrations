@@ -1,6 +1,6 @@
 # WebSphere Application Server
 
-This Elastic integration is used to collect [IBM WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server) metrics as follows:
+This Elastic integration is used to collect the following metrics from [IBM WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server):
 
    - JDBC metrics
 
@@ -16,10 +16,10 @@ An example event for `jdbc` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-22T08:37:45.273Z",
+    "@timestamp": "2022-05-11T08:42:42.671Z",
     "agent": {
-        "ephemeral_id": "add1889c-ae8c-4c6b-928f-047be04c7887",
-        "id": "3d0b5b96-e9ff-4560-8cd8-9261ded61509",
+        "ephemeral_id": "bfc5ae35-31dc-4fd1-a463-d4e7e4670ee4",
+        "id": "5463df26-9517-49e2-8dd5-3c68a1aeb4b3",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -33,7 +33,7 @@ An example event for `jdbc` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "3d0b5b96-e9ff-4560-8cd8-9261ded61509",
+        "id": "5463df26-9517-49e2-8dd5-3c68a1aeb4b3",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -41,8 +41,8 @@ An example event for `jdbc` looks as following:
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "websphere_application_server.jdbc",
-        "duration": 239432765,
-        "ingested": "2022-04-22T08:37:48Z",
+        "duration": 222275069,
+        "ingested": "2022-05-11T08:42:45Z",
         "kind": "metric",
         "module": "websphere_application_server",
         "type": "info"
@@ -52,10 +52,10 @@ An example event for `jdbc` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.30.0.7"
+            "172.22.0.7"
         ],
         "mac": [
-            "02:42:ac:1e:00:07"
+            "02:42:ac:16:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -90,23 +90,22 @@ An example event for `jdbc` looks as following:
                 "allocated": 0,
                 "closed": 0,
                 "created": 0,
-                "fault_total": 0,
                 "free": 0,
                 "handles": 0,
                 "managed": 0,
                 "returned": 0,
-                "total_in_use": 0,
-                "total_operations_calls": 0,
-                "total_operations_seconds": 0,
-                "total_seconds_in_use": 0,
-                "wait_seconds_total": 0,
-                "wait_total": 0,
+                "total": {
+                    "fault": 0,
+                    "in_use": 0,
+                    "seconds_in_use": 0,
+                    "wait": 0,
+                    "wait_seconds": 0
+                },
                 "waiting_threads": 0
             },
-            "datasource": "jdbc/DefaultEJBTimerDataSource",
+            "data_source": "jms/built-in-jms-connectionfactory",
             "percent_used": 0,
-            "pool_size": 0,
-            "total_cache_discarded": 0
+            "pool_size": 0
         }
     }
 }
@@ -133,19 +132,19 @@ An example event for `jdbc` looks as following:
 | websphere_application_server.jdbc.connection.allocated | The total number of connections that were allocated. | long |
 | websphere_application_server.jdbc.connection.closed | The total number of connections that were closed. | long |
 | websphere_application_server.jdbc.connection.created | The total number of connections that were created. | long |
-| websphere_application_server.jdbc.connection.fault_total | The number of connection timeouts in the pool. | long |
 | websphere_application_server.jdbc.connection.free | The number of free connections in the pool. | long |
 | websphere_application_server.jdbc.connection.handles | The number of Connection objects in use for a particular connection pool. The number applies to V5.0 data sources only. | long |
 | websphere_application_server.jdbc.connection.managed | The number of ManagedConnection objects that are in use for a particular connection pool. The number applies to V5.0 data sources only. | long |
 | websphere_application_server.jdbc.connection.returned | The total number of connections that were returned to the pool. | long |
-| websphere_application_server.jdbc.connection.total_in_use | The total number of times that a connection was in use. | long |
-| websphere_application_server.jdbc.connection.total_operations_calls | The number of JDBC calls. | long |
-| websphere_application_server.jdbc.connection.total_operations_seconds | The total time (in seconds) that was spent running the JDBC calls, including the time spent in the JDBC driver, network, and database. The total time applies to V5.0 data sources only. | double |
-| websphere_application_server.jdbc.connection.total_seconds_in_use | The total time (in seconds) that a connection was used. The total time is difference between the time at which the connection is allocated and returned. This value includes the JBDC operation time. | double |
-| websphere_application_server.jdbc.connection.wait_seconds_total | The total wait time (in seconds) until a connection is granted. | double |
-| websphere_application_server.jdbc.connection.wait_total | The number of times a request was waited for a connection to be granted. | long |
+| websphere_application_server.jdbc.connection.total.fault | The number of connection timeouts in the pool. | long |
+| websphere_application_server.jdbc.connection.total.in_use | The total number of times that a connection was in use. | long |
+| websphere_application_server.jdbc.connection.total.operations_calls | The number of JDBC calls. | long |
+| websphere_application_server.jdbc.connection.total.operations_seconds | The total time (in seconds) that was spent running the JDBC calls, including the time spent in the JDBC driver, network, and database. The total time applies to V5.0 data sources only. | double |
+| websphere_application_server.jdbc.connection.total.seconds_in_use | The total time (in seconds) that a connection was used. The total time is difference between the time at which the connection is allocated and returned. This value includes the JBDC operation time. | double |
+| websphere_application_server.jdbc.connection.total.wait | The number of times a request was waited for a connection to be granted. | long |
+| websphere_application_server.jdbc.connection.total.wait_seconds | The total wait time (in seconds) until a connection is granted. | double |
 | websphere_application_server.jdbc.connection.waiting_threads | The number of threads that are concurrently waiting for a connection. | long |
-| websphere_application_server.jdbc.datasource | Name of datasource. | keyword |
+| websphere_application_server.jdbc.data_source | Name of data source. | keyword |
 | websphere_application_server.jdbc.percent_used | Percent of the pool that was in use. The value is based on the total number of configured connections in the ConnectionPool, not the current number of connections. | long |
 | websphere_application_server.jdbc.pool_size | The size of the connection pool. | long |
 | websphere_application_server.jdbc.total_cache_discarded | The number of statements that were discarded because the cache is full. | long |
