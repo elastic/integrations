@@ -5,15 +5,63 @@ streams:
   - input: packet
     vars:
       - name: port
-        type: integer
         # currently the Kibana UI doesn't support multi inputs
         # that are numeric, you get "Error: r.toLowerCase is not a function"
-        # multi: true
-        title: Port
+        # so map this as text
+        type: text
+        multi: true
+        title: Ports
         required: true
         show_user: true
-        default: 3306
-        # default: [3306, 3307]
+        default: [3306, 3307]
+      - name: send_request
+        type: bool
+        title: Send Request
+        description: |-
+          If this option is enabled, the raw message of the request (`request` field)
+          is sent to Elasticsearch. The default is false.
+        show_user: false
+        multi: false
+        required: false
+      - name: send_response
+        type: bool
+        title: Send Response
+        description: |-
+          If this option is enabled, the raw message of the response (`response`
+          field) is sent to Elasticsearch. The default is false.
+        show_user: false
+        multi: false
+        required: false
+      - name: keep_null
+        type: bool
+        title: Keep Null
+        description: Set to true to publish fields with null values in events.
+        show_user: false
+        multi: false
+        required: false
+      - name: transaction_timeout
+        type: text
+        title: Transaction Timeout
+        description: |-
+          Transaction timeout. Expired transactions will no longer be correlated to
+          incoming responses, but sent to Elasticsearch immediately.
+        show_user: false
+        multi: false
+        required: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        show_user: false
+        multi: false
+        required: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        show_user: false
+        multi: true
+        required: false
     title: MySQL
     description: Capture MySQL Traffic
     template_path: mysql.yml.hbs
