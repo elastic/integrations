@@ -60,6 +60,7 @@ The journald input is available on Linux systems with `systemd` installed.
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | keyword |
+| process.command_line.text | Multi-field of `process.command_line`. | text |
 | process.pid | Process id. | long |
 | systemd.cgroup | The control group path in the systemd hierarchy. | keyword |
 | systemd.invocation_id | The invocation ID for the runtime cycle of the unit the message was generated in, as available to processes of the unit in $INVOCATION_ID. | keyword |

@@ -20,6 +20,7 @@ The `audit` dataset collects MySQL Enterprise Audit logs.
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.user.name | Short name or login of the user. | keyword |
+| client.user.name.text | Multi-field of `client.user.name`. | match_only_text |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -59,8 +60,10 @@ The `audit` dataset collects MySQL Enterprise Audit logs.
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -94,19 +97,25 @@ The `audit` dataset collects MySQL Enterprise Audit logs.
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | server.user.name | Short name or login of the user. | keyword |
+| server.user.name.text | Multi-field of `server.user.name`. | match_only_text |
 | service.id | Unique identifier of the running service. If the service is comprised of many nodes, the `service.id` should be the same for all nodes. This id should uniquely identify the service. This makes it possible to correlate logs and metrics for one specific service, no matter which particular node emitted the event. Note that if you need to see the events from one specific host of the service, you should filter on that `host.name` or `host.id` instead. | keyword |
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.target.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 
 
 An example event for `audit` looks as following:
