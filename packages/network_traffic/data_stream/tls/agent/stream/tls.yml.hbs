@@ -1,12 +1,34 @@
 type: tls
-ports: [{{port}}]
-{{#if processes}}
-procs:
-  enabled: true
-  monitored:
-    {{#each processes}}
-    - cmdline_grep: {{this}}
-    {{/each}}
+{{#if port}}
+ports:
+{{#each port as |p|}}
+  - {{p}}
+{{/each}}
+{{/if}}
+{{#if fingerprints}}
+fingerprints:
+{{#each fingerprints as |fingerprint|}}
+  - {{fingerprint}}
+{{/each}}
+{{/if}}
+{{#if send_certificates}}
+send_certificates: {{send_certificates}}
+{{/if}}
+{{#if include_raw_certificates}}
+include_raw_certificates: {{include_raw_certificates}}
+{{/if}}
+{{#if keep_null}}
+keep_null: {{keep_null}}
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+{{#if tags}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
 {{/if}}
 {{#if interface}}
 interface:
