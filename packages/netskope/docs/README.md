@@ -2793,7 +2793,7 @@ An example event for `alerts` looks as following:
 | netskope.events.two_factor_auth | N/A | keyword |
 | netskope.events.type | Shows if it is an application event or a connection event. Application events are recorded to track user events inside a cloud app. Connection events shows the actual HTTP connection. | keyword |
 | netskope.events.universal_connector | N/A | keyword |
-| netskope.events.url | URL of the application that the user visited as provided by the log or data plane traffic. | flattened |
+| netskope.events.url | URL of the application that the user visited as provided by the log or data plane traffic | flattened |
 | netskope.events.url_to_activity | Populated if the activity from the URL matches certain activities. This field applies to Risk Insights only. | keyword |
 | netskope.events.user.category | Type of user in an enterprise - external / internal. | keyword |
 | netskope.events.user.generated | Tells whether it is user generated page event. | boolean |
