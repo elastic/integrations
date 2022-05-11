@@ -1,0 +1,163 @@
+- name: kubernetes.scheduler
+  type: group
+  fields:
+    - name: handler
+      dimension: true
+      type: keyword
+      description: |
+        Request handler
+    - name: code
+      dimension: true
+      type: keyword
+      description: |
+        HTTP code
+    - name: method
+      dimension: true
+      type: keyword
+      description: |
+        HTTP method
+    - name: host
+      dimension: true
+      type: keyword
+      description: |
+        Request host
+    - name: name
+      dimension: true
+      type: keyword
+      description: |
+        Name for the resource
+    - name: result
+      dimension: true
+      type: keyword
+      description: |
+        Schedule attempt result
+    - name: operation
+      dimension: true
+      type: keyword
+      description: |
+        Scheduling operation
+    - name: process
+      type: group
+      fields:
+        - name: cpu.sec
+          type: double
+          metric_type: counter
+          description: CPU seconds
+        - name: memory.resident.bytes
+          type: long
+          format: bytes
+          unit: byte
+          metric_type: gauge
+          description: Bytes in resident memory
+        - name: memory.virtual.bytes
+          type: long
+          format: bytes
+          unit: byte
+          metric_type: gauge
+          description: Bytes in virtual memory
+        - name: fds.open.count
+          type: long
+          metric_type: gauge
+          description: Number of open file descriptors
+        - name: started.sec
+          type: double
+          metric_type: gauge
+          description: Seconds since the process started
+    - name: http
+      type: group
+      fields:
+        - name: request.duration.us.percentile.*
+          type: object
+          description: Request duration microseconds percentiles
+        - name: request.duration.us.sum
+          type: double
+          metric_type: counter
+          unit: micros
+          description: Request duration microseconds cumulative sum
+        - name: request.duration.us.count
+          type: long
+          metric_type: counter
+          unit: micros
+          description: Request count for duration
+        - name: request.size.bytes.percentile.*
+          type: object
+          description: Request size percentiles
+        - name: request.size.bytes.sum
+          type: long
+          format: bytes
+          unit: byte
+          metric_type: counter
+          description: Request size cumulative sum
+        - name: request.size.bytes.count
+          type: long
+          unit: byte
+          metric_type: counter
+          description: Request count for size
+        - name: response.size.bytes.percentile.*
+          type: object
+          description: Response size percentiles
+        - name: response.size.bytes.sum
+          type: long
+          format: bytes
+          unit: byte
+          metric_type: counter
+          description: Response size cumulative sum
+        - name: response.size.bytes.count
+          type: long
+          metric_type: counter
+          description: Response count
+        - name: request.count
+          type: long
+          metric_type: counter
+          description: Request count
+    - name: client.request.count
+      type: long
+      metric_type: counter
+      description: |
+        Number of requests as client
+    - name: leader.is_master
+      type: boolean
+      description: |
+        Whether the node is master
+    - name: scheduling
+      type: group
+      fields:
+        - name: e2e.duration.us.bucket.*
+          type: object
+          description: End to end scheduling duration microseconds
+        - name: e2e.duration.us.sum
+          type: long
+          unit: micros
+          metric_type: counter
+          description: End to end scheduling duration microseconds sum
+        - name: e2e.duration.us.count
+          type: long
+          unit: micros
+          metric_type: counter
+          description: End to end scheduling count
+        - name: pod.preemption.victims.bucket.*
+          type: long
+          description: Pod preemption victims
+        - name: pod.preemption.victims.sum
+          type: long
+          metric_type: counter
+          description: Pod preemption victims sum
+        - name: pod.preemption.victims.count
+          type: long
+          metric_type: counter
+          description: Pod preemption victims count
+        - name: pod.attempts.count
+          type: long
+          metric_type: counter
+          description: Pod attempts count
+        - name: duration.seconds.percentile.*
+          type: object
+          description: Scheduling duration percentiles
+        - name: duration.seconds.sum
+          type: double
+          metric_type: counter
+          description: Scheduling duration cumulative sum
+        - name: duration.seconds.count
+          type: long
+          metric_type: counter
+          description: Scheduling count

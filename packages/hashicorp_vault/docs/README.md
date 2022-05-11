@@ -438,5 +438,20 @@ telemetry {
 | event.module | Event module | constant_keyword |
 | hashicorp_vault.metrics.\*.\* | Hashicorp Vault telemetry data from the Prometheus endpoint. |  |
 | labels | Custom key/value pairs. Can be used to add meta information to events. Should not contain nested objects. All values are stored as keyword. Example: `docker` and `k8s` labels. | object |
+| labels.auth_method | Authorization engine type. | keyword |
+| labels.cluster | The cluster name from which the metric originated; set in the configuration file, or automatically generated when a cluster is created. | keyword |
+| labels.creation_ttl | Time-to-live value assigned to a token or lease at creation. This value is rounded up to the next-highest bucket; the available buckets are 1m, 10m, 20m, 1h, 2h, 1d, 2d, 7d, and 30d. Any longer TTL is assigned the value +Inf. | keyword |
+| labels.host |  | keyword |
+| labels.instance |  | keyword |
+| labels.job |  | keyword |
+| labels.local |  | keyword |
+| labels.mount_point | Path at which an auth method or secret engine is mounted. | keyword |
+| labels.namespace | A namespace path, or root for the root namespace | keyword |
+| labels.quantile |  | keyword |
+| labels.queue_id |  | keyword |
+| labels.term |  | keyword |
+| labels.token_type | Identifies whether the token is a batch token or a service token. | keyword |
+| labels.type |  | keyword |
+| labels.version |  | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 

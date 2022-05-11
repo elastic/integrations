@@ -1,0 +1,74 @@
+- name: kubernetes.system
+  type: group
+  fields:
+    - name: container
+      dimension: true
+      type: keyword
+      description: |
+        Container name
+    - name: start_time
+      type: date
+      description: |
+        Start time
+    - name: cpu
+      type: group
+      fields:
+        - name: usage
+          type: group
+          fields:
+            - name: core
+              type: group
+              fields:
+                - name: ns
+                  type: long
+                  metric_type: gauge
+                  description: |
+                    CPU Core usage nanoseconds
+            - name: nanocores
+              type: long
+              metric_type: gauge
+              description: |
+                CPU used nanocores
+    - name: memory
+      type: group
+      fields:
+        - name: usage
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              format: bytes
+              unit: byte
+              metric_type: gauge
+              description: |
+                Total memory usage
+        - name: rss
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              format: bytes
+              unit: byte
+              metric_type: gauge
+              description: |
+                RSS memory usage
+        - name: workingset
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              format: bytes
+              unit: byte
+              metric_type: gauge
+              description: |
+                Working set memory usage
+        - name: pagefaults
+          type: long
+          metric_type: counter
+          description: |
+            Number of page faults
+        - name: majorpagefaults
+          type: long
+          metric_type: counter
+          description: |
+            Number of major page faults
