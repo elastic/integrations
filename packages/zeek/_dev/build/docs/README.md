@@ -236,6 +236,12 @@ SOCKS proxy requests.
 
 {{fields "socks"}}
 
+### software
+
+The `software` dataset collects details on applications operated by the hosts it sees on the local network.
+
+{{fields "software"}}
+
 ### ssh
 
 The `ssh` dataset collects the Zeek ssh.log file, which contains SSH
