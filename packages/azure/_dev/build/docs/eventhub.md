@@ -1,4 +1,4 @@
-## Azure Eventhub Input
+# Azure Eventhub Input
 
 The Azure Eventhub Input integration allows users to collect events from Azure event hubs.
  The azure-eventhub input functionality is based on the the event processor host (EPH is intended to be run across multiple processes and machines while load balancing message consumers more on this here https://github.com/Azure/azure-event-hubs-go#event-processor-host, https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-event-processor-host). State such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. 
@@ -7,12 +7,11 @@ The Azure Eventhub Input integration allows users to collect events from Azure e
 There are several requirements before using the integration since the logs will actually be read from azure event hubs.
    * the logs/metrics have to be exported first to the event hub https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled
 
-
-### Credentials
+## Settings
 
 `eventhub` :
   _string_
-Is the fully managed, real-time data ingestion service.
+It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets).
 
 `consumer_group` :
 _string_
@@ -36,17 +35,28 @@ The storage account key, this key will be used to authorize access to data in yo
 `resource_manager_endpoint` :
 _string_
 Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
-Ex:
-https://management.chinacloudapi.cn/ for azure ChinaCloud
-https://management.microsoftazure.de/ for azure GermanCloud
-https://management.azure.com/ for azure PublicCloud
-https://management.usgovcloudapi.net/ for azure USGovernmentCloud
-Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
+
+Resource manager endpoints:
+
+```text
+# Azure ChinaCloud
+https://management.chinacloudapi.cn/
+
+# Azure GermanCloud
+https://management.microsoftazure.de/
+
+# Azure PublicCloud 
+https://management.azure.com/
+
+# Azure USGovernmentCloud
+https://management.usgovcloudapi.net/
+```
+
+## Logs
 
 ### eventhub
 
-The `eventhub` data stream of the Azure Logs package will collect any  events that have been streamed through an azure event hub.
-
+The `eventhub` data stream of the Azure Logs package will collect any events that have been streamed through an azure event hub.
 
 {{event "eventhub"}}
 
