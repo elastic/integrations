@@ -1,5 +1,5 @@
 ---
-description: Pipeline for normalizing Zeek known_certs.log
+description: Pipeline for normalizing Zeek known_services.log
 processors:
   - rename:
       field: message
@@ -75,16 +75,12 @@ processors:
       target_field: server.as.organization.name
       ignore_missing: true
   - rename:
-      field: json.subject
-      target_field: tls.server.x509.subject.distinguished_name
+      field: json.port_proto
+      target_field: network.transport
       ignore_missing: true
   - rename:
-      field: json.issuer_subject
-      target_field: tls.server.x509.issuer.distinguished_name
-      ignore_missing: true
-  - rename:
-      field: json.serial
-      target_field: tls.server.x509.serial_number
+      field: json.service
+      target_field: network.application
       ignore_missing: true
   - remove:
       field: 

@@ -122,6 +122,12 @@ The `known_hosts` dataset captures information about SSL/TLS certificates seen o
 
 {{fields "known_hosts"}}
 
+### known_services
+
+The `known_services` dataset captures information about SSL/TLS certificates seen on the local network.
+
+{{fields "known_services"}}
+
 ### modbus
 
 The `modbus` dataset collects the Zeek modbus.log file, which contains
