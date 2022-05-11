@@ -285,6 +285,22 @@ processors:
   - remove:
       field: _tmp_copy
 
+  - set:
+      field: email.to.address
+      value: ["{{{destination.user.email}}}"]
+      if: "ctx?.destination?.user?.email != null"
+  - set:
+      field: email.from.address
+      value: ["{{{source.user.email}}}"]
+      if: "ctx?.source?.user?.email != null"
+  - set:
+      field: email.subject
+      copy_from: checkpoint.email_subject
+      if: "ctx?.checkpoint?.email_subject != null"
+  - set:
+      field: email.message_id
+      copy_from: checkpoint.email_session_id
+      if: "ctx?.checkpoint?.email_session_id != null"
   - convert:
       field: event.risk_score
       type: float
