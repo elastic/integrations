@@ -110,6 +110,12 @@ contains kerberos data.
 
 {{fields "kerberos"}}
 
+### known_certs
+
+The `known_certs` dataset captures information about SSL/TLS certificates seen on the local network.
+
+{{fields "known_certs"}}
+
 ### known_hosts
 
 The `known_hosts` dataset captures information about SSL/TLS certificates seen on the local network.
