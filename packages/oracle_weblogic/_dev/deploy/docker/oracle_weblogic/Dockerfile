@@ -17,7 +17,7 @@
 
 # Pull base image
 # ---------------
-FROM docker.elastic.co/observability-ci/weblogic:12.2.1.3-dev
+FROM container-registry.oracle.com/middleware/weblogic:12.2.1.3-dev
 
 ARG CUSTOM_DOMAIN_NAME="${CUSTOM_DOMAIN_NAME:-domain1}"
 ARG CUSTOM_ADMIN_PORT="${CUSTOM_ADMIN_PORT:-7001}"  
