@@ -124,7 +124,7 @@ The `known_hosts` dataset captures information about SSL/TLS certificates seen o
 
 ### known_services
 
-The `known_services` dataset captures information about SSL/TLS certificates seen on the local network.
+The `known_services` dataset records a timestamp, IP, port number, protocol, and service (if available) when Zeek observes a system offering a new service on the local network.
 
 {{fields "known_services"}}
 
