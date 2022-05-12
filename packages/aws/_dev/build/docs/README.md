@@ -3,7 +3,7 @@
 The AWS integration is used to fetch logs and metrics from [Amazon Web Services](https://aws.amazon.com/).
 
 Use the AWS integration to collect metrics and logs across many AWS services managed by your AWS account.
-Visualize that data in Kibana, create alerts to notify you know if something goes wrong,
+Visualize that data in Kibana, create alerts to notify you if something goes wrong,
 and reference data when troubleshooting an issue.
 
 <!-- Example ?? -->
@@ -97,7 +97,7 @@ the package will check for `credential_profile_name`.
 <!-- i'm not sure what this does... -->
 <!-- * `endpoint`: URL of the entry point for an AWS web service. -->
 
-#### IAM role ARN
+#### Use an IAM role Amazon Resource Name (ARN)
 
 An IAM role ARN is an IAM identity that you can create in your AWS account. You determine what the role has permission to do.
 A role does not have standard long-term credentials such as a password or access keys associated with it.
@@ -110,7 +110,7 @@ To use an IAM role ARN, you need to provide either a [credential profile](#use-a
 `role_arn` is used to specify which AWS IAM role to assume for generating temporary credentials.
 
 Note: If `role_arn` is given, the package will check if access keys are given.
-If they are not given, the package will check for credential profile name.
+If they are not given, the package will check for a credential profile name.
 If neither is given, the default credential profile will be used. 
 
 ### AWS Permissions
