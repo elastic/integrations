@@ -1,21 +1,21 @@
-# JAMF Compliance Reporter
+# Jamf Compliance Reporter
 
-The [JAMF Compliance Reporter](https://docs.jamf.com/compliance-reporter/documentation/Compliance_Reporter_Overview.html) Integration collects and parses data received from JAMF Compliance Reporter using TLS or HTTP Endpoint.  
+The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documentation/Compliance_Reporter_Overview.html) Integration collects and parses data received from Jamf Compliance Reporter using TLS or HTTP Endpoint.  
 
 ## Requirements
 - Enable the Integration with the TLS or HTTP Endpoint input.
-- Configure JAMF Compliance Reporter to send logs to the Elastic Agent.
+- Configure Jamf Compliance Reporter to send logs to the Elastic Agent.
 
 ## Setup Steps
 
-- After validating settings, you can use a configuration profile in JAMF Pro to deploy certificates to endpoints in production.
+- After validating settings, you can use a configuration profile in Jamf Pro to deploy certificates to endpoints in production.
 
 - Reference link for generating [REST Endpoint Remote logging](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html) for Compliance Reporter.
 
-- Reference link for [Creating a Configuration Profile](https://docs.jamf.com/compliance-reporter/documentation/Configuring_Compliance_Reporter_Properties_Using_Jamf_Pro.html) using JAMF Pro.
+- Reference link for [Creating a Configuration Profile](https://docs.jamf.com/compliance-reporter/documentation/Configuring_Compliance_Reporter_Properties_Using_Jamf_Pro.html) using Jamf Pro.
 
 ## Compatibility
-This package has been tested for Compliance Reporter against JAMF pro version 10.18.0.
+This package has been tested for Compliance Reporter against Jamf pro version 10.18.0.
 
 ## Logs
 
@@ -46,8 +46,8 @@ An example event for `app` looks as following:
 {
     "@timestamp": "2019-10-15T18:30:27.000Z",
     "agent": {
-        "ephemeral_id": "ad79d8c7-0bd2-4dfd-84a2-dd9838f1f6c1",
-        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
+        "ephemeral_id": "12057d0a-faeb-4547-a70e-45a1bf62a752",
+        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.3"
@@ -61,7 +61,7 @@ An example event for `app` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
+        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
         "snapshot": false,
         "version": "8.1.3"
     },
@@ -72,7 +72,7 @@ An example event for `app` looks as following:
             "process"
         ],
         "dataset": "jamf_compliance_reporter.app_metrics",
-        "ingested": "2022-05-03T11:11:14Z",
+        "ingested": "2022-05-09T12:52:45Z",
         "kind": "event",
         "type": [
             "info"
@@ -85,7 +85,7 @@ An example event for `app` looks as following:
         "hostname": "Dan_macbook_pro",
         "id": "3x6xxxxx-xxx5-xxxE-xxxC-xxxxxxxxxxx1",
         "mac": [
-            "XX-XX-XX-XX-XX-XX"
+            "38-F9-E8-15-5A-82"
         ],
         "os": {
             "type": "macos",
@@ -116,7 +116,7 @@ An example event for `app` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.30.0.6:45712"
+            "address": "192.168.128.4:36618"
         }
     },
     "related": {
@@ -136,7 +136,7 @@ An example event for `app` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
@@ -145,7 +145,7 @@ An example event for `app` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
+| container.id | Unique container ID. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
@@ -155,6 +155,7 @@ An example event for `app` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
@@ -165,8 +166,8 @@ An example event for `app` looks as following:
 | host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
@@ -205,8 +206,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-10-02T16:21:03.400Z",
     "agent": {
-        "ephemeral_id": "b41a9742-7f21-400d-980c-231113b66ad0",
-        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
+        "ephemeral_id": "c486fba1-82b1-4073-a857-e1b616f49ee7",
+        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.3"
@@ -220,7 +221,7 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
+        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
         "snapshot": false,
         "version": "8.1.3"
     },
@@ -235,7 +236,7 @@ An example event for `audit` looks as following:
         ],
         "code": "2",
         "dataset": "jamf_compliance_reporter.audit",
-        "ingested": "2022-05-03T11:13:18Z",
+        "ingested": "2022-05-09T12:54:48Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -249,7 +250,7 @@ An example event for `audit` looks as following:
             "0.0.0.0"
         ],
         "mac": [
-            "38-X9-X8-15-5X-82"
+            "38-F9-E8-15-5A-82"
         ],
         "os": {
             "type": "macos",
@@ -299,6 +300,10 @@ An example event for `audit` looks as following:
                     "group": {
                         "id": "20",
                         "name": "staff"
+                    },
+                    "user": {
+                        "id": "502",
+                        "name": "dan"
                     }
                 },
                 "session_id": "100011",
@@ -321,7 +326,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.30.0.6:45072"
+            "address": "192.168.128.4:34316"
         }
     },
     "process": {
@@ -373,7 +378,7 @@ An example event for `audit` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
@@ -382,7 +387,7 @@ An example event for `audit` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
+| container.id | Unique container ID. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
@@ -393,17 +398,20 @@ An example event for `audit` looks as following:
 | error.code | Error code describing the error. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
@@ -549,8 +557,8 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2019-10-02T16:17:08.000Z",
     "agent": {
-        "ephemeral_id": "5fca1652-07e4-4738-adf4-8872c47af7eb",
-        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
+        "ephemeral_id": "107f82ec-98c9-407e-b16a-773577562721",
+        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.3"
@@ -564,7 +572,7 @@ An example event for `event` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "fdecaad5-33dd-4fe3-a22a-5a0857bd5c7f",
+        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
         "snapshot": false,
         "version": "8.1.3"
     },
@@ -575,7 +583,7 @@ An example event for `event` looks as following:
             "process"
         ],
         "dataset": "jamf_compliance_reporter.event",
-        "ingested": "2022-05-03T11:15:24Z",
+        "ingested": "2022-05-09T12:56:49Z",
         "kind": "event",
         "type": [
             "info"
@@ -585,7 +593,7 @@ An example event for `event` looks as following:
         "hostname": "macbook_pro",
         "id": "3X6E4X3X-9285-4X7X-9X0X-X3X62XX379XX",
         "mac": [
-            "38-F9-X8-15-5X-82"
+            "38-F9-E8-15-5A-82"
         ],
         "os": {
             "type": "macos",
@@ -659,7 +667,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.30.0.6:48300"
+            "address": "192.168.128.4:44960"
         }
     },
     "related": {
@@ -685,7 +693,7 @@ An example event for `event` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
@@ -694,7 +702,7 @@ An example event for `event` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
+| container.id | Unique container ID. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
@@ -718,9 +726,9 @@ An example event for `event` looks as following:
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |

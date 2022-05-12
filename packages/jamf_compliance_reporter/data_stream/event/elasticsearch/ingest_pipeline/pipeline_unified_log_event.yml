@@ -1,5 +1,5 @@
 ---
-description: Pipeline for JAMF Compliance Reporter unified event logs.
+description: Pipeline for Jamf Compliance Reporter unified event logs.
 processors:
   - convert:
       field: json.event_attributes.activityIdentifier
@@ -55,7 +55,7 @@ processors:
   - append:
       field: event.type
       value: '{{{json.event_attributes.messageType}}}'
-      if: ctx?.json?.event_attributes?.messageType != null
+      if: ctx.json?.event_attributes?.messageType != null
       allow_duplicates: false
       ignore_failure: true
   - lowercase:
@@ -108,7 +108,7 @@ processors:
   - date:
       field: json.event_attributes.timestamp
       target_field: jamf_compliance_reporter.event.event_attributes.timestamp
-      if: ctx?.json?.event_attributes?.timestamp != '0'
+      if: ctx.json?.event_attributes?.timestamp != '0'
       ignore_failure: true
       formats:
         - yyyy-MM-dd HH:mm:ss.SSSSSSZ

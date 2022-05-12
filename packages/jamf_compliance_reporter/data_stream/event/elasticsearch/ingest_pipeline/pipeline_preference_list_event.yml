@@ -1,5 +1,5 @@
 ---
-description: Pipeline for JAMF Compliance Reporter preference list event logs.
+description: Pipeline for Jamf Compliance Reporter preference list event logs.
 processors:
   - rename:
       field: json.event_attributes.AuditEventExcludedProcesses
@@ -39,13 +39,13 @@ processors:
   - append:
       field: related.user
       value: '{{{user.email}}}'
-      if: ctx?.user?.email != null
+      if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - date:
       field: json.event_attributes.FileLicenseInfo.LicenseExpirationDate
       target_field: jamf_compliance_reporter.event.event_attributes.file_license_info.license_expiration_date
-      if: ctx?.json?.event_attributes?.FileLicenseInfo?.LicenseExpirationDate != '0'
+      if: ctx.json?.event_attributes?.FileLicenseInfo?.LicenseExpirationDate != '0'
       ignore_failure: true
       formats:
         - dd/MM/yyyy

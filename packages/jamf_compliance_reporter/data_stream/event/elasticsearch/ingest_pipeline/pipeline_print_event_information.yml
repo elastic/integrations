@@ -1,17 +1,17 @@
 ---
-description: Pipeline for JAMF Compliance Reporter print information event logs.
+description: Pipeline for Jamf Compliance Reporter print information event logs.
 processors:
   - date:
       field: json.event_attributes.job_completed_time
       target_field: jamf_compliance_reporter.event.event_attributes.job.completed_time
-      if: ctx?.json?.event_attributes?.job_completed_time != 0
+      if: ctx.json?.event_attributes?.job_completed_time != 0
       ignore_failure: true
       formats:
         - UNIX
   - date:
       field: json.event_attributes.job_creation_time
       target_field: jamf_compliance_reporter.event.event_attributes.job.creation_time
-      if: ctx?.json?.event_attributes?.job_creation_time != 0
+      if: ctx.json?.event_attributes?.job_creation_time != 0
       ignore_failure: true
       formats:
         - UNIX
@@ -31,7 +31,7 @@ processors:
   - date:
       field: json.event_attributes.job_processing_time
       target_field: jamf_compliance_reporter.event.event_attributes.job.processing_time
-      if: ctx?.json?.event_attributes?.job_processing_time != 0
+      if: ctx.json?.event_attributes?.job_processing_time != 0
       ignore_failure: true
       formats:
         - UNIX
@@ -54,6 +54,6 @@ processors:
   - append:
       field: related.user
       value: '{{{jamf_compliance_reporter.event.event_attributes.job.user}}}'
-      if: ctx?.jamf_compliance_reporter?.event?.event_attributes?.job?.user != null
+      if: ctx.jamf_compliance_reporter?.event?.event_attributes?.job?.user != null
       allow_duplicates: false
       ignore_failure: true
