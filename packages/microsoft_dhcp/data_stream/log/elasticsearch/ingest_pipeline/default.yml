@@ -28,6 +28,20 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "dhcpv6" }}'
       if: "ctx?.log?.file?.path != null && ctx.log.file.path.contains('V6')"
+  - foreach:
+      field: observer.mac
+      ignore_missing: true
+      processor:
+        gsub:
+          field: _ingest._value
+          pattern: '[:]'
+          replacement: '-'
+  - foreach:
+      field: observer.mac
+      ignore_missing: true
+      processor:
+        uppercase:
+          field: _ingest._value
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
