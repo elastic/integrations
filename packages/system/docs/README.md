@@ -1,11 +1,9 @@
 # System Integration
 
-## Overview
-
 The System integration allows you to monitor servers, personal computers, and more.
 
 Use the System integration to collect metrics and logs from your machines.
-Then visualize that data in Kibana, create alerts to notify you know if something goes wrong,
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
 and reference data when troubleshooting an issue.
 
 For example, if you wanted to be notified when less than 10% of the disk space is still available, you
@@ -29,7 +27,7 @@ information on network behavior, and more.
 See more details in the [Metrics reference](#metrics-reference).
 
 You can enable and disable individual datasets. If _all_ datasets are disabled and the System integration
-is still enabled, fleet uses the default datasets.
+is still enabled, Fleet uses the default datasets.
 
 ## Requirements
 
