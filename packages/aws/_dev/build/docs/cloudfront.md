@@ -28,14 +28,14 @@ Before using any AWS integration you will need:
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
-For more details about these requirements, see [AWS integration requirements](/integrations/aws/#requirements).
+For more details about these requirements, see the **AWS** integration documentation.
 
 ## Setup
 
 Use this integration if you only need to collect data from the AWS CloudFront service.
 
 If you want to collect data from two or more AWS services, consider using the
-[AWS integration](/integrations/aws/). When you configure the AWS integration,
+**AWS** integration. When you configure the AWS integration,
 you can collect data from as many AWS services as you'd like.
 
 For step-by-step instructions on how to set up an integration, see the

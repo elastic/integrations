@@ -143,7 +143,7 @@ When you configure the integration, you can collect data from as many AWS servic
 
 If you only need to collect data from one AWS service, consider using the individual integration
 (for example, to only collect billing metrics, you can use the
-[AWS CloudFront integration](/integrations/aws/cloudfront/)).
+**AWS CloudFront** integration).
 
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
@@ -153,29 +153,29 @@ For step-by-step instructions on how to set up an integration, see the
 Below is an overview of the type of data you can collect from each AWS service.
 Visit the page for each individual AWS integration to see details about exported fields.
 
-| Service                                               | Metrics | Logs    |
-| ----------------------------------------------------- |:-------:|:-------:|
-| [Billing](/integrations/aws/billing/)                 |    x    |         |
-| [CloudFront](/integrations/aws/cloudfront/)           |         |    x    |
-| [CloudTrail](/integrations/aws/cloudtrail/)           |         |    x    |
-| [CloudWatch](/integrations/aws/cloudwatch/)           |    x    |    x    |
-| [DynamoDB](/integrations/aws/dynamodb/)               |    x    |         |
-| [EBS](/integrations/aws/ebs/)                         |    x    |         |
-| [EC2](/integrations/aws/ec2/)                         |    x    |    x    |
-| [ELB](/integrations/aws/elb/)                         |    x    |    x    |
-| [Fargate](/integrations/awsfargate/)                  |    x    |         |
-| [Network Firewall](/integrations/aws/firewall/)       |    x    |    x    |
-| [Lambda](/integrations/aws/lambda/)                   |    x    |         |
-| [NAT Gateway](/integrations/aws/natgateway/)          |    x    |         |
-| [RDS](/integrations/aws/rds/)                         |    x    |         |
-| [Route 53](/integrations/aws/route53/)                |         |    x    |
-| [S3](/integrations/aws/s3/)                           |    x    |    x    |
-| [S3 Storage Lens](/integrations/aws/s3_storage_lens/) |    x    |         |
-| [SNS](/integrations/aws/sns/)                         |    x    |         |
-| [SQS](/integrations/aws/sqs/)                         |    x    |         |
-| [Transit Gateway](/integrations/aws/transitgateway/)  |    x    |         |
-| [Usage](/integrations/aws/usage/)                     |    x    |         |
-| [VPC Flow](/integrations/aws/vpcflow/)                |         |    x    |
-| [VPN](/integrations/aws/vpn/)                         |    x    |         |
-| [WAF](/integrations/aws/waf/)                         |         |    x    |
-| [Custom](/integrations/aws_logs/)                     |         |    x    |
+| Service          | Metrics | Logs    |
+| ---------------- |:-------:|:-------:|
+| Billing          |    x    |         |
+| CloudFront       |         |    x    |
+| CloudTrail       |         |    x    |
+| CloudWatch       |    x    |    x    |
+| DynamoDB         |    x    |         |
+| EBS              |    x    |         |
+| EC2              |    x    |    x    |
+| ELB              |    x    |    x    |
+| Fargate          |    x    |         |
+| Network Firewall |    x    |    x    |
+| Lambda           |    x    |         |
+| NAT Gateway      |    x    |         |
+| RDS              |    x    |         |
+| Route 53         |         |    x    |
+| S3               |    x    |    x    |
+| S3 Storage Lens  |    x    |         |
+| SNS              |    x    |         |
+| SQS              |    x    |         |
+| Transit Gateway  |    x    |         |
+| Usage            |    x    |         |
+| VPC Flow         |         |    x    |
+| VPN              |    x    |         |
+| WAF              |         |    x    |
+| Custom           |         |    x    |
