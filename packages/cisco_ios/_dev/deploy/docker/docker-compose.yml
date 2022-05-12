@@ -6,6 +6,11 @@ services:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  cisco-ios-tls:
+    image: docker.elastic.co/observability/stream:v0.6.2
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command: log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9515 -p=tls --insecure /sample_logs/cisco-ios.log
   cisco-ios-tcp:
     image: docker.elastic.co/observability/stream:v0.6.2
     volumes:
