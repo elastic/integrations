@@ -16,6 +16,14 @@ processors:
         - json.alerts
       ignore_missing: true
       if: "ctx.json?.alerts == null || ctx.json?.alerts instanceof List"
+  - fingerprint:
+      fields:
+        - json.alerts.alertId
+        - json.alerts.creationTime
+        - json.alerts.entities.deviceId
+        - json.alerts.entities.evidenceCreationTime
+      target_field: _id
+      ignore_missing: true
   - date:
       field: json.alerts.entities.evidenceCreationTime
       target_field: json.alerts.entities.evidenceCreationTime
