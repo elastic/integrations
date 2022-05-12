@@ -11,10 +11,10 @@ processors:
       ignore_missing: true
   - set:
       field: event.type
-      value: flow
+      value: connection
   - set:
       field: event.category
-      value: network_traffic
+      value: network
   - drop:
       if: 'ctx.event?.original.startsWith("version") || ctx.event?.original.startsWith("instance-id")'
   - script:
@@ -95,11 +95,11 @@ processors:
         handleMap(ctx.aws);
   - set:
       field: event.outcome
-      value: allow
+      value: success
       if: ctx.aws?.vpcflow?.action == "ACCEPT"
   - set:
       field: event.outcome
-      value: deny
+      value: failure
       if: ctx.aws?.vpcflow?.action == "REJECT"
   - rename:
       field: aws.vpcflow.srcaddr

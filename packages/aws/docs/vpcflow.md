@@ -184,9 +184,9 @@ An example event for `vpcflow` looks as following:
         "kind": "event",
         "start": "2016-10-31T11:35:08.000Z",
         "end": "2016-10-31T11:37:00.000Z",
-        "type": "flow",
-        "category": "network_traffic",
-        "outcome": "allow"
+        "type": "connection",
+        "category": "network",
+        "outcome": "success"
     },
     "aws": {
         "vpcflow": {
