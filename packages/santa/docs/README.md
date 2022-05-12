@@ -168,6 +168,10 @@ An example event for `log` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
+| file.target_path | Target path for symlinks. | keyword |
+| file.target_path.text | Multi-field of `file.target_path`. | match_only_text |
 | file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
@@ -196,6 +200,8 @@ An example event for `log` looks as following:
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.hash.sha256 | SHA256 hash. | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.pid | Process id. | long |
 | process.pid | Process id. | long |
 | process.start | The time the process started. | date |
@@ -205,6 +211,7 @@ An example event for `log` looks as following:
 | santa.certificate.common_name | Common name from code signing certificate. | keyword |
 | santa.certificate.sha256 | SHA256 hash of code signing certificate. | keyword |
 | santa.decision | Decision that santad took. | keyword |
+| santa.disk.appearance | Timestamp for volume operation. | date |
 | santa.disk.bsdname | The disk BSD name. | keyword |
 | santa.disk.bus | The disk bus protocol. | keyword |
 | santa.disk.fs | The disk volume kind (filesystem type). | keyword |
@@ -212,6 +219,7 @@ An example event for `log` looks as following:
 | santa.disk.mount | The disk volume path. | keyword |
 | santa.disk.serial | The disk serial number. | keyword |
 | santa.disk.volume | The volume name. | keyword |
+| santa.explain | Further details for the decision. | keyword |
 | santa.mode | Operating mode of Santa. | keyword |
 | santa.reason | Reason for the decision. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
