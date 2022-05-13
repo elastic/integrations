@@ -233,6 +233,7 @@ An example event for `audit` looks as following:
 | o365.audit.ClientIP |  | keyword |
 | o365.audit.ClientIPAddress |  | keyword |
 | o365.audit.ClientInfoString |  | keyword |
+| o365.audit.ClientRequestId |  | keyword |
 | o365.audit.Comments |  | text |
 | o365.audit.CorrelationId |  | keyword |
 | o365.audit.CreationTime |  | keyword |
