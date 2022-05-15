@@ -12,4 +12,6 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 
 ### PAN-OS
 
+{{event "panos"}}
+
 {{fields "panos"}}
