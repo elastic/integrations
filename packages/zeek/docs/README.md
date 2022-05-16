@@ -1422,7 +1422,7 @@ contains kerberos data.
 
 ### known_certs
 
-The `known_certs` dataset captures information about SSL/TLS certificates seen on the local network.
+The `known_certs` dataset captures information about SSL/TLS certificates seen on the local network. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-certs-log) for more details.
 
 **Exported fields**
 
@@ -1502,7 +1502,7 @@ The `known_certs` dataset captures information about SSL/TLS certificates seen o
 
 ### known_hosts
 
-The `known_hosts` dataset captures information about SSL/TLS certificates seen on the local network.
+The `known_hosts` dataset simply records a timestamp and an IP address when Zeek observes a new system on the local network.. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-hosts-log) for more details.
 
 **Exported fields**
 
@@ -1569,7 +1569,7 @@ The `known_hosts` dataset captures information about SSL/TLS certificates seen o
 
 ### known_services
 
-The `known_services` dataset captures information about SSL/TLS certificates seen on the local network.
+The `known_services` dataset records a timestamp, IP, port number, protocol, and service (if available) when Zeek observes a system offering a new service on the local network. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-services-log) for more details.
 
 **Exported fields**
 
@@ -3540,7 +3540,7 @@ SOCKS proxy requests.
 
 ### software
 
-The `software` dataset collects details on applications operated by the hosts it sees on the local network.
+The `software` dataset collects details on applications operated by the hosts it sees on the local network. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#software-log) for more details.
 
 **Exported fields**
 
