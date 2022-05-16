@@ -6,7 +6,7 @@ Use the Windows integration to collect metrics and logs from your machine.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
 For example, if you wanted to know if a Windows service unexpectedly stops running, you could install the Windows integration to send service metrics to Elastic.
-Then, you could view real-time changes to to service status in Kibana's _[Metrics Windows] Services_ dashboard.
+Then, you could view real-time changes to service status in Kibana's _[Metrics Windows] Services_ dashboard.
 
 ## Data types
 
@@ -20,7 +20,7 @@ See more details in the [Logs reference](#logs-reference).
 Metric datasets collected by the Windows integration include service details and performance counter values.
 See more details in the [Metrics reference](#metrics-reference).
 
-Note: for 7.11, `security`, `application` and `system` logs have been moved to the system package.
+Note: for 7.11, `security`, `application`, and `system` logs have been moved to the system package.
 
 ## Requirements
 
