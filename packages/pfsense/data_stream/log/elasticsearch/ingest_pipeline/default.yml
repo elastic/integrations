@@ -24,13 +24,14 @@ processors:
         - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP} %{PF_SEQ_ID}?%{GREEDYDATA:message}'
       pattern_definitions:
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>(\d )?'
-        "PF_SEQ_ID": '\[%{WORD}%{SPACE}%{WORD}%{DATA}\]%{SPACE}'
+        PF_SEQ_ID: '\[%{WORD}%{SPACE}%{WORD}%{DATA}\]%{SPACE}'
         BSD_TIMESTAMP_FORMAT: '%{SYSLOGTIMESTAMP:_tmp.timestamp}(%{SPACE}%{OBSERVER})?%{SPACE}%{PROCESS}(\[%{POSINT:process.pid:long}\])?:'
         SYSLOG_TIMESTAMP_FORMAT: '%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}%{OBSERVER}%{SPACE}%{PROCESS}%{SPACE}(%{POSINT:process.pid:long}|-) - -'
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         TIMESTAMP: '(?:%{BSD_TIMESTAMP_FORMAT}|%{SYSLOG_TIMESTAMP_FORMAT})'
         OBSERVER: '(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})'
-        PROCESS: '(\(%{DATA:process.name}\)|(%{UNIXPATH}/)?%{WORD:process.name})'
+        WORD_WITH_DOT: '(?:[A-Za-z0-9_.-]+)'
+        PROCESS: '(\(%{DATA:process.name}\)|(%{UNIXPATH}/)?%{WORD_WITH_DOT:process.name})'
   - date:
       if: ctx?._tmp.timestamp8601 != null
       field: _tmp.timestamp8601
