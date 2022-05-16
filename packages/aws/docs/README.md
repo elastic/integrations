@@ -6,8 +6,6 @@ Use the AWS integration to collect metrics and logs across many AWS services man
 Visualize that data in Kibana, create alerts to notify you if something goes wrong,
 and reference data when troubleshooting an issue.
 
-<!-- Example ?? -->
-
 ## Data types
 
 The AWS integration collects two types of data, logs and metrics, across many AWS services.
@@ -87,15 +85,11 @@ you will provide two advanced options to look up the access keys in the shared c
 * `shared_credential_file`: The directory of the shared credentials file.
 
 **Note**: If you don't provide values for all keys, the integration will use defaults:
-- If `access_key_id`, `secret_access_key` and `role_arn` are all not provided, then
-the package will check for `credential_profile_name`.
+- If `access_key_id`, `secret_access_key` and `role_arn` are all not provided, then the package will check for `credential_profile_name`.
 - If there is no `credential_profile_name` given, the default profile will be used.
 - If `shared_credential_file` is empty, the default directory will be used.
   - In Windows, shared credentials file is located at `C:\Users\<yourUserName>\.aws\credentials`.
   - For Linux, macOS, or Unix, the file is located at `~/.aws/credentials`.
-
-<!-- i'm not sure what this does... -->
-<!-- * `endpoint`: URL of the entry point for an AWS web service. -->
 
 #### Use an IAM role Amazon Resource Name (ARN)
 
