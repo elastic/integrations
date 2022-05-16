@@ -3169,13 +3169,13 @@ An example event for `sip` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T08:32:14.536Z",
+    "@timestamp": "2022-05-13T07:10:35.715Z",
     "agent": {
-        "ephemeral_id": "ee3aeba6-2bd9-4a89-840a-32af72217a7a",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "008322ce-0d84-45f0-beaf-153cf4786013",
+        "id": "a82e5ec9-4d24-4491-8d66-470aa321ddae",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "client": {
         "ip": "10.0.2.20",
@@ -3194,48 +3194,47 @@ An example event for `sip` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "a82e5ec9-4d24-4491-8d66-470aa321ddae",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "event": {
         "action": "sip-invite",
         "agent_id_status": "verified",
         "category": [
-            "network",
-            "protocol"
+            "network"
         ],
         "dataset": "network_traffic.sip",
         "duration": 0,
-        "end": "2022-03-09T08:32:14.536Z",
-        "ingested": "2022-03-09T08:32:15Z",
+        "end": "2022-05-13T07:10:35.715Z",
+        "ingested": "2022-05-13T07:10:39Z",
         "kind": "event",
         "original": "INVITE sip:test@10.0.2.15:5060 SIP/2.0\r\nVia: SIP/2.0/UDP 10.0.2.20:5060;branch=z9hG4bK-2187-1-0\r\nFrom: \"DVI4/8000\" \u003csip:sipp@10.0.2.20:5060\u003e;tag=1\r\nTo: test \u003csip:test@10.0.2.15:5060\u003e\r\nCall-ID: 1-2187@10.0.2.20\r\nCSeq: 1 INVITE\r\nContact: sip:sipp@10.0.2.20:5060\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length:   123\r\n\r\nv=0\r\no=- 42 42 IN IP4 10.0.2.20\r\ns=-\r\nc=IN IP4 10.0.2.20\r\nt=0 0\r\nm=audio 6000 RTP/AVP 5\r\na=rtpmap:5 DVI4/8000\r\na=recvonly\r\n",
         "sequence": 1,
-        "start": "2022-03-09T08:32:14.536Z",
+        "start": "2022-05-13T07:10:35.715Z",
         "type": [
             "info"
         ]
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "network": {
