@@ -19,7 +19,7 @@ Access logs collects the Apache access logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
+| apache.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | ip |
 | apache.access.ssl.cipher | SSL cipher name. - name: nginx.access | keyword |
 | apache.access.ssl.protocol | SSL protocol version. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
