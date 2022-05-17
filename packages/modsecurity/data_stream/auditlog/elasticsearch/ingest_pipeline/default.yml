@@ -16,6 +16,7 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+      allow_duplicate_keys: true
 # parse date
   - set:
      field: _temps.date
@@ -24,12 +25,14 @@ processors:
   - set:
      field: _temps.date
      if: ctx?.tz_offset == null
-     value: '{{json.transaction.time_stamp}}{{event.timezone }}'
+     value: '{{json.transaction.time_stamp}}{{event.timezone}}'
   - date:
      field: _temps.date
      formats:
         - E MMM d HH:mm:ss yyyyZ
         - E MMM d HH:mm:ss yyyyXXX
+        - E MMM  d HH:mm:ss yyyyZ
+        - E MMM  d HH:mm:ss yyyyXXX
 # rename ecs
   - rename:
       field: json.transaction.client_ip
