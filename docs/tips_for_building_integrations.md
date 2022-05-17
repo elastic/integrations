@@ -47,6 +47,8 @@ $ ./elastic-package help
 
    Good candidates for a team: `elastic/integrations`, `elastic/security-external-integrations`
 
+   Update the `.github/CODEOWNERS` file accordingly.
+
 ## All integrations
 
 ### Development

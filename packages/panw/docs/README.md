@@ -1,6 +1,6 @@
 # Palo Alto Network Integration
 
-This integration is for Palo Alto Networks PAN-OS firewall monitoring logs received over Syslog or read from a file. It currently supports messages of Traffic and Threat types.
+This integration is for Palo Alto Networks PAN-OS firewall monitoring logs received over Syslog or read from a file. It currently supports messages of [GlobalProtect](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/globalprotect-log-fields.html), [HIP Match](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/hip-match-log-fields.html), [Threat](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/threat-log-fields.html), [Traffic](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/traffic-log-fields.html) and [User-ID](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/user-id-log-fields.html) types.
 
 ## Compatibility
 
@@ -11,6 +11,203 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 ## Logs
 
 ### PAN-OS
+
+An example event for `panos` looks as following:
+
+```json
+{
+    "@timestamp": "2018-11-30T16:09:07.000Z",
+    "agent": {
+        "ephemeral_id": "ff87971e-45e3-4ef8-8517-bd986fd8e553",
+        "id": "69c5b3bb-a0c8-407c-9f6f-166c94a2d63f",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.2.0"
+    },
+    "data_stream": {
+        "dataset": "panw.panos",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 5976,
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "name": "United States",
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.1",
+        "nat": {
+            "ip": "175.16.199.1",
+            "port": 443
+        },
+        "packets": 20,
+        "port": 443
+    },
+    "ecs": {
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "69c5b3bb-a0c8-407c-9f6f-166c94a2d63f",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
+    "event": {
+        "action": "flow_terminated",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "created": "2018-11-30T16:09:07.000Z",
+        "dataset": "panw.panos",
+        "duration": 586000000000,
+        "end": "2018-11-30T16:08:50.000Z",
+        "ingested": "2022-05-15T06:01:30Z",
+        "kind": "event",
+        "outcome": "success",
+        "start": "2018-11-30T15:59:04.000Z",
+        "timezone": "+00:00",
+        "type": [
+            "allowed",
+            "end",
+            "connection"
+        ]
+    },
+    "hostname": "PA-220",
+    "input": {
+        "type": "syslog"
+    },
+    "labels": {
+        "nat_translated": true
+    },
+    "log": {
+        "source": {
+            "address": "192.168.208.4:47747"
+        }
+    },
+    "message": "192.168.15.207,175.16.199.1,192.168.1.63,175.16.199.1,new_outbound_from_trust,,,apple-maps,vsys1,trust,untrust,ethernet1/2,ethernet1/1,send_to_mac,2018/11/30 16:09:07,22751,1,55113,443,16418,443,0x400053,tcp,allow,7734,1758,5976,36,2018/11/30 15:59:04,586,computer-and-internet-info,0,32091112,0x0,192.168.0.0-192.168.255.255,United States,0,16,20,tcp-fin,0,0,0,0,,PA-220,from-policy,,,0,,0,,N/A,0,0,0,0",
+    "network": {
+        "application": "apple-maps",
+        "bytes": 7734,
+        "community_id": [
+            "1:La5Jgm/PJBlaHF8BtgJSyZEmW9E=",
+            "1:sKYRL+yp3SWr5aT5SC1cvyWNnnM="
+        ],
+        "packets": 36,
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "observer": {
+        "egress": {
+            "interface": {
+                "name": "ethernet1/1"
+            },
+            "zone": "untrust"
+        },
+        "hostname": "PA-220",
+        "ingress": {
+            "interface": {
+                "name": "ethernet1/2"
+            },
+            "zone": "trust"
+        },
+        "product": "PAN-OS",
+        "serial_number": "012801096514",
+        "type": "firewall",
+        "vendor": "Palo Alto Networks"
+    },
+    "panw": {
+        "panos": {
+            "action": "allow",
+            "action_flags": "0x0",
+            "action_source": "from-policy",
+            "destination": {
+                "nat": {
+                    "ip": "175.16.199.1",
+                    "port": 443
+                }
+            },
+            "device_group_hierarchy1": "0",
+            "device_group_hierarchy2": "0",
+            "device_group_hierarchy3": "0",
+            "device_group_hierarchy4": "0",
+            "endreason": "tcp-fin",
+            "flow_id": "22751",
+            "imsi": "0",
+            "log_profile": "send_to_mac",
+            "network": {
+                "nat": {
+                    "community_id": "1:sKYRL+yp3SWr5aT5SC1cvyWNnnM="
+                }
+            },
+            "parent_session": {
+                "id": "0"
+            },
+            "related_vsys": "vsys1",
+            "repeat_count": 1,
+            "ruleset": "new_outbound_from_trust",
+            "scp": {
+                "assoc_id": "0",
+                "chunks": 0,
+                "chunks_received": 0,
+                "chunks_sent": 0
+            },
+            "sequence_number": 32091112,
+            "source": {
+                "nat": {
+                    "ip": "192.168.1.63",
+                    "port": 16418
+                }
+            },
+            "sub_type": "end",
+            "tunnel_type": "N/A",
+            "type": "TRAFFIC",
+            "url": {
+                "category": "computer-and-internet-info"
+            }
+        }
+    },
+    "related": {
+        "hosts": [
+            "PA-220"
+        ],
+        "ip": [
+            "192.168.15.207",
+            "175.16.199.1",
+            "192.168.1.63"
+        ]
+    },
+    "rule": {
+        "name": "new_outbound_from_trust"
+    },
+    "source": {
+        "bytes": 1758,
+        "geo": {
+            "name": "192.168.0.0-192.168.255.255"
+        },
+        "ip": "192.168.15.207",
+        "nat": {
+            "ip": "192.168.1.63",
+            "port": 16418
+        },
+        "packets": 16,
+        "port": 55113
+    },
+    "syslog": {},
+    "tags": [
+        "panw-panos",
+        "forwarded"
+    ]
+}
+```
 
 **Exported fields**
 
@@ -24,6 +221,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | client.packets | Packets sent from the client to the server. | long |
 | client.port | Port of the client. | long |
 | client.user.name | Short name or login of the user. | keyword |
+| client.user.name.text | Multi-field of `client.user.name`. | match_only_text |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -43,6 +241,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
@@ -59,6 +258,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | destination.port | Port of the destination. | long |
 | destination.user.email | User email address. | keyword |
 | destination.user.name | Short name or login of the user. | keyword |
+| destination.user.name.text | Multi-field of `destination.user.name`. | match_only_text |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
@@ -67,7 +267,6 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -89,6 +288,7 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -112,6 +312,13 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
+| log.syslog.facility.name | The Syslog text-based facility of the log event, if available. | keyword |
+| log.syslog.hostname | The hostname, FQDN, or IP of the machine that originally sent the Syslog message. This is sourced from the hostname field of the syslog header. Depending on the environment, this value may be different from the host that handled the event, especially if the host handling the events is acting as a collector. | keyword |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
+| log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
+| log.syslog.version | The version of the Syslog protocol specification. Only applicable for RFC 5424 messages. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
@@ -133,7 +340,15 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.action | Action taken for the session. | keyword |
 | panw.panos.action_flags | 32-bit field that provides details on session, details about specific values is found in the Palo Alto Traffic Field documentation. | keyword |
 | panw.panos.action_source | Specifies whether the action taken to allow or block an application was defined in the application or in policy. The actions can be allow, deny, drop, reset- server, reset-client or reset-both for the session. | keyword |
+| panw.panos.attempted_gateways | The fields that are collected for each gateway connection attempt with the gateway name, SSL response time, and priority | keyword |
+| panw.panos.auth_method | A string showing the authentication type. | keyword |
+| panw.panos.client_ver | The client’s GlobalProtect app version. | keyword |
+| panw.panos.connect_method | A string showing the how the GlobalProtect app connects to Gateway. | keyword |
 | panw.panos.content_version | Applications and Threats version on your firewall when the log was generated. | keyword |
+| panw.panos.datasource | Source from which mapping information is collected. | keyword |
+| panw.panos.datasourcename | User-ID source that sends the IP (Port)-User Mapping. | keyword |
+| panw.panos.datasourcetype | Mechanism used to identify the IP/User mappings within a data source. | keyword |
+| panw.panos.description | Additional information for any event that has occurred. | keyword |
 | panw.panos.destination.interface | Destination interface for this session. | keyword |
 | panw.panos.destination.nat.ip | Post-NAT destination IP. | ip |
 | panw.panos.destination.nat.port | Post-NAT destination port. | long |
@@ -144,6 +359,10 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.device_group_hierarchy3 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
 | panw.panos.device_group_hierarchy4 | A sequence of identification numbers that indicate the device group’s location within a device group hierarchy. The firewall (or virtual system) generating the log includes the identification number of each ancestor in its device group hierarchy. The shared device group (level 0) is not included in this structure. | keyword |
 | panw.panos.endreason | The reason a session terminated. | keyword |
+| panw.panos.error_code | An integer associated with any errors that occurred. | integer |
+| panw.panos.factorcompletiontime | Time the authentication was completed. | date |
+| panw.panos.factorno | Indicates the use of primary authentication (1) or additional factors (2, 3). | integer |
+| panw.panos.factortype | Vendor used to authenticate a user when Multi Factor authentication is present. | keyword |
 | panw.panos.file.hash | Binary hash for a threat file sent to be analyzed by the WildFire service. | keyword |
 | panw.panos.flow_id | Internal numeric identifier for each session. | keyword |
 | panw.panos.http_content_type | Content type of the HTTP response data | keyword |
@@ -151,11 +370,14 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.imei | International Mobile Equipment Identity (IMEI) is a unique 15 or 16 digit number allocated to each mobile station equipment. | keyword |
 | panw.panos.imsi | International Mobile Subscriber Identity (IMSI) is a unique number allocated to each mobile subscriber in the GSM/UMTS/EPS system | keyword |
 | panw.panos.log_profile | Log Forwarding Profile that was applied to the session. | keyword |
+| panw.panos.matchname | Name of the HIP object or profile. | keyword |
+| panw.panos.matchtype | Whether the document represents a HIP object or a HIP profile. | keyword |
 | panw.panos.network.nat.community_id | Community ID flow-hash for the NAT 5-tuple. | keyword |
 | panw.panos.network.pcap_id | Packet capture ID for a threat. | keyword |
 | panw.panos.parent_session.id | ID of the session in which this session is tunneled. Applies to inner tunnel (if two levels of tunneling) or inside content (if one level of tunneling) only. | keyword |
 | panw.panos.parent_session.start_time | Date that the parent tunnel session began. | date |
 | panw.panos.payload_protocol_id | ID of the protocol for the payload in the data portion of the data chunk. | keyword |
+| panw.panos.priority | The priority order of the gateway that is based on highest (1), high (2), medium (3), low (4), or lowest (5) to which the GlobalProtect app can connect. | keyword |
 | panw.panos.related_vsys | Virtual System associated with the session. | keyword |
 | panw.panos.repeat_count | Number of sessions with same Source IP, Destination IP, Application, and Subtype seen within 5 seconds. | long |
 | panw.panos.ruleset | Name of the rule that matched this session. | keyword |
@@ -163,21 +385,28 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | panw.panos.scp.chunks | Sum of SCTP chunks sent and received for an association. | long |
 | panw.panos.scp.chunks_received | Number of SCTP chunks received for an association. | long |
 | panw.panos.scp.chunks_sent | Number of SCTP chunks sent for an association. | long |
+| panw.panos.selection_type | The connection method that is selected to connect to the gateway. | keyword |
 | panw.panos.sequence_number | Log entry identifier that is incremented sequentially. Unique for each log type. | long |
+| panw.panos.serial_number | The serial number of the user’s machine or device. | keyword |
 | panw.panos.source.interface | Source interface for this session. | keyword |
 | panw.panos.source.nat.ip | Post-NAT source IP. | ip |
 | panw.panos.source.nat.port | Post-NAT source port. | long |
 | panw.panos.source.zone | Source zone for this session. | keyword |
 | panw.panos.source_vm_uuid | Identifies the source universal unique identifier for a guest virtual machine in the VMware NSX environment. | keyword |
+| panw.panos.stage | A string showing the stage of the connection. | keyword |
 | panw.panos.sub_type | Specifies the sub type of the log. | keyword |
 | panw.panos.threat.id | Palo Alto Networks identifier for the threat. | keyword |
 | panw.panos.threat.name | Palo Alto Networks name for the threat. | keyword |
 | panw.panos.threat.resource | URL or file name for a threat. | keyword |
 | panw.panos.threat_category | Describes threat categories used to classify different types of threat signatures. | keyword |
+| panw.panos.timeout | Timeout after which the IP/User Mappings are cleared. | integer |
 | panw.panos.tunnel_type | Type of tunnel, such as GRE or IPSec. | keyword |
 | panw.panos.type | Specifies the type of the log. | keyword |
+| panw.panos.ugflags | Displays whether the user group that was found during user group mapping. Supported values are: User Group Found—Indicates whether the user could be mapped to a group. Duplicate User—Indicates whether duplicate users were found in a user group. Displays N/A if no user group is found. | keyword |
 | panw.panos.url.category | For threat URLs, it's the URL category. For WildFire, the verdict on the file and is either 'malicious', 'grayware', or 'benign'. | keyword |
 | panw.panos.url_idx | When an application uses TCP keepalives to keep a connection open for a length of time, all the log entries for that session have a single session ID. In such cases, when you have a single threat log (and session ID) that includes multiple URL entries, the url_idx is a counter that allows you to correlate the order of each log entry within the single session. | keyword |
+| panw.panos.virtual_sys | Virtual System associated with the HIP match log. | keyword |
+| panw.panos.vsys_id | A unique identifier for a virtual system on a Palo Alto Networks firewall. | keyword |
 | panw.panos.vsys_name | The name of the virtual system associated with the session; only valid on firewalls enabled for multiple virtual systems. | keyword |
 | panw.panos.wildfire.name | Displays the FQDN of either the WildFire appliance (private) or the WildFire cloud (public) from where the file was uploaded for analysis. | keyword |
 | panw.panos.wildfire.report_id | Identifies the analysis request on the WildFire cloud or the WildFire appliance. | keyword |
@@ -194,9 +423,11 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | server.packets | Packets sent from the server to the client. | long |
 | server.port | Port of the server. | long |
 | server.user.name | Short name or login of the user. | keyword |
+| server.user.name.text | Multi-field of `server.user.name`. | match_only_text |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -211,13 +442,17 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | source.nat.port | Translated port of source based NAT sessions. (e.g. internal client to internet) Typically used with load balancers, firewalls, or routers. | long |
 | source.packets | Packets sent from the source to the destination. | long |
 | source.port | Port of the source. | long |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | source.user.email | User email address. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
+| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
 | syslog.facility | Syslog numeric facility of the event. | long |
 | syslog.facility_label | Syslog text-based facility of the event. | keyword |
 | syslog.priority | Syslog priority of the event. | long |
 | syslog.severity_label | Syslog text-based severity of the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 
