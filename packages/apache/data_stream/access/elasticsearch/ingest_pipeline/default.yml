@@ -47,18 +47,19 @@ processors:
           CIDR class_b_network = new CIDR('172.16.0.0/12');
           CIDR class_c_network = new CIDR('192.168.0.0/16');
 
-          return class_a_network.contains(ip) || class_b_network.contains(ip) || class_c_network.contains(ip);
+          try {
+            return class_a_network.contains(ip) || class_b_network.contains(ip) || class_c_network.contains(ip);
+          } catch (IllegalArgumentException e) {
+            return false;
+          }
         }
 
         try {
-          if (ctx?.source == null){
+          if (ctx.source == null) {
             Map map = new HashMap();
             ctx.put("source", map);
           }
-          ctx.source.address = null;
-          if (ctx.apache.access.remote_ip_list == null) {
-            return;
-          }
+
           def found = false;
           for (def item : ctx.apache.access.remote_ip_list) {
             if (!isPrivateCIDR(item)) {
@@ -94,11 +95,11 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
+      if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
       field: event.outcome
       value: failure
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code > 399"
+      if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code > 399"
   - grok:
       field: source.address
       ignore_missing: true
@@ -150,10 +151,10 @@ processors:
   - set:
       field: tls.cipher
       value: '{{apache.access.ssl.cipher}}'
-      if: ctx?.apache?.access?.ssl?.cipher != null
+      if: ctx.apache?.access?.ssl?.cipher != null
   - script:
       lang: painless
-      if: ctx?.apache?.access?.ssl?.protocol != null
+      if: ctx.apache?.access?.ssl?.protocol != null
       source: >-
         def parts = ctx.apache.access.ssl.protocol.toLowerCase().splitOnToken("v");
         if (parts.length != 2) {
@@ -191,7 +192,7 @@ processors:
         handleMap(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
