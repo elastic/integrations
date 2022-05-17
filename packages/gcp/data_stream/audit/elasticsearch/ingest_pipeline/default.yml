@@ -48,6 +48,10 @@ processors:
       field: "json.protoPayload.@type"
       target_field: gcp.audit.type
       ignore_missing: true
+
+##
+# Process authenticationInfo object
+##
   - rename:
       field: json.protoPayload.authenticationInfo.principalEmail
       target_field: gcp.audit.authentication_info.principal_email
@@ -60,6 +64,14 @@ processors:
       field: json.protoPayload.authenticationInfo.authoritySelector
       target_field: gcp.audit.authentication_info.authority_selector
       ignore_missing: true
+  - rename:
+      field: json.protoPayload.authenticationInfo.authoritySelector
+      target_field: gcp.audit.authentication_info.authority_selector
+      ignore_missing: true
+
+##
+# authorization info
+##
   - rename:
       field: json.protoPayload.authorizationInfo
       target_field: gcp.audit.authorization_info
@@ -77,38 +89,19 @@ processors:
       target_field: gcp.audit.num_response_items
       type: long
       ignore_missing: true
-  - rename:
-      field: "json.protoPayload.request.@type"
-      target_field: gcp.audit.request.proto_name
-      ignore_missing: true
-  - rename:
-      field: json.protoPayload.request.filter
-      target_field: gcp.audit.request.filter
-      ignore_missing: true
-  - rename:
-      field: json.protoPayload.request.name
-      target_field: gcp.audit.request.name
-      ignore_missing: true
-  - rename:
-      field: json.protoPayload.request.resourceName
-      target_field: gcp.audit.request.resource_name
-      ignore_missing: true
+  - set:
+      field: gcp.audit.request
+      copy_from: json.protoPayload.request
+      if: ctx.json?.protoPayload?.request != null
   - convert:
       type: ip
       field: json.protoPayload.requestMetadata.callerIp
+      target_field: source.ip
       ignore_missing: true
       on_failure:
         - rename:
             field: json.protoPayload.requestMetadata.callerIp
-            target_field: gcp.audit.request_metadata.raw.caller_ip
-  - rename:
-      field: json.protoPayload.requestMetadata.callerIp
-      target_field: gcp.audit.request_metadata.caller_ip
-      ignore_missing: true
-  - set:
-      field: source.ip
-      value: "{{gcp.audit.request_metadata.caller_ip}}"
-      if: ctx?.gcp?.audit?.request_metadata?.caller_ip != null
+            target_field: source.address
   - rename:
       field: json.protoPayload.requestMetadata.callerSuppliedUserAgent
       target_field: gcp.audit.request_metadata.caller_supplied_user_agent
@@ -117,35 +110,10 @@ processors:
       field: user_agent.original
       value: "{{gcp.audit.request_metadata.caller_supplied_user_agent}}"
       if: ctx?.gcp?.audit?.request_metadata?.caller_supplied_user_agent != null
-  - rename:
-      field: "json.protoPayload.response.@type"
-      target_field: gcp.audit.response.proto_name
-      ignore_missing: true
-  - rename:
-      field: json.protoPayload.response.status
-      target_field: gcp.audit.response.status
-      ignore_missing: true
-  - rename:
-      field: gcp.audit.response.status
-      target_field: gcp.audit.response.status.value
-      if: ctx?.gcp?.audit?.response?.status instanceof String
-      ignore_missing: true
-  - rename:
-      field: json.protoPayload.response.details.group
-      target_field: gcp.audit.response.details.group
-      ignore_missing: true
-  - rename:
-      field: json.protoPayload.response.details.kind
-      target_field: gcp.audit.response.details.kind
-      ignore_missing: true
-  - rename:
-      field: json.protoPayload.response.details.name
-      target_field: gcp.audit.response.details.name
-      ignore_missing: true
-  - rename:
-      field: json.protoPayload.response.details.uid
-      target_field: gcp.audit.response.details.uid
-      ignore_missing: true
+  - set:
+      field: gcp.audit.response
+      copy_from: json.protoPayload.response
+      if: ctx.json?.protoPayload?.response != null
   - rename:
       field: json.protoPayload.resourceName
       target_field: gcp.audit.resource_name

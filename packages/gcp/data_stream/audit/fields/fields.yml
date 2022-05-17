@@ -14,6 +14,9 @@
         - name: authority_selector
           type: keyword
           description: "The authority selector specified by the requestor, if any. It is not guaranteed  that the principal was allowed to use this authority."
+        - name: principal_subject
+          type: keyword
+          description: "String representation of identity of requesting party. Populated for both first and third party identities. Only present for APIs that support third-party identities."
     - name: authorization_info
       type: array
       description: |
@@ -49,22 +52,7 @@
       description: |
         The number of items returned from a List or Query API method, if applicable.
     - name: request
-      type: group
-      fields:
-        - name: proto_name
-          type: keyword
-          description: |
-            Type property of the request.
-        - name: filter
-          type: keyword
-          description: |
-            Filter of the request.
-        - name: name
-          type: keyword
-          description: "Name of the request."
-        - name: resource_name
-          type: keyword
-          description: "Name of the request resource."
+      type: flattened
     - name: request_metadata
       type: group
       fields:
@@ -79,37 +67,7 @@
           description: |
             The user agent of the caller. This information is not authenticated and  should be treated accordingly.
     - name: response
-      type: group
-      fields:
-        - name: proto_name
-          type: keyword
-          description: |
-            Type property of the response.
-        - name: details
-          type: group
-          fields:
-            - name: group
-              type: keyword
-              description: |
-                The name of the group.
-            - name: kind
-              type: keyword
-              description: |
-                The kind of the response details.
-            - name: name
-              type: keyword
-              description: |
-                The name of the response details.
-            - name: uid
-              type: keyword
-              description: |
-                The uid of the response details.
-        - name: status.allowed
-          type: boolean
-        - name: status.reason
-          type: keyword
-        - name: status.value
-          type: keyword
+      type: flattened
     - name: resource_name
       type: keyword
       description: |
