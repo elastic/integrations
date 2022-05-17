@@ -163,36 +163,33 @@ processors:
       lang: painless
       description: Extracts additional information from src and dst
       params:
-        objects:
-          src:
-            - source
-            - observer.ingress
-          dst:
-            - destination
-            - observer.egress
-        mapping:
-          - [0, ".address"]
-          - [0, ".port"]
-          - [1, ".interface.name"]
-          - [0, ".domain"]
+        src:
+          - source.address
+          - source.port
+          - observer.ingress.interface.name
+          - source.domain
+        dst:
+          - destination.address
+          - destination.port
+          - observer.egress.interface.name
+          - destination.domain
       source: |
         List sets = ctx._temp_.computeIfAbsent("sets", k -> new ArrayList());
         List removes = ctx._temp_.computeIfAbsent("removes", k -> new ArrayList());
-        for (def obj : params.objects.entrySet()) {
-          String value = ctx.sonicwall.firewall[obj.getKey()];
+        for (def field : params.entrySet()) {
+          String value = ctx.sonicwall.firewall[field.getKey()];
           if (value == null) continue;
           String[] parts = value.splitOnToken(":");
-          for ( int i = (int)Math.min(parts.length, params.mapping.size()) - 1
+          List mapping = field.getValue();
+          for ( int i = (int)Math.min(parts.length, mapping.size()) - 1
               ; i>=0
               ; i--) {
-            List m = params.mapping[i];
-            String target = obj.getValue()[m[0]] + m[1];
             sets.add([
-              "target": target,
+              "target": mapping[i],
               "value": parts[i]
             ]);
           }
-          removes.add(obj.getKey());
+          removes.add(field.getKey());
         }
 
 #
