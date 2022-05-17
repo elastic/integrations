@@ -39,30 +39,17 @@ processors:
   - script:
       if: ctx.apache?.access?.remote_ip_list != null && ctx.apache.access.remote_ip_list.length > 0
       lang: painless
+      tag: Get source address
+      description: Extract from remote_ip_list, the first non-private IP to source.address
       source: >-
-        boolean isPrivate(def dot, def ip) {
-          try {
-            StringTokenizer tok = new StringTokenizer(ip, dot);
-            int firstByte = Integer.parseInt(tok.nextToken());
-            int secondByte = Integer.parseInt(tok.nextToken());
-            if (firstByte == 10) {
-              return true;
-            }
-            if (firstByte == 192 && secondByte == 168) {
-              return true;
-            }
-            if (firstByte == 172 && secondByte >= 16 && secondByte <= 31) {
-              return true;
-            }
-            if (firstByte == 127) {
-              return true;
-            }
-            return false;
-          }
-          catch (Exception e) {
-            return false;
-          }
+        boolean isPrivateCIDR(def ip) {
+          CIDR class_a_network = new CIDR('10.0.0.0/8');
+          CIDR class_b_network = new CIDR('172.16.0.0/12');
+          CIDR class_c_network = new CIDR('192.168.0.0/16');
+
+          return class_a_network.contains(ip) || class_b_network.contains(ip) || class_c_network.contains(ip);
         }
+
         try {
           if (ctx?.source == null){
             Map map = new HashMap();
@@ -74,7 +61,7 @@ processors:
           }
           def found = false;
           for (def item : ctx.apache.access.remote_ip_list) {
-            if (!isPrivate(params.dot, item)) {
+            if (!isPrivateCIDR(item)) {
               ctx.source.address = item;
               found = true;
               break;
@@ -87,8 +74,6 @@ processors:
         catch (Exception e) {
           ctx.source.address = null;
         }
-      params:
-        dot: .
   - uri_parts:
       field: _tmp.url_orig
       ignore_failure: true
