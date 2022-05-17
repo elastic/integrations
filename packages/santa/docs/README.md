@@ -65,7 +65,6 @@ An example event for `log` looks as following:
             "pid": 1
         },
         "pid": 71993,
-        "pidversion": 1097732,
         "start": "2022-05-12T11:38:03.923Z"
     },
     "related": {
@@ -86,6 +85,7 @@ An example event for `log` looks as following:
         "decision": "ALLOW",
         "explain": "critical system binary",
         "mode": "M",
+        "pidversion": 1097732,
         "reason": "BINARY"
     },
     "tags": [
@@ -176,6 +176,7 @@ An example event for `log` looks as following:
 | santa.disk.volume | The volume name. | keyword |
 | santa.explain | Further details for the decision. | keyword |
 | santa.mode | Operating mode of Santa. | keyword |
+| santa.pidversion | macOS process identity version. | long |
 | santa.reason | Reason for the decision. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.id | Unique identifier of the user. | keyword |
