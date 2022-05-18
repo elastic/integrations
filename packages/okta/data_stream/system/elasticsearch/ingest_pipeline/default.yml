@@ -270,6 +270,25 @@ processors:
       target_field: okta.debug_context.debug_data.flattened.behaviors
       ignore_missing: true
       ignore_failure: true
+  - dissect:
+      field: okta.debug_context.debug_data.flattened.risk
+      pattern: "{%{okta.debug_context.debug_data.flattened.risk}}"
+      ignore_missing: true
+      ignore_failure: true
+  - kv:
+      field: okta.debug_context.debug_data.flattened.risk
+      field_split: ", "
+      value_split: "="
+      target_field: _risk_object
+      if: ctx.okta?.debug_context?.debug_data?.flattened?.risk != null
+  - remove:
+      field: okta.debug_context.debug_data.flattened.risk
+      if: ctx._risk_object != null
+  - rename:
+      field: _risk_object
+      target_field: okta.debug_context.debug_data.flattened.risk
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.debugContext.debugData.deviceFingerprint
       target_field: okta.debug_context.debug_data.device_fingerprint
@@ -301,13 +320,8 @@ processors:
       if: 'ctx.okta?.debug_context?.debug_data?.flattened?.logOnlySecurityData?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.flattened?.logOnlySecurityData?.risk?.level != ""'
   - set:
       field: okta.debug_context.debug_data.risk_level
-      value: "{{{okta.debug_context.debug_data.flattened.risk}}}"
+      value: "{{{okta.debug_context.debug_data.flattened.risk.level}}}"
       if: 'ctx.okta?.debug_context?.debug_data?.risk_level == null && ctx.okta?.debug_context?.debug_data?.flattened?.risk != null && ctx.okta?.debug_context?.debug_data?.flattened?.risk != ""'
-  - dissect:
-      field: okta.debug_context.debug_data.risk_level
-      pattern: "{%{}=%{okta.debug_context.debug_data.risk_level}}"
-      ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.authenticationContext.authenticationProvider
       target_field: okta.authentication_context.authentication_provider
