@@ -251,9 +251,23 @@ processors:
   - json:
       field: okta.debug_context.debug_data.flattened.logOnlySecurityData
       ignore_failure: true
+  - dissect:
+      field: okta.debug_context.debug_data.flattened.behaviors
+      pattern: "{%{okta.debug_context.debug_data.flattened.behaviors}}"
+      ignore_missing: true
+      ignore_failure: true
+  - kv:
+      field: okta.debug_context.debug_data.flattened.behaviors
+      field_split: ", "
+      value_split: "="
+      target_field: _behaviors_object
+      if: ctx.okta?.debug_context?.debug_data?.flattened?.behaviors != null
+  - remove:
+      field: okta.debug_context.debug_data.flattened.behaviors
+      if: ctx._behaviors_object != null
   - rename:
-      field: okta.debug_context.debug_data.flattened.logOnlySecurityData
-      target_field: okta.debug_context.debug_data.flattened.log_only_security_data
+      field: _behaviors_object
+      target_field: okta.debug_context.debug_data.flattened.behaviors
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -283,8 +297,8 @@ processors:
       ignore_failure: true
   - set:
       field: okta.debug_context.debug_data.risk_level
-      value: "{{{okta.debug_context.debug_data.flattened.log_only_security_data.risk.level}}}"
-      if: 'ctx.okta?.debug_context?.debug_data?.flattened?.log_only_security_data?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.flattened?.log_only_security_data?.risk?.level != ""'
+      value: "{{{okta.debug_context.debug_data.flattened.logOnlySecurityData.risk.level}}}"
+      if: 'ctx.okta?.debug_context?.debug_data?.flattened?.logOnlySecurityData?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.flattened?.logOnlySecurityData?.risk?.level != ""'
   - set:
       field: okta.debug_context.debug_data.risk_level
       value: "{{{okta.debug_context.debug_data.flattened.risk}}}"
