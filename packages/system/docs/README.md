@@ -411,11 +411,11 @@ An example event for `security` looks as following:
 {
     "@timestamp": "2019-11-07T10:37:04.226Z",
     "agent": {
-        "ephemeral_id": "0efb22b5-730e-4431-b563-cbe251d53595",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "aa973fb6-b8fe-427e-a9e9-51c411926db8",
+        "id": "dbc761fd-dec4-4bc7-acec-8e5cb02a0cb6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.1"
     },
     "data_stream": {
         "dataset": "system.security",
@@ -426,9 +426,9 @@ An example event for `security` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
-        "snapshot": false,
-        "version": "8.0.0-beta1"
+        "id": "dbc761fd-dec4-4bc7-acec-8e5cb02a0cb6",
+        "snapshot": true,
+        "version": "8.2.1"
     },
     "event": {
         "action": "logging-service-shutdown",
@@ -437,9 +437,9 @@ An example event for `security` looks as following:
             "process"
         ],
         "code": "1100",
-        "created": "2022-01-12T04:32:11.973Z",
+        "created": "2022-05-18T06:07:07.204Z",
         "dataset": "system.security",
-        "ingested": "2022-01-12T04:32:13Z",
+        "ingested": "2022-05-18T06:07:08Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Eventlog' Guid='{fc65ddd8-d6ef-4962-83d5-6e5cfe9ce148}'/\u003e\u003cEventID\u003e1100\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e103\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x4020000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-11-07T10:37:04.226092500Z'/\u003e\u003cEventRecordID\u003e14257\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='1144' ThreadID='4532'/\u003e\u003cChannel\u003eSecurity\u003c/Channel\u003e\u003cComputer\u003eWIN-41OB2LO92CR.wlbeat.local\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cUserData\u003e\u003cServiceShutdown xmlns='http://manifests.microsoft.com/win/2004/08/windows/eventlog'\u003e\u003c/ServiceShutdown\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "outcome": "success",
@@ -573,7 +573,18 @@ An example event for `security` looks as following:
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
