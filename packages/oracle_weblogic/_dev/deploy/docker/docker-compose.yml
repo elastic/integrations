@@ -1,0 +1,40 @@
+version: '2.2'
+services:
+  wlsadmin:
+    build:
+      context: .
+      dockerfile: ./oracle_weblogic/Dockerfile
+    hostname: wlsadmin
+    user: root
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/jolokia/"]
+      interval: 15s
+      timeout: 30s
+      retries: 40
+    ports:
+      - 7001
+      - 8005
+    volumes:
+      - ./oracle_weblogic/properties/docker-run:/u01/oracle/properties
+      - ${SERVICE_LOGS_DIR}/adminserver:/u01/oracle/user_projects/domains/domain1/servers/admin-server
+  ms-1:
+    build:
+      context: .
+      dockerfile: ./oracle_weblogic/Dockerfile
+    links:
+      - wlsadmin:wlsadmin
+    environment:
+      - MS_NAME=ms-1
+      - JAVA_OPTIONS=$JAVA_OPTIONS -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8007,host=0.0.0.0 -Djavax.management.builder.initial=weblogic.management.jmx.mbeanserver.WLSMBeanServerBuilder
+    user: root
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/jolokia/"]
+      interval: 15s
+      timeout: 30s
+      retries: 40
+    ports:
+      - 8007
+    volumes:
+      - ./oracle_weblogic/properties/docker-run:/u01/oracle/properties
+      - ${SERVICE_LOGS_DIR}/managedserver:/u01/oracle/user_projects/domains/domain1/servers/managed-server1/logs
+    command: startManagedServer.sh
