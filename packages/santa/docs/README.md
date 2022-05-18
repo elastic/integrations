@@ -5,11 +5,11 @@ binaries.
 
 ## Compatibility
 
-The Google Santa integration was tested with logs from Santa 0.9.14.
+The Google Santa integration was tested with logs from Santa 2022.4.
 
 **Google Santa is available for MacOS only.**
 
-The integration is by default configured to read logs from `/var/log/santa.log`.
+The integration is by default configured to read logs from `/var/db/santa/santa.log`.
 
 ## Logs
 
@@ -21,36 +21,17 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2018-12-10T06:45:16.802Z",
-    "agent": {
-        "ephemeral_id": "e9d120ee-3138-47d0-9bf8-5b007a85f20e",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.0.0-beta1"
-    },
-    "data_stream": {
-        "dataset": "santa.log",
-        "namespace": "ep",
-        "type": "logs"
-    },
+    "@timestamp": "2022-05-12T11:38:03.923Z",
     "ecs": {
         "version": "8.2.0"
     },
-    "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
-        "snapshot": false,
-        "version": "8.0.0-beta1"
-    },
     "event": {
         "action": "exec",
-        "agent_id_status": "verified",
         "category": [
             "process"
         ],
-        "dataset": "santa.log",
-        "ingested": "2022-02-02T05:02:06Z",
         "kind": "event",
+        "original": "[2022-05-12T11:38:03.923Z] I santad: action=EXEC|decision=ALLOW|reason=BINARY|explain=critical system binary|sha256=43158bf397bf52001067319c591249307e2862daf8690828c15cdcc1ddf6166d|cert_sha256=d84db96af8c2e60ac4c851a21ec460f6f84e0235beb17d24a78712b9b021ed57|cert_cn=Software Signing|pid=71993|pidversion=1097732|ppid=1|uid=0|user=root|gid=0|group=wheel|mode=M|path=/usr/libexec/xpcproxy|args=xpcproxy com.apple.CoreAuthentication.agent",
         "outcome": "success",
         "type": [
             "start"
@@ -67,57 +48,29 @@ An example event for `log` looks as following:
         "id": "0",
         "name": "wheel"
     },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.19.0.6"
-        ],
-        "mac": [
-            "02:42:ac:13:00:06"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.13.0-27-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
-            "type": "linux",
-            "version": "7 (Core)"
-        }
-    },
-    "input": {
-        "type": "log"
-    },
     "log": {
-        "file": {
-            "path": "/tmp/service_logs/santa.log"
-        },
-        "level": "I",
-        "offset": 0
+        "level": "I"
     },
     "process": {
         "args": [
             "/usr/libexec/xpcproxy",
-            "/usr/sbin/newsyslog"
+            "xpcproxy",
+            "com.apple.CoreAuthentication.agent"
         ],
         "executable": "/usr/libexec/xpcproxy",
         "hash": {
-            "sha256": "c4bc09fd2f248534552f517acf3edb9a635aba2b02e46f49df683ea9b778e5b4"
+            "sha256": "43158bf397bf52001067319c591249307e2862daf8690828c15cdcc1ddf6166d"
         },
         "parent": {
             "pid": 1
         },
-        "pid": 29678,
-        "start": "2018-12-10T06:45:16.802Z"
+        "pid": 71993,
+        "start": "2022-05-12T11:38:03.923Z"
     },
     "related": {
         "hash": [
-            "2aa4b9973b7ba07add447ee4da8b5337c3ee2c3a991911e80e7282e8a751fc32",
-            "c4bc09fd2f248534552f517acf3edb9a635aba2b02e46f49df683ea9b778e5b4"
+            "d84db96af8c2e60ac4c851a21ec460f6f84e0235beb17d24a78712b9b021ed57",
+            "43158bf397bf52001067319c591249307e2862daf8690828c15cdcc1ddf6166d"
         ],
         "user": [
             "root"
@@ -127,14 +80,16 @@ An example event for `log` looks as following:
         "action": "EXEC",
         "certificate": {
             "common_name": "Software Signing",
-            "sha256": "2aa4b9973b7ba07add447ee4da8b5337c3ee2c3a991911e80e7282e8a751fc32"
+            "sha256": "d84db96af8c2e60ac4c851a21ec460f6f84e0235beb17d24a78712b9b021ed57"
         },
         "decision": "ALLOW",
+        "explain": "critical system binary",
         "mode": "M",
-        "reason": "CERT"
+        "pidversion": 1097732,
+        "reason": "BINARY"
     },
     "tags": [
-        "santa-log"
+        "preserve_original_event"
     ],
     "user": {
         "id": "0",
@@ -168,6 +123,10 @@ An example event for `log` looks as following:
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.module | Event module | constant_keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
+| file.target_path | Target path for symlinks. | keyword |
+| file.target_path.text | Multi-field of `file.target_path`. | match_only_text |
 | file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
@@ -196,6 +155,8 @@ An example event for `log` looks as following:
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.hash.sha256 | SHA256 hash. | keyword |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.pid | Process id. | long |
 | process.pid | Process id. | long |
 | process.start | The time the process started. | date |
@@ -205,6 +166,7 @@ An example event for `log` looks as following:
 | santa.certificate.common_name | Common name from code signing certificate. | keyword |
 | santa.certificate.sha256 | SHA256 hash of code signing certificate. | keyword |
 | santa.decision | Decision that santad took. | keyword |
+| santa.disk.appearance | Timestamp for volume operation. | date |
 | santa.disk.bsdname | The disk BSD name. | keyword |
 | santa.disk.bus | The disk bus protocol. | keyword |
 | santa.disk.fs | The disk volume kind (filesystem type). | keyword |
@@ -212,7 +174,9 @@ An example event for `log` looks as following:
 | santa.disk.mount | The disk volume path. | keyword |
 | santa.disk.serial | The disk serial number. | keyword |
 | santa.disk.volume | The volume name. | keyword |
+| santa.explain | Further details for the decision. | keyword |
 | santa.mode | Operating mode of Santa. | keyword |
+| santa.pidversion | macOS process identity version. | long |
 | santa.reason | Reason for the decision. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.id | Unique identifier of the user. | keyword |

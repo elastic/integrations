@@ -5,11 +5,11 @@ binaries.
 
 ## Compatibility
 
-The Google Santa integration was tested with logs from Santa 0.9.14.
+The Google Santa integration was tested with logs from Santa 2022.4.
 
 **Google Santa is available for MacOS only.**
 
-The integration is by default configured to read logs from `/var/log/santa.log`.
+The integration is by default configured to read logs from `/var/db/santa/santa.log`.
 
 ## Logs
 
