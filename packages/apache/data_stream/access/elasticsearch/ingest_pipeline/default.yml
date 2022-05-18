@@ -16,14 +16,10 @@ processors:
   - grok:
       field: event.original
       patterns:
-      - '(%{HOSTNAME:destination.domain} )?%{ADDRESS_LIST:apache.access.remote_ip_list} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
+      - '(%{IPORHOST:destination.domain} )?%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
         "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
         %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
-        "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?'
-      - '%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
-        "(?:%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}|-)?"
-        %{NUMBER:http.response.status_code:long} (?:%{NUMBER:http.response.body.bytes:long}|-)(
-        "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?'
+        "%{DATA:http.request.referrer}")?( "%{DATA:user_agent.original}")?( X-Forwarded-For="%{ADDRESS_LIST:apache.access.remote_addresses}")?'
       - '%{IPORHOST:source.address} - %{DATA:user.name} \[%{HTTPDATE:apache.access.time}\]
         "-" %{NUMBER:http.response.status_code:long} -'
       - \[%{HTTPDATE:apache.access.time}\] %{IPORHOST:source.address} %{DATA:apache.access.ssl.protocol}
@@ -33,14 +29,22 @@ processors:
       pattern_definitions:
         ADDRESS_LIST: (%{IP})("?,?\s*(%{IP}))*
   - split:
-      field: apache.access.remote_ip_list
-      separator: '"?,?\s+'
+      field: apache.access.remote_addresses
+      separator: '"?,\s*'
       ignore_missing: true
+  - set:
+      field: network.forwarded_ip
+      value: "{{{apache.access.remote_addresses.0}}}"
+      if: ctx.apache?.access?.remote_addresses != null && ctx.apache.access.remote_addresses.length > 0
+  - append:
+      field: apache.access.remote_addresses
+      value: ["{{source.address}}"]
+      if: ctx.source?.address != null
   - script:
-      if: ctx.apache?.access?.remote_ip_list != null && ctx.apache.access.remote_ip_list.length > 0
+      if: ctx.apache?.access?.remote_addresses != null && ctx.apache.access.remote_addresses.length > 0
       lang: painless
       tag: Get source address
-      description: Extract from remote_ip_list, the first non-private IP to source.address
+      description: Extract from remote_addresses, the first non-private IP to source.address
       source: >-
         boolean isPrivateCIDR(def ip) {
           CIDR class_a_network = new CIDR('10.0.0.0/8');
@@ -61,7 +65,7 @@ processors:
           }
 
           def found = false;
-          for (def item : ctx.apache.access.remote_ip_list) {
+          for (def item : ctx.apache.access.remote_addresses) {
             if (!isPrivateCIDR(item)) {
               ctx.source.address = item;
               found = true;
@@ -69,7 +73,7 @@ processors:
             }
           }
           if (!found) {
-            ctx.source.address = ctx.apache.access.remote_ip_list[0];
+            ctx.source.address = ctx.apache.access.remote_addresses[0];
           }
         }
         catch (Exception e) {
@@ -105,10 +109,6 @@ processors:
       ignore_missing: true
       patterns:
       - ^(%{IP:source.ip}|%{HOSTNAME:source.domain})$
-  - set:
-      field: network.forwarded_ip
-      copy_from: source.ip
-      ignore_empty_value: true
   - remove:
       field: event.created
       ignore_missing: true
