@@ -5,6 +5,20 @@ processors:
   - set:
       field: ecs.version
       value: '8.2.0'
+  - gsub:
+      field: host.mac
+      ignore_missing: true
+      pattern: '[:]'
+      replacement: '-'
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - script:
+      description: Convert host.mac to an array.
+      if: ctx.host?.mac != null && ctx.host.mac instanceof String
+      lang: painless
+      source:
+        ctx.host.mac = [ctx.host.mac];
   # User agent
   - user_agent:
       field: user_agent.original
