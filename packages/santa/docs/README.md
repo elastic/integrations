@@ -21,75 +21,97 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-12T11:38:03.923Z",
+    "@timestamp": "2022-05-12T11:30:05.248Z",
+    "agent": {
+        "ephemeral_id": "ea9b3ab9-896a-456a-8e87-7a6452edad19",
+        "id": "2c596a05-d358-406e-924c-bf221088f43c",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.2.1"
+    },
+    "data_stream": {
+        "dataset": "santa.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
         "version": "8.2.0"
     },
+    "elastic_agent": {
+        "id": "2c596a05-d358-406e-924c-bf221088f43c",
+        "snapshot": true,
+        "version": "8.2.1"
+    },
     "event": {
-        "action": "exec",
-        "category": [
-            "process"
-        ],
-        "kind": "event",
-        "original": "[2022-05-12T11:38:03.923Z] I santad: action=EXEC|decision=ALLOW|reason=BINARY|explain=critical system binary|sha256=43158bf397bf52001067319c591249307e2862daf8690828c15cdcc1ddf6166d|cert_sha256=d84db96af8c2e60ac4c851a21ec460f6f84e0235beb17d24a78712b9b021ed57|cert_cn=Software Signing|pid=71993|pidversion=1097732|ppid=1|uid=0|user=root|gid=0|group=wheel|mode=M|path=/usr/libexec/xpcproxy|args=xpcproxy com.apple.CoreAuthentication.agent",
-        "outcome": "success",
-        "type": [
-            "start"
-        ]
+        "action": "link",
+        "agent_id_status": "verified",
+        "dataset": "santa.log",
+        "ingested": "2022-05-18T03:34:40Z",
+        "kind": "event"
     },
     "file": {
-        "x509": {
-            "issuer": {
-                "common_name": "Software Signing"
-            }
-        }
+        "path": "/private/var/db/santa/santa.log",
+        "target_path": "/private/var/db/santa/santa.log.0"
     },
     "group": {
         "id": "0",
         "name": "wheel"
     },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "192.168.160.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:a0:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
     "log": {
-        "level": "I"
+        "file": {
+            "path": "/tmp/service_logs/santa.log"
+        },
+        "level": "I",
+        "offset": 1150
     },
     "process": {
         "args": [
-            "/usr/libexec/xpcproxy",
-            "xpcproxy",
-            "com.apple.CoreAuthentication.agent"
+            "/usr/sbin/newsyslog"
         ],
-        "executable": "/usr/libexec/xpcproxy",
-        "hash": {
-            "sha256": "43158bf397bf52001067319c591249307e2862daf8690828c15cdcc1ddf6166d"
-        },
+        "entity_id": "2c596a05-d358-406e-924c-bf221088f43c-71559-1096716",
+        "executable": "/usr/sbin/newsyslog",
+        "name": "newsyslog",
         "parent": {
             "pid": 1
         },
-        "pid": 71993,
-        "start": "2022-05-12T11:38:03.923Z"
+        "pid": 71559,
+        "start": "2022-05-12T11:30:05.248Z"
     },
     "related": {
-        "hash": [
-            "d84db96af8c2e60ac4c851a21ec460f6f84e0235beb17d24a78712b9b021ed57",
-            "43158bf397bf52001067319c591249307e2862daf8690828c15cdcc1ddf6166d"
-        ],
         "user": [
             "root"
         ]
     },
     "santa": {
-        "action": "EXEC",
-        "certificate": {
-            "common_name": "Software Signing",
-            "sha256": "d84db96af8c2e60ac4c851a21ec460f6f84e0235beb17d24a78712b9b021ed57"
-        },
-        "decision": "ALLOW",
-        "explain": "critical system binary",
-        "mode": "M",
-        "pidversion": 1097732,
-        "reason": "BINARY"
+        "action": "LINK",
+        "pidversion": 1096716
     },
     "tags": [
-        "preserve_original_event"
+        "santa-log"
     ],
     "user": {
         "id": "0",
@@ -103,6 +125,7 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -152,6 +175,7 @@ An example event for `log` looks as following:
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.hash.sha256 | SHA256 hash. | keyword |

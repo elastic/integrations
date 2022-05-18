@@ -16,6 +16,14 @@ processors:
       - '\[%{TIMESTAMP_ISO8601:timestamp}\] %{NOT_SEPARATOR:log.level} santad: action=%{NOT_SEPARATOR:santa.action}\|mount=%{NOT_SEPARATOR:santa.disk.mount}?\|volume=%{NOT_SEPARATOR:santa.disk.volume}\|bsdname=%{NOT_SEPARATOR:santa.disk.bsdname}?(\|fs=%{NOT_SEPARATOR:santa.disk.fs})?(\|model=%{NOT_SEPARATOR:santa.disk.model}?)?(\|serial=%{NOT_SEPARATOR:santa.disk.serial}?)?(\|bus=%{NOT_SEPARATOR:santa.disk.bus}?)?(\|dmgpath=%{NOT_SEPARATOR:santa.disk.dmgpath}?)?(\|appearance=%{TIMESTAMP_ISO8601:santa.disk.appearance})?'
       pattern_definitions:
         NOT_SEPARATOR: '[^\|]+'
+  - set:
+      field: process.entity_id
+      value: "{{{process.pid}}}-{{{santa.pidversion}}}"
+      if: "ctx.process?.pid != null && ctx.santa?.pidversion != null"
+  - set:
+      field: process.entity_id
+      value: "{{{agent.id}}}-{{{process.entity_id}}}"
+      if: "ctx.agent?.id != null && ctx.process?.entity_id != null"
   - date:
       field: process.start
       target_field: process.start
