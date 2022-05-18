@@ -20,8 +20,8 @@
 FROM docker.elastic.co/observability-ci/weblogic:12.2.1.3-dev
 
 ARG CUSTOM_DOMAIN_NAME="${CUSTOM_DOMAIN_NAME:-domain1}"
-ARG CUSTOM_ADMIN_PORT="${CUSTOM_ADMIN_PORT:-7001}"  
-ARG CUSTOM_ADMIN_SERVER_SSL_PORT="${CUSTOM_ADMIN_SERVER_SSL_PORT:-7002}"  
+ARG CUSTOM_ADMIN_PORT="${CUSTOM_ADMIN_PORT:-7001}"
+ARG CUSTOM_ADMIN_SERVER_SSL_PORT="${CUSTOM_ADMIN_SERVER_SSL_PORT:-7002}"
 ARG CUSTOM_MANAGED_SERVER_PORT="${CUSTOM_MANAGED_SERVER_PORT:-8001}"
 ARG CUSTOM_MANAGED_SERVER_SSL_PORT="${CUSTOM_MANAGED_SERVER_SSL_PORT:-8002}"
 ARG CUSTOM_DEBUG_PORT="${CUSTOM_DEBUG_PORT:-8453}"
@@ -62,9 +62,13 @@ RUN chmod +xw /u01/oracle/*.sh && \
     chown -R oracle:root ${PROPERTIES_FILE_DIR}
 
 COPY --chown=oracle:root ./oracle_weblogic/properties/docker-build/domain*.properties ${PROPERTIES_FILE_DIR}/
+COPY --chown=oracle:root ./oracle_weblogic/sample/* /home/oracle/sample/
+
+RUN jar -cvf ${DOMAIN_HOME}/sample.war -C /home/oracle/sample/ .
+RUN jar -cvf ${DOMAIN_HOME}/archive.zip  -C ${DOMAIN_HOME} sample.war
 
 # Configuration of WLS Domain
-USER oracle
+USER root
 RUN curl -o /home/oracle/jolokia-jvm-1.6.0-agent.jar https://repo1.maven.org/maven2/org/jolokia/jolokia-jvm/1.6.0/jolokia-jvm-1.6.0-agent.jar && \
     /u01/oracle/createWLSDomain.sh && \
     chmod -R g+w $DOMAIN_HOME && \
@@ -84,16 +88,11 @@ ENV APP_NAME="${APPLICATION_NAME}" \
 
 # Copy files and deploy application in WLST Offline mode
 COPY ./oracle_weblogic/container-scripts/* /u01/oracle/
-COPY ./oracle_weblogic/$APP_PKG_FILE ${DOMAIN_HOME}/
-COPY ./oracle_weblogic/app-archive/$APP_FILE ${DOMAIN_HOME}/
-
-# RUN ["/u01/oracle/generateAccess.sh","&"] 
 
 RUN cd /u01/oracle & $JAVA_HOME/bin/jar xf ${DOMAIN_HOME}/$APP_PKG_FILE && \
     /u01/oracle/deployAppToDomain.sh
 
 WORKDIR $DOMAIN_HOME
 
-# HEALTHCHECK --interval=20s --retries=30 CMD curl -f http://localhost:7001/sample/
 # Define default command to start bash.
 CMD ["startAdminServer.sh"]
