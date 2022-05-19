@@ -101,7 +101,7 @@ An example event for `application` looks as following:
 | hadoop.application.time.started | Application start time | date |
 | hadoop.application.vcore_seconds | The amount of CPU resources the application has allocated | long |
 | input.type | Type of Filebeat input. | keyword |
-| tags | User defined tags | keyword |
+| tags | List of keywords used to tag each event. | keyword |
 
 
 ## cluster

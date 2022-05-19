@@ -500,7 +500,7 @@ An example event for `log` looks as following:
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
-| input.type |  | keyword |
+| input.type | Input type | keyword |
 | log.file.path | File path from which the log event was read / sent from. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
