@@ -187,6 +187,8 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.user.email | User email address. | keyword |
+| client.user.id | Unique identifier of the user. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -205,6 +207,8 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.code | Error code describing the error. | keyword |
+| error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
@@ -216,30 +220,26 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | gcp.audit.authentication_info.authority_selector | The authority selector specified by the requestor, if any. It is not guaranteed  that the principal was allowed to use this authority. | keyword |
 | gcp.audit.authentication_info.principal_email | The email address of the authenticated user making the request. | keyword |
+| gcp.audit.authentication_info.principal_subject | String representation of identity of requesting party. Populated for both first and third party identities. Only present for APIs that support third-party identities. | keyword |
 | gcp.audit.authorization_info.granted | Whether or not authorization for resource and permission was granted. | boolean |
 | gcp.audit.authorization_info.permission | The required IAM permission. | keyword |
+| gcp.audit.authorization_info.resource | The resource being accessed, as a REST-style string. | keyword |
 | gcp.audit.authorization_info.resource_attributes.name | The name of the resource. | keyword |
 | gcp.audit.authorization_info.resource_attributes.service | The name of the service. | keyword |
 | gcp.audit.authorization_info.resource_attributes.type | The type of the resource. | keyword |
+| gcp.audit.logentry_operation.first | Optional. Set this to True if this is the first log entry in the operation. | boolean |
+| gcp.audit.logentry_operation.id | Optional. An arbitrary operation identifier. Log entries with the same identifier are assumed to be part of the same operation. | keyword |
+| gcp.audit.logentry_operation.last | Optional. Set this to True if this is the last log entry in the operation. | boolean |
+| gcp.audit.logentry_operation.producer | Optional. An arbitrary producer identifier. The combination of id and producer must be globally unique. | keyword |
 | gcp.audit.method_name | The name of the service method or operation. For API calls, this  should be the name of the API method.  For example, 'google.datastore.v1.Datastore.RunQuery'. | keyword |
 | gcp.audit.num_response_items | The number of items returned from a List or Query API method, if applicable. | long |
-| gcp.audit.request.filter | Filter of the request. | keyword |
-| gcp.audit.request.name | Name of the request. | keyword |
-| gcp.audit.request.proto_name | Type property of the request. | keyword |
-| gcp.audit.request.resource_name | Name of the request resource. | keyword |
+| gcp.audit.request |  | flattened |
 | gcp.audit.request_metadata.caller_ip | The IP address of the caller. | ip |
 | gcp.audit.request_metadata.caller_supplied_user_agent | The user agent of the caller. This information is not authenticated and  should be treated accordingly. | keyword |
 | gcp.audit.request_metadata.raw.caller_ip | The raw IP address of the caller. | keyword |
-| gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
+| gcp.audit.resource_location.current_locations | Current locations of the resource. | array |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
-| gcp.audit.response.details.group | The name of the group. | keyword |
-| gcp.audit.response.details.kind | The kind of the response details. | keyword |
-| gcp.audit.response.details.name | The name of the response details. | keyword |
-| gcp.audit.response.details.uid | The uid of the response details. | keyword |
-| gcp.audit.response.proto_name | Type property of the response. | keyword |
-| gcp.audit.response.status.allowed |  | boolean |
-| gcp.audit.response.status.reason |  | keyword |
-| gcp.audit.response.status.value |  | keyword |
+| gcp.audit.response |  | flattened |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
 | gcp.audit.status.code | The status code, which should be an enum value of google.rpc.Code. | integer |
 | gcp.audit.status.message | A developer-facing error message, which should be in English. Any user-facing  error message should be localized and sent in the google.rpc.Status.details  field, or localized by the client. | keyword |
@@ -288,6 +288,7 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | orchestrator.resource.type | Type of resource being acted upon. | keyword |
 | orchestrator.type | Orchestrator cluster type (e.g. kubernetes, nomad or cloudfoundry). | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
