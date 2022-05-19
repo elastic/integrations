@@ -36,4 +36,4 @@ For Cloud users, see [Edit Kibana user settings](https://www.elastic.co/guide/en
 Just like every other integration, the KSPM integration requires an Elastic agent to be deployed.
 
 See agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/running-on-kubernetes-managed-by-fleet.html).
-Note, this integration can be added only to Elastic agents with version 8.3 or higher.
+Note, this integration can only be added to Elastic agents with versions 8.3 or higher.
