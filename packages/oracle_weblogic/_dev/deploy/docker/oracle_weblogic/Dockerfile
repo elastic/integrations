@@ -53,7 +53,7 @@ ENV ORACLE_HOME=/u01/oracle \
 COPY --chown=oracle:root ./oracle_weblogic/container-scripts/ /u01/oracle/
 
 #Create directory where domain will be written to
-USER oracle
+USER root
 RUN chmod +xw /u01/oracle/*.sh && \
     chmod +xw /u01/oracle/*.py && \
     mkdir -p ${PROPERTIES_FILE_DIR} && \
