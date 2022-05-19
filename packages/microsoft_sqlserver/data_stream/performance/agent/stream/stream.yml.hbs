@@ -3,8 +3,10 @@ hosts:
   - sqlserver://{{username}}:{{password}}@{{hosts}}
 period: {{period}}
 raw_data.enabled: true
-additionalmetrics: {{additionalmetrics}}
+# Below dynamic_counter_name handles the dynamic counter name passing it to SQL query
+dynamic_counter_name: {{dynamic_counter_name}}
 driver: "mssql"
+# Below TRIM() will remove the trailing spaces which is coming from SQL DB value
 sql_queries:
   - query: "SELECT TRIM(counter_name) As 'User_Connections',cntr_value FROM sys.dm_os_performance_counters WHERE counter_name= 'User Connections'"
     response_format: variables
@@ -38,7 +40,7 @@ sql_queries:
     response_format: variables
   - query: "SELECT TRIM(counter_name) As 'SQL Re-Compilations/sec',cntr_value FROM sys.dm_os_performance_counters WHERE counter_name = 'SQL Re-Compilations/sec'"
     response_format: variables
-  - query: "SELECT TRIM(counter_name) As '{{additionalmetrics}}' ,cntr_value FROM sys.dm_os_performance_counters WHERE counter_name= '{{additionalmetrics}}'"
+  - query: "SELECT TRIM(counter_name) As '{{dynamic_counter_name}}' ,cntr_value FROM sys.dm_os_performance_counters WHERE counter_name= '{{dynamic_counter_name}}'"
     response_format: variables
 
  
