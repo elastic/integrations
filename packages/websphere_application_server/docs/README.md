@@ -16,13 +16,13 @@ An example event for `jdbc` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-11T08:42:42.671Z",
+    "@timestamp": "2022-05-18T19:19:53.463Z",
     "agent": {
-        "ephemeral_id": "bfc5ae35-31dc-4fd1-a463-d4e7e4670ee4",
-        "id": "5463df26-9517-49e2-8dd5-3c68a1aeb4b3",
+        "ephemeral_id": "25512325-3f7b-45ae-9e27-91d9625df63a",
+        "id": "92efee99-936e-44a7-9a5c-20486485d4ab",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.2.0"
     },
     "data_stream": {
         "dataset": "websphere_application_server.jdbc",
@@ -33,16 +33,16 @@ An example event for `jdbc` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "5463df26-9517-49e2-8dd5-3c68a1aeb4b3",
+        "id": "92efee99-936e-44a7-9a5c-20486485d4ab",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "websphere_application_server.jdbc",
-        "duration": 222275069,
-        "ingested": "2022-05-11T08:42:45Z",
+        "duration": 67284475,
+        "ingested": "2022-05-18T19:19:56Z",
         "kind": "metric",
         "module": "websphere_application_server",
         "type": "info"
@@ -52,20 +52,20 @@ An example event for `jdbc` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.22.0.7"
+            "172.18.0.5"
         ],
         "mac": [
-            "02:42:ac:16:00:07"
+            "02:42:ac:12:00:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -97,15 +97,18 @@ An example event for `jdbc` looks as following:
                 "total": {
                     "fault": 0,
                     "in_use": 0,
+                    "operations_calls": 0,
+                    "operations_seconds": 0,
                     "seconds_in_use": 0,
                     "wait": 0,
                     "wait_seconds": 0
                 },
                 "waiting_threads": 0
             },
-            "data_source": "jms/built-in-jms-connectionfactory",
+            "data_source": "jdbc/DefaultEJBTimerDataSource",
             "percent_used": 0,
-            "pool_size": 0
+            "pool_size": 0,
+            "total_cache_discarded": 0
         }
     }
 }
