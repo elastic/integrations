@@ -24,10 +24,10 @@ processors:
       description: Drop the document if it is not of AuditLog type
       if: ctx.gcp?.audit?.type != null && ctx.gcp?.audit?.type != 'type.googleapis.com/google.cloud.audit.AuditLog'
 # .insertId
-  - rename:
-      field: json.insertId
-      target_field: event.id
-      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: json.insertId
+      if: ctx.json?.insertId != null
 # .logName
   - rename:
       field: json.logName
