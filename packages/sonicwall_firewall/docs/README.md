@@ -211,7 +211,28 @@ An example event for `log` looks as following:
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
-| sonicwall.firewall |  | flattened |
+| sonicwall.firewall.Category | Category of CFS blocked content. | keyword |
+| sonicwall.firewall.af_polid | Displays the Application Filter Policy ID. | keyword |
+| sonicwall.firewall.app | Numeric application ID. | keyword |
+| sonicwall.firewall.appName | Non-Signature Application Name. | keyword |
+| sonicwall.firewall.appcat | Application control category. | keyword |
+| sonicwall.firewall.appid | Application ID. | keyword |
+| sonicwall.firewall.auditId |  | keyword |
+| sonicwall.firewall.code | CFS blocking code. | keyword |
+| sonicwall.firewall.dpi | Indicates wether a flow underwent Deep Packet Inspection. | boolean |
+| sonicwall.firewall.event_group_category | Event group category. | keyword |
+| sonicwall.firewall.gcat | Event group category (numeric identifier). | keyword |
+| sonicwall.firewall.ipscat | IPS category. | keyword |
+| sonicwall.firewall.ipspri | IPS priority. | keyword |
+| sonicwall.firewall.oldValue |  | keyword |
+| sonicwall.firewall.sess | User session type. | keyword |
+| sonicwall.firewall.sid | IPS or Anti-Spyware signature ID. | keyword |
+| sonicwall.firewall.tranxId |  | keyword |
+| sonicwall.firewall.type | ICMP type. | keyword |
+| sonicwall.firewall.userMode |  | keyword |
+| sonicwall.firewall.uuid | Object UUID. | keyword |
+| sonicwall.firewall.vpnpolicy | source VPN policy name. | keyword |
+| sonicwall.firewall.vpnpolicyDst | destination VPN policy name. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
