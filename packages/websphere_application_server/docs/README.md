@@ -159,10 +159,10 @@ An example event for `servlet` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-20T08:40:17.149Z",
+    "@timestamp": "2022-05-20T11:44:31.768Z",
     "agent": {
-        "ephemeral_id": "7b0b9af7-2079-45d5-8056-c253e563275c",
-        "id": "c5cc9af5-aaea-4d83-8050-40dbb44c613a",
+        "ephemeral_id": "2cc9ade1-a44e-4151-91bf-1e4865a9e57e",
+        "id": "c05318bf-e468-4a7a-bd1d-7c7e4320cbde",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -176,7 +176,7 @@ An example event for `servlet` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c5cc9af5-aaea-4d83-8050-40dbb44c613a",
+        "id": "c05318bf-e468-4a7a-bd1d-7c7e4320cbde",
         "snapshot": false,
         "version": "8.2.0"
     },
@@ -184,8 +184,8 @@ An example event for `servlet` looks as following:
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "websphere_application_server.servlet",
-        "duration": 103214814,
-        "ingested": "2022-05-20T08:40:20Z",
+        "duration": 153850315,
+        "ingested": "2022-05-20T11:44:35Z",
         "kind": "metric",
         "module": "websphere_application_server",
         "type": "info"
@@ -195,10 +195,10 @@ An example event for `servlet` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.32.6"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:20:06"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -229,9 +229,9 @@ An example event for `servlet` looks as following:
     ],
     "websphere_application_server": {
         "servlet": {
-            "app_name": "MetricsApp#metrics.war",
-            "loaded": 1,
-            "reloaded": 1
+            "app_name": "isclite#isclite.war",
+            "loaded": 0,
+            "reloaded": 0
         }
     }
 }
@@ -257,18 +257,18 @@ An example event for `servlet` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
 | websphere_application_server.servlet.app_name | Application name. | keyword |
-| websphere_application_server.servlet.async_context.response_time_seconds | The total time spent(in seconds) per servlet for the AsyncContext response to complete. | double |
-| websphere_application_server.servlet.async_context.total_responses | The total number of AsyncContext responses for the specified URL. | long |
-| websphere_application_server.servlet.concurrent_requests | Number of concurrent requests sent to the servlet. | long |
+| websphere_application_server.servlet.async_context.response_time_seconds | The total time spent (in seconds) per servlet for the AsyncContext response to complete. | double |
+| websphere_application_server.servlet.async_context.responses.total | The total number of AsyncContext responses for the specified URL. | long |
 | websphere_application_server.servlet.errors | Number of errors that were generated while responding to a request. | long |
 | websphere_application_server.servlet.loaded | The number of servlets that were loaded. | long |
 | websphere_application_server.servlet.reloaded | The number of servlets that were reloaded. | long |
-| websphere_application_server.servlet.requests_processed | The total number of requests that a servlet processed. | long |
+| websphere_application_server.servlet.requests.concurrent | Number of concurrent requests sent to the servlet. | long |
+| websphere_application_server.servlet.requests.processed | The total number of requests that a servlet processed. | long |
 | websphere_application_server.servlet.response_time_seconds | The total response time (in seconds) to process servlet requests. | double |
-| websphere_application_server.servlet.responses_processed | The total number of responses that a servlet processed. | long |
-| websphere_application_server.servlet.uri.async_context.response_time_seconds | The total time spent(in seconds) per URL for the AsyncContext response to complete. | double |
-| websphere_application_server.servlet.uri.async_context.total_responses | The total number of AsyncContext responses for the specified URL. | long |
-| websphere_application_server.servlet.uri.concurrent_requests | The number of requests that were concurrently processed for the specified URL. | long |
+| websphere_application_server.servlet.responses.processed | The total number of responses that a servlet processed. | long |
+| websphere_application_server.servlet.uri.async_context.response_time_seconds | The total time spent (in seconds) per URL for the AsyncContext response to complete. | double |
+| websphere_application_server.servlet.uri.async_context.responses.total | The total number of AsyncContext responses for the specified URL. | long |
+| websphere_application_server.servlet.uri.requests.concurrent | The number of requests that were concurrently processed for the specified URL. | long |
+| websphere_application_server.servlet.uri.requests.total | Total number of requests that a servlet processed for the specified URL. | long |
 | websphere_application_server.servlet.uri.response_time_seconds | The total response time (in seconds) to process the requests for the specified URL. | double |
-| websphere_application_server.servlet.uri.total_requests | total number of requests that a servlet processed for the specified URL. | long |
-| websphere_application_server.servlet.uri.total_responses | The total number of responses for the specified URL. | long |
+| websphere_application_server.servlet.uri.responses.total | The total number of responses for the specified URL. | long |
