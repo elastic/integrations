@@ -16,10 +16,10 @@ An example event for `jdbc` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-18T19:19:53.463Z",
+    "@timestamp": "2022-05-19T13:33:01.029Z",
     "agent": {
-        "ephemeral_id": "25512325-3f7b-45ae-9e27-91d9625df63a",
-        "id": "92efee99-936e-44a7-9a5c-20486485d4ab",
+        "ephemeral_id": "7fca7599-6641-4340-ab44-e026d1b4935a",
+        "id": "a0386d69-0749-44b4-8487-9b92e66852a1",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -33,7 +33,7 @@ An example event for `jdbc` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "92efee99-936e-44a7-9a5c-20486485d4ab",
+        "id": "a0386d69-0749-44b4-8487-9b92e66852a1",
         "snapshot": false,
         "version": "8.2.0"
     },
@@ -41,8 +41,8 @@ An example event for `jdbc` looks as following:
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "websphere_application_server.jdbc",
-        "duration": 67284475,
-        "ingested": "2022-05-18T19:19:56Z",
+        "duration": 364066933,
+        "ingested": "2022-05-19T13:33:04Z",
         "kind": "metric",
         "module": "websphere_application_server",
         "type": "info"
@@ -52,16 +52,16 @@ An example event for `jdbc` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.18.0.5"
+            "172.31.0.5"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02:42:ac:1f:00:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "3.10.0-1160.45.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -97,18 +97,15 @@ An example event for `jdbc` looks as following:
                 "total": {
                     "fault": 0,
                     "in_use": 0,
-                    "operations_calls": 0,
-                    "operations_seconds": 0,
                     "seconds_in_use": 0,
                     "wait": 0,
                     "wait_seconds": 0
                 },
                 "waiting_threads": 0
             },
-            "data_source": "jdbc/DefaultEJBTimerDataSource",
+            "data_source": "jms/built-in-jms-connectionfactory",
             "percent_used": 0,
-            "pool_size": 0,
-            "total_cache_discarded": 0
+            "pool_size": 0
         }
     }
 }
