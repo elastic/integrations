@@ -96,7 +96,7 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2022-01-23T09:16:05.341Z",
     "agent": {
-        "ephemeral_id": "0a8788f9-39fb-4af0-bdb3-8ecfc2ee6454",
+        "ephemeral_id": "21a4eccb-1fd9-4d8b-beef-3c78c32f03f6",
         "hostname": "docker-fleet-agent",
         "id": "881eed9e-f1d0-4e58-9efd-819f27ff81e7",
         "name": "docker-fleet-agent",
@@ -151,10 +151,10 @@ An example event for `dns` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-05-20T05:07:10.864Z",
+        "created": "2022-05-20T05:49:10.978Z",
         "dataset": "gcp.dns",
         "id": "vwroyze8pg7y",
-        "ingested": "2022-05-20T05:07:11Z",
+        "ingested": "2022-05-20T05:49:11Z",
         "kind": "event",
         "outcome": "success"
     },
