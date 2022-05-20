@@ -147,9 +147,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "69f3a6a9-a809-46eb-9443-a19d76c6cf1c",
+        "ephemeral_id": "88282319-d625-409f-a07a-53875ef781fa",
         "hostname": "docker-fleet-agent",
-        "id": "9dfde2d0-fc3b-434b-9aff-534592ab422b",
+        "id": "881eed9e-f1d0-4e58-9efd-819f27ff81e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -174,7 +174,7 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "9dfde2d0-fc3b-434b-9aff-534592ab422b",
+        "id": "881eed9e-f1d0-4e58-9efd-819f27ff81e7",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -185,23 +185,18 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2022-05-19T12:27:33.813Z",
+        "created": "2022-05-20T05:06:26.185Z",
         "dataset": "gcp.audit",
-        "id": "yonau2dg2zi",
-        "ingested": "2022-05-19T12:27:35Z",
+        "id": "yonau3dc2zi",
+        "ingested": "2022-05-20T05:06:27Z",
         "kind": "event",
-        "outcome": "success",
-        "provider": "data_access",
-        "type": [
-            "access",
-            "allowed"
-        ]
+        "outcome": "failure",
+        "provider": "data_access"
     },
     "gcp": {
         "audit": {
             "authorization_info": [
                 {
-                    "granted": true,
                     "permission": "compute.instances.list",
                     "resource_attributes": {
                         "name": "projects/elastic-beats",
@@ -224,19 +219,11 @@ An example event for `audit` looks as following:
                 ]
             },
             "resource_name": "projects/elastic-beats/global/instances",
-            "response": {
-                "@type": "core.k8s.io/v1.Status",
-                "apiVersion": "v1",
-                "details": {
-                    "group": "batch",
-                    "kind": "jobs",
-                    "name": "gsuite-exporter-1589294700",
-                    "uid": "2beff34a-945f-11ea-bacf-42010a80007f"
-                },
-                "kind": "Status",
-                "status": "Success"
-            },
             "service_name": "compute.googleapis.com",
+            "status": {
+                "code": 7,
+                "message": "PERMISSION_DENIED"
+            },
             "type": "type.googleapis.com/google.cloud.audit.AuditLog"
         }
     },

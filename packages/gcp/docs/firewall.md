@@ -133,9 +133,9 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "214c2188-c59e-447d-a74a-958be5d3a355",
+        "ephemeral_id": "101e0b46-fd1a-4fa3-a18c-05f024eb84b6",
         "hostname": "docker-fleet-agent",
-        "id": "9dfde2d0-fc3b-434b-9aff-534592ab422b",
+        "id": "881eed9e-f1d0-4e58-9efd-819f27ff81e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -163,7 +163,7 @@ An example event for `firewall` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "9dfde2d0-fc3b-434b-9aff-534592ab422b",
+        "id": "881eed9e-f1d0-4e58-9efd-819f27ff81e7",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -171,10 +171,10 @@ An example event for `firewall` looks as following:
         "action": "firewall-rule",
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2022-05-19T12:28:58.807Z",
+        "created": "2022-05-20T05:07:49.277Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2022-05-19T12:28:59Z",
+        "ingested": "2022-05-20T05:07:50Z",
         "kind": "event",
         "type": "connection"
     },

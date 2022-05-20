@@ -111,7 +111,7 @@ processors:
 # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#AuthenticationInfo
 ##
 # email address of authenticated user (redacted) or service account
-# principalEmail -> user.email
+# principalEmail -> client.user.email
   - rename:
       field: json.protoPayload.authenticationInfo.principalEmail
       target_field: client.user.email
@@ -134,8 +134,8 @@ processors:
       if: ctx.user?.email != null
   - set:
       field: gcp.audit.authentication_info.principal_subject
-      copy_from: user.id
-      if: ctx.user?.id != null
+      copy_from: client.user.id
+      if: ctx.client?.user?.id != null
 ##
 # AuthorizationInfo
 # .protoPayload.authorizationInfo
