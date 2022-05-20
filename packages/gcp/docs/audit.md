@@ -147,9 +147,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "c80ea3eb-6a00-4668-ba41-ea9ebe4bc255",
+        "ephemeral_id": "15ffa48e-049a-4ead-9716-cea0236748c4",
         "hostname": "docker-fleet-agent",
-        "id": "881eed9e-f1d0-4e58-9efd-819f27ff81e7",
+        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -174,7 +174,7 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "881eed9e-f1d0-4e58-9efd-819f27ff81e7",
+        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -185,10 +185,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2022-05-20T05:48:23.008Z",
+        "created": "2022-05-20T07:25:00.534Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2022-05-20T05:48:26Z",
+        "ingested": "2022-05-20T07:25:01Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -199,6 +199,9 @@ An example event for `audit` looks as following:
     },
     "gcp": {
         "audit": {
+            "authentication_info": {
+                "principal_email": "xxx@xxx.xxx"
+            },
             "authorization_info": [
                 {
                     "granted": true,
