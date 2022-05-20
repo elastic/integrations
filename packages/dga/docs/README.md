@@ -39,7 +39,7 @@ Detect domain generation algorithm (DGA) activity in your network data.
 
 | Rule | Description |
 |---|---|
-| Machine Learning Detected DGA activity using a known SUNBURST DNS domain | A supervised machine learning model has identified a DNS question name that used by the SUNBURST malware and is predicted to be the result of a Domain Generation Algorithm.|
+| Machine Learning Detected DGA activity using a known SUNBURST DNS domain | A supervised machine learning model has identified a DNS question name that is used by the SUNBURST malware and is predicted to be the result of a Domain Generation Algorithm.|
 | Machine Learning Detected a DNS Request Predicted to be a DGA Domain | A supervised machine learning model has identified a DNS question name that is predicted to be the result of a Domain Generation Algorithm (DGA), which could indicate command and control network activity.|
 | Potential DGA Activity | A population analysis machine learning job detected potential DGA (domain generation algorithm) activity. Such activity is often used by malware command and control (C2) channels. This machine learning job looks for a source IP address making DNS requests that have an aggregate high probability of being DGA activity. This is an experimental job and is therefore unsupported.|
 | Machine Learning Detected a DNS Request With a High DGA Probability Score | A supervised machine learning model has identified a DNS question name with a high probability of sourcing from a Domain Generation Algorithm (DGA), which could indicate command and control network activity.|

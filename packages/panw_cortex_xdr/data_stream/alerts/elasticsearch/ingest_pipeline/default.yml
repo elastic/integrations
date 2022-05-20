@@ -2,11 +2,8 @@
 description: Pipeline for Palo Alto XDR API.
 processors:
   - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
-  - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.2.0"
   - set:
       field: event.kind
       value: alert
@@ -350,6 +347,18 @@ processors:
       field: panw_cortex.xdr.events.fw_serial_number
       target_field: observer.serial_number
       ignore_missing: true
+  - set:
+      field: email.subject
+      copy_from: panw_cortex.xdr.events.fw_email_subject
+      if: "ctx?.panw_cortex.xdr?.events?.fw_email_subject != null"
+  - append:
+      field: email.from.address
+      value: "{{{panw_cortex.xdr.events.fw_email_sender}}}"
+      if: "ctx?.panw_cortex.xdr?.events?.fw_email_sender != null"
+  - append:
+      field: email.to.address
+      value: "{{{panw_cortex.xdr.events.fw_email_recipient}}}"
+      if: "ctx?.panw_cortex.xdr?.events?.fw_email_recipient != null"
   - geoip:
       field: source.ip
       target_field: source.geo
