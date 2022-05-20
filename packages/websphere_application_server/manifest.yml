@@ -1,0 +1,92 @@
+format_version: 1.0.0
+name: websphere_application_server
+title: WebSphere Application Server
+version: 0.1.0
+license: basic
+description: Collects metrics from IBM WebSphere Application Server with Elastic Agent.
+type: integration
+categories:
+  - web
+conditions:
+  kibana.version: "^8.1.0"
+screenshots:
+  - src: /img/websphere_application_server-jdbc-dashboard-screenshot.png
+    title: Websphere Application Server JDBC Dashboard Screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/websphere_application_server-logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: websphere_application_server
+    title: WebSphere Application Server metrics
+    description: Collect WebSphere Application Server metrics
+    inputs:
+      - type: prometheus/metrics
+        vars:
+          - name: host
+            type: text
+            title: Host
+            required: true
+            show_user: true
+            description: WebSphere Application Server Host (http://localhost:9080 or localhost:9080).
+            default:
+              - localhost:9080
+          - name: period
+            type: text
+            title: Period
+            required: true
+            show_user: true
+            description: Period between collecting metrics.
+            default: 60s
+          - name: username
+            type: text
+            title: Username
+            multi: false
+            required: false
+            show_user: false
+          - name: password
+            type: password
+            title: Password
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            default: |
+              # ssl.certificate_authorities: |
+              #   -----BEGIN CERTIFICATE-----
+              #   MIID+jCCAuKgAwIBAgIGAJJMzlxLMA0GCSqGSIb3DQEBCwUAMHoxCzAJBgNVBAYT
+              #   AlVTMQwwCgYDVQQKEwNJQk0xFjAUBgNVBAsTDURlZmF1bHROb2RlMDExFjAUBgNV
+              #   BAsTDURlZmF1bHRDZWxsMDExGTAXBgNVBAsTEFJvb3QgQ2VydGlmaWNhdGUxEjAQ
+              #   BgNVBAMTCWxvY2FsaG9zdDAeFw0yMTEyMTQyMjA3MTZaFw0yMjEyMTQyMjA3MTZa
+              #   MF8xCzAJBgNVBAYTAlVTMQwwCgYDVQQKEwNJQk0xFjAUBgNVBAsTDURlZmF1bHRO
+              #   b2RlMDExFjAUBgNVBAsTDURlZmF1bHRDZWxsMDExEjAQBgNVBAMTCWxvY2FsaG9z
+              #   dDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMv5HCsJZIpI5zCy+jXV
+              #   z6lmzNc9UcVSEEHn86h6zT6pxuY90TYeAhlZ9hZ+SCKn4OQ4GoDRZhLPTkYDt+wW
+              #   CV3NTIy9uCGUSJ6xjCKoxClJmgSQdg5m4HzwfY4ofoEZ5iZQ0Zmt62jGRWc0zuxj
+              #   hegnM+eO2reBJYu6Ypa9RPJdYJsmn1RNnC74IDY8Y95qn+WZj//UALCpYfX41hko
+              #   i7TWD9GKQO8SBmAxhjCDifOxVBokoxYrNdzESl0LXvnzEadeZTd9BfUtTaBHhx6t
+              #   njqqCPrbTY+3jAbZFd4RiERPnhLVKMytw5ot506BhPrUtpr2lusbN5svNXjuLeea
+              #   MMUCAwEAAaOBoDCBnTATBgNVHSMEDDAKgAhOatpLwvJFqjAdBgNVHSUEFjAUBggr
+              #   BgEFBQcDAQYIKwYBBQUHAwIwVAYDVR0RBE0wS4E+UHJvZmlsZVVVSUQ6QXBwU3J2
+              #   MDEtQkFTRS05MDkzMzJjMC1iNmFiLTQ2OTMtYWI5NC01Mjc1ZDI1MmFmNDiCCWxv
+              #   Y2FsaG9zdDARBgNVHQ4ECgQITzqhA5sO8O4wDQYJKoZIhvcNAQELBQADggEBAKR0
+              #   gY/BM69S6BDyWp5dxcpmZ9FS783FBbdUXjVtTkQno+oYURDrhCdsfTLYtqUlP4J4
+              #   CHoskP+MwJjRIoKhPVQMv14Q4VC2J9coYXnePhFjE+6MaZbTjq9WaekGrpKkMaQA
+              #   iQt5b67jo7y63CZKIo9yBvs7sxODQzDn3wZwyux2vPegXSaTHR/rop/s/mPk3YTS
+              #   hQprs/IVtPoWU4/TsDN3gIlrAYGbcs29CAt5q9MfzkMmKsuDkTZD0ry42VjxjAmk
+              #   xw23l/k8RoD1wRWaDVbgpjwSzt+kl+vJE/ip2w3h69eEZ9wbo6scRO5lCO2JM4Pr
+              #   7RhLQyWn2u00L7/9Omw=
+              #   -----END CERTIFICATE-----
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+        title: Metrics using prometheus
+        description: Collecting metrics from WebSphere Application Server using prometheus.
+owner:
+  github: elastic/obs-service-integrations
