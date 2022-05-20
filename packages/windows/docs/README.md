@@ -13,14 +13,13 @@ Then, you could view real-time changes to service status in Kibana's _[Metrics W
 The Windows integration collects two types of data: logs and metrics.
 
 **Logs** help you keep a record of events that happen on your machine.
-Log datasets collected by the Windows integration include forwarded events, PowerShell events, and Sysmon events. 
+Log datasets collected by the Windows integration include forwarded events, PowerShell events, and Sysmon events.
+Log collection for the Security, Application, and System event logs is handled by the System integration.
 See more details in the [Logs reference](#logs-reference).
 
 **Metrics** give you insight into the state of the machine.
 Metric datasets collected by the Windows integration include service details and performance counter values.
 See more details in the [Metrics reference](#metrics-reference).
-
-Note: for 7.11, `security`, `application`, and `system` logs have been moved to the system package.
 
 ## Requirements
 
@@ -29,7 +28,6 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 The Windows datasets collect different kinds of metric data, which may require dedicated permissions
 to be fetched and which may vary across operating systems.
-Details on the permissions needed for each dataset are available in the [Metrics](#metrics-reference) and [Logs](#logs-reference) reference.
 
 ## Setup
 
@@ -57,18 +55,10 @@ The Windows `forwarded` dataset provides events from the Windows
 `ForwardedEvents` event log. The fields will be the same as the 
 channel specific datasets.
 
-#### Permissions
-
-This data should be available without elevated permissions.
-
 ### Powershell
 
 The Windows `powershell` dataset provides events from the Windows
 `Windows PowerShell` event log.
-
-#### Permissions
-
-This data should be available without elevated permissions.
 
 An example event for `powershell` looks as following:
 
@@ -413,10 +403,6 @@ An example event for `powershell` looks as following:
 The Windows `powershell_operational` dataset provides events from the Windows
 `Microsoft-Windows-PowerShell/Operational` event log.
 
-#### Permissions
-
-This data should be available without elevated permissions.
-
 An example event for `powershell_operational` looks as following:
 
 ```json
@@ -752,10 +738,6 @@ An example event for `powershell_operational` looks as following:
 
 The Windows `sysmon_operational` dataset provides events from the Windows
 `Microsoft-Windows-Sysmon/Operational` event log.
-
-#### Permissions
-
-This data should be available without elevated permissions.
 
 An example event for `sysmon_operational` looks as following:
 
@@ -1208,10 +1190,6 @@ Both datasets are available on Windows only.
 
 The Windows `service` dataset provides service details.
 
-#### Permissions
-
-This data should be available without elevated permissions.
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -1267,10 +1245,6 @@ This data should be available without elevated permissions.
 ### Perfmon
 
 The Windows `perfmon` dataset provides performance counter values.
-
-#### Permissions
-
-This data should be available without elevated permissions.
 
 **Exported fields**
 
