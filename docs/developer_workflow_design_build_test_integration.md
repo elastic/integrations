@@ -78,7 +78,7 @@ elastic-package build
 ... and recycle the package-registry Docker container (run from inside of the integration directory):
 
 ```bash
-elastic-package stack up --services package-registry
+elastic-package stack up -v -d --services package-registry
 ```
 
 Once the container is recycled, you can refresh the Fleet UI and Kibana will pick up updated packages.
