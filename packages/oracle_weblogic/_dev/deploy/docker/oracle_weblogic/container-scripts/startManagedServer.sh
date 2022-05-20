@@ -64,7 +64,7 @@ if [ "${SSL_ENABLED}" = "true" ]; then
   ADMIN_SERVER_URL="https://${ADMIN_HOST}:${ADMIN_SERVER_SSL_PORT}" 
 fi
 
-# Copy 'ManagedServer' logfile('managed-server1.log') for docker binding
+# Copy 'ManagedServer' logfile ('managed-server1.log') for Docker binding
 /u01/oracle/managedServerLogs.sh &
 
 echo "Start Managed Server"
