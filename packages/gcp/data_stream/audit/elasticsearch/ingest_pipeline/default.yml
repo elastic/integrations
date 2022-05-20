@@ -65,14 +65,14 @@ processors:
 # .resource
 # MonitoredResource https://cloud.google.com/logging/docs/reference/v2/rest/v2/MonitoredResource
 ##
-  - rename:
-      field: json.resource.labels.project_id
-      target_field: cloud.project.id
-      ignore_missing: true
-  - rename: 
-      field: json.resource.labels.instance_id
-      target_field: cloud.instance.id
-      ignore_missing: true
+  - set:
+      field: cloud.project.id
+      copy_from: json.resource.labels.project_id
+      if: ctx.json?.resource?.labels?.project_id != null
+  - set:
+      field: cloud.instance.id
+      copy_from: json.resource.labels.instance_id
+      if: ctx.json?.resource?.labels?.instance_id != null
 ##
 # MonitoredResourceDescriptor type
 # https://cloud.google.com/logging/docs/reference/v2/rest/v2/monitoredResourceDescriptors/list#MonitoredResourceDescriptor
