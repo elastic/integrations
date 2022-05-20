@@ -1,6 +1,7 @@
 # SonicWall Firewall Integration
 
-This integration collects syslog messages from SonicWall firewalls. It has been tested with SonicOS 6.5 and 7.0.
+This integration collects syslog messages from SonicWall firewalls. It has been tested with Enhanced
+Syslog logs from SonicOS 6.5 and 7.0 as described in the [Log Events reference guide.](https://www.sonicwall.com/techdocs/pdf/sonicos-6-5-4-log-events-reference-guide.pdf)
 
 ## Configuration
 
