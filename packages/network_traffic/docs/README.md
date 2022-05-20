@@ -3,6 +3,12 @@
 This integration sniffs network packets on a host and dissects
 known protocols.
 
+Monitoring your network traffic is critical to gaining observability and
+securing your environment — ensuring high levels of performance and security.
+The Network Packet Capture integration captures the network traffic between
+your application servers, decodes common application layer protocols and
+records the interesting fields for each transaction.
+
 ## Supported Protocols
 
 Currently, Network Packet Capture supports the following protocols:
