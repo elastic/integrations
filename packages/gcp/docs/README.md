@@ -227,7 +227,7 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | gcp.audit.authorization_info.resource_attributes.name | The name of the resource. | keyword |
 | gcp.audit.authorization_info.resource_attributes.service | The name of the service. | keyword |
 | gcp.audit.authorization_info.resource_attributes.type | The type of the resource. | keyword |
-| gcp.audit.labels |  | flattened |
+| gcp.audit.labels | A map of key, value pairs that provides additional information about the log entry. The labels can be user-defined or system-defined. | flattened |
 | gcp.audit.logentry_operation.first | Optional. Set this to True if this is the first log entry in the operation. | boolean |
 | gcp.audit.logentry_operation.id | Optional. An arbitrary operation identifier. Log entries with the same identifier are assumed to be part of the same operation. | keyword |
 | gcp.audit.logentry_operation.last | Optional. Set this to True if this is the last log entry in the operation. | boolean |
