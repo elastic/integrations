@@ -131,6 +131,23 @@ processors:
       value: firewall
       if: ctx?.log?.file?.path.contains('cloudfirewalllogs')
 
+  #######################
+  # Audit Logs #
+  #######################
+  - csv:
+      field: event.original
+      target_fields:
+        - event.id
+        - cisco.umbrella._tmp.time
+        - user.email
+        - user.name
+        - cisco.umbrella.audit.type
+        - event.action
+        - source.address
+        - cisco.umbrella.audit.before
+        - cisco.umbrella.audit.after
+      if: ctx?.log?.file?.path.contains('auditlogs')
+
   - uri_parts:
       field: url.full
       ignore_failure: true
@@ -163,6 +180,7 @@ processors:
       target_field: "@timestamp"
       formats:
         - "yyyy-MM-dd HH:mm:ss"
+        - ISO8601
       if: ctx?.cisco?.umbrella?._tmp?.time != null
   ##################
   # DNS ECS Fields #
@@ -223,6 +241,7 @@ processors:
   - set:
       field: event.category
       value: network
+      if: "!ctx?.log?.file?.path.contains('auditlogs')"
   - append:
       field: event.type
       value: allowed
@@ -235,6 +254,22 @@ processors:
       field: event.type
       value: connection
       if: ctx?.cisco?.umbrella?.action != null
+  - set:
+      field: event.category
+      value: configuration
+      if: "ctx?.log?.file?.path.contains('auditlogs')"
+  - append:
+      field: event.type
+      value: creation
+      if: "ctx?.log?.file?.path.contains('auditlogs') && ctx.event?.action.toLowerCase() == 'create'"
+  - append:
+      field: event.type
+      value: change
+      if: "ctx?.log?.file?.path.contains('auditlogs') && ctx.event?.action.toLowerCase() == 'update'"
+  - append:
+      field: event.type
+      value: deletion
+      if: "ctx?.log?.file?.path.contains('auditlogs') && ctx.event?.action.toLowerCase() == 'delete'"
   # Converting address fields to either ip or domain
   - convert:
       field: source.address
