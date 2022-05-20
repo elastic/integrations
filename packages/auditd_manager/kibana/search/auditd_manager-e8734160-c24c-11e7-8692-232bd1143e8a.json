@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "columns": [
+            "agent.name",
+            "auditd.summary.how",
+            "auditd.summary.object.primary",
+            "auditd.summary.object.secondary",
+            "auditd.data.socket.family",
+            "event.action"
+        ],
+        "description": "",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                            "key": "auditd.summary.object.type",
+                            "negate": false,
+                            "params": {
+                                "query": "socket",
+                                "type": "phrase"
+                            },
+                            "type": "phrase",
+                            "value": "socket"
+                        },
+                        "query": {
+                            "match": {
+                                "auditd.summary.object.type": {
+                                    "query": "socket",
+                                    "type": "phrase"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "exists": {
+                            "field": "auditd.summary.object.primary"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                            "key": "auditd.summary.object.primary",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                            "key": "query",
+                            "negate": false,
+                            "type": "custom",
+                            "value": "{\"terms\":{\"auditd.data.syscall\":[\"accept\",\"accept4\",\"recvfrom\",\"recvmsg\"]}}"
+                        },
+                        "query": {
+                            "terms": {
+                                "auditd.data.syscall": [
+                                    "accept",
+                                    "accept4",
+                                    "recvfrom",
+                                    "recvmsg"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "highlightAll": true,
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                },
+                "version": true
+            }
+        },
+        "sort": [
+            [
+                "@timestamp",
+                "desc"
+            ]
+        ],
+        "title": "[Auditd Manager] Socket Accept / Recvfrom",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.2.0",
+    "id": "auditd_manager-e8734160-c24c-11e7-8692-232bd1143e8a",
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "search"
+}
