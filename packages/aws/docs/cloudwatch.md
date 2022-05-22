@@ -66,7 +66,7 @@ An example event for `cloudwatch` looks as following:
         "dataset": "aws.cloudwatch_logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "event": {
         "ingested": "2021-07-19T21:47:04.696803300Z",

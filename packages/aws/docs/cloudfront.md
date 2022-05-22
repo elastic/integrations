@@ -162,7 +162,7 @@ An example event for `cloudfront` looks as following:
     },
     "@timestamp": "2019-12-04T21:02:31.000Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.2.0"
     },
     "related": {
         "hosts": [

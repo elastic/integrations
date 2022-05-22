@@ -69,7 +69,7 @@ An example event for `ec2` looks as following:
     },
     "@timestamp": "2020-02-20T07:01:01.000Z",
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "event": {
         "ingested": "2021-07-19T21:47:04.871450600Z",

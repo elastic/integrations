@@ -172,7 +172,7 @@ An example event for `elb` looks as following:
         "provider": "aws"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "event": {
         "category": "web",
