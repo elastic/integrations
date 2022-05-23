@@ -110,6 +110,9 @@ check_wls "started" localhost ${ADMIN_PORT} 2
 
 /u01/oracle/generateAccess.sh &
 
+# Copy 'AdminServer' logfiles ('admin-server.log', 'domain1.log' and 'access.log') for Docker binding
+/u01/oracle/adminServerLogs.sh &
+
 # tail the Admin Server Logs
 tail -f ${AS_HOME}/logs/${ADMIN_NAME}.log &
 

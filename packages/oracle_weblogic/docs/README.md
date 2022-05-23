@@ -8,7 +8,7 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 
 ## Logs
 
-This integration is for Oracle Weblogic Admin Server logs. It includes the following datasets for receiving logs from a file:
+This integration is for Oracle Weblogic Admin Server and Managed Server logs. It includes the following datasets for receiving logs from a file:
 
 ### Admin Server logs
 
@@ -121,6 +121,123 @@ An example event for `admin_server` looks as following:
 | oracle_weblogic.admin_server.server_name | Server Name is the name of the WebLogic Server instance on which the message was generated. | keyword |
 | oracle_weblogic.admin_server.subsystem | Indicates the subsystem of WebLogic Server that was the source of the message; for example, Enterprise Java Bean (EJB) container or Java Messaging Service (JMS). | keyword |
 | oracle_weblogic.admin_server.thread_id | Thread ID is the ID that the JVM assigns to the thread in which the message originated. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| transaction.id | Unique identifier of the transaction within the scope of its trace. A transaction is the highest level of work measured within a service, such as a request to a server. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+
+
+### Managed Server Logs
+
+The `managed_server` data stream collects Managed Server logs from `Managedserver.log`.
+
+An example event for `managed_server` looks as following:
+
+```json
+{
+    "@timestamp": "2022-03-24T10:29:56.637Z",
+    "agent": {
+        "ephemeral_id": "fc2f1df6-97a1-42bf-9f6b-904a765041e3",
+        "id": "e27eb192-b14d-4af1-8861-fd7cbadb3643",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.1.0"
+    },
+    "data_stream": {
+        "dataset": "oracle_weblogic.managed_server",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "e27eb192-b14d-4af1-8861-fd7cbadb3643",
+        "snapshot": false,
+        "version": "8.1.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "log"
+        ],
+        "dataset": "oracle_weblogic.managed_server",
+        "ingested": "2022-05-09T11:59:45Z",
+        "kind": "event",
+        "module": "oracle_weblogic",
+        "original": "####\u003cMar 24, 2022 10:29:56,637 AM GMT\u003e \u003cInfo\u003e \u003cManagement\u003e \u003c5565e043d1b0\u003e \u003c\u003e \u003cThread-12\u003e \u003c\u003e \u003c\u003e \u003c\u003e \u003c1648117796637\u003e \u003c[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] \u003e \u003cBEA-141307\u003e \u003cUnable to connect to the Administration Server. Waiting 5 second(s) to retry (attempt number 2 of 3).\u003e ",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.21.0.7"
+        ],
+        "mac": [
+            "02:42:ac:15:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.3 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/oracle-weblogic-managedserver.log"
+        },
+        "level": "Info",
+        "offset": 0
+    },
+    "message": "Unable to connect to the Administration Server. Waiting 5 second(s) to retry (attempt number 2 of 3).",
+    "oracle_weblogic": {
+        "managed_server": {
+            "diagnostic_context_id": "1648117796637",
+            "machine_name": "5565e043d1b0",
+            "message_id": "BEA-141307",
+            "meta": "[severity-value: 64] [partition-id: 0] [partition-name: DOMAIN] ",
+            "subsystem": "Management",
+            "thread_id": "Thread-12"
+        }
+    },
+    "tags": [
+        "oracle_weblogic-managed_server"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| host.ip | Host ip addresses. | ip |
+| input.type | Input type. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Log offset. | long |
+| message | A description of the event or condition. | keyword |
+| oracle_weblogic.managed_server.diagnostic_context_id | Context information to correlate messages coming from a specific request or application. | keyword |
+| oracle_weblogic.managed_server.machine_name | Machine Name is the DNS name of the computer that hosts the server instance. | keyword |
+| oracle_weblogic.managed_server.message_id | A unique identifier for the message. | keyword |
+| oracle_weblogic.managed_server.meta | Meta information for the event. | keyword |
+| oracle_weblogic.managed_server.server_name | Server Name is the name of the WebLogic Server instance on which the message was generated. | keyword |
+| oracle_weblogic.managed_server.subsystem | Indicates the subsystem of WebLogic Server that was the source of the message; for example, Enterprise Java Bean (EJB) container or Java Messaging Service (JMS). | keyword |
+| oracle_weblogic.managed_server.thread_id | Thread ID is the ID that the JVM assigns to the thread in which the message originated. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | transaction.id | Unique identifier of the transaction within the scope of its trace. A transaction is the highest level of work measured within a service, such as a request to a server. | keyword |
 | user.id | Unique identifier of the user. | keyword |
