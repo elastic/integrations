@@ -1,12 +1,12 @@
 config_version: "2"
 interval: {{interval}}
-request.url: {{api_url}}
+request.url: {{api_url}}/api/audit/get-siem-logs
 request.method: "POST"
 request.transforms:
    - set:
       target: body.data
       value: '[{"type":"MTA","fileFormat":"json", "compress":false, "token": "[[.cursor.next_token]]"}]'
-      default: '[{"type":"MTA","fileFormat":"json", "compress":false}]'
+      default: '[{"type":"MTA","fileFormat":"json", "compress":true}]'
       value_type: json
    - set:
       target: header.x-mc-app-id
@@ -24,7 +24,7 @@ request.transforms:
    - set:
       target: header.Accept
       value: '*/*'
-response.decode_as: application/json
+response.decode_as: application/zip
 response.split:
    transforms:
    - set:
@@ -34,7 +34,7 @@ response.split:
 response.pagination:
    - set:
       target: body.data
-      value: '[{"type":"MTA","fileFormat":"json", "compress":false, "token": "[[.last_response.header.Get "mc-siem-token"]]"}]'
+      value: '[{"type":"MTA","fileFormat":"json", "compress":true, "token": "[[.last_response.header.Get "mc-siem-token"]]"}]'
       value_type: json
 cursor:
    next_token:
