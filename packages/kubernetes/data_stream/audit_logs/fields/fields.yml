@@ -107,11 +107,92 @@
           type: text
           description: A human-readable description of the status of this operation
     - name: requestObject
-      type: text
+      type: group
+      dynamic: false
       description: API object from the request, in JSON format
+      fields:
+        - name: spec
+          type: group
+          fields:
+            - name: type
+              type: keyword
+            - name: volumes
+              type: group
+              groups: 2
+              fields:
+                - name: hostPath.path
+                  type: text
+            - name: containers
+              type: group
+              fields:
+                - name: image
+                  type: text
+                - name: HostNetwork
+                  type: boolean
+                - name: HostIPC
+                  type: boolean
+                - name: HostPID
+                  type: boolean
+                - name: volumeMounts
+                  type: group
+                  fields:
+                    - name: mountPath
+                      type: text
+                - name: securityContext
+                  type: group
+                  fields:
+                    - name: privileged
+                      type: boolean
+        - name: rules.*
+          type: object
+          object_type: array
+          object_type_mapping_type: "*"
     - name: responseObject
-      type: text
-      description: API object returned in the response, in JSON
+      type: group
+      dynamic: false
+      description: API object returned in the response, in JSON format
+      fields:
+        - name: spec
+          type: group
+          fields:
+            - name: hostIPC
+              type: boolean
+            - name: hostNetwork
+              type: boolean
+            - name: hostPID
+              type: boolean
+            - name: restartPolicy
+              type: keyword
+            - name: containers
+              type: group
+              fields:
+                - name: securityContext
+                  type: group
+                  fields:
+                    - name: privileged
+                      type: boolean
+                    - name: allowPrivilegeEscalation
+                      type: boolean
+                - name: volumeMounts
+                  type: group
+                  fields:
+                    - name: mountPath
+                      type: text
+            - name: volumes
+              type: group
+              groups: 2
+              fields:
+                - name: hostPath.path
+                  type: text
+        - name: rules.*
+          type: object
+          object_type: array
+          object_type_mapping_type: "*"
+        - name: roleRef
+          type: group
+          fields:
+            - name: kind
+              type: keyword
     - name: requestReceivedTimestamp
       type: date
       description: Time the request reached the apiserver
