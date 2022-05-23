@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "columns": [
+            "agent.name",
+            "auditd.summary.how",
+            "auditd.summary.object.primary",
+            "auditd.summary.object.secondary",
+            "auditd.data.socket.family",
+            "auditd.result"
+        ],
+        "description": "",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                            "key": "auditd.data.syscall",
+                            "negate": false,
+                            "params": {
+                                "query": "bind",
+                                "type": "phrase"
+                            },
+                            "type": "phrase",
+                            "value": "bind"
+                        },
+                        "query": {
+                            "match": {
+                                "auditd.data.syscall": {
+                                    "query": "bind",
+                                    "type": "phrase"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                            "key": "auditd.data.socket.family",
+                            "negate": true,
+                            "params": {
+                                "query": "netlink",
+                                "type": "phrase"
+                            },
+                            "type": "phrase",
+                            "value": "netlink"
+                        },
+                        "query": {
+                            "match": {
+                                "auditd.data.socket.family": {
+                                    "query": "netlink",
+                                    "type": "phrase"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "highlightAll": true,
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                },
+                "version": true
+            }
+        },
+        "sort": [
+            [
+                "@timestamp",
+                "desc"
+            ]
+        ],
+        "title": "[Auditd Manager] Socket Binds",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.2.0",
+    "id": "auditd_manager-b4c93470-c240-11e7-8692-232bd1143e8a",
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "search"
+}
