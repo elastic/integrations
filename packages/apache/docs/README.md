@@ -22,6 +22,7 @@ Access logs collects the Apache access logs.
 | apache.access.remote_addresses | An array of remote addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. | keyword |
 | apache.access.ssl.cipher | SSL cipher name. - name: nginx.access | keyword |
 | apache.access.ssl.protocol | SSL protocol version. | keyword |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |

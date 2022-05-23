@@ -36,15 +36,11 @@ processors:
       field: network.forwarded_ip
       value: "{{{apache.access.remote_addresses.0}}}"
       if: ctx.apache?.access?.remote_addresses != null && ctx.apache.access.remote_addresses.length > 0
-  - append:
-      field: apache.access.remote_addresses
-      value: ["{{source.address}}"]
-      if: ctx.source?.address != null
   - script:
       if: ctx.apache?.access?.remote_addresses != null && ctx.apache.access.remote_addresses.length > 0
       lang: painless
       tag: Get source address
-      description: Extract from remote_addresses, the first non-private IP to source.address
+      description: Extract from remote_addresses, the first non-private IP to ctx.client.ip
       source: >-
         boolean isPrivateCIDR(def ip) {
           CIDR class_a_network = new CIDR('10.0.0.0/8');
@@ -59,26 +55,30 @@ processors:
         }
 
         try {
-          if (ctx.source == null) {
+          if (ctx.client == null) {
             Map map = new HashMap();
-            ctx.put("source", map);
+            ctx.put("client", map);
           }
 
           def found = false;
           for (def item : ctx.apache.access.remote_addresses) {
             if (!isPrivateCIDR(item)) {
-              ctx.source.address = item;
+              ctx.client.ip = item;
               found = true;
               break;
             }
           }
           if (!found) {
-            ctx.source.address = ctx.apache.access.remote_addresses[0];
+            ctx.client.ip = ctx.apache.access.remote_addresses[0];
           }
         }
         catch (Exception e) {
-          ctx.source.address = null;
+          ctx.client.ip = null;
         }
+  - append:
+      field: apache.access.remote_addresses
+      value: ["{{source.address}}"]
+      if: ctx.source?.address != null
   - uri_parts:
       field: _tmp.url_orig
       ignore_failure: true
