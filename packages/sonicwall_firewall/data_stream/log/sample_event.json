@@ -1,5 +1,17 @@
 {
-    "@timestamp": "2022-04-29T10:05:12.000+02:00",
+    "@timestamp": "2022-05-16T08:18:39.000+02:00",
+    "agent": {
+        "ephemeral_id": "6cc3228b-d89c-4104-b750-d9cb44ed5513",
+        "id": "08a5caf6-a717-4f5f-90e2-0f4eb7c59b00",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.2.0"
+    },
+    "data_stream": {
+        "dataset": "sonicwall_firewall.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "destination": {
         "geo": {
             "city_name": "London",
@@ -13,35 +25,49 @@
             "region_iso_code": "GB-ENG",
             "region_name": "England"
         },
-        "ip": "81.2.69.143",
-        "port": 443
+        "ip": "81.2.69.193",
+        "mac": "00-17-C5-30-F9-D9",
+        "port": 64889
     },
     "ecs": {
         "version": "8.2.0"
     },
+    "elastic_agent": {
+        "id": "08a5caf6-a717-4f5f-90e2-0f4eb7c59b00",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
     "event": {
-        "action": "connection-start",
+        "action": "connection-denied",
+        "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "code": "98",
+        "code": "713",
+        "dataset": "sonicwall_firewall.log",
+        "ingested": "2022-05-23T13:47:58Z",
         "kind": "event",
-        "original": "Apr 29 10:04:36 172.16.2.1 id=firewall sn=0000A0AAAA00 time=\"2022-04-29 10:05:12\" fw=172.16.0.2 pri=6 c=262144 m=98 msg=\"Connection Opened\" n=15243934 src=172.16.2.2:4522:X0 dst=81.2.69.143:443:X1 proto=tcp/https sent=60",
         "outcome": "success",
-        "sequence": "15243934",
-        "severity": "6",
+        "sequence": "692",
+        "severity": "7",
         "timezone": "+02:00",
         "type": [
             "connection",
-            "start"
+            "denied"
         ]
     },
-    "log": {
-        "level": "info"
+    "input": {
+        "type": "udp"
     },
-    "message": "Connection Opened",
+    "log": {
+        "level": "debug",
+        "source": {
+            "address": "172.24.0.4:47831"
+        }
+    },
+    "message": "� (TCP Flag(s): RST)",
     "network": {
-        "bytes": 60,
+        "bytes": 46,
         "protocol": "https",
         "transport": "tcp"
     },
@@ -49,33 +75,53 @@
         "egress": {
             "interface": {
                 "name": "X1"
-            }
+            },
+            "zone": "Untrusted"
         },
         "ingress": {
             "interface": {
-                "name": "X0"
-            }
+                "name": "X1"
+            },
+            "zone": "Untrusted"
         },
-        "ip": "172.16.0.2",
+        "ip": "10.0.0.96",
         "name": "firewall",
         "product": "SonicOS",
-        "serial_number": "0000A0AAAA00",
+        "serial_number": "0040103CE114",
         "type": "firewall",
         "vendor": "SonicWall"
     },
     "related": {
         "ip": [
-            "172.16.2.2",
-            "81.2.69.143",
-            "172.16.0.2"
+            "10.0.0.96",
+            "81.2.69.193"
+        ],
+        "user": [
+            "admin"
         ]
     },
+    "rule": {
+        "id": "15 (WAN-\u003eWAN)"
+    },
+    "sonicwall": {
+        "firewall": {
+            "app": "12",
+            "event_group_category": "Firewall Settings",
+            "gcat": "6",
+            "sess": "Web"
+        }
+    },
     "source": {
-        "bytes": 60,
-        "ip": "172.16.2.2",
-        "port": 4522
+        "bytes": 46,
+        "ip": "10.0.0.96",
+        "mac": "00-06-B1-DD-4F-D4",
+        "port": 443
     },
     "tags": [
-        "preserve_original_event"
-    ]
+        "sonicwall-firewall",
+        "forwarded"
+    ],
+    "user": {
+        "name": "admin"
+    }
 }
