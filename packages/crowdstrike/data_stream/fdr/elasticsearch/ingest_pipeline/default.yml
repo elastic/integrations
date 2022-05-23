@@ -48,7 +48,7 @@ processors:
   ## ECS fields.
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: "8.2.0"
 
   ## Categorization.
   - script:
@@ -294,9 +294,6 @@ processors:
         }
 
   ## Event fields.
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - rename:
       field: crowdstrike.id
       target_field: event.id
@@ -902,6 +899,9 @@ processors:
   - rename:
       field: crowdstrike.PhysicalAddress
       target_field: source.mac
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
       ignore_missing: true
   - rename:
       field: crowdstrike.DownloadServer

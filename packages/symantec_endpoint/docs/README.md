@@ -456,11 +456,11 @@ An example event for `log` looks as following:
         "end": "2020-11-11T19:25:28.000Z",
         "category": [
             "intrusion_detection",
-            "network"
+            "network",
+            "process"
         ],
         "type": [
             "connection",
-            "process",
             "denied"
         ]
     },

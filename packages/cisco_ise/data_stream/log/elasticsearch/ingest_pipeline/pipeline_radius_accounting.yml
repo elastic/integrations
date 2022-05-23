@@ -1,0 +1,249 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: [configuration]
+  - append:
+      field: event.type
+      value: [info]
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number == 0
+      patterns: 
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number > 0
+      patterns: 
+        - "^%{GREEDYDATA:cisco_ise.log.log_details},"
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats: 
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+      timezone: '{{{event.timezone}}}'
+      ignore_failure: true
+  - kv: 
+      field: cisco_ise.log.log_details
+      field_split: ', '
+      value_split: =
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx?.cisco_ise?.log?.message?.description != null
+      source:
+        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+  - convert:
+      field: ConfigVersionId
+      target_field: cisco_ise.log.config_version.id
+      type: long
+      ignore_failure: true
+  - convert:
+      field: Device IP Address
+      target_field: client.ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}' 
+      if: ctx?.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: RequestLatency
+      target_field: cisco_ise.log.request.latency
+      type: long
+      ignore_failure: true
+  - rename:
+      field: NetworkDeviceName
+      target_field: cisco_ise.log.network.device.name
+      ignore_missing: true
+  - rename:
+      field: User-Name
+      target_field: user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: NAS-IP-Address
+      target_field: cisco_ise.log.nas.ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{cisco_ise.log.nas.ip}}}' 
+      if: ctx?.cisco_ise?.log?.nas?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: NAS-Port
+      target_field: cisco_ise.log.nas.port.number
+      type: long
+      ignore_failure: true
+  - convert:
+      field: Framed-IP-Address
+      target_field: cisco_ise.log.framed.ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{cisco_ise.log.framed.ip}}}' 
+      if: ctx?.cisco_ise?.log?.framed?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: Class
+      target_field: cisco_ise.log.class
+      ignore_missing: true
+  - rename:
+      field: Called-Station-ID
+      target_field: cisco_ise.log.called_station.id
+      ignore_missing: true
+  - rename:
+      field: Calling-Station-ID
+      target_field: cisco_ise.log.calling_station.id
+      ignore_missing: true
+  - rename:
+      field: NAS-Identifier
+      target_field: cisco_ise.log.nas.identifier
+      ignore_missing: true
+  - rename:
+      field: Acct-Status-Type
+      target_field: cisco_ise.log.acct.status.type
+      ignore_missing: true
+  - rename:
+      field: Acct-Session-Id
+      target_field: cisco_ise.log.acct.session.id
+      ignore_missing: true
+  - rename:
+      field: Acct-Authentic
+      target_field: cisco_ise.log.acct.authentic
+      ignore_missing: true
+  - convert:
+      field: Acct-Session-Time
+      target_field: cisco_ise.log.acct.session.time
+      type: long
+      ignore_failure: true
+  - rename:
+      field: Step
+      target_field: cisco_ise.log.step
+      ignore_missing: true
+  - rename:
+      field: Event-Timestamp
+      target_field: cisco_ise.log.event.timestamp
+      ignore_missing: true
+  - date: 
+      field: cisco_ise.log.event.timestamp
+      target_field: cisco_ise.log.event.timestamp
+      if: ctx?.cisco_ise?.log?.event?.timestamp != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - rename:
+      field: NAS-Port-Type
+      target_field: cisco_ise.log.nas.port.type
+      ignore_missing: true
+  - rename:
+      field: Tunnel-Type
+      target_field: cisco_ise.log.tunnel.type
+      ignore_missing: true
+  - rename:
+      field: Tunnel-Medium-Type
+      target_field: cisco_ise.log.tunnel.medium.type
+      ignore_missing: true
+  - rename:
+      field: Tunnel-Private-Group-ID
+      target_field: cisco_ise.log.tunnel.private.group_id
+      ignore_missing: true
+  - convert:
+      field: Airespace-Wlan-Id
+      target_field: cisco_ise.log.airespace.wlan.id
+      type: long
+      ignore_missing: true
+  - rename:
+      field: AcsSessionID
+      target_field: cisco_ise.log.acs.session.id
+      ignore_missing: true
+  - rename:
+      field: SelectedAccessService
+      target_field: cisco_ise.log.selected.access.service
+      ignore_missing: true
+  - rename:
+      field: NetworkDeviceGroups
+      target_field: cisco_ise.log.network.device.groups
+      ignore_missing: true
+  - rename:
+      field: CPMSessionID
+      target_field: cisco_ise.log.cpm.session.id
+      ignore_missing: true
+  - rename:
+      field: AllowedProtocolMatchedRule
+      target_field: cisco_ise.log.allowed_protocol.matched.rule
+      ignore_missing: true
+  - rename:
+      field: Location
+      target_field: cisco_ise.log.location
+      ignore_missing: true
+  - rename:
+      field: Device Type
+      target_field: cisco_ise.log.device.type
+      ignore_missing: true
+  - convert:
+      field: Acct-Delay-Time
+      target_field: cisco_ise.log.acct.delay_time
+      type: long
+      ignore_failure: true
+  - convert:
+      field: Acct-Input-Octets
+      target_field: cisco_ise.log.acct.input.octets
+      type: long
+      ignore_failure: true
+  - convert:
+      field: Acct-Output-Octets
+      target_field: cisco_ise.log.acct.output.octets
+      type: long
+      ignore_failure: true
+  - convert:
+      field: Acct-Input-Packets
+      target_field: cisco_ise.log.acct.input.packets
+      type: long
+      ignore_failure: true
+  - convert:
+      field: Acct-Output-Packets
+      target_field: cisco_ise.log.acct.output.packets
+      type: long
+      ignore_failure: true
+  - rename:
+      field: Acct-Terminate-Cause
+      target_field: cisco_ise.log.acct.terminate_cause
+      ignore_missing: true
+  - rename:
+      field: undefined-52
+      target_field: cisco_ise.log.undefined_52
+      ignore_missing: true
+  - remove:
+      field:
+        - _tmp
+        - ConfigVersionId
+        - Device IP Address
+        - NAS-IP-Address
+        - NAS-Port
+        - cisco_ise.log.log_details
+        - Acct-Input-Octets
+        - Acct-Output-Octets
+        - Acct-Input-Packets
+        - Acct-Output-Packets
+        - Acct-Session-Time
+        - Acct-Delay-Time
+        - RequestLatency
+        - Airespace-Wlan-Id
+        - Framed-IP-Address
+      ignore_missing: true
