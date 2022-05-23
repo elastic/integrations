@@ -449,6 +449,7 @@ An example event for `siem` looks as following:
 | mimecast.RcptHdrType | Type of the receipt header. | keyword |
 | mimecast.ReceiptAck | The receipt acknowledgment message received by Mimecast from the receiving mail server. | keyword |
 | mimecast.ReplyMismatch | The reply address does not correspond to the senders address. | keyword |
+| mimecast.Route | Email route. | keyword |
 | mimecast.ScanResultInfo | The reason that the click was blocked. | keyword |
 | mimecast.SenderDomainInternal | The sender domain is a registered internal domain. | keyword |
 | mimecast.SimilarCustomExternalDomain | The senders domain is similar to a custom external domain list. | keyword |
