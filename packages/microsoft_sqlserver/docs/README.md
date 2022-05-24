@@ -50,7 +50,7 @@ Enable to collect SQL Server audit events from the specified windows event log c
 
 ### Performance and Transaction Log Metrics
 
-Enable to collect the Microsoft SQL Server performance and `transaction log` metrics
+Enable to collect the Microsoft SQL Server performance and transaction log metrics
 
 ## Logs
 
