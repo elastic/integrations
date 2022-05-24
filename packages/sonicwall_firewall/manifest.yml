@@ -1,0 +1,72 @@
+format_version: 1.0.0
+name: sonicwall_firewall
+title: "SonicWall Firewall"
+version: 0.1.0
+license: basic
+release: beta
+description: "Integration for SonicWall firewall logs"
+type: integration
+categories:
+  - network
+  - security
+conditions:
+  kibana.version: "^8.2.0"
+screenshots:
+  - src: /img/dashboard.png
+    title: Sample dashboard
+    size: 911x1531
+    type: image/png
+icons:
+  - src: /img/logo.svg
+    title: SonicWall logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: sample
+    title: Sample logs
+    description: Collect sample logs
+    inputs:
+      - type: udp
+        title: Collect logs via syslog
+        description: Collecting logs via syslog
+      - type: logfile
+        title: Collect logs from file
+        description: Collecting logs from file
+vars:
+  - name: tz_offset
+    type: text
+    title: Timezone Offset
+    multi: false
+    required: true
+    show_user: true
+    default: local
+    description: >-
+      By default, datetimes in the logs will be interpreted as relative to the timezone configured in the host where the agent is running. If ingesting logs from a host on a different timezone, use this field to set the timezone offset so that datetimes are correctly parsed. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00") from UTC.
+  - name: tags
+    type: text
+    title: Tags
+    multi: true
+    required: true
+    show_user: false
+    default:
+      - sonicwall-firewall
+      - forwarded
+  - name: preserve_original_event
+    required: true
+    show_user: true
+    title: Preserve original event
+    description: Preserves a raw copy of the original event, added to the field `event.original`
+    type: bool
+    multi: false
+    default: false
+  - name: processors
+    type: yaml
+    title: Processors
+    multi: false
+    required: false
+    show_user: false
+    description: >
+      Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+owner:
+  github: elastic/security-external-integrations
