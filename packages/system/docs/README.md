@@ -1225,8 +1225,8 @@ This dataset is available on:
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
-| host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | long |  |  |
-| host.disk.write.bytes | The total number of bytes write successfully in a given period of time. | long |  |  |
+| host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | scaled_float | byte | gauge |
+| host.disk.write.bytes | The total number of bytes write successfully in a given period of time. | scaled_float | byte | gauge |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
@@ -1594,9 +1594,9 @@ This dataset is available on:
 | host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
-| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |  |  |
-| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
-| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |  |  |
+| host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |  | counter |
+| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | long |  | counter |
+| host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |  | counter |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
