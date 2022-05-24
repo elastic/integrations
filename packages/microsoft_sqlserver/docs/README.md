@@ -190,7 +190,86 @@ The SQL Server audit dataset provides events from the configured Windows event l
 
 The Microsoft SQL Server performance dataset provides events from the performance counter table. All performance metrics will be available in `sqlserver.metrics` field group.
 
-
 ### Transaction Logs
 
 The Microsoft SQL Server transaction dataset provides events from the log space usage and log stats tables of the system databases. All transaction_log metrics will be available in `sqlserver.metrics` field group.
+
+An example event for `transaction_log` looks as following:
+
+```json
+{
+    "@timestamp": "2022-05-23T10:20:14.787809Z",
+    "sql": {
+        "driver": "mssql",
+        "query": "SELECT *, 'msdb' As 'database_name' FROM sys.dm_db_log_space_usage model",
+        "metrics": {
+            "database_name": "msdb",
+            "database_id": 1,
+            "used_log_space_in_percent": 41.17647171020508,
+            "log_space_in_bytes_since_last_backup": 397312,
+            "total_log_size_in_bytes": 2088960,
+            "used_log_space_in_bytes": 860160
+        }
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "query"
+    },
+    "agent": {
+        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
+        "ephemeral_id": "d1a76cf4-2463-478a-a474-36e771218467",
+        "type": "metricbeat",
+        "version": "8.3.0"
+    },
+    "service": {
+        "address": "54.90.251.237:1433",
+        "type": "sql"
+    },
+    "elastic_agent": {
+        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
+        "version": "8.3.0",
+        "snapshot": true
+    },
+    "event": {
+        "duration": 5595352584,
+        "agent_id_status": "verified",
+        "ingested": "2022-05-23T10:20:21Z",
+        "module": "sql",
+        "dataset": "microsoft_sqlserver.transaction_log"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "microsoft_sqlserver.transaction_log"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| sql.driver | Driver used to execute the query. | keyword |
+| sql.metrics.active_log_size_mb | Total active transaction log size in bytes. | long |
+| sql.metrics.database_id | Unique ID of the database inside MSSQL. | long |
+| sql.metrics.database_name | Name of the database. | keyword |
+| sql.metrics.log_backup_time | Last transaction log backup time. | date |
+| sql.metrics.log_recovery_size_mb | Log size in bytes since log recovery log sequence number (LSN). | long |
+| sql.metrics.log_since_last_checkpoint_mb | Log size in bytes since last checkpoint log sequence number (LSN). | long |
+| sql.metrics.log_since_last_log_backup_mb | Log file size since last backup | long |
+| sql.metrics.log_space_in_bytes_since_last_backup | The amount of space used since the last log backup in bytes. | long |
+| sql.metrics.total_log_size_in_bytes | Total transaction log size in bytes. | long |
+| sql.metrics.total_log_size_mb | Total log size. | long |
+| sql.metrics.used_log_space_in_bytes | The occupied size of the log in bytes. | long |
+| sql.metrics.used_log_space_in_percent | A percentage of the occupied size of the log as a percent of the total log size. | float |
+| sql.query | Query executed to collect metrics. | keyword |
