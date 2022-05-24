@@ -1,6 +1,6 @@
 # MySQL Integration
 
-This integration periodically fetches logs and metrics from [MySQL](https://www.mysql.com/) servers.
+This integration periodically connects and fetches logs and metrics from [MySQL](https://www.mysql.com/) servers.
 
 ## Compatibility
 
@@ -364,7 +364,7 @@ An example event for `galera_status` looks as following:
 
 ### status
 
-The MySQL `status` dataset collects data from MySQL by running a `SHOW GLOBAL STATUS;` SQL query. This query returns a large number of metrics.
+The MySQL `status` dataset collects data from MySQL by running a `SHOW GLOBAL STATUS;` SQL query. This query returns a large number of metrics based on the response.
 
 An example event for `status` looks as following:
 
