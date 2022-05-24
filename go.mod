@@ -130,6 +130,7 @@ require (
 	go.mongodb.org/mongo-driver v1.8.1 // indirect
 	go.starlark.net v0.0.0-20211203141949-70c0e40ae128 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
+	go.uber.org/goleak v1.1.12 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
