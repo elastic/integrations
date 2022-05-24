@@ -1593,9 +1593,9 @@ This dataset is available on:
 | host.ip | Host ip addresses. | ip |  |  |
 | host.mac | Host mac addresses. | keyword |  |  |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
-| host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | long |  |  |
+| host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
 | host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |  |  |
-| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | long |  |  |
+| host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | scaled_float | byte | counter |
 | host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
