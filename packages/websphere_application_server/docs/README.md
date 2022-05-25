@@ -283,10 +283,10 @@ An example event for `session_manager` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-25T06:15:59.780Z",
+    "@timestamp": "2022-05-25T10:02:02.554Z",
     "agent": {
-        "ephemeral_id": "568e6ec9-1097-45cb-a37d-4b62c6d79cf9",
-        "id": "bf7d7191-61b9-42b6-8232-29215bf2e3ea",
+        "ephemeral_id": "ce98e7b5-b605-42ae-bc3e-93dfe4989d2b",
+        "id": "9a7dfaf6-d476-47ba-8a87-e7196ca4d0a3",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -300,7 +300,7 @@ An example event for `session_manager` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "bf7d7191-61b9-42b6-8232-29215bf2e3ea",
+        "id": "9a7dfaf6-d476-47ba-8a87-e7196ca4d0a3",
         "snapshot": false,
         "version": "8.2.0"
     },
@@ -308,8 +308,8 @@ An example event for `session_manager` looks as following:
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "websphere_application_server.session_manager",
-        "duration": 122642282,
-        "ingested": "2022-05-25T06:16:03Z",
+        "duration": 35233763,
+        "ingested": "2022-05-25T10:02:06Z",
         "kind": "metric",
         "module": "websphere_application_server",
         "type": "info"
@@ -319,10 +319,10 @@ An example event for `session_manager` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.192.7"
+            "192.168.240.6"
         ],
         "mac": [
-            "02:42:c0:a8:c0:07"
+            "02:42:c0:a8:f0:06"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -374,7 +374,7 @@ An example event for `session_manager` looks as following:
             },
             "sessions": {
                 "active": 0,
-                "create": 0,
+                "created": 0,
                 "current": 0,
                 "invalidated": {
                     "by_timeouts": 0,
@@ -418,7 +418,7 @@ An example event for `session_manager` looks as following:
 | websphere_application_server.session_manager.persistent_stores.data_read | Total number of times the session data was read from persistent stores. | long |
 | websphere_application_server.session_manager.persistent_stores.data_written | Total number of times the session data being written to persistent store. | long |
 | websphere_application_server.session_manager.sessions.active | The number of sessions that are currently accessed by requests. | long |
-| websphere_application_server.session_manager.sessions.create | The number of session objects that were created by the server. | long |
+| websphere_application_server.session_manager.sessions.created | The number of session objects that were created by the server. | long |
 | websphere_application_server.session_manager.sessions.current | The number of live sessions till date. | long |
 | websphere_application_server.session_manager.sessions.invalidated.by_timeouts | The number of sessions that were invalidated by timeouts. | long |
 | websphere_application_server.session_manager.sessions.invalidated.total | The total number of sessions that were invalidated. | long |
