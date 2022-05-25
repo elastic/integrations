@@ -6,92 +6,104 @@ An example event for `rds` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:58:34.537Z",
+    "@timestamp": "2022-04-29T22:06:00.000Z",
     "ecs": {
-        "version": "1.5.0"
-    },
-    "service": {
-        "type": "aws"
-    },
-    "aws": {
-        "rds": {
-            "latency": {
-                "dml": 0,
-                "insert": 0,
-                "update": 0,
-                "commit": 0,
-                "ddl": 0,
-                "delete": 0,
-                "select": 0.21927814569536422
-            },
-            "queries": 6.197934021992669,
-            "aurora_bin_log_replica_lag": 0,
-            "transactions": {
-                "blocked": 0,
-                "active": 0
-            },
-            "deadlocks": 0,
-            "login_failures": 0,
-            "throughput": {
-                "network": 1.399813358218904,
-                "insert": 0,
-                "ddl": 0,
-                "select": 2.5165408396246853,
-                "delete": 0,
-                "commit": 0,
-                "network_transmit": 0.699906679109452,
-                "update": 0,
-                "dml": 0,
-                "network_receive": 0.699906679109452
-            },
-            "cpu": {
-                "total": {
-                    "pct": 0.03
-                }
-            },
-            "db_instance": {
-                "arn": "arn:aws:rds:eu-west-1:428152502467:db:database-1-instance-1-eu-west-1a",
-                "class": "db.r5.large",
-                "identifier": "database-1-instance-1-eu-west-1a",
-                "status": "available"
-            },
-            "cache_hit_ratio.result_set": 0,
-            "aurora_replica.lag.ms": 19.576,
-            "free_local_storage.bytes": 32431271936,
-            "cache_hit_ratio.buffer": 100,
-            "disk_usage": {
-                "bin_log.bytes": 0
-            },
-            "db_instance.identifier": "database-1-instance-1-eu-west-1a",
-            "freeable_memory.bytes": 4436537344,
-            "engine_uptime.sec": 10463030,
-            "database_connections": 0
-        }
-    },
-    "cloud": {
-        "provider": "aws",
-        "region": "eu-west-1",
-        "account": {
-            "id": "428152502467",
-            "name": "elastic-beats"
-        },
-        "availability_zone": "eu-west-1a"
-    },
-    "event": {
-        "dataset": "aws.rds",
-        "module": "aws",
-        "duration": 10777919184
+        "version": "8.0.0"
     },
     "metricset": {
         "name": "rds",
         "period": 60000
     },
-    "agent": {
-        "name": "MacBook-Elastic.local",
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30"
+    "service": {
+        "type": "aws"
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "us-east-1",
+        "account": {
+            "name": "test",
+            "id": "123456789"
+        }
+    },
+    "aws": {
+        "rds": {
+            "free_local_storage": {
+                "bytes": 26268446720
+            },
+            "aurora_replica": {
+                "lag_max": {
+                    "ms": 20.304000854492188
+                },
+                "lag_min": {
+                    "ms": 20.304000854492188
+                }
+            },
+            "engine_uptime": {
+                "sec": 49034043.5
+            },
+            "throughput": {
+                "dml": 0.49996361679093426,
+                "network": 1.4025011270098342,
+                "network_transmit": 0.7012505635049171,
+                "update": 0,
+                "ddl": 0,
+                "delete": 0,
+                "insert": 0.49996361679093426,
+                "network_receive": 0.7012505635049171,
+                "select": 3.191082392137672,
+                "commit": 0.49996361679093426
+            },
+            "deadlocks": 0,
+            "aurora_volume_left_total": {
+                "bytes": 70007366615040
+            },
+            "database_connections": 0,
+            "freeable_memory": {
+                "bytes": 4668841984
+            },
+            "swap_usage": {
+                "bytes": 0
+            },
+            "queries": 9.079938078523146,
+            "latency": {
+                "write": 0.0011471449704016914,
+                "delete": 0,
+                "commit": 7.523700000000001,
+                "ddl": 0,
+                "dml": 0.19436666666666666,
+                "select": 0.23795217035217037,
+                "insert": 0.19436666666666666,
+                "read": 0,
+                "update": 0
+            },
+            "transactions": {
+                "active": 0,
+                "blocked": 0
+            },
+            "login_failures": 0,
+            "aurora_bin_log_replica_lag": 0,
+            "cache_hit_ratio": {
+                "result_set": 0,
+                "buffer": 100
+            }
+        },
+        "cloudwatch": {
+            "namespace": "AWS/RDS"
+        },
+        "dimensions": {
+            "Role": "WRITER",
+            "DBClusterIdentifier": "database-1"
+        },
+        "tags": {
+            "cluster": "database-1",
+            "dept": "eng",
+            "created-by": "ks"
+        }
+    },
+    "event": {
+        "duration": 23004180977,
+        "dataset": "aws.rds",
+        "module": "aws"
     }
 }
 ```
@@ -105,11 +117,10 @@ An example event for `rds` looks as following:
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.DBClusterIdentifier | This dimension filters the data that you request for a specific Amazon Aurora DB cluster. | keyword |
-| aws.dimensions.DBClusterIdentifier,Role | This dimension filters the data that you request for a specific Aurora DB cluster, aggregating the metric by instance role (WRITER/READER). | keyword |
 | aws.dimensions.DBInstanceIdentifier | This dimension filters the data that you request for a specific DB instance. | keyword |
 | aws.dimensions.DatabaseClass | This dimension filters the data that you request for all instances in a database class. | keyword |
-| aws.dimensions.DbClusterIdentifier, EngineName | This dimension filters the data that you request for a specific Aurora DB cluster, aggregating the metric by engine name. | keyword |
 | aws.dimensions.EngineName | This dimension filters the data that you request for the identified engine name only. | keyword |
+| aws.dimensions.Role | This dimension filters the data that you request by instance role (WRITER/READER). | keyword |
 | aws.dimensions.SourceRegion | This dimension filters the data that you request for the specified region only. | keyword |
 | aws.rds.aurora_bin_log_replica_lag | The amount of time a replica DB cluster running on Aurora with MySQL compatibility lags behind the source DB cluster. | long |
 | aws.rds.aurora_global_db.data_transfer.bytes | In an Aurora Global Database, the amount of redo log data transferred from the master AWS Region to a secondary AWS Region. | long |
