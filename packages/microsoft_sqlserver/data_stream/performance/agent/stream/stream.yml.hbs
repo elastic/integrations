@@ -1,6 +1,7 @@
 metricsets: ["query"]
+# Specify hosts in the below format. TODO:The host configuration needs to be updated.
 hosts: 
-  - sqlserver://{{username}}:{{password}}@{{hosts}}:{{port}}   # Need to use this format
+  - sqlserver://{{username}}:{{password}}@{{hosts}}:{{port}}   
 period: {{period}}
 raw_data.enabled: true
 # Below dynamic_counter_name handles the dynamic counter name passing it to SQL query
@@ -39,5 +40,5 @@ sql_queries:
     response_format: table
   - query: "SELECT cntr_value As 'sql_re_compilations_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'SQL Re-Compilations/sec'"
     response_format: table
-  - query: "SELECT cntr_value As 'dynamic_counter_name' FROM sys.dm_os_performance_counters WHERE counter_name= '{{dynamic_counter_name}}'"
+  - query: "SELECT counter_name As 'dynamic_counter_name', cntr_value As 'dynamic_counter_value' FROM sys.dm_os_performance_counters WHERE counter_name= '{{dynamic_counter_name}}'"
     response_format: table
