@@ -283,13 +283,13 @@ An example event for `session_manager` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-25T12:40:46.413Z",
+    "@timestamp": "2022-05-25T06:15:59.780Z",
     "agent": {
-        "ephemeral_id": "d5572e4c-4045-455b-abab-3954dda97e39",
-        "id": "b26c384c-6b4b-4c58-92bb-782548bf402a",
+        "ephemeral_id": "568e6ec9-1097-45cb-a37d-4b62c6d79cf9",
+        "id": "bf7d7191-61b9-42b6-8232-29215bf2e3ea",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.1.0"
+        "version": "8.2.0"
     },
     "data_stream": {
         "dataset": "websphere_application_server.session_manager",
@@ -300,16 +300,16 @@ An example event for `session_manager` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "b26c384c-6b4b-4c58-92bb-782548bf402a",
+        "id": "bf7d7191-61b9-42b6-8232-29215bf2e3ea",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "websphere_application_server.session_manager",
-        "duration": 36585023,
-        "ingested": "2022-04-25T12:40:49Z",
+        "duration": 122642282,
+        "ingested": "2022-05-25T06:16:03Z",
         "kind": "metric",
         "module": "websphere_application_server",
         "type": "info"
@@ -319,20 +319,20 @@ An example event for `session_manager` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.19.0.7"
+            "192.168.192.7"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:c0:a8:c0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "3.10.0-1160.45.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -355,7 +355,7 @@ An example event for `session_manager` looks as following:
         "session_manager": {
             "activated_non_existent_sessions": 0,
             "affinity_breaks": 0,
-            "app_name": "isclite#wasportlet.war",
+            "app_name": "ibmasyncrsp#ibmasyncrsp.war",
             "cache_discarded": 0,
             "external": {
                 "bytes": {
