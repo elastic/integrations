@@ -262,9 +262,10 @@ An example event for `performance` looks as following:
 | sql.metrics.batch_requests_sec | Number of Transact-SQL command batches received per second. This statistic is affected by all constraints (such as I/O, number of users, cache size, complexity of requests, and so on). High batch requests mean good throughput. | long |
 | sql.metrics.buffer_cache_hit_ratio | The ratio is the total number of cache hits divided by the total number of cache lookups over the last few thousand page accesses. After a long period of time, the ratio moves very little. Because reading from the cache is much less expensive than reading from disk, you want this ratio to be high. | double |
 | sql.metrics.checkpoint_pages_sec | Indicates the number of pages flushed to disk per second by a checkpoint or other operation that require all dirty pages to be flushed. | long |
-| sql.metrics.connection_reset_sec | Total number of logins started from the connection pool. | long |
+| sql.metrics.connection_reset_sec | Total number of logins started per second from the connection pool. | long |
 | sql.metrics.database_pages | Indicates the number of pages in the buffer pool with database content. | long |
-| sql.metrics.dynamic_counter_name | Dynamic counter name handles the dynamic counter name passing to performance SQL query | long |
+| sql.metrics.dynamic_counter_name | Dynamic counter name is given by user. | keyword |
+| sql.metrics.dynamic_counter_value | Dynamic counter value is fetched from performance table for the dynamic counter name which is provided by user. | long |
 | sql.metrics.lock_waits_sec | Number of lock requests per second that required the caller to wait. | long |
 | sql.metrics.logins_sec | Total number of logins started per second. This does not include pooled connections. | long |
 | sql.metrics.logouts_sec | Total number of logout operations started per second. | long |
