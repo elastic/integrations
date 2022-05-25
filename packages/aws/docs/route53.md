@@ -256,7 +256,7 @@ An example event for `route53_resolver` looks as following:
     },
     "dns": {
         "question": {
-            "name": "15.3.4.32.in-addr.arpa",
+            "name": "15.199.16.175.in-addr.arpa",
             "subdomain": "15.3.4",
             "registered_domain": "32.in-addr.arpa",
             "type": "PTR",
@@ -283,7 +283,7 @@ An example event for `route53_resolver` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2021-12-12T00:28:02.201047005Z",
-        "original": "{\"srcaddr\":\"4.5.64.102\",\"vpc_id\":\"vpc-7example\",\"answers\":[{\"Rdata\":\"203.0.113.9\",\"Type\":\"PTR\",\"Class\":\"IN\"}],\"firewall_rule_group_id\":\"rslvr-frg-01234567890abcdef\",\"firewall_rule_action\":\"BLOCK\",\"query_name\":\"15.3.4.32.in-addr.arpa.\",\"firewall_domain_list_id\":\"rslvr-fdl-01234567890abcdef\",\"query_class\":\"IN\",\"srcids\":{\"instance\":\"i-0d15cd0d3example\"},\"rcode\":\"NOERROR\",\"query_type\":\"PTR\",\"transport\":\"UDP\",\"version\":\"1.100000\",\"account_id\":\"111122223333\",\"srcport\":\"56067\",\"query_timestamp\":\"2021-02-04T17:51:55Z\",\"region\":\"us-east-1\"}",
+        "original": "{\"srcaddr\":\"4.5.64.102\",\"vpc_id\":\"vpc-7example\",\"answers\":[{\"Rdata\":\"203.0.113.9\",\"Type\":\"PTR\",\"Class\":\"IN\"}],\"firewall_rule_group_id\":\"rslvr-frg-01234567890abcdef\",\"firewall_rule_action\":\"BLOCK\",\"query_name\":\"15.199.16.175.in-addr.arpa.\",\"firewall_domain_list_id\":\"rslvr-fdl-01234567890abcdef\",\"query_class\":\"IN\",\"srcids\":{\"instance\":\"i-0d15cd0d3example\"},\"rcode\":\"NOERROR\",\"query_type\":\"PTR\",\"transport\":\"UDP\",\"version\":\"1.100000\",\"account_id\":\"111122223333\",\"srcport\":\"56067\",\"query_timestamp\":\"2021-02-04T17:51:55Z\",\"region\":\"us-east-1\"}",
         "category": [
             "network"
         ],
@@ -306,7 +306,7 @@ An example event for `route53_resolver` looks as following:
     },
     "related": {
         "hosts": [
-            "15.3.4.32.in-addr.arpa"
+            "15.199.16.175.in-addr.arpa"
         ],
         "ip": [
             "4.5.64.102"
