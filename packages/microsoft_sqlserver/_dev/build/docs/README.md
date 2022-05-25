@@ -44,7 +44,7 @@ See: [Instructions about each performance counter metrics](https://docs.microsof
 
 ### transaction_log metrics
 
-Collects system level `transaction_log metrics` information for SQL Server instance.
+Collects system level `transaction_log` metrics information for SQL Server instance.
 
 See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
 
