@@ -325,6 +325,7 @@ An example event for `ec2` looks as following:
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |
 | host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | long |
 | host.disk.write.bytes | The total number of bytes write successfully in a given period of time. | long |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -333,8 +334,12 @@ An example event for `ec2` looks as following:
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |
 | host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | long |
 | host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |
 | host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | long |
 | host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |
 | host.os.build | OS build information. | keyword |
