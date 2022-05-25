@@ -95,6 +95,14 @@ An example event for `dns` looks as following:
 ```json
 {
     "@timestamp": "2022-01-23T09:16:05.341Z",
+    "agent": {
+        "ephemeral_id": "0d2f83ac-67e6-454f-84eb-859aa503167a",
+        "hostname": "docker-fleet-agent",
+        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.17.0"
+    },
     "cloud": {
         "availability_zone": "europe-west2-a",
         "instance": {
@@ -104,7 +112,13 @@ An example event for `dns` looks as following:
         "project": {
             "id": "project"
         },
+        "provider": "gcp",
         "region": "europe-west2"
+    },
+    "data_stream": {
+        "dataset": "gcp.dns",
+        "namespace": "ep",
+        "type": "logs"
     },
     "dns": {
         "answers": [
@@ -130,11 +144,19 @@ An example event for `dns` looks as following:
     "ecs": {
         "version": "8.2.0"
     },
+    "elastic_agent": {
+        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "snapshot": false,
+        "version": "7.17.0"
+    },
     "event": {
+        "agent_id_status": "verified",
+        "created": "2022-05-20T07:25:43.755Z",
+        "dataset": "gcp.dns",
         "id": "vwroyze8pg7y",
+        "ingested": "2022-05-20T07:25:44Z",
         "kind": "event",
-        "outcome": "success",
-        "original": "{\"insertId\":\"vwroyze8pg7y\",\"jsonPayload\":{\"authAnswer\":true,\"protocol\":\"UDP\",\"queryName\":\"elastic.co.\",\"queryType\":\"A\",\"rdata\":\"elastic.co.\\t300\\tIN\\ta\\t127.0.0.1\",\"responseCode\":\"NOERROR\",\"serverLatency\":14,\"sourceIP\":\"10.154.0.3\",\"sourceNetwork\":\"default\",\"vmInstanceId\":8340998530665147,\"vmInstanceIdString\":\"8340998530665147\",\"vmInstanceName\":\"694119234537.instance\",\"vmProjectId\":\"project\",\"vmZoneName\":\"europe-west2-a\"},\"logName\":\"projects/project/logs/dns.googleapis.com%2Fdns_queries\",\"receiveTimestamp\":\"2022-01-23T09:16:05.502805637Z\",\"resource\":{\"labels\":{\"location\":\"europe-west2\",\"project_id\":\"project\",\"source_type\":\"gce-vm\",\"target_name\":\"\",\"target_type\":\"external\"},\"type\":\"dns_query\"},\"severity\":\"INFO\",\"timestamp\":\"2022-01-23T09:16:05.341873447Z\"}"
+        "outcome": "success"
     },
     "gcp": {
         "dns": {
@@ -153,6 +175,9 @@ An example event for `dns` looks as following:
             "vm_zone_name": "europe-west2-a"
         }
     },
+    "input": {
+        "type": "gcp-pubsub"
+    },
     "log": {
         "logger": "projects/project/logs/dns.googleapis.com%2Fdns_queries"
     },
@@ -164,7 +189,8 @@ An example event for `dns` looks as following:
         "ip": "10.154.0.3"
     },
     "tags": [
-        "preserve_original_event"
+        "forwarded",
+        "gcp-dns"
     ]
 }
 ```
