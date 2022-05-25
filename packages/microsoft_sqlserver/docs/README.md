@@ -6,8 +6,8 @@ Auditing an instance of the SQL Server Database Engine or an individual database
 SQL Server audit lets you create server audits, which can contain server audit specifications for server level events, and database audit specifications for database level events. 
 See: [SQL Server Audit page](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15) for more information on SQL Server auditing.
 
-Performance metrics gathers the list of performance objects available on that server. Each server will have a different list of performance objects depending on the installed software.
-`Transaction log` metrics collects all usage stats and the database modifications made by each transaction. If there is a system failure, you will need that log to bring your database back to a consistent state.
+The `performance` metrics gathers the list of performance objects available on that server. Each server will have a different list of performance objects depending on the installed software.
+`transaction_log` metrics collects all usage stats and the total space usage.
 
 ## Named Instance
 
@@ -17,11 +17,11 @@ See: [Instruction on how to configure server to listen Named Instance port](http
 
 ## Compatibility
 
-The package collects performance, transaction_log metrics and audit events from the event log. Other log sources such as file are not supported.
+The package collects `performance`, `transaction_log` metrics and `audit` events from the event log. Other log sources such as file are not supported.
 
 ## Configuration
 
-### Audit
+### audit
 
 There are several levels of auditing for SQL Server, depending on government or standards requirements for your installation. The SQL Server Audit feature enables you to audit server-level and database-level groups of events and individual events. 
 
@@ -31,30 +31,26 @@ See: [Instructions on how to enable auditing for SQL Server](https://docs.micros
 
 >Note: For the integration package to be able to read and send audit events the event target must be configured to be Windows event log.
 
-### Performance
+### audit events
 
-Collects the performance counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
+Enable to collect SQL Server audit events from the specified windows event log channel.
+
+### performance metrics
+
+Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
 
 See: [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15
 )
 
-### Transaction Log
+### transaction_log metrics
 
-Collects usage stats and the system level information for SQL Server instance.
+Collects system level `transaction_log` metrics information for SQL Server instance.
 
 See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
 
-### Audit Events
-
-Enable to collect SQL Server audit events from the specified windows event log channel.
-
-### Performance and Transaction Log Metrics
-
-Enable to collect the Microsoft SQL Server performance and transaction_log metrics
-
 ## Logs
 
-### Audit
+### audit
 
 The SQL Server audit dataset provides events from the configured Windows event log channel. All SQL Server audit specific fields are available in the `sqlserver.audit` field group.
 
@@ -186,9 +182,9 @@ The SQL Server audit dataset provides events from the configured Windows event l
 
 ## Metrics
 
-### Performance
+### performance
 
-The Microsoft SQL Server performance dataset provides events from the performance counter table. All performance metrics will be available in `sqlserver.metrics` field group.
+The Microsoft SQL Server `performance` dataset provides events from the performance counter table. All `performance` metrics will be available in `sqlserver.metrics` field group.
 
 An example event for `performance` looks as following:
 
@@ -279,6 +275,6 @@ An example event for `performance` looks as following:
 | sql.query | Query executed to collect | keyword |
 
 
-### Transaction Logs
+### transaction_log
 
-The Microsoft SQL Server transaction dataset provides events from the log space usage and log stats tables of the system databases. All transaction_log metrics will be available in `sqlserver.metrics` field group.
+The Microsoft SQL Server `transaction_log` dataset provides events from the log space usage and log stats tables of the system databases. All `transaction_log` metrics will be available in `sqlserver.metrics` field group.
