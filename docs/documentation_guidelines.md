@@ -37,14 +37,10 @@ The overview should answer the following questions:
 Use this template language as a starting point, replacing `<placeholder text>` with details about the integration:
 
 ```md
-<!-- What is the integration? -->
 The <name> integration allows you to monitor <service>.
 
-<!-- What can you do with it? -->
-<!-- General description -->
 Use the <name> integration to <function>. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
-<!-- Basic example -->
 For example, if you wanted to <use case> you could <action>. Then you can <visualize|alert|troubleshoot|> by <action>.
 ```
 
@@ -68,13 +64,10 @@ The data types section should include:
 
 * List data types collected by the integration
 * Summary of each data type included and link to reference:
-  * Application errors
-  * Application metrics
-  * Events
-  * Internal Metrics
   * Logs
-  * Metrics  
-  * Traces
+  * Metrics
+  * Events
+  * Errors
 * (Optional) Notes
 
 **Template**
@@ -84,25 +77,17 @@ Use this template language as a starting point, replacing `<placeholder text>` w
 ```md
 ## Data types
 
-<!-- List -->
 The <name> integration collects two types of data: logs and metrics.
 
-<!-- Logs summary -->
-<!-- Definition -->
 **Logs** help you keep a record of events happening in <service>.
-<!-- Examples -->
 Log datasets collected by the <name> integration include <select datasets>, and more. See more details in the [Logs](#logs-reference).
 
-<!-- Metrics summary -->
-<!-- Definition -->
 **Metrics** give you insight into the state of <service>.
-<!-- Examples -->
 Metric datasets collected by the <name> integration include <select datasets> and more. See more details in the [Metrics](#metrics-reference).
 
 <!-- etc. -->
 
 <!-- Optional notes -->
-<notes>
 ```
 
 **Example**
@@ -139,7 +124,6 @@ Use this template language as a starting point, including any other requirements
 ```md
 ## Requirements
 
-<!-- Elastic prerequisites  -->
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
@@ -179,7 +163,8 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Troubleshooting
 
-The troubleshooting section ...
+The troubleshooting section is optional.
+It should contain information about special cases and exceptions that isn't necessary for getting started or won't be applicable to all users.
 
 **Template**
 
@@ -197,13 +182,19 @@ There is no standard format for the troubleshooting section.
 
 ## Reference
 
-<!-- - real-world configuration examples for both the package and the target system.
-- integration specific caveats (e.g. enabling this module will incur additional costs).
-- actual metric types (counters, gauges, histograms vs. longs and doubles). -->
+Readers might use the reference section while evaluating the integration or after installation when using the resulting data or troubleshooting issues.
+
+There can be any number of reference sections (for example, `## Metrics reference`, `## Logs reference`).
+And each reference section can contain one or more subsections, one for each dataset (for example, `### Access Logs` and `### Error logs`).
+
+Each reference section should contain detailed information about:
+
+* Exported fields for logs, metrics, and events with actual types (for example, `counters`, `gauges`, `histograms` vs. `longs` and `doubles`)
+* ML Modules jobs
 
 **Template**
 
-```md
-```
+There is no standard format for the narrative content in reference sections,
+but fields should be generated using the instructions in [Fine-tune the integration](./fine_tune_integration.md).
 
-**Example**
+<!-- **Example** -->
