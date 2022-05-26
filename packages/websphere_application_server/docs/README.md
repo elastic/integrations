@@ -4,6 +4,7 @@ This Elastic integration is used to collect the following metrics from [IBM WebS
 
    - JDBC metrics
    - Servlet metrics
+   - ThreadPool metrics
 
 This integration uses Prometheus to collect above metrics.
 
@@ -272,3 +273,133 @@ An example event for `servlet` looks as following:
 | websphere_application_server.servlet.uri.requests.total | Total number of requests that a servlet processed for the specified URL. | long |
 | websphere_application_server.servlet.uri.response_time_seconds | The total response time (in seconds) to process the requests for the specified URL. | double |
 | websphere_application_server.servlet.uri.responses.total | The total number of responses for the specified URL. | long |
+
+
+## ThreadPool
+
+This data stream collects Thread related metrics.
+
+An example event for `threadpool` looks as following:
+
+```json
+{
+    "@timestamp": "2022-05-25T05:29:29.876Z",
+    "agent": {
+        "ephemeral_id": "89977a47-6584-45ca-acf9-b0fcdf8c5ee0",
+        "id": "37bf4307-b56f-4bf5-9f94-5a2ab9cf49f0",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.2.0"
+    },
+    "data_stream": {
+        "dataset": "websphere_application_server.threadpool",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "37bf4307-b56f-4bf5-9f94-5a2ab9cf49f0",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "web",
+        "dataset": "websphere_application_server.threadpool",
+        "duration": 417718741,
+        "ingested": "2022-05-25T05:29:33Z",
+        "kind": "metric",
+        "module": "websphere_application_server",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "192.168.144.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:90:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 60000
+    },
+    "server": {
+        "address": "elastic-package-service_websphere_application_server_1:9080"
+    },
+    "service": {
+        "address": "http://elastic-package-service_websphere_application_server_1:9080/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "forwarded",
+        "websphere_application_server-threadpool",
+        "prometheus"
+    ],
+    "websphere_application_server": {
+        "threadpool": {
+            "active_time_seconds": 0,
+            "name": "AriesThreadPool",
+            "threads": {
+                "active": 0,
+                "cleared": 0,
+                "stopped": {
+                    "concurrent": 0,
+                    "declared": 0
+                },
+                "total": 0
+            },
+            "total": {
+                "active": 0,
+                "created": 0,
+                "destroyed": 0
+            }
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | Event category. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.kind | Event kind | constant_keyword |
+| event.module | Event module | constant_keyword |
+| event.type | Event type | constant_keyword |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| websphere_application_server.threadpool.active_time_seconds | The total time (in seconds) that the threads are in active state. | double |
+| websphere_application_server.threadpool.name | Name of ThreadPool. | keyword |
+| websphere_application_server.threadpool.threads.active | The number of concurrently active threads. | long |
+| websphere_application_server.threadpool.threads.cleared | The number of thread stops that cleared. | long |
+| websphere_application_server.threadpool.threads.stopped.concurrent | The number of concurrently stopped threads. | long |
+| websphere_application_server.threadpool.threads.stopped.declared | The number of threads that were declared stopped. | long |
+| websphere_application_server.threadpool.threads.total | The number of threads in a pool. | long |
+| websphere_application_server.threadpool.total.active | The number of threads that were active. | long |
+| websphere_application_server.threadpool.total.created | The total number of threads that were created. | long |
+| websphere_application_server.threadpool.total.destroyed | The total number of threads that were destroyed. | long |
+
