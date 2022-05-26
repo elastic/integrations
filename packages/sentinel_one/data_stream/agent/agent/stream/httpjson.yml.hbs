@@ -1,0 +1,51 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: GET
+request.url: {{url}}/web/api/v2.1/agents
+request.transforms:
+  - set: 
+      target: header.Authorization
+      value: 'ApiToken {{api_token}}'
+  - set:
+      target: url.params.limit
+      value: '100'
+  - set:
+      target: url.params.sortBy
+      value: 'updatedAt'
+  - set:
+      target: url.params.sortOrder
+      value: 'asc'
+  - set:
+      target: url.params.updatedAt__gte
+      value: '[[formatDate (parseDate .cursor.last_update_at)]]'
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
+response.pagination: 
+  - set:
+      target: url.params.cursor
+      value: '[[if (ne .last_response.body.pagination.nextCursor nil)]][[.last_response.body.pagination.nextCursor]][[else]][[.last_response.terminate_pagination]][[end]]'
+      fail_on_template_error: true
+cursor:
+  last_update_at:
+    value: '[[.last_event.updatedAt]]'
+response.split:
+  target: body.data
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
