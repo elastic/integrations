@@ -29,3 +29,9 @@ services:
       - STREAM_INSECURE=true
       - STREAM_ADDR=https://elastic-agent:7443/
     command: log --webhook-content-type application/x-ndjson --start-signal=SIGHUP --delay=5s /sample_logs/test-threatstream-ndjson.log
+  threatstream-integrator-test:
+    image: docker.io/adrisr/filebeat-anomali-integrator-test:latest
+    volumes:
+      - ./files:/files:ro
+    command:
+      - /files/test-intel.ndjson
