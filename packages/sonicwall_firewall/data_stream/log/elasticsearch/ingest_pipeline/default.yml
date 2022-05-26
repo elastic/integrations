@@ -391,25 +391,21 @@ processors:
       field: _temp_.source_nat_ip
       description: Extracts optional port number from src nat field
       ignore_missing: true
+      ignore_failure: true
       patterns:
-        - '^%{IPV4:source.nat.ip}:%{POSINT:source.nat.port}$'
+        - '^%{IPV4:source.nat.ip}(:?:%{POSINT:source.nat.port})?$'
+        - '^%{IPV6:source.nat.ip}$'
         - '^\[%{IPV6:source.nat.ip}\]:%{POSINT:source.nat.port}$'
-      on_failure:
-        - convert:
-            field: _temp_.source_nat_ip
-            type: ip
 
   - grok:
       field: _temp_.destination_nat_ip
       description: Extracts optional port number from dst nat field
       ignore_missing: true
+      ignore_failure: true
       patterns:
-        - '^%{IPV4:destination.nat.ip}:%{POSINT:destination.nat.port}$'
+        - '^%{IPV4:destination.nat.ip}(:?:%{POSINT:destination.nat.port})?$'
+        - '^%{IPV6:destination.nat.ip}$'
         - '^\[%{IPV6:destination.nat.ip}\]:%{POSINT:destination.nat.port}$'
-      on_failure:
-        - convert:
-            field: _temp_.destination_nat_ip
-            type: ip
 
 #
 # Validate integer fields
