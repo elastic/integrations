@@ -77,7 +77,7 @@ pipeline {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           prepareStack()
                           withKubernetes() {
-                            withCloudTestEnv() {
+                            withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
                               sh(label: "Test integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
@@ -245,25 +245,6 @@ def prepareStack() {
 
   sh(label: "Update the Elastic stack", script: "../../build/elastic-package stack update ${stackArgs}")
   sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
-}
-
-def withCloudTestEnv(Closure body) {
-  def maskedVars = []
-  // AWS
-  def aws = getVaultSecret(secret: "${AWS_ACCOUNT_SECRET}").data
-  if (!aws.containsKey('access_key')) {
-    error("${AWS_ACCOUNT_SECRET} doesn't contain 'access_key'")
-  }
-  if (!aws.containsKey('secret_key')) {
-    error("${AWS_ACCOUNT_SECRET} doesn't contain 'secret_key'")
-  }
-  maskedVars.addAll([
-    [var: "AWS_ACCESS_KEY_ID", password: aws.access_key],
-    [var: "AWS_SECRET_ACCESS_KEY", password: aws.secret_key],
-  ])
-  withEnvMask(vars: maskedVars) {
-    body()
-  }
 }
 
 def stashCoverageReport() {
