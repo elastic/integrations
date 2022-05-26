@@ -167,8 +167,8 @@ An example event for `limo` looks as following:
 ### Anomali Threatstream
 
 This integration requires additional software, the _Elastic_ _Extension,_
-to connect the Anomali ThreatStream with this integration. This software
-is provided by Anomali.
+to connect the Anomali ThreatStream with this integration. It's available
+at the https://ui.threatstream.com/downloads[ThreatStream download page.]
 
 Please refer to the documentation included with the Extension for a detailed
 explanation on how to configure the Anomali ThreatStream to send indicator
