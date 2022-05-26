@@ -33,14 +33,17 @@ processors:
       field: azure.activitylogs.resourceId
       target_field: azure.resource_id
       ignore_missing: true
-  - grok:
-      field: azure.activitylogs.callerIpAddress
-      patterns:
-        - \[%{IPORHOST:source.ip}\]:%{INT:source.port:int}
-        - "%{IPORHOST:source.ip}:%{INT:source.port:int}"
-        - "%{IPORHOST:source.ip}"
-      ignore_missing: true
-      ignore_failure: true
+  - convert:
+        field: azure.activitylogs.callerIpAddress
+        target_field: source.ip
+        type: ip
+        ignore_missing: true
+        on_failure:
+        - rename: 
+            field: azure.activitylogs.callerIpAddress
+            target_field: source.address
+            ignore_missing: true 
+            ignore_failure: true
   - remove:
       field: azure.activitylogs.callerIpAddress
       if: 'ctx.source?.ip != null'

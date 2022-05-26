@@ -140,14 +140,17 @@ processors:
       field: azure.springcloudlogs.EventName
       target_field: event.action
       ignore_missing: true
-  - grok:
+  - convert:
       field: azure.springcloudlogs.callerIpAddress
-      patterns:
-        - \[%{IPORHOST:source.ip}\]:%{INT:source.port:int}
-        - "%{IPORHOST:source.ip}:%{INT:source.port:int}"
-        - "%{IPORHOST:source.ip}"
+      target_field: source.ip
+      type: ip
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - rename: 
+            field: azure.springcloudlogs.callerIpAddress
+            target_field: source.address
+            ignore_missing: true 
+            ignore_failure: true
   - remove:
       field: azure.springcloudlogs.callerIpAddress
       if: 'ctx.source?.ip != null'
