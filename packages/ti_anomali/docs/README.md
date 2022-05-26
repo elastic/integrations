@@ -166,22 +166,13 @@ An example event for `limo` looks as following:
 
 ### Anomali Threatstream
 
-To configure the ThreatStream integration you first need to define an output
-in the Anomali ThreatStream Integrator using the Elastic SDK provided by Anomali.
-It will deliver indicators via HTTP or HTTPS to a elastic-agent instance running this integration.
+This integration requires additional software, the _Elastic_ _Extension,_
+to connect the Anomali ThreatStream with this integration. This software
+is provided by Anomali.
 
-Configure an Integrator output with the following settings:
-
-* Indicator Filter: `*` (or use any desired filter).
-* SDK Executable Command: `/path/to/python /path/to/anomali-sdk/main.py`.
-  Adjust the paths to the python executable and the directory where the Elastic SDK
-  has been unpacked.
-* Metadata in JSON Format: `{"url": "https://elastic-agent:8080/", "server_certificate": "/path/to/cert.pem", "secret": "my secret"}`.
-    - `url`: Use the host and port where the integration will be running, and `http` or `https` accordingly.
-    - `server_certificate`: If using HTTPS, absolute path to the server certificate. Otherwise don't set
-        this field.
-    - `secret`: A shared secret string to authenticate messages between the SDK and the integration.
-
+Please refer to the documentation included with the Extension for a detailed
+explanation on how to configure the Anomali ThreatStream to send indicator
+to this integration.
 
 An example event for `threatstream` looks as following:
 
@@ -366,3 +357,4 @@ An example event for `threatstream` looks as following:
 | threat.indicator.url.port | Port of the request, such as 443. | long |
 | threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | threat.indicator.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+
