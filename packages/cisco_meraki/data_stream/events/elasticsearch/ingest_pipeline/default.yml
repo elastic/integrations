@@ -1,0 +1,300 @@
+---
+description: Pipeline for processing Cisco Meraki events
+processors:
+- set:
+    field: ecs.version
+    value: '8.0.0'
+- set:
+    field: observer.serial_number
+    copy_from: json.deviceSerial
+- gsub:
+    field: json.deviceMac
+    target_field: observer.mac
+    pattern: '[-:.]'
+    replacement: '-'
+- set:
+    field: observer.name
+    copy_from: json.deviceName
+- set:
+    field: observer.vendor
+    value: Cisco
+- set:
+    field: observer.product
+    copy_from: json.deviceModel
+- set:
+    field: network.name
+    copy_from: json.networkName
+- date:
+    field: json.occurredAt
+    formats:
+      - ISO8601
+- set:
+    field: organization.id
+    copy_from: json.organizationId
+- set:
+    field: organization.name
+    copy_from: json.organizationName
+- set:
+    field: log.level
+    copy_from: json.alertLevel
+- append:
+    field: event.category
+    value: network
+- append:
+    field: event.type
+    value: info
+- script:
+    lang: painless
+    description: The script sets event type, action and category based on type and sub-type fields
+    params:
+       eventmap:
+        "started_reporting":
+          type:
+            - start
+        "stopped_reporting":
+          type:
+            - end
+        "foreign_ap":
+          category:
+            - intrusion_detection
+            - threat
+          type:
+            - indicator
+        "bluetooth_in":
+          type:
+            - start
+        "bluetooth_out":
+          type:
+            - end
+        "port_cable_error":
+          type:
+            - connection
+        "node_hardware_failure":
+          category:
+            - host
+          type:
+            - end
+        "cellular_up":
+          type:
+            - start
+        "cellular_down":
+          type:
+            - end
+        "umbrella_expiring":
+          category:
+            - configuration
+        "ip_conflict":
+          type:
+            - protocol
+        "rogue_ap_association":
+          category:
+            - threat
+          type:
+            - indicator
+        "client_connectivity":
+          category:
+            - session
+          type:
+            - connection
+        "pcc_security_compliance":
+          category:
+            - configuration
+        "pcc_security_violation":
+          category:
+            - configuration
+            - threat
+          type:
+            - change
+            - indicator
+        "pcc_outage_end":
+          category:
+            - host
+          type:
+            - connection
+        "pcc_enrollment":
+          category:
+            - session
+          type:
+            - connection
+            - start
+        "geofencing_out":
+          type:
+            - connection
+        "pcc_outage_begin":
+          category:
+            - host
+          type:
+            - connection
+            - end
+        "dhcp_no_leases":
+          type:
+            - connection
+            - denied
+            - protocol
+        "vrrp":
+          category:
+            - configuration
+          type:
+            - change
+        "pcc_expired_apns_cert":
+          category:
+            - authentication
+        "amp_malware_blocked":
+          category:
+            - threat
+            - intrusion_detection
+          type:
+            - indicator
+            - denied
+        "amp_malware_detected":
+          category:
+            - threat
+            - intrusion_detection
+          type:
+            - indicator
+            - allowed
+        "pcc_sw_found":
+          category:
+            - host
+            - configuration
+          type:
+            - change
+        "pcc_unmanaged":
+          category:
+            - configuration
+            - iam
+          type:
+            - change
+            - deletion
+        "dhcp_alerts":
+          type:
+            - protocol
+        "power_supply_up":
+          type:
+            - start
+        "power_supply_down":
+          category:
+            - host
+          type:
+            - end
+        "unreachable_radius_server":
+          category:
+            - authentication
+          type:
+            - end
+            - denied
+        "rogue_ap":
+          category:
+            - threat
+          type:
+            - indicator
+        "rogue_dhcp":
+          category:
+            - threat
+          type:
+            - indicator
+        "settings_changed":
+          category:
+            - configuration
+          type:
+            - change
+        "port_connected":
+          type:
+            - connection
+        "port_disconnected":
+          type:
+            - end
+        "port_speed_change":
+          category:
+            - configuration
+          type:
+            - change
+            - protocol
+        "udld_error":
+          type:
+            - connection
+            - end
+        "uplink_ip6_conflict":
+          type:
+            - protocol
+    if: ctx?.json?.alertTypeId != null
+    source: |-
+         def alertTypeId = ctx.json.alertTypeId;
+         def eventMap = params.get('eventmap');
+         def eventData = eventMap.get(alertTypeId);
+         ctx.event.action = ctx.json.alertType;
+         if (eventData == null) {
+           // Unclassified events
+           // - geofencing_in, critical_temperature
+           // - gateway_to_repeater, mi_alert
+           // - motion_alert, usage_alert
+           // - new_splash_signup, rps_base_supply_up
+           // - rps_backup, vpn_connectivity_change
+           return;
+         }
+         def eventCategory = eventData.get('category');
+         if (eventCategory != null) {
+           for (def c : eventCategory) {
+             ctx.event.category.add(c);
+           }
+         }
+         def eventType = eventData.get('type');
+         if (eventType != null) {
+           for (def t : eventType) {
+             ctx.event.type.add(t);
+           }
+         }
+- rename:
+    field: json
+    target_field: cisco_meraki.event
+##
+# Clean up
+##
+- remove:
+    field: 
+      - cisco_meraki.event.deviceSerial
+      - cisco_meraki.event.deviceMac
+      - cisco_meraki.event.deviceName
+      - cisco_meraki.event.deviceModel
+      - cisco_meraki.event.occurredAt
+      - cisco_meraki.event.networkName
+      - cisco_meraki.event.organizationId
+      - cisco_meraki.event.organizationName
+      - cisco_meraki.event.alertType
+      - cisco_meraki.event.alertLevel
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

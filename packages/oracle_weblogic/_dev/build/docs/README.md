@@ -25,11 +25,47 @@ In order to ingest data from Oracle WebLogic:
      -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
     ```
 
+## Logs
+
+This integration collects Oracle Weblogic Admin Server, Managed Server, Domain and Access logs. It includes the following datasets for receiving logs from a file:
+
+### Access logs
+
+The `access` data stream collects Access logs form `access.log`.
+
+{{event "access"}}
+
+{{fields "access"}}
+
+### Admin Server logs
+
+The `admin_server` data stream collects Admin Server logs from `Adminserver.log`.
+
+{{event "admin_server"}}
+
+{{fields "admin_server"}}
+
+### Domain logs
+
+The `domain` data stream collects Domain logs from `Domain.log`.
+
+{{event "domain"}}
+
+{{fields "domain"}}
+
+### Managed Server Logs
+
+The `managed_server` data stream collects Managed Server logs from `Managedserver.log`.
+
+{{event "managed_server"}}
+
+{{fields "managed_server"}}
+
 ## Metrics
 
 ### Deployed Application Metrics
 
-This `deployed_application` data stream gives metrics of Deployed Application.
+The `deployed_application` data stream collects metrics of Deployed Application.
 
 {{event "deployed_application"}}
 
