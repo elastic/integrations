@@ -5,15 +5,169 @@ streams:
   - input: packet
     vars:
       - name: port
-        type: integer
         # currently the Kibana UI doesn't support multi inputs
         # that are numeric, you get "Error: r.toLowerCase is not a function"
-        # multi: true
-        title: Port
+        # so map this as text
+        type: text
+        multi: true
+        title: Ports
         required: true
         show_user: true
-        default: 80
-        # default: [80, 8080, 8000, 5000, 8002]
+        default: [80, 8080, 8000, 5000, 8002]
+      - name: hide_keywords
+        type: text
+        title: Hide Keywords
+        description: |-
+          Uncomment the following to hide certain parameters in URL or forms attached
+          to HTTP requests. The names of the parameters are case insensitive.
+          The value of the parameters will be replaced with the 'xxxxx' string.
+          This is generally useful for avoiding storing user passwords or other
+          sensitive information.
+          Only query parameters and top level form parameters are replaced.
+        show_user: false
+        multi: true
+        required: false
+      - name: send_headers
+        type: bool
+        title: Send Headers
+        description: |-
+          A list of header names to capture and send to Elasticsearch. These headers
+          are placed under the `headers` dictionary in the resulting JSON.
+        show_user: false
+        multi: false
+        required: false
+      - name: send_all_headers
+        type: bool
+        title: Send All Headers
+        description: |-
+          Instead of sending a white list of headers to Elasticsearch, you can send
+          all headers by setting this option to true. The default is false.
+        show_user: false
+        multi: false
+        required: false
+      - name: redact_headers
+        type: text
+        title: Redact Headers
+        description: |-
+          A list of headers to redact if present in the HTTP request. This will keep
+          the header field present, but will redact it's value to show the headers
+          presence.
+        show_user: false
+        multi: true
+        required: false
+      - name: include_body_for
+        type: text
+        title: Include Body For
+        description: |-
+          The list of content types for which Packetbeat includes the full HTTP
+          payload. If the request's or response's Content-Type matches any on this
+          list, the full body will be included under the request or response field.
+        show_user: false
+        multi: true
+        required: false
+      - name: include_request_body_for
+        type: text
+        title: Include Request Body For
+        description: |-
+          The list of content types for which Packetbeat includes the full HTTP
+          request payload.
+        show_user: false
+        multi: true
+        required: false
+      - name: include_response_body_for
+        type: text
+        title: Include Response Body For
+        description: |-
+          The list of content types for which Packetbeat includes the full HTTP
+          response payload.
+        show_user: false
+        multi: true
+        required: false
+      - name: decode_body
+        type: bool
+        title: Decode Body
+        description: |-
+          Whether the body of a request must be decoded when a content-encoding
+          or transfer-encoding has been applied.
+        show_user: false
+        multi: false
+        required: false
+      - name: split_cookie
+        type: bool
+        title: Split Cookie
+        description: |-
+          If the Cookie or Set-Cookie headers are sent, this option controls whether
+          they are split into individual values.
+        show_user: false
+        multi: false
+        required: false
+      - name: real_ip_header
+        type: bool
+        title: Real Ip Header
+        description: |-
+          The header field to extract the real IP from. This setting is useful when
+          you want to capture traffic behind a reverse proxy, but you want to get the
+          geo-location information.
+        show_user: false
+        multi: false
+        required: false
+      - name: send_request
+        type: bool
+        title: Send Request
+        description: |-
+          If this option is enabled, the raw message of the request (`request` field)
+          is sent to Elasticsearch. The default is false.
+        show_user: false
+        multi: false
+        required: false
+      - name: send_response
+        type: bool
+        title: Send Response
+        description: |-
+          If this option is enabled, the raw message of the response (`response`
+          field) is sent to Elasticsearch. The default is false.
+        show_user: false
+        multi: false
+        required: false
+      - name: keep_null
+        type: bool
+        title: Keep Null
+        description: Set to true to publish fields with null values in events.
+        show_user: false
+        multi: false
+        required: false
+      - name: transaction_timeout
+        type: text
+        title: Transaction Timeout
+        description: |-
+          Transaction timeout. Expired transactions will no longer be correlated to
+          incoming responses, but sent to Elasticsearch immediately.
+        show_user: false
+        multi: false
+        required: false
+      - name: max_message_size
+        type: integer
+        title: Max Message Size
+        description: |-
+          Maximum message size. If an HTTP message is larger than this, it will
+          be trimmed to this size. Default is 10 MB.
+        show_user: false
+        multi: false
+        required: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        show_user: false
+        multi: false
+        required: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        show_user: false
+        multi: true
+        required: false
     title: HTTP
     description: Capture HTTP Traffic
     template_path: http.yml.hbs
