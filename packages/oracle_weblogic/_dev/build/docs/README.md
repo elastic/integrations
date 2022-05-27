@@ -8,7 +8,15 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 
 ## Logs
 
-This integration collects Oracle Weblogic Admin Server, Managed Server and Domain logs. It includes the following datasets for receiving logs from a file:
+This integration collects Oracle Weblogic Admin Server, Managed Server, Domain and Access logs. It includes the following datasets for receiving logs from a file:
+
+### Access logs
+
+The `access` data stream collects Access logs form `access.log`.
+
+{{event "access"}}
+
+{{fields "access"}}
 
 ### Admin Server logs
 
