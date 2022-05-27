@@ -122,6 +122,23 @@ persistent connections, so enable with care.
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
+## Metrics access permission
+
+Assigning `pg_monitor` or `pg_read_all_stats` rights to the database user might not be enough for fetching the metric data from PostgreSQL servers. 
+Apart from `CONNECT` permission, the database user must be granted `SELECT` accesss on underlying tables / views `pg_stat_bgwriter`, `pg_stat_activity`, `pg_stat_database`, `pg_stat_statements`. 
+
+
+```
+   grant select on table pg_stat_bgwriter to user;
+   grant select on table pg_stat_activity to user;
+   grant select on table pg_stat_database to user;
+   grant select on table pg_stat_statements to user; 
+```
+Run the below command if the `pg_stat_statements` view is unavailable 
+```
+CREATE EXTENSION pg_stat_statements;
+``` 
+
 ## Metrics
 
 ### activity
