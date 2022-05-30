@@ -10,10 +10,10 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 
 In order to ingest data from Oracle WebLogic:
 - You must know the host for Oracle WebLogic application, add that host while configuring the integration package.
-- Add default path for jolokia.
-- Configuring Jolokia for Weblogic
+- Add default path for Jolokia.
+- Configuring Jolokia for WebLogic
 
-    User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment variables for jolokia.
+    User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment variables for Jolokia.
 
     ```
      -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>
@@ -27,11 +27,11 @@ In order to ingest data from Oracle WebLogic:
 
 ## Logs
 
-This integration collects Oracle Weblogic Admin Server, Managed Server, Domain and Access logs. It includes the following datasets for receiving logs from a file:
+This integration collects Oracle WebLogic Admin Server, Managed Server, Domain and Access logs. It includes the following datasets for receiving logs from a file:
 
 ### Access logs
 
-The `access` data stream collects Access logs form `access.log`.
+The `access` data stream collects Access logs form `Access.log`.
 
 {{event "access"}}
 
