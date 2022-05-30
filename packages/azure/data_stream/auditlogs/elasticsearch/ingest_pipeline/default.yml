@@ -85,14 +85,17 @@ processors:
       field: azure.auditlogs.properties.additionalDetails
       target_field: azure.auditlogs.properties.additional_details
       ignore_missing: true
-  - grok:
+  - convert:
       field: azure.auditlogs.callerIpAddress
-      patterns:
-        - \[%{IPORHOST:source.ip}\]:%{INT:source.port:int}
-        - "%{IPORHOST:source.ip}:%{INT:source.port:int}"
-        - "%{IPORHOST:source.ip}"
+      target_field: source.ip
+      type: ip
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - rename: 
+            field: azure.auditlogs.callerIpAddress
+            target_field: source.address
+            ignore_missing: true 
+            ignore_failure: true
   - remove:
       field: azure.auditlogs.callerIpAddress
       if: 'ctx.source?.ip != null'
