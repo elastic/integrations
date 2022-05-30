@@ -136,7 +136,7 @@ An example event for `log` looks as following:
 | cisco.umbrella.destination_lists_id |  | keyword |
 | cisco.umbrella.dlp_status |  | keyword |
 | cisco.umbrella.file_name |  | keyword |
-| cisco.umbrella.identities |  | keyword |
+| cisco.umbrella.identities | An array of the different identities related to the event. | keyword |
 | cisco.umbrella.identity_types |  | keyword |
 | cisco.umbrella.origin_id | The unique identity of the network tunnel. | keyword |
 | cisco.umbrella.policy_identity_type | The first identity type matched with this request. Available in version 3 and above. | keyword |
