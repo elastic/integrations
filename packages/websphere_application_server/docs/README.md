@@ -410,16 +410,16 @@ An example event for `session_manager` looks as following:
 | websphere_application_server.session_manager.activated_non_existent_sessions | The number of non-existent sessions that are activated. | long |
 | websphere_application_server.session_manager.affinity_breaks | The number of session affinity breaks. | long |
 | websphere_application_server.session_manager.app_name | Name of the Application. | keyword |
-| websphere_application_server.session_manager.cache_discarded | The number of times that the cache was discarded. | long |
+| websphere_application_server.session_manager.cache_discarded | The number of times the cache was discarded. | long |
 | websphere_application_server.session_manager.external.bytes.read | Size of the session data (in bytes) read from persistent stores. This size is applicable only for serialized persistent sessions and similar to the externalReadTime field. | long |
-| websphere_application_server.session_manager.external.bytes.written | Size of the session data (in bytes) written to persistent stores. This size is applicable only for serialized persistent sessions and similar to the externalReadTime field. | long |
+| websphere_application_server.session_manager.external.bytes.written | Size of the session data (in bytes) written to persistent stores. | long |
 | websphere_application_server.session_manager.external.time_seconds.read | Time (in seconds) taken to read the session data from persistent store. For the Multirow session, the metrics are for the attribute; for the SingleRow session the metrics are for the whole session. The time is applicable only for persistent sessions. When you use a JMS persistent store, if you choose not to serialize the data, the counter is not available. | long |
 | websphere_application_server.session_manager.external.time_seconds.written | Time (in seconds) taken to write the session data from persistent stores. This time is applicable only for (serialized) persistent sessions and is similar to the externalReadTime field. | long |
-| websphere_application_server.session_manager.no_room_for_new_sessions | The number of times that a request for a new session cannot be handled because this value exceeds the maximum session count. | long |
+| websphere_application_server.session_manager.no_room_for_new_sessions | The number of times a request for a new session cannot be handled because this value exceeds the maximum session count. | long |
 | websphere_application_server.session_manager.persistent_stores.data_read | Total number of times the session data was read from persistent stores. | long |
 | websphere_application_server.session_manager.persistent_stores.data_written | Total number of times the session data being written to persistent store. | long |
 | websphere_application_server.session_manager.sessions.active | The number of sessions that are currently accessed by requests. | long |
-| websphere_application_server.session_manager.sessions.created | The number of session objects that were created by the server. | long |
+| websphere_application_server.session_manager.sessions.created | The number of sessions that were created by the server. | long |
 | websphere_application_server.session_manager.sessions.current | The number of live sessions till date. | long |
 | websphere_application_server.session_manager.sessions.invalidated.by_timeouts | The number of sessions that were invalidated by timeouts. | long |
 | websphere_application_server.session_manager.sessions.invalidated.total | The total number of sessions that were invalidated. | long |
