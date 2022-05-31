@@ -4,6 +4,7 @@ This Elastic integration is used to collect the following metrics from [IBM WebS
 
    - JDBC metrics
    - Servlet metrics
+   - Session Manager metrics
    - ThreadPool metrics
 
 This integration uses Prometheus to collect above metrics.
@@ -25,6 +26,14 @@ This data stream collects Servlet related metrics.
 {{event "servlet"}}
 
 {{fields "servlet"}}
+
+### Session Manager
+
+This data stream collects metrics related to Sessions.
+
+{{event "session_manager"}}
+
+{{fields "session_manager"}}
 
 ## ThreadPool
 
