@@ -4,6 +4,7 @@ This Elastic integration is used to collect the following metrics from [IBM WebS
 
    - JDBC metrics
    - Servlet metrics
+   - Session Manager metrics
    - ThreadPool metrics
 
 This integration uses Prometheus to collect above metrics.
@@ -273,6 +274,157 @@ An example event for `servlet` looks as following:
 | websphere_application_server.servlet.uri.requests.total | Total number of requests that a servlet processed for the specified URL. | long |
 | websphere_application_server.servlet.uri.response_time_seconds | The total response time (in seconds) to process the requests for the specified URL. | double |
 | websphere_application_server.servlet.uri.responses.total | The total number of responses for the specified URL. | long |
+
+
+### Session Manager
+
+This data stream collects metrics related to Sessions.
+
+An example event for `session_manager` looks as following:
+
+```json
+{
+    "@timestamp": "2022-05-25T10:02:02.554Z",
+    "agent": {
+        "ephemeral_id": "ce98e7b5-b605-42ae-bc3e-93dfe4989d2b",
+        "id": "9a7dfaf6-d476-47ba-8a87-e7196ca4d0a3",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.2.0"
+    },
+    "data_stream": {
+        "dataset": "websphere_application_server.session_manager",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "9a7dfaf6-d476-47ba-8a87-e7196ca4d0a3",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": "web",
+        "dataset": "websphere_application_server.session_manager",
+        "duration": 35233763,
+        "ingested": "2022-05-25T10:02:06Z",
+        "kind": "metric",
+        "module": "websphere_application_server",
+        "type": "info"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "192.168.240.6"
+        ],
+        "mac": [
+            "02:42:c0:a8:f0:06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 60000
+    },
+    "server": {
+        "address": "elastic-package-service_websphere_application_server_1:9080"
+    },
+    "service": {
+        "address": "http://elastic-package-service_websphere_application_server_1:9080/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "forwarded",
+        "websphere_application_server-session_manager",
+        "prometheus"
+    ],
+    "websphere_application_server": {
+        "session_manager": {
+            "activated_non_existent_sessions": 0,
+            "affinity_breaks": 0,
+            "app_name": "ibmasyncrsp#ibmasyncrsp.war",
+            "cache_discarded": 0,
+            "external": {
+                "bytes": {
+                    "read": 0,
+                    "written": 0
+                },
+                "time_seconds": {
+                    "read": 0,
+                    "written": 0
+                }
+            },
+            "no_room_for_new_sessions": 0,
+            "persistent_stores": {
+                "data_read": 0,
+                "data_written": 0
+            },
+            "sessions": {
+                "active": 0,
+                "created": 0,
+                "current": 0,
+                "invalidated": {
+                    "by_timeouts": 0,
+                    "total": 0
+                },
+                "life_time": 0
+            },
+            "time_since_session_last_activated": 0
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | Event category. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.kind | Event kind | constant_keyword |
+| event.module | Event module | constant_keyword |
+| event.type | Event type | constant_keyword |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| websphere_application_server.session_manager.activated_non_existent_sessions | The number of non-existent sessions that are activated. | long |
+| websphere_application_server.session_manager.affinity_breaks | The number of session affinity breaks. | long |
+| websphere_application_server.session_manager.app_name | Name of the Application. | keyword |
+| websphere_application_server.session_manager.cache_discarded | The number of times the cache was discarded. | long |
+| websphere_application_server.session_manager.external.bytes.read | Size of the session data (in bytes) read from persistent stores. This size is applicable only for serialized persistent sessions and similar to the externalReadTime field. | long |
+| websphere_application_server.session_manager.external.bytes.written | Size of the session data (in bytes) written to persistent stores. | long |
+| websphere_application_server.session_manager.external.time_seconds.read | Time (in seconds) taken to read the session data from persistent store. For the Multirow session, the metrics are for the attribute; for the SingleRow session the metrics are for the whole session. The time is applicable only for persistent sessions. When you use a JMS persistent store, if you choose not to serialize the data, the counter is not available. | long |
+| websphere_application_server.session_manager.external.time_seconds.written | Time (in seconds) taken to write the session data from persistent stores. This time is applicable only for (serialized) persistent sessions and is similar to the externalReadTime field. | long |
+| websphere_application_server.session_manager.no_room_for_new_sessions | The number of times a request for a new session cannot be handled because this value exceeds the maximum session count. | long |
+| websphere_application_server.session_manager.persistent_stores.data_read | Total number of times the session data was read from persistent stores. | long |
+| websphere_application_server.session_manager.persistent_stores.data_written | Total number of times the session data being written to persistent store. | long |
+| websphere_application_server.session_manager.sessions.active | The number of sessions that are currently accessed by requests. | long |
+| websphere_application_server.session_manager.sessions.created | The number of sessions that were created by the server. | long |
+| websphere_application_server.session_manager.sessions.current | The number of live sessions till date. | long |
+| websphere_application_server.session_manager.sessions.invalidated.by_timeouts | The number of sessions that were invalidated by timeouts. | long |
+| websphere_application_server.session_manager.sessions.invalidated.total | The total number of sessions that were invalidated. | long |
+| websphere_application_server.session_manager.sessions.life_time | Life time of the session. | double |
+| websphere_application_server.session_manager.time_since_session_last_activated | Time since this session was last activated. | double |
 
 
 ## ThreadPool
