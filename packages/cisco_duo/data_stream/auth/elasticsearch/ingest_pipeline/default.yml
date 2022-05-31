@@ -273,6 +273,14 @@ processors:
       field: json.access_device.location.state
       target_field: cisco_duo.auth.access_device.location.state
       ignore_missing: true
+  - remove:
+      field: json.access_device.security_agents
+      if: |-
+        ctx.json?.access_device?.security_agents != null && (
+          !(ctx.json.access_device.security_agents instanceof List) ||
+          ctx.json.access_device.security_agents.length == 0 ||
+          !(ctx.json.access_device.security_agents[0] instanceof Object)
+        )
   - rename:
       field: json.access_device.security_agents
       target_field: cisco_duo.auth.access_device.security_agents
