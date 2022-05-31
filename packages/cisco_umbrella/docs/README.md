@@ -137,7 +137,7 @@ An example event for `log` looks as following:
 | cisco.umbrella.dlp_status |  | keyword |
 | cisco.umbrella.file_name |  | keyword |
 | cisco.umbrella.identities | An array of the different identities related to the event. | keyword |
-| cisco.umbrella.identity_types |  | keyword |
+| cisco.umbrella.identity_types | The type of identity that made the request. For example, Roaming Computer or Network. | keyword |
 | cisco.umbrella.origin_id | The unique identity of the network tunnel. | keyword |
 | cisco.umbrella.policy_identity_type | The first identity type matched with this request. Available in version 3 and above. | keyword |
 | cisco.umbrella.puas | A list of all potentially unwanted application (PUA) results for the proxied file as returned by the antivirus scanner. | keyword |
