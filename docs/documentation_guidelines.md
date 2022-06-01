@@ -4,7 +4,7 @@ The goal of each integration doc is to:
 
 * Help the reader see the benefits the integration offers and how Elastic can help with their use case.
 * Inform the reader of any requirements including system compatibility, supported versions of third-party products, permissions needed, and more.
-* Provide a comprehensive list of collected fields are and the data format for each for the reader to reference while evaluating the integration or after installation when using data or troubleshooting issues.
+* Provide a comprehensive list of collected fields and the data format for each. The reader can reference this information while evaluating the integration, interpreting collected data, or troubleshooting issues.
 * Set the reader up for a successful installation and setup by connecting them with any other resources they'll need.
 
 <!-- The audience ... -->
@@ -39,9 +39,9 @@ Use this template language as a starting point, replacing `<placeholder text>` w
 ```md
 The <name> integration allows you to monitor <service>.
 
-Use the <name> integration to <function>. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
+Use the <name> integration to <function>. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference <data type> when troubleshooting an issue.
 
-For example, if you wanted to <use case> you could <action>. Then you can <visualize|alert|troubleshoot|> by <action>.
+For example, if you wanted to <use case> you could <action>. Then you can <visualize|alert|troubleshoot> by <action>.
 ```
 
 **Example**
@@ -52,17 +52,16 @@ For example, if you wanted to <use case> you could <action>. Then you can <visua
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
 and reference logs when troubleshooting an issue.
 >
->For example, if you wanted to know when there are more than some number of failed requests for a single piece of content in a given time period, you could search the logs for that time period, find all requests for that unique piece of content, and filter by response type. Then you could troubleshoot the issue by looking at additional context in the logs like the
-number of unique users (by IP address) who experienced the issue, the source of the request, or whether there are patterns related to the operating system or browser used when the request failed.
+>For example, if you wanted to know when there are more than some number of failed requests for a single piece of content in a given time period, you could search the logs for that time period, find all requests for that unique piece of content, and filter by response type. Then you could troubleshoot the issue by looking at additional context in the logs like the number of unique users (by IP address) who experienced the issue, the source of the request, or whether there are patterns related to the operating system or browser used when the request failed.
 
 ## Data types
 
 The data types section provides a high-level overview of the kind of data that is collected by the integration.
-(It's difficult to quickly derive an understanding from just the reference sections since they're so long.)
+This is helpful since it can be difficult to quickly derive an understanding from just the reference sections (since they're so long).
 
 The data types section should include:
 
-* List data types collected by the integration
+* List of data types collected by the integration
 * Summary of each data type included and link to reference:
   * Logs
   * Metrics
@@ -96,7 +95,7 @@ Metric datasets collected by the <name> integration include <select datasets> an
 >
 >**Logs** help you keep a record of events that happen on your machine.
 >Log datasets collected by the System integration include application, system, and security events on
->machines running Windows and auth and syslog events on machines running macOS or Linux.
+>machines running Windows or auth and syslog events on machines running macOS or Linux.
 >See more details in the [Logs reference](#logs-reference).
 >
 >**Metrics** give you insight into the state of the machine.
@@ -111,7 +110,7 @@ is still enabled, Fleet uses the default datasets.
 
 The requirements section helps the reader be confident up front that the integration will work with their systems.
 
-* Elastic prerequisites (for example, self-managed or cloud deployment)
+* Elastic prerequisites (for example, a self-managed or cloud deployment)
 * System compatibility
 * Supported versions of third-party products
 * Permissions needed
@@ -136,7 +135,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 >You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 >
 >The System datasets collect different kinds of metric data, which may require dedicated permissions
->to be fetched and which may vary across operating systems.
+>to be fetched and may vary across operating systems.
 >Details on the permissions needed for each dataset are available in the [Metrics reference](#metrics-reference).
 
 See a much more detailed example in [`packages/aws/_dev/build/docs/README.md`](../packages/aws/_dev/build/docs/README.md#requirements).
@@ -157,6 +156,8 @@ Use this template language as a starting point, including any other setup instru
 
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+<!-- Other instructions -->
 ```
 
 <!-- **Example** -->
@@ -182,7 +183,7 @@ There is no standard format for the troubleshooting section.
 
 ## Reference
 
-Readers might use the reference section while evaluating the integration or after installation when using the resulting data or troubleshooting issues.
+Readers might use the reference section while evaluating the integration, interpreting collected data, or troubleshooting issues.
 
 There can be any number of reference sections (for example, `## Metrics reference`, `## Logs reference`).
 And each reference section can contain one or more subsections, one for each dataset (for example, `### Access Logs` and `### Error logs`).
@@ -194,7 +195,7 @@ Each reference section should contain detailed information about:
 
 **Template**
 
-There is no standard format for the narrative content in reference sections,
+There is no standard format for the _narrative_ content in reference sections,
 but fields should be generated using the instructions in [Fine-tune the integration](./fine_tune_integration.md).
 
 <!-- **Example** -->
