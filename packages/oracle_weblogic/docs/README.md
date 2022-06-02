@@ -9,20 +9,28 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 ## Requirements
 
 In order to ingest data from Oracle WebLogic:
-- You must know the host for Oracle WebLogic application, add that host while configuring the integration package.
-- Add default path for Jolokia.
+- User must add the path where the Jolokia agent is downloaded (For example, `/home/oracle/jolokia-jvm-1.6.0-agent.jar`).
 - Configuring Jolokia for WebLogic
 
     User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment variables for Jolokia.
 
     ```
-     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>
+     -javaagent:<path-to-jolokia-agent>=port=<port>,host=<hostname>
     ``` 
+    Example configuration:
+    ```
+     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost
+    ```
 
     (Optional) User can run Jolokia on https by configuring following [paramters](https://jolokia.org/reference/html/agents.html#:~:text=Table%C2%A03.6.-,JVM%20agent%20configuration%20options,-Parameter).
 
     ```
-     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
+     -javaagent:<path-to-jolokia-agent>=port=<port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
+    ```
+
+    Example configuration:
+    ```
+     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost,protocol=https,keystore=/u01/oracle/weblogic.jks,keystorePassword=host@123,keyStoreType=JKS
     ```
 
 ## Logs
@@ -631,7 +639,7 @@ An example event for `threadpool` looks as following:
 | oracle_weblogic.threadpool.threads.hogging | The threads that are being held by a request right now. These threads will either be declared as stuck after the configured timeout or will return to the pool before that. The self-tuning mechanism will backfill if necessary. | long |
 | oracle_weblogic.threadpool.threads.standby | The number of threads in the standby pool. Threads that are not needed to handle the present work load are designated as standby and added to the standby pool. These threads are activated when more threads are needed. | long |
 | oracle_weblogic.threadpool.threads.stuck | Number of stuck threads in the thread pool. | long |
-| oracle_weblogic.threadpool.threads.total | Current number of live daemon and non-daemon threads. | long |
+| oracle_weblogic.threadpool.threads.total | Current number of live threads including both daemon and non-daemon threads. | long |
 | oracle_weblogic.threadpool.throughput | The mean number of requests completed per second. | double |
 | oracle_weblogic.threadpool.work_manager.capacity.shared | Maximum amount of requests that can be accepted in the priority queue. Note that a request with higher priority will be accepted in place of a lower priority request already in the queue even after the threshold is reached. The lower priority request is kept waiting in the queue till all high priority requests are executed. Also note that further enqueues of the low priority requests are rejected right away. | long |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
