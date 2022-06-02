@@ -95,6 +95,16 @@ processors:
       field: json.device_name
       target_field: host.hostname
       ignore_missing: true
+  - grok:
+      field: host.hostname
+      patterns:
+        - '^(%{DATA:user.domain})\\(%{GREEDYDATA:host.hostname})$'
+      ignore_missing: true
+      ignore_failure: true 
+  - set:
+      field: host.name
+      value: "{{{host.hostname}}}"
+      ignore_failure: true
   - rename:
       field: json.device_group
       target_field: host.os.family
@@ -168,7 +178,9 @@ processors:
       allow_duplicates: false
   - append:
       field: related.hosts
-      value: "{{{host.hostname}}}"
+      value: 
+        - "{{{host.hostname}}}"
+        - "{{{user.domain}}}"
       allow_duplicates: false
   - script:
       description: Dynamically map MD5 and SHA256 hash

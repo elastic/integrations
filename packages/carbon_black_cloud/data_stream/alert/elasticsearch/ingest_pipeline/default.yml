@@ -80,6 +80,16 @@ processors:
       field: json.device_name
       target_field: host.hostname
       ignore_missing: true
+  - grok:
+      field: host.hostname
+      patterns:
+        - '^(%{DATA:user.domain})\\(%{GREEDYDATA:host.hostname})$'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: host.name
+      value: "{{{host.hostname}}}"
+      ignore_failure: true
   - append:
       field: host.ip
       value: "{{{json.device_internal_ip}}}"
@@ -96,6 +106,12 @@ processors:
       field: json.device_username
       target_field: user.name
       ignore_missing: true
+  - grok:
+      field: user.name
+      patterns:
+        - '^(%{DATA:user.domain})\\(%{GREEDYDATA:user.name})$'
+      ignore_missing: true
+      ignore_failure: true
   - append:
       field: related.ip
       value: 
@@ -104,11 +120,14 @@ processors:
       allow_duplicates: false
   - append:
       field: related.user
-      value: "{{{user.name}}}"
+      value: 
+        - "{{{user.name}}}"
       allow_duplicates: false
   - append:
       field: related.hosts
-      value: "{{{host.hostname}}}"
+      value: 
+        - "{{{host.hostname}}}"
+        - "{{{user.domain}}}"
       allow_duplicates: false
   - append:
       field: related.hash
