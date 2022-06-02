@@ -9,20 +9,28 @@ This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 ## Requirements
 
 In order to ingest data from Oracle WebLogic:
-- You must know the host for Oracle WebLogic application, add that host while configuring the integration package.
-- Add default path for jolokia.
-- Configuring Jolokia for Weblogic
+- User must add the path where the Jolokia agent is downloaded (For example, `/home/oracle/jolokia-jvm-1.6.0-agent.jar`).
+- Configuring Jolokia for WebLogic
 
-    User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment variables for jolokia.
+    User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment variables for Jolokia.
 
     ```
-     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>
+     -javaagent:<path-to-jolokia-agent>=port=<Port>,host=<hostname>
     ``` 
+    Example configuration:
+    ```
+     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost
+    ```
 
     (Optional) User can run Jolokia on https by configuring following [paramters](https://jolokia.org/reference/html/agents.html#:~:text=Table%C2%A03.6.-,JVM%20agent%20configuration%20options,-Parameter).
 
     ```
-     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=<Port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
+     -javaagent:<path-to-jolokia-agent>=port=<Port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
+    ```
+
+    Example configuration:
+    ```
+     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost,protocol=https,keystore=/u01/oracle/weblogic.jks,keystorePassword=host@123,keyStoreType=JKS
     ```
 
 ## Logs
@@ -509,10 +517,10 @@ An example event for `deployed_application` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-25T13:04:53.499Z",
+    "@timestamp": "2022-06-01T06:06:16.679Z",
     "agent": {
-        "ephemeral_id": "c50a9fac-8093-4e03-ac7b-c6b45b8c705f",
-        "id": "e47a1950-c44f-4799-a2a2-37a601358e3d",
+        "ephemeral_id": "9b5302d4-4654-485a-8708-b8c971d7ebd6",
+        "id": "f5ae4eeb-820b-4f24-a94a-df327091d185",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.1.0"
@@ -526,7 +534,7 @@ An example event for `deployed_application` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "e47a1950-c44f-4799-a2a2-37a601358e3d",
+        "id": "f5ae4eeb-820b-4f24-a94a-df327091d185",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -534,8 +542,8 @@ An example event for `deployed_application` looks as following:
         "agent_id_status": "verified",
         "category": "web",
         "dataset": "oracle_weblogic.deployed_application",
-        "duration": 2645736,
-        "ingested": "2022-04-25T13:04:56Z",
+        "duration": 27026922,
+        "ingested": "2022-06-01T06:06:20Z",
         "kind": "metric",
         "module": "oracle_weblogic",
         "type": "info"
@@ -545,16 +553,16 @@ An example event for `deployed_application` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.0.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:00:07"
+            "02:42:ac:1f:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-107-generic",
+            "kernel": "3.10.0-1160.59.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -568,8 +576,10 @@ An example event for `deployed_application` looks as following:
     "oracle_weblogic": {
         "deployed_application": {
             "deployment": {
-                "state": "Running",
-                "state_value": 2
+                "state": {
+                    "name": "Running",
+                    "value": 2
+                }
             },
             "session_timeout": 3600,
             "sessions": {
@@ -580,12 +590,12 @@ An example event for `deployed_application` looks as following:
                 }
             },
             "single_threaded_servlet_pool_size": 5,
-            "source_info": "bea_wls_deployment_internal.war",
+            "source_info": "weblogic.war",
             "status": "DEPLOYED"
         }
     },
     "service": {
-        "address": "http://elastic-package-service_oracle_weblogic_1:8010/jolokia",
+        "address": "http://elastic-package-service_wlsadmin_1:8005/jolokia",
         "type": "jolokia"
     },
     "tags": [
@@ -611,8 +621,8 @@ An example event for `deployed_application` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| oracle_weblogic.deployed_application.deployment.state | Current state of the deployment as an keyword. | keyword |
-| oracle_weblogic.deployed_application.deployment.state_value | Current state of the deployment as an integer. | long |
+| oracle_weblogic.deployed_application.deployment.state.name | Current state of the deployment as an keyword. | keyword |
+| oracle_weblogic.deployed_application.deployment.state.value | Current state of the deployment as an integer. | long |
 | oracle_weblogic.deployed_application.session_timeout | Session timeout in integer. | long |
 | oracle_weblogic.deployed_application.sessions.open.current | Current number of open sessions in this module. | long |
 | oracle_weblogic.deployed_application.sessions.open.high | Highest number of open sessions on this server at any one time. | long |

@@ -14,35 +14,6 @@ processors:
       target_field: oracle_weblogic
       ignore_missing: true
       ignore_failure: true
-  - rename:
-      field: oracle_weblogic.deployed_application.deployment.state
-      target_field: oracle_weblogic.deployed_application.deployment.state_value
-      ignore_missing: true
-      ignore_failure: true
-  - set:
-      field: oracle_weblogic.deployed_application.deployment.state
-      value: Shutdown
-      ignore_empty_value: true
-      if: ctx.oracle_weblogic.deployed_application.deployment.state_value == 0
-      ignore_failure: true
-  - set:
-      field: oracle_weblogic.deployed_application.deployment.state
-      value: Starting
-      ignore_empty_value: true
-      if: ctx.oracle_weblogic.deployed_application.deployment.state_value == 1
-      ignore_failure: true
-  - set:
-      field: oracle_weblogic.deployed_application.deployment.state
-      value: Running
-      ignore_empty_value: true
-      if: ctx.oracle_weblogic.deployed_application.deployment.state_value == 2
-      ignore_failure: true
-  - remove:
-      field:
-        - jolokia
-        - oracle_weblogic.mbean
-      ignore_failure: true
-      ignore_missing: true
   - set:
       field: event.type
       value: info
@@ -63,6 +34,22 @@ processors:
       field: event.dataset
       value: oracle_weblogic.deployed_application
       ignore_failure: true
+  - script:
+      description: Set deployed application deployment state.
+      lang: painless
+      ignore_failure: true
+      source: |
+        Map m = new HashMap();
+        m.put(0, "Shutdown");
+        m.put(1, "Starting");
+        m.put(2, "Running");
+        ctx.oracle_weblogic.deployed_application.deployment.state.name = m.get(ctx.oracle_weblogic.deployed_application.deployment.state.value);
+  - remove:
+      field:
+        - jolokia
+        - oracle_weblogic.mbean
+      ignore_failure: true
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
