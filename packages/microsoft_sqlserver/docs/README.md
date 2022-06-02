@@ -201,10 +201,10 @@ An example event for `transaction_log` looks as following:
         "metrics": {
             "database_name": "msdb",
             "database_id": 1,
-            "used_log_space.bytes": 41.17647171020508,
-            "log_space_since_last_backup.bytes": 397312,
-            "total_log_size.bytes": 2088960,
-            "used_log_space.pct": 860160
+            "used_log_space_bytes": 41.17647171020508,
+            "log_space_in_bytes_since_last_backup": 397312,
+            "total_log_size_bytes": 2088960,
+            "used_log_space_pct": 860160
         }
     },
     "metricset": {
