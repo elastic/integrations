@@ -1,27 +1,15 @@
 # Microsoft SQL Server Integration
 
-The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit logs and metrics through Elasticsearch. 
-
+The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit events through Elasticsearch. 
 Auditing an instance of the SQL Server Database Engine or an individual database involves tracking and logging events that occur on the Database Engine. 
 SQL Server audit lets you create server audits, which can contain server audit specifications for server level events, and database audit specifications for database level events. 
 See: [SQL Server Audit page](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15) for more information on SQL Server auditing.
 
-The `performance` metrics gathers the list of performance objects available on that server. Each server will have a different list of performance objects depending on the installed software.
-`transaction_log` metrics collects all usage stats and the total space usage.
-
-## Named Instance
-
-The Microsoft SQL Server has a feature that allows to run multiple databases on the same host (or Clustered hosts) with separate settings. Edit the instance port and provide the named instance port to connect to the named instance and collect metrics.
-
-See: [Instruction on how to configure server to listen Named Instance port](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/configure-a-server-to-listen-on-a-specific-tcp-port?view=sql-server-ver15)
-
 ## Compatibility
 
-The package collects `performance`, `transaction_log` metrics and `audit` events from the event log. Other log sources such as file are not supported.
+The package collects audit events from the event log. Other log sources such as file are not supported.
 
 ## Configuration
-
-### audit
 
 There are several levels of auditing for SQL Server, depending on government or standards requirements for your installation. The SQL Server Audit feature enables you to audit server-level and database-level groups of events and individual events. 
 
@@ -31,26 +19,13 @@ See: [Instructions on how to enable auditing for SQL Server](https://docs.micros
 
 >Note: For the integration package to be able to read and send audit events the event target must be configured to be Windows event log.
 
-### audit events
+### Audit Events
 
 Enable to collect SQL Server audit events from the specified windows event log channel.
 
-### performance metrics
-
-Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
-
-See: [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15
-)
-
-### transaction_log metrics
-
-Collects system level `transaction_log` metrics information for SQL Server instance.
-
-See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
-
 ## Logs
 
-### audit
+### Audit
 
 The SQL Server audit dataset provides events from the configured Windows event log channel. All SQL Server audit specific fields are available in the `sqlserver.audit` field group.
 
@@ -179,102 +154,3 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | winlog.user_data | The event specific data. This field is mutually exclusive with `event_data`. | object |
 | winlog.version | The version number of the event's definition. | long |
 
-
-## Metrics
-
-### performance
-
-The Microsoft SQL Server `performance` dataset provides events from the performance counter table. All `performance` metrics will be available in `sqlserver.metrics` field group.
-
-An example event for `performance` looks as following:
-
-```json
-{
-    "@timestamp": "2022-05-24T15:28:03.783282521Z",
-    "sql": {
-        "driver": "mssql",
-        "metrics": {
-            "user_connections": 1
-        },
-        "query": "SELECT cntr_value As 'user_connections' FROM sys.dm_os_performance_counters WHERE counter_name= 'User Connections'"
-    },
-    "agent": {
-        "ephemeral_id": "2e0a3812-aede-4a35-89ce-935f692339da",
-        "id": "a5237ddf-4e55-421c-b9e1-1356b19f5e11",
-        "name": "docker-fleet-agent",
-        "type": "metricbeat",
-        "version": "8.3.0"
-    },
-    "data_stream": {
-        "dataset": "microsoft_sqlserver.performance",
-        "namespace": "ep",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "elastic_agent": {
-        "id": "a5237ddf-4e55-421c-b9e1-1356b19f5e11",
-        "snapshot": true,
-        "version": "8.3.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "microsoft_sqlserver.performance",
-        "duration": 13101376,
-        "ingested": "2022-05-24T15:28:04Z",
-        "module": "sql"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "name": "docker-fleet-agent"
-    },
-    "metricset": {
-        "name": "query",
-        "period": 10000
-    },
-    "service": {
-        "address": "elastic-package-service_microsoft_sqlserver_1:1433",
-        "type": "sql"
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| sql.driver | Driver used to execute the query. | keyword |
-| sql.metrics.active_temp_tables | Number of temporary tables/table variables in use. | long |
-| sql.metrics.batch_requests_sec | Number of Transact-SQL command batches received per second. This statistic is affected by all constraints (such as I/O, number of users, cache size, complexity of requests, and so on). High batch requests mean good throughput. | long |
-| sql.metrics.buffer_cache_hit_ratio | The ratio is the total number of cache hits divided by the total number of cache lookups over the last few thousand page accesses. After a long period of time, the ratio moves very little. Because reading from the cache is much less expensive than reading from disk, you want this ratio to be high. | double |
-| sql.metrics.checkpoint_pages_sec | Indicates the number of pages flushed to disk per second by a checkpoint or other operation that require all dirty pages to be flushed. | long |
-| sql.metrics.connection_reset_sec | Total number of logins started per second from the connection pool. | long |
-| sql.metrics.database_pages | Indicates the number of pages in the buffer pool with database content. | long |
-| sql.metrics.dynamic_counter_name | Dynamic counter name is given by user. | keyword |
-| sql.metrics.dynamic_counter_value | Dynamic counter value is fetched from performance table for the dynamic counter name which is provided by user. | long |
-| sql.metrics.lock_waits_sec | Number of lock requests per second that required the caller to wait. | long |
-| sql.metrics.logins_sec | Total number of logins started per second. This does not include pooled connections. | long |
-| sql.metrics.logouts_sec | Total number of logout operations started per second. | long |
-| sql.metrics.page_life_expectancy | Indicates the number of seconds a page will stay in the buffer pool without references (in seconds). | long |
-| sql.metrics.page_splits_sec | Number of page splits per second that occur as the result of overflowing index pages. | long |
-| sql.metrics.sql_compilations_sec | Number of SQL compilations per second. Indicates the number of times the compile code path is entered. Includes compiles caused by statement-level recompilations in SQL Server. After SQL Server user activity is stable, this value reaches a steady state. | long |
-| sql.metrics.sql_re_compilations_sec | Number of statement recompiles per second. Counts the number of times statement recompiles are triggered. Generally, you want the recompiles to be low. | long |
-| sql.metrics.target_pages | Ideal number of pages in the buffer pool. | long |
-| sql.metrics.transactions | Total number of transactions | long |
-| sql.metrics.user_connections | Total number of user connections. | long |
-| sql.query | Query executed to collect | keyword |
-
-
-### transaction_log
-
-The Microsoft SQL Server `transaction_log` dataset provides events from the log space usage and log stats tables of the system databases. All `transaction_log` metrics will be available in `sqlserver.metrics` field group.
