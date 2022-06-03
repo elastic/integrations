@@ -254,16 +254,16 @@ An example event for `transaction_log` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | mssql.driver | Driver used to execute the query. | keyword |  |  |
-| mssql.metrics.active_log_size_mb | Total active transaction log size in megabytes (MB). | long |  |  |
+| mssql.metrics.active_log_size | Total active transaction log size in megabytes (MB). | long | byte |  |
 | mssql.metrics.database_id | Unique ID of the database inside MSSQL. | long |  |  |
 | mssql.metrics.database_name | Name of the database. | keyword |  |  |
 | mssql.metrics.log_backup_time | Last transaction log backup time. | date |  |  |
-| mssql.metrics.log_recovery_size_mb | Log size in megabytes (MB) since log recovery log sequence number (LSN). | long |  |  |
-| mssql.metrics.log_since_last_checkpoint_mb | Log size in megabytes (MB) since last checkpoint log sequence number (LSN). | long |  |  |
-| mssql.metrics.log_since_last_log_backup_mb | Log file size since last backup in megabytes (MB). | long |  |  |
+| mssql.metrics.log_recovery_size | Log size in megabytes (MB) since log recovery log sequence number (LSN). | long | byte |  |
+| mssql.metrics.log_since_last_checkpoint | Log size in megabytes (MB) since last checkpoint log sequence number (LSN). | long | byte |  |
+| mssql.metrics.log_since_last_log_backup | Log file size since last backup in megabytes (MB). | long | byte |  |
 | mssql.metrics.log_space_in_bytes_since_last_backup | The amount of space used since the last log backup in bytes. | long | byte | gauge |
+| mssql.metrics.total_log_size | Total log size. | long | byte |  |
 | mssql.metrics.total_log_size_bytes | Total transaction log size in bytes. | long | byte | gauge |
-| mssql.metrics.total_log_size_mb | Total log size. | long |  |  |
 | mssql.metrics.used_log_space_bytes | The occupied size of the log in bytes. | long | byte | gauge |
 | mssql.metrics.used_log_space_pct | A percentage of the occupied size of the log as a percent of the total log size. | float | percent | gauge |
 | mssql.query | Query executed to collect metrics. | keyword |  |  |
