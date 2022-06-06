@@ -4,7 +4,7 @@ The goal of each integration doc is to:
 
 * Help the reader see the benefits the integration offers and how Elastic can help with their use case.
 * Inform the reader of any requirements including system compatibility, supported versions of third-party products, permissions needed, and more.
-* Provide a comprehensive list of collected fields and the data format for each. The reader can reference this information while evaluating the integration, interpreting collected data, or troubleshooting issues.
+* Provide a comprehensive list of collected fields and the data and metric types for each. The reader can reference this information while evaluating the integration, interpreting collected data, or troubleshooting issues.
 * Set the reader up for a successful installation and setup by connecting them with any other resources they'll need.
 
 <!-- The audience ... -->
@@ -52,7 +52,7 @@ For example, if you wanted to <use case> you could <action>. Then you can <visua
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
 and reference logs when troubleshooting an issue.
 >
->For example, if you wanted to know when there are more than some number of failed requests for a single piece of content in a given time period, you could search the logs for that time period, find all requests for that unique piece of content, and filter by response type. Then you could troubleshoot the issue by looking at additional context in the logs like the number of unique users (by IP address) who experienced the issue, the source of the request, or whether there are patterns related to the operating system or browser used when the request failed.
+>For example, you could use the data from this integration to know when there are more than some number of failed requests for a single piece of content in a given time period. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs like the number of unique users (by IP address) who experienced the issue, the source of the request, and more.
 
 ## Data types
 
@@ -65,8 +65,6 @@ The data types section should include:
 * Summary of each data type included and link to reference:
   * Logs
   * Metrics
-  * Events
-  * Errors
 * (Optional) Notes
 
 **Template**
