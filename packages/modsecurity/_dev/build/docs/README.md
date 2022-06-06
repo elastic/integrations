@@ -4,7 +4,7 @@ This integration periodically fetches audit logs from [Modsecurity](https://gith
 
 ## Compatibility
 
-The logs were tested with Modsecurity v3 with nginx connector.Change the default modsecurity logging format to json as per configuration
+The logs were tested with Modsecurity v3 with nginx connector and Modsecurity v3 with apachae connector.Change the default modsecurity logging format to json as per configuration
 
 ```
 SecAuditLogParts ABDEFHIJZ
