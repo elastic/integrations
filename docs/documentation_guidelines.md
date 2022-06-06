@@ -14,7 +14,7 @@ to make it easier for a single user to evaluate and use multiple integrations.
 Sections include:
 
 * [Overview](#overview)
-* [Data types](#data-types)
+* [Data streams](#data-streams)
 * [Requirements](#requirements)
 * [Setup](#setup)
 * (Optional) [Troubleshooting](#troubleshooting)
@@ -39,7 +39,7 @@ Use this template language as a starting point, replacing `<placeholder text>` w
 ```md
 The <name> integration allows you to monitor <service>.
 
-Use the <name> integration to <function>. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference <data type> when troubleshooting an issue.
+Use the <name> integration to <function>. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference <data stream type> when troubleshooting an issue.
 
 For example, if you wanted to <use case> you could <action>. Then you can <visualize|alert|troubleshoot> by <action>.
 ```
@@ -54,15 +54,15 @@ and reference logs when troubleshooting an issue.
 >
 >For example, you could use the data from this integration to know when there are more than some number of failed requests for a single piece of content in a given time period. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs like the number of unique users (by IP address) who experienced the issue, the source of the request, and more.
 
-## Data types
+## Data streams
 
-The data types section provides a high-level overview of the kind of data that is collected by the integration.
+The data streams section provides a high-level overview of the kind of data that is collected by the integration.
 This is helpful since it can be difficult to quickly derive an understanding from just the reference sections (since they're so long).
 
-The data types section should include:
+The data streams section should include:
 
-* List of data types collected by the integration
-* Summary of each data type included and link to reference:
+* A list of the types of data streams collected by the integration
+* A summary of each type of data stream included and a link to the relevant reference section:
   * Logs
   * Metrics
 * (Optional) Notes
@@ -72,15 +72,15 @@ The data types section should include:
 Use this template language as a starting point, replacing `<placeholder text>` with details about the integration:
 
 ```md
-## Data types
+## Data streams
 
-The <name> integration collects two types of data: logs and metrics.
+The <name> integration collects two types of data streams: logs and metrics.
 
 **Logs** help you keep a record of events happening in <service>.
-Log datasets collected by the <name> integration include <select datasets>, and more. See more details in the [Logs](#logs-reference).
+Log data streams collected by the <name> integration include <select data streams>, and more. See more details in the [Logs](#logs-reference).
 
 **Metrics** give you insight into the state of <service>.
-Metric datasets collected by the <name> integration include <select datasets> and more. See more details in the [Metrics](#metrics-reference).
+Metric data streams collected by the <name> integration include <select data streams> and more. See more details in the [Metrics](#metrics-reference).
 
 <!-- etc. -->
 
@@ -92,17 +92,17 @@ Metric datasets collected by the <name> integration include <select datasets> an
 >The System integration collects two types of data: logs and metrics.
 >
 >**Logs** help you keep a record of events that happen on your machine.
->Log datasets collected by the System integration include application, system, and security events on
+>Log data streams collected by the System integration include application, system, and security events on
 >machines running Windows or auth and syslog events on machines running macOS or Linux.
 >See more details in the [Logs reference](#logs-reference).
 >
 >**Metrics** give you insight into the state of the machine.
->Metric datasets collected by the System integration include CPU usage, load statistics, memory usage,
+>Metric data streams collected by the System integration include CPU usage, load statistics, memory usage,
 >information on network behavior, and more.
 >See more details in the [Metrics reference](#metrics-reference).
 >
->You can enable and disable individual datasets. If _all_ datasets are disabled and the System integration
-is still enabled, Fleet uses the default datasets.
+>You can enable and disable individual data streams. If _all_ data streams are disabled and the System integration
+is still enabled, Fleet uses the default data streams.
 
 ## Requirements
 
@@ -132,9 +132,9 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 >You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 >You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 >
->The System datasets collect different kinds of metric data, which may require dedicated permissions
+>Each data stream collects different kinds of metric data, which may require dedicated permissions
 >to be fetched and may vary across operating systems.
->Details on the permissions needed for each dataset are available in the [Metrics reference](#metrics-reference).
+>Details on the permissions needed for each data stream are available in the [Metrics reference](#metrics-reference).
 
 See a much more detailed example in [`packages/aws/_dev/build/docs/README.md`](../packages/aws/_dev/build/docs/README.md#requirements).
 
@@ -171,7 +171,7 @@ There is no standard format for the troubleshooting section.
 
 **Example**
 
->Note that certain datasets may access `/proc` to gather process information,
+>Note that certain data streams may access `/proc` to gather process information,
 >and the resulting `ptrace_may_access()` call by the kernel to check for
 >permissions can be blocked by
 >[AppArmor and other LSM software](https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace), even though the System module doesn't use `ptrace` directly.
@@ -184,7 +184,7 @@ There is no standard format for the troubleshooting section.
 Readers might use the reference section while evaluating the integration, interpreting collected data, or troubleshooting issues.
 
 There can be any number of reference sections (for example, `## Metrics reference`, `## Logs reference`).
-And each reference section can contain one or more subsections, one for each dataset (for example, `### Access Logs` and `### Error logs`).
+And each reference section can contain one or more subsections, one for each individual data stream (for example, `### Access Logs` and `### Error logs`).
 
 Each reference section should contain detailed information about:
 
