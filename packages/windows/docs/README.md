@@ -8,17 +8,17 @@ Then visualize that data in Kibana, create alerts to notify you if something goe
 For example, if you wanted to know if a Windows service unexpectedly stops running, you could install the Windows integration to send service metrics to Elastic.
 Then, you could view real-time changes to service status in Kibana's _[Metrics Windows] Services_ dashboard.
 
-## Data types
+## Data streams
 
 The Windows integration collects two types of data: logs and metrics.
 
 **Logs** help you keep a record of events that happen on your machine.
-Log datasets collected by the Windows integration include forwarded events, PowerShell events, and Sysmon events.
+Log data streams collected by the Windows integration include forwarded events, PowerShell events, and Sysmon events.
 Log collection for the Security, Application, and System event logs is handled by the System integration.
 See more details in the [Logs reference](#logs-reference).
 
 **Metrics** give you insight into the state of the machine.
-Metric datasets collected by the Windows integration include service details and performance counter values.
+Metric data streams collected by the Windows integration include service details and performance counter values.
 See more details in the [Metrics reference](#metrics-reference).
 
 ## Requirements
@@ -26,7 +26,7 @@ See more details in the [Metrics reference](#metrics-reference).
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-The Windows datasets collect different kinds of metric data, which may require dedicated permissions
+Each data stream collects different kinds of metric data, which may require dedicated permissions
 to be fetched and which may vary across operating systems.
 
 ## Setup
@@ -51,13 +51,13 @@ To achieve this, `renderXml` needs to be set to `1` in your [`inputs.conf`](http
 
 ### Forwarded
 
-The Windows `forwarded` dataset provides events from the Windows
+The Windows `forwarded` data stream provides events from the Windows
 `ForwardedEvents` event log. The fields will be the same as the 
-channel specific datasets.
+channel specific data streams.
 
 ### Powershell
 
-The Windows `powershell` dataset provides events from the Windows
+The Windows `powershell` data stream provides events from the Windows
 `Windows PowerShell` event log.
 
 An example event for `powershell` looks as following:
@@ -400,7 +400,7 @@ An example event for `powershell` looks as following:
 
 ### Powershell/Operational
 
-The Windows `powershell_operational` dataset provides events from the Windows
+The Windows `powershell_operational` data stream provides events from the Windows
 `Microsoft-Windows-PowerShell/Operational` event log.
 
 An example event for `powershell_operational` looks as following:
@@ -736,7 +736,7 @@ An example event for `powershell_operational` looks as following:
 
 ### Sysmon/Operational
 
-The Windows `sysmon_operational` dataset provides events from the Windows
+The Windows `sysmon_operational` data stream provides events from the Windows
 `Microsoft-Windows-Sysmon/Operational` event log.
 
 An example event for `sysmon_operational` looks as following:
@@ -1184,11 +1184,11 @@ An example event for `sysmon_operational` looks as following:
 
 ## Metrics reference
 
-Both datasets are available on Windows only.
+Both data streams are available on Windows only.
 
 ### Service
 
-The Windows `service` dataset provides service details.
+The Windows `service` data stream provides service details.
 
 **Exported fields**
 
@@ -1244,7 +1244,7 @@ The Windows `service` dataset provides service details.
 
 ### Perfmon
 
-The Windows `perfmon` dataset provides performance counter values.
+The Windows `perfmon` data stream provides performance counter values.
 
 **Exported fields**
 
