@@ -2,18 +2,16 @@
 
 The AWS CloudFront integration allows you to monitor your [AWS CloudFront](https://aws.amazon.com/cloudfront/) usage.
 
-Use the AWS CloudFront integration to collect and parse logs related to content delivery via CloudFront.
-Visualize that data in Kibana, create alerts to notify you if something goes wrong,
+Use the AWS CloudFront integration to collect and parse logs related to content delivery.
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
 and reference logs when troubleshooting an issue.
 
-For example, if you wanted to know when there are more than 25 failed requests for a single
-piece of content in a given time period, you could search the logs for that time period, find all
-requests for that unique piece of content, and filter by response type.
-Then you could troubleshoot the issue by looking at additional context in the logs like the
-number of _unique_ users (by IP address) who experienced the issue, where the request is coming from,
-or whether there are patterns related to the operating system or browser used when the request failed.
+For example, you could use the data from this integration to know when there are more than some number of failed requests
+for a single piece of content in a given time period. You could also use the data to troubleshoot the underlying issue by
+looking at additional context in the logs like the number of unique users (by IP address) who experienced the issue,
+the source of the request, and more.
 
-## Data types
+## Data streams
 
 The AWS CloudFront integration collects one type of data: logs.
 
@@ -43,7 +41,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs reference
 
-The `cloudfront` dataset collects standard logs (also called access logs) from AWS CloudFront.
+The `cloudfront` data stream collects standard logs (also called access logs) from AWS CloudFront.
 CloudFront standard logs provide detailed records about every request that’s made to a distribution.
 
 **Exported fields**
