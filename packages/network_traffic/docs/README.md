@@ -53,6 +53,13 @@ filter, very little CPU is required to discard the packet. Network Packet Captur
 also uses the ports specified here to determine which parser to use for
 each packet.
 
+#### `monitor_processes`
+
+If this option is enabled then network traffic events will be enriched
+with information about the process associated with the events.
+
+The default value is false.
+
 #### `send_request`
 
 If this option is enabled, the raw message of the request (`request`
