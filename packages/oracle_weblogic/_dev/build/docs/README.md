@@ -15,7 +15,7 @@ In order to ingest data from Oracle WebLogic:
     User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment variables for Jolokia.
 
     ```
-     -javaagent:<path-to-jolokia-agent>=port=<Port>,host=<hostname>
+     -javaagent:<path-to-jolokia-agent>=port=<port>,host=<hostname>
     ``` 
     Example configuration:
     ```
@@ -25,7 +25,7 @@ In order to ingest data from Oracle WebLogic:
     (Optional) User can run Jolokia on https by configuring following [paramters](https://jolokia.org/reference/html/agents.html#:~:text=Table%C2%A03.6.-,JVM%20agent%20configuration%20options,-Parameter).
 
     ```
-     -javaagent:<path-to-jolokia-agent>=port=<Port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
+     -javaagent:<path-to-jolokia-agent>=port=<port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
     ```
 
     Example configuration:
@@ -35,11 +35,11 @@ In order to ingest data from Oracle WebLogic:
 
 ## Logs
 
-This integration collects Oracle Weblogic Admin Server, Managed Server, Domain and Access logs. It includes the following datasets for receiving logs from a file:
+This integration collects Oracle WebLogic Admin Server, Managed Server, Domain and Access logs. It includes the following datasets for receiving logs from a file:
 
 ### Access logs
 
-The `access` data stream collects Access logs form `access.log`.
+The `access` data stream collects Access logs form `Access.log`.
 
 {{event "access"}}
 
@@ -78,3 +78,11 @@ The `deployed_application` data stream collects metrics of Deployed Application.
 {{event "deployed_application"}}
 
 {{fields "deployed_application"}}
+
+### ThreadPool metrics
+
+This `threadpool` data stream collects metrics of ThreadPool.
+
+{{event "threadpool"}}
+
+{{fields "threadpool"}}
