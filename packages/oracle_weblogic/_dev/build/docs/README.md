@@ -6,13 +6,40 @@ The Oracle WebLogic Integration is used to fetch observability data from [Oracle
 
 This integration has been tested against `Oracle WebLogic v12.2.1.3`.
 
+## Requirements
+
+In order to ingest data from Oracle WebLogic:
+- User must add the path where the Jolokia agent is downloaded (For example, `/home/oracle/jolokia-jvm-1.6.0-agent.jar`).
+- Configuring Jolokia for WebLogic
+
+    User needs to [download](https://jolokia.org/download.html) and add the JAR file and set environment variables for Jolokia.
+
+    ```
+     -javaagent:<path-to-jolokia-agent>=port=<port>,host=<hostname>
+    ``` 
+    Example configuration:
+    ```
+     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost
+    ```
+
+    (Optional) User can run Jolokia on https by configuring following [paramters](https://jolokia.org/reference/html/agents.html#:~:text=Table%C2%A03.6.-,JVM%20agent%20configuration%20options,-Parameter).
+
+    ```
+     -javaagent:<path-to-jolokia-agent>=port=<port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
+    ```
+
+    Example configuration:
+    ```
+     -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost,protocol=https,keystore=/u01/oracle/weblogic.jks,keystorePassword=host@123,keyStoreType=JKS
+    ```
+
 ## Logs
 
-This integration collects Oracle Weblogic Admin Server, Managed Server, Domain and Access logs. It includes the following datasets for receiving logs from a file:
+This integration collects Oracle WebLogic Admin Server, Managed Server, Domain and Access logs. It includes the following datasets for receiving logs from a file:
 
 ### Access logs
 
-The `access` data stream collects Access logs form `access.log`.
+The `access` data stream collects Access logs form `Access.log`.
 
 {{event "access"}}
 
@@ -41,3 +68,13 @@ The `managed_server` data stream collects Managed Server logs from `Managedserve
 {{event "managed_server"}}
 
 {{fields "managed_server"}}
+
+## Metrics
+
+### ThreadPool metrics
+
+This `threadpool` data stream gives metrics of ThreadPool.
+
+{{event "threadpool"}}
+
+{{fields "threadpool"}}
