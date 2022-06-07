@@ -8,12 +8,12 @@ Then visualize that data in Kibana, create alerts to notify you if something goe
 For example, if you wanted to know ___, you could install the Linux Metrics integration to send ____ metrics to Elastic.
 Then, you could view real-time changes to service status in Kibana's _[Metrics Linux] Host Services Overview_ dashboard.
 
-## Data types
+## Data streams
 
 The Linux Metrics integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of the machine.
-Metric datasets collected by the Linux Metrics integration include 
+Metric data streams collected by the Linux Metrics integration include 
 performance counter values, memory usage, entropy availability, and more.
 See more details in the [Metrics reference](#metrics-reference).
 
