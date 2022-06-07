@@ -32,18 +32,13 @@ processors:
       ignore_failure: true
   - rename:
       field: json.header.event_name
-      target_field: jamf_compliance_reporter.header.event_name
+      target_field: event.action
       ignore_missing: true
-  - set:
-      field: event.action
-      copy_from: jamf_compliance_reporter.header.event_name
-      ignore_failure: true
   - lowercase:
       field: event.action
       ignore_missing: true
   - date:
       field: json.header.time_seconds_epoch
-      target_field: '@timestamp'
       if: ctx.json?.header?.time_seconds_epoch != 0
       ignore_failure: true
       formats:
@@ -60,7 +55,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.host_info.host_uuid
-      target_field: host.id
+      target_field: jamf_compliance_reporter.host_info.host.uuid
       ignore_missing: true
   - rename:
       field: json.host_info.osversion
@@ -82,53 +77,53 @@ processors:
       ignore_missing: true
   - rename:
       field: json.host_info.serial_number
-      target_field: jamf_compliance_reporter.host_info.serial_number
+      target_field: host.id
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_audio_video_device_event" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'AUDIO_VIDEO_DEVICE_EVENT'
+      if: ctx.event?.action == 'audio_video_device_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_audit_class_verification_event" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'AUDIT_CLASS_VERIFICATION_EVENT'
+      if: ctx.event?.action == 'audit_class_verification_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_compliance_reporter_tamper_event_and_file_event_info" }}'
-      if: '["COMPLIANCEREPORTER_TAMPER_EVENT", "FILE_EVENT"].contains(ctx.jamf_compliance_reporter?.header?.event_name)'
+      if: '["compliancereporter_tamper_event", "file_event"].contains(ctx.event?.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_gatekeeper_info_event" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'GATEKEEPER_INFO_EVENT'
+      if: ctx.event?.action == 'gatekeeper_info_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_gatekeeper_manual_overrides" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'GATEKEEPER_MANUAL_OVERRIDES'
+      if: ctx.event?.action == 'gatekeeper_manual_overrides'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_gatekeeper_quarantine_log" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'GATEKEEPER_QUARANTINE_LOG'
+      if: ctx.event?.action == 'gatekeeper_quarantine_log'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_hardware_event" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'HARDWARE_EVENT'
+      if: ctx.event?.action == 'hardware_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_license_info_event" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'LICENSE_INFO_EVENT'
+      if: ctx.event?.action == 'license_info_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_preference_list_event" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'PREFERENCE_LIST_EVENT'
+      if: ctx.event?.action == 'preference_list_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_print_event_information" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'PRINT_EVENT_INFORMATION'
+      if: ctx.event?.action == 'print_event_information'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_prohibited_app_blocked" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'PROHIBITED_APP_BLOCKED'
+      if: ctx.event?.action == 'prohibited_app_blocked'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_signal_event" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'SIGNAL_EVENT'
+      if: ctx.event?.action == 'signal_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_unified_log_event" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'UNIFIED_LOG_EVENT'
+      if: ctx.event?.action == 'unified_log_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_xprotect_definitions_version_info" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'XPROTECT_DEFINITIONS_VERSION_INFO'
+      if: ctx.event?.action == 'xprotect_definitions_version_info'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_xprotect_event_log" }}'
-      if: ctx.jamf_compliance_reporter?.header?.event_name == 'XPROTECT_EVENT_LOG'
+      if: ctx.event?.action == 'xprotect_event_log'
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))

@@ -8,7 +8,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.exec_args.args
-      target_field: jamf_compliance_reporter.audit.exec_args.args
+      target_field: json.args
       ignore_missing: true
   - rename:
       field: json.exec_args.args_compiled
@@ -30,5 +30,14 @@ processors:
       field: json.exec_chain_parent.uuid
       target_field: jamf_compliance_reporter.audit.exec_chain_parent.uuid
       ignore_missing: true
+  - script:
+      description: Convert Object into Array.
+      lang: painless
+      source: |
+        def args_list = new ArrayList();
+        ctx.process.args = args_list;
+        for (Map.Entry m : ctx.json?.args.entrySet()) {
+          ctx.process?.args.add(m.getValue());
+        }
   - pipeline:
       name: '{{ IngestPipeline "pipeline_identity_object" }}'

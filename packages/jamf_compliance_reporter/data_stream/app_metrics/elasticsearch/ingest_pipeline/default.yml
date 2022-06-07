@@ -52,27 +52,22 @@ processors:
   - convert:
       field: json.app_metric_info.resident_memory_size_mb
       type: double
-      target_field: jamf_compliance_reporter.app_metrics.app_metric_info.resident_memory_size_mb
+      target_field: jamf_compliance_reporter.app_metrics.app_metric_info.resident_memory_size.mb
       ignore_failure: true
   - convert:
       field: json.app_metric_info.virtual_memory_size_mb
       type: double
-      target_field: jamf_compliance_reporter.app_metrics.app_metric_info.virtual_memory_size_mb
+      target_field: jamf_compliance_reporter.app_metrics.app_metric_info.virtual_memory_size.mb
       ignore_failure: true
   - rename:
       field: json.header.event_name
-      target_field: jamf_compliance_reporter.header.event_name
+      target_field: event.action
       ignore_missing: true
-  - set:
-      field: event.action
-      copy_from: jamf_compliance_reporter.header.event_name
-      ignore_failure: true
   - lowercase:
       field: event.action
       ignore_missing: true
   - date:
       field: json.header.time_seconds_epoch
-      target_field: '@timestamp'
       if: ctx.json?.header?.time_seconds_epoch != '0'
       ignore_failure: true
       formats:
@@ -89,7 +84,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.host_info.host_uuid
-      target_field: host.id
+      target_field: jamf_compliance_reporter.host_info.host.uuid
       ignore_missing: true
   - rename:
       field: json.host_info.osversion
@@ -111,7 +106,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.host_info.serial_number
-      target_field: jamf_compliance_reporter.host_info.serial_number
+      target_field: host.id
       ignore_missing: true
   - script:
       lang: painless

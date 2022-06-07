@@ -6,10 +6,9 @@ processors:
       target_field: jamf_compliance_reporter.audit.attributes.device
       type: string
       ignore_failure: true
-  - convert:
+  - rename:
       field: json.attributes.file_access_mode
-      target_field: jamf_compliance_reporter.audit.attributes.file.access_mode
-      type: string
+      target_field: json.file_access_mode
       ignore_failure: true
   - convert:
       field: json.attributes.file_system_id
@@ -23,26 +22,33 @@ processors:
       ignore_failure: true
   - convert:
       field: json.attributes.owner_group_id
-      target_field: jamf_compliance_reporter.audit.attributes.owner.group.id
+      target_field: user.group.id
       type: string
       ignore_failure: true
   - rename:
       field: json.attributes.owner_group_name
-      target_field: jamf_compliance_reporter.audit.attributes.owner.group.name
+      target_field: user.group.name
       ignore_missing: true
   - convert:
       field: json.attributes.owner_user_id
-      target_field: jamf_compliance_reporter.audit.attributes.owner.user.id
       type: string
       ignore_failure: true
-  - rename:
-      field: json.attributes.owner_user_name
-      target_field: jamf_compliance_reporter.audit.attributes.owner.user.name
-      ignore_missing: true
+  - append:
+      field: user.id
+      value: '{{{json.attributes.owner_user_id}}}'
+      if: ctx.json?.attributes?.owner_user_id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: user.name
+      value: '{{{json.attributes.owner_user_name}}}'
+      if: ctx.json?.attributes?.owner_user_name != null
+      allow_duplicates: false
+      ignore_failure: true
   - append:
       field: related.user
-      value: '{{{jamf_compliance_reporter.audit.attributes.owner.user.name}}}'
-      if: ctx.jamf_compliance_reporter?.audit?.attributes?.owner?.user?.name != null
+      value: '{{{json.attributes.owner_user_name}}}'
+      if: ctx.json?.attributes?.owner_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - pipeline:
@@ -55,7 +61,7 @@ processors:
       name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
   - rename:
       field: json.exec_args.args
-      target_field: jamf_compliance_reporter.audit.exec_args.args
+      target_field: json.args
       ignore_missing: true
   - rename:
       field: json.exec_args.args_compiled
@@ -63,11 +69,11 @@ processors:
       ignore_missing: true
   - rename:
       field: json.exec_env.env.ARCH
-      target_field: jamf_compliance_reporter.audit.exec_env.env.arch
+      target_field: host.os.type
       ignore_missing: true
   - rename:
       field: json.exec_env.env.CPU
-      target_field: jamf_compliance_reporter.audit.exec_env.env.cpu
+      target_field: host.architecture
       ignore_missing: true
   - rename:
       field: json.exec_env.env.MALWAREBYTES_GROUP
@@ -89,3 +95,18 @@ processors:
       field: json.exec_env.env_compiled
       target_field: jamf_compliance_reporter.audit.exec_env.env.compiled
       ignore_missing: true
+  - script:
+      description: Convert Object into Array.
+      lang: painless
+      source: |
+        def args_list = new ArrayList();
+        ctx.process.args = args_list;
+        for (Map.Entry m : ctx.json?.args.entrySet()) {
+          ctx.process?.args.add(m.getValue());
+        }
+  - script:
+      description: Convert Decimal into Octal.
+      lang: painless
+      source: |
+        int temp = (int)ctx.json?.file_access_mode;
+        ctx.jamf_compliance_reporter.audit.attributes.file.access_mode = Integer.toOctalString(temp);

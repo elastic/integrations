@@ -96,13 +96,6 @@
                       type: keyword
                     - name: name
                       type: keyword
-                - name: user
-                  type: group
-                  fields:
-                    - name: id
-                      type: keyword
-                    - name: name
-                      type: keyword
         - name: event_score
           type: long
         - name: exec_args
@@ -120,8 +113,6 @@
               fields:
                 - name: path
                   type: text
-                - name: pid
-                  type: long
                 - name: uuid
                   type: keyword
         - name: exec_chain_parent
@@ -138,8 +129,6 @@
                 - name: arch
                   type: keyword
                 - name: compiled
-                  type: keyword
-                - name: cpu
                   type: keyword
                 - name: malwarebytes_group
                   type: keyword
@@ -164,16 +153,9 @@
           fields:
             - name: event_modifier
               type: keyword
-            - name: event_name
-              type: keyword
             - name: time_milliseconds_offset
               type: long
             - name: version
-              type: keyword
-        - name: host_info
-          type: group
-          fields:
-            - name: serial_number
               type: keyword
         - name: identity
           type: group
@@ -201,10 +183,6 @@
         - name: process
           type: group
           fields:
-            - name: audit_id
-              type: keyword
-            - name: audit_user_name
-              type: keyword
             - name: effective
               type: group
               fields:
@@ -273,13 +251,6 @@
                   type: keyword
                 - name: id
                   type: keyword
-                - name: ip
-                  type: group
-                  fields:
-                    - name: address
-                      type: ip
-                - name: port
-                  type: long
             - name: unix
               type: group
               fields:
@@ -317,6 +288,13 @@
                       type: keyword
                     - name: name
                       type: keyword
+            - name: process
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                - name: pid
+                  type: long
             - name: session_id
               type: keyword
             - name: terminal_id
@@ -332,16 +310,14 @@
           type: keyword
     - name: event_score
       type: long
-    - name: header
-      type: group
-      fields:
-        - name: event_name
-          type: keyword
     - name: host_info
       type: group
       fields:
-        - name: serial_number
-          type: keyword
+        - name: host
+          type: group
+          fields:
+            - name: uuid
+              type: keyword
 - name: log.source.address
   type: keyword
   description: Source address from which the log event was read / sent from.

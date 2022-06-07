@@ -6,13 +6,32 @@ The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documen
 - Enable the Integration with the TLS or HTTP Endpoint input.
 - Configure Jamf Compliance Reporter to send logs to the Elastic Agent.
 
+### Enabling the integration in Elastic
+
+1. In Kibana go to **Management > Integrations**.
+2. In "Search for integrations" search bar type **Jamf Compliance Reporter**.
+3. Click on "Jamf Compliance Reporter" integration from the search results.
+4. Click on **Add Jamf Compliance Reporter** button to add Jamf Compliance Reporter integration.
+
+### Configure the Jamf Compliance Reporter integration for REST Endpoint Remote logging
+
+1. Enter values for "Listen Address", "Listen Port" and "URL" to form the endpoint URL. Make note of the **Endpoint URL** `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
+
+### Configure the Jamf Compliance Reporter integration for TLS Remote Logging
+
+1. Enter values for "Listen Address" and "Listen Port" to form the TLS. `http://{AGENT_ADDRESS}:{AGENT_PORT}`.
+
 ## Setup Steps
 
 - After validating settings, you can use a configuration profile in Jamf Pro to deploy certificates to endpoints in production.
 
+- Reference link for [Creating a Configuration Profile](https://docs.jamf.com/compliance-reporter/documentation/Configuring_Compliance_Reporter_Properties_Using_Jamf_Pro.html) using Jamf Pro.
+
+## Follow one of the below methods to collect logs from Jamf Compliance Reporter
+
 - Reference link for generating [REST Endpoint Remote logging](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html) for Compliance Reporter.
 
-- Reference link for [Creating a Configuration Profile](https://docs.jamf.com/compliance-reporter/documentation/Configuring_Compliance_Reporter_Properties_Using_Jamf_Pro.html) using Jamf Pro.
+- Reference link for generating [TLS Remote Logging](https://docs.jamf.com/compliance-reporter/documentation/TLS_Remote_Logging.html) for Compliance Reporter.
 
 ## Compatibility
 This package has been tested for Compliance Reporter against Jamf pro version 10.18.0.
@@ -46,8 +65,9 @@ An example event for `app` looks as following:
 {
     "@timestamp": "2019-10-15T18:30:27.000Z",
     "agent": {
-        "ephemeral_id": "12057d0a-faeb-4547-a70e-45a1bf62a752",
-        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
+        "ephemeral_id": "7ec3367f-4d0e-4b57-a6e8-6e1e1e5bf064",
+        "hostname": "docker-fleet-agent",
+        "id": "c30233ff-80f0-47f1-9360-db38e19df5f2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.3"
@@ -61,7 +81,7 @@ An example event for `app` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
+        "id": "c30233ff-80f0-47f1-9360-db38e19df5f2",
         "snapshot": false,
         "version": "8.1.3"
     },
@@ -72,7 +92,7 @@ An example event for `app` looks as following:
             "process"
         ],
         "dataset": "jamf_compliance_reporter.app_metrics",
-        "ingested": "2022-05-09T12:52:45Z",
+        "ingested": "2022-06-03T08:36:34Z",
         "kind": "event",
         "type": [
             "info"
@@ -83,7 +103,7 @@ An example event for `app` looks as following:
             "usage": 0.031
         },
         "hostname": "Dan_macbook_pro",
-        "id": "3x6xxxxx-xxx5-xxxE-xxxC-xxxxxxxxxxx1",
+        "id": "x03xxxxxxxx3",
         "mac": [
             "38-F9-E8-15-5A-82"
         ],
@@ -102,21 +122,24 @@ An example event for `app` looks as following:
                 "cpu_time_seconds": 1540.195786,
                 "interrupt_wakeups": 4840,
                 "platform_idle_wakeups": 2879,
-                "resident_memory_size_mb": 40.32421875,
-                "virtual_memory_size_mb": 62.96875
+                "resident_memory_size": {
+                    "mb": 40.32421875
+                },
+                "virtual_memory_size": {
+                    "mb": 62.96875
+                }
             }
         },
         "event_score": 0,
-        "header": {
-            "event_name": "APP_METRICS"
-        },
         "host_info": {
-            "serial_number": "x03xxxxxxxx3"
+            "host": {
+                "uuid": "3x6xxxxx-xxx5-xxxE-xxxC-xxxxxxxxxxx1"
+            }
         }
     },
     "log": {
         "source": {
-            "address": "192.168.128.4:36618"
+            "address": "172.18.0.4:45804"
         }
     },
     "related": {
@@ -185,11 +208,10 @@ An example event for `app` looks as following:
 | jamf_compliance_reporter.app_metrics.app_metric_info.cpu_time_seconds |  | double |
 | jamf_compliance_reporter.app_metrics.app_metric_info.interrupt_wakeups |  | long |
 | jamf_compliance_reporter.app_metrics.app_metric_info.platform_idle_wakeups |  | long |
-| jamf_compliance_reporter.app_metrics.app_metric_info.resident_memory_size_mb |  | double |
-| jamf_compliance_reporter.app_metrics.app_metric_info.virtual_memory_size_mb |  | double |
+| jamf_compliance_reporter.app_metrics.app_metric_info.resident_memory_size.mb |  | double |
+| jamf_compliance_reporter.app_metrics.app_metric_info.virtual_memory_size.mb |  | double |
 | jamf_compliance_reporter.event_score |  | long |
-| jamf_compliance_reporter.header.event_name |  | keyword |
-| jamf_compliance_reporter.host_info.serial_number |  | keyword |
+| jamf_compliance_reporter.host_info.host.uuid |  | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
@@ -206,8 +228,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-10-02T16:21:03.400Z",
     "agent": {
-        "ephemeral_id": "c486fba1-82b1-4073-a857-e1b616f49ee7",
-        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
+        "ephemeral_id": "e85539c6-e118-482e-b6be-1e802108b3d6",
+        "hostname": "docker-fleet-agent",
+        "id": "c30233ff-80f0-47f1-9360-db38e19df5f2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.3"
@@ -221,7 +244,7 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
+        "id": "c30233ff-80f0-47f1-9360-db38e19df5f2",
         "snapshot": false,
         "version": "8.1.3"
     },
@@ -236,7 +259,7 @@ An example event for `audit` looks as following:
         ],
         "code": "2",
         "dataset": "jamf_compliance_reporter.audit",
-        "ingested": "2022-05-09T12:54:48Z",
+        "ingested": "2022-06-03T08:38:34Z",
         "kind": "event",
         "outcome": "success",
         "type": [
@@ -245,7 +268,7 @@ An example event for `audit` looks as following:
     },
     "host": {
         "hostname": "Dan_macbook_pro",
-        "id": "3F6E4B3A-9285-4E7E-9A0C-C3B62DC379DF",
+        "id": "C03XY889JHG3",
         "ip": [
             "0.0.0.0"
         ],
@@ -253,7 +276,6 @@ An example event for `audit` looks as following:
             "38-F9-E8-15-5A-82"
         ],
         "os": {
-            "type": "macos",
             "version": "Version 10.14.6 (Build 18G95)"
         }
     },
@@ -290,21 +312,15 @@ An example event for `audit` looks as following:
                 "description": "success"
             },
             "subject": {
-                "audit": {
-                    "id": "502",
-                    "user": {
-                        "name": "dan"
-                    }
-                },
                 "effective": {
                     "group": {
                         "id": "20",
                         "name": "staff"
-                    },
-                    "user": {
-                        "id": "502",
-                        "name": "dan"
                     }
+                },
+                "process": {
+                    "name": "/Applications/GitHub Desktop.app/Contents/Frameworks/GitHub Desktop Helper.app/Contents/MacOS/GitHub Desktop Helper",
+                    "pid": 60068
                 },
                 "session_id": "100011",
                 "terminal_id": {
@@ -317,16 +333,15 @@ An example event for `audit` looks as following:
             }
         },
         "event_score": 0,
-        "header": {
-            "event_name": "AUE_FORK"
-        },
         "host_info": {
-            "serial_number": "C03XY889JHG3"
+            "host": {
+                "uuid": "3F6E4B3A-9285-4E7E-9A0C-C3B62DC379DF"
+            }
         }
     },
     "log": {
         "source": {
-            "address": "192.168.128.4:34316"
+            "address": "172.18.0.4:40930"
         }
     },
     "process": {
@@ -334,8 +349,18 @@ An example event for `audit` looks as following:
         "hash": {
             "sha1": "F38903FE2AEBEDD2F07704FAE89A405AF57023F2"
         },
-        "name": "/Applications/GitHub Desktop.app/Contents/Frameworks/GitHub Desktop Helper.app/Contents/MacOS/GitHub Desktop Helper",
-        "pid": 60068
+        "real_group": {
+            "id": "20",
+            "name": "staff"
+        },
+        "real_user": {
+            "id": "502",
+            "name": "dan"
+        },
+        "user": {
+            "id": "502",
+            "name": "dan"
+        }
     },
     "related": {
         "hash": [
@@ -357,14 +382,6 @@ An example event for `audit` looks as following:
         "jamf_compliance_reporter_audit"
     ],
     "user": {
-        "effective": {
-            "id": "502",
-            "name": "dan"
-        },
-        "group": {
-            "id": "20",
-            "name": "staff"
-        },
         "id": "502",
         "name": [
             "dan"
@@ -456,18 +473,14 @@ An example event for `audit` looks as following:
 | jamf_compliance_reporter.audit.attributes.node.id |  | keyword |
 | jamf_compliance_reporter.audit.attributes.owner.group.id |  | keyword |
 | jamf_compliance_reporter.audit.attributes.owner.group.name |  | keyword |
-| jamf_compliance_reporter.audit.attributes.owner.user.id |  | keyword |
-| jamf_compliance_reporter.audit.attributes.owner.user.name |  | keyword |
 | jamf_compliance_reporter.audit.event_score |  | long |
 | jamf_compliance_reporter.audit.exec_args.args |  | flattened |
 | jamf_compliance_reporter.audit.exec_args.args_compiled |  | keyword |
 | jamf_compliance_reporter.audit.exec_chain_child.parent.path |  | text |
-| jamf_compliance_reporter.audit.exec_chain_child.parent.pid |  | long |
 | jamf_compliance_reporter.audit.exec_chain_child.parent.uuid |  | keyword |
 | jamf_compliance_reporter.audit.exec_chain_parent.uuid |  | keyword |
 | jamf_compliance_reporter.audit.exec_env.env.arch |  | keyword |
 | jamf_compliance_reporter.audit.exec_env.env.compiled |  | keyword |
-| jamf_compliance_reporter.audit.exec_env.env.cpu |  | keyword |
 | jamf_compliance_reporter.audit.exec_env.env.malwarebytes_group |  | keyword |
 | jamf_compliance_reporter.audit.exec_env.env.path |  | text |
 | jamf_compliance_reporter.audit.exec_env.env.xpc_flags |  | keyword |
@@ -475,10 +488,8 @@ An example event for `audit` looks as following:
 | jamf_compliance_reporter.audit.exit.return.value |  | long |
 | jamf_compliance_reporter.audit.exit.status |  | keyword |
 | jamf_compliance_reporter.audit.header.event_modifier |  | keyword |
-| jamf_compliance_reporter.audit.header.event_name |  | keyword |
 | jamf_compliance_reporter.audit.header.time_milliseconds_offset |  | long |
 | jamf_compliance_reporter.audit.header.version |  | keyword |
-| jamf_compliance_reporter.audit.host_info.serial_number |  | keyword |
 | jamf_compliance_reporter.audit.identity.cd_hash |  | keyword |
 | jamf_compliance_reporter.audit.identity.signer.id |  | keyword |
 | jamf_compliance_reporter.audit.identity.signer.id_truncated |  | keyword |
@@ -486,8 +497,6 @@ An example event for `audit` looks as following:
 | jamf_compliance_reporter.audit.identity.team.id |  | keyword |
 | jamf_compliance_reporter.audit.identity.team.id_truncated |  | keyword |
 | jamf_compliance_reporter.audit.path |  | keyword |
-| jamf_compliance_reporter.audit.process.audit_id |  | keyword |
-| jamf_compliance_reporter.audit.process.audit_user_name |  | keyword |
 | jamf_compliance_reporter.audit.process.effective.group.id |  | keyword |
 | jamf_compliance_reporter.audit.process.effective.group.name |  | keyword |
 | jamf_compliance_reporter.audit.process.effective.user.id |  | keyword |
@@ -507,8 +516,6 @@ An example event for `audit` looks as following:
 | jamf_compliance_reporter.audit.socket.inet.addr |  | keyword |
 | jamf_compliance_reporter.audit.socket.inet.family |  | keyword |
 | jamf_compliance_reporter.audit.socket.inet.id |  | keyword |
-| jamf_compliance_reporter.audit.socket.inet.ip.address |  | ip |
-| jamf_compliance_reporter.audit.socket.inet.port |  | long |
 | jamf_compliance_reporter.audit.socket.unix.family |  | keyword |
 | jamf_compliance_reporter.audit.socket.unix.path |  | text |
 | jamf_compliance_reporter.audit.subject.audit.id |  | keyword |
@@ -517,25 +524,38 @@ An example event for `audit` looks as following:
 | jamf_compliance_reporter.audit.subject.effective.group.name |  | keyword |
 | jamf_compliance_reporter.audit.subject.effective.user.id |  | keyword |
 | jamf_compliance_reporter.audit.subject.effective.user.name |  | keyword |
+| jamf_compliance_reporter.audit.subject.process.name |  | keyword |
+| jamf_compliance_reporter.audit.subject.process.pid |  | long |
 | jamf_compliance_reporter.audit.subject.session_id |  | keyword |
 | jamf_compliance_reporter.audit.subject.terminal_id.addr |  | keyword |
 | jamf_compliance_reporter.audit.subject.terminal_id.port |  | long |
 | jamf_compliance_reporter.audit.subject.terminal_id.type |  | keyword |
 | jamf_compliance_reporter.audit.texts |  | keyword |
 | jamf_compliance_reporter.event_score |  | long |
-| jamf_compliance_reporter.header.event_name |  | keyword |
-| jamf_compliance_reporter.host_info.serial_number |  | keyword |
+| jamf_compliance_reporter.host_info.host.uuid |  | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
 | process.hash.sha1 | SHA1 hash. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.parent.pid | Process id. | long |
 | process.pid | Process id. | long |
+| process.real_group.id | Unique identifier for the group on the system/platform. | keyword |
+| process.real_group.name | Name of the group. | keyword |
+| process.real_user.id | Unique identifier of the user. | keyword |
+| process.real_user.name | Short name or login of the user. | keyword |
+| process.real_user.name.text | Multi-field of `process.real_user.name`. | match_only_text |
+| process.user.id | Unique identifier of the user. | keyword |
+| process.user.name | Short name or login of the user. | keyword |
+| process.user.name.text | Multi-field of `process.user.name`. | match_only_text |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| server.port | Port of the server. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.effective.id | Unique identifier of the user. | keyword |
 | user.effective.name | Short name or login of the user. | keyword |
@@ -557,8 +577,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2019-10-02T16:17:08.000Z",
     "agent": {
-        "ephemeral_id": "107f82ec-98c9-407e-b16a-773577562721",
-        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
+        "ephemeral_id": "adc5ae5a-45a7-43a6-99d3-b3ed6d49cbc6",
+        "hostname": "docker-fleet-agent",
+        "id": "c30233ff-80f0-47f1-9360-db38e19df5f2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.3"
@@ -572,7 +593,7 @@ An example event for `event` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "6c82fac0-7826-4f15-bf02-c7c33d7aa9c4",
+        "id": "c30233ff-80f0-47f1-9360-db38e19df5f2",
         "snapshot": false,
         "version": "8.1.3"
     },
@@ -583,7 +604,7 @@ An example event for `event` looks as following:
             "process"
         ],
         "dataset": "jamf_compliance_reporter.event",
-        "ingested": "2022-05-09T12:56:49Z",
+        "ingested": "2022-06-03T08:40:34Z",
         "kind": "event",
         "type": [
             "info"
@@ -591,7 +612,7 @@ An example event for `event` looks as following:
     },
     "host": {
         "hostname": "macbook_pro",
-        "id": "3X6E4X3X-9285-4X7X-9X0X-X3X62XX379XX",
+        "id": "X03XX889XXX3",
         "mac": [
             "38-F9-E8-15-5A-82"
         ],
@@ -658,16 +679,15 @@ An example event for `event` looks as following:
             }
         },
         "event_score": 0,
-        "header": {
-            "event_name": "PREFERENCE_LIST_EVENT"
-        },
         "host_info": {
-            "serial_number": "X03XX889XXX3"
+            "host": {
+                "uuid": "3X6E4X3X-9285-4X7X-9X0X-X3X62XX379XX"
+            }
         }
     },
     "log": {
         "source": {
-            "address": "192.168.128.4:44960"
+            "address": "172.18.0.4:49204"
         }
     },
     "related": {
@@ -896,6 +916,7 @@ An example event for `event` looks as following:
 | jamf_compliance_reporter.event.subject.effective.group.name |  | keyword |
 | jamf_compliance_reporter.event.subject.effective.user.id |  | keyword |
 | jamf_compliance_reporter.event.subject.effective.user.name |  | keyword |
+| jamf_compliance_reporter.event.subject.process.pid |  | long |
 | jamf_compliance_reporter.event.subject.process_information |  | keyword |
 | jamf_compliance_reporter.event.subject.responsible.process.id |  | keyword |
 | jamf_compliance_reporter.event.subject.responsible.process.name |  | keyword |
@@ -904,14 +925,18 @@ An example event for `event` looks as following:
 | jamf_compliance_reporter.event.subject.terminal_id.type |  | keyword |
 | jamf_compliance_reporter.event.texts |  | keyword |
 | jamf_compliance_reporter.event_score |  | long |
-| jamf_compliance_reporter.header.event_name |  | keyword |
-| jamf_compliance_reporter.host_info.serial_number |  | keyword |
+| jamf_compliance_reporter.host_info.host.uuid |  | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | process.hash.sha1 | SHA1 hash. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
+| process.real_user.id | Unique identifier of the user. | keyword |
+| process.real_user.name | Short name or login of the user. | keyword |
+| process.real_user.name.text | Multi-field of `process.real_user.name`. | match_only_text |
+| process.user.name | Short name or login of the user. | keyword |
+| process.user.name.text | Multi-field of `process.user.name`. | match_only_text |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |

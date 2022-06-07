@@ -3,16 +3,14 @@
   fields:
     - name: event_score
       type: long
-    - name: header
-      type: group
-      fields:
-        - name: event_name
-          type: keyword
     - name: host_info
       type: group
       fields:
-        - name: serial_number
-          type: keyword
+        - name: host
+          type: group
+          fields:
+            - name: uuid
+              type: keyword
     - name: app_metrics
       type: group
       fields:
@@ -27,10 +25,16 @@
               type: long
             - name: platform_idle_wakeups
               type: long
-            - name: resident_memory_size_mb
-              type: double
-            - name: virtual_memory_size_mb
-              type: double
+            - name: resident_memory_size
+              type: group
+              fields:
+                - name: mb
+                  type: double
+            - name: virtual_memory_size
+              type: group
+              fields:
+                - name: mb
+                  type: double
 - name: log.source.address
   type: keyword
   description: Source address from which the log event was read / sent from.

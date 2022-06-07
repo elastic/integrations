@@ -1,20 +1,10 @@
 ---
 description: Pipeline for Jamf process_object audit logs.
-processors:
-  - rename:
-      field: json.process.audit_user_name
-      target_field: jamf_compliance_reporter.audit.process.audit_user_name
-      ignore_missing: true
-  - append:
-      field: related.user
-      value: '{{{jamf_compliance_reporter.audit.process.audit_user_name}}}'
-      if: ctx.jamf_compliance_reporter?.audit?.process?.audit_user_name != null
-      allow_duplicates: false
-      ignore_failure: true       
+processors:  
   - convert:
       field: json.process.audit_id
-      target_field: jamf_compliance_reporter.audit.process.audit_id
-      type: string
+      target_field: jamf_compliance_reporter.audit.process.pid
+      type: long
       ignore_failure: true
   - convert:
       field: json.process.effective_group_id
@@ -80,7 +70,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.process.process_name
-      target_field: jamf_compliance_reporter.audit.process.name
+      target_field: process.name
       ignore_missing: true
   - convert:
       field: json.process.session_id
