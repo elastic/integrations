@@ -71,9 +71,17 @@ The `managed_server` data stream collects Managed Server logs from `Managedserve
 
 ## Metrics
 
+### Deployed Application Metrics
+
+The `deployed_application` data stream collects metrics of Deployed Application.
+
+{{event "deployed_application"}}
+
+{{fields "deployed_application"}}
+
 ### ThreadPool metrics
 
-This `threadpool` data stream gives metrics of ThreadPool.
+This `threadpool` data stream collects metrics of ThreadPool.
 
 {{event "threadpool"}}
 
