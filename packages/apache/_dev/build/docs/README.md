@@ -28,7 +28,7 @@ Supported format for the access logs are:
     >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
   - Example:
     >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)"```
-- Combined Log Format + x_forwarded_for header
+- Combined Log Format + X-Forwarded-For header
   - Defined in apache `LogFormat` by:
     >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
   - Example:
