@@ -12,31 +12,31 @@ Then, you could view real-time updates to disk space used on your system in Kiba
 You could also set up a new rule in the Elastic Observability Metrics app to alert you when the percent free is
 less than 10% of the total disk space.
 
-## Data types
+## Data streams
 
 The System integration collects two types of data: logs and metrics.
 
 **Logs** help you keep a record of events that happen on your machine.
-Log datasets collected by the System integration include application, system, and security events on
+Log data streams collected by the System integration include application, system, and security events on
 machines running Windows and auth and syslog events on machines running macOS or Linux.
 See more details in the [Logs reference](#logs-reference).
 
 **Metrics** give you insight into the state of the machine.
-Metric datasets collected by the System integration include CPU usage, load statistics, memory usage,
+Metric data streams collected by the System integration include CPU usage, load statistics, memory usage,
 information on network behavior, and more.
 See more details in the [Metrics reference](#metrics-reference).
 
-You can enable and disable individual datasets. If _all_ datasets are disabled and the System integration
-is still enabled, Fleet uses the default datasets.
+You can enable and disable individual data streams. If _all_ data streams are disabled and the System integration
+is still enabled, Fleet uses the default data streams.
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-The System datasets collect different kinds of metric data, which may require dedicated permissions
+Each data stream collects different kinds of metric data, which may require dedicated permissions
 to be fetched and which may vary across operating systems.
-Details on the permissions needed for each dataset are available in the [Metrics reference](#metrics-reference).
+Details on the permissions needed for each data stream are available in the [Metrics reference](#metrics-reference).
 
 ## Setup
 
@@ -45,7 +45,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Troubleshooting
 
-Note that certain datasets may access `/proc` to gather process information,
+Note that certain data streams may access `/proc` to gather process information,
 and the resulting `ptrace_may_access()` call by the kernel to check for
 permissions can be blocked by
 [AppArmor and other LSM software](https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace), even though the System module doesn't use `ptrace` directly.
@@ -57,7 +57,7 @@ should be set using `system.hostfs` setting to `/hostfs`.
 
 ### Application
 
-The Windows `application` dataset provides events from the Windows
+The Windows `application` data stream provides events from the Windows
 `Application` event log.
 
 #### Supported operating systems
@@ -246,7 +246,7 @@ The Windows `application` dataset provides events from the Windows
 
 ### System
 
-The Windows `system` dataset provides events from the Windows `System`
+The Windows `system` data stream provides events from the Windows `System`
 event log.
 
 #### Supported operating systems
@@ -443,7 +443,7 @@ event log.
 
 ### Security
 
-The Windows `security` dataset provides events from the Windows
+The Windows `security` data stream provides events from the Windows
 `Security` event log.
 
 #### Supported operating systems
@@ -912,7 +912,7 @@ An example event for `security` looks as following:
 
 ### Auth
 
-The `auth` dataset provides auth logs.
+The `auth` data stream provides auth logs.
 
 #### Supported operating systems
 
@@ -1015,7 +1015,7 @@ The `auth` dataset provides auth logs.
 
 ### syslog
 
-The `syslog` dataset provides system logs.
+The `syslog` data stream provides system logs.
 
 #### Supported operating systems
 
@@ -1085,7 +1085,7 @@ The `syslog` dataset provides system logs.
 
 ### Core
 
-The System `core` dataset provides usage statistics for each CPU core.
+The System `core` data stream provides usage statistics for each CPU core.
 
 #### Supported operating systems
 
@@ -1163,7 +1163,7 @@ This data should be available without elevated permissions.
 
 ### CPU
 
-The System `cpu` dataset provides CPU statistics.
+The System `cpu` data stream provides CPU statistics.
 
 #### Supported operating systems
 
@@ -1252,7 +1252,7 @@ This data should be available without elevated permissions.
 
 ### Disk IO
 
-The System `diskio` dataset provides disk IO metrics collected from the
+The System `diskio` data stream provides disk IO metrics collected from the
 operating system. One event is created for each disk mounted on the system.
 
 #### Supported operating systems
@@ -1337,7 +1337,7 @@ This data should be available without elevated permissions.
 
 ### Filesystem
 
-The System `filesystem` dataset provides file system statistics. For each file
+The System `filesystem` data stream provides file system statistics. For each file
 system, one document is provided.
 
 #### Supported operating systems
@@ -1406,7 +1406,7 @@ This data should be available without elevated permissions.
 
 ### Fsstat
 
-The System `fsstat` dataset provides overall file system statistics.
+The System `fsstat` data stream provides overall file system statistics.
 
 #### Supported operating systems
 
@@ -1472,7 +1472,7 @@ This data should be available without elevated permissions.
 
 ### Load
 
-The System `load` dataset provides load statistics.
+The System `load` data stream provides load statistics.
 
 #### Supported operating systems
 
@@ -1539,7 +1539,7 @@ This data should be available without elevated permissions.
 
 ### Memory
 
-The System `memory` dataset provides memory statistics.
+The System `memory` data stream provides memory statistics.
 
 #### Supported operating systems
 
@@ -1631,7 +1631,7 @@ This data should be available without elevated permissions.
 
 ### Network
 
-The System `network` dataset provides network IO metrics collected from the
+The System `network` data stream provides network IO metrics collected from the
 operating system. One event is created for each network interface.
 
 #### Supported operating systems
@@ -1724,7 +1724,7 @@ This data should be available without elevated permissions.
 
 ### Process
 
-The System `process` dataset provides process statistics. One document is
+The System `process` data stream provides process statistics. One document is
 provided for each process.
 
 #### Supported operating systems
@@ -1940,7 +1940,7 @@ If running as less privileged user, it may not be able to read process data belo
 
 ### Process summary
 
-The `process_summary` dataset collects high level statistics about the running
+The `process_summary` data stream collects high level statistics about the running
 processes.
 
 #### Supported operating systems
@@ -2029,7 +2029,7 @@ If the process data belongs to the other users, it will be counted as unknown va
 
 ### Socket summary
 
-The System `socket_summary` dataset provides the summary of open network
+The System `socket_summary` data stream provides the summary of open network
 sockets in the host system.
 
 It collects a summary of metrics with the count of existing TCP and UDP
@@ -2129,7 +2129,7 @@ This data should be available without elevated permissions.
 
 ### Uptime
 
-The System `uptime` dataset provides the uptime of the host operating system.
+The System `uptime` data stream provides the uptime of the host operating system.
 
 #### Supported operating systems
 
