@@ -6,104 +6,185 @@ An example event for `rds` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-29T22:06:00.000Z",
+    "@timestamp": "2022-06-03T15:28:00.000Z",
     "ecs": {
         "version": "8.0.0"
     },
-    "metricset": {
-        "name": "rds",
-        "period": 60000
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "90bfb41e-b925-420f-973e-9c1115297278",
+        "type": "metricbeat",
+        "ephemeral_id": "c4161c81-1e2e-4e8b-a0be-15940cc13226",
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "90bfb41e-b925-420f-973e-9c1115297278",
+        "version": "8.2.0",
+        "snapshot": false
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "eu-west-1",
+        "account": {
+            "name": "elastic-beats",
+            "id": "123456789"
+        }
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.rds"
     },
     "service": {
         "type": "aws"
     },
-    "cloud": {
-        "provider": "aws",
-        "region": "us-east-1",
-        "account": {
-            "name": "test",
-            "id": "123456789"
-        }
+    "metricset": {
+        "period": 60000,
+        "name": "cloudwatch"
     },
     "aws": {
         "rds": {
-            "free_local_storage": {
-                "bytes": 26268446720
+            "cache_hit_ratio": {
+                "buffer": 100,
+                "result_set": 0
             },
-            "aurora_replica": {
-                "lag_max": {
-                    "ms": 20.304000854492188
-                },
-                "lag_min": {
-                    "ms": 20.304000854492188
-                }
-            },
-            "engine_uptime": {
-                "sec": 49034043.5
-            },
-            "throughput": {
-                "dml": 0.49996361679093426,
-                "network": 1.4025011270098342,
-                "network_transmit": 0.7012505635049171,
-                "update": 0,
-                "ddl": 0,
-                "delete": 0,
-                "insert": 0.49996361679093426,
-                "network_receive": 0.7012505635049171,
-                "select": 3.191082392137672,
-                "commit": 0.49996361679093426
-            },
-            "deadlocks": 0,
             "aurora_volume_left_total": {
                 "bytes": 70007366615040
             },
-            "database_connections": 0,
-            "freeable_memory": {
-                "bytes": 4668841984
+            "aurora_bin_log_replica_lag": 0,
+            "aurora_replica": {
+                "lag": {
+                    "ms": 19.47
+                },
+                "lag_max": {
+                    "ms": 19.469999313354492
+                },
+                "lag_min": {
+                    "ms": 19.469999313354492
+                }
+            },
+            "latency": {
+                "dml": 0.09705000000000001,
+                "read": 0,
+                "select": 0.2412933510638298,
+                "commit": 3.536983333333333,
+                "insert": 0.09705000000000001,
+                "update": 0,
+                "ddl": 0,
+                "write": 0.0006218917818574514,
+                "delete": 0
             },
             "swap_usage": {
                 "bytes": 0
             },
-            "queries": 9.079938078523146,
-            "latency": {
-                "write": 0.0011471449704016914,
-                "delete": 0,
-                "commit": 7.523700000000001,
-                "ddl": 0,
-                "dml": 0.19436666666666666,
-                "select": 0.23795217035217037,
-                "insert": 0.19436666666666666,
-                "read": 0,
-                "update": 0
-            },
             "transactions": {
-                "active": 0,
-                "blocked": 0
+                "blocked": 0,
+                "active": 0
+            },
+            "queries": 7.737700770575286,
+            "database_connections": 0,
+            "free_local_storage": {
+                "bytes": 28622428160
             },
             "login_failures": 0,
-            "aurora_bin_log_replica_lag": 0,
-            "cache_hit_ratio": {
-                "result_set": 0,
-                "buffer": 100
+            "engine_uptime": {
+                "sec": 53016926.5
+            },
+            "metrics": {
+                "Aurora_pq_request_not_chosen_below_min_rows": {
+                    "avg": 0
+                },
+                "RowLockTime": {
+                    "avg": 0
+                },
+                "RollbackSegmentHistoryListLength": {
+                    "avg": 53
+                },
+                "SumBinaryLogSize": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen_pq_high_buffer_pool_pct": {
+                    "avg": 0
+                },
+                "StorageNetworkThroughput": {
+                    "avg": 22950.537520958267
+                },
+                "Aurora_pq_request_not_chosen_few_pages_outside_buffer_pool": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen_small_table": {
+                    "avg": 0
+                },
+                "StorageNetworkReceiveThroughput": {
+                    "avg": 7104.272100353031
+                },
+                "AbortedClients": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_executed": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen_unsupported_access": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen_long_trx": {
+                    "avg": 0
+                },
+                "ConnectionAttempts": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_failed": {
+                    "avg": 0
+                },
+                "NumBinaryLogFiles": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_not_chosen": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_in_progress": {
+                    "avg": 0
+                },
+                "Aurora_pq_request_throttled": {
+                    "avg": 0
+                },
+                "StorageNetworkTransmitThroughput": {
+                    "avg": 15846.26542060524
+                },
+                "Aurora_pq_request_attempted": {
+                    "avg": 0
+                }
+            },
+            "throughput": {
+                "dml": 0.2500125006250313,
+                "select": 2.9051419389878808,
+                "network_transmit": 0.7020888516985455,
+                "network_receive": 0.7020888516985455,
+                "commit": 0.2500125006250313,
+                "insert": 0.2500125006250313,
+                "update": 0,
+                "delete": 0,
+                "ddl": 0,
+                "network": 1.404177703397091
+            },
+            "deadlocks": 0,
+            "freeable_memory": {
+                "bytes": 4705378304
             }
         },
         "cloudwatch": {
             "namespace": "AWS/RDS"
         },
         "dimensions": {
-            "Role": "WRITER",
-            "DBClusterIdentifier": "database-1"
-        },
-        "tags": {
-            "cluster": "database-1",
-            "dept": "eng",
-            "created-by": "ks"
+            "DatabaseClass": "db.r5.large"
         }
     },
     "event": {
-        "duration": 23004180977,
-        "dataset": "aws.rds",
-        "module": "aws"
+        "duration": 12570787900,
+        "agent_id_status": "verified",
+        "ingested": "2022-06-03T15:28:44Z",
+        "module": "aws",
+        "dataset": "aws.rds"
     }
 }
 ```
@@ -169,6 +250,7 @@ An example event for `rds` looks as following:
 | aws.rds.latency.write | The average amount of time taken per disk I/O operation. | float |
 | aws.rds.login_failures | The average number of failed login attempts per second. | long |
 | aws.rds.maximum_used_transaction_ids | The maximum transaction ID that has been used. Applies to PostgreSQL. | long |
+| aws.rds.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.rds.oldest_replication_slot_lag.mb | The lagging size of the replica lagging the most in terms of WAL data received. Applies to PostgreSQL. | long |
 | aws.rds.queries | The average number of queries executed per second. | long |
 | aws.rds.rds_to_aurora_postgresql_replica_lag.sec | The amount of lag in seconds when replicating updates from the primary RDS PostgreSQL instance to other nodes in the cluster. | long |
@@ -201,7 +283,7 @@ An example event for `rds` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |

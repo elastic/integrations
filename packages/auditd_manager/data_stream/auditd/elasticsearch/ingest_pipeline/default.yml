@@ -1,0 +1,242 @@
+---
+description: Pipeline for parsing Linux auditd logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.2.0'
+  - rename:
+      field: event.original
+      target_field: auditd.messages
+      ignore_missing: true
+  - join:
+      field: auditd.messages
+      separator: "\n"
+      target_field: event.original
+      if: ctx?.auditd?.messages != null && ctx.auditd.messages instanceof List
+  - rename:
+      field: error.message
+      target_field: auditd.warnings
+      ignore_missing: true
+  - join:
+      field: auditd.warnings
+      separator: "\n"
+      target_field: error.message
+      if: |
+        ctx?.auditd?.warnings != null &&
+        ctx.auditd.warnings instanceof List &&
+        ctx.auditd.warnings.size() > 0
+  - script:
+      lang: painless
+      description: Standardize all field names.
+      source: |
+        void handleMap(Map map) {
+          for (def k : map.keySet().toArray(new def[map.size()])) {
+            if (map[k] instanceof Map) {
+              handleMap(map[k]);
+            }
+
+            if (k.contains("-")) {
+              map[k.replace("-", "_")] = map[k];
+              map.remove(k);
+            }
+          }
+        }
+        handleMap(ctx);
+  - rename:
+      field: source.path
+      target_field: source.address
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: destination.path
+      target_field: destination.address
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: user.audit
+      target_field: auditd.user.audit
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: user.new_auid
+      target_field: auditd.user.new_auid
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: user.old_auid
+      target_field: auditd.user.old_auid
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: file.selinux
+      target_field: auditd.file.selinux
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: user.selinux
+      target_field: auditd.user.selinux
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: user.saved
+      target_field: auditd.user.saved
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: user.filesystem
+      target_field: auditd.user.filesystem
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx?.event?.outcome == "fail"
+  - rename:
+      field: auditd.sequence
+      target_field: event.sequence
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: auditd.data.id
+      target_field: event.id
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: auditd.data.removed
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.items
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.lport
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.rport
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.sport
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.dport
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.entries
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.argc
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.seqno
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.nargs
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.socket.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.old_vcpu
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.new_vcpu
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.changed
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.added
+      type: long
+      ignore_missing: true
+  - convert:
+      field: destination.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: source.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.spid
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.opid
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.nlnk_pid
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.vm_pid
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.audit_pid
+      type: long
+      ignore_missing: true
+  - convert:
+      field: auditd.data.exit
+      type: long
+      ignore_missing: true
+  - convert:
+      field: process.pid
+      type: long
+      ignore_missing: true
+  - convert:
+      field: process.exit_code
+      type: long
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: auditd.messages
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
