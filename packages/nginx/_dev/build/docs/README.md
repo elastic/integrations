@@ -12,7 +12,7 @@ Then, you could view the logs stream into Elastic in real time in the Observabil
 You could also set up a new log threshold rule in the Logs app to alert you when there are more than
 a certain number of events with a failing status in a given time period.
 
-## Data types
+## Data streams
 
 The Nginx integration collects two types of data: logs and metrics.
 
