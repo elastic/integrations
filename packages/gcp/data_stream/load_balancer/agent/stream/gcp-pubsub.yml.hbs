@@ -1,0 +1,27 @@
+project_id: {{project_id}}
+topic: {{topic}}
+subscription.name: {{subscription_name}}
+{{#if credentials_file}}
+credentials_file: {{credentials_file}}
+{{/if}}
+{{#if credentials_json}}
+credentials_json: '{{credentials_json}}'
+{{/if}}
+{{#if alternative_host}}
+alternative_host: {{alternative_host}}
+{{/if}}
+subscription.create: {{subscription_create}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
