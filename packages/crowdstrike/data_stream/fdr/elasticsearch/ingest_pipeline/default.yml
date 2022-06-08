@@ -27,12 +27,12 @@ processors:
       formats:
         - UNIX
       ignore_failure: true
-      if: ctx?.event?.created == null
+      if: ctx.event?.created == null
   - set:
       tag: set-timestamp
       field: "@timestamp"
       copy_from: event.created
-      if: ctx?.event?.created != null && (ctx?.crowdstrike?.ContextTimeStamp == null || ctx?.crowdstrike?.ContextTimeStamp == "")
+      if: ctx.event?.created != null && (ctx.crowdstrike?.ContextTimeStamp == null || ctx.crowdstrike?.ContextTimeStamp == "")
   - date:
       tag: date-context-timestamp
       field: crowdstrike.ContextTimeStamp
@@ -1307,12 +1307,12 @@ processors:
       field: related.ip
       value: "{{observer.ip}}"
       allow_duplicates: false
-      if: ctx?.observer?.ip != null && ctx.observer.ip != ""
+      if: ctx.observer?.ip != null && ctx.observer.ip != ""
   - append:
       field: related.hosts
       value: "{{observer.ip}}"
       allow_duplicates: false
-      if: ctx?.observer?.ip != null && ctx.observer.ip != ""
+      if: ctx.observer?.ip != null && ctx.observer.ip != ""
   
   ## Host fields.
   - rename:
@@ -1404,15 +1404,15 @@ processors:
   - set:
       field: os.type
       value: linux
-      if: ctx?.crowdstrike?.event_platform != null && ctx?.crowdstrike?.event_platform == "Lin"
+      if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Lin"
   - set:
       field: os.type
       value: macos
-      if: ctx?.crowdstrike?.event_platform != null && ctx?.crowdstrike?.event_platform == "Mac"
+      if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Mac"
   - set:
       field: os.type
       value: windows
-      if: ctx?.crowdstrike?.event_platform != null && ctx?.crowdstrike?.event_platform == "Win"
+      if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Win"
   - rename:
       field: crowdstrike.OSVersionString
       target_field: os.version
@@ -1432,7 +1432,7 @@ processors:
   - script:
       description: Implements Windows-like SplitCommandLine
       lang: painless
-      if: ctx?.process?.command_line != null && ctx.process.command_line != "" && ctx?.os?.type != null
+      if: ctx.process?.command_line != null && ctx.process.command_line != "" && ctx.os?.type != null
       source: |-
         // appendBSBytes appends n '\\' bytes to b and returns the resulting slice.
         def appendBSBytes(StringBuilder b, int n) {
@@ -1524,35 +1524,35 @@ processors:
       lang: painless
       description: Calculate process.uptime
       source: |-
-        def d1 = Float.parseFloat(ctx?.crowdstrike?.ProcessStartTime);
-        def d2 = Float.parseFloat(ctx?.crowdstrike?.ProcessEndTime);
-        if (ctx?.process == null) {
+        def d1 = Float.parseFloat(ctx.crowdstrike?.ProcessStartTime);
+        def d2 = Float.parseFloat(ctx.crowdstrike?.ProcessEndTime);
+        if (ctx.process == null) {
           ctx.process = [];
         }
         ctx.process.uptime = (long) ((d2-d1)/1000);
-      if: ctx?.crowdstrike?.ProcessStartTime != null && ctx?.crowdstrike?.ProcessStartTime != "" && ctx?.crowdstrike?.ProcessEndTime != null && ctx?.crowdstrike?.ProcessEndTime != ""
+      if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != "" && ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
   - date:
       field: crowdstrike.ProcessStartTime
       target_field: crowdstrike.ProcessStartTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.ProcessStartTime != null && ctx?.crowdstrike?.ProcessStartTime != ""
+      if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != ""
   - rename:
       field: crowdstrike.ProcessStartTime
       target_field: process.start
       ignore_missing: true
-      if: ctx?.crowdstrike?.ProcessStartTime != ""
+      if: ctx.crowdstrike?.ProcessStartTime != ""
   - date:
       field: crowdstrike.ProcessEndTime
       target_field: crowdstrike.ProcessEndTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.ProcessEndTime != null && ctx?.crowdstrike?.ProcessEndTime != ""
+      if: ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
   - rename:
       field: crowdstrike.ProcessEndTime
       target_field: process.end
       ignore_missing: true
-      if: ctx?.crowdstrike?.ProcessEndTime != ""
+      if: ctx.crowdstrike?.ProcessEndTime != ""
   - convert:
       field: crowdstrike.RawProcessId
       type: long
@@ -1586,18 +1586,18 @@ processors:
       target_field: process.entity_id
       ignore_missing: true
       ignore_failure: true
-      if: ctx?.process?.entity_id == null
+      if: ctx.process?.entity_id == null
   - convert:
       field: crowdstrike.ContextThreadId
       type: long
       ignore_missing: true
-      if: ctx?.process?.thread?.id == null
+      if: ctx.process?.thread?.id == null
   - rename:
       field: crowdstrike.ContextThreadId
       target_field: process.thread.id
       ignore_missing: true
       ignore_failure: true
-      if: ctx?.process?.thread?.id == null
+      if: ctx.process?.thread?.id == null
   - convert:
       field: crowdstrike.EtwRawProcessId
       type: long
@@ -1606,7 +1606,7 @@ processors:
       field: crowdstrike.EtwRawProcessId
       target_field: process.pid
       ignore_missing: true
-      if: ctx?.process?.pid == null
+      if: ctx.process?.pid == null
   - convert:
       field: crowdstrike.EtwRawThreadId
       type: long
@@ -1615,7 +1615,7 @@ processors:
       field: crowdstrike.EtwRawThreadId
       target_field: process.thread.id
       ignore_missing: true
-      if: ctx?.process?.thread?.id == null
+      if: ctx.process?.thread?.id == null
   - rename:
       field: crowdstrike.ServiceDisplayName
       target_field: process.title
@@ -1623,7 +1623,7 @@ processors:
   - rename:
       field: _temp.hashes
       target_field: process.hash
-      if: ctx?.event?.action != null && (ctx.event.action.contains("Process") || ctx.event.action.contains("Service")) && ctx?._temp?.hashes != null && ctx?._temp?.hashes.size() > 0
+      if: ctx.event?.action != null && (ctx.event.action.contains("Process") || ctx.event.action.contains("Service")) && ctx._temp?.hashes != null && ctx._temp?.hashes.size() > 0
 
   ## User fields.
   - rename:
@@ -1638,11 +1638,11 @@ processors:
       field: crowdstrike.UserSid
       target_field: user.id
       ignore_missing: true
-      if: ctx?.user?.id == null || ctx.user.id == ""
+      if: ctx.user?.id == null || ctx.user.id == ""
   - append:
       field: user.roles
       value: admin
-      if: ctx?.crowdstrike?.UserIsAdmin == "1"
+      if: ctx.crowdstrike?.UserIsAdmin == "1"
   - rename:
       field: crowdstrike.UserName
       target_field: user.name
@@ -1651,7 +1651,7 @@ processors:
       field: crowdstrike.UserPrincipal
       target_field: "_temp.user_parts"
       separator: '@'
-      if: ctx?.crowdstrike?.UserPrincipal != null
+      if: ctx.crowdstrike?.UserPrincipal != null
   - rename:
       field: crowdstrike.UserPrincipal
       target_field: user.email
@@ -1661,25 +1661,25 @@ processors:
       value: "{{_temp.user_parts.1}}"
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx?._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - set:
       field: user.full_name
       value: "{{_temp.user_parts.0}}"
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx?._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - append:
       field: related.user
       value: "{{user.name}}"
       ignore_failure: true
       allow_duplicates: false
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
   - append:
       field: related.user
       value: "{{user.full_name}}"
       ignore_failure: true
       allow_duplicates: false
-      if: ctx?.user?.full_name != null
+      if: ctx.user?.full_name != null
 
   ## Networking fields.
   - convert:
@@ -1745,7 +1745,7 @@ processors:
   - script:
       lang: painless
       ignore_failure: true
-      if: ctx?.network?.iana_number != null
+      if: ctx.network?.iana_number != null
       source: |
         def iana_number = ctx.network.iana_number;
         if (iana_number == '0') {
@@ -1774,15 +1774,15 @@ processors:
   - set:
       field: network.direction
       value: outbound
-      if: ctx?.crowdstrike?.ConnectionDirection == "0"
+      if: ctx.crowdstrike?.ConnectionDirection == "0"
   - set:
       field: network.direction
       value: inbound
-      if: ctx?.crowdstrike?.ConnectionDirection == "1"
+      if: ctx.crowdstrike?.ConnectionDirection == "1"
   - set:
       field: network.direction
       value: unknown
-      if: ctx?.network?.direction == null && ctx?.crowdstrike?.ConnectionDirection != null && ctx.crowdstrike.ConnectionDirection != ""
+      if: ctx.network?.direction == null && ctx.crowdstrike?.ConnectionDirection != null && ctx.crowdstrike.ConnectionDirection != ""
   - community_id:
       ignore_missing: true
       ignore_failure: true
@@ -1790,22 +1790,22 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
-      if: ctx?.source?.ip != null && ctx.source.ip != ""
+      if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       allow_duplicates: false
-      if: ctx?.destination?.ip != null && ctx.destination.ip != ""
+      if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - append:
       field: related.hosts
       value: "{{source.ip}}"
       allow_duplicates: false
-      if: ctx?.source?.ip != null && ctx.source.ip != ""
+      if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
       field: related.hosts
       value: "{{destination.ip}}"
       allow_duplicates: false
-      if: ctx?.destination?.ip != null && ctx.destination.ip != ""
+      if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - rename:
       field: crowdstrike.PhysicalAddress
       target_field: source.mac
@@ -1834,15 +1834,15 @@ processors:
   - set:
       field: url.scheme
       value: https
-      if: ctx?.crowdstrike?.DownloadPort == 443
+      if: ctx.crowdstrike?.DownloadPort == 443
   - set:
       field: url.scheme
       value: http
-      if: ctx?.crowdstrike?.DownloadPort != 443
+      if: ctx.crowdstrike?.DownloadPort != 443
   - set:
       field: url.full
       value: "{{url.scheme}}://{{server.address}}{{url.path}}"
-      if: ctx?.url?.scheme != null && ctx?.server?.address != null && ctx?.url?.path != null
+      if: ctx.url?.scheme != null && ctx.server?.address != null && ctx.url?.path != null
   - uri_parts:
       field: url.full
       ignore_failure: true
@@ -1905,17 +1905,17 @@ processors:
   - set:
       field: dns.type
       value: query
-      if: ctx?.event?.action == "DnsRequest"
+      if: ctx.event?.action == "DnsRequest"
   - registered_domain:
       field: crowdstrike.DomainName
       target_field: dns.question
       ignore_missing: true
-      if: ctx?.event?.action == "DnsRequest"
+      if: ctx.event?.action == "DnsRequest"
   - rename:
       field: dns.question.domain
       target_field: dns.question.name
       ignore_missing: true
-      if: ctx?.event?.action == "DnsRequest"
+      if: ctx.event?.action == "DnsRequest"
   - script:
       description: Map decimal DNS request type to its name.
       lang: painless
@@ -1938,7 +1938,7 @@ processors:
           ctx.dns.question.type = t;
           ctx.crowdstrike.remove("RequestType");
         }
-      if: ctx?.event?.action == "DnsRequest" && ctx?.crowdstrike?.RequestType != null && ctx.crowdstrike.RequestType != ""
+      if: ctx.event?.action == "DnsRequest" && ctx.crowdstrike?.RequestType != null && ctx.crowdstrike.RequestType != ""
 
   ## File fields.
   - convert:
@@ -1978,7 +1978,7 @@ processors:
   - script:
       description: Adds file information.
       lang: painless
-      if: ctx?.file?.path != null && ctx.file.path.length() > 1
+      if: ctx.file?.path != null && ctx.file.path.length() > 1
       source: |-
         def removeSuffix(String s, String suffix) {
           if (s != null && suffix != null && s.endsWith(suffix)) {
@@ -1994,7 +1994,7 @@ processors:
           idx = path.lastIndexOf("/");
         }
         if (idx > -1) {
-            if (ctx?.file == null) {
+            if (ctx.file == null) {
                 ctx.file = new HashMap();
             }
             ctx.file.name = path.substring(idx+1);
@@ -2011,7 +2011,7 @@ processors:
   - rename:
       field: _temp.hashes
       target_field: file.hash
-      if: ctx?.event?.action != null && (ctx.event.action.contains("File") || ctx.event.action.contains("Directory") || ctx.event.action.contains("Executable")) && ctx?._temp?.hashes != null && ctx?._temp?.hashes.size() > 0
+      if: ctx.event?.action != null && (ctx.event.action.contains("File") || ctx.event.action.contains("Directory") || ctx.event.action.contains("Executable")) && ctx._temp?.hashes != null && ctx._temp?.hashes.size() > 0
 
   ## Crowdstrike fields.
   - split:
@@ -2051,7 +2051,7 @@ processors:
       value: "{{crowdstrike.ConfigStateHash}}"
       ignore_failure: true
       allow_duplicates: false
-      if: ctx?.crowdstrike?.ConfigStateHash != null && ctx.crowdstrike.ConfigStateHash != ""
+      if: ctx.crowdstrike?.ConfigStateHash != null && ctx.crowdstrike.ConfigStateHash != ""
   - trim:
       field: crowdstrike.BootArgs
       ignore_missing: true
@@ -2064,50 +2064,50 @@ processors:
       target_field: crowdstrike.LogonTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.LogonTime != null && ctx?.crowdstrike?.LogonTime != ""
+      if: ctx.crowdstrike?.LogonTime != null && ctx.crowdstrike?.LogonTime != ""
   - date:
       field: crowdstrike.LogoffTime
       target_field: crowdstrike.LogoffTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.LogoffTime != null && ctx?.crowdstrike?.LogoffTime != ""
+      if: ctx.crowdstrike?.LogoffTime != null && ctx.crowdstrike?.LogoffTime != ""
   - date:
       field: crowdstrike.ConnectTime
       target_field: crowdstrike.ConnectTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.ConnectTime != null && ctx?.crowdstrike?.ConnectTime != ""
+      if: ctx.crowdstrike?.ConnectTime != null && ctx.crowdstrike?.ConnectTime != ""
   - date:
       field: crowdstrike.PreviousConnectTime
       target_field: crowdstrike.PreviousConnectTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.PreviousConnectTime != null && ctx?.crowdstrike?.PreviousConnectTime != ""
+      if: ctx.crowdstrike?.PreviousConnectTime != null && ctx.crowdstrike?.PreviousConnectTime != ""
   - date:
       field: crowdstrike.AgentLocalTime
       target_field: crowdstrike.AgentLocalTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.AgentLocalTime != null && ctx?.crowdstrike?.AgentLocalTime != ""
+      if: ctx.crowdstrike?.AgentLocalTime != null && ctx.crowdstrike?.AgentLocalTime != ""
   - date:
       field: crowdstrike.FirstSeen
       target_field: crowdstrike.FirstSeen
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.FirstSeen != null && ctx?.crowdstrike?.FirstSeen != ""
+      if: ctx.crowdstrike?.FirstSeen != null && ctx.crowdstrike?.FirstSeen != ""
   - date:
       field: crowdstrike.Time
       target_field: crowdstrike.Time
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.Time != null && ctx?.crowdstrike?.Time != ""
+      if: ctx.crowdstrike?.Time != null && ctx.crowdstrike?.Time != ""
   - date:
       field: crowdstrike.BiosReleaseDate
       target_field: crowdstrike.BiosReleaseDate
       formats:
         - MM/dd/yyyy
         - strict_date_optional_time
-      if: ctx?.crowdstrike?.BiosReleaseDate != null && ctx?.crowdstrike?.BiosReleaseDate != ""
+      if: ctx.crowdstrike?.BiosReleaseDate != null && ctx.crowdstrike?.BiosReleaseDate != ""
   - convert:
       field: crowdstrike.AgentTimeOffset
       target_field: crowdstrike.AgentTimeOffset
@@ -2149,19 +2149,19 @@ processors:
       field: related.hosts
       value: "{{crowdstrike.LogonServer}}"
       allow_duplicates: false
-      if: ctx?.crowdstrike?.LogonServer != null
+      if: ctx.crowdstrike?.LogonServer != null
   - append:
       field: related.hosts
       value: "{{crowdstrike.ClientComputerName}}"
       allow_duplicates: false
-      if: ctx?.crowdstrike?.ClientComputerName != null
+      if: ctx.crowdstrike?.ClientComputerName != null
 
   ## Cleanup.
   - remove:
       field: crowdstrike.event_platform
       ignore_missing: true
       ignore_failure: true
-      if: ctx?.os?.type != null
+      if: ctx.os?.type != null
   - remove:
       field:
         - _temp
@@ -2177,7 +2177,7 @@ processors:
       ignore_failure: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
   - script:
