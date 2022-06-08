@@ -1215,6 +1215,7 @@ processors:
 
 ## Prepare data.
   - script:
+      tag: convert-count-fields-to-long
       description: Convert all count fields to number.
       lang: painless
       source: |-
@@ -1228,6 +1229,7 @@ processors:
           }
         }
   - script:
+      tag: remove-empty-hashes
       description: Remove all 0's hashes.
       lang: painless
       params:
@@ -1430,6 +1432,7 @@ processors:
       target_field: process.command_line
       ignore_missing: true
   - script:
+      tag: split-command-line
       description: Implements Windows-like SplitCommandLine
       lang: painless
       if: ctx.process?.command_line != null && ctx.process.command_line != "" && ctx.os?.type != null
@@ -1521,6 +1524,7 @@ processors:
       target_field: process.exit_code
       ignore_missing: true
   - script:
+      tag: process-uptime
       lang: painless
       description: Calculate process.uptime
       source: |-
@@ -1743,6 +1747,7 @@ processors:
       target_field: network.iana_number
       ignore_missing: true
   - script:
+      tag: network-transport-lookup
       lang: painless
       ignore_failure: true
       if: ctx.network?.iana_number != null
@@ -1917,6 +1922,7 @@ processors:
       ignore_missing: true
       if: ctx.event?.action == "DnsRequest"
   - script:
+      tag: dns-request-type-to-name
       description: Map decimal DNS request type to its name.
       lang: painless
       source: |-
@@ -1976,6 +1982,7 @@ processors:
       value: dir
       if: ctx.file?.path != null && (ctx.event.action.contains("Directory") || ctx.file.path.endsWith("\\") || ctx.file.path.endsWith("/"))
   - script:
+      tag: parse-file-path
       description: Adds file information.
       lang: painless
       if: ctx.file?.path != null && ctx.file.path.length() > 1
@@ -2181,6 +2188,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: remove-nulls
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
