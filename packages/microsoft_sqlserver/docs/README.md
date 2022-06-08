@@ -263,5 +263,6 @@ An example event for `transaction_log` looks as following:
 | mssql.metrics.total_log_size_bytes | Total transaction log size in bytes. | long | byte | counter |
 | mssql.metrics.used_log_space_bytes | The occupied size of the log in bytes. | long | byte | gauge |
 | mssql.metrics.used_log_space_pct | A percentage of the occupied size of the log as a percent of the total log size. | float | percent | gauge |
+| mssql.query | Query executed to collect | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
