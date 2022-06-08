@@ -149,17 +149,21 @@
         - name: spec
           type: group
           fields:
-            - name: hostIPC
-              type: boolean
             - name: hostNetwork
+              type: boolean
+            - name: hostIPC
               type: boolean
             - name: hostPID
               type: boolean
+            - name: volumes.hostPath
+              type: flattened
             - name: restartPolicy
               type: keyword
             - name: containers
               type: group
               fields:
+                - name: volumeMounts
+                  type: flattened
                 - name: securityContext
                   type: group
                   fields:
@@ -169,10 +173,6 @@
                       type: boolean
                     - name: runasuser
                       type: integer
-                - name: volumeMounts
-                  type: flattened
-            - name: volumes.hostPath
-              type: flattened
         - name: rules
           dynamic: true
           type: nested
