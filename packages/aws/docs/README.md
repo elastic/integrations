@@ -14,8 +14,9 @@ The AWS integration collects two types of data, logs and metrics, across many AW
 This may include every user request that CloudFront receives, every action taken on your services
 by an AWS user or role, and more.
 
-**Metrics** give you insight into the state of your AWS usage.
-This may include understanding where you're spending the most and why, the volume of storage you're using, and more.
+**Metrics** give you insight into the state of your AWS services.
+his may include understanding where you're spending the most and why, the volume of storage you're using,
+CPU utilization of your instances, and more.
 
 For a complete list of all AWS services and the data streams available for each, see [Reference](#reference).
 
