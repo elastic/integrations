@@ -93,7 +93,7 @@
                     "i": "fae24c10-6ee7-467b-8d98-b1d7a432f7e3",
                     "w": 44,
                     "x": 0,
-                    "y": 0
+                    "y": 4
                 },
                 "panelIndex": "fae24c10-6ee7-467b-8d98-b1d7a432f7e3",
                 "title": "Select Namespace and Pod [Metrics Kubernetes]",
@@ -277,10 +277,1284 @@
                     "i": "0a10c73f-959b-40e1-b1a2-609c3fd59914",
                     "w": 44,
                     "x": 0,
-                    "y": 6
+                    "y": 10
                 },
                 "panelIndex": "0a10c73f-959b-40e1-b1a2-609c3fd59914",
                 "title": "Status per Pod [Metrics Kubernetes]",
+                "type": "lens",
+                "version": "8.3.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "21eaa2c8-8870-4ce4-b9b7-855ea2835f9e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a": {
+                                            "columnOrder": [
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0",
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                            ],
+                                            "columns": {
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.pod.cpu.usage.node.pct: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "CPU Usage",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "kubernetes.pod.cpu.usage.node.pct"
+                                                },
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of kubernetes.pod.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "kubernetes.pod.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "21eaa2c8-8870-4ce4-b9b7-855ea2835f9e",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "kubernetes.pod"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "kubernetes.pod"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                        ],
+                                        "layerId": "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                        "xAccessor": "a83bd360-6bed-4bab-ac6c-82b8e473c2b0"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "8775bc75-d36c-4e37-94e4-ca63300d9dd3",
+                    "w": 22,
+                    "x": 0,
+                    "y": 25
+                },
+                "panelIndex": "8775bc75-d36c-4e37-94e4-ca63300d9dd3",
+                "title": "CPU Usage as Pct of the Total Node CPU [Metrics Kubernetes]",
+                "type": "lens",
+                "version": "8.3.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "d82a1442-e0ad-4acd-913f-06f8b0c1bb74",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a": {
+                                            "columnOrder": [
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0",
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                            ],
+                                            "columns": {
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.pod.cpu.usage.node.pct: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "CPU Usage",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "kubernetes.pod.cpu.usage.limit.pct"
+                                                },
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of kubernetes.pod.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "kubernetes.pod.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "d82a1442-e0ad-4acd-913f-06f8b0c1bb74",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "kubernetes.pod"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "kubernetes.pod"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                        ],
+                                        "layerId": "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                        "xAccessor": "a83bd360-6bed-4bab-ac6c-82b8e473c2b0"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "8e7901b2-cfc3-433d-9dcb-4af30c649efb",
+                    "w": 22,
+                    "x": 22,
+                    "y": 25
+                },
+                "panelIndex": "8e7901b2-cfc3-433d-9dcb-4af30c649efb",
+                "title": "CPU Usage as Pct of the Defined Pod Limit [Metrics Kubernetes]",
+                "type": "lens",
+                "version": "8.3.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "11c30bec-8510-473c-bdf9-4da3d863af57",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a": {
+                                            "columnOrder": [
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0",
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                            ],
+                                            "columns": {
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.pod.cpu.usage.node.pct: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Memory Usage",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "kubernetes.pod.memory.usage.node.pct"
+                                                },
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of kubernetes.pod.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "kubernetes.pod.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "11c30bec-8510-473c-bdf9-4da3d863af57",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "kubernetes.pod"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "kubernetes.pod"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                        ],
+                                        "layerId": "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                        "xAccessor": "a83bd360-6bed-4bab-ac6c-82b8e473c2b0"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "98677dcb-ab94-47e8-94ca-326470ee2380",
+                    "w": 22,
+                    "x": 0,
+                    "y": 40
+                },
+                "panelIndex": "98677dcb-ab94-47e8-94ca-326470ee2380",
+                "title": "Memory Usage as Pct of the Total Node Memory [Metrics Kubernetes]",
+                "type": "lens",
+                "version": "8.3.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "b146396e-ddf3-4642-af86-89fde33a0ef4",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a": {
+                                            "columnOrder": [
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0",
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                            ],
+                                            "columns": {
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.pod.cpu.usage.node.pct: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Memory Usage",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "kubernetes.pod.memory.usage.limit.pct"
+                                                },
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of kubernetes.pod.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "kubernetes.pod.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "b146396e-ddf3-4642-af86-89fde33a0ef4",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "kubernetes.pod"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "kubernetes.pod"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                        ],
+                                        "layerId": "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                        "xAccessor": "a83bd360-6bed-4bab-ac6c-82b8e473c2b0"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "5575d413-c4a4-4e34-8605-54f82e5e05b3",
+                    "w": 22,
+                    "x": 22,
+                    "y": 40
+                },
+                "panelIndex": "5575d413-c4a4-4e34-8605-54f82e5e05b3",
+                "title": "Memory Usage as Pct of the Total Node Memory [Metrics Kubernetes]",
+                "type": "lens",
+                "version": "8.3.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "e59047b8-574d-42a8-82dc-3a06ae1c186f",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a": {
+                                            "columnOrder": [
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0",
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                            ],
+                                            "columns": {
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.pod.cpu.usage.node.pct: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Memory Usage",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "kubernetes.pod.memory.working_set.limit.pct"
+                                                },
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of kubernetes.pod.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "kubernetes.pod.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "e59047b8-574d-42a8-82dc-3a06ae1c186f",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "kubernetes.pod"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "kubernetes.pod"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                        ],
+                                        "layerId": "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                        "xAccessor": "a83bd360-6bed-4bab-ac6c-82b8e473c2b0"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "435eeb17-c28a-4bde-9c43-b85d8e463c03",
+                    "w": 22,
+                    "x": 0,
+                    "y": 55
+                },
+                "panelIndex": "435eeb17-c28a-4bde-9c43-b85d8e463c03",
+                "title": "Working Set Memory Usage as Pct of the Defined Pod Limit [Metrics Kubernetes]",
+                "type": "lens",
+                "version": "8.3.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "b1f131dc-80e8-4ebc-be5f-ca1b56082b0c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a": {
+                                            "columnOrder": [
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0",
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                            ],
+                                            "columns": {
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.pod.cpu.usage.node.pct: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Network Usage",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "kubernetes.pod.network.tx.bytes"
+                                                },
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of kubernetes.pod.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "kubernetes.pod.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "b1f131dc-80e8-4ebc-be5f-ca1b56082b0c",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "kubernetes.pod"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "kubernetes.pod"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                        ],
+                                        "layerId": "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                        "xAccessor": "a83bd360-6bed-4bab-ac6c-82b8e473c2b0"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "7a1ccd34-5b1c-445b-8f1f-00d792c49104",
+                    "w": 22,
+                    "x": 22,
+                    "y": 55
+                },
+                "panelIndex": "7a1ccd34-5b1c-445b-8f1f-00d792c49104",
+                "title": "Network Outgoing Bytes per Pod [Metrics Kubernetes]",
+                "type": "lens",
+                "version": "8.3.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "2463b928-eeb5-4fe5-9068-6c28341f6ab9",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a": {
+                                            "columnOrder": [
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0",
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                            ],
+                                            "columns": {
+                                                "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "kubernetes.pod.cpu.usage.node.pct: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Network Usage",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "kubernetes.pod.network.rx.bytes"
+                                                },
+                                                "a83bd360-6bed-4bab-ac6c-82b8e473c2b0": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of kubernetes.pod.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "kubernetes.pod.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "2463b928-eeb5-4fe5-9068-6c28341f6ab9",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "kubernetes.pod"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "kubernetes.pod"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "86e6d540-5fd3-483e-b1a1-b575a0a5ca9c"
+                                        ],
+                                        "layerId": "921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ce13a463-7e39-46f6-8d0f-14c1f9e9a0d9",
+                                        "xAccessor": "a83bd360-6bed-4bab-ac6c-82b8e473c2b0"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "72b97d6f-17f7-44b0-87a9-e272981c7565",
+                    "w": 22,
+                    "x": 0,
+                    "y": 70
+                },
+                "panelIndex": "72b97d6f-17f7-44b0-87a9-e272981c7565",
+                "title": "Network Incoming Bytes per Pod [Metrics Kubernetes]",
                 "type": "lens",
                 "version": "8.3.0-SNAPSHOT"
             },
@@ -300,624 +1574,23 @@
                         },
                         "description": "",
                         "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "background_color_rules": [
-                                {
-                                    "id": "effbda00-b658-11ec-b432-f55b76073132"
-                                }
-                            ],
-                            "drop_last_bucket": 0,
-                            "filter": {
-                                "language": "kuery",
-                                "query": "event.dataset :\"kubernetes.pod\"  "
-                            },
-                            "id": "034a1b39-789a-4c21-ba0f-3a3f01c132c0",
-                            "index_pattern_ref_name": "metrics_72087713-118c-4441-ace1-79b0de6bd159_0_index_pattern",
-                            "interval": "",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "formatter": "percent",
-                                    "id": "7cc97db7-b10d-4452-9ea8-8f9ac149c901",
-                                    "label": "",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "kubernetes.pod.cpu.usage.node.pct",
-                                            "id": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                            "type": "avg"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "kubernetes.pod.name",
-                                    "terms_order_by": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                    "time_range_mode": "entire_time_range"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
+                            "fontSize": 10,
+                            "markdown": "[Kubernetes Overview](#/view/kubernetes-e0195ce0-bcaf-11ec-b64f-7dd6e8e82013),\n[Kubernetes Nodes](#/view/kubernetes-b945b7b0-bcb1-11ec-b64f-7dd6e8e82013), \n[Kubernetes Pods](#/view/kubernetes-3d4d9290-bcb1-11ec-b64f-7dd6e8e82013),  [Kubernetes Deployments](#/view/kubernetes-5be46210-bcb1-11ec-b64f-7dd6e8e82013), [Kubernetes StatefulSets](#/view/kubernetes-21694370-bcb2-11ec-b64f-7dd6e8e82013),  [Kubernetes DaemonSets](#/view/kubernetes-85879010-bcb1-11ec-b64f-7dd6e8e82013), [Kubernetes CronJobs](#/view/kubernetes-0a672d50-bcb1-11ec-b64f-7dd6e8e82013), [Kubernetes Jobs](#/view/kubernetes-9bf990a0-bcb1-11ec-b64f-7dd6e8e82013), [Kubernetes Volumes](#/view/kubernetes-3912d9a0-bcb2-11ec-b64f-7dd6e8e82013), [Kubernetes PV/PVC](#/view/kubernetes-dd081350-bcb1-11ec-b64f-7dd6e8e82013), [Kubernetes Services](#/view/kubernetes-ff1b3850-bcb1-11ec-b64f-7dd6e8e82013)",
+                            "openLinksInNewTab": false
                         },
-                        "type": "metrics",
+                        "type": "markdown",
                         "uiState": {}
                     }
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "72087713-118c-4441-ace1-79b0de6bd159",
-                    "w": 22,
+                    "h": 4,
+                    "i": "72efb777-3b17-42a9-91c5-b17ee964ce28",
+                    "w": 44,
                     "x": 0,
-                    "y": 21
+                    "y": 0
                 },
-                "panelIndex": "72087713-118c-4441-ace1-79b0de6bd159",
-                "title": "CPU Usage as Pct of the Total Node CPU [Metrics Kubernetes]",
-                "type": "visualization",
-                "version": "8.3.0-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "background_color_rules": [
-                                {
-                                    "id": "effbda00-b658-11ec-b432-f55b76073132"
-                                }
-                            ],
-                            "drop_last_bucket": 0,
-                            "filter": {
-                                "language": "kuery",
-                                "query": "event.dataset :\"kubernetes.pod\"  "
-                            },
-                            "id": "034a1b39-789a-4c21-ba0f-3a3f01c132c0",
-                            "index_pattern_ref_name": "metrics_4a779b31-4786-4f28-9944-a4d2f752a92e_0_index_pattern",
-                            "interval": "",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "formatter": "percent",
-                                    "id": "7cc97db7-b10d-4452-9ea8-8f9ac149c901",
-                                    "label": "",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "kubernetes.pod.cpu.usage.limit.pct",
-                                            "id": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                            "type": "avg"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "kubernetes.pod.name",
-                                    "terms_order_by": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                    "time_range_mode": "entire_time_range"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
-                        },
-                        "type": "metrics",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "4a779b31-4786-4f28-9944-a4d2f752a92e",
-                    "w": 22,
-                    "x": 22,
-                    "y": 21
-                },
-                "panelIndex": "4a779b31-4786-4f28-9944-a4d2f752a92e",
-                "title": "CPU Usage as Pct of the Defined Pod Limit [Metrics Kubernetes]",
-                "type": "visualization",
-                "version": "8.3.0-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "background_color_rules": [
-                                {
-                                    "id": "effbda00-b658-11ec-b432-f55b76073132"
-                                }
-                            ],
-                            "drop_last_bucket": 0,
-                            "filter": {
-                                "language": "kuery",
-                                "query": "event.dataset :\"kubernetes.pod\"  "
-                            },
-                            "id": "034a1b39-789a-4c21-ba0f-3a3f01c132c0",
-                            "index_pattern_ref_name": "metrics_4553a400-31ec-4ea7-83ee-214cd7340402_0_index_pattern",
-                            "interval": "",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "formatter": "percent",
-                                    "id": "7cc97db7-b10d-4452-9ea8-8f9ac149c901",
-                                    "label": "",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "kubernetes.pod.memory.usage.node.pct",
-                                            "id": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                            "type": "avg"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "kubernetes.pod.name",
-                                    "terms_order_by": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                    "time_range_mode": "entire_time_range"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
-                        },
-                        "type": "metrics",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "4553a400-31ec-4ea7-83ee-214cd7340402",
-                    "w": 22,
-                    "x": 0,
-                    "y": 36
-                },
-                "panelIndex": "4553a400-31ec-4ea7-83ee-214cd7340402",
-                "title": "Memory Usage as Pct of the Total Node Memory [Metrics Kubernetes]",
-                "type": "visualization",
-                "version": "8.3.0-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "background_color_rules": [
-                                {
-                                    "id": "effbda00-b658-11ec-b432-f55b76073132"
-                                }
-                            ],
-                            "drop_last_bucket": 0,
-                            "filter": {
-                                "language": "kuery",
-                                "query": "event.dataset :\"kubernetes.pod\"  "
-                            },
-                            "id": "034a1b39-789a-4c21-ba0f-3a3f01c132c0",
-                            "index_pattern_ref_name": "metrics_5fbe0bd4-fa9b-4a61-a4de-746cf0b7c199_0_index_pattern",
-                            "interval": "",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "formatter": "percent",
-                                    "id": "7cc97db7-b10d-4452-9ea8-8f9ac149c901",
-                                    "label": "",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "kubernetes.pod.memory.usage.limit.pct",
-                                            "id": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                            "type": "avg"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "kubernetes.pod.name",
-                                    "terms_order_by": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                    "time_range_mode": "entire_time_range"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
-                        },
-                        "type": "metrics",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "5fbe0bd4-fa9b-4a61-a4de-746cf0b7c199",
-                    "w": 22,
-                    "x": 22,
-                    "y": 36
-                },
-                "panelIndex": "5fbe0bd4-fa9b-4a61-a4de-746cf0b7c199",
-                "title": "Memory Usage as Pct of the Defined Pod Limit [Metrics Kubernetes]",
-                "type": "visualization",
-                "version": "8.3.0-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "background_color_rules": [
-                                {
-                                    "id": "effbda00-b658-11ec-b432-f55b76073132"
-                                }
-                            ],
-                            "drop_last_bucket": 0,
-                            "filter": {
-                                "language": "kuery",
-                                "query": "event.dataset :\"kubernetes.pod\"  "
-                            },
-                            "id": "034a1b39-789a-4c21-ba0f-3a3f01c132c0",
-                            "index_pattern_ref_name": "metrics_049797f9-619d-4519-922e-0e8faf03b482_0_index_pattern",
-                            "interval": "",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "formatter": "percent",
-                                    "id": "7cc97db7-b10d-4452-9ea8-8f9ac149c901",
-                                    "label": "",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "kubernetes.pod.memory.working_set.limit.pct",
-                                            "id": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                            "type": "avg"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "kubernetes.pod.name",
-                                    "terms_order_by": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                    "time_range_mode": "entire_time_range"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
-                        },
-                        "type": "metrics",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "049797f9-619d-4519-922e-0e8faf03b482",
-                    "w": 22,
-                    "x": 0,
-                    "y": 51
-                },
-                "panelIndex": "049797f9-619d-4519-922e-0e8faf03b482",
-                "title": "Working Set Memory Usage as Pct of the Defined Pod Limit [Metrics Kubernetes]",
-                "type": "visualization",
-                "version": "8.3.0-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "background_color_rules": [
-                                {
-                                    "id": "effbda00-b658-11ec-b432-f55b76073132"
-                                }
-                            ],
-                            "drop_last_bucket": 0,
-                            "filter": {
-                                "language": "kuery",
-                                "query": "event.dataset :\"kubernetes.pod\"  "
-                            },
-                            "id": "034a1b39-789a-4c21-ba0f-3a3f01c132c0",
-                            "index_pattern_ref_name": "metrics_47586597-361a-4f8d-9ab0-86d9e4d280ee_0_index_pattern",
-                            "interval": "",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "formatter": "bytes",
-                                    "id": "7cc97db7-b10d-4452-9ea8-8f9ac149c901",
-                                    "label": "",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "kubernetes.pod.network.rx.bytes",
-                                            "id": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                            "type": "avg"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "kubernetes.pod.name",
-                                    "terms_order_by": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                    "time_range_mode": "entire_time_range"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
-                        },
-                        "type": "metrics",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "47586597-361a-4f8d-9ab0-86d9e4d280ee",
-                    "w": 22,
-                    "x": 22,
-                    "y": 51
-                },
-                "panelIndex": "47586597-361a-4f8d-9ab0-86d9e4d280ee",
-                "title": "Network Incoming Bytes per Pod [Metrics Kubernetes]",
-                "type": "visualization",
-                "version": "8.3.0-SNAPSHOT"
-            },
-            {
-                "embeddableConfig": {
-                    "enhancements": {},
-                    "savedVis": {
-                        "data": {
-                            "aggs": [],
-                            "searchSource": {
-                                "filter": [],
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "axis_formatter": "number",
-                            "axis_position": "left",
-                            "axis_scale": "normal",
-                            "background_color_rules": [
-                                {
-                                    "id": "effbda00-b658-11ec-b432-f55b76073132"
-                                }
-                            ],
-                            "drop_last_bucket": 0,
-                            "filter": {
-                                "language": "kuery",
-                                "query": "event.dataset :\"kubernetes.pod\"  "
-                            },
-                            "id": "034a1b39-789a-4c21-ba0f-3a3f01c132c0",
-                            "index_pattern_ref_name": "metrics_16e72bc4-66f8-4fa9-9253-0e510ef6ad01_0_index_pattern",
-                            "interval": "",
-                            "isModelInvalid": false,
-                            "max_lines_legend": 1,
-                            "series": [
-                                {
-                                    "axis_position": "right",
-                                    "chart_type": "line",
-                                    "color": "#68BC00",
-                                    "fill": 0.5,
-                                    "formatter": "bytes",
-                                    "id": "7cc97db7-b10d-4452-9ea8-8f9ac149c901",
-                                    "label": "",
-                                    "line_width": 1,
-                                    "metrics": [
-                                        {
-                                            "field": "kubernetes.pod.network.tx.bytes",
-                                            "id": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                            "type": "avg"
-                                        }
-                                    ],
-                                    "override_index_pattern": 0,
-                                    "palette": {
-                                        "name": "default",
-                                        "type": "palette"
-                                    },
-                                    "point_size": 1,
-                                    "separate_axis": 0,
-                                    "series_drop_last_bucket": 0,
-                                    "split_mode": "terms",
-                                    "stacked": "none",
-                                    "terms_field": "kubernetes.pod.name",
-                                    "terms_order_by": "9080d8bd-59d3-4b3e-b75b-13262188d8d3",
-                                    "time_range_mode": "entire_time_range"
-                                }
-                            ],
-                            "show_grid": 1,
-                            "show_legend": 1,
-                            "time_field": "",
-                            "time_range_mode": "entire_time_range",
-                            "tooltip_mode": "show_all",
-                            "truncate_legend": 1,
-                            "type": "timeseries",
-                            "use_kibana_indexes": true
-                        },
-                        "type": "metrics",
-                        "uiState": {}
-                    }
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "16e72bc4-66f8-4fa9-9253-0e510ef6ad01",
-                    "w": 22,
-                    "x": 0,
-                    "y": 66
-                },
-                "panelIndex": "16e72bc4-66f8-4fa9-9253-0e510ef6ad01",
-                "title": "Network Outgoing Bytes per Pod [Metrics Kubernetes]",
+                "panelIndex": "72efb777-3b17-42a9-91c5-b17ee964ce28",
+                "title": "Kubernetes Dashboards [Metrics Kubernetes]",
                 "type": "visualization",
                 "version": "8.3.0-SNAPSHOT"
             }
@@ -959,37 +1632,72 @@
         },
         {
             "id": "metrics-*",
-            "name": "72087713-118c-4441-ace1-79b0de6bd159:metrics_72087713-118c-4441-ace1-79b0de6bd159_0_index_pattern",
+            "name": "8775bc75-d36c-4e37-94e4-ca63300d9dd3:indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "4a779b31-4786-4f28-9944-a4d2f752a92e:metrics_4a779b31-4786-4f28-9944-a4d2f752a92e_0_index_pattern",
+            "name": "8775bc75-d36c-4e37-94e4-ca63300d9dd3:21eaa2c8-8870-4ce4-b9b7-855ea2835f9e",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "4553a400-31ec-4ea7-83ee-214cd7340402:metrics_4553a400-31ec-4ea7-83ee-214cd7340402_0_index_pattern",
+            "name": "8e7901b2-cfc3-433d-9dcb-4af30c649efb:indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "5fbe0bd4-fa9b-4a61-a4de-746cf0b7c199:metrics_5fbe0bd4-fa9b-4a61-a4de-746cf0b7c199_0_index_pattern",
+            "name": "8e7901b2-cfc3-433d-9dcb-4af30c649efb:d82a1442-e0ad-4acd-913f-06f8b0c1bb74",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "049797f9-619d-4519-922e-0e8faf03b482:metrics_049797f9-619d-4519-922e-0e8faf03b482_0_index_pattern",
+            "name": "98677dcb-ab94-47e8-94ca-326470ee2380:indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "47586597-361a-4f8d-9ab0-86d9e4d280ee:metrics_47586597-361a-4f8d-9ab0-86d9e4d280ee_0_index_pattern",
+            "name": "98677dcb-ab94-47e8-94ca-326470ee2380:11c30bec-8510-473c-bdf9-4da3d863af57",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "16e72bc4-66f8-4fa9-9253-0e510ef6ad01:metrics_16e72bc4-66f8-4fa9-9253-0e510ef6ad01_0_index_pattern",
+            "name": "5575d413-c4a4-4e34-8605-54f82e5e05b3:indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "5575d413-c4a4-4e34-8605-54f82e5e05b3:b146396e-ddf3-4642-af86-89fde33a0ef4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "435eeb17-c28a-4bde-9c43-b85d8e463c03:indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "435eeb17-c28a-4bde-9c43-b85d8e463c03:e59047b8-574d-42a8-82dc-3a06ae1c186f",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "7a1ccd34-5b1c-445b-8f1f-00d792c49104:indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "7a1ccd34-5b1c-445b-8f1f-00d792c49104:b1f131dc-80e8-4ebc-be5f-ca1b56082b0c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "72b97d6f-17f7-44b0-87a9-e272981c7565:indexpattern-datasource-layer-921ae90c-bc32-4ce1-b4d0-bcaec7eb339a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "72b97d6f-17f7-44b0-87a9-e272981c7565:2463b928-eeb5-4fe5-9068-6c28341f6ab9",
             "type": "index-pattern"
         }
     ],
