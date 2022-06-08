@@ -1305,12 +1305,12 @@ processors:
       value: agent
   - append:
       field: related.ip
-      value: "{{observer.ip}}"
+      value: "{{{observer.ip}}}"
       allow_duplicates: false
       if: ctx.observer?.ip != null && ctx.observer.ip != ""
   - append:
       field: related.hosts
-      value: "{{observer.ip}}"
+      value: "{{{observer.ip}}}"
       allow_duplicates: false
       if: ctx.observer?.ip != null && ctx.observer.ip != ""
   
@@ -1327,7 +1327,7 @@ processors:
       ignore_failure: true
   - append:
       field: related.hosts
-      value: "{{host.name}}"
+      value: "{{{host.name}}}"
       allow_duplicates: false
       if: ctx.host?.name != null
   - rename:
@@ -1658,25 +1658,25 @@ processors:
       ignore_missing: true
   - set:
       field: user.domain
-      value: "{{_temp.user_parts.1}}"
+      value: "{{{_temp.user_parts.1}}}"
       ignore_failure: true
       ignore_empty_value: true
       if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - set:
       field: user.full_name
-      value: "{{_temp.user_parts.0}}"
+      value: "{{{_temp.user_parts.0}}}"
       ignore_failure: true
       ignore_empty_value: true
       if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - append:
       field: related.user
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
-      value: "{{user.full_name}}"
+      value: "{{{user.full_name}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.user?.full_name != null
@@ -1788,22 +1788,22 @@ processors:
       ignore_failure: true
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - append:
       field: related.hosts
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
       field: related.hosts
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - rename:
@@ -1841,7 +1841,7 @@ processors:
       if: ctx.crowdstrike?.DownloadPort != 443
   - set:
       field: url.full
-      value: "{{url.scheme}}://{{server.address}}{{url.path}}"
+      value: "{{{url.scheme}}}://{{{server.address}}}{{{url.path}}}"
       if: ctx.url?.scheme != null && ctx.server?.address != null && ctx.url?.path != null
   - uri_parts:
       field: url.full
@@ -2048,7 +2048,7 @@ processors:
       ignore_missing: true
   - append:
       field: related.hash
-      value: "{{crowdstrike.ConfigStateHash}}"
+      value: "{{{crowdstrike.ConfigStateHash}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx.crowdstrike?.ConfigStateHash != null && ctx.crowdstrike.ConfigStateHash != ""
@@ -2147,12 +2147,12 @@ processors:
       ignore_missing: true
   - append:
       field: related.hosts
-      value: "{{crowdstrike.LogonServer}}"
+      value: "{{{crowdstrike.LogonServer}}}"
       allow_duplicates: false
       if: ctx.crowdstrike?.LogonServer != null
   - append:
       field: related.hosts
-      value: "{{crowdstrike.ClientComputerName}}"
+      value: "{{{crowdstrike.ClientComputerName}}}"
       allow_duplicates: false
       if: ctx.crowdstrike?.ClientComputerName != null
 
