@@ -1925,18 +1925,57 @@ processors:
       tag: dns-request-type-to-name
       description: Map decimal DNS request type to its name.
       lang: painless
+      params:
+        "1": A
+        "2": NS
+        "5": CNAME
+        "6": SOA
+        "12": PTR
+        "13": HINFO
+        "15": MX
+        "16": TXT
+        "17": RP
+        "18": AFSDB
+        "24": SIG
+        "25": KEY
+        "28": AAAA
+        "29": LOC
+        "33": SRV
+        "35": NAPTR
+        "36": KX
+        "37": CERT
+        "39": DNAME
+        "42": APL
+        "43": DS
+        "44": SSHFP
+        "45": IPSECKEY
+        "46": RRSIG
+        "47": NSEC
+        "48": DNSKEY
+        "49": DHCID
+        "50": NSEC3
+        "51": NSEC3PARAM
+        "52": TLSA
+        "53": SMIMEA
+        "55": HIP
+        "59": CDS
+        "60": CDNSKEY
+        "61": OPENPGPKEY
+        "62": CSYNC
+        "63": ZONEMD
+        "64": SVCB
+        "65": HTTPS
+        "108": EUI48
+        "109": EUI64
+        "249": TKEY
+        "250": TSIG
+        "256": URI
+        "257": CAA
+        "32768": TA
+        "32769": DLV
+      if: ctx.event?.action == "DnsRequest" && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty()
       source: |-
-        def conversions = ["1": "A", "2": "NS", "5": "CNAME", "6": "SOA", "12": "PTR",
-        "13": "HINFO", "15": "MX", "16": "TXT", "17": "RP",
-        "18": "AFSDB", "24": "SIG", "25": "KEY", "28": "AAAA", "29": "LOC",
-        "33": "SRV", "35": "NAPTR", "36": "KX", "37": "CERT", "39": "DNAME",
-        "42": "APL", "43": "DS", "44": "SSHFP", "45": "IPSECKEY",
-        "46": "RRSIG", "47": "NSEC", "48": "DNSKEY", "49": "DHCID", "50": "NSEC3",
-        "51": "NSEC3PARAM", "52": "TLSA", "53": "SMIMEA", "55": "HIP", "59": "CDS",
-        "60": "CDNSKEY", "61": "OPENPGPKEY", "62": "CSYNC", "63": "ZONEMD",
-        "64": "SVCB", "65": "HTTPS", "108": "EUI48", "109": "EUI64", "249": "TKEY",
-        "250": "TSIG", "256": "URI", "257": "CAA", "32768": "TA", "32769": "DLV"];
-        def t = conversions[ctx.crowdstrike.RequestType];
+        def t = params[ctx.crowdstrike.RequestType];
         if (t != null) {
           if (ctx.dns?.question == null) {
             ctx.dns.question = new HashMap();
@@ -1944,7 +1983,6 @@ processors:
           ctx.dns.question.type = t;
           ctx.crowdstrike.remove("RequestType");
         }
-      if: ctx.event?.action == "DnsRequest" && ctx.crowdstrike?.RequestType != null && ctx.crowdstrike.RequestType != ""
 
   ## File fields.
   - convert:
@@ -2216,4 +2254,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message {{ _ingest.on_failure_message }}"
+      value: "Processor '{{ _ingest.on_failure_processor_type }}' with tag '{{ _ingest.on_failure_processor_tag }}' in pipeline '{{ _ingest.on_failure_pipeline }}' failed with message {{ _ingest.on_failure_message }}"
