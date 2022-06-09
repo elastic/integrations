@@ -111,77 +111,139 @@ An example event for `load_balancer` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-23T09:16:05.341Z",
-    "cloud": {
-        "availability_zone": "europe-west2-a",
-        "instance": {
-            "id": "8340998530665147",
-            "name": "instance"
-        },
-        "project": {
-            "id": "project"
-        },
-        "region": "europe-west2"
+    "@timestamp": "2020-06-08T23:41:30.078Z",
+    "agent": {
+        "ephemeral_id": "1f7633a7-3410-4684-bb55-14b0bd0e2bd4",
+        "hostname": "docker-fleet-agent",
+        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.17.0"
     },
-    "dns": {
-        "answers": [
-            {
-                "class": "IN",
-                "data": "127.0.0.1",
-                "name": "elastic.co",
-                "ttl": "300",
-                "type": "A"
-            }
-        ],
-        "question": {
-            "name": "elastic.co",
-            "registered_domain": "elastic.co",
-            "top_level_domain": "co",
-            "type": "A"
+    "cloud": {
+        "project": {
+            "id": "PROJECT_ID"
         },
-        "resolved_ip": [
-            "127.0.0.1"
-        ],
-        "response_code": "NOERROR"
+        "region": "global"
+    },
+    "data_stream": {
+        "dataset": "gcp.load_balancer",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "81.2.69.193",
+        "ip": "81.2.69.193",
+        "nat": {
+            "ip": "10.5.3.1",
+            "port": 9090
+        },
+        "port": 8080
     },
     "ecs": {
         "version": "8.2.0"
     },
+    "elastic_agent": {
+        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "snapshot": false,
+        "version": "7.17.0"
+    },
     "event": {
-        "id": "vwroyze8pg7y",
+        "category": "network",
+        "created": "2020-06-08T23:41:30.588Z",
+        "id": "1oek5rg3l3fxj7",
         "kind": "event",
-        "outcome": "success",
-        "original": "{\"insertId\":\"vwroyze8pg7y\",\"jsonPayload\":{\"authAnswer\":true,\"protocol\":\"UDP\",\"queryName\":\"elastic.co.\",\"queryType\":\"A\",\"rdata\":\"elastic.co.\\t300\\tIN\\ta\\t127.0.0.1\",\"responseCode\":\"NOERROR\",\"serverLatency\":14,\"sourceIP\":\"10.154.0.3\",\"sourceNetwork\":\"default\",\"vmInstanceId\":8340998530665147,\"vmInstanceIdString\":\"8340998530665147\",\"vmInstanceName\":\"694119234537.instance\",\"vmProjectId\":\"project\",\"vmZoneName\":\"europe-west2-a\"},\"logName\":\"projects/project/logs/dns.googleapis.com%2Fdns_queries\",\"receiveTimestamp\":\"2022-01-23T09:16:05.502805637Z\",\"resource\":{\"labels\":{\"location\":\"europe-west2\",\"project_id\":\"project\",\"source_type\":\"gce-vm\",\"target_name\":\"\",\"target_type\":\"external\"},\"type\":\"dns_query\"},\"severity\":\"INFO\",\"timestamp\":\"2022-01-23T09:16:05.341873447Z\"}"
+        "original": "{\"insertId\":\"1oek5rg3l3fxj7\",\"jsonPayload\":{\"@type\":\"type.googleapis.com/google.cloud.loadbalancin,g.type.LoadBalancerLogEntry\",\"cacheId\":\"SFO-fbae48ad\",\"statusDetails\":\"response_from_cache\"},\"httpRequest\":{\"requestMethod\":\"GET\",\"requestUrl\":\"http://81.2.69.193:8080/static/us/three-cats.jpg\",\"requestSize\":\"577\",\"status\":304,\"responseSize\":\"157\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36\",\"remoteIp\":\"89.160.20.156:9989\",\"cacheHit\":true,\"cacheLookup\":true,\"serverIp\":\"10.5.3.1:9090\",\"protocol\":\"HTTP/2.0\",\"referer\":\"https://developer.mozilla.org/en-US/docs/Web/JavaScript\"},\"resource\":{\"type\":\"http_load_balancer\",\"labels\":{\"zone\":\"global\",\"url_map_name\":\"URL_MAP_NAME\",\"forwarding_rule_name\":\"FORWARDING_RULE_NAME\",\"target_proxy_name\":\"TARGET_PROXY_NAME\",\"backend_service_name\":\"\",\"project_id\":\"PROJECT_ID\"}},\"timestamp\":\"2020-06-08T23:41:30.078651Z\",\"severity\":\"INFO\",\"logName\":\"projects/PROJECT_ID/logs/requests\",\"trace\":\"projects/PROJECT_ID/traces/241d69833e64b3bf83fabac8c873d992\",\"receiveTimestamp\":\"2020-06-08T23:41:30.588272510Z\",\"spanId\":\"7b6537d3672e08e1\"}",
+        "type": "info"
     },
     "gcp": {
-        "dns": {
-            "auth_answer": true,
-            "protocol": "UDP",
-            "query_name": "elastic.co.",
-            "query_type": "A",
-            "rdata": "elastic.co.\t300\tIN\ta\t127.0.0.1",
-            "response_code": "NOERROR",
-            "server_latency": 14,
-            "source_ip": "10.154.0.3",
-            "source_network": "default",
-            "vm_instance_id": "8340998530665147",
-            "vm_instance_name": "694119234537.instance",
-            "vm_project_id": "project",
-            "vm_zone_name": "europe-west2-a"
+        "load_balancer": {
+            "backend_service_name": "",
+            "cache_hit": true,
+            "cache_id": "SFO-fbae48ad",
+            "cache_lookup": true,
+            "forwarding_rule_name": "FORWARDING_RULE_NAME",
+            "status_details": "response_from_cache",
+            "target_proxy_name": "TARGET_PROXY_NAME",
+            "url_map_name": "URL_MAP_NAME"
         }
     },
+    "http": {
+        "request": {
+            "bytes": 577,
+            "method": "GET",
+            "referrer": "https://developer.mozilla.org/en-US/docs/Web/JavaScript"
+        },
+        "response": {
+            "bytes": 157,
+            "status_code": 304
+        },
+        "version": "2.0"
+    },
+    "input": {
+        "type": "gcp-pubsub"
+    },
     "log": {
-        "logger": "projects/project/logs/dns.googleapis.com%2Fdns_queries"
+        "level": "INFO",
+        "logger": "projects/PROJECT_ID/logs/requests"
     },
     "network": {
-        "transport": "udp"
+        "protocol": "http"
+    },
+    "related": {
+        "ip": [
+            "89.160.20.156",
+            "81.2.69.193",
+            "10.5.3.1"
+        ]
     },
     "source": {
-        "address": "10.154.0.3",
-        "ip": "10.154.0.3"
+        "address": "89.160.20.156",
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.156",
+        "port": 9989
     },
     "tags": [
-        "preserve_original_event"
-    ]
+        "forwarded",
+        "gcp-firewall"
+    ],
+    "url": {
+        "domain": "81.2.69.193",
+        "extension": "jpg",
+        "original": "http://81.2.69.193:8080/static/us/three-cats.jpg",
+        "path": "/static/us/three-cats.jpg",
+        "port": 8080,
+        "scheme": "http"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Mac"
+        },
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36",
+        "os": {
+            "full": "Mac OS X 10.14.6",
+            "name": "Mac OS X",
+            "version": "10.14.6"
+        },
+        "version": "83.0.4103.61"
+    }
 }
 ```
