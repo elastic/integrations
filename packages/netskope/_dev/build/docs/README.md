@@ -35,7 +35,7 @@ ECS fields where applicable and the remaining fields are written under
         * Add **Source Configuration** put input created for Events in step 4.
         * Add **Destination Configuration**, put output created for Events in step 6.
 
->Note: For detailed steps refer to [Configure Log Shipper SIEM Mappings](https://docs.netskope.com/en/configure-log-shipper-siem-mappings.html).
+> Note: For detailed steps refer to [Configure Log Shipper SIEM Mappings](https://docs.netskope.com/en/configure-log-shipper-siem-mappings.html).
 Please make sure to use the given response formats.
 
 ## Compatibility
