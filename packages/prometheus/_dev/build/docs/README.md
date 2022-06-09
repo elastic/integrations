@@ -200,7 +200,7 @@ The fields reported are:
 #### Histograms and types [x-pack]
 
 `use_types` parameter (default: false) enables a different layout for metrics storage, leveraging Elasticsearch
-types, including https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html[histograms].
+types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html).
 
 `rate_counters` parameter (default: false) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
