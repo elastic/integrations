@@ -1,0 +1,40 @@
+title: "SonicWall Firewall logs"
+type: logs
+streams:
+  - input: udp
+    template_path: udp.yml.hbs
+    title: Syslog logs
+    description: Collect logs via syslog
+    vars:
+      - name: syslog_host
+        type: text
+        title: Listen address
+        description: |
+          Address where the agent will accept syslog messages.
+          Use 0.0.0.0 to receive syslog on all interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: syslog_port
+        type: integer
+        title: Listen Port
+        description: UDP Port where the Agent will receive syslog messages.
+        multi: false
+        required: true
+        show_user: true
+        default: 9514
+  - input: logfile
+    enabled: false
+    template_path: logfile.yml.hbs
+    title: Log files
+    description: Collect logs from file
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/sonicwall-firewall.log

@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Atlassian Jira audit logs.
 processors:
 - set:
     field: ecs.version
@@ -10,14 +10,12 @@ processors:
 - json:
     field: event.original
     target_field: json
-- set:
-    field: _tmp.timestamp
-    copy_from: json.timestamp
-    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
-- set:
-    field: _tmp.timestamp
-    value: "{{json.timestamp.epochSecond}}.{{json.timestamp.nano}}"
-    if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
+- pipeline:
+    name: '{{ IngestPipeline "cloud" }}'
+    if: "ctx._config?.atlassian_cloud != null"
+- pipeline:
+    name: '{{ IngestPipeline "self-hosted" }}'
+    if: "ctx._config?.atlassian_cloud == null"
 - date:
     field: _tmp.timestamp
     formats:
@@ -53,74 +51,59 @@ processors:
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
-- rename:
-    field: json.author.id
-    target_field: user.id
-    ignore_missing: true
-- rename:
-    field: json.author.name
-    target_field: user.name
-    ignore_missing: true
-- rename:
-    field: json.auditType
-    target_field: jira.audit.type
-    ignore_missing: true
-- rename:
-    field: json.type
-    target_field: jira.audit.type
-    ignore_missing: true
-- rename:
-    field: json.method
-    target_field: jira.audit.method
-    ignore_missing: true
-- rename:
-    field: json.system
-    target_field: service.address
-    ignore_missing: true
-- uri_parts:
-    field: service.address
-    target_field: _tmp.service
-    ignore_failure: true
-    if: ctx.service?.address != null
-- rename:
-    field: json.extraAttributes
-    target_field: jira.audit.extra_attributes
-    ignore_missing: true
-- rename:
-    field: json.changedValues
-    target_field: jira.audit.changed_values
-    ignore_missing: true
-- rename:
-    field: json.affectedObjects
-    target_field: jira.audit.affected_objects
-    ignore_missing: true
-- set:
-    field: event.action
-    copy_from: jira.audit.type.actionI18nKey
-    ignore_empty_value: true
 - script:
     lang: painless
     tag: Add ECS categorization
     params:
+      User created:
+        category:
+          - iam
+        type:
+          - user
+          - creation
       jira.auditing.user.created:
         category:
           - iam
         type:
           - user
           - creation
+      User updated:
+        category:
+          - iam
+        type:
+          - user
+          - change
       jira.auditing.user.updated:
         category:
           - iam
         type:
           - user
           - change
+      User deleted:
+        category:
+          - iam
+        type:
+          - user
+          - deletion
       jira.auditing.user.deleted:
         category:
           - iam
         type:
           - user
           - deletion
+      User added to group:
+        category:
+          - iam
+        type:
+          - group
+          - change
       jira.auditing.user.added.to.group:
+        category:
+          - iam
+        type:
+          - group
+          - change
+      User removed from group:
         category:
           - iam
         type:
@@ -166,18 +149,37 @@ processors:
           - authentication
         type:
           - end
+      Group created:
+        category:
+          - iam
+        type:
+          - group
+          - creation
       jira.auditing.group.created:
         category:
           - iam
         type:
           - group
           - creation
+      Group deleted:
+        category:
+          - iam
+        type:
+          - group
+          - deletion
       jira.auditing.group.deleted:
         category:
           - iam
         type:
           - group
           - deletion
+      Global permission added:
+        category:
+          - iam
+          - configuration
+        type:
+          - admin
+          - creation
       jira.auditing.global.permission.added:
         category:
           - iam
@@ -185,6 +187,13 @@ processors:
         type:
           - admin
           - creation
+      Global permission removed:
+        category:
+          - iam
+          - configuration
+        type:
+          - admin
+          - deletion
       personal.access.tokens.audit.log.summary.token.created:
         category:
           - iam
@@ -208,6 +217,11 @@ processors:
         type:
           - admin
           - change
+      Project created:
+        category:
+          - configuration
+        type:
+          - creation
       jira.auditing.project.created:
         category:
           - configuration
@@ -261,7 +275,7 @@ processors:
 - script:
     lang: painless
     description: Add ECS User fields
-    if: "['jira.auditing.category.usermanagement','jira.auditing.category.groupmanagement'].contains(ctx.jira?.audit?.type?.categoryI18nKey)"
+    if: "['jira.auditing.category.usermanagement','jira.auditing.category.groupmanagement'].contains(ctx.jira?.audit?.type?.categoryI18nKey) || ['user management','group management'].contains(ctx.jira?.audit?.type?.category)"
     source: >-
       if (ctx?.event?.action == null) {
           return;
@@ -289,16 +303,16 @@ processors:
       if(ctx.jira?.audit?.affected_objects != null) {
         for (def j = 0; j < ctx.jira?.audit?.affected_objects.length; j++) {
           if(ctx.jira?.audit?.affected_objects[j]?.type == 'GROUP') {
-            if(['jira.auditing.group.created', 'jira.auditing.group.deleted'].contains(ctx.event.action)) {
+            if(['jira.auditing.group.created', 'jira.auditing.group.deleted', 'Group created', 'Group deleted'].contains(ctx.event.action)) {
               ctx.group.put("name", ctx.jira?.audit?.affected_objects[j]?.name);
             }
-            if(['jira.auditing.user.added.to.group', 'jira.auditing.user.removed.from.group'].contains(ctx.event.action)) {
+            if(['jira.auditing.user.added.to.group', 'jira.auditing.user.removed.from.group', 'User added to group', 'User removed from group'].contains(ctx.event.action)) {
               ctx.user.target.group.put("name", ctx.jira?.audit?.affected_objects[j]?.name);
               ctx.user.target.group.put("id", ctx.jira?.audit?.affected_objects[j]?.id);
             }
           }
           if(ctx.jira?.audit?.affected_objects[j]?.type == 'USER') {
-            if(['jira.auditing.user.created', 'jira.auditing.user.deleted','jira.auditing.user.password.changed','jira.auditing.user.updated','jira.auditing.user.added.to.group', 'jira.auditing.user.removed.from.group'].contains(ctx.event.action)) {
+            if(['jira.auditing.user.created', 'jira.auditing.user.deleted','jira.auditing.user.password.changed','jira.auditing.user.updated','jira.auditing.user.added.to.group', 'jira.auditing.user.removed.from.group', 'User created', 'User deleted', 'User added to group', 'User removed from group'].contains(ctx.event.action)) {
               ctx.user.target.put("name", ctx.jira?.audit?.affected_objects[j]?.name);
               ctx.user.target.put("id", ctx.jira?.audit?.affected_objects[j]?.id);
             }
@@ -307,13 +321,13 @@ processors:
       }
       if(ctx.jira?.audit?.changed_values != null) {
         for (def j = 0; j < ctx.jira?.audit?.changed_values.length; j++) {
-          if(['jira.auditing.user.renamed'].contains(ctx.event.action)) {
+          if(['jira.auditing.user.renamed', 'User renamed'].contains(ctx.event.action)) {
             if(ctx.jira?.audit?.changed_values[j]?.i18nKey == 'common.words.username') {
               ctx.user.changes.put("name", ctx.jira?.audit?.changed_values[j]?.to);
               ctx.user.target.put("name", ctx.jira?.audit?.changed_values[j]?.from);
             }
           }
-          if(['jira.auditing.user.created','jira.auditing.user.updated'].contains(ctx.event.action)) {
+          if(['jira.auditing.user.created','jira.auditing.user.updated', 'User created', 'User updated'].contains(ctx.event.action)) {
             if(ctx.jira?.audit?.changed_values[j]?.i18nKey == 'common.words.username') {
               ctx.user.changes.put("name", ctx.jira?.audit?.changed_values[j]?.to);
               if(ctx.jira?.audit?.changed_values[j]?.from != null) {
@@ -364,6 +378,7 @@ processors:
     field:
       - json
       - _tmp
+      - _config
     ignore_missing: true  
 - remove:
     field: event.original
