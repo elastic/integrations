@@ -10,7 +10,7 @@ The log message is expected to be in JSON format. The data is mapped to ECS fiel
 1. Enable the integration with the TCP input.
 2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. See [Add NSS Server](https://help.zscaler.com/zia/adding-nss-servers) and [Add NSS Feeds](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscaler NSS Server and NSS Feeds follow the following steps.
     - In the ZIA Admin Portal, add an NSS Server.
-        - Log in to the ZIA Admin Portal using your admin account. If you're unable to log in, contact Support.
+        - Log in to the ZIA Admin Portal using your admin account. If you're unable to log in, [contact Support](https://www.zscaler.com/company/contact).
         - Add an NSS server. Refer to Adding NSS Servers to set up an [Add NSS Server](https://help.zscaler.com/zia/adding-nss-servers) for Web and/or Firewall.
         - Verify that the state of the NSS Server is healthy.
             - In the ZIA Admin Portal, go to Administration > Nanolog Streaming Service > NSS Servers.
