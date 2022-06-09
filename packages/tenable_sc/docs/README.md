@@ -10,7 +10,7 @@ This module has been tested against `Tenable.sc version 5.18`
 
 In order to ingest data from the Tenable.sc you must have the **Access key** and **Secret Key**.
 
-Enable API keys to allow users to perform API key authentication. See: [Enable API Key Authentication]() in Tenable's documentation for more information. 
+Enable API keys to allow users to perform API key authentication. See: [Enable API Key Authentication](https://docs.tenable.com/tenablesc/Content/EnableAPIKeys.htm) in Tenable's documentation for more information. 
 
 Generate API keys:
 1. Log in to **Tenable.sc Admin account** via the user interface.
@@ -21,9 +21,7 @@ Generate API keys:
 6. The "Your API Key" window appears, displaying the access key and secret key for the user.
 7. Use the keys in the Tenable.sc Integration configuration parameters.
 
-<DocCallOut title="Note">
-The default value is the recommended value for a batch size by tenable. It can be found under _Advanced Options_ and can be configured as per requirements. A very large value might not work as intended depending on the API and instance limitations.
-</DocCallOut>
+>  Note: The default value is the recommended value for a batch size by tenable. It can be found under _Advanced Options_ and can be configured as per requirements. A very large value might not work as intended depending on the API and instance limitations.
 
 ## Logs
 
