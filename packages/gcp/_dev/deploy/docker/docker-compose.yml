@@ -61,3 +61,17 @@ services:
       - /sample_logs/vpcflow.log
     depends_on:
       - gcppubsub-emulator
+  gcppubsub-load-balancer:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=gcppubsub-emulator:8681
+      - -p=gcppubsub
+      - --gcppubsub-clear=true
+      - --gcppubsub-project=load_balancer
+      - /sample_logs/load_balancer.log
+    depends_on:
+      - gcppubsub-emulator
