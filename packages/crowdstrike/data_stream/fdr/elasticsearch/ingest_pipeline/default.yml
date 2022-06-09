@@ -27,14 +27,15 @@ processors:
       formats:
         - UNIX
       ignore_failure: true
-      if: ctx?.event?.created == null
+      if: ctx.event?.created == null
   - set:
       tag: set-timestamp
       field: "@timestamp"
       copy_from: event.created
-      if: ctx?.event?.created != null && (ctx?.crowdstrike?.ContextTimeStamp == null || ctx?.crowdstrike?.ContextTimeStamp == "")
+      if: ctx.event?.created != null && (ctx.crowdstrike?.ContextTimeStamp == null || ctx.crowdstrike?.ContextTimeStamp == "")
   - date:
       tag: date-context-timestamp
+      if: ctx.crowdstrike?.ContextTimeStamp != null
       field: crowdstrike.ContextTimeStamp
       formats:
         - UNIX
@@ -55,242 +56,1152 @@ processors:
       tag: script-categorize-events
       description: Categorize events.
       lang: painless
+      params:
+        AcUninstallConfirmation:
+          category: [ package ]
+          type: [ deletion ]
+          kind: state
+          outcome: success
+        AcUnloadConfirmation:
+          category: [ package ]
+          type: [ deletion ]
+          kind: state
+          outcome: success
+        AgentConnect:
+          category: [ network, session ]
+          type: [ connection, info ]
+          kind: event
+          outcome: success
+        AgentOnline:
+          category: [ configuration, package, host ]
+          type: [ change, installation, start ]
+          kind: state
+          outcome: success
+        AmsiRegistrationStatus:
+          category: [ host ]
+          type: [ info ]
+          kind: state
+          outcome: success
+        AsepFileChange:
+          category: [ file ]
+          type: [ creation, change ]
+          kind: event
+          outcome: success
+        AsepKeyUpdate:
+          category: [ registry ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        AsepValueUpdate:
+          category: [ registry ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        AssociateIndicator:
+          category: [ malware ]
+          type: [ info ]
+          kind: alert
+          outcome: unknown
+        AssociateTreeIdWithRoot:
+          category: [ malware ]
+          type: [ info ]
+          kind: alert
+          outcome: success
+        BITSJobCreated:
+          category: [ network, file ]
+          type: [ connection, creation ]
+          kind: event
+          outcome: success
+        BZip2FileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        BehaviorWhitelisted:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        BrowserInjectedThread:
+          category: [ process ]
+          type: [ access, change ]
+          kind: event
+          outcome: success
+        CloudAssociateTreeIdWithRoot:
+          category: [ malware ]
+          type: [ deletion ]
+          kind: alert
+          outcome: success
+        CommandHistory:
+          category: [ process ]
+          type: [ end, info ]
+          kind: event
+          outcome: success
+        ConfigStateUpdate:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        CrashNotification:
+          category: [ host ]
+          type: [ info ]
+          kind: event
+          outcome: failure
+        CreateProcessArgs:
+          category: [ process ]
+          type: [ start ]
+          kind: state
+          outcome: success
+        CreateService:
+          category: [ host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        CreateThreadNoStartImage:
+          category: [ process ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        CreateThreadReflectiveDll:
+          category: [ process ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        CriticalEnvironmentVariableChanged:
+          category: [ configuration, host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        CriticalFileAccessed:
+          category: [ file ]
+          type: [ access ]
+          kind: alert
+          outcome: success
+        CriticalFileModified:
+          category: [ file ]
+          type: [ change ]
+          kind: alert
+          outcome: success
+        CurrentSystemTags:
+          category: [ host ]
+          type: [ info ]
+          kind: state
+          outcome: success
+        CustomIOABasicProcessDetectionInfoEvent:
+          category: [ malware ]
+          type: [ info ]
+          kind: alert
+          outcome: unknown
+        DCSyncAttempted:
+          category: [ configuration, iam ]
+          type: [ access ]
+          kind: event
+          outcome: unknown
+        DcOffline:
+          category: [ iam ]
+          type: [ info ]
+          kind: event
+          outcome: success
+        DcOnline:
+          category: [ iam ]
+          type: [ info ]
+          kind: event
+          outcome: success
+        DcStatus:
+          category: [ iam ]
+          type: [ info ]
+          kind: state
+          outcome: success
+        DetectAnalysis:
+          category: [ malware ]
+          type: [ info ]
+          kind: alert
+          outcome: success
+        DetectionExcluded:
+          category: [ configuration, malware ]
+          type: [ change, info ]
+          kind: alert
+          outcome: success
+        DirectoryCreate:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        DllInjection:
+          category: [ process ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        DmpFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        DnsRequest:
+          category: [ network ]
+          type: [ protocol ]
+          kind: event
+          outcome: success
+        DocumentProgramInjectedThread:
+          category: [ process ]
+          type: [ access, change ]
+          kind: event
+          outcome: success
+        DriverLoad:
+          category: [ driver ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        DwgFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        EarlyExploitPivotDetect:
+          category: [ malware ]
+          type: [ info ]
+          kind: event
+          outcome: unknown
+        EndOfProcess:
+          category: [ process ]
+          type: [ end ]
+          kind: event
+          outcome: success
+        ErrorEvent:
+          category: [ package ]
+          type: [ info ]
+          kind: alert
+          outcome: failure
+        EtwErrorEvent:
+          category: [ package, host ]
+          type: [ info ]
+          kind: event
+          outcome: failure
+        ExecutableDeleted:
+          category: [ file ]
+          type: [ deletion ]
+          kind: event
+          outcome: success
+        FalconHostRegTamperingInfo:
+          category: [ registry ]
+          type: [ change ]
+          kind: alert
+          outcome: unknown
+        FalconServiceStatus:
+          category: [ package ]
+          type: [ info ]
+          kind: state
+          outcome: unknown
+        FileCreateInfo:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        FileDeleteInfo:
+          category: [ file ]
+          type: [ deletion ]
+          kind: event
+          outcome: success
+        FileDetectInfo:
+          category: [ file ]
+          type: [ info ]
+          kind: alert
+          outcome: unknown
+        FileInfo:
+          category: [ file ]
+          type: [ info ]
+          kind: event
+          outcome: unknown
+        FileOpenInfo:
+          category: [ file ]
+          type: [ access ]
+          kind: event
+          outcome: success
+        FileRenameInfo:
+          category: [ file ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FileSystemOperationBlocked:
+          category: [ file ]
+          type: [ change, deletion ]
+          kind: event
+          outcome: failure
+        FileSystemOperationDetectInfo:
+          category: [ file ]
+          type: [ change, deletion ]
+          kind: alert
+          outcome: unknown
+        FileTimestampsModified:
+          category: [ file ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FirewallChangeOption:
+          category: [ configuration, host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FirewallDeleteRule:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FirewallDeleteRuleIP4:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FirewallDeleteRuleIP6:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FirewallDisabled:
+          category: [ configuration, host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FirewallEnabled:
+          category: [ configuration, host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FirewallSetRule:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FirewallSetRuleIP4:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FirewallSetRuleIP6:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FirmwareAnalysisErrorEvent:
+          category: [ host ]
+          type: [ info ]
+          kind: state
+          outcome: failure
+        FirmwareAnalysisHardwareData:
+          category: [ host ]
+          type: [ info ]
+          kind: state
+          outcome: success
+        FirmwareAnalysisStatus:
+          category: [ host ]
+          type: [ info ]
+          kind: state
+          outcome: success
+        FlashThreadCreateProcess:
+          category: [ process ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        FsPostOpenSnapshotFile:
+          category: [ file ]
+          type: [ access ]
+          kind: event
+          outcome: success
+        FsVolumeMounted:
+          category: [ host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        FsVolumeUnmounted:
+          category: [ host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        HostInfo:
+          category: [ host ]
+          type: [ info ]
+          kind: event
+          outcome: success
+        HostedServiceStarted:
+          category: [ package ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        HostedServiceStopped:
+          category: [ package ]
+          type: [ end ]
+          kind: event
+          outcome: success
+        HostnameChanged:
+          category: [ host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        HttpRequestDetect:
+          category: [ network, session ]
+          type: [ connection, start ]
+          kind: event
+          outcome: success
+        HttpVisibilityStatus:
+          category: [ session ]
+          type: [ info ]
+          kind: state
+          outcome: unknown
+        IOServiceRegister:
+          category: [ package ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        ImageHash:
+          category: [ process ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        InjectedThread:
+          category: [ process ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        InjectedThreadFromUnsignedModule:
+          category: [ process ]
+          type: [ change ]
+          kind: alert
+          outcome: success
+        InstallBundleDownloadComplete:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        InstallServiceDownloadComplete:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        InstalledApplication:
+          category: [ package ]
+          type: [ installation ]
+          kind: event
+          outcome: success
+        InstalledUpdates:
+          category: [ host, package ]
+          type: [ change, installation ]
+          kind: event
+          outcome: success
+        InstanceMetadata:
+          category: [ host ]
+          type: [ info ]
+          kind: state
+          outcome: unknown
+        IoSessionConnected:
+          category: [ session ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        IoSessionLoggedOn:
+          category: [ session ]
+          type: [ end ]
+          kind: event
+          outcome: success
+        JarFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        JavaClassFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        JavaInjectedThread:
+          category: [ process ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        KernelModeLoadImage:
+          category: [ driver ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        KextLoad:
+          category: [ driver ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        KextUnload:
+          category: [ driver ]
+          type: [ end ]
+          kind: event
+          outcome: success
+        LFODownloadConfirmation:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        LfoUploadDataComplete:
+          category: [ file ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        LfoUploadDataFailed:
+          category: [ file ]
+          type: [ change ]
+          kind: event
+          outcome: failure
+        LfoUploadDataUnneeded:
+          category: [ file ]
+          type: [ change ]
+          kind: event
+          outcome: failure
+        LocalIpAddressIP4:
+          category: [ configuration, host ]
+          type: [ change ]
+          kind: state
+          outcome: success
+        LocalIpAddressIP6:
+          category: [ configuration, host ]
+          type: [ change ]
+          kind: state
+          outcome: success
+        LocalIpAddressRemovedIP4:
+          category: [ configuration, host ]
+          type: [ change ]
+          kind: state
+          outcome: success
+        LocalIpAddressRemovedIP6:
+          category: [ configuration, host ]
+          type: [ change ]
+          kind: state
+          outcome: success
+        LsassHandleFromUnsignedModule:
+          category: [ process ]
+          type: [ change ]
+          kind: alert
+          outcome: unknown
+        MachOFileWritten:
+          category: [ file ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        ManifestDownloadComplete:
+          category: [ configuration, file ]
+          type: [ change, creation ]
+          kind: event
+          outcome: success
+        ModifyServiceBinary:
+          category: [ file ]
+          type: [ change ]
+          kind: alert
+          outcome: unknown
+        ModuleBlockedEvent:
+          category: [ process, malware ]
+          type: [ info, denied ]
+          kind: alert
+          outcome: success
+        ModuleBlockedEventWithPatternId:
+          category: [ process, malware ]
+          type: [ info ]
+          kind: event
+          outcome: unknown
+        ModuleDetectInfo:
+          category: [ process, malware ]
+          type: [ info ]
+          kind: event
+          outcome: unknown
+        NeighborListIP4:
+          category: [ host, network ]
+          type: [ info ]
+          kind: state
+          outcome: unknown
+        NeighborListIP6:
+          category: [ host, network ]
+          type: [ info ]
+          kind: state
+          outcome: unknown
+        NetShareAdd:
+          category: [ host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        NetShareDelete:
+          category: [ host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        NetShareSecurityModify:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        NetworkCloseIP4:
+          category: [ network ]
+          type: [ end, connection ]
+          kind: event
+          outcome: unknown
+        NetworkCloseIP6:
+          category: [ network ]
+          type: [ end, connection ]
+          kind: event
+          outcome: unknown
+        NetworkConnectIP4:
+          category: [ network ]
+          type: [ start, connection ]
+          kind: event
+          outcome: unknown
+        NetworkConnectIP6:
+          category: [ network ]
+          type: [ start, connection ]
+          kind: event
+          outcome: unknown
+        NetworkListenIP4:
+          category: [ network ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        NetworkListenIP6:
+          category: [ network ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        NetworkReceiveAcceptIP4:
+          category: [ network ]
+          type: [ allowed, access, connection ]
+          kind: event
+          outcome: unknown
+        NetworkReceiveAcceptIP6:
+          category: [ network ]
+          type: [ allowed, access, connection ]
+          kind: event
+          outcome: unknown
+        NewExecutableRenamed:
+          category: [ file ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        NewExecutableWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        NewScriptWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        OciContainerTelemetry:
+          category: [ host ]
+          type: [ info ]
+          kind: state
+          outcome: unknown
+        OleFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        OoxmlFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        OsVersionInfo:
+          category: [ host ]
+          type: [ info ]
+          kind: event
+          outcome: success
+        PackedExecutableWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        PdfFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        PeFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        PeVersionInfo:
+          category: [ file ]
+          type: [ info ]
+          kind: event
+          outcome: success
+        PrivilegedProcessHandleFromUnsignedModule:
+          category: [ process ]
+          type: [ access ]
+          kind: alert
+          outcome: success
+        ProcessBlocked:
+          category: [ process ]
+          type: [ access ]
+          kind: alert
+          outcome: failure
+        ProcessExecOnPackedExecutable:
+          category: [ process, file ]
+          type: [ access ]
+          kind: alert
+          outcome: success
+        ProcessExecOnSMBFile:
+          category: [ process, file, network ]
+          type: [ access ]
+          kind: alert
+          outcome: success
+        ProcessHandleOpDetectInfo:
+          category: [ process, malware ]
+          type: [ info ]
+          kind: alert
+          outcome: success
+        ProcessInjection:
+          category: [ process ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        ProcessRollup2:
+          category: [ process ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        ProcessRollup2Stats:
+          category: [ process ]
+          type: [ info ]
+          kind: state
+          outcome: unknown
+        ProcessSelfDeleted:
+          category: [ process ]
+          type: [ end ]
+          kind: event
+          outcome: success
+        PromiscuousBindIP4:
+          category: [ host ]
+          type: [ change ]
+          kind: state
+          outcome: success
+        PtyCreated:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        QuarantineActionResult:
+          category: [ file ]
+          type: [ info ]
+          kind: alert
+          outcome: unknown
+        QuarantinedFile:
+          category: [ file ]
+          type: [ change ]
+          kind: alert
+          outcome: unknown
+        QuarantinedFileState:
+          category: [ file ]
+          type: [ info ]
+          kind: alert
+          outcome: unknown
+        QueueApcEtw:
+          category: [ file ]
+          type: [ creation ]
+          kind: alert
+          outcome: success
+        RansomwareCreateFile:
+          category: [ file ]
+          type: [ creation ]
+          kind: alert
+          outcome: success
+        RansomwareFileAccessPattern:
+          category: [ file ]
+          type: [ access ]
+          kind: alert
+          outcome: success
+        RansomwareOpenFile:
+          category: [ file ]
+          type: [ access ]
+          kind: alert
+          outcome: success
+        RarFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        RawBindIP4:
+          category: [ network ]
+          type: [ start, connection ]
+          kind: event
+          outcome: success
+        RawBindIP6:
+          category: [ network ]
+          type: [ start, connection ]
+          kind: event
+          outcome: success
+        ReflectiveDllOpenProcess:
+          category: [ process ]
+          type: [ access ]
+          kind: alert
+          outcome: success
+        RegGenericValueUpdate:
+          category: [ registry ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        RegSystemConfigValueUpdate:
+          category: [ registry, host, configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        RegisterRawInputDevicesEtw:
+          category: [ host, configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        RegistryOperationDetectInfo:
+          category: [ malware, registry ]
+          type: [ info ]
+          kind: alert
+          outcome: success
+        RemoteBruteForceDetectInfo:
+          category: [ malware, authentication ]
+          type: [ info ]
+          kind: alert
+          outcome: success
+        RemovableDiskModuleLoadAttempt:
+          category: [ configuration, host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        RemovableMediaVolumeMounted:
+          category: [ configuration, host ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        RtfFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        SAMHashDumpFromUnsignedModule:
+          category: [ registry, file ]
+          type: [ access, creation ]
+          kind: alert
+          outcome: success
+        ScheduledTaskDeleted:
+          category: [ configuration ]
+          type: [ deletion ]
+          kind: event
+          outcome: success
+        ScheduledTaskModified:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        ScheduledTaskRegistered:
+          category: [ configuration ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        ScreenshotTakenEtw:
+          category: [ process ]
+          type: [ access ]
+          kind: event
+          outcome: success
+        ScriptControlBlocked:
+          category: [ malware, file ]
+          type: [ info ]
+          kind: alert
+          outcome: success
+        ScriptControlDetectInfo:
+          category: [ malware, file ]
+          type: [ info ]
+          kind: alert
+          outcome: success
+        ScriptControlErrorEvent:
+          category: [ malware, file ]
+          type: [ info ]
+          kind: alert
+          outcome: failure
+        ScriptControlScanInfo:
+          category: [ malware, file ]
+          type: [ info ]
+          kind: state
+          outcome: success
+        ScriptControlScanTelemetry:
+          category: [ malware, file ]
+          type: [ info ]
+          kind: state
+          outcome: success
+        SensitiveWmiQuery:
+          category: [ malware, process ]
+          type: [ info ]
+          kind: alert
+          outcome: success
+        SensorHeartbeat:
+          category: [ package ]
+          type: [ info ]
+          kind: event
+          outcome: success
+        ServiceStarted:
+          category: [ process ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        SetWinEventHookEtw:
+          category: [ host, configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        SevenZipFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        SignInfoError:
+          category: [ file ]
+          type: [ info ]
+          kind: state
+          outcome: failure
+        SignInfoWithCertAndContext:
+          category: [ file ]
+          type: [ info ]
+          kind: state
+          outcome: unknown
+        SignInfoWithContext:
+          category: [ file ]
+          type: [ info ]
+          kind: state
+          outcome: unknown
+        SmbClientNamedPipeConnectEtw:
+          category: [ network ]
+          type: [ connection ]
+          kind: event
+          outcome: success
+        SmbClientShareClosedEtw:
+          category: [ network ]
+          type: [ connection, end ]
+          kind: event
+          outcome: success
+        SmbClientShareOpenedEtw:
+          category: [ network ]
+          type: [ connection, start ]
+          kind: event
+          outcome: success
+        SmbServerShareOpenedEtw:
+          category: [ network ]
+          type: [ connection, start ]
+          kind: event
+          outcome: success
+        SmbServerV1AuditEtw:
+          category: [ network ]
+          type: [ connection ]
+          kind: state
+          outcome: unknown
+        SnapshotVolumeMounted:
+          category: [ host, configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        SuspiciousCreateSymbolicLink:
+          category: [ malware, file ]
+          type: [ creation, info ]
+          kind: alert
+          outcome: success
+        SuspiciousDnsRequest:
+          category: [ network ]
+          type: [ start, protocol ]
+          kind: alert
+          outcome: success
+        SuspiciousEseFileWritten:
+          category: [ malware, file ]
+          type: [ creation, info ]
+          kind: alert
+          outcome: success
+        SuspiciousRegAsepUpdate:
+          category: [ malware, registry, configuration ]
+          type: [ change, info ]
+          kind: alert
+          outcome: success
+        SuspiciousUserRemoteAPCAttempt:
+          category: [ malware, process ]
+          type: [ info ]
+          kind: alert
+          outcome: success
+        SyntheticProcessRollup2:
+          category: [ process ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        SystemCapacity:
+          category: [ host ]
+          type: [ info ]
+          kind: state
+          outcome: success
+        TarFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        TelemetryCounters2:
+          category: [ host ]
+          type: [ info ]
+          kind: state
+          outcome: success
+        TelemetryNetworkConnections:
+          category: [ network ]
+          type: [ connection ]
+          kind: state
+          outcome: success
+        TelemetryStats:
+          category: [ host ]
+          type: [ info ]
+          kind: state
+          outcome: success
+        TerminateProcess:
+          category: [ process ]
+          type: [ end ]
+          kind: event
+          outcome: success
+        TokenImpersonated:
+          category: [ process, authentication ]
+          type: [ info, change ]
+          kind: event
+          outcome: success
+        UACCOMElevation:
+          category: [ process, authentication ]
+          type: [ info, change ]
+          kind: event
+          outcome: success
+        UACExeElevation:
+          category: [ process, authentication ]
+          type: [ info, change ]
+          kind: event
+          outcome: success
+        UACMSIElevation:
+          category: [ process, authentication ]
+          type: [ info, change ]
+          kind: event
+          outcome: success
+        UmppaErrorEvent:
+          category: [ package ]
+          type: [ info ]
+          kind: event
+          outcome: failure
+        UnsignedModuleLoad:
+          category: [ process ]
+          type: [ change ]
+          kind: alert
+          outcome: success
+        UpdateManifestDownloadComplete:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        UserAccountAddedToGroup:
+          category: [ configuration, iam ]
+          type: [ change, group ]
+          kind: event
+          outcome: success
+        UserAccountCreated:
+          category: [ configuration, iam ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        UserAccountDeleted:
+          category: [ configuration, iam ]
+          type: [ deletion ]
+          kind: event
+          outcome: success
+        UserExceptionDEP:
+          category: [ process, malware ]
+          type: [ info ]
+          kind: alert
+          outcome: success
+        UserFontLoad:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        UserIdentity:
+          category: [ authentication, iam ]
+          type: [ info, user ]
+          kind: event
+          outcome: success
+        UserLogoff:
+          category: [ authentication ]
+          type: [ end ]
+          kind: event
+          outcome: success
+        UserLogon:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        UserLogonFailed:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: failure
+        UserLogonFailed2:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: failure
+        VolumeSnapshotCreated:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        VolumeSnapshotDeleted:
+          category: [ file ]
+          type: [ deletion ]
+          kind: event
+          outcome: success
+        WfpFilterTamperingFilterAdded:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        WfpFilterTamperingFilterDeleted:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        WmiCreateProcess:
+          category: [ process ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        WmiFilterConsumerBindingEtw:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        WmiProviderRegistrationEtw:
+          category: [ configuration ]
+          type: [ change ]
+          kind: event
+          outcome: success
+        WroteExeAndGeneratedServiceEvent:
+          category: [ process ]
+          type: [ access ]
+          kind: alert
+          outcome: success
+        XarFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
+        ZipFileWritten:
+          category: [ file ]
+          type: [ creation ]
+          kind: event
+          outcome: success
       source: |-
-        def c = [
-          "AcUninstallConfirmation":["category":["package"],"type":["deletion"],"kind":"state","outcome":"success"],
-          "AcUnloadConfirmation":["category":["package"],"type":["deletion"],"kind":"state","outcome":"success"],
-          "AgentConnect":["category":["network","session"],"type":["connection","info"],"kind":"event","outcome":"success"],
-          "AgentOnline":["category":["configuration","package","host"],"type":["change","installation","start"],"kind":"state","outcome":"success"],
-          "AmsiRegistrationStatus":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
-          "AsepFileChange":["category":["file"],"type":["creation","change"],"kind":"event","outcome":"success"],
-          "AsepKeyUpdate":["category":["registry"],"type":["change"],"kind":"event","outcome":"success"],
-          "AsepValueUpdate":["category":["registry"],"type":["change"],"kind":"event","outcome":"success"],
-          "AssociateIndicator":["category":["malware"],"type":["info"],"kind":"alert","outcome":"unknown"],
-          "AssociateTreeIdWithRoot":["category":["malware"],"type":["info"],"kind":"alert","outcome":"success"],          
-          "BITSJobCreated":["category":["network","file"],"type":["connection","creation"],"kind":"event","outcome":"success"],
-          "BZip2FileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "BehaviorWhitelisted":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "BrowserInjectedThread":["category":["process"],"type":["access","change"],"kind":"event","outcome":"success"],
-          "CloudAssociateTreeIdWithRoot":["category":["malware"],"type":["deletion"],"kind":"alert","outcome":"success"],
-          "CommandHistory":["category":["process"],"type":["end","info"],"kind":"event","outcome":"success"],
-          "ConfigStateUpdate":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "CrashNotification":["category":["host"],"type":["info"],"kind":"event","outcome":"failure"],
-          "CreateProcessArgs":["category":["process"],"type":["start"],"kind":"state","outcome":"success"],
-          "CreateService":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],
-          "CreateThreadNoStartImage":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
-          "CreateThreadReflectiveDll":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
-          "CriticalEnvironmentVariableChanged":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
-          "CriticalFileAccessed":["category":["file"],"type":["access"],"kind":"alert","outcome":"success"],
-          "CriticalFileModified":["category":["file"],"type":["change"],"kind":"alert","outcome":"success"],
-          "CurrentSystemTags":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
-          "CustomIOABasicProcessDetectionInfoEvent":["category":["malware"],"type":["info"],"kind":"alert","outcome":"unknown"],
-          "DCSyncAttempted":["category":["configuration","iam"],"type":["access"],"kind":"event","outcome":"unknown"],
-          "DcOffline":["category":["iam"],"type":["info"],"kind":"event","outcome":"success"],
-          "DcOnline":["category":["iam"],"type":["info"],"kind":"event","outcome":"success"],
-          "DcStatus":["category":["iam"],"type":["info"],"kind":"state","outcome":"success"],
-          "DetectAnalysis":["category":["malware"],"type":["info"],"kind":"alert","outcome":"success"],
-          "DetectionExcluded":["category":["configuration","malware"],"type":["change","info"],"kind":"alert","outcome":"success"],
-          "DirectoryCreate":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "DllInjection":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
-          "DmpFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "DnsRequest":["category":["network"],"type":["protocol"],"kind":"event","outcome":"success"],
-          "DocumentProgramInjectedThread":["category":["process"],"type":["access","change"],"kind":"event","outcome":"success"],
-          "DriverLoad":["category":["driver"],"type":["start"],"kind":"event","outcome":"success"],
-          "DwgFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "EarlyExploitPivotDetect":["category":["malware"],"type":["info"],"kind":"event","outcome":"unknown"],
-          "EndOfProcess":["category":["process"],"type":["end"],"kind":"event","outcome":"success"],
-          "ErrorEvent":["category":["package"],"type":["info"],"kind":"alert","outcome":"failure"],
-          "EtwErrorEvent":["category":["package","host"],"type":["info"],"kind":"event","outcome":"failure"],
-          "ExecutableDeleted":["category":["file"],"type":["deletion"],"kind":"event","outcome":"success"],
-          "FalconHostRegTamperingInfo":["category":["registry"],"type":["change"],"kind":"alert","outcome":"unknown"],
-          "FalconServiceStatus":["category":["package"],"type":["info"],"kind":"state","outcome":"unknown"],
-          "FileCreateInfo":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "FileDeleteInfo":["category":["file"],"type":["deletion"],"kind":"event","outcome":"success"],
-          "FileDetectInfo":["category":["file"],"type":["info"],"kind":"alert","outcome":"unknown"],
-          "FileInfo":["category":["file"],"type":["info"],"kind":"event","outcome":"unknown"],
-          "FileOpenInfo":["category":["file"],"type":["access"],"kind":"event","outcome":"success"],
-          "FileRenameInfo":["category":["file"],"type":["change"],"kind":"event","outcome":"success"],
-          "FileSystemOperationBlocked":["category":["file"],"type":["change","deletion"],"kind":"event","outcome":"failure"],
-          "FileSystemOperationDetectInfo":["category":["file"],"type":["change","deletion"],"kind":"alert","outcome":"unknown"],
-          "FileTimestampsModified":["category":["file"],"type":["change"],"kind":"event","outcome":"success"],
-          "FirewallChangeOption":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
-          "FirewallDeleteRule":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "FirewallDeleteRuleIP4":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "FirewallDeleteRuleIP6":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "FirewallDisabled":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
-          "FirewallEnabled":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
-          "FirewallSetRule":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "FirewallSetRuleIP4":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "FirewallSetRuleIP6":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "FirmwareAnalysisErrorEvent":["category":["host"],"type":["info"],"kind":"state","outcome":"failure"],
-          "FirmwareAnalysisHardwareData":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
-          "FirmwareAnalysisStatus":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
-          "FlashThreadCreateProcess":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
-          "FsPostOpenSnapshotFile":["category":["file"],"type":["access"],"kind":"event","outcome":"success"],
-          "FsVolumeMounted":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],
-          "FsVolumeUnmounted":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],	
-          "HostInfo":["category":["host"],"type":["info"],"kind":"event","outcome":"success"],
-          "HostedServiceStarted":["category":["package"],"type":["start"],"kind":"event","outcome":"success"],
-          "HostedServiceStopped":["category":["package"],"type":["end"],"kind":"event","outcome":"success"],
-          "HostnameChanged":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],
-          "HttpRequestDetect":["category":["network","session"],"type":["connection","start"],"kind":"event","outcome":"success"],
-          "HttpVisibilityStatus":["category":["session"],"type":["info"],"kind":"state","outcome":"unknown"],
-          "IOServiceRegister":["category":["package"],"type":["change"],"kind":"event","outcome":"success"],
-          "ImageHash":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
-          "InjectedThread":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
-          "InjectedThreadFromUnsignedModule":["category":["process"],"type":["change"],"kind":"alert","outcome":"success"],
-          "InstallBundleDownloadComplete":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "InstallServiceDownloadComplete":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "InstalledApplication":["category":["package"],"type":["installation"],"kind":"event","outcome":"success"],
-          "InstalledUpdates":["category":["host","package"],"type":["change","installation"],"kind":"event","outcome":"success"],
-          "InstanceMetadata":["category":["host"],"type":["info"],"kind":"state","outcome":"unknown"],
-          "IoSessionConnected":["category":["session"],"type":["start"],"kind":"event","outcome":"success"],
-          "IoSessionLoggedOn":["category":["session"],"type":["end"],"kind":"event","outcome":"success"],
-          "JarFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "JavaClassFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "JavaInjectedThread":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
-          "KernelModeLoadImage":["category":["driver"],"type":["start"],"kind":"event","outcome":"success"],
-          "KextLoad":["category":["driver"],"type":["start"],"kind":"event","outcome":"success"],
-          "KextUnload":["category":["driver"],"type":["end"],"kind":"event","outcome":"success"],
-          "LFODownloadConfirmation":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "LfoUploadDataComplete":["category":["file"],"type":["change"],"kind":"event","outcome":"success"],
-          "LfoUploadDataFailed":["category":["file"],"type":["change"],"kind":"event","outcome":"failure"],
-          "LfoUploadDataUnneeded":["category":["file"],"type":["change"],"kind":"event","outcome":"failure"],			
-          "LocalIpAddressIP4":["category":["configuration","host"],"type":["change"],"kind":"state","outcome":"success"],
-          "LocalIpAddressIP6":["category":["configuration","host"],"type":["change"],"kind":"state","outcome":"success"],
-          "LocalIpAddressRemovedIP4":["category":["configuration","host"],"type":["change"],"kind":"state","outcome":"success"],
-          "LocalIpAddressRemovedIP6":["category":["configuration","host"],"type":["change"],"kind":"state","outcome":"success"],
-          "LsassHandleFromUnsignedModule":["category":["process"],"type":["change"],"kind":"alert","outcome":"unknown"],
-          "MachOFileWritten":["category":["file"],"type":["change"],"kind":"event","outcome":"success"],
-          "ManifestDownloadComplete":["category":["configuration","file"],"type":["change","creation"],"kind":"event","outcome":"success"],
-          "ModifyServiceBinary":["category":["file"],"type":["change"],"kind":"alert","outcome":"unknown"],
-          "ModuleBlockedEvent":["category":["process","malware"],"type":["info","denied"],"kind":"alert","outcome":"success"],
-          "ModuleBlockedEventWithPatternId":["category":["process","malware"],"type":["info"],"kind":"event","outcome":"unknown"],
-          "ModuleDetectInfo":["category":["process","malware"],"type":["info"],"kind":"event","outcome":"unknown"],
-          "NeighborListIP4":["category":["host","network"],"type":["info"],"kind":"state","outcome":"unknown"],
-          "NeighborListIP6":["category":["host","network"],"type":["info"],"kind":"state","outcome":"unknown"],
-          "NetShareAdd":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],
-          "NetShareDelete":["category":["host"],"type":["change"],"kind":"event","outcome":"success"],
-          "NetShareSecurityModify":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "NetworkCloseIP4":["category":["network"],"type":["end","connection"],"kind":"event","outcome":"unknown"],
-          "NetworkCloseIP6":["category":["network"],"type":["end","connection"],"kind":"event","outcome":"unknown"],
-          "NetworkConnectIP4":["category":["network"],"type":["start","connection"],"kind":"event","outcome":"unknown"],
-          "NetworkConnectIP6":["category":["network"],"type":["start","connection"],"kind":"event","outcome":"unknown"],
-          "NetworkListenIP4":["category":["network"],"type":["start"],"kind":"event","outcome":"success"],
-          "NetworkListenIP6":["category":["network"],"type":["start"],"kind":"event","outcome":"success"],
-          "NetworkReceiveAcceptIP4":["category":["network"],"type":["allowed","access","connection"],"kind":"event","outcome":"unknown"],
-          "NetworkReceiveAcceptIP6":["category":["network"],"type":["allowed","access","connection"],"kind":"event","outcome":"unknown"],
-          "NewExecutableRenamed":["category":["file"],"type":["change"],"kind":"event","outcome":"success"],
-          "NewExecutableWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "NewScriptWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "OciContainerTelemetry":["category":["host"],"type":["info"],"kind":"state","outcome":"unknown"],
-          "OleFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "OoxmlFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "OsVersionInfo":["category":["host"],"type":["info"],"kind":"event","outcome":"success"],			
-          "PackedExecutableWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "PdfFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "PeFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "PeVersionInfo":["category":["file"],"type":["info"],"kind":"event","outcome":"success"],
-          "PrivilegedProcessHandleFromUnsignedModule":["category":["process"],"type":["access"],"kind":"alert","outcome":"success"],
-          "ProcessBlocked":["category":["process"],"type":["access"],"kind":"alert","outcome":"failure"],
-          "ProcessExecOnPackedExecutable":["category":["process","file"],"type":["access"],"kind":"alert","outcome":"success"],
-          "ProcessExecOnSMBFile":["category":["process","file","network"],"type":["access"],"kind":"alert","outcome":"success"],
-          "ProcessHandleOpDetectInfo":["category":["process","malware"],"type":["info"],"kind":"alert","outcome":"success"],
-          "ProcessInjection":["category":["process"],"type":["change"],"kind":"event","outcome":"success"],
-          "ProcessRollup2":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
-          "ProcessRollup2Stats":["category":["process"],"type":["info"],"kind":"state","outcome":"unknown"],
-          "ProcessSelfDeleted":["category":["process"],"type":["end"],"kind":"event","outcome":"success"],
-          "PromiscuousBindIP4":["category":["host"],"type":["change"],"kind":"state","outcome":"success"],
-          "PtyCreated":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "QuarantineActionResult":["category":["file"],"type":["info"],"kind":"alert","outcome":"unknown"],
-          "QuarantinedFile":["category":["file"],"type":["change"],"kind":"alert","outcome":"unknown"],
-          "QuarantinedFileState":["category":["file"],"type":["info"],"kind":"alert","outcome":"unknown"],
-          "QueueApcEtw":["category":["file"],"type":["creation"],"kind":"alert","outcome":"success"],
-          "RansomwareCreateFile":["category":["file"],"type":["creation"],"kind":"alert","outcome":"success"],
-          "RansomwareFileAccessPattern":["category":["file"],"type":["access"],"kind":"alert","outcome":"success"],
-          "RansomwareOpenFile":["category":["file"],"type":["access"],"kind":"alert","outcome":"success"],
-          "RarFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "RawBindIP4":["category":["network"],"type":["start","connection"],"kind":"event","outcome":"success"],
-          "RawBindIP6":["category":["network"],"type":["start","connection"],"kind":"event","outcome":"success"],
-          "ReflectiveDllOpenProcess":["category":["process"],"type":["access"],"kind":"alert","outcome":"success"],
-          "RegGenericValueUpdate":["category":["registry"],"type":["change"],"kind":"event","outcome":"success"],
-          "RegSystemConfigValueUpdate":["category":["registry","host","configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "RegisterRawInputDevicesEtw":["category":["host","configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "RegistryOperationDetectInfo":["category":["malware","registry"],"type":["info"],"kind":"alert","outcome":"success"],
-          "RemoteBruteForceDetectInfo":["category":["malware","authentication"],"type":["info"],"kind":"alert","outcome":"success"],	
-          "RemovableDiskModuleLoadAttempt":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
-          "RemovableMediaVolumeMounted":["category":["configuration","host"],"type":["change"],"kind":"event","outcome":"success"],
-          "RtfFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "SAMHashDumpFromUnsignedModule":["category":["registry","file"],"type":["access","creation"],"kind":"alert","outcome":"success"],
-          "ScheduledTaskDeleted":["category":["configuration"],"type":["deletion"],"kind":"event","outcome":"success"],
-          "ScheduledTaskModified":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "ScheduledTaskRegistered":["category":["configuration"],"type":["creation"],"kind":"event","outcome":"success"],
-          "ScreenshotTakenEtw":["category":["process"],"type":["access"],"kind":"event","outcome":"success"],
-          "ScriptControlBlocked":["category":["malware","file"],"type":["info"],"kind":"alert","outcome":"success"],
-          "ScriptControlDetectInfo":["category":["malware","file"],"type":["info"],"kind":"alert","outcome":"success"],
-          "ScriptControlErrorEvent":["category":["malware","file"],"type":["info"],"kind":"alert","outcome":"failure"],
-          "ScriptControlScanInfo":["category":["malware","file"],"type":["info"],"kind":"state","outcome":"success"],
-          "ScriptControlScanTelemetry":["category":["malware","file"],"type":["info"],"kind":"state","outcome":"success"],
-          "SensitiveWmiQuery":["category":["malware","process"],"type":["info"],"kind":"alert","outcome":"success"],
-          "SensorHeartbeat":["category":["package"],"type":["info"],"kind":"event","outcome":"success"],
-          "ServiceStarted":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
-          "SetWinEventHookEtw":["category":["host","configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "SevenZipFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "SignInfoError":["category":["file"],"type":["info"],"kind":"state","outcome":"failure"],
-          "SignInfoWithCertAndContext":["category":["file"],"type":["info"],"kind":"state","outcome":"unknown"],
-          "SignInfoWithContext":["category":["file"],"type":["info"],"kind":"state","outcome":"unknown"],
-          "SmbClientNamedPipeConnectEtw":["category":["network"],"type":["connection"],"kind":"event","outcome":"success"],
-          "SmbClientShareClosedEtw":["category":["network"],"type":["connection","end"],"kind":"event","outcome":"success"],
-          "SmbClientShareOpenedEtw":["category":["network"],"type":["connection","start"],"kind":"event","outcome":"success"],
-          "SmbServerShareOpenedEtw":["category":["network"],"type":["connection","start"],"kind":"event","outcome":"success"],
-          "SmbServerV1AuditEtw":["category":["network"],"type":["connection"],"kind":"state","outcome":"unknown"],
-          "SnapshotVolumeMounted":["category":["host","configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "SuspiciousCreateSymbolicLink":["category":["malware","file"],"type":["creation","info"],"kind":"alert","outcome":"success"],
-          "SuspiciousDnsRequest":["category":["network"],"type":["start","protocol"],"kind":"alert","outcome":"success"],
-          "SuspiciousEseFileWritten":["category":["malware","file"],"type":["creation","info"],"kind":"alert","outcome":"success"],
-          "SuspiciousRegAsepUpdate":["category":["malware","registry","configuration"],"type":["change","info"],"kind":"alert","outcome":"success"],
-          "SuspiciousUserRemoteAPCAttempt":["category":["malware","process"],"type":["info"],"kind":"alert","outcome":"success"],
-          "SyntheticProcessRollup2":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
-          "SystemCapacity":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
-          "TarFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "TelemetryCounters2":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
-          "TelemetryNetworkConnections":["category":["network"],"type":["connection"],"kind":"state","outcome":"success"],
-          "TelemetryStats":["category":["host"],"type":["info"],"kind":"state","outcome":"success"],
-          "TerminateProcess":["category":["process"],"type":["end"],"kind":"event","outcome":"success"],
-          "TokenImpersonated":["category":["process","authentication"],"type":["info","change"],"kind":"event","outcome":"success"],
-          "UACCOMElevation":["category":["process","authentication"],"type":["info","change"],"kind":"event","outcome":"success"],
-          "UACExeElevation":["category":["process","authentication"],"type":["info","change"],"kind":"event","outcome":"success"],
-          "UACMSIElevation":["category":["process","authentication"],"type":["info","change"],"kind":"event","outcome":"success"],
-          "UmppaErrorEvent":["category":["package"],"type":["info"],"kind":"event","outcome":"failure"],
-          "UnsignedModuleLoad":["category":["process"],"type":["change"],"kind":"alert","outcome":"success"],
-          "UpdateManifestDownloadComplete":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "UserAccountAddedToGroup":["category":["configuration","iam"],"type":["change","group"],"kind":"event","outcome":"success"],
-          "UserAccountCreated":["category":["configuration","iam"],"type":["creation"],"kind":"event","outcome":"success"],
-          "UserAccountDeleted":["category":["configuration","iam"],"type":["deletion"],"kind":"event","outcome":"success"],
-          "UserExceptionDEP":["category":["process","malware"],"type":["info"],"kind":"alert","outcome":"success"],
-          "UserFontLoad":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "UserIdentity":["category":["authentication","iam"],"type":["info","user"],"kind":"event","outcome":"success"],
-          "UserLogoff":["category":["authentication"],"type":["end"],"kind":"event","outcome":"success"],
-          "UserLogon":["category":["authentication"],"type":["start"],"kind":"event","outcome":"success"],
-          "UserLogonFailed":["category":["authentication"],"type":["start"],"kind":"event","outcome":"failure"],
-          "UserLogonFailed2":["category":["authentication"],"type":["start"],"kind":"event","outcome":"failure"],
-          "VolumeSnapshotCreated":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "VolumeSnapshotDeleted":["category":["file"],"type":["deletion"],"kind":"event","outcome":"success"],
-          "WfpFilterTamperingFilterAdded":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "WfpFilterTamperingFilterDeleted":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "WmiCreateProcess":["category":["process"],"type":["start"],"kind":"event","outcome":"success"],
-          "WmiFilterConsumerBindingEtw":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "WmiProviderRegistrationEtw":["category":["configuration"],"type":["change"],"kind":"event","outcome":"success"],
-          "WroteExeAndGeneratedServiceEvent":["category":["process"],"type":["access"],"kind":"alert","outcome":"success"],
-          "XarFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"],
-          "ZipFileWritten":["category":["file"],"type":["creation"],"kind":"event","outcome":"success"]
-        ];
-
-        def v = c.get(ctx?.crowdstrike?.event_simpleName);
-        if (v != null) {
-          for (def entry : v.entrySet()) {
-            ctx.event[entry.getKey().toString()] = entry.getValue();
-          }
+        def m = params.get(ctx.crowdstrike?.event_simpleName);
+        if (m != null) {
+          m.forEach((k, v) -> {
+            if (v instanceof List) {
+              ctx.event[k] = new ArrayList(v);
+            } else {
+              ctx.event[k] = v;
+            }
+          });
         }
 
   ## Event fields.
@@ -305,6 +1216,7 @@ processors:
 
 ## Prepare data.
   - script:
+      tag: convert-count-fields-to-long
       description: Convert all count fields to number.
       lang: painless
       source: |-
@@ -318,6 +1230,7 @@ processors:
           }
         }
   - script:
+      tag: remove-empty-hashes
       description: Remove all 0's hashes.
       lang: painless
       params:
@@ -395,14 +1308,14 @@ processors:
       value: agent
   - append:
       field: related.ip
-      value: "{{observer.ip}}"
+      value: "{{{observer.ip}}}"
       allow_duplicates: false
-      if: ctx?.observer?.ip != null && ctx.observer.ip != ""
+      if: ctx.observer?.ip != null && ctx.observer.ip != ""
   - append:
       field: related.hosts
-      value: "{{observer.ip}}"
+      value: "{{{observer.ip}}}"
       allow_duplicates: false
-      if: ctx?.observer?.ip != null && ctx.observer.ip != ""
+      if: ctx.observer?.ip != null && ctx.observer.ip != ""
   
   ## Host fields.
   - rename:
@@ -417,7 +1330,7 @@ processors:
       ignore_failure: true
   - append:
       field: related.hosts
-      value: "{{host.name}}"
+      value: "{{{host.name}}}"
       allow_duplicates: false
       if: ctx.host?.name != null
   - rename:
@@ -494,15 +1407,15 @@ processors:
   - set:
       field: os.type
       value: linux
-      if: ctx?.crowdstrike?.event_platform != null && ctx?.crowdstrike?.event_platform == "Lin"
+      if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Lin"
   - set:
       field: os.type
       value: macos
-      if: ctx?.crowdstrike?.event_platform != null && ctx?.crowdstrike?.event_platform == "Mac"
+      if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Mac"
   - set:
       field: os.type
       value: windows
-      if: ctx?.crowdstrike?.event_platform != null && ctx?.crowdstrike?.event_platform == "Win"
+      if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Win"
   - rename:
       field: crowdstrike.OSVersionString
       target_field: os.version
@@ -520,9 +1433,10 @@ processors:
       target_field: process.command_line
       ignore_missing: true
   - script:
+      tag: split-command-line
       description: Implements Windows-like SplitCommandLine
       lang: painless
-      if: ctx?.process?.command_line != null && ctx.process.command_line != "" && ctx?.os?.type != null
+      if: ctx.process?.command_line != null && ctx.process.command_line != "" && ctx.os?.type != null
       source: |-
         // appendBSBytes appends n '\\' bytes to b and returns the resulting slice.
         def appendBSBytes(StringBuilder b, int n) {
@@ -611,38 +1525,39 @@ processors:
       target_field: process.exit_code
       ignore_missing: true
   - script:
+      tag: process-uptime
       lang: painless
       description: Calculate process.uptime
       source: |-
-        def d1 = Float.parseFloat(ctx?.crowdstrike?.ProcessStartTime);
-        def d2 = Float.parseFloat(ctx?.crowdstrike?.ProcessEndTime);
-        if (ctx?.process == null) {
+        def d1 = Float.parseFloat(ctx.crowdstrike?.ProcessStartTime);
+        def d2 = Float.parseFloat(ctx.crowdstrike?.ProcessEndTime);
+        if (ctx.process == null) {
           ctx.process = [];
         }
         ctx.process.uptime = (long) ((d2-d1)/1000);
-      if: ctx?.crowdstrike?.ProcessStartTime != null && ctx?.crowdstrike?.ProcessStartTime != "" && ctx?.crowdstrike?.ProcessEndTime != null && ctx?.crowdstrike?.ProcessEndTime != ""
+      if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != "" && ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
   - date:
       field: crowdstrike.ProcessStartTime
       target_field: crowdstrike.ProcessStartTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.ProcessStartTime != null && ctx?.crowdstrike?.ProcessStartTime != ""
+      if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != ""
   - rename:
       field: crowdstrike.ProcessStartTime
       target_field: process.start
       ignore_missing: true
-      if: ctx?.crowdstrike?.ProcessStartTime != ""
+      if: ctx.crowdstrike?.ProcessStartTime != ""
   - date:
       field: crowdstrike.ProcessEndTime
       target_field: crowdstrike.ProcessEndTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.ProcessEndTime != null && ctx?.crowdstrike?.ProcessEndTime != ""
+      if: ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
   - rename:
       field: crowdstrike.ProcessEndTime
       target_field: process.end
       ignore_missing: true
-      if: ctx?.crowdstrike?.ProcessEndTime != ""
+      if: ctx.crowdstrike?.ProcessEndTime != ""
   - convert:
       field: crowdstrike.RawProcessId
       type: long
@@ -676,18 +1591,18 @@ processors:
       target_field: process.entity_id
       ignore_missing: true
       ignore_failure: true
-      if: ctx?.process?.entity_id == null
+      if: ctx.process?.entity_id == null
   - convert:
       field: crowdstrike.ContextThreadId
       type: long
       ignore_missing: true
-      if: ctx?.process?.thread?.id == null
+      if: ctx.process?.thread?.id == null
   - rename:
       field: crowdstrike.ContextThreadId
       target_field: process.thread.id
       ignore_missing: true
       ignore_failure: true
-      if: ctx?.process?.thread?.id == null
+      if: ctx.process?.thread?.id == null
   - convert:
       field: crowdstrike.EtwRawProcessId
       type: long
@@ -696,7 +1611,7 @@ processors:
       field: crowdstrike.EtwRawProcessId
       target_field: process.pid
       ignore_missing: true
-      if: ctx?.process?.pid == null
+      if: ctx.process?.pid == null
   - convert:
       field: crowdstrike.EtwRawThreadId
       type: long
@@ -705,7 +1620,7 @@ processors:
       field: crowdstrike.EtwRawThreadId
       target_field: process.thread.id
       ignore_missing: true
-      if: ctx?.process?.thread?.id == null
+      if: ctx.process?.thread?.id == null
   - rename:
       field: crowdstrike.ServiceDisplayName
       target_field: process.title
@@ -713,7 +1628,7 @@ processors:
   - rename:
       field: _temp.hashes
       target_field: process.hash
-      if: ctx?.event?.action != null && (ctx.event.action.contains("Process") || ctx.event.action.contains("Service")) && ctx?._temp?.hashes != null && ctx?._temp?.hashes.size() > 0
+      if: ctx.event?.action != null && (ctx.event.action.contains("Process") || ctx.event.action.contains("Service")) && ctx._temp?.hashes != null && ctx._temp?.hashes.size() > 0
 
   ## User fields.
   - rename:
@@ -728,11 +1643,11 @@ processors:
       field: crowdstrike.UserSid
       target_field: user.id
       ignore_missing: true
-      if: ctx?.user?.id == null || ctx.user.id == ""
+      if: ctx.user?.id == null || ctx.user.id == ""
   - append:
       field: user.roles
       value: admin
-      if: ctx?.crowdstrike?.UserIsAdmin == "1"
+      if: ctx.crowdstrike?.UserIsAdmin == "1"
   - rename:
       field: crowdstrike.UserName
       target_field: user.name
@@ -741,35 +1656,35 @@ processors:
       field: crowdstrike.UserPrincipal
       target_field: "_temp.user_parts"
       separator: '@'
-      if: ctx?.crowdstrike?.UserPrincipal != null
+      if: ctx.crowdstrike?.UserPrincipal != null
   - rename:
       field: crowdstrike.UserPrincipal
       target_field: user.email
       ignore_missing: true
   - set:
       field: user.domain
-      value: "{{_temp.user_parts.1}}"
+      value: "{{{_temp.user_parts.1}}}"
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx?._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - set:
       field: user.full_name
-      value: "{{_temp.user_parts.0}}"
+      value: "{{{_temp.user_parts.0}}}"
       ignore_failure: true
       ignore_empty_value: true
-      if: ctx?._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+      if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
   - append:
       field: related.user
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       ignore_failure: true
       allow_duplicates: false
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
   - append:
       field: related.user
-      value: "{{user.full_name}}"
+      value: "{{{user.full_name}}}"
       ignore_failure: true
       allow_duplicates: false
-      if: ctx?.user?.full_name != null
+      if: ctx.user?.full_name != null
 
   ## Networking fields.
   - convert:
@@ -833,9 +1748,10 @@ processors:
       target_field: network.iana_number
       ignore_missing: true
   - script:
+      tag: network-transport-lookup
       lang: painless
       ignore_failure: true
-      if: ctx?.network?.iana_number != null
+      if: ctx.network?.iana_number != null
       source: |
         def iana_number = ctx.network.iana_number;
         if (iana_number == '0') {
@@ -864,38 +1780,38 @@ processors:
   - set:
       field: network.direction
       value: outbound
-      if: ctx?.crowdstrike?.ConnectionDirection == "0"
+      if: ctx.crowdstrike?.ConnectionDirection == "0"
   - set:
       field: network.direction
       value: inbound
-      if: ctx?.crowdstrike?.ConnectionDirection == "1"
+      if: ctx.crowdstrike?.ConnectionDirection == "1"
   - set:
       field: network.direction
       value: unknown
-      if: ctx?.network?.direction == null && ctx?.crowdstrike?.ConnectionDirection != null && ctx.crowdstrike.ConnectionDirection != ""
+      if: ctx.network?.direction == null && ctx.crowdstrike?.ConnectionDirection != null && ctx.crowdstrike.ConnectionDirection != ""
   - community_id:
       ignore_missing: true
       ignore_failure: true
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
-      if: ctx?.source?.ip != null && ctx.source.ip != ""
+      if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       allow_duplicates: false
-      if: ctx?.destination?.ip != null && ctx.destination.ip != ""
+      if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - append:
       field: related.hosts
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
-      if: ctx?.source?.ip != null && ctx.source.ip != ""
+      if: ctx.source?.ip != null && ctx.source.ip != ""
   - append:
       field: related.hosts
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       allow_duplicates: false
-      if: ctx?.destination?.ip != null && ctx.destination.ip != ""
+      if: ctx.destination?.ip != null && ctx.destination.ip != ""
   - rename:
       field: crowdstrike.PhysicalAddress
       target_field: source.mac
@@ -924,15 +1840,15 @@ processors:
   - set:
       field: url.scheme
       value: https
-      if: ctx?.crowdstrike?.DownloadPort == 443
+      if: ctx.crowdstrike?.DownloadPort == 443
   - set:
       field: url.scheme
       value: http
-      if: ctx?.crowdstrike?.DownloadPort != 443
+      if: ctx.crowdstrike?.DownloadPort != 443
   - set:
       field: url.full
-      value: "{{url.scheme}}://{{server.address}}{{url.path}}"
-      if: ctx?.url?.scheme != null && ctx?.server?.address != null && ctx?.url?.path != null
+      value: "{{{url.scheme}}}://{{{server.address}}}{{{url.path}}}"
+      if: ctx.url?.scheme != null && ctx.server?.address != null && ctx.url?.path != null
   - uri_parts:
       field: url.full
       ignore_failure: true
@@ -995,32 +1911,72 @@ processors:
   - set:
       field: dns.type
       value: query
-      if: ctx?.event?.action == "DnsRequest"
+      if: ctx.event?.action == "DnsRequest"
   - registered_domain:
       field: crowdstrike.DomainName
       target_field: dns.question
       ignore_missing: true
-      if: ctx?.event?.action == "DnsRequest"
+      if: ctx.event?.action == "DnsRequest"
   - rename:
       field: dns.question.domain
       target_field: dns.question.name
       ignore_missing: true
-      if: ctx?.event?.action == "DnsRequest"
+      if: ctx.event?.action == "DnsRequest"
   - script:
+      tag: dns-request-type-to-name
       description: Map decimal DNS request type to its name.
       lang: painless
+      params:
+        "1": A
+        "2": NS
+        "5": CNAME
+        "6": SOA
+        "12": PTR
+        "13": HINFO
+        "15": MX
+        "16": TXT
+        "17": RP
+        "18": AFSDB
+        "24": SIG
+        "25": KEY
+        "28": AAAA
+        "29": LOC
+        "33": SRV
+        "35": NAPTR
+        "36": KX
+        "37": CERT
+        "39": DNAME
+        "42": APL
+        "43": DS
+        "44": SSHFP
+        "45": IPSECKEY
+        "46": RRSIG
+        "47": NSEC
+        "48": DNSKEY
+        "49": DHCID
+        "50": NSEC3
+        "51": NSEC3PARAM
+        "52": TLSA
+        "53": SMIMEA
+        "55": HIP
+        "59": CDS
+        "60": CDNSKEY
+        "61": OPENPGPKEY
+        "62": CSYNC
+        "63": ZONEMD
+        "64": SVCB
+        "65": HTTPS
+        "108": EUI48
+        "109": EUI64
+        "249": TKEY
+        "250": TSIG
+        "256": URI
+        "257": CAA
+        "32768": TA
+        "32769": DLV
+      if: ctx.event?.action == "DnsRequest" && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty()
       source: |-
-        def conversions = ["1": "A", "2": "NS", "5": "CNAME", "6": "SOA", "12": "PTR",
-        "13": "HINFO", "15": "MX", "16": "TXT", "17": "RP",
-        "18": "AFSDB", "24": "SIG", "25": "KEY", "28": "AAAA", "29": "LOC",
-        "33": "SRV", "35": "NAPTR", "36": "KX", "37": "CERT", "39": "DNAME",
-        "42": "APL", "43": "DS", "44": "SSHFP", "45": "IPSECKEY",
-        "46": "RRSIG", "47": "NSEC", "48": "DNSKEY", "49": "DHCID", "50": "NSEC3",
-        "51": "NSEC3PARAM", "52": "TLSA", "53": "SMIMEA", "55": "HIP", "59": "CDS",
-        "60": "CDNSKEY", "61": "OPENPGPKEY", "62": "CSYNC", "63": "ZONEMD",
-        "64": "SVCB", "65": "HTTPS", "108": "EUI48", "109": "EUI64", "249": "TKEY",
-        "250": "TSIG", "256": "URI", "257": "CAA", "32768": "TA", "32769": "DLV"];
-        def t = conversions[ctx.crowdstrike.RequestType];
+        def t = params[ctx.crowdstrike.RequestType];
         if (t != null) {
           if (ctx.dns?.question == null) {
             ctx.dns.question = new HashMap();
@@ -1028,7 +1984,6 @@ processors:
           ctx.dns.question.type = t;
           ctx.crowdstrike.remove("RequestType");
         }
-      if: ctx?.event?.action == "DnsRequest" && ctx?.crowdstrike?.RequestType != null && ctx.crowdstrike.RequestType != ""
 
   ## File fields.
   - convert:
@@ -1066,9 +2021,10 @@ processors:
       value: dir
       if: ctx.file?.path != null && (ctx.event.action.contains("Directory") || ctx.file.path.endsWith("\\") || ctx.file.path.endsWith("/"))
   - script:
+      tag: parse-file-path
       description: Adds file information.
       lang: painless
-      if: ctx?.file?.path != null && ctx.file.path.length() > 1
+      if: ctx.file?.path != null && ctx.file.path.length() > 1
       source: |-
         def removeSuffix(String s, String suffix) {
           if (s != null && suffix != null && s.endsWith(suffix)) {
@@ -1084,7 +2040,7 @@ processors:
           idx = path.lastIndexOf("/");
         }
         if (idx > -1) {
-            if (ctx?.file == null) {
+            if (ctx.file == null) {
                 ctx.file = new HashMap();
             }
             ctx.file.name = path.substring(idx+1);
@@ -1101,7 +2057,7 @@ processors:
   - rename:
       field: _temp.hashes
       target_field: file.hash
-      if: ctx?.event?.action != null && (ctx.event.action.contains("File") || ctx.event.action.contains("Directory") || ctx.event.action.contains("Executable")) && ctx?._temp?.hashes != null && ctx?._temp?.hashes.size() > 0
+      if: ctx.event?.action != null && (ctx.event.action.contains("File") || ctx.event.action.contains("Directory") || ctx.event.action.contains("Executable")) && ctx._temp?.hashes != null && ctx._temp?.hashes.size() > 0
 
   ## Crowdstrike fields.
   - split:
@@ -1138,10 +2094,10 @@ processors:
       ignore_missing: true
   - append:
       field: related.hash
-      value: "{{crowdstrike.ConfigStateHash}}"
+      value: "{{{crowdstrike.ConfigStateHash}}}"
       ignore_failure: true
       allow_duplicates: false
-      if: ctx?.crowdstrike?.ConfigStateHash != null && ctx.crowdstrike.ConfigStateHash != ""
+      if: ctx.crowdstrike?.ConfigStateHash != null && ctx.crowdstrike.ConfigStateHash != ""
   - trim:
       field: crowdstrike.BootArgs
       ignore_missing: true
@@ -1154,50 +2110,50 @@ processors:
       target_field: crowdstrike.LogonTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.LogonTime != null && ctx?.crowdstrike?.LogonTime != ""
+      if: ctx.crowdstrike?.LogonTime != null && ctx.crowdstrike?.LogonTime != ""
   - date:
       field: crowdstrike.LogoffTime
       target_field: crowdstrike.LogoffTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.LogoffTime != null && ctx?.crowdstrike?.LogoffTime != ""
+      if: ctx.crowdstrike?.LogoffTime != null && ctx.crowdstrike?.LogoffTime != ""
   - date:
       field: crowdstrike.ConnectTime
       target_field: crowdstrike.ConnectTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.ConnectTime != null && ctx?.crowdstrike?.ConnectTime != ""
+      if: ctx.crowdstrike?.ConnectTime != null && ctx.crowdstrike?.ConnectTime != ""
   - date:
       field: crowdstrike.PreviousConnectTime
       target_field: crowdstrike.PreviousConnectTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.PreviousConnectTime != null && ctx?.crowdstrike?.PreviousConnectTime != ""
+      if: ctx.crowdstrike?.PreviousConnectTime != null && ctx.crowdstrike?.PreviousConnectTime != ""
   - date:
       field: crowdstrike.AgentLocalTime
       target_field: crowdstrike.AgentLocalTime
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.AgentLocalTime != null && ctx?.crowdstrike?.AgentLocalTime != ""
+      if: ctx.crowdstrike?.AgentLocalTime != null && ctx.crowdstrike?.AgentLocalTime != ""
   - date:
       field: crowdstrike.FirstSeen
       target_field: crowdstrike.FirstSeen
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.FirstSeen != null && ctx?.crowdstrike?.FirstSeen != ""
+      if: ctx.crowdstrike?.FirstSeen != null && ctx.crowdstrike?.FirstSeen != ""
   - date:
       field: crowdstrike.Time
       target_field: crowdstrike.Time
       formats:
         - UNIX
-      if: ctx?.crowdstrike?.Time != null && ctx?.crowdstrike?.Time != ""
+      if: ctx.crowdstrike?.Time != null && ctx.crowdstrike?.Time != ""
   - date:
       field: crowdstrike.BiosReleaseDate
       target_field: crowdstrike.BiosReleaseDate
       formats:
         - MM/dd/yyyy
         - strict_date_optional_time
-      if: ctx?.crowdstrike?.BiosReleaseDate != null && ctx?.crowdstrike?.BiosReleaseDate != ""
+      if: ctx.crowdstrike?.BiosReleaseDate != null && ctx.crowdstrike?.BiosReleaseDate != ""
   - convert:
       field: crowdstrike.AgentTimeOffset
       target_field: crowdstrike.AgentTimeOffset
@@ -1237,21 +2193,21 @@ processors:
       ignore_missing: true
   - append:
       field: related.hosts
-      value: "{{crowdstrike.LogonServer}}"
+      value: "{{{crowdstrike.LogonServer}}}"
       allow_duplicates: false
-      if: ctx?.crowdstrike?.LogonServer != null
+      if: ctx.crowdstrike?.LogonServer != null
   - append:
       field: related.hosts
-      value: "{{crowdstrike.ClientComputerName}}"
+      value: "{{{crowdstrike.ClientComputerName}}}"
       allow_duplicates: false
-      if: ctx?.crowdstrike?.ClientComputerName != null
+      if: ctx.crowdstrike?.ClientComputerName != null
 
   ## Cleanup.
   - remove:
       field: crowdstrike.event_platform
       ignore_missing: true
       ignore_failure: true
-      if: ctx?.os?.type != null
+      if: ctx.os?.type != null
   - remove:
       field:
         - _temp
@@ -1267,10 +2223,11 @@ processors:
       ignore_failure: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: remove-nulls
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -1298,4 +2255,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message {{ _ingest.on_failure_message }}"
+      value: "Processor '{{ _ingest.on_failure_processor_type }}' with tag '{{ _ingest.on_failure_processor_tag }}' failed with message {{ _ingest.on_failure_message }}"
