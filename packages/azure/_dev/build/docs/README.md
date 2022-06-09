@@ -5,8 +5,8 @@ The azure logs integration retrieves different types of log data from [Azure](ht
 There are several requirements before using the integration, since the logs will actually be read from azure event hubs:
 
    * The logs have to be exported first to the [event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled)
-   * To export activity logs to event hubs, users can follow the steps in Microsoft's [Legacy collection methods documentation]( https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export) 
-   * To export audit and sign-in logs to event hubs, users can follow the steps in Microsoft's [Stream Azure Active Directory logs to an Azure event hub tutorial]( https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub) 
+   * To export activity logs to event hubs, users can follow the steps in Microsoft's [Legacy collection methods documentation] https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export) 
+   * To export audit and sign-in logs to event hubs, users can follow the steps in Microsoft's [Stream Azure Active Directory logs to an Azure event hub tutorial](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub) 
 
 ### About the datastreams 
 
@@ -41,7 +41,7 @@ Default value: `$Default`
 
 `connection_string` :
 _string_
-The connection string required to communicate with Event Hubs. See the steps described in: [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string.)   
+The connection string required to communicate with Event Hubs. See the steps described in: [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).   
 
 A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the filebeat azure module it can start back up at the spot that it stopped processing messages.
 
