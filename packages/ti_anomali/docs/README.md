@@ -11,7 +11,7 @@ The Anomali integration supports the following datasets.
 
 Anomali Limo offers multiple sources called collections. Each collection has a specific ID, which
 then fits into the url used in this configuration. A list of different
-collections can be found using the default guest/guest credentials at [Limo Collections](https://limo.anomali.com/api/v1/taxii2/feeds/collections)
+collections can be found using the default guest/guest credentials at [Limo Collections](https://limo.anomali.com/api/v1/taxii2/feeds/collections/)
 
 An example if you want to use the feed with ID 42, the URL to configure would end up like this:
 `https://limo.anomali.com/api/v1/taxii2/feeds/collections/41/objects`
@@ -367,3 +367,4 @@ An example event for `threatstream` looks as following:
 | threat.indicator.url.port | Port of the request, such as 443. | long |
 | threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | threat.indicator.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+

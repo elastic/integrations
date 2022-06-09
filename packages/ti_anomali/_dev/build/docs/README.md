@@ -11,7 +11,7 @@ The Anomali integration supports the following datasets.
 
 Anomali Limo offers multiple sources called collections. Each collection has a specific ID, which
 then fits into the url used in this configuration. A list of different
-collections can be found using the default guest/guest credentials at [Limo Collections](https://limo.anomali.com/api/v1/taxii2/feeds/collections)
+collections can be found using the default guest/guest credentials at [Limo Collections](https://limo.anomali.com/api/v1/taxii2/feeds/collections/)
 
 An example if you want to use the feed with ID 42, the URL to configure would end up like this:
 `https://limo.anomali.com/api/v1/taxii2/feeds/collections/41/objects`
