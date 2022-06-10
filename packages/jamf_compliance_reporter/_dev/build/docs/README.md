@@ -38,43 +38,13 @@ This package has been tested for Compliance Reporter against Jamf pro version 10
 
 ## Logs
 
-### App Metrics Logs
-
-- Default port for HTTP Endpoint: _9550_  
-- Default port for TLS: _9553_
-
-### Audit Logs
+### log
 
 - Default port for HTTP Endpoint: _9551_  
-- Default port for TLS: _9554_
+- Default port for TLS: _9552_
 
-### Event Logs
+This is the `log` data stream.
 
-- Default port for HTTP Endpoint: _9552_  
-- Default port for TLS: _9555_
+{{event "log"}}
 
-## Fields and Sample Event
-
-### App Metrics Logs
-
-This is the `app_metrics` dataset.
-
-{{event "app_metrics"}}
-
-{{fields "app_metrics"}}
-
-### Audit Logs
-
-This is the `audit` dataset.
-
-{{event "audit"}}
-
-{{fields "audit"}}
-
-### Event Logs
-
-This is the `event` dataset.
-
-{{event "event"}}
-
-{{fields "event"}}
+{{fields "log"}}

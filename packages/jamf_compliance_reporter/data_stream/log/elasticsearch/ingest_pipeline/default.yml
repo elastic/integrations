@@ -1,0 +1,27 @@
+---
+description: Pipeline for Jamf Compliance Reporter logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.2.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_app_metrics" }}'
+      if: ctx.json?.header?.event_name == 'APP_METRICS'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_audit" }}'
+      if: "['AUE_ACCEPT','AUE_auth_user','AUE_BIND','AUE_CHDIR','AUE_CHROOT','AUE_CONNECT','AUE_EXECVE','AUE_EXIT','AUE_FORK','AUE_GETAUID','AUE_KILL','AUE_LISTEN','AUE_logout','AUE_lw_login','AUE_MAC_SET_PROC','AUE_MOUNT','AUE_PIDFORTASK','AUE_POSIX_SPAWN','AUE_PTRACE','AUE_remove_from_group','AUE_SESSION_CLOSE','AUE_SESSION_END','AUE_SESSION_START','AUE_SESSION_UPDATE','AUE_SETPRIORITY','AUE_SETSOCKOPT','AUE_SETTIMEOFDAY','AUE_SHUTDOWN','AUE_SOCKETPAIR','AUE_ssauthint','AUE_ssauthmech','AUE_ssauthorize','AUE_TASKFORPID','AUE_TASKNAMEFORPID','AUE_UNMOUNT','AUE_WAIT4'].contains(ctx.json?.header?.event_name)"
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_event" }}'
+      if: "['AUDIO_VIDEO_DEVICE_EVENT','AUDIT_CLASS_VERIFICATION_EVENT','COMPLIANCEREPORTER_TAMPER_EVENT','FILE_EVENT','GATEKEEPER_INFO_EVENT','GATEKEEPER_MANUAL_OVERRIDES','GATEKEEPER_QUARANTINE_LOG','HARDWARE_EVENT','LICENSE_INFO_EVENT','PREFERENCE_LIST_EVENT','PRINT_EVENT_INFORMATION','PROHIBITED_APP_BLOCKED','SIGNAL_EVENT','UNIFIED_LOG_EVENT','XPROTECT_DEFINITIONS_VERSION_INFO','XPROTECT_EVENT_LOG'].contains(ctx.json?.header?.event_name)"
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
