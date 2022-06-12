@@ -2087,6 +2087,87 @@ processors:
       target_field: file.hash
       if: ctx.event?.action != null && (ctx.event.action.contains("File") || ctx.event.action.contains("Directory") || ctx.event.action.contains("Executable")) && ctx._temp?.hashes != null && ctx._temp?.hashes.size() > 0
 
+  ## SSL fields.
+  - rename:
+      field: crowdstrike.IssuerDN
+      target_field: tls.server.issuer
+      ignore_missing: true
+  - date:
+      field: crowdstrike.SubjectCertValidTo
+      target_field: tls.server.not_after
+      formats:
+        - ISO8601
+      if: ctx.crowdstrike?.SubjectCertValidTo != null
+  - date:
+      field: crowdstrike.SubjectCertValidFrom
+      target_field: tls.server.not_before
+      formats:
+        - ISO8601
+      if: ctx.crowdstrike?.SubjectCertValidFrom != null
+  - rename:
+      field: crowdstrike.SubjectDN
+      target_field: tls.server.subject
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.SubjectCertThumbprint
+      target_field: tls.server.hash.sha1
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: "{{{tls.server.hash.sha1}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.tls?.server?.hash?.sha1 != null
+  - rename:
+      field: _temp.hashes.sha256
+      target_field: tls.server.hash.sha256
+      ignore_missing: true
+      if: ctx.tls?.server != null
+  - append:
+      field: related.hash
+      value: "{{{tls.server.hash.sha256}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.tls?.server?.hash?.sha256 != null
+
+  - set:
+      field: tls.server.x509.issuer.distinguished_name
+      copy_from: tls.server.issuer
+      ignore_empty_value: true
+  - rename:
+      field: crowdstrike.IssuerCN
+      target_field: tls.server.x509.issuer.common_name
+      ignore_missing: true
+  - set:
+      field: tls.server.x509.subject.distinguished_name
+      copy_from: tls.server.subject
+      ignore_empty_value: true
+  - rename:
+      field: crowdstrike.SubjectCN
+      target_field: tls.server.x509.subject.common_name
+      ignore_missing: true
+  - set:
+      field: tls.server.x509.not_after
+      copy_from: tls.server.not_after
+      ignore_empty_value: true
+  - set:
+      field: tls.server.x509.not_before
+      copy_from: tls.server.not_before
+      ignore_empty_value: true
+  - rename:
+      field: crowdstrike.SubjectVersion
+      target_field: tls.server.x509.version_number
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.SubjectSerialNumber
+      target_field: tls.server.x509.serial_number
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.SignatureDigestAlg
+      target_field: tls.server.x509.signature_algorithm
+      ignore_missing: true
+      
+      
   ## Crowdstrike fields.
   - split:
       field: crowdstrike.FalconGroupingTags
@@ -2248,6 +2329,8 @@ processors:
         - crowdstrike.UserIsAdmin
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
+        - crowdstrike.SubjectCertValidFrom
+        - crowdstrike.SubjectCertValidTo
       ignore_missing: true
       ignore_failure: true
   - remove:
