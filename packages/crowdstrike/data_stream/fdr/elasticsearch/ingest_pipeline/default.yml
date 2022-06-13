@@ -12,19 +12,42 @@ processors:
       field: event.original
       target_field: crowdstrike
   - date:
+      tag: date-timestamp-utc
+      description: Parse timestamp from event.
+      field: crowdstrike.UTCTimestamp
+      target_field: event.created
+      formats:
+        - UNIX_MS
+        - ISO8601
+      ignore_failure: true
+      if: ctx.event?.created == null
+  - date:
       tag: date-timestamp
       description: Parse timestamp from event.
       field: crowdstrike.timestamp
       target_field: event.created
       formats:
         - UNIX_MS
+        - ISO8601
       ignore_failure: true
+      if: ctx.event?.created == null
   - date:
       tag: date-event-created
       description: Parse timestamp from event.
       field: crowdstrike.CreationTimeStamp
       target_field: event.created
       formats:
+        - UNIX
+        - ISO8601
+      ignore_failure: true
+      if: ctx.event?.created == null
+  - date:
+      tag: date-agent-local-time
+      description: Parse timestamp from event.
+      field: crowdstrike.AgentLocalTime
+      target_field: event.created
+      formats:
+        - ISO8601
         - UNIX
       ignore_failure: true
       if: ctx.event?.created == null
@@ -33,6 +56,11 @@ processors:
       field: "@timestamp"
       copy_from: event.created
       if: ctx.event?.created != null && (ctx.crowdstrike?.ContextTimeStamp == null || ctx.crowdstrike?.ContextTimeStamp == "")
+  - set:
+      tag: set-timestamp-ingest
+      field: "@timestamp"
+      copy_from: _ingest.timestamp
+      if: ctx["@timestamp"] == null
   - date:
       tag: date-context-timestamp
       if: ctx.crowdstrike?.ContextTimeStamp != null
@@ -2218,6 +2246,7 @@ processors:
         - crowdstrike.DomainName
         - crowdstrike.ConnectionDirection
         - crowdstrike.UserIsAdmin
+        - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
       ignore_missing: true
       ignore_failure: true
