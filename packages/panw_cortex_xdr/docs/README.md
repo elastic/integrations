@@ -1,6 +1,6 @@
 # Palo Alto Cortex XDR Integration
 
-The PANW XDR integration collects events from the [Cortex XDR API,](https://docs.paloaltonetworks.com/cortex/cortex-xdr/cortex-xdr-api/cortex-xdr-apis/incident-management/get-alerts) specifically reading from the Incident Management API.
+The PANW XDR integration collects alerts with multiple events from the [Cortex XDR API,](https://docs.paloaltonetworks.com/cortex/cortex-xdr/cortex-xdr-api/cortex-xdr-apis/incident-management/get-alerts).
 
 ## Logs
 
