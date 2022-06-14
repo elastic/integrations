@@ -1,15 +1,26 @@
 # Microsoft SQL Server Integration
 
-The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit events through Elasticsearch. 
+The Microsoft SQL Server integration package allows you to search, observe and visualize the SQL Server audit logs and metrics through Elasticsearch. 
+
 Auditing an instance of the SQL Server Database Engine or an individual database involves tracking and logging events that occur on the Database Engine. 
 SQL Server audit lets you create server audits, which can contain server audit specifications for server level events, and database audit specifications for database level events. 
 See: [SQL Server Audit page](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15) for more information on SQL Server auditing.
 
+`performance` metrics gathers the list of performance objects available on that server. Each server will have a different list of performance objects depending on the installed software.
+`transaction_log` metrics collects all usage stats and the total space usage.
+
+## Named Instance
+
+Microsoft SQL Server has a feature that allows running multiple databases on the same host (or clustered hosts) with separate settings. Edit the instance port and provide the named instance port to connect to the named instance and collect metrics.
+See: [Instruction on how to configure server to listen Named Instance port](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/configure-a-server-to-listen-on-a-specific-tcp-port?view=sql-server-ver15)
+
 ## Compatibility
 
-The package collects audit events from the event log. Other log sources such as file are not supported.
+The package collects `performance` and `transaction_log` metrics, and `audit` events from the event log. Other log sources such as file are not supported.
 
 ## Configuration
+
+### audit
 
 There are several levels of auditing for SQL Server, depending on government or standards requirements for your installation. The SQL Server Audit feature enables you to audit server-level and database-level groups of events and individual events. 
 
@@ -19,13 +30,26 @@ See: [Instructions on how to enable auditing for SQL Server](https://docs.micros
 
 >Note: For the integration package to be able to read and send audit events the event target must be configured to be Windows event log.
 
-### Audit Events
+### audit events
 
 Enable to collect SQL Server audit events from the specified windows event log channel.
 
+### performance metrics
+
+Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
+
+See: [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15
+)
+
+### transaction_log metrics
+
+Collects system level `transaction_log` metrics information for SQL Server instance.
+
+See: [Instructions and the operations supported by transaction log](https://docs.microsoft.com/en-us/sql/relational-databases/logs/the-transaction-log-sql-server?view=sql-server-ver15)
+
 ## Logs
 
-### Audit
+### audit
 
 The SQL Server audit dataset provides events from the configured Windows event log channel. All SQL Server audit specific fields are available in the `sqlserver.audit` field group.
 
@@ -154,3 +178,204 @@ The SQL Server audit dataset provides events from the configured Windows event l
 | winlog.user_data | The event specific data. This field is mutually exclusive with `event_data`. | object |
 | winlog.version | The version number of the event's definition. | long |
 
+
+## Metrics
+
+### performance
+
+The Microsoft SQL Server `performance` dataset provides metrics from the performance counter table. All `performance` metrics will be available in `sqlserver.metrics` field group.
+
+An example event for `performance` looks as following:
+
+```json
+{
+    "@timestamp": "2022-06-08T13:35:05.558Z",
+    "agent": {
+        "ephemeral_id": "16ad2de8-8ba3-496f-98d1-cbe19441c168",
+        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.3.0"
+    },
+    "cloud": {
+        "account": {},
+        "instance": {
+            "id": "b30e45e6-7900-4900-8d67-e37cb13374bc",
+            "name": "obs-int-windows-dev"
+        },
+        "machine": {
+            "type": "Standard_D16ds_v5"
+        },
+        "provider": "azure",
+        "region": "CentralIndia",
+        "service": {
+            "name": "Virtual Machines"
+        }
+    },
+    "data_stream": {
+        "dataset": "microsoft_sqlserver.performance",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
+        "snapshot": true,
+        "version": "8.3.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "microsoft_sqlserver.performance",
+        "duration": 7151724,
+        "ingested": "2022-06-08T13:35:06Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.16.3-microsoft-standard-WSL2",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 60000
+    },
+    "mssql": {
+        "metrics": {
+            "user_connections": 1
+        }
+    },
+    "service": {
+        "address": "elastic-package-service-microsoft_sqlserver-1:1433",
+        "type": "sql"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| mssql.metrics.active_temp_tables | Number of temporary tables/table variables in use. | long |  |
+| mssql.metrics.batch_requests_per_sec | Number of Transact-SQL command batches received per second. This statistic is affected by all constraints (such as I/O, number of users, cache size, complexity of requests, and so on). High batch requests mean good throughput. | float | gauge |
+| mssql.metrics.buffer_cache_hit_ratio | The ratio is the total number of cache hits divided by the total number of cache lookups over the last few thousand page accesses. After a long period of time, the ratio moves very little. Because reading from the cache is much less expensive than reading from disk, you want this ratio to be high. | double |  |
+| mssql.metrics.buffer_checkpoint_pages_per_sec | Indicates the number of pages flushed to disk per second by a checkpoint or other operation that require all dirty pages to be flushed. | float | gauge |
+| mssql.metrics.buffer_database_pages | Indicates the number of pages in the buffer pool with database content. | long |  |
+| mssql.metrics.buffer_page_life_expectancy | Indicates the number of seconds a page will stay in the buffer pool without references (in seconds). | long |  |
+| mssql.metrics.buffer_target_pages | Ideal number of pages in the buffer pool. | long |  |
+| mssql.metrics.compilations_per_sec | Number of SQL compilations per second. Indicates the number of times the compile code path is entered. Includes compiles caused by statement-level recompilations in SQL Server. After SQL Server user activity is stable, this value reaches a steady state. | float | gauge |
+| mssql.metrics.connection_reset_per_sec | Total number of logins started per second from the connection pool. | float | gauge |
+| mssql.metrics.dynamic_counter.name | Dynamic counter name is given by user. | keyword |  |
+| mssql.metrics.dynamic_counter.value | Dynamic counter value is fetched from performance table for the dynamic counter name which is provided by user. | long |  |
+| mssql.metrics.lock_waits_per_sec | Number of lock requests per second that required the caller to wait. | float | gauge |
+| mssql.metrics.logins_per_sec | Total number of logins started per second. This does not include pooled connections. | float | gauge |
+| mssql.metrics.logouts_per_sec | Total number of logout operations started per second. | float | gauge |
+| mssql.metrics.page_splits_per_sec | Number of page splits per second that occur as the result of overflowing index pages. | float | gauge |
+| mssql.metrics.re_compilations_per_sec | Number of statement recompiles per second. Counts the number of times statement recompiles are triggered. Generally, you want the recompiles to be low. | float | gauge |
+| mssql.metrics.transactions | Total number of transactions | long |  |
+| mssql.metrics.user_connections | Total number of user connections. | long |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+
+
+### transaction_log
+
+The Microsoft SQL Server `transaction_log` dataset provides metrics from the log space usage and log stats tables of the system databases. All `transaction_log` metrics will be available in `sqlserver.metrics` field group.
+
+An example event for `transaction_log` looks as following:
+
+```json
+{
+    "@timestamp": "2022-06-08T10:20:14.787809Z",
+    "mssql": {
+        "metrics": {
+            "database_name": "msdb",
+            "database_id": 1,
+            "used_log_space_bytes": 41.17647171020508,
+            "log_space_in_bytes_since_last_backup": 397312,
+            "total_log_size_bytes": 2088960,
+            "used_log_space_pct": 860160
+        }
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "query"
+    },
+    "agent": {
+        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
+        "ephemeral_id": "d1a76cf4-2463-478a-a474-36e771218467",
+        "type": "metricbeat",
+        "version": "8.3.0"
+    },
+    "service": {
+        "address": "54.90.251.237:1433",
+        "type": "sql"
+    },
+    "elastic_agent": {
+        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
+        "version": "8.3.0",
+        "snapshot": true
+    },
+    "event": {
+        "duration": 5595352584,
+        "agent_id_status": "verified",
+        "ingested": "2022-05-23T10:20:21Z",
+        "module": "sql",
+        "dataset": "microsoft_sqlserver.transaction_log"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "microsoft_sqlserver.transaction_log"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| mssql.metrics.active_log_size | Total active transaction log size in bytes. | long | byte | counter |
+| mssql.metrics.database_id | Unique ID of the database inside MSSQL. | long |  |  |
+| mssql.metrics.database_name | Name of the database. | keyword |  |  |
+| mssql.metrics.log_backup_time | Last transaction log backup time. | date |  |  |
+| mssql.metrics.log_recovery_size | Log size in bytes since log recovery log sequence number (LSN). | long | byte | gauge |
+| mssql.metrics.log_since_last_checkpoint | Log size in bytes since last checkpoint log sequence number (LSN). | long | byte | gauge |
+| mssql.metrics.log_since_last_log_backup | Log file size since last backup in bytes. | long | byte | gauge |
+| mssql.metrics.log_space_in_bytes_since_last_backup | The amount of space used since the last log backup in bytes. | long | byte | gauge |
+| mssql.metrics.total_log_size | Total log size. | long | byte | counter |
+| mssql.metrics.total_log_size_bytes | Total transaction log size in bytes. | long | byte | counter |
+| mssql.metrics.used_log_space_bytes | The occupied size of the log in bytes. | long | byte | gauge |
+| mssql.metrics.used_log_space_pct | A percentage of the occupied size of the log as a percent of the total log size. | float | percent | gauge |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
