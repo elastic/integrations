@@ -61,6 +61,10 @@ The SQL Server audit dataset provides events from the configured Windows event l
 
 The Microsoft SQL Server `performance` dataset provides metrics from the performance counter table. All `performance` metrics will be available in `sqlserver.metrics` field group.
 
+{{event "performance"}}
+
+{{fields "performance"}}
+
 ### transaction_log
 
 The Microsoft SQL Server `transaction_log` dataset provides metrics from the log space usage and log stats tables of the system databases. All `transaction_log` metrics will be available in `sqlserver.metrics` field group.
