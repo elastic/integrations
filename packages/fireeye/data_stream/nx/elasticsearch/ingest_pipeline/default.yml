@@ -165,6 +165,15 @@ processors:
       value: "{{destination.ip}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
+  - append:
+      field: related.hash
+      value: "{{tls.server.ja3s}}"
+      if: "ctx?.tls?.server?.ja3s != null"
+  - append:
+      field: related.hash
+      value: "{{tls.client.ja3}}"
+      if: "ctx?.tls?.client?.ja3 != null"
+      allow_duplicates: false
   - remove:
       field:
         - rawmsg
