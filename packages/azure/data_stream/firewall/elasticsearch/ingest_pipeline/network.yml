@@ -1,0 +1,160 @@
+---
+description: Pipeline for processing Azure Firewall network rule logs.
+processors:
+  - dissect:
+      field: json.properties.msg
+      pattern: '%{azure.firewall.network_proto} request from %{azure.firewall.srcaddr}:%{azure.firewall.srcport} to %{azure.firewall.dstaddr}:%{azure.firewall.dstport}. Action: %{azure.firewall.action}.'
+      if: ctx?._temp_?.message_token_count == 9 && ctx?.json?.operationName == 'AzureFirewallNetworkRuleLog'
+  - dissect:
+      field: json.properties.msg
+      pattern: '%{azure.firewall.network_proto} Type=%{azure.icmp.request.code} request from %{azure.firewall.srcaddr} to %{azure.firewall.dstaddr}. Action: %{azure.firewall.action}.'
+      if: ctx?._temp_?.message_token_count == 10 && ctx?.json?.operationName == 'AzureFirewallNetworkRuleLog'
+  - dissect:
+      field: json.properties.msg
+      pattern: "%{azure.firewall.network_proto} request from %{azure.firewall.srcaddr}:%{azure.firewall.srcport} to %{azure.firewall.outside_dstaddr}:%{azure.firewall.outside_dstport} was DNAT'ed to %{azure.firewall.inside_dstaddr}:%{azure.firewall.inside_dstport}"
+      if: ctx?._temp_?.message_token_count == 10 && ctx?.json?.operationName == 'AzureFirewallNatRuleLog'
+
+  - set:
+      field: json.event.alert.action
+      value: denied
+      if: ctx.azure?.firewall?.action == 'Deny'
+  - set:
+      field: json.event.alert.action
+      value: allowed
+      if: ctx.azure?.firewall?.action == 'Allow'
+  - append:
+      field: event.type
+      value: "{{json.event.alert.action}}"
+      if: ctx.json?.event?.alert?.action != null
+
+  - rename:
+      field: azure.firewall.srcaddr
+      target_field: source.address
+      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: source.address
+      ignore_empty_value: true
+  - rename:
+      field: azure.firewall.dstaddr
+      target_field: destination.address
+      ignore_missing: true
+  - rename:
+      field: azure.firewall.outside_dstaddr
+      target_field: destination.address
+      ignore_missing: true
+  - rename:
+      field: azure.firewall.inside_dstaddr
+      target_field: destination.nat.ip
+      ignore_missing: true
+  - set:
+      field: destination.ip
+      copy_from: destination.address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name 
+      ignore_missing: true
+  - convert:
+      field: azure.firewall.srcport
+      target_field: source.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: azure.firewall.dstport
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: azure.firewall.outside_dstport
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: azure.firewall.inside_dstport
+      target_field: destination.nat.port
+      type: long
+      ignore_missing: true
+  - append:
+      if: ctx?.source?.ip != null
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      if: ctx?.destination.ip != null
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      ignore_failure: true
+
+  - set:
+      field: network.transport
+      copy_from: azure.firewall.network_proto
+      ignore_empty_value: true
+  - lowercase:
+      field: network.transport
+      ignore_failure: true
+
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx?.network?.transport != null
+      source: |
+        def transport = ctx.network.transport;
+        if (transport == 'udp') {
+            ctx.network.iana_number = '17';
+        } else if (transport == 'tcp') {
+            ctx.network.iana_number = '6';
+        }
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}' 
+      if: ctx.host?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in Network pipeline:
+        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
+        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
+        {{ _ingest.on_failure_message }}

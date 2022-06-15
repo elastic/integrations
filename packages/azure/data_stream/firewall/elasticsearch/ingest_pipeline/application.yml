@@ -1,0 +1,126 @@
+---
+description: Pipeline for processing Azure Firewall application rule logs.
+processors:
+  - dissect:
+      field: json.properties.msg
+      pattern: '%{azure.firewall.network_proto} request from %{azure.firewall.srcaddr}:%{azure.firewall.srcport} to %{azure.firewall.dstaddr}:%{azure.firewall.dstport}. Action: %{azure.firewall.action}. %{event.reason}'
+      if: ctx?._temp_?.message_token_count == 15
+  - dissect:
+      field: json.properties.msg
+      pattern: '%{azure.firewall.network_proto} request from %{azure.firewall.srcaddr}:%{azure.firewall.srcport} to %{azure.firewall.dstaddr}:%{azure.firewall.dstport}. Action: %{azure.firewall.action}. Policy: %{azure.firewall.policy}. Rule Collection Group: %{azure.firewall.rule_collection_group}. Rule Collection: %{azure.firewall.rule_collection}. Rule: %{azure.firewall.rule}. Web Category: %{azure.firewall.web_category}'
+      if: ctx?._temp_?.message_token_count == 24
+  - dissect:
+      field: json.properties.msg
+      pattern: '%{azure.firewall.network_proto} request from %{azure.firewall.srcaddr}:%{azure.firewall.srcport} to %{azure.firewall.dstaddr}:%{azure.firewall.dstport}. Url: %{azure.firewall.dsturl}. Action: %{azure.firewall.action}. Policy: %{azure.firewall.policy}. Rule Collection Group: %{azure.firewall.rule_collection_group}. Rule Collection: %{azure.firewall.rule_collection}. Rule: %{azure.firewall.rule}'
+      if: ctx?._temp_?.message_token_count == 23
+  - dissect:
+      field: json.properties.msg
+      pattern: '%{azure.firewall.network_proto} request from %{azure.firewall.srcaddr}:%{azure.firewall.srcport} to %{azure.firewall.dstaddr}:%{azure.firewall.dstport}. Action: %{azure.firewall.action}. %{event.reason}'
+      if: ctx?._temp_?.message_token_count == 20
+  - dissect:
+      field: json.properties.msg
+      pattern: '%{azure.firewall.network_proto} request from %{azure.firewall.srcaddr}:%{azure.firewall.srcport}. Action: %{azure.firewall.action}. Reason: %{event.reason}'
+      if: ctx?._temp_?.message_token_count == 12
+
+  - set:
+      field: json.event.alert.action
+      value: denied
+      if: ctx.azure?.firewall?.action == 'Deny'
+  - set:
+      field: json.event.alert.action
+      value: allowed
+      if: ctx.azure?.firewall?.action == 'Allow'
+  - append:
+      field: event.type
+      value: "{{json.event.alert.action}}"
+      if: ctx.json?.event?.alert?.action != null
+
+  - rename:
+      field: azure.firewall.srcaddr
+      target_field: source.address
+      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: source.address
+      ignore_empty_value: true
+  - rename:
+      field: azure.firewall.dstaddr
+      target_field: destination.address
+      ignore_missing: true
+  - set:
+      field: destination.domain
+      copy_from: destination.address
+      ignore_empty_value: true
+
+  - convert:
+      field: azure.firewall.srcport
+      target_field: source.port
+      type: long
+      ignore_missing: true
+  - convert:
+      field: azure.firewall.dstport
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+
+  - append:
+      if: ctx?.source?.ip != null
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      if: ctx?.destination?.domain != null
+      field: related.hosts
+      value: "{{destination.domain}}"
+      allow_duplicates: false
+      ignore_failure: true
+
+  - set:
+      field: network.transport
+      copy_from: azure.firewall.network_proto
+      ignore_empty_value: true
+  - lowercase:
+      field: network.transport
+      ignore_failure: true
+
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx?.network?.transport != null
+      source: |
+        def transport = ctx.network.transport;
+        if (transport == 'udp') {
+            ctx.network.iana_number = '17';
+        } else if (transport == 'tcp') {
+            ctx.network.iana_number = '6';
+        }
+  
+  - rename:
+      field: azure.firewall.dsturl 
+      target_field: url.original
+      ignore_missing: true
+
+  - rename:
+      field: azure.firewall.rule
+      target_field: rule.name
+      ignore_missing: true
+
+  - rename:
+      field: azure.firewall.rule_collection
+      target_field: rule.ruleset
+      ignore_missing: true
+
+  - rename:
+      field: azure.firewall.web_category
+      target_field: rule.category
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in Application pipeline:
+        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
+        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
+        {{ _ingest.on_failure_message }}

@@ -1,0 +1,68 @@
+---
+description: Pipeline for processing Azure Firewall DNS proxy rule logs.
+processors:
+  - dissect:
+      field: json.properties.msg
+      pattern: 'DNS Request: %{source.address}:%{source.port} - %{azure.firewall.event_original_uid} %{dns.question.type} %{dns.question.class} %{dns.question.name}. %{network.transport} %{source.bytes} %{azure.firewall.dnssec_bool_flag} %{azure.firewall.dnssec_buffer_size} %{dns.response_code} %{dns.header_flags} %{destination.bytes} %{azure.firewall.duration}'
+
+  - set:
+      field: source.ip
+      copy_from: source.address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - convert:
+      field: source.port
+      type: long
+      ignore_missing: true
+  - uppercase:
+      field: dns.header_flags
+      "ignore_missing": true
+  - split:
+      field: dns.header_flags
+      separator: ","
+      ignore_missing: true
+  - convert:
+      field: source.bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      field: destination.bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      field: azure.firewall.dnssec_bool_flag
+      type: boolean
+      ignore_missing: true
+  - convert:
+      field: azure.firewall.dnssec_buffer_size
+      type: long
+      ignore_missing: true
+
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in DNS Proxy pipeline:
+        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
+        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
+        {{ _ingest.on_failure_message }}

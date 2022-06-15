@@ -1,0 +1,130 @@
+---
+description: Pipeline for processing Azure firewall logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.2.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [connection]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - date:
+      field: json.time
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - ISO8601
+  - remove:
+      field: json.time
+      ignore_missing: true
+  - rename:
+      field: json.resourceId
+      target_field: azure.resource_id
+      ignore_missing: true
+
+  - script:
+      lang: painless
+      if: ctx.json.properties.msg != null
+      source: >-
+        ctx._temp_ = new HashMap();
+        ctx._temp_.message_token_count = ctx.json?.properties.msg.splitOnToken(" ").length;
+
+  - pipeline:
+      if: ctx?.json?.operationName == 'AzureFirewallNetworkRuleLog' || ctx?.json?.operationName == 'AzureFirewallNatRuleLog'
+      name: '{{ IngestPipeline "network" }}'
+
+  - pipeline:
+      if: ctx?.json?.operationName == 'AzureFirewallApplicationRuleLog'
+      name: '{{ IngestPipeline "application" }}'
+
+  - pipeline:
+      if: ctx?.json?.operationName == 'AzureFirewallDnsProxyLog'
+      name: '{{ IngestPipeline "dnsproxy" }}'
+
+  - rename:
+      field: json.category
+      target_field: azure.firewall.category
+      ignore_missing: true
+  - rename:
+      field: json.operationName
+      target_field: azure.firewall.operation_name
+      ignore_missing: true
+  - set:
+      field: observer.name
+      copy_from: azure.resource.name
+      ignore_empty_value: true
+  - set:
+      field: observer.type
+      value: firewall
+  - set:
+      field: observer.vendor
+      value: Azure
+  - set:
+      field: observer.product
+      value: "Network Firewall"
+
+
+  - remove:
+      field:
+        - json
+        - _temp_
+        - azure.firewall.srcaddr
+        - azure.firewall.srcport
+        - azure.firewall.dstaddr
+        - azure.firewall.dstport
+        - azure.firewall.outside_dstaddr
+        - azure.firewall.inside_dstaddr
+        - azure.firewall.outside_dstport
+        - azure.firewall.inside_dstport
+        - azure.firewall.network_proto
+        - azure.firewall.web_category
+        - azure.firewall.dns_flags
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: 
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+on_failure:
+  - append:
+      field: "error.message"
+      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+  - remove:
+      field:
+        - _temp_
+        - _conf
+        - message
+      ignore_missing: true
