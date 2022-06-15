@@ -4,7 +4,7 @@ description: "Pipeline for ELB logs"
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.2.0'
   - rename:
       field: message
       target_field: event.original
@@ -82,7 +82,7 @@ processors:
           (?:-|%{NUMBER:aws.elb.backend.http.response.status_code:long})
           %{NUMBER:http.request.body.bytes:long}
           %{NUMBER:http.response.body.bytes:long}
-          \"(?:-|%{WORD:http.request.method}) (?:-|%{NOTSPACE:_tmp.uri_orig}) (?:-|HTTP/%{NOTSPACE:http.version})\"
+          \"(?:-|%{WORD:http.request.method}) (?:-|%{DATA:_tmp.uri_orig}) (?:-|HTTP/%{NOTSPACE:http.version})\"
           \"%{DATA:_tmp.user_agent}\"
           %{ELBSSL}
         ELBTCPLOG: >-

@@ -104,6 +104,7 @@ For network load balancer, please follow [enable access log for network load bal
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -115,6 +116,7 @@ For network load balancer, please follow [enable access log for network load bal
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
