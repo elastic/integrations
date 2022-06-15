@@ -4,15 +4,25 @@ processors:
   - grok:
       field: message
       patterns:
-      - 'Connect from (%{IPORHOST:source.address}|-):%{POSINT:source.port:long} %{WORD} %{IPORHOST:destination.ip}:%{POSINT:destination.port:long} \(%{WORD:haproxy.frontend_name}/%{WORD:haproxy.mode}\)'
-      - '(%{IPORHOST:source.address}|-):%{POSINT:source.port:long} \[%{NOTSPACE:haproxy.request_date}\] %{WORD:haproxy.frontend_name}~ %{NOTSPACE:haproxy.backend_name}/%{NOTSPACE:haproxy.server_name} 
-        %{NUMBER:haproxy.http.request.time_wait_ms:long}/%{NUMBER:haproxy.total_waiting_time_ms:long}/%{NUMBER:haproxy.connection_wait_time_ms:long}/%{NUMBER:haproxy.http.request.time_wait_without_data_ms:long}/%{NUMBER:temp.duration:long} 
+      - 'Connect from (%{IPORHOST:source.address}|-):%{POSINT:source.port:long} %{WORD} %{IPORHOST:destination.address}:%{POSINT:destination.port:long} \(%{NOTSPACE:haproxy.frontend_name}/%{WORD:haproxy.mode}\)'
+      # HTTP(S)
+      - '(%{IPORHOST:source.address}|-):%{POSINT:source.port:long} \[%{NOTSPACE:haproxy.request_date}\] %{NOTSPACE:haproxy.frontend_name} %{NOTSPACE:haproxy.backend_name}/%{NOTSPACE:haproxy.server_name} 
+        %{NUMBER:haproxy.http.request.time_wait_ms:long}/%{NUMBER:haproxy.total_waiting_time_ms:long}/%{NUMBER:haproxy.connection_wait_time_ms:long}/%{NUMBER:haproxy.http.request.time_wait_without_data_ms:long}/%{NUMBER:_temp.duration:long} 
         %{NUMBER:http.response.status_code:long} %{NUMBER:haproxy.bytes_read:long} %{NOTSPACE:haproxy.http.request.captured_cookie} %{NOTSPACE:haproxy.http.response.captured_cookie} %{NOTSPACE:haproxy.termination_state} 
         %{NUMBER:haproxy.connections.active:long}/%{NUMBER:haproxy.connections.frontend:long}/%{NUMBER:haproxy.connections.backend:long}/%{NUMBER:haproxy.connections.server:long}/%{NUMBER:haproxy.connections.retries:long} %{NUMBER:haproxy.server_queue:long}/%{NUMBER:haproxy.backend_queue:long} 
         (\{%{DATA:haproxy.http.request.captured_headers}\} \{%{DATA:haproxy.http.response.captured_headers}\} |\{%{DATA}\} )?"%{GREEDYDATA:haproxy.http.request.raw_request_line}"'
+      # TCP
+      - '(%{IP:source.address}|-):%{POSINT:source.port:long} \[%{NOTSPACE:haproxy.request_date}\] 
+        %{NOTSPACE:haproxy.frontend_name} %{NOTSPACE:haproxy.backend_name}/%{NOTSPACE:haproxy.server_name} 
+        %{NUMBER:haproxy.total_waiting_time_ms:long}/%{NUMBER:haproxy.connection_wait_time_ms:long}/%{NUMBER:_temp.duration:long} 
+        %{NUMBER:haproxy.bytes_read:long} %{NOTSPACE:haproxy.termination_state} %{NUMBER:haproxy.connections.active:long}/%{NUMBER:haproxy.connections.frontend:long}/%{NUMBER:haproxy.connections.backend:long}/%{NUMBER:haproxy.connections.server:long}/%{NUMBER:haproxy.connections.retries:long} 
+        %{NUMBER:haproxy.server_queue:long}/%{NUMBER:haproxy.backend_queue:long}'
+      # Error
+      - '(%{IP:source.address}|-):%{POSINT:source.port:long} \[%{NOTSPACE:haproxy.request_date}\] %{NOTSPACE:haproxy.frontend_name}/%{BIND_NAME:haproxy.bind_name}:? %{GREEDYDATA:haproxy.error_message}'
       ignore_missing: false
       pattern_definitions:
         HAPROXY_DATE: (%{MONTHDAY}[/-]%{MONTH}[/-]%{YEAR}:%{HOUR}:%{MINUTE}:%{SECOND})|%{SYSLOGTIMESTAMP}
+        BIND_NAME: ((%{IP:destination.address})?(:%{POSINT:destination.port:long})?|%{NOTSPACE})
       on_failure:
         - drop:
             description: Drop if not a connection log
@@ -31,8 +41,6 @@ processors:
       - dd/MMM/yyyy:HH:mm:ss.SSS
       - MMM dd HH:mm:ss
       timezone: '{{ event.timezone }}'
-  - remove:
-      field: haproxy.request_date
   - grok:
       field: haproxy.http.request.raw_request_line
       patterns:
@@ -87,13 +95,10 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      source: ctx.event.duration = Math.round(ctx.temp.duration * params.scale)
+      source: ctx.event.duration = Math.round(ctx._temp.duration * params.scale)
       params:
         scale: 1000000
-      if: ctx.temp?.duration != null
-  - remove:
-      field: temp.duration
-      ignore_missing: true
+      if: ctx._temp?.duration != null
   - convert:
       field: haproxy.bytes_read
       target_field: http.response.bytes
@@ -123,6 +128,11 @@ processors:
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
+  - remove:
+      field: 
+        - _temp
+        - haproxy.request_date
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
