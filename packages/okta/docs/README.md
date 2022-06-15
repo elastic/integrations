@@ -14,12 +14,11 @@ An example event for `system` looks as following:
 {
     "@timestamp": "2020-02-14T20:18:57.718Z",
     "agent": {
-        "ephemeral_id": "ef00e489-67a9-4e8f-999c-81305f2350f5",
-        "hostname": "docker-fleet-agent",
-        "id": "dd014e06-ac12-40b1-a20a-4453a5f99c84",
+        "ephemeral_id": "3347d5a2-0d81-41c5-8cbf-a69aebcdb56a",
+        "id": "dbc761fd-dec4-4bc7-acec-8e5cb02a0cb6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.2.1"
     },
     "client": {
         "geo": {
@@ -46,9 +45,9 @@ An example event for `system` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "dd014e06-ac12-40b1-a20a-4453a5f99c84",
-        "snapshot": false,
-        "version": "7.17.0"
+        "id": "dbc761fd-dec4-4bc7-acec-8e5cb02a0cb6",
+        "snapshot": true,
+        "version": "8.2.1"
     },
     "event": {
         "action": "user.session.start",
@@ -57,10 +56,10 @@ An example event for `system` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2022-04-07T02:23:26.399Z",
+        "created": "2022-05-18T08:57:39.484Z",
         "dataset": "okta.system",
         "id": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
-        "ingested": "2022-04-07T02:23:27Z",
+        "ingested": "2022-05-18T08:57:40Z",
         "kind": "event",
         "original": "{\"actor\":{\"alternateId\":\"xxxxxx@elastic.co\",\"detailEntry\":null,\"displayName\":\"xxxxxx\",\"id\":\"00u1abvz4pYqdM8ms4x6\",\"type\":\"User\"},\"authenticationContext\":{\"authenticationProvider\":null,\"authenticationStep\":0,\"credentialProvider\":null,\"credentialType\":null,\"externalSessionId\":\"102bZDNFfWaQSyEZQuDgWt-uQ\",\"interface\":null,\"issuer\":null},\"client\":{\"device\":\"Computer\",\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"id\":null,\"ipAddress\":\"108.255.197.247\",\"userAgent\":{\"browser\":\"FIREFOX\",\"os\":\"Mac OS X\",\"rawUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0\"},\"zone\":\"null\"},\"debugContext\":{\"debugData\":{\"deviceFingerprint\":\"541daf91d15bef64a7e08c946fd9a9d0\",\"requestId\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"requestUri\":\"/api/v1/authn\",\"threatSuspected\":\"false\",\"url\":\"/api/v1/authn?\"}},\"displayMessage\":\"User login to Okta\",\"eventType\":\"user.session.start\",\"legacyEventType\":\"core.user_auth.login_success\",\"outcome\":{\"reason\":null,\"result\":\"SUCCESS\"},\"published\":\"2020-02-14T20:18:57.718Z\",\"request\":{\"ipChain\":[{\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"ip\":\"108.255.197.247\",\"source\":null,\"version\":\"V4\"}]},\"securityContext\":{\"asNumber\":null,\"asOrg\":null,\"domain\":null,\"isProxy\":null,\"isp\":null},\"severity\":\"INFO\",\"target\":null,\"transaction\":{\"detail\":{},\"id\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"type\":\"WEB\"},\"uuid\":\"3aeede38-4f67-11ea-abd3-1f5d113f2546\",\"version\":\"0\"}",
         "outcome": "success",
@@ -96,6 +95,13 @@ An example event for `system` looks as following:
         "debug_context": {
             "debug_data": {
                 "device_fingerprint": "541daf91d15bef64a7e08c946fd9a9d0",
+                "flattened": {
+                    "deviceFingerprint": "541daf91d15bef64a7e08c946fd9a9d0",
+                    "requestId": "XkcAsWb8WjwDP76xh@1v8wAABp0",
+                    "requestUri": "/api/v1/authn",
+                    "threatSuspected": "false",
+                    "url": "/api/v1/authn?"
+                },
                 "request_id": "XkcAsWb8WjwDP76xh@1v8wAABp0",
                 "request_uri": "/api/v1/authn",
                 "threat_suspected": "false",
@@ -106,6 +112,24 @@ An example event for `system` looks as following:
         "event_type": "user.session.start",
         "outcome": {
             "result": "SUCCESS"
+        },
+        "request": {
+            "ip_chain": [
+                {
+                    "geographical_context": {
+                        "city": "Dublin",
+                        "country": "United States",
+                        "geolocation": {
+                            "lat": 37.7201,
+                            "lon": -121.919
+                        },
+                        "postal_code": "94568",
+                        "state": "California"
+                    },
+                    "ip": "108.255.197.247",
+                    "version": "V4"
+                }
+            ]
         },
         "transaction": {
             "id": "XkcAsWb8WjwDP76xh@1v8wAABp0",
@@ -252,8 +276,10 @@ An example event for `system` looks as following:
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
 | okta.client.zone | The zone information of the client. | keyword |
 | okta.debug_context.debug_data.device_fingerprint | The fingerprint of the device. | keyword |
+| okta.debug_context.debug_data.flattened | The complete debug_data object. | flattened |
 | okta.debug_context.debug_data.request_id | The identifier of the request. | keyword |
 | okta.debug_context.debug_data.request_uri | The request URI. | keyword |
+| okta.debug_context.debug_data.risk_level | The risk level assigned to the sign in attempt. | keyword |
 | okta.debug_context.debug_data.threat_suspected | Threat suspected. | keyword |
 | okta.debug_context.debug_data.url | The URL. | keyword |
 | okta.display_message | The display message of the LogEvent. | keyword |
