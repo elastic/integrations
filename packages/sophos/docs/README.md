@@ -20,7 +20,7 @@ Versions above this are expected to work but have not been tested.
 
 ### Utm log
 
-The `utm` dataset collects Unified Threat Management (formally known as Astaro Security Gateway) logs.
+The `utm` dataset collects Unified Threat Management logs.
 
 **Exported fields**
 
