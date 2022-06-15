@@ -130,11 +130,20 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "e58d02a0-e7a0-45c0-aba6-a8c983782744",
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "ephemeral_id": "10bb82a5-c0e6-4aed-8589-003f734a7183",
+        "hostname": "docker-fleet-agent",
+        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
+    },
+    "cloud": {
+        "availability_zone": "us-east1-b",
+        "project": {
+            "id": "my-sample-project"
+        },
+        "provider": "gcp",
+        "region": "us-east1"
     },
     "data_stream": {
         "dataset": "gcp.vpcflow",
@@ -142,10 +151,11 @@ An example event for `vpcflow` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "67.43.156.13",
+        "address": "67.43.156.14",
         "as": {
             "number": 35908
         },
+        "domain": "elasticsearch",
         "geo": {
             "continent_name": "Asia",
             "country_iso_code": "BT",
@@ -155,30 +165,42 @@ An example event for `vpcflow` looks as following:
                 "lon": 90.5
             }
         },
-        "ip": "67.43.156.13",
-        "port": 33478
+        "ip": "67.43.156.14",
+        "port": 9200
     },
     "ecs": {
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2021-12-31T03:12:25.823Z",
+        "created": "2022-05-20T07:27:09.739Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:45:37.301953198Z",
-        "id": "ut8lbrffooxyw",
-        "ingested": "2021-12-31T03:12:26Z",
+        "end": "2019-06-14T03:49:51.821308944Z",
+        "id": "ut8lbrffooxyp",
+        "ingested": "2022-05-20T07:27:10Z",
         "kind": "event",
-        "start": "2019-06-14T03:45:37.186193305Z",
+        "start": "2019-06-14T03:40:08.469099728Z",
         "type": "connection"
     },
     "gcp": {
+        "destination": {
+            "instance": {
+                "project_id": "my-sample-project",
+                "region": "us-east1",
+                "zone": "us-east1-b"
+            },
+            "vpc": {
+                "project_id": "my-sample-project",
+                "subnetwork_name": "default",
+                "vpc_name": "default"
+            }
+        },
         "source": {
             "instance": {
                 "project_id": "my-sample-project",
@@ -194,7 +216,7 @@ An example event for `vpcflow` looks as following:
         "vpcflow": {
             "reporter": "SRC",
             "rtt": {
-                "ms": 36
+                "ms": 3
             }
         }
     },
@@ -205,27 +227,28 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 1776,
-        "community_id": "1:Wa+aonxAQZ59AWtNdQD0CH6FnsM=",
-        "direction": "outbound",
+        "bytes": 15169,
+        "community_id": "1:NAY9D1IuyJAG+Hm34t3LIlP6/4c=",
+        "direction": "internal",
         "iana_number": "6",
-        "packets": 7,
+        "name": "default",
+        "packets": 92,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
             "10.87.40.76",
-            "67.43.156.13"
+            "67.43.156.14"
         ]
     },
     "source": {
         "address": "10.87.40.76",
-        "bytes": 1776,
+        "bytes": 15169,
         "domain": "kibana",
         "ip": "10.87.40.76",
-        "packets": 7,
-        "port": 5601
+        "packets": 92,
+        "port": 33880
     },
     "tags": [
         "forwarded",
