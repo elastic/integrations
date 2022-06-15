@@ -20,10 +20,16 @@ processors:
       value: '8.2.0'
   - set:
       field: event.kind
-      value: info
+      value: event
   - set:
       field: event.category
-      value: network
+      value: 
+        - network
+        - file
+  - set:
+      field: event.type
+      value: 
+        - info
   - date:
       field: json.ts
       formats:
@@ -86,6 +92,28 @@ processors:
       field: json.serial
       target_field: tls.server.x509.serial_number
       ignore_missing: true
+  - grok:
+      field: tls.server.x509.subject.distinguished_name
+      ignore_missing: true
+      patterns:
+        - 'CN=%{CN:tls.server.x509.subject.common_name}'
+      pattern_definitions:
+        CN: '[^,]+'
+  - grok:
+      field: tls.server.x509.issuer.distinguished_name
+      ignore_missing: true
+      patterns:
+        - 'CN=%{CN:tls.server.x509.issuer.common_name}'
+      pattern_definitions:
+        CN: '[^,]+'
+  - set:
+      field: tls.server.issuer
+      copy_from: tls.server.x509.issuer.distinguished_name
+      ignore_empty_value: true
+  - set:
+      field: tls.server.subject
+      copy_from: tls.server.x509.subject.distinguished_name
+      ignore_empty_value: true
   - remove:
       field: 
         - json

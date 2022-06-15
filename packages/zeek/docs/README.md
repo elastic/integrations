@@ -1495,8 +1495,12 @@ The `known_certs` dataset captures information about SSL/TLS certificates seen o
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | keyword |
+| tls.server.subject | Subject of the x.509 certificate presented by the server. | keyword |
+| tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | tls.server.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
 | tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
+| tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.server.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
 
 
