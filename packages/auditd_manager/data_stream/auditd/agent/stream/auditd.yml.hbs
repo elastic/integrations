@@ -1,0 +1,34 @@
+# EQL expression evaluated by Elastic Agent to limit input to Linux.
+condition: ${host.platform} == 'linux'
+
+type: audit/auditd
+include_raw_message: true
+{{#if multicast}}
+socket_type: multicast
+{{else}}
+socket_type: unicast
+{{/if}}
+resolve_ids: {{resolve_ids}}
+failure_mode: {{failure_mode}}
+audit_rules: |
+{{#each audit_rules as |rule i|}}
+  {{rule}}
+{{/each}}
+backlog_limit: {{backlog_limit}}
+rate_limit: {{rate_limit}}
+include_warnings: {{include_warnings}}
+backpressure_strategy: {{backpressure_strategy}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
