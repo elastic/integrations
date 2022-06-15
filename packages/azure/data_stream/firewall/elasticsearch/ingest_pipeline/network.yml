@@ -1,18 +1,12 @@
 ---
 description: Pipeline for processing Azure Firewall network rule logs.
 processors:
-  - dissect:
+  - grok:
       field: json.properties.msg
-      pattern: '%{azure.firewall.network_proto} request from %{azure.firewall.srcaddr}:%{azure.firewall.srcport} to %{azure.firewall.dstaddr}:%{azure.firewall.dstport}. Action: %{azure.firewall.action}.'
-      if: ctx?._temp_?.message_token_count == 9 && ctx?.json?.operationName == 'AzureFirewallNetworkRuleLog'
-  - dissect:
-      field: json.properties.msg
-      pattern: '%{azure.firewall.network_proto} Type=%{azure.icmp.request.code} request from %{azure.firewall.srcaddr} to %{azure.firewall.dstaddr}. Action: %{azure.firewall.action}.'
-      if: ctx?._temp_?.message_token_count == 10 && ctx?.json?.operationName == 'AzureFirewallNetworkRuleLog'
-  - dissect:
-      field: json.properties.msg
-      pattern: "%{azure.firewall.network_proto} request from %{azure.firewall.srcaddr}:%{azure.firewall.srcport} to %{azure.firewall.outside_dstaddr}:%{azure.firewall.outside_dstport} was DNAT'ed to %{azure.firewall.inside_dstaddr}:%{azure.firewall.inside_dstport}"
-      if: ctx?._temp_?.message_token_count == 10 && ctx?.json?.operationName == 'AzureFirewallNatRuleLog'
+      patterns:
+        - "^%{DATA:network.transport} request from %{IP:source.address}:%{NUMBER:source.port:long} to %{IP:destination.address}:%{NUMBER:destination.port:long}. Action: %{DATA:azure.firewall.action}. $" 
+        - "^%{DATA:network.transport} Type=%{DATA:azure.firewall.icmp.request.code} request from %{IP:source.address} to %{IP:destination.address}. Action: %{DATA:azure.firewall.action}. $"
+        - "^%{DATA:network.transport} request from %{IP:source.address}:%{NUMBER:source.port:long} to %{IP:destination.address}:%{NUMBER:destination.port:long} was DNAT'ed to %{IP:destination.nat.ip}:%{NUMBER:destination.nat.port:long}$"
 
   - set:
       field: json.event.alert.action
@@ -27,26 +21,10 @@ processors:
       value: "{{json.event.alert.action}}"
       if: ctx.json?.event?.alert?.action != null
 
-  - rename:
-      field: azure.firewall.srcaddr
-      target_field: source.address
-      ignore_missing: true
   - set:
       field: source.ip
       copy_from: source.address
       ignore_empty_value: true
-  - rename:
-      field: azure.firewall.dstaddr
-      target_field: destination.address
-      ignore_missing: true
-  - rename:
-      field: azure.firewall.outside_dstaddr
-      target_field: destination.address
-      ignore_missing: true
-  - rename:
-      field: azure.firewall.inside_dstaddr
-      target_field: destination.nat.ip
-      ignore_missing: true
   - set:
       field: destination.ip
       copy_from: destination.address
@@ -91,26 +69,7 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name 
       ignore_missing: true
-  - convert:
-      field: azure.firewall.srcport
-      target_field: source.port
-      type: long
-      ignore_missing: true
-  - convert:
-      field: azure.firewall.dstport
-      target_field: destination.port
-      type: long
-      ignore_missing: true
-  - convert:
-      field: azure.firewall.outside_dstport
-      target_field: destination.port
-      type: long
-      ignore_missing: true
-  - convert:
-      field: azure.firewall.inside_dstport
-      target_field: destination.nat.port
-      type: long
-      ignore_missing: true
+
   - append:
       if: ctx?.source?.ip != null
       field: related.ip
@@ -124,10 +83,6 @@ processors:
       allow_duplicates: false
       ignore_failure: true
 
-  - set:
-      field: network.transport
-      copy_from: azure.firewall.network_proto
-      ignore_empty_value: true
   - lowercase:
       field: network.transport
       ignore_failure: true
