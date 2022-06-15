@@ -3492,6 +3492,7 @@ SSL/TLS handshake info.
 | log.offset | Offset of the entry in the log file. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -3511,6 +3512,7 @@ SSL/TLS handshake info.
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.client.issuer | Distinguished name of subject of the issuer of the x.509 certificate presented by the client. | keyword |
+| tls.client.ja3 | A hash that identifies clients based on how they perform an SSL/TLS handshake. | keyword |
 | tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.client.x509.subject.country | List of country (C) code | keyword |
 | tls.client.x509.subject.locality | List of locality names (L) | keyword |
@@ -3520,7 +3522,11 @@ SSL/TLS handshake info.
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.established | Boolean flag indicating if the TLS negotiation was successful and transitioned to an encrypted tunnel. | boolean |
 | tls.resumed | Boolean flag indicating if this TLS connection was resumed from an existing TLS negotiation. | boolean |
+| tls.server.hash.sha1 | Certificate fingerprint using the SHA1 digest of DER-encoded version of certificate offered by the server. For consistency with other hash values, this value should be formatted as an uppercase hash. | keyword |
 | tls.server.issuer | Subject of the issuer of the x.509 certificate presented by the server. | keyword |
+| tls.server.ja3s | A hash that identifies servers based on how they perform an SSL/TLS handshake. | keyword |
+| tls.server.not_after | Timestamp indicating when server certificate is no longer considered valid. | date |
+| tls.server.not_before | Timestamp indicating when server certificate is first considered valid. | date |
 | tls.server.subject | Subject of the x.509 certificate presented by the server. | keyword |
 | tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | tls.server.x509.issuer.country | List of country (C) codes | keyword |
