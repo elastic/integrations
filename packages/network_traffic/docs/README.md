@@ -53,6 +53,13 @@ filter, very little CPU is required to discard the packet. Network Packet Captur
 also uses the ports specified here to determine which parser to use for
 each packet.
 
+#### `monitor_processes`
+
+If this option is enabled then network traffic events will be enriched
+with information about the process associated with the events.
+
+The default value is false.
+
 #### `send_request`
 
 If this option is enabled, the raw message of the request (`request`
@@ -4272,6 +4279,7 @@ Fields published for TLS packets.
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
