@@ -275,7 +275,7 @@ processors:
       if: '["aue_remove_from_group", "aue_mac_set_proc"].contains(ctx.event?.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_session" }}'
-      if: '["aue_session_end", "aue_session_update", "aue_session_close", "AUE_SESSION_START"].contains(ctx.event?.action)'
+      if: '["aue_session_end", "aue_session_update", "aue_session_close", "aue_session_start"].contains(ctx.event?.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_arguments" }}'
       if: '["aue_setsockopt", "aue_shutdown"].contains(ctx.event?.action)'
@@ -318,30 +318,6 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_wait4" }}'
       if: ctx.event?.action == 'aue_wait4'
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_missing: true
-  - remove:
-      field: json
-      ignore_missing: true
-  - script:
-      description: Drops null/empty values recursively.
-      lang: painless
-      source: 
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);  
 on_failure:
   - set:
       field: error.message

@@ -13,14 +13,6 @@ The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documen
 3. Click on "Jamf Compliance Reporter" integration from the search results.
 4. Click on **Add Jamf Compliance Reporter** button to add Jamf Compliance Reporter integration.
 
-### Configure the Jamf Compliance Reporter integration for REST Endpoint Remote logging
-
-1. Enter values for "Listen Address", "Listen Port" and "URL" to form the endpoint URL. Make note of the **Endpoint URL** `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
-
-### Configure the Jamf Compliance Reporter integration for TLS Remote Logging
-
-1. Enter values for "Listen Address" and "Listen Port" to form the TLS. `http://{AGENT_ADDRESS}:{AGENT_PORT}`.
-
 ## Setup Steps
 
 - After validating settings, you can use a configuration profile in Jamf Pro to deploy certificates to endpoints in production.
@@ -29,12 +21,24 @@ The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documen
 
 ## Follow one of the below methods to collect logs from Jamf Compliance Reporter
 
-- Reference link for generating [REST Endpoint Remote logging](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html) for Compliance Reporter.
+### REST Endpoint Remote logging
+1. Reference link for configuring [REST Endpoint Remote logging](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html) for Compliance Reporter.
+2. In Jamf Configuration Profile, form the full URL with port in the form `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
 
-- Reference link for generating [TLS Remote Logging](https://docs.jamf.com/compliance-reporter/documentation/TLS_Remote_Logging.html) for Compliance Reporter.
+### TLS Remote Logging
+1. Reference link for generating [TLS Remote Logging](https://docs.jamf.com/compliance-reporter/documentation/TLS_Remote_Logging.html) for Compliance Reporter.
+2. In Jamf Configuration Profile, form the full URL with port in the form `tls://{AGENT_ADDRESS}:{AGENT_PORT}`.
+
+### Configure the Jamf Compliance Reporter integration with REST Endpoint Remote logging for Rest Endpoint Input
+
+- Enter values for "Listen Address", "Listen Port" and "URL" to form the endpoint URL. Make note of the **Endpoint URL** `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
+
+### Configure the Jamf Compliance Reporter integration with TLS Remote Logging for TCP Input
+
+- Enter values for "Listen Address" and "Listen Port" to form the TLS.
 
 ## Compatibility
-This package has been tested for Compliance Reporter against Jamf pro version 10.18.0.
+This package has been tested for Compliance Reporter against Jamf pro version 10.39.0 and Jamf Compliance Reporter version 1.0.4.
 
 ## Logs
 
@@ -51,11 +55,12 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-10-02T16:17:08.000Z",
     "agent": {
-        "ephemeral_id": "c414368d-238a-4449-8566-947e49f0af89",
-        "id": "21ddd86a-1e71-4038-94e2-10deecd447ee",
+        "ephemeral_id": "6149e281-aed5-4797-84b9-34e1a9845e72",
+        "hostname": "docker-fleet-agent",
+        "id": "db746ba5-8718-4fd3-abec-6e629eb71821",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.1"
+        "version": "7.17.0"
     },
     "data_stream": {
         "dataset": "jamf_compliance_reporter.log",
@@ -66,9 +71,9 @@ An example event for `log` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "21ddd86a-1e71-4038-94e2-10deecd447ee",
+        "id": "db746ba5-8718-4fd3-abec-6e629eb71821",
         "snapshot": false,
-        "version": "8.2.1"
+        "version": "7.17.0"
     },
     "event": {
         "action": "preference_list_event",
@@ -77,7 +82,7 @@ An example event for `log` looks as following:
             "process"
         ],
         "dataset": "jamf_compliance_reporter.log",
-        "ingested": "2022-06-10T13:38:51Z",
+        "ingested": "2022-06-14T06:30:18Z",
         "kind": "event",
         "type": [
             "info"
@@ -161,7 +166,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.96.7:53256"
+            "address": "172.27.0.1:60440"
         }
     },
     "related": {

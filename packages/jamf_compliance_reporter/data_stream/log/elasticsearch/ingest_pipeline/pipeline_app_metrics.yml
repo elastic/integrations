@@ -106,32 +106,7 @@ processors:
       source: |
         ctx.host.cpu = new HashMap();
         ctx.host.cpu.usage = Math.round(ctx.json?.app_metric_info?.cpu_percentage *10) / 1000.0;
-  - remove:
-      field: json
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
-  - script:
-      description: Drops null/empty values recursively.
-      lang: painless
-      source: 
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

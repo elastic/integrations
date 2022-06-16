@@ -13,14 +13,6 @@ The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documen
 3. Click on "Jamf Compliance Reporter" integration from the search results.
 4. Click on **Add Jamf Compliance Reporter** button to add Jamf Compliance Reporter integration.
 
-### Configure the Jamf Compliance Reporter integration for REST Endpoint Remote logging
-
-1. Enter values for "Listen Address", "Listen Port" and "URL" to form the endpoint URL. Make note of the **Endpoint URL** `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
-
-### Configure the Jamf Compliance Reporter integration for TLS Remote Logging
-
-1. Enter values for "Listen Address" and "Listen Port" to form the TLS. `http://{AGENT_ADDRESS}:{AGENT_PORT}`.
-
 ## Setup Steps
 
 - After validating settings, you can use a configuration profile in Jamf Pro to deploy certificates to endpoints in production.
@@ -29,12 +21,24 @@ The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documen
 
 ## Follow one of the below methods to collect logs from Jamf Compliance Reporter
 
-- Reference link for generating [REST Endpoint Remote logging](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html) for Compliance Reporter.
+### REST Endpoint Remote logging
+1. Reference link for configuring [REST Endpoint Remote logging](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html) for Compliance Reporter.
+2. In Jamf Configuration Profile, form the full URL with port in the form `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
 
-- Reference link for generating [TLS Remote Logging](https://docs.jamf.com/compliance-reporter/documentation/TLS_Remote_Logging.html) for Compliance Reporter.
+### TLS Remote Logging
+1. Reference link for generating [TLS Remote Logging](https://docs.jamf.com/compliance-reporter/documentation/TLS_Remote_Logging.html) for Compliance Reporter.
+2. In Jamf Configuration Profile, form the full URL with port in the form `tls://{AGENT_ADDRESS}:{AGENT_PORT}`.
+
+### Configure the Jamf Compliance Reporter integration with REST Endpoint Remote logging for Rest Endpoint Input
+
+- Enter values for "Listen Address", "Listen Port" and "URL" to form the endpoint URL. Make note of the **Endpoint URL** `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
+
+### Configure the Jamf Compliance Reporter integration with TLS Remote Logging for TCP Input
+
+- Enter values for "Listen Address" and "Listen Port" to form the TLS.
 
 ## Compatibility
-This package has been tested for Compliance Reporter against Jamf pro version 10.18.0.
+This package has been tested for Compliance Reporter against Jamf pro version 10.39.0 and Jamf Compliance Reporter version 1.0.4.
 
 ## Logs
 

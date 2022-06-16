@@ -79,7 +79,7 @@ processors:
       if: ctx.event?.action == 'audit_class_verification_event'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_compliance_reporter_tamper_event_and_file_event_info" }}'
-      if: '["compliancereporter_tamper_event", "file_event"].contains(ctx.event?.action)'
+      if: '["compliance_reporter_tamper_event", "file_event"].contains(ctx.event?.action)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_gatekeeper_info_event" }}'
       if: ctx.event?.action == 'gatekeeper_info_event'
@@ -116,31 +116,6 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_xprotect_event_log" }}'
       if: ctx.event?.action == 'xprotect_event_log'
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
-      field: json
-      ignore_missing: true
-  - script:
-      description: Drops null/empty values recursively.
-      lang: painless
-      source: 
-        boolean dropEmptyFields(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
-          }
-          return false;
-        }
-        dropEmptyFields(ctx);
 on_failure:
   - set:
       field: error.message
