@@ -616,32 +616,32 @@
                                     "layers": {
                                         "ba586c5f-d8fb-4a69-bbb6-dc4ef2a08fd1": {
                                             "columnOrder": [
-                                                "9ef1ac51-62b2-4f29-b907-cfdd43c81f6b",
-                                                "521c8de1-a56b-4f5c-a347-6f4a3f20038f",
-                                                "521c8de1-a56b-4f5c-a347-6f4a3f20038fX0",
-                                                "521c8de1-a56b-4f5c-a347-6f4a3f20038fX1"
+                                                "5aa8c5da-b052-4a44-9a62-2f2536c7f64e",
+                                                "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX2",
+                                                "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX0",
+                                                "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX1"
                                             ],
                                             "columns": {
-                                                "521c8de1-a56b-4f5c-a347-6f4a3f20038f": {
+                                                "5aa8c5da-b052-4a44-9a62-2f2536c7f64e": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Current Memory Consumption (In Kb)",
+                                                    "label": "Memory Usage %",
                                                     "operationType": "formula",
                                                     "params": {
-                                                        "formula": "median(memcached.stats.bytes.current)/1000",
+                                                        "formula": "median(memcached.stats.bytes.current)/median(memcached.stats.bytes.limit)*100",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "521c8de1-a56b-4f5c-a347-6f4a3f20038fX1"
+                                                        "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX2"
                                                     ],
                                                     "scale": "ratio"
                                                 },
-                                                "521c8de1-a56b-4f5c-a347-6f4a3f20038fX0": {
+                                                "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX0": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Current Memory Consumption (In Kb)",
+                                                    "label": "Part of Memory Usage %",
                                                     "operationType": "median",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -649,44 +649,51 @@
                                                     "scale": "ratio",
                                                     "sourceField": "memcached.stats.bytes.current"
                                                 },
-                                                "521c8de1-a56b-4f5c-a347-6f4a3f20038fX1": {
+                                                "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX1": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of Current Memory Consumption (In Kb)",
+                                                    "label": "Part of Memory Usage %",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "memcached.stats.bytes.limit"
+                                                },
+                                                "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Memory Usage %",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
                                                             "args": [
-                                                                "521c8de1-a56b-4f5c-a347-6f4a3f20038fX0",
-                                                                1000
+                                                                {
+                                                                    "args": [
+                                                                        "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX0",
+                                                                        "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX1"
+                                                                    ],
+                                                                    "name": "divide",
+                                                                    "type": "function"
+                                                                },
+                                                                100
                                                             ],
                                                             "location": {
-                                                                "max": 42,
+                                                                "max": 77,
                                                                 "min": 0
                                                             },
-                                                            "name": "divide",
-                                                            "text": "median(memcached.stats.bytes.current)/1000",
+                                                            "name": "multiply",
+                                                            "text": "median(memcached.stats.bytes.current)/median(memcached.stats.bytes.limit)*100",
                                                             "type": "function"
                                                         }
                                                     },
                                                     "references": [
-                                                        "521c8de1-a56b-4f5c-a347-6f4a3f20038fX0"
+                                                        "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX0",
+                                                        "5aa8c5da-b052-4a44-9a62-2f2536c7f64eX1"
                                                     ],
                                                     "scale": "ratio"
-                                                },
-                                                "9ef1ac51-62b2-4f29-b907-cfdd43c81f6b": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -700,31 +707,14 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "521c8de1-a56b-4f5c-a347-6f4a3f20038f"
-                                        ],
-                                        "layerId": "ba586c5f-d8fb-4a69-bbb6-dc4ef2a08fd1",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "9ef1ac51-62b2-4f29-b907-cfdd43c81f6b"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
+                                "accessor": "5aa8c5da-b052-4a44-9a62-2f2536c7f64e",
+                                "layerId": "ba586c5f-d8fb-4a69-bbb6-dc4ef2a08fd1",
+                                "layerType": "data"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -732,7 +722,7 @@
                 "gridData": {
                     "h": 15,
                     "i": "ae0e3054-5ac1-45c7-8872-2df236379f94",
-                    "w": 24,
+                    "w": 15,
                     "x": 24,
                     "y": 30
                 },
