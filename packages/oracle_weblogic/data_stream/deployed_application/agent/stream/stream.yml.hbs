@@ -1,0 +1,37 @@
+metricsets: ["jmx"]
+namespace: "metrics"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+http_method: "GET"
+path: {{path}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+username: {{username}}
+password: {{password}}
+period: {{period}}
+jmx.mappings:  
+  - mbean: 'com.bea:ApplicationRuntime=*,Name=*,ServerRuntime=*,Type=WebAppComponentRuntime'
+    attributes:
+    - attr: DeploymentState
+      field: deployed_application.deployment.state.value
+    - attr: OpenSessionsHighCount
+      field: deployed_application.sessions.open.high
+    - attr: OpenSessionsCurrentCount
+      field: deployed_application.sessions.open.current
+    - attr: SessionsOpenedTotalCount
+      field: deployed_application.sessions.open.total
+    - attr: SingleThreadedServletPoolSize
+      field: deployed_application.single_threaded_servlet_pool_size
+    - attr: Status
+      field: deployed_application.status
+    - attr: SessionTimeoutSecs
+      field: deployed_application.session_timeout
+    - attr: SourceInfo
+      field: deployed_application.source_info

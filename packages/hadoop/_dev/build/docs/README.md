@@ -34,6 +34,13 @@ This data stream collects Datanode metrics.
 
 {{fields "datanode"}}
 
+## namenode
+
+This data stream collects Namenode metrics.
+
+{{event "namenode"}}
+
+{{fields "namenode"}}
 ## node_manager
 
 This data stream collects Node Manager metrics.
