@@ -228,18 +228,7 @@ processors:
   - remove:
       field:
         - json
-        - _temp_
-        - azure.firewall.srcaddr
-        - azure.firewall.srcport
-        - azure.firewall.dstaddr
-        - azure.firewall.dstport
-        - azure.firewall.outside_dstaddr
-        - azure.firewall.inside_dstaddr
-        - azure.firewall.outside_dstport
-        - azure.firewall.inside_dstport
-        - azure.firewall.network_proto
-        - azure.firewall.web_category
-        - azure.firewall.dns_flags
+        - azure.firewall.proto
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
@@ -272,7 +261,7 @@ on_failure:
       value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
   - remove:
       field:
-        - _temp_
+        - json
         - _conf
         - message
       ignore_missing: true
