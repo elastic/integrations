@@ -13,19 +13,25 @@ services:
       - --addr=:8080
       - --config=/files/config.yml
   threatstream-webhook-http:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.6.1
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
       - STREAM_PROTOCOL=webhook
-      - STREAM_ADDR=http://elastic-agent:9080/threatstream
-    command: log --start-signal=SIGHUP --delay=5s /sample_logs/test-threatstream-ndjson.log
+      - STREAM_ADDR=http://elastic-agent:9080/
+    command: log --webhook-content-type application/x-ndjson --start-signal=SIGHUP --delay=5s /sample_logs/test-threatstream-ndjson.log
   threatstream-webhook-https:
-    image: akroh/stream:v0.2.0
+    image: docker.elastic.co/observability/stream:v0.6.1
     volumes:
       - ./sample_logs:/sample_logs:ro
     environment:
       - STREAM_PROTOCOL=webhook
       - STREAM_INSECURE=true
-      - STREAM_ADDR=https://elastic-agent:7443/threatstream
-    command: log --start-signal=SIGHUP --delay=5s /sample_logs/test-threatstream-ndjson.log
+      - STREAM_ADDR=https://elastic-agent:7443/
+    command: log --webhook-content-type application/x-ndjson --start-signal=SIGHUP --delay=5s /sample_logs/test-threatstream-ndjson.log
+  threatstream-integrator-test:
+    image: docker.io/adrisr/filebeat-anomali-integrator-test:latest
+    volumes:
+      - ./files:/files:ro
+    command:
+      - /files/test-intel.ndjson

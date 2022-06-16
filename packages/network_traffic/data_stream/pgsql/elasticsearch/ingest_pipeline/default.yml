@@ -21,6 +21,20 @@ processors:
 - uppercase:
     field: host.mac
     ignore_missing: true
+- script:
+    description: Remove invalid "network_traffic" term added by packetbeat prior to v8.
+    # This string-based comparison is valid while versions are below v10.x.
+    if: 'ctx.agent?.version == null || ctx.agent.version.compareTo("8.") < 0'
+    lang: painless
+    source: >
+        if (ctx.event?.category != null) {
+            for (int i=ctx.event.category.length-1; i>=0; i--) {
+                if (ctx.event.category[i] == "network_traffic") {
+                    ctx.event.category.remove(i);
+                }
+            }
+        }
+
 on_failure:
 - set:
     field: error.message
