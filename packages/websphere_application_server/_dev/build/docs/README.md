@@ -3,6 +3,9 @@
 This Elastic integration is used to collect the following metrics from [IBM WebSphere Application Server](https://www.ibm.com/cloud/websphere-application-server):
 
    - JDBC metrics
+   - Servlet metrics
+   - Session Manager metrics
+   - ThreadPool metrics
 
 This integration uses Prometheus to collect above metrics.
 
@@ -15,3 +18,27 @@ This data stream collects JDBC (Java Database Connectivity) related metrics.
 {{event "jdbc"}}
 
 {{fields "jdbc"}}
+
+## Servlet
+
+This data stream collects Servlet related metrics.
+
+{{event "servlet"}}
+
+{{fields "servlet"}}
+
+### Session Manager
+
+This data stream collects metrics related to Sessions.
+
+{{event "session_manager"}}
+
+{{fields "session_manager"}}
+
+## ThreadPool
+
+This data stream collects Thread related metrics.
+
+{{event "threadpool"}}
+
+{{fields "threadpool"}}
