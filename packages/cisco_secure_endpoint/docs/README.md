@@ -1,7 +1,6 @@
 # Cisco Secure Endpoint Integration
 
-This integration is for Cisco Secure Endpoint logs. It includes the following
-datasets for receiving logs over syslog or read from a file:
+This integration is for [Cisco Secure Endpoint](https://developer.cisco.com/amp-for-endpoints/) logs. It includes the following datasets for receiving logs over syslog or read from a file:
 
 - `event` dataset: supports Cisco Secure Endpoint Event logs.
 
@@ -66,7 +65,7 @@ An example event for `event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "83d8d392-d20c-40ef-a257-bf9cf314d1db",

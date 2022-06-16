@@ -1,12 +1,12 @@
 # GitHub Integration
 
-The GitHub integration collects audit events from the GitHub API.
+The GitHub integration collects audit events from the [GitHub API](https://docs.github.com/en/rest ).
 
 ## Logs
 
 ### Audit
 
-The GitHub audit log records all events related to the GitHub organization. See [https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) for more details.
+The GitHub audit log records all events related to the GitHub organization. See [Audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) for more details.
 
 To use this integration, you must be an organization owner, and you must use an Personal Access Token with the admin:org scope.
 
@@ -84,7 +84,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
