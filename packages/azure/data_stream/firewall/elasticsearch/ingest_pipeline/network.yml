@@ -4,9 +4,11 @@ processors:
   - grok:
       field: json.properties.msg
       patterns:
-        - "^%{DATA:network.transport} request from %{IP:source.address}:%{NUMBER:source.port:long} to %{IP:destination.address}:%{NUMBER:destination.port:long}. Action: %{DATA:azure.firewall.action}. $" 
-        - "^%{DATA:network.transport} Type=%{DATA:azure.firewall.icmp.request.code} request from %{IP:source.address} to %{IP:destination.address}. Action: %{DATA:azure.firewall.action}. $"
-        - "^%{DATA:network.transport} request from %{IP:source.address}:%{NUMBER:source.port:long} to %{IP:destination.address}:%{NUMBER:destination.port:long} was DNAT'ed to %{IP:destination.nat.ip}:%{NUMBER:destination.nat.port:long}$"
+        - "^%{DATA:azure.firewall.proto} request from %{IPORHOST:source.address}:%{NUMBER:source.port:long} to %{IPORHOST:destination.address}:%{NUMBER:destination.port:long}. Action: %{DATA:azure.firewall.action}. $" 
+        - "^%{DATA:azure.firewall.proto} Type=%{DATA:azure.firewall.icmp.request.code} request from %{IPORHOST:source.address} to %{IPORHOST:destination.address}. Action: %{DATA:azure.firewall.action}. $"
+        - "^%{DATA:azure.firewall.proto} request from %{IPORHOST:source.address}:%{NUMBER:source.port:long} to %{IPORHOST:destination.address}:%{NUMBER:destination.port:long} was DNAT'ed to %{IP:destination.nat.ip}:%{NUMBER:destination.nat.port:long}$"
+        - "^%{DATA:azure.firewall.proto} request from %{IPORHOST:source.address}:(%{NUMBER:source.port:long})? to %{IPORHOST:destination.address}:(%{NUMBER:destination.port:long})?. Action: %{DATA:azure.firewall.action}. Signature: %{DATA:rule.id}. IDS: %{DATA:rule.name}. Priority: %{NUMBER:event.risk_score:long}. Classification: %{DATA:rule.category}$" 
+        - "^%{DATA:azure.firewall.proto} request from %{IPORHOST:source.address}:%{NUMBER:source.port:long} to %{IPORHOST:destination.address}:%{NUMBER:destination.port:long}. Url: %{HOSTNAME:url.original}. Action: %{DATA:azure.firewall.action}. ThreatIntel: %{DATA:rule.name}$" 
 
   - set:
       field: json.event.alert.action
@@ -21,14 +23,20 @@ processors:
       value: "{{json.event.alert.action}}"
       if: ctx.json?.event?.alert?.action != null
 
-  - set:
-      field: source.ip
-      copy_from: source.address
-      ignore_empty_value: true
-  - set:
-      field: destination.ip
-      copy_from: destination.address
-      ignore_empty_value: true
+  - grok:
+      field: source.address
+      patterns:
+        - "%{IP:source.ip}"
+        - "%{HOSTNAME:source.domain}"
+      ignore_missing: true
+      
+  - grok:
+      field: destination.address
+      patterns:
+        - "%{IP:destination.ip}"
+        - "%{HOSTNAME:destination.domain}"
+      ignore_missing: true
+
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -77,15 +85,46 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - append:
-      if: ctx?.destination.ip != null
+      if: ctx?.destination?.ip != null
       field: related.ip
       value: "{{destination.ip}}"
       allow_duplicates: false
       ignore_failure: true
+  - append:
+      if: ctx?.destination?.nat?.ip != null
+      field: related.ip
+      value: "{{destination.nat.ip}}"
+      allow_duplicates: false
+      ignore_failure: true
+    
+  - append:
+      if: ctx?.source?.domain != null
+      field: related.hosts
+      value: "{{source.domain}}"
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      if: ctx?.destination?.domain != null
+      field: related.hosts
+      value: "{{destination.domain}}"
+      allow_duplicates: false
+      ignore_failure: true
 
   - lowercase:
-      field: network.transport
+      field: azure.firewall.proto
       ignore_failure: true
+  - set:
+      field: network.transport
+      value: "{{azure.firewall.proto}}"
+      if: "ctx?.azure?.firewall?.proto != null && ['udp', 'tcp', 'icmp'].contains(ctx.azure.firewall.proto)"
+  - set:
+      field: network.protocol
+      value: "{{azure.firewall.proto}}"
+      if: "ctx?.network?.transport == null"
+  - remove:
+      field:
+        - azure.firewall.proto
+      ignore_missing: true
 
   - script:
       lang: painless
