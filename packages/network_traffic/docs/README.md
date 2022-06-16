@@ -209,6 +209,11 @@ The default value is 10s.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -377,6 +382,11 @@ Fields published for AMQP packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -686,6 +696,11 @@ Fields published for Apache Cassandra packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -947,6 +962,11 @@ Fields published for DHCPv4 packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -1215,6 +1235,11 @@ Fields published for DNS packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -1613,6 +1638,11 @@ Fields published for HTTP packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -1881,6 +1911,11 @@ Fields published for ICMP packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -2168,6 +2203,11 @@ Fields published for Memcached packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -2418,6 +2458,11 @@ Fields published for MongoDB packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -2650,6 +2695,11 @@ Fields published for MySQL packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -2865,6 +2915,11 @@ Fields published for NFS packets.
 | nfs.version | NFS protocol version number. | long |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -3116,6 +3171,11 @@ Fields published for PostgreSQL packets.
 | pgsql.error_severity | The PostgreSQL error severity. | keyword |
 | pgsql.num_fields | If the SELECT query if successful, this field is set to the number of fields returned. | long |
 | pgsql.num_rows | If the SELECT query if successful, this field is set to the number of rows returned. | long |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -3331,6 +3391,11 @@ Fields published for Redis packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | redis.error | If the Redis command has resulted in an error, this field contains the error message returned by the Redis server. | keyword |
 | redis.return_value | The return value of the Redis command in a human readable format. | keyword |
@@ -3555,6 +3620,11 @@ Fields published for SIP packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -4009,6 +4079,11 @@ Fields published for Thrift packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -4282,6 +4357,11 @@ Fields published for TLS packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | The command-line of the process. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.name | The name of the process. | keyword |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
