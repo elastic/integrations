@@ -1,18 +1,18 @@
 ---
 description: Pipeline for processing Azure Firewall DNS proxy rule logs.
 processors:
-  - dissect:
+  - grok:
       field: json.properties.msg
-      pattern: 'DNS Request: %{source.address}:%{source.port} - %{azure.firewall.event_original_uid} %{dns.question.type} %{dns.question.class} %{dns.question.name}. %{network.transport} %{source.bytes} %{azure.firewall.dnssec_bool_flag} %{azure.firewall.dnssec_buffer_size} %{dns.response_code} %{dns.header_flags} %{destination.bytes} %{azure.firewall.duration}'
+      patterns:
+        - "^DNS Request: %{IPORHOST:source.address}:%{NUMBER:source.port:long} - %{DATA:azure.firewall.event_original_uid} %{DATA:dns.question.type} %{DATA:dns.question.class} %{DATA:dns.question.name}. %{DATA:network.transport} %{NUMBER:source.bytes:long} %{DATA:azure.firewall.dnssec_bool_flag:boolean} %{NUMBER:azure.firewall.dnssec_buffer_size:long} %{DATA:dns.response_code} %{DATA:dns.header_flags} %{NUMBER:destination.bytes:long} %{DATA:azure.firewall.duration}$"
 
-  - set:
-      field: source.ip
-      copy_from: source.address
-      ignore_empty_value: true
-  - geoip:
-      field: source.ip
-      target_field: source.geo
+  - grok:
+      field: source.address
+      patterns:
+        - "%{IP:source.ip}"
+        - "%{HOSTNAME:source.domain}"
       ignore_missing: true
+      
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -28,10 +28,6 @@ processors:
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
-      ignore_missing: true
-  - convert:
-      field: source.port
-      type: long
       ignore_missing: true
   - uppercase:
       field: dns.header_flags
