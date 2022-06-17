@@ -1,6 +1,6 @@
 # MISP Integration
 
-The MISP integration uses the REST API from the running MISP instance to retrieve indicators and Threat Intelligence.
+The MISP integration uses the [REST API from the running MISP instance](https://www.circl.lu/doc/misp/automation/#automation-api) to retrieve indicators and Threat Intelligence.
 
 ## Logs
 
