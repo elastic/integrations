@@ -1,6 +1,6 @@
 # Apache Spark Integration
 
-The Apache Spark integration collects and parses data using the Jolokia Metricbeat Module.
+The Apache Spark integration collects and parses data using the Jolokia Input.
 
 ## Compatibility
 
@@ -70,10 +70,27 @@ This is the `application` data stream.
 {{event "application"}}
 
 {{fields "application"}}
-### Nodes
 
-This is the `nodes` data stream.
+### Driver
 
-{{event "nodes"}}
+This is the `driver` data stream.
 
-{{fields "nodes"}}
+{{event "driver"}}
+
+{{fields "driver"}}
+
+### Executor
+
+This is the `executor` data stream.
+
+{{event "executor"}}
+
+{{fields "executor"}}
+
+### Node
+
+This is the `node` data stream.
+
+{{event "node"}}
+
+{{fields "node"}}

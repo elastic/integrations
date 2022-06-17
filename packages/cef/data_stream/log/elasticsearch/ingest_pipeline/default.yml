@@ -4,7 +4,7 @@ description: Pipeline for CEF logs. CEF decoding happens in the Agent. This perf
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.2.0'
 
   - convert:
       field: event.id
@@ -142,6 +142,13 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+
+  # Cleanup
+  - remove:
+      field:
+        - cef.extensions._cefVer
+      ignore_missing: true
+
 on_failure:
   - remove:
       field:
