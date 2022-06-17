@@ -4,7 +4,7 @@ description: Pipeline for parsing Suricata EVE logs
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.2.0'
   - set:
       field: event.original
       copy_from: message
@@ -630,6 +630,15 @@ processors:
       if: ctx?.destination?.ip != null
       field: related.ip
       value: '{{{destination.ip}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{tls.server.ja3s}}"
+      if: "ctx?.tls?.server?.ja3s != null"
+  - append:
+      field: related.hash
+      value: "{{tls.client.ja3}}"
+      if: "ctx?.tls?.client?.ja3 != null"
       allow_duplicates: false
   - remove:
       field: suricata.eve.alert.metadata

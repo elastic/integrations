@@ -1,9 +1,6 @@
 ---
 description: Pipeline for parsing system authorisation/secure logs
 processors:
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - grok:
       field: message
       ignore_missing: true
@@ -137,12 +134,12 @@ processors:
       ignore_failure: true
       source: >-
         if (ctx.system.auth.ssh.event == "Accepted") {
-          ctx.event.type = ["authentication_success", "info"];
+          ctx.event.type = ["info"];
           ctx.event.category = ["authentication","session"];
           ctx.event.action = "ssh_login";
           ctx.event.outcome = "success";
         } else if (ctx.system.auth.ssh.event == "Invalid" || ctx.system.auth.ssh.event == "Failed") {
-          ctx.event.type = ["authentication_failure", "info"];
+          ctx.event.type = ["info"];
           ctx.event.category = ["authentication"];
           ctx.event.action = "ssh_login";
           ctx.event.outcome = "failure";
