@@ -27,28 +27,16 @@ processors:
         - host.id
         - panw.panos.serial_number
         - host.mac
+        - _temp_.high_res_timestamp
 
-  - grok:
-      field: _temp_.srcuser
-      ignore_missing: true
+  - set:
+      field: panw.panos.source.ip
+      copy_from: source.ip
       ignore_failure: true
-      patterns:
-        - '%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}'
-        - '%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}'
-        - '%{USERNAME:source.user.name}'
-      if: ctx?._temp_?.srcuser != null
   - set:
       field: source.ip
       value: "{{_temp_.source_ipv6}}"
       if: ctx?._temp_?.source_ipv6 != null && ctx?._temp_?.source_ipv6 != "" && ctx?._temp_?.source_ipv6 != "0.0.0.0"
-  - set:
-      field: network.type
-      value: 'ipv4'
-      if: 'ctx?.network?.type == null && ctx?.source?.ip.contains(".")'
-  - set:
-      field: network.type
-      value: 'ipv6'
-      if: 'ctx?.network?.type == null && ctx?.source?.ip.contains(":")'
 
 # Set event.category.
   - set:
@@ -58,6 +46,32 @@ processors:
       field: event.category
       value:
         - network
+
+# Set custom fields to ECS fields
+  - set:
+      field: panw.panos.host.id
+      copy_from: host.id
+      ignore_failure: true
+  - set:
+      field: panw.panos.machine.name
+      copy_from: host.name
+      ignore_failure: true
+  - set:
+      field: panw.panos.machine.os
+      copy_from: host.os.full
+      ignore_failure: true
+  - set:
+      field: panw.panos.device_name
+      copy_from: observer.hostname
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.ipv6
+      copy_from: _temp_.source_ipv6
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.user
+      copy_from: _temp_.srcuser
+      ignore_failure: true
 
 on_failure:
   - append:

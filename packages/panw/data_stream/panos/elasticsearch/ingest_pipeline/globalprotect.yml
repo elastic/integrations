@@ -30,15 +30,27 @@ processors:
         - event.duration
         - panw.panos.connect_method
         - panw.panos.error_code
-        - observer.hostname
+        - panw.panos.portal
         - panw.panos.sequence_number
         - panw.panos.action_flags
+        - _temp_.high_res_timestamp
         - panw.panos.selection_type
         - panw.panos.response_time
         - panw.panos.priority
         - panw.panos.attempted_gateways
         - panw.panos.gateway
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - observer.hostname
+        - panw.panos.vsys_id
 
+  - set:
+      field: panw.panos.private.ip
+      copy_from: source.ip
+      ignore_failure: true
   - set:
       field: source.ip
       value: "{{_temp_.private_ipv6}}"
@@ -48,25 +60,13 @@ processors:
       value: "{{source.ip}}"
       if: ctx.source?.ip != null
   - set:
+      field: panw.panos.public.ip
+      copy_from: source.nat.ip
+      ignore_failure: true
+  - set:
       field: source.nat.ip
       value: "{{_temp_.public_ipv6}}"
       if: (ctx.source?.nat?.ip == null || ctx.source?.nat?.ip == "0.0.0.0") && ctx._temp_?.public_ipv6 != null && ctx._temp_?.public_ipv6 != "0.0.0.0"
-  - grok:
-      field: _temp_.srcuser
-      ignore_missing: true
-      patterns:
-        - '%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}'
-        - '%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}'
-        - '%{USERNAME:source.user.name}'
-      if: ctx?._temp_?.srcuser != null
-  - set:
-      field: network.type
-      value: 'ipv4'
-      if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(".")'
-  - set:
-      field: network.type
-      value: 'ipv6'
-      if: 'ctx.network?.type == null && ctx.source?.ip != null && ctx.source.ip.contains(":")'
 
 # Set event.category.
   - set:
@@ -76,6 +76,64 @@ processors:
       field: event.category
       value:
         - network
+
+# Set custom fields to ECS fields
+  - set:
+      field: panw.panos.event.id
+      copy_from: event.code
+      ignore_failure: true
+  - set:
+      field: panw.panos.login_duration
+      copy_from: event.duration
+      ignore_failure: true
+  - set:
+      field: panw.panos.event.status
+      copy_from: event.outcome
+      ignore_failure: true
+  - set:
+      field: panw.panos.event.reason
+      copy_from: event.reason
+      ignore_failure: true
+  - set:
+      field: panw.panos.host.id
+      copy_from: host.id
+      ignore_failure: true
+  - set:
+      field: panw.panos.machine.name
+      copy_from: host.name
+      ignore_failure: true
+  - set:
+      field: panw.panos.client.os
+      copy_from: host.os.family
+      ignore_failure: true
+  - set:
+      field: panw.panos.client.os_version
+      copy_from: host.os.full
+      ignore_failure: true
+  - set:
+      field: panw.panos.location
+      copy_from: observer.geo.name
+      ignore_failure: true
+  - set:
+      field: panw.panos.device_name
+      copy_from: observer.hostname
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.region
+      copy_from: source.geo.name
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.user
+      copy_from: _temp_.srcuser
+      ignore_failure: true
+  - set:
+      field: panw.panos.public.ipv6
+      copy_from: _temp_.public_ipv6
+      ignore_failure: true
+  - set:
+      field: panw.panos.private.ipv6
+      copy_from: _temp_.private_ipv6
+      ignore_failure: true
 
 on_failure:
   - append:

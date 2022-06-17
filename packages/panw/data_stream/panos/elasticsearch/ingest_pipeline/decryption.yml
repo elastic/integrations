@@ -1,0 +1,294 @@
+---
+description: Pipeline for PanOS Decryption Logs.
+processors:
+  - csv:
+      field: message
+      ignore_failure: true
+      target_fields:
+        - source.ip
+        - destination.ip
+        - source.nat.ip
+        - destination.nat.ip
+        - panw.panos.ruleset
+        -  _temp_.srcuser
+        - destination.user.name
+        - network.application
+        - panw.panos.virtual_sys
+        - observer.ingress.zone
+        - observer.egress.zone
+        - observer.ingress.interface.name
+        - observer.egress.interface.name
+        - panw.panos.log_profile
+        - _temp_.logged_time
+        -  panw.panos.flow_id
+        - panw.panos.repeat_count
+        - source.port
+        - destination.port
+        - source.nat.port
+        - destination.nat.port
+        - _temp_.labels
+        - network.transport
+        - panw.panos.action
+        - panw.panos.tunnel_type
+        - _temp_.future_use1
+        - _temp_.future_use2
+        - panw.panos.source_vm_uuid
+        - panw.panos.destination_vm_uuid
+        - rule.uuid
+        - panw.panos.hs_stage_c2f
+        - panw.panos.hs_stage_f2s
+        - tls.version
+        - panw.panos.tls.key_exchange_algorithm
+        - tls.cipher
+        - panw.panos.tls.auth
+        - panw.panos.policy.name
+        - tls.curve
+        - panw.panos.tls.error_type
+        - panw.panos.root_certificate_status
+        - panw.panos.chain_status
+        - panw.panos.proxy_type
+        - tls.client.x509.serial_number
+        - _temp_.hash
+        - tls.client.not_before
+        - tls.client.not_after
+        - tls.client.x509.version_number
+        - tls.client.x509.public_key_size
+        - panw.panos.subject_common_name.length
+        - panw.panos.issuer_common_name.length
+        - panw.panos.root_common_name.length
+        - panw.panos.server_name_indication.length
+        - panw.panos.certificate.flags
+        - panw.panos.subject_common_name.value
+        - panw.panos.issuer_common_name.value
+        - panw.panos.root_common_name.value
+        - tls.client.server_name
+        - panw.panos.error_message
+        - panw.panos.container.id
+        - panw.panos.pod.namespace
+        - panw.panos.pod.name
+        - panw.panos.src.external_dynamic_list
+        - panw.panos.dst.external_dynamic_list
+        - panw.panos.src.dynamic_address_group
+        - panw.panos.dst.dynamic_address_group
+        - _temp_.high_res_timestamp
+        - panw.panos.src.category
+        - panw.panos.src.profile
+        - panw.panos.src.model
+        - panw.panos.src.vendor
+        - panw.panos.src.os.family
+        - panw.panos.src.os.version
+        - panw.panos.src.host
+        - panw.panos.src.mac
+        - panw.panos.dst.category
+        - panw.panos.dst.profile
+        - panw.panos.dst.model
+        - panw.panos.dst.vendor
+        - panw.panos.dst.os.family
+        - panw.panos.dst.os.version
+        - panw.panos.dst.host
+        - panw.panos.dst.mac
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - observer.hostname
+        - panw.panos.vsys_id
+        - panw.panos.application.sub_category
+        - panw.panos.application.category
+        - panw.panos.application.technology
+        - panw.panos.application.risk_level
+        - panw.panos.application.characteristics
+        - panw.panos.application.container
+        # - panw.panos.application.is_saas
+        # - panw.panos.application.is_sanctioned
+        - panw.panos.application.tunneled
+        - panw.panos.application.is_saas
+        - panw.panos.application.is_sanctioned
+
+  - rename:
+      field: _temp_.config_version
+      target_field: panw.panos.config_version
+      ignore_missing: true
+  - date:
+      if: ctx.event?.timezone == null
+      field: tls.client.not_after
+      target_field: tls.client.not_after
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      ignore_failure: true
+  - date:
+      if: ctx.event?.timezone != null
+      field: tls.client.not_after
+      target_field: tls.client.not_after
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      timezone: '{{{ event.timezone }}}'
+      ignore_failure: true
+  - date:
+      if: ctx.event?.timezone == null
+      field: tls.client.not_before
+      target_field: tls.client.not_before
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      ignore_failure: true
+  - date:
+      if: ctx.event?.timezone != null
+      field: tls.client.not_before
+      target_field: tls.client.not_before
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      timezone: '{{{ event.timezone }}}'
+      ignore_failure: true
+
+# Set event.kind & event.category field.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+
+  - script:
+      description: Dynamically map fingerprint hash to MD5, SHA1 and SHA256 hash.
+      lang: painless
+      if: ctx._temp_?.hash != null
+      source: |
+        ctx.tls.client.hash = new HashMap();
+        if (ctx._temp_.hash.length() == 32) {ctx.tls.client.hash.md5 = ctx._temp_.hash}
+        else if (ctx._temp_.hash.length() == 40) {ctx.tls.client.hash.sha1 = ctx._temp_.hash}
+        else if (ctx._temp_.hash.length() == 64) {ctx.tls.client.hash.sha256 = ctx._temp_.hash}
+        
+# Set custom fields to ECS fields
+  - set:
+      field: panw.panos.destination.ip
+      copy_from: destination.ip
+      ignore_failure: true
+  - set:
+      field: panw.panos.destination.nat.ip
+      copy_from: destination.nat.ip
+      ignore_failure: true
+  - set:
+      field: panw.panos.destination.nat.port
+      copy_from: destination.nat.port
+      ignore_failure: true
+  - set:
+      field: panw.panos.destination.port
+      copy_from: destination.port
+      ignore_failure: true
+  - set:
+      field: panw.panos.destination.user
+      copy_from: destination.user.name
+      ignore_failure: true
+  - set:
+      field: panw.panos.network.application
+      copy_from: network.application
+      ignore_failure: true
+  - set:
+      field: panw.panos.protocol
+      copy_from: network.transport
+      ignore_failure: true
+  - set:
+      field: panw.panos.outbound_interface
+      copy_from: observer.egress.interface.name
+      ignore_failure: true
+  - set:
+      field: panw.panos.destination.zone
+      copy_from: observer.egress.zone
+      ignore_failure: true
+  - set:
+      field: panw.panos.device_name
+      copy_from: observer.hostname
+      ignore_failure: true
+  - set:
+      field: panw.panos.inbound_interface
+      copy_from: observer.ingress.interface.name
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.zone
+      copy_from: observer.ingress.zone
+      ignore_failure: true
+  - set:
+      field: panw.panos.rule_uuid
+      copy_from: rule.uuid
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.ip
+      copy_from: source.ip
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.nat.ip
+      copy_from: source.nat.ip
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.port
+      copy_from: source.port
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.nat.port
+      copy_from: source.nat.port
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.user
+      copy_from: _temp_.srcuser
+      ignore_failure: true
+  - set:
+      field: panw.panos.tls.encryption
+      copy_from: tls.cipher
+      ignore_failure: true
+  - set:
+      field: panw.panos.certificate.fingerprint
+      copy_from: panw.panos.fingerprint
+      ignore_failure: true
+  - set:
+      field: panw.panos.certificate.not_after
+      copy_from: tls.client.not_after
+      ignore_failure: true
+  - set:
+      field: panw.panos.certificate.not_before
+      copy_from: tls.client.not_before
+      ignore_failure: true
+  - set:
+      field: panw.panos.server_name_indication.value
+      copy_from: tls.client.server_name
+      ignore_failure: true
+  - set:
+      field: tls.client.server_name
+      copy_from: destination.domain
+      ignore_failure: true
+  - set:
+      field: panw.panos.certificate.size
+      copy_from: tls.client.x509.public_key_size
+      ignore_failure: true
+  - set:
+      field: panw.panos.certificate.serial_number
+      copy_from: tls.client.x509.serial_number
+      ignore_failure: true
+  - set:
+      field: panw.panos.certificate.version
+      copy_from: tls.client.x509.version_number
+      ignore_failure: true
+  - set:
+      field: panw.panos.elliptic_curve
+      copy_from: tls.curve
+      ignore_failure: true
+  - set:
+      field: panw.panos.tls.version
+      copy_from: tls.version
+      ignore_failure: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in Decryption pipeline:
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{_ingest.on_failure_message}}}

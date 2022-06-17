@@ -1,0 +1,149 @@
+---
+description: Pipeline for PanOS SCTP Logs.
+processors:
+  - csv:
+      field: message
+      ignore_failure: true
+      target_fields:
+        - source.ip
+        - destination.ip
+        - _temp_.future_use1
+        - _temp_.future_use2
+        - panw.panos.ruleset
+        - _temp_.future_use3
+        - _temp_.future_use4
+        - _temp_.future_use5
+        - panw.panos.virtual_sys
+        - observer.ingress.zone
+        - observer.egress.zone
+        - observer.ingress.interface.name
+        - observer.egress.interface.name
+        - panw.panos.log_profile
+        - _temp_.future_use6
+        - panw.panos.flow_id
+        - panw.panos.repeat_count
+        - source.port
+        - destination.port
+        - _temp_.future_use7
+        - _temp_.future_use8
+        - _temp_.future_use9
+        - _temp_.future_use10
+        - network.transport
+        - panw.panos.action
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - observer.hostname
+        - panw.panos.sequence_number
+        - _temp_.future_use11
+        - panw.panos.sctp.assoc_id
+        - panw.panos.payload_protocol_id
+        - log.level
+        - panw.panos.sctp.chunk_type
+        - _temp_.future_use12
+        - panw.panos.sctp.verification.tag_1
+        - panw.panos.sctp.verification.tag_2
+        - panw.panos.sctp.cause_code
+        - panw.panos.diameter_app_id
+        - panw.panos.diameter_cmd_code
+        - panw.panos.diameter_avp_code
+        - panw.panos.sctp.stream_id
+        - panw.panos.sctp.assoc_end_reason
+        - panw.panos.op_code
+        - panw.panos.sccp.calling_ssn
+        - panw.panos.sccp.calling_gt
+        - panw.panos.sctp.filter
+        - panw.panos.sctp.chunks
+        - panw.panos.sctp.chunks_sent
+        - panw.panos.sctp.chunks_received
+        - network.packets
+        - source.packets
+        - destination.packets
+        - rule.uuid
+        - _temp_.high_res_timestamp
+
+# Set event.category.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+
+# Set custom fields to ECS fields
+  - set:
+      field: panw.panos.destination.ip
+      copy_from: destination.ip
+      ignore_failure: true
+  - set:
+      field: panw.panos.packets_received
+      copy_from: destination.packets
+      ignore_failure: true
+  - set:
+      field: panw.panos.destination.port
+      copy_from: destination.port
+      ignore_failure: true
+  - set:
+      field: panw.panos.severity
+      copy_from: log.level
+      ignore_failure: true
+  - set:
+      field: panw.panos.network.packets
+      copy_from: network.packets
+      ignore_failure: true
+  - set:
+      field: panw.panos.protocol
+      copy_from: network.transport
+      ignore_failure: true
+  - set:
+      field: panw.panos.outbound_interface
+      copy_from: observer.egress.interface.name
+      ignore_failure: true
+  - set:
+      field: panw.panos.destination.zone
+      copy_from: observer.egress.zone
+      ignore_failure: true
+  - set:
+      field: panw.panos.device_name
+      copy_from: observer.hostname
+      ignore_failure: true
+  - set:
+      field: panw.panos.inbound_interface
+      copy_from: observer.ingress.interface.name
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.zone
+      copy_from: observer.ingress.zone
+      ignore_failure: true
+  - set:
+      field: panw.panos.serial_number
+      copy_from: observer.serial_number
+      ignore_failure: true
+  - set:
+      field: panw.panos.rule_uuid
+      copy_from: rule.uuid
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.ip
+      copy_from: source.ip
+      ignore_failure: true
+  - set:
+      field: panw.panos.packets_sent
+      copy_from: source.packets
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.port
+      copy_from: source.port
+      ignore_failure: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in SCTP pipeline:
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{_ingest.on_failure_message}}}
