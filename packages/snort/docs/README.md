@@ -16,11 +16,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-09-05T16:02:55.000-05:00",
     "agent": {
-        "ephemeral_id": "d1ca036e-57c0-4c4a-9b92-ddc5f4cdb3a2",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "3ada3cc1-9563-4aa5-880e-585d87fc6adf",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "data_stream": {
         "dataset": "snort.log",
@@ -44,12 +44,12 @@ An example event for `log` looks as following:
         "ip": "175.16.199.1"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -58,9 +58,9 @@ An example event for `log` looks as following:
         ],
         "created": "2022-09-05T16:02:55.000-05:00",
         "dataset": "snort.log",
-        "ingested": "2022-02-03T09:26:00Z",
+        "ingested": "2022-05-09T16:00:09Z",
         "kind": "alert",
-        "original": "Sep  5 16:02:55 dev snort: [1:1000015:0] Pinging... [Classification: Misc activity] [Priority: 3] {ICMP} 10.50.10.88 -\u003e 175.16.199.1\n",
+        "original": "Sep  5 16:02:55 dev snort: [1:1000015:0] Pinging... [Classification: Misc activity] [Priority: 3] {ICMP} 10.50.10.88 -\u003e 175.16.199.1",
         "severity": 3,
         "timezone": "-05:00"
     },
@@ -69,7 +69,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.7:38583"
+            "address": "172.18.0.4:54924"
         }
     },
     "network": {
@@ -153,10 +153,16 @@ An example event for `log` looks as following:
 | destination.packets | Packets sent from the destination to the source. | long |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
+| event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
