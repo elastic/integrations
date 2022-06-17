@@ -1,6 +1,6 @@
 # Recorded Future Integration
 
-The Recorded Future integration fetches _risklists_ from the Recorded Future API.
+The Recorded Future integration fetches _risklists_ from the [Recorded Future API](https://api.recordedfuture.com/index.html).
 It supports `domain`, `hash`, `ip` and `url` entities.
 
 In order to use it you need to define the `entity` and `list` to fetch. Check with
