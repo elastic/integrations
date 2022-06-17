@@ -1,4 +1,5 @@
 rules:
+  # Confluence Self Hosted Server
   - path: /rest/auditing/1.0/events
     methods: ["GET"]
     request_headers:
@@ -23,3 +24,30 @@ rules:
       - status_code: 200
         body: |-
           {"entities":[{"timestamp":"2021-11-23T00:44:58.940Z","author":{"name":"test user","type":"user","id":"2c9680837d4a3682017d4a375a280000","uri":"http://confluence.internal:8090/admin/users/viewuser.action?username=admin","avatarUri":""},"type":{"categoryI18nKey":"atlassian.audit.event.category.audit","category":"Auditing","actionI18nKey":"atlassian.audit.event.action.audit.search","action":"Audit Log search performed"},"affectedObjects":[],"changedValues":[],"source":"81.2.69.143","system":"http://confluence.internal:8090","method":"Browser","extraAttributes":[{"nameI18nKey":"atlassian.audit.event.attribute.id","name":"ID Range","value":"1 - 179"},{"nameI18nKey":"atlassian.audit.event.attribute.query","name":"Query","value":""},{"nameI18nKey":"atlassian.audit.event.attribute.results","name":"Results returned","value":"179"},{"nameI18nKey":"atlassian.audit.event.attribute.timestamp","name":"Timestamp Range","value":"2021-11-23T00:34:44.466Z - 2021-11-23T00:44:36.398Z"}]},{"timestamp":"2021-11-23T00:44:36.398Z","author":{"name":"test user","type":"user","id":"2c9680837d4a3682017d4a375a280000","uri":"http://confluence.internal:8090/admin/users/viewuser.action?username=admin","avatarUri":""},"type":{"categoryI18nKey":"atlassian.audit.event.category.audit","category":"Auditing","actionI18nKey":"atlassian.audit.event.action.audit.search","action":"Audit Log search performed"},"affectedObjects":[],"changedValues":[],"source":"81.2.69.143","system":"http://confluence.internal:8090","method":"Browser","extraAttributes":[{"nameI18nKey":"atlassian.audit.event.attribute.id","name":"ID Range","value":"79 - 178"},{"nameI18nKey":"atlassian.audit.event.attribute.query","name":"Query","value":""},{"nameI18nKey":"atlassian.audit.event.attribute.results","name":"Results returned","value":"100"},{"nameI18nKey":"atlassian.audit.event.attribute.timestamp","name":"Timestamp Range","value":"2021-11-23T00:39:37.166Z - 2021-11-23T00:43:12.188Z"}]}],"pagingInfo":{"lastPage":false,"nextPageOffset":0,"nextPageCursor":"1637628276398,179","nextPageLink":"http://{{ hostname }}:{{ env "PORT" }}/rest/auditing/1.0/events?offset=0&limit=2&pageCursor=1637628276398,179","size":2}}
+  # Confluence Cloud
+  - path: /wiki/rest/api/audit
+    methods: ["GET"]
+    request_headers:
+      authorization: Basic dGVzdC51c2VyOmFiYzEyMw==
+    query_params:
+      startDate: "{startDate:.*}"
+      endDate: "{endDate:.*}"
+      start: "2"
+      limit: "2"
+    responses:
+      - status_code: 200
+        body: |-
+          {"results":[{"author":{"type":"user","displayName":"System","operations":null,"isExternalCollaborator":false,"accountType":"","publicName":"Unknown user","externalCollaborator":false},"remoteAddress":"81.2.69.143","creationDate":1637054756738,"summary":"User details updated","description":"","category":"Users and groups","sysAdmin":false,"superAdmin":false,"affectedObject":{"name":"John Doe (Deactivated)","objectType":"User"},"changedValues":[{"name":"Active","oldValue":"Yes","newValue":"No","hiddenOldValue":"","hiddenNewValue":""}],"associatedObjects":[]},{"author":{"type":"user","displayName":"System","operations":null,"isExternalCollaborator":false,"accountType":"","publicName":"Unknown user","externalCollaborator":false},"remoteAddress":"81.2.69.143","creationDate":1637054756666,"summary":"User deactivated","description":"","category":"Users and groups","sysAdmin":false,"superAdmin":false,"affectedObject":{"name":"","objectType":""},"changedValues":[],"associatedObjects":[]}],"start":2,"limit":2,"size":37,"_links":{"base":"https://test.atlassian.net/wiki","context":"/wiki","self":"https://test.atlassian.net/wiki/rest/api/audit"}}
+  - path: /wiki/rest/api/audit
+    methods: ["GET"]
+    request_headers:
+      authorization: Basic dGVzdC51c2VyOmFiYzEyMw==
+    query_params:
+      startDate: "{startDate:.*}"
+      endDate: "{endDate:.*}"
+      limit: "2"
+      start: "0"
+    responses:
+      - status_code: 200
+        body: |-
+          {"results":[{"author":{"type":"user","displayName":"John Jacobs","operations":null,"isExternalCollaborator":false,"username":"df856b17d84fcf010f11fcfcc6be4267","userKey":"26971c016361d1f6a3eb8f62461f1e4e","accountId":"df856b17d84fcf010f11fcfcc6be4267","accountType":"","publicName":"Unknown user","externalCollaborator":false},"remoteAddress":"81.2.69.143","creationDate":1643097111962,"summary":"Space logo uploaded","description":"","category":"Spaces","sysAdmin":false,"superAdmin":false,"affectedObject":{"name":"Service Catalogue","objectType":"Space"},"changedValues":[],"associatedObjects":[]},{"author":{"type":"user","displayName":"John Jacobs","operations":null,"isExternalCollaborator":false,"username":"df856b17d84fcf010f11fcfcc6be4267","userKey":"26971c016361d1f6a3eb8f62461f1e4e","accountId":"df856b17d84fcf010f11fcfcc6be4267","accountType":"","publicName":"Unknown user","externalCollaborator":false},"remoteAddress":"81.2.69.143","creationDate":1643097094621,"summary":"Space logo uploaded","description":"","category":"Spaces","sysAdmin":false,"superAdmin":false,"affectedObject":{"name":"Service Catalogue","objectType":"Space"},"changedValues":[],"associatedObjects":[]}],"start":0,"limit":2,"size":37,"_links":{"base":"https://test.atlassian.net/wiki","context":"/wiki","self":"https://test.atlassian.net/wiki/rest/api/audit"}}

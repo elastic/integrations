@@ -69,3 +69,13 @@ This is the `threading` data stream.
 {{event "threading"}}
 
 {{fields "threading"}}
+
+### GC Metrics
+
+This is the `gc` data stream.
+
+- This data stream gives metrics related to Garbage Collector (GC) Memory.
+
+{{event "gc"}}
+
+{{fields "gc"}}
