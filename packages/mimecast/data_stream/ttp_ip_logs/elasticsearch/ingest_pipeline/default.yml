@@ -1,7 +1,7 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Mimecast ttp_ip_logs.
 processors:
-  # Generic event/ecs fields we always want to populated
+  # Generic event/ecs fields we always want to populate.
   - set:
       field: ecs.version
       value: "8.2.0"
@@ -78,6 +78,10 @@ processors:
        pattern: "<%{email.to.address}>"
        ignore_missing: true
        ignore_failure: true  
+  - lowercase:
+      field: email.direction
+      ignore_missing: true
+      
   ### Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.

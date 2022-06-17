@@ -1,7 +1,6 @@
 # CockroachDB Integration
 
-This integration collects metrics from CockroachDB. It includes the
-following datasets for receiving logs:
+This integration collects metrics from [CockroachDB](https://www.cockroachlabs.com/docs/stable/developer-guide-overview.html). It includes the following datasets for receiving logs:
 
 - `status` datastream: consists of status metrics
 
@@ -15,5 +14,4 @@ exposing metrics in Prometheus format.
 {{fields "status"}}
 
 {{event "status"}}
-
 
