@@ -37,7 +37,7 @@ processors:
         - rule.uuid
         - panw.panos.hs_stage_c2f
         - panw.panos.hs_stage_f2s
-        - tls.version
+        - _temp_.tls
         - panw.panos.tls.key_exchange_algorithm
         - tls.cipher
         - panw.panos.tls.auth
@@ -58,8 +58,8 @@ processors:
         - panw.panos.root_common_name.length
         - panw.panos.server_name_indication.length
         - panw.panos.certificate.flags
-        - panw.panos.subject_common_name.value
-        - panw.panos.issuer_common_name.value
+        - x509.subject.common_name
+        - x509.issuer.common_name
         - panw.panos.root_common_name.value
         - tls.client.server_name
         - panw.panos.error_message
@@ -102,8 +102,6 @@ processors:
         - panw.panos.application.risk_level
         - panw.panos.application.characteristics
         - panw.panos.application.container
-        # - panw.panos.application.is_saas
-        # - panw.panos.application.is_sanctioned
         - panw.panos.application.tunneled
         - panw.panos.application.is_saas
         - panw.panos.application.is_sanctioned
@@ -165,8 +163,20 @@ processors:
         if (ctx._temp_.hash.length() == 32) {ctx.tls.client.hash.md5 = ctx._temp_.hash}
         else if (ctx._temp_.hash.length() == 40) {ctx.tls.client.hash.sha1 = ctx._temp_.hash}
         else if (ctx._temp_.hash.length() == 64) {ctx.tls.client.hash.sha256 = ctx._temp_.hash}
-        
+
+  - script:
+      description: Dynamically map fingerprint hash to MD5, SHA1 and SHA256 hash.
+      lang: painless
+      if: ctx._temp_?.tls != null
+      source: |
+        ctx.tls.version = new HashMap();
+        ctx.tls.version_protocol = ctx._temp_?.tls.substring(0,3).toLowerCase();
+        ctx.tls.version = ctx._temp_?.tls.substring(3,6);
 # Set custom fields to ECS fields
+  - set:
+      field: panw.panos.tls.version
+      copy_from: _temp_.tls
+      ignore_failure: true
   - set:
       field: panw.panos.destination.ip
       copy_from: destination.ip
@@ -214,6 +224,14 @@ processors:
   - set:
       field: panw.panos.source.zone
       copy_from: observer.ingress.zone
+      ignore_failure: true
+  - set:
+      field: panw.panos.subject_common_name.value
+      copy_from: x509.subject.common_name
+      ignore_failure: true
+  - set:
+      field: panw.panos.issuer_common_name.value
+      copy_from: x509.issuer.common_name
       ignore_failure: true
   - set:
       field: panw.panos.rule_uuid
@@ -278,10 +296,6 @@ processors:
   - set:
       field: panw.panos.elliptic_curve
       copy_from: tls.curve
-      ignore_failure: true
-  - set:
-      field: panw.panos.tls.version
-      copy_from: tls.version
       ignore_failure: true
 
 on_failure:

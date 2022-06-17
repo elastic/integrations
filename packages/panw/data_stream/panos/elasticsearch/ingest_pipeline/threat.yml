@@ -43,7 +43,7 @@ processors:
         - panw.panos.file.hash
         - panw.panos.wildfire.name
         - panw.panos.url_idx
-        - user_agent.original
+        - _temp_.user_agent
         - file.type
         - _temp_.forwarded_ip
         - http.request.referrer
@@ -68,7 +68,7 @@ processors:
         - panw.panos.tunnel_type
         - panw.panos.threat_category
         - panw.panos.content_version
-        - panw.panos.sig_flags
+        - _temp_.future_use4
         - panw.panos.sctp.assoc_id
         - panw.panos.payload_protocol_id
         - panw.panos.http_headers
@@ -116,7 +116,6 @@ processors:
         - panw.panos.application.container
         - panw.panos.application.tunneled
         - panw.panos.application.is_saas
-        #- panw.panos.application.tunneled
         - panw.panos.application.is_sanctioned
         - panw.panos.cloud_report.id
 
@@ -162,10 +161,6 @@ processors:
             ignore_missing: true
 
 # Set custom fields to ECS fields
-  - set:
-      field: panw.panos.forwarded_ip
-      copy_from: network.forwarded_ip
-      ignore_failure: true
   - set:
       field: panw.panos.destination.location
       copy_from: _temp_.dstloc
@@ -220,7 +215,7 @@ processors:
       ignore_failure: true
   - set:
       field: panw.panos.forwarded_ip
-      copy_from: _temp_.forwarded_ip
+      copy_from: network.forwarded_ip
       ignore_failure: true
   - set:
       field: panw.panos.protocol
@@ -284,7 +279,7 @@ processors:
       ignore_failure: true
   - set:
       field: panw.panos.user_agent
-      copy_from: user_agent.original
+      copy_from: _temp_.user_agent
       ignore_failure: true
 
 on_failure:

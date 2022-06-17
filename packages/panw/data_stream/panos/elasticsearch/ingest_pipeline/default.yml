@@ -268,6 +268,10 @@ processors:
       type: ip
       ignore_failure: true
   - convert:
+      field: network.forwarded_ip
+      type: ip
+      ignore_failure: true
+  - convert:
       field: panw.panos.xff.ip
       type: ip
       ignore_failure: true
@@ -294,7 +298,7 @@ processors:
   - convert:
       field: panw.panos.forwarded_ip
       type: ip
-      if: ctx.network?.forwarded_ip != null && ctx.network?.forwarded_ip != ''
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: panw.panos.host.ip
@@ -522,6 +526,10 @@ processors:
       field: panw.panos.application.risk_level
       type: long
       ignore_failure: true
+  - convert:
+      field: panw.panos.response_time
+      type: long
+      ignore_failure: true
 
 # Add '-' in Mac Address and convert it into uppercase
   - gsub:
@@ -556,6 +564,8 @@ processors:
   - uppercase:
       field: panw.panos.machine.mac_address
       ignore_missing: true
+
+
 # Convert Network fields into lowercase.
   - lowercase:
       field: network.application
@@ -849,7 +859,6 @@ processors:
       field: source.nat.ip
       target_field: source.geo
 
-
 # Geolocation for destination.
   - geoip:
       if: 'ctx?.destination?.ip != null'
@@ -859,6 +868,13 @@ processors:
       if: 'ctx?.destination?.nat?.ip != null && ctx.destination?.geo == null'
       field: destination.nat.ip
       target_field: destination.geo
+
+# User Agent processor
+  - user_agent:
+      field: _temp_.user_agent
+      target_field: user_agent
+      ignore_missing: true
+      ignore_failure: true
 
 # IP Autonomous System (AS) Lookup
   - geoip:
@@ -981,7 +997,15 @@ processors:
       field: related.user
       allow_duplicates: false
       value: "{{source.user.name}}"
-      if: "ctx?.source?.user?.name != null"
+      if: ctx.source?.user?.name != null && !(ctx.source?.user?.name instanceof List)
+  - foreach:
+      if: ctx.source?.user?.name != null && ctx.source?.user?.name instanceof List
+      field: source.user.name
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: related.user
       allow_duplicates: false
@@ -1084,6 +1108,7 @@ processors:
         - panw.panos.event.reason
         - panw.panos.event.status
         - panw.panos.file.type
+        - panw.panos.forwarded_ip
         - panw.panos.generated_time
         - panw.panos.host.id
         - panw.panos.host.ip
@@ -1132,6 +1157,8 @@ processors:
         - panw.panos.user
         - panw.panos.user_agent
         - panw.panos.user_by_source
+        - panw.panos.subject_common_name.value
+        - panw.panos.issuer_common_name.value
       ignore_missing: true
 
   - remove:
