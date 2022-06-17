@@ -1,6 +1,6 @@
 # Juniper SRX integration
 
-This is an integration for ingesting logs from Juniper SRX.
+This is an integration for ingesting logs from [Juniper SRX](https://www.juniper.net/documentation/en_US/release-independent/junos/information-products/pathway-pages/srx-series/product/).
 
 ### Log
 
