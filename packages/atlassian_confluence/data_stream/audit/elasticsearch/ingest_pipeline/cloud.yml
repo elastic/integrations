@@ -1,0 +1,84 @@
+---
+description: Pipeline for processing Atlassian Confluence Cloud audit logs.
+processors:
+- date:
+    field: json.creationDate
+    formats:
+      - UNIX_MS
+- rename:
+    field: json.remoteAddress
+    target_field: source.address
+    ignore_missing: true
+- rename:
+    field: json.author.accountId
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.author.displayName
+    target_field: user.full_name
+    ignore_missing: true
+- rename:
+    field: json.author.externalCollaborator
+    target_field: confluence.audit.external_collaborator
+    ignore_missing: true
+- rename:
+    field: json.category
+    target_field: confluence.audit.type.category
+    ignore_missing: true
+- rename:
+    field: json.summary
+    target_field: confluence.audit.type.action
+    ignore_missing: true
+- set:
+    field: event.action
+    copy_from: confluence.audit.type.action
+    ignore_empty_value: true
+- rename:
+    field: json.associatedObjects
+    target_field: confluence.audit.affected_objects
+    ignore_missing: true
+- rename:
+    field: json.changedValues
+    target_field: confluence.audit.changed_values
+    ignore_missing: true
+- script:
+    lang: painless
+    description: Modify data to match Self Hosted 
+    source: >-
+        if(ctx.confluence?.audit?.affected_objects == null) {
+            ArrayList items = new ArrayList();
+            ctx.confluence?.audit.put("affected_objects", items);
+        }
+        if(ctx.json?.affectedObject != null && !ctx.confluence?.audit?.affected_objects.contains(ctx.json?.affectedObject)) {
+            ctx.confluence?.audit?.affected_objects.add(ctx.json?.affectedObject);
+        }
+                
+        if(ctx.confluence?.audit?.affected_objects != null) {
+            for (def j = 0; j < ctx.confluence?.audit?.affected_objects.length; j++) {
+                if(ctx.confluence.audit.affected_objects[j]?.objectType != null) {
+                    ctx.confluence.audit.affected_objects[j].put('type', ctx.confluence.audit.affected_objects[j].objectType);
+                    ctx.confluence.audit.affected_objects[j].remove('objectType');
+                }
+            }
+        }
+        if(ctx.confluence?.audit?.changed_values != null) {
+            for (def j = 0; j < ctx.confluence?.audit?.changed_values.length; j++) {
+                if(ctx.confluence.audit.changed_values[j]?.name != null) {
+                    ctx.confluence.audit.changed_values[j].put('i18nKey', ctx.confluence.audit.changed_values[j].name);
+                    ctx.confluence.audit.changed_values[j].put('key', ctx.confluence.audit.changed_values[j].name);
+                    ctx.confluence.audit.changed_values[j].remove('name');
+                }
+                if(ctx.confluence.audit.changed_values[j]?.newValue != null) {
+                    ctx.confluence.audit.changed_values[j].put('to', ctx.confluence.audit.changed_values[j].newValue);
+                    ctx.confluence.audit.changed_values[j].remove('newValue');
+                }
+                if(ctx.confluence.audit.changed_values[j]?.oldValue != null) {
+                    ctx.confluence.audit.changed_values[j].put('from', ctx.confluence.audit.changed_values[j].oldValue);
+                    ctx.confluence.audit.changed_values[j].remove('oldValue');
+                }
+            }
+        }
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}' 
