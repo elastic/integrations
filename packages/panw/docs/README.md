@@ -12,6 +12,203 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 
 ### PAN-OS
 
+An example event for `panos` looks as following:
+
+```json
+{
+    "@timestamp": "2018-11-30T16:09:07.000Z",
+    "agent": {
+        "ephemeral_id": "ff87971e-45e3-4ef8-8517-bd986fd8e553",
+        "id": "69c5b3bb-a0c8-407c-9f6f-166c94a2d63f",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.2.0"
+    },
+    "data_stream": {
+        "dataset": "panw.panos",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 5976,
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "name": "United States",
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.1",
+        "nat": {
+            "ip": "175.16.199.1",
+            "port": 443
+        },
+        "packets": 20,
+        "port": 443
+    },
+    "ecs": {
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "69c5b3bb-a0c8-407c-9f6f-166c94a2d63f",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
+    "event": {
+        "action": "flow_terminated",
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "created": "2018-11-30T16:09:07.000Z",
+        "dataset": "panw.panos",
+        "duration": 586000000000,
+        "end": "2018-11-30T16:08:50.000Z",
+        "ingested": "2022-05-15T06:01:30Z",
+        "kind": "event",
+        "outcome": "success",
+        "start": "2018-11-30T15:59:04.000Z",
+        "timezone": "+00:00",
+        "type": [
+            "allowed",
+            "end",
+            "connection"
+        ]
+    },
+    "hostname": "PA-220",
+    "input": {
+        "type": "syslog"
+    },
+    "labels": {
+        "nat_translated": true
+    },
+    "log": {
+        "source": {
+            "address": "192.168.208.4:47747"
+        }
+    },
+    "message": "192.168.15.207,175.16.199.1,192.168.1.63,175.16.199.1,new_outbound_from_trust,,,apple-maps,vsys1,trust,untrust,ethernet1/2,ethernet1/1,send_to_mac,2018/11/30 16:09:07,22751,1,55113,443,16418,443,0x400053,tcp,allow,7734,1758,5976,36,2018/11/30 15:59:04,586,computer-and-internet-info,0,32091112,0x0,192.168.0.0-192.168.255.255,United States,0,16,20,tcp-fin,0,0,0,0,,PA-220,from-policy,,,0,,0,,N/A,0,0,0,0",
+    "network": {
+        "application": "apple-maps",
+        "bytes": 7734,
+        "community_id": [
+            "1:La5Jgm/PJBlaHF8BtgJSyZEmW9E=",
+            "1:sKYRL+yp3SWr5aT5SC1cvyWNnnM="
+        ],
+        "packets": 36,
+        "transport": "tcp",
+        "type": "ipv4"
+    },
+    "observer": {
+        "egress": {
+            "interface": {
+                "name": "ethernet1/1"
+            },
+            "zone": "untrust"
+        },
+        "hostname": "PA-220",
+        "ingress": {
+            "interface": {
+                "name": "ethernet1/2"
+            },
+            "zone": "trust"
+        },
+        "product": "PAN-OS",
+        "serial_number": "012801096514",
+        "type": "firewall",
+        "vendor": "Palo Alto Networks"
+    },
+    "panw": {
+        "panos": {
+            "action": "allow",
+            "action_flags": "0x0",
+            "action_source": "from-policy",
+            "destination": {
+                "nat": {
+                    "ip": "175.16.199.1",
+                    "port": 443
+                }
+            },
+            "device_group_hierarchy1": "0",
+            "device_group_hierarchy2": "0",
+            "device_group_hierarchy3": "0",
+            "device_group_hierarchy4": "0",
+            "endreason": "tcp-fin",
+            "flow_id": "22751",
+            "imsi": "0",
+            "log_profile": "send_to_mac",
+            "network": {
+                "nat": {
+                    "community_id": "1:sKYRL+yp3SWr5aT5SC1cvyWNnnM="
+                }
+            },
+            "parent_session": {
+                "id": "0"
+            },
+            "related_vsys": "vsys1",
+            "repeat_count": 1,
+            "ruleset": "new_outbound_from_trust",
+            "scp": {
+                "assoc_id": "0",
+                "chunks": 0,
+                "chunks_received": 0,
+                "chunks_sent": 0
+            },
+            "sequence_number": 32091112,
+            "source": {
+                "nat": {
+                    "ip": "192.168.1.63",
+                    "port": 16418
+                }
+            },
+            "sub_type": "end",
+            "tunnel_type": "N/A",
+            "type": "TRAFFIC",
+            "url": {
+                "category": "computer-and-internet-info"
+            }
+        }
+    },
+    "related": {
+        "hosts": [
+            "PA-220"
+        ],
+        "ip": [
+            "192.168.15.207",
+            "175.16.199.1",
+            "192.168.1.63"
+        ]
+    },
+    "rule": {
+        "name": "new_outbound_from_trust"
+    },
+    "source": {
+        "bytes": 1758,
+        "geo": {
+            "name": "192.168.0.0-192.168.255.255"
+        },
+        "ip": "192.168.15.207",
+        "nat": {
+            "ip": "192.168.1.63",
+            "port": 16418
+        },
+        "packets": 16,
+        "port": 55113
+    },
+    "syslog": {},
+    "tags": [
+        "panw-panos",
+        "forwarded"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -115,6 +312,13 @@ The ingest-geoip Elasticsearch plugin is required to run this module.
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+| log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
+| log.syslog.facility.name | The Syslog text-based facility of the log event, if available. | keyword |
+| log.syslog.hostname | The hostname, FQDN, or IP of the machine that originally sent the Syslog message. This is sourced from the hostname field of the syslog header. Depending on the environment, this value may be different from the host that handled the event, especially if the host handling the events is acting as a collector. | keyword |
+| log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
+| log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |
+| log.syslog.severity.name | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different severity value (e.g. firewall, IDS), your source's text severity should go to `log.level`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `log.level`. | keyword |
+| log.syslog.version | The version of the Syslog protocol specification. Only applicable for RFC 5424 messages. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |

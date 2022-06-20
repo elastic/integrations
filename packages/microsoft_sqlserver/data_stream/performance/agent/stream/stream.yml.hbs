@@ -1,0 +1,44 @@
+metricsets: ["query"]
+# Specify hosts in the below format. TODO: hosts need to be updated to support multiple entries.
+hosts: 
+  - sqlserver://{{username}}:{{password}}@{{hosts}}:{{port}}   
+period: {{period}}
+raw_data.enabled: true
+# Below dynamic_counter_name handles the dynamic counter name passing it to SQL query
+dynamic_counter_name: {{dynamic_counter_name}}
+driver: "mssql"
+sql_queries:
+  - query: "SELECT cntr_value As 'user_connections' FROM sys.dm_os_performance_counters WHERE counter_name= 'User Connections'"
+    response_format: table
+  - query: "SELECT cntr_value As 'active_temp_tables' FROM sys.dm_os_performance_counters WHERE counter_name = 'Active Temp Tables' AND object_name like '%General Statistics%'"
+    response_format: table
+  - query: "SELECT cntr_value As 'buffer_cache_hit_ratio' FROM sys.dm_os_performance_counters WHERE counter_name = 'Buffer cache hit ratio' AND object_name like '%Buffer Manager%'"
+    response_format: table
+  - query: "SELECT cntr_value As 'page_splits_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Page splits/sec'"
+    response_format: table
+  - query: "SELECT cntr_value As 'lock_waits_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Lock Waits/sec' AND instance_name = '_Total'"
+    response_format: table
+  - query: "SELECT cntr_value As 'compilations_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'SQL Compilations/sec'"
+    response_format: table
+  - query: "SELECT cntr_value As 'batch_requests_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Batch Requests/sec'"
+    response_format: table
+  - query: "SELECT cntr_value As 'buffer_checkpoint_pages_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Checkpoint pages/sec' AND object_name like '%Buffer Manager%'"
+    response_format: table
+  - query: "SELECT cntr_value As 'buffer_database_pages' FROM sys.dm_os_performance_counters WHERE counter_name = 'Database pages' AND object_name like '%Buffer Manager%'"
+    response_format: table
+  - query: "SELECT cntr_value As 'buffer_page_life_expectancy' FROM sys.dm_os_performance_counters WHERE counter_name = 'Page life expectancy' AND  object_name like '%Buffer Manager%'"
+    response_format: table
+  - query: "SELECT cntr_value As 'buffer_target_pages' FROM sys.dm_os_performance_counters WHERE counter_name = 'Target pages' AND  object_name like '%Buffer Manager%'"
+    response_format: table
+  - query: "SELECT cntr_value As 'connection_reset_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Connection Reset/sec' AND object_name like '%Buffer Manager%'"
+    response_format: table
+  - query: "SELECT cntr_value As 'logins_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Logins/sec' AND object_name like '%General Statistics%'"
+    response_format: table
+  - query: "SELECT cntr_value As 'logouts_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Logouts/sec' AND object_name like '%General Statistics%'"
+    response_format: table
+  - query: "SELECT cntr_value As 'transactions' FROM sys.dm_os_performance_counters WHERE counter_name = 'Transactions' AND object_name like '%General Statistics%'"
+    response_format: table
+  - query: "SELECT cntr_value As 're_compilations_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'SQL Re-Compilations/sec'"
+    response_format: table
+  - query: "SELECT counter_name As 'dynamic_counter.name', cntr_value As 'dynamic_counter.value' FROM sys.dm_os_performance_counters WHERE counter_name= '{{dynamic_counter_name}}'"
+    response_format: table

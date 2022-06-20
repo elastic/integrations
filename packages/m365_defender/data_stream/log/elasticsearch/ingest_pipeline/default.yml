@@ -11,6 +11,9 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - drop:
+      description: Drops duplicated events without alerts
+      if: ctx.json?.status == 'Redirected'
   - remove:
       field:
         - json.alerts
