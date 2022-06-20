@@ -1,5 +1,4 @@
 # Azure Logs Integration
-
 The azure logs integration retrieves different types of log data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
 
 There are several requirements before using the integration, since the logs will actually be read from azure event hubs:
@@ -25,13 +24,14 @@ Will retrieve azure Active Directory sign-in logs. The sign-ins report provides 
 Will retrieve azure Active Directory audit logs. The audit logs provide traceability through logs for all changes done by various features within Azure AD. Examples of audit logs include changes made to any resources within Azure AD like adding or removing users, apps, groups, roles and policies.
 
 #### springcloudlogs 
+
 Will retrieve Azure Spring Cloud system and application logs.
 
-### Credentials
+## Settings
 
 `eventhub` :
-  _string_
-Is the fully managed, real-time data ingestion service.
+_string_
+It is a fully managed, real-time data ingestion service. Elastic recommends using only letters, numbers, and the hyphen (-) character for Event Hub names to maximize compatibility. You can use existing Event Hubs having underscores (_) in the Event Hub name; in this case, the integration will replace underscores with hyphens (-) when it uses the Event Hub name to create dependent Azure resources behind the scenes (e.g., the storage account container to store Event Hub consumer offsets).
 Default value `insights-operational-logs`.
 
 `consumer_group` :
@@ -41,6 +41,7 @@ Default value: `$Default`
 
 `connection_string` :
 _string_
+
 The connection string required to communicate with Event Hubs. See the steps described in: [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string).   
 
 A Blob Storage account is required in order to store/retrieve/update the offset or state of the eventhub messages. This means that after stopping the filebeat azure module it can start back up at the spot that it stopped processing messages.
@@ -56,6 +57,7 @@ The storage account key, this key will be used to authorize access to data in yo
 `resource_manager_endpoint` :
 _string_
 Optional, by default we are using the azure public environment, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
+
 Examples:
 
 * https://management.chinacloudapi.cn/ for azure ChinaCloud
@@ -66,6 +68,16 @@ Examples:
 
 Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
 
+## Sample Event and Exported Fields
+
+For sample event and exported fields, review documentation provided for each integration:
+
+- Azure Activity Logs
+- Active Directory Logs (contains sign-in and audit logs)
+- Azure Platform Logs
+- Azure Spring Cloud Logs
+
+Users can also use this in case of a Hybrid Cloud model, where one may define their own endpoints.
 
 An example event for `activitylogs` looks as following:
 
@@ -977,9 +989,3 @@ An example event for `signinlogs` looks as following:
 | user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
-
-
-
-
-
-
