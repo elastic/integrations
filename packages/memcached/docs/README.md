@@ -27,7 +27,7 @@ The below metrics are fetched from memcached:
 | memcached.stats.evictions | Number of objects removed from the cache to free up memory for new items when Memcached reaches it's maximum memory setting (limit_maxbytes). | long |  | counter |
 | memcached.stats.get.hits | Cache HitRate: Its the ratio of number of successful "get" commands (cache hits) since startup and the "cmd_get" value. | long |  | gauge |
 | memcached.stats.get.misses | Number of failed "get" requests as nothing was cached for this key or the cached value was too old. | long |  | counter |
-| memcached.stats.items.current | Number of items currently in this server's cache. | long |  |  |
+| memcached.stats.items.current | Number of items currently in this server's cache. | long |  | gauge |
 | memcached.stats.items.total | Number of items ever stored on the server. The count increases by every new item stored in the cache. | long |  | counter |
 | memcached.stats.limit.bytes | Number of bytes the server is allowed to use for storage. | long | byte | gauge |
 | memcached.stats.pid | Current process ID of the Memcached task. | long |  |  |
