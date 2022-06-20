@@ -33,6 +33,10 @@ Before adding the integration, you must complete the following tasks as logs are
  * To export activity logs to event hubs, follow the steps in Microsoft's [Legacy collection methods documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export)
 * To export audit and sign-in logs to event hubs, follow the steps in Microsoft's [Stream Azure Active Directory logs to an Azure Event Hub tutorial](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub)
 
+## firewall
+
+Will retrieve Azure Firewall application rule, network rule, and DNS proxy logs.
+
 ## Settings
 
 Use the following settings to configure the Azure Logs integration when you add it to Fleet.
