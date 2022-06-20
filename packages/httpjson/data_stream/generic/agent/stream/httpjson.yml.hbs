@@ -2,18 +2,20 @@ config_version: 2
 data_stream:
   dataset: {{data_stream.dataset}}
 interval: {{request_interval}}
-{{#unless oauth_id}}
+
 {{#if username}}
 auth.basic.user: {{username}}
 {{/if}}
 {{#if password}}
 auth.basic.password: {{password}}
 {{/if}}
-{{/unless}}
+
 {{#if pipeline}}
 pipeline: {{pipeline}}
 {{/if}}
-{{#if oauth_id}}
+
+{{#unless username}}
+{{#unless password}}
 {{#if oauth_id}}
 auth.oauth2.client.id: {{oauth_id}}
 {{/if}}
@@ -54,7 +56,8 @@ auth.oauth2.azure.resource: {{oauth_azure_resource}}
 auth.oauth2.endpoint_params: 
   {{oauth_endpoint_params}}
 {{/if}}
-{{/if}}
+{{/unless}}
+{{/unless}}
 
 request.url: {{request_url}}
 request.method: {{request_method}}
