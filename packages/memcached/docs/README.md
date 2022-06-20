@@ -8,45 +8,45 @@ The below metrics are fetched from memcached:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event module | constant_keyword |
-| event.kind | Event kind | constant_keyword |
-| event.module | Event module | constant_keyword |
-| event.type | Event type | constant_keyword |
-| memcached.stats.bytes.current | Number of bytes currently used for caching items. | long |
-| memcached.stats.bytes.limit | Number of bytes the server is allowed to use for storage. | long |
-| memcached.stats.cmd.get | Number of "get" commands received since server startup not counting if they were successful or not. | long |
-| memcached.stats.cmd.set | Number of "set" commands serviced since server startup. | long |
-| memcached.stats.connections.current | Number of open connections to this Memcached server, should be the same value on all servers during normal operation. | long |
-| memcached.stats.connections.total | Numer of successful connection attempts to this server since it has been started. | long |
-| memcached.stats.evictions | Number of objects removed from the cache to free up memory for new items when Memcached reaches it's maximum memory setting (limit_maxbytes). | long |
-| memcached.stats.get.hits | Cache HitRate: Its the ratio of number of successful "get" commands (cache hits) since startup and the "cmd_get" value. | long |
-| memcached.stats.get.misses | Number of failed "get" requests as nothing was cached for this key or the cached value was too old. | long |
-| memcached.stats.items.current | Number of items currently in this server's cache. | long |
-| memcached.stats.items.total | Number of items ever stored on the server. The count increases by every new item stored in the cache. | long |
-| memcached.stats.pid | Current process ID of the Memcached task. | long |
-| memcached.stats.read.bytes | Total number of bytes received by the server from the network. | long |
-| memcached.stats.threads | Number of threads used by the current Memcached server process. | long |
-| memcached.stats.uptime.sec | Memcached server uptime. | long |
-| memcached.stats.written.bytes | Total number of bytes sent to the network by the server. | long |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| event.dataset | Event module | constant_keyword |  |  |
+| event.kind | Event kind | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| event.type | Event type | constant_keyword |  |  |
+| memcached.stats.cmd.get | Number of "get" commands received since server startup not counting if they were successful or not. | long |  | counter |
+| memcached.stats.cmd.set | Number of "set" commands serviced since server startup. | long |  | counter |
+| memcached.stats.connections.current | Number of open connections to this Memcached server, should be the same value on all servers during normal operation. | long |  | counter |
+| memcached.stats.connections.total | Numer of successful connection attempts to this server since it has been started. | long |  | counter |
+| memcached.stats.current.bytes | Number of bytes currently used for caching items. | long | byte | gauge |
+| memcached.stats.evictions | Number of objects removed from the cache to free up memory for new items when Memcached reaches it's maximum memory setting (limit_maxbytes). | long |  | counter |
+| memcached.stats.get.hits | Cache HitRate: Its the ratio of number of successful "get" commands (cache hits) since startup and the "cmd_get" value. | long |  | gauge |
+| memcached.stats.get.misses | Number of failed "get" requests as nothing was cached for this key or the cached value was too old. | long |  | counter |
+| memcached.stats.items.current | Number of items currently in this server's cache. | long |  |  |
+| memcached.stats.items.total | Number of items ever stored on the server. The count increases by every new item stored in the cache. | long |  | counter |
+| memcached.stats.limit.bytes | Number of bytes the server is allowed to use for storage. | long | byte | gauge |
+| memcached.stats.pid | Current process ID of the Memcached task. | long |  |  |
+| memcached.stats.read.bytes | Total number of bytes received by the server from the network. | long | byte | gauge |
+| memcached.stats.threads | Number of threads used by the current Memcached server process. | long |  | counter |
+| memcached.stats.uptime.sec | Memcached server uptime. | long | s | gauge |
+| memcached.stats.written.bytes | Total number of bytes sent to the network by the server. | long | byte | gauge |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-11T12:05:02.226Z",
+    "@timestamp": "2022-06-20T16:52:29.036Z",
     "agent": {
-        "ephemeral_id": "38b65793-f402-44c0-8b4f-355eed71af3d",
-        "id": "0d8f7a52-a060-474e-8197-c31b96b1abe4",
+        "ephemeral_id": "cdd60d9c-66cd-4d17-bc9e-62768d740210",
+        "id": "496dcab0-f4e2-4777-a645-6474194f01b7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -60,15 +60,15 @@ An example event for `stats` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "0d8f7a52-a060-474e-8197-c31b96b1abe4",
+        "id": "496dcab0-f4e2-4777-a645-6474194f01b7",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "memcached.stats",
-        "duration": 8651834,
-        "ingested": "2022-06-11T12:05:03Z",
+        "duration": 12189959,
+        "ingested": "2022-06-20T16:52:32Z",
         "kind": "metric",
         "module": "memcached"
     },
@@ -77,10 +77,10 @@ An example event for `stats` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.24.0.7"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:18:00:07"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -95,19 +95,19 @@ An example event for `stats` looks as following:
     },
     "memcached": {
         "stats": {
-            "bytes": {
-                "current": 0,
-                "limit": 67108864
-            },
+            "bytes": {},
             "cmd": {
                 "get": 0,
                 "set": 0
             },
             "connections": {
                 "current": 2,
-                "total": 33
+                "total": 25
             },
-            "evictions": 20,
+            "current": {
+                "bytes": 0
+            },
+            "evictions": 0,
             "get": {
                 "hits": 0,
                 "misses": 0
@@ -116,13 +116,16 @@ An example event for `stats` looks as following:
                 "current": 0,
                 "total": 0
             },
+            "limit": {
+                "bytes": 67108864
+            },
             "pid": 1,
             "read": {
                 "bytes": 12
             },
             "threads": 4,
             "uptime": {
-                "sec": 33
+                "sec": 25
             },
             "written": {
                 "bytes": 2206
