@@ -10,93 +10,82 @@ An example event for `redshift` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-06-15T12:43:00.000Z",
     "agent": {
+        "ephemeral_id": "61635543-c809-4a99-acc8-bcff893d2f51",
+        "id": "f793915a-7373-423f-9336-8470608ebf56",
         "name": "docker-fleet-agent",
-        "id": "e55dfb85-b682-4813-a061-b28a1dc26aed",
         "type": "metricbeat",
-        "ephemeral_id": "12ae0020-5951-4870-a660-da22ff244676",
         "version": "8.2.0"
     },
-    "elastic_agent": {
-        "id": "e55dfb85-b682-4813-a061-b28a1dc26aed",
-        "version": "8.2.0",
-        "snapshot": false
-    },
-    "cloud": {
-        "provider": "aws",
-        "region": "us-east-1",
-        "account": {
-            "name": "elastic-observability",
-            "id": "627286350134"
-        }
-    },
-    "@timestamp": "2022-06-08T10:43:00.000Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "service": {
-        "type": "aws"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "aws.redshift"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "family": "debian",
-            "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "ip": [
-            "172.31.0.4"
-        ],
-        "containerized": false,
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02:42:ac:1f:00:04"
-        ],
-        "architecture": "x86_64"
-    },
-    "metricset": {
-        "period": 60000,
-        "name": "cloudwatch"
-    },
-    "event": {
-        "duration": 11927957801,
-        "agent_id_status": "verified",
-        "ingested": "2022-06-08T10:44:07Z",
-        "module": "aws",
-        "dataset": "aws.redshift"
-    },
     "aws": {
-        "redshift": {
-            "storage": {
-                "percentage_disk_space_used": 0.247802734375,
-                "write_iops": 0,
-                "write_throughput": 0,
-                "read_latency": 0,
-                "read_throughput": 0,
-                "write_latency": 0,
-                "read_iops": 0
-            },
-            "network": {
-                "network_transmit_throughput": 3061.698971683805,
-                "network_receive_throughput": 6366.427226212896
-            }
-        },
         "cloudwatch": {
             "namespace": "AWS/Redshift"
         },
         "dimensions": {
-            "NodeID": "Compute-0",
-            "ClusterIdentifier": "redshift-integration"
+            "ClusterIdentifier": "elastic-package-test-19342"
+        },
+        "redshift": {
+            "status": {
+                "maintenance_mode": 0
+            }
         }
+    },
+    "cloud": {
+        "account": {
+            "id": "627286350134",
+            "name": "elastic-observability"
+        },
+        "provider": "aws",
+        "region": "eu-west-1"
+    },
+    "data_stream": {
+        "dataset": "aws.redshift",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "f793915a-7373-423f-9336-8470608ebf56",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws.redshift",
+        "duration": 1517261817,
+        "ingested": "2022-06-15T12:58:21Z",
+        "module": "aws"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "192.168.96.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:60:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "cloudwatch",
+        "period": 300000
+    },
+    "service": {
+        "type": "aws"
     }
 }
 ```
@@ -120,9 +109,9 @@ An example event for `redshift` looks as following:
 | aws.redshift.cpu.cpu_utilization | The percentage of CPU utilization. For clusters, this metric represents an aggregation of all nodes (leader and compute) CPU utilization values. | scaled_float |
 | aws.redshift.network.network_receive_throughput | The rate at which the node or cluster receives data. | long |
 | aws.redshift.network.network_transmit_throughput | The rate at which the node or cluster writes data. | long |
-| aws.redshift.performance.concurrency_scaling_active_clusters | The number of concurrency scaling clusters that are actively processing queries at any given time. | long |
+| aws.redshift.performance.concurrency_scaling_active_clusters | The number of concurrency scaling clusters that are actively processing queries at any given time. | integer |
 | aws.redshift.performance.concurrency_scaling_seconds | The number of seconds used by concurrency scaling clusters that have active query processing activity. | long |
-| aws.redshift.performance.max_configured_concurrency_scaling_clusters | Maximum number of concurrency scaling clusters configured from the parameter group. | long |
+| aws.redshift.performance.max_configured_concurrency_scaling_clusters | Maximum number of concurrency scaling clusters configured from the parameter group. | integer |
 | aws.redshift.performance.queries_completed_per_second | The average number of queries completed per second. | long |
 | aws.redshift.performance.query_duration | The average amount of time to complete a query. | long |
 | aws.redshift.performance.query_runtime_breakdown | The total time queries spent running by query stage. | long |
