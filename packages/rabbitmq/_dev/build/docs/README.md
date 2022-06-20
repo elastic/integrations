@@ -54,3 +54,9 @@ It supports two modes to collect data which can be selected with the "Collection
 {{event "queue"}}
 
 {{fields "queue"}}
+
+### Shovel Metrics
+
+{{event "shovel"}}
+
+{{fields "shovel"}}
