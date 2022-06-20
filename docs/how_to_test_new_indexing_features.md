@@ -133,8 +133,8 @@ PUT /_component_template/metrics-kubernetes.pod@custom
 {
   "template": {
     "settings": {
-      "mode": "time_series",
-      "routing_path": ["kubernetes.pod.uid"]
+      "index.mode": "time_series",
+      "index.routing_path": ["kubernetes.pod.uid"]
     },
     "mappings": {}
   },
