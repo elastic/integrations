@@ -1,10 +1,8 @@
 # Cloudflare Integration
 
-Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudflare/) use Cloudflare services for the purposes of increasing security and performance of their web sites and services. 
+Cloudflare integration uses [Cloudflare's API](https://api.cloudflare.com/) to retrieve [audit logs](https://support.cloudflare.com/hc/en-us/articles/115002833612-Understanding-Cloudflare-Audit-Logs) and [traffic logs](https://developers.cloudflare.com/logs/logpull/understanding-the-basics/) from Cloudflare, for a particular zone, and ingest them into Elasticsearch. This allows you to search, observe and visualize the Cloudflare log events through Elasticsearch.
 
-Cloudflare integration uses [Cloudflare's API](https://api.cloudflare.com/) to retrieve Audit events and network traffic logs from Cloudflare and ingest them into Elasticsearch. This allows you to search, observe and visualize the Cloudflare log events through Elasticsearch.
-
-The Elastic agent running this integration interacts with the Cloudflare infrastructure using Cloudflare APIs to retrieve [audit logs](https://support.cloudflare.com/hc/en-us/articles/115002833612-Understanding-Cloudflare-Audit-Logs) and [traffic logs](https://developers.cloudflare.com/logs/logpull/understanding-the-basics/) for a particular zone.
+Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudflare/) use Cloudflare services to increase the security and performance of their web sites and services. 
 
 ## Configuration
 
@@ -44,7 +42,7 @@ Enter values "Auth Email", "Auth Key" and "Zone ID".
 2. [**Auth Key**](https://developers.cloudflare.com/api/keys/) is the API key generated on the "My Account" page.
 3. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
-NOTE: See for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
+>  Note: See for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
 
 #### Configure using API Token
 
