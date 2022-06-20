@@ -1,12 +1,12 @@
 # Azure Application Insights Integration
 
-The Application Insights Integration allows users to retrieve application insights metrics from specified applications.
+The [Application Insights](https://docs.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview) Integration allows users to retrieve application insights metrics from specified applications.  
 
 ### Integration level configuration options
 
 `Application ID`:: (_[]string_) ID of the application. This is Application ID from the API Access settings blade in the Azure portal.
 
-`Api Key`:: (_[]string_) The API key which will be generated, more on the steps here https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID.
+`Api Key`:: (_[]string_) The API key which will be generated. See [Azure Monitor Log Analytics API Overview](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID) for more information.
 
 
 The integration contains the following data streams:
@@ -21,8 +21,7 @@ Users can retrieve any application insights metrics and make use of the filters 
 
 `id`:: (_[]string_) IDs of the metrics that's being reported. Usually, the id is descriptive enough to help identify what's measured.
 A list of metric names can be entered as well. 
-Default metrics include a curated selection of requests counters, performance, and service availability. 
-The list of options can be found here https://docs.microsoft.com/en-us/rest/api/application-insights/metrics/get#metricid
+Default metrics include a curated selection of requests counters, performance, and service availability.  See the [Microsoft Azure Metrics web page](https://docs.microsoft.com/en-us/rest/api/application-insights/metrics/get#metricid) for a list of the available options.
 
 `interval`:: (_string_) The time interval to use when retrieving metric values. This is an ISO8601 duration.
 If interval is omitted, the metric value is aggregated across the entire timespan.
@@ -59,7 +58,7 @@ Will retrieve application related state metrics.
 
 ## Additional notes about metrics and costs
 
-Costs: Metric queries are charged based on the number of standard API calls. More information on pricing here https://azure.microsoft.com/en-us/pricing/details/monitor/.
+Costs: Metric queries are charged based on the number of standard API calls. See [Azure Monitor pricing](https://azure.microsoft.com/en-us/pricing/details/monitor/) for more information. 
 
 
 {{event "app_insights"}}

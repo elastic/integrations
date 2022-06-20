@@ -1,7 +1,6 @@
 # CyberArk Privileged Access Security
 
-The CyberArk Privileged Access Security integration collects audit logs from CyberArk's Vault server.
-
+The CyberArk Privileged Access Security integration collects audit logs from [CyberArk's Vault](https://docs.cyberark.com/Product-Doc/OnlineHelp/Portal/Content/Resources/_TopNav/cc_Portal.htm) server.
 ## Audit
 
 The `audit` dataset receives Vault Audit logs for User and Safe activities over the syslog protocol.
@@ -69,7 +68,7 @@ An example event for `audit` looks as following:
         }
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",

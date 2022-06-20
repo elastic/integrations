@@ -1,6 +1,6 @@
 # ThreatQuotient Integration
 
-The ThreatQuotient integration uses the available REST API to retrieve indicators and Threat Intelligence.
+The ThreatQuotient integration uses the available [ThreatQuotient](https://www.threatq.com/integrations/) REST API to retrieve indicators and Threat Intelligence.
 
 ## Logs
 
@@ -118,7 +118,7 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
         "id": "394964aa-5974-455c-bea7-5c0b89b470bd",
