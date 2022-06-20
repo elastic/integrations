@@ -1091,12 +1091,12 @@ The DNS protocol supports processing DNS messages on TCP and UDP.
 
 Also see [Common protocol options](#common-protocol-options).
 
-#### `include_authorities` 
+#### `include_authorities`
 
 If this option is enabled, dns.authority fields (authority resource
 records) are added to DNS events. The default is false.
 
-#### `include_additionals` 
+#### `include_additionals`
 
 If this option is enabled, dns.additionals fields (additional resource
 records) are added to DNS events. The default is false.
@@ -1466,11 +1466,13 @@ In the following example, the HTML attachments of the HTTP responses are
 exported under the `response` field and under
 `http.request.body.content` or `http.response.body.content`:
 
-    Network Packet Capture.protocols:
-    - type: http
-      ports: [80, 8080]
-      send_response: true
-      include_body_for: ["text/html"]
+```yaml
+Network Packet Capture.protocols:
+- type: http
+  ports: [80, 8080]
+  send_response: true
+  include_body_for: ["text/html"]
+```
 
 #### `decode_body`
 
@@ -1487,24 +1489,26 @@ If the `Cookie` or `Set-Cookie` headers are sent, this option controls
 whether they are split into individual values. For example, with this
 option set, an HTTP response might result in the following JSON:
 
-    "response": {
-      "code": 200,
-      "headers": {
-        "connection": "close",
-        "content-language": "en",
-        "content-type": "text/html; charset=utf-8",
-        "date": "Fri, 21 Nov 2014 17:07:34 GMT",
-        "server": "gunicorn/19.1.1",
-        "set-cookie": { 
-          "csrftoken": "S9ZuJF8mvIMT5CL4T1Xqn32wkA6ZSeyf",
-          "expires": "Fri, 20-Nov-2015 17:07:34 GMT",
-          "max-age": "31449600",
-          "path": "/"
-        },
-        "vary": "Cookie, Accept-Language"
-      },
-      "status_phrase": "OK"
-    }
+```json
+"response": {
+  "code": 200,
+  "headers": {
+    "connection": "close",
+    "content-language": "en",
+    "content-type": "text/html; charset=utf-8",
+    "date": "Fri, 21 Nov 2014 17:07:34 GMT",
+    "server": "gunicorn/19.1.1",
+    "set-cookie": {
+      "csrftoken": "S9ZuJF8mvIMT5CL4T1Xqn32wkA6ZSeyf",
+      "expires": "Fri, 20-Nov-2015 17:07:34 GMT",
+      "max-age": "31449600",
+      "path": "/"
+    },
+    "vary": "Cookie, Accept-Language"
+  },
+  "status_phrase": "OK"
+}
+```
 
 -   Note that `set-cookie` is a map containing the cookie names as keys.
 
@@ -1522,7 +1526,7 @@ a valid IP addresses, the information is used for the
 
 If an individual HTTP message is larger than this setting (in bytes), it
 will be trimmed to this size. Unless this value is very small
-(<1.5K), Network Packet Capture is able to still correctly follow the transaction
+(less than 1.5K), Network Packet Capture is able to still correctly follow the transaction
 and create an event for it. The default is 10485760 (10 MB).
 
 Fields published for HTTP packets.
@@ -4194,7 +4198,7 @@ and `tls.client.certificate_chain` fields. The default is false.
 
 #### `include_detailed_fields`
 
-Controls whether the [https://www.elastic.co/guide/en/beats/packetbeat/current/exported-fields-tls_detailed.html](#exported-fields-tls_detailed) are added to exported documents. When
+Controls whether the [TLS fields](https://www.elastic.co/guide/en/beats/packetbeat/current/exported-fields-tls_detailed.html) are added to exported documents. When
 set to false, only [ECS TLS](https://www.elastic.co/guide/en/ecs/8.2/ecs-tls.html) fields are included.
 exported are included. The default is `true`.
 
