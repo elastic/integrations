@@ -631,6 +631,15 @@ processors:
       field: related.ip
       value: '{{{destination.ip}}}'
       allow_duplicates: false
+  - append:
+      field: related.hash
+      value: "{{tls.server.ja3s}}"
+      if: "ctx?.tls?.server?.ja3s != null"
+  - append:
+      field: related.hash
+      value: "{{tls.client.ja3}}"
+      if: "ctx?.tls?.client?.ja3 != null"
+      allow_duplicates: false
   - remove:
       field: suricata.eve.alert.metadata
       if: "ctx.suricata?.eve?.alert?.metadata == null || ctx.suricata?.eve?.alert?.metadata.isEmpty()"

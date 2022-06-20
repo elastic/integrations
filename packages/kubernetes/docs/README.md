@@ -42,8 +42,9 @@ All datasets with the `state_` prefix require `hosts` field pointing to `kube-st
 service within the cluster. As the service provides cluster-wide metrics, there's no need to fetch them per node,
 hence the recommendation is to run these datasets as part of an `Agent Deployment` with one only replica.
 
-Note: Kube-state-metrics is not deployed by default in Kubernetes. For these cases the instructions for its
-deployment are available [here](https://github.com/kubernetes/kube-state-metrics#kubernetes-deployment). 
+> Note: 
+> Kube-state-metrics is not deployed by default in Kubernetes. For these cases, see Kubernetes's instructions on [Kubernetes Deployment](https://github.com/kubernetes/kube-state-metrics#kubernetes-deployment). 
+
 Generally `kube-state-metrics` runs a `Deployment` and is accessible via a service called `kube-state-metrics` on
 `kube-system` namespace, which will be the service to use in our configuration.
 

@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.52.0
+	github.com/elastic/elastic-package v0.53.0
 	github.com/elastic/package-registry v1.9.0
 	github.com/magefile/mage v1.13.0
 	github.com/pkg/errors v0.9.1
@@ -17,7 +17,7 @@ require (
 	cloud.google.com/go/compute v1.6.1 // indirect
 	cloud.google.com/go/iam v0.3.0 // indirect
 	cloud.google.com/go/storage v1.22.0 // indirect
-	github.com/AlecAivazis/survey/v2 v2.3.4 // indirect
+	github.com/AlecAivazis/survey/v2 v2.3.5 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
