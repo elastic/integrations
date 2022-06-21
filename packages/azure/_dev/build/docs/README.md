@@ -1,6 +1,10 @@
 # Azure Logs Integration
 The azure logs integration retrieves different types of log data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
 
+Use the Azure logs integration to collect logs from Azure.
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
+and reference data when troubleshooting an issue.
+
 ## Data streams
 
 The Azure logs integration collects logs.
