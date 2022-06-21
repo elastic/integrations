@@ -296,7 +296,6 @@ An example event for `activitylogs` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.full_name | User's full name, if available. | keyword |
@@ -390,6 +389,7 @@ An example event for `platformlogs` looks as following:
 | azure.platformlogs.event_category | Event Category | keyword |
 | azure.platformlogs.operation_name | Operation name | keyword |
 | azure.platformlogs.properties | Event properties | flattened |
+| azure.platformlogs.result_description | Result description | keyword |
 | azure.platformlogs.result_signature | Result signature | keyword |
 | azure.platformlogs.result_type | Result type | keyword |
 | azure.platformlogs.status | Status | keyword |
@@ -450,6 +450,7 @@ An example event for `platformlogs` looks as following:
 | geo.country_iso_code | Country ISO code. | keyword |
 | geo.country_name | Country name. | keyword |
 | geo.location | Longitude and latitude. | geo_point |
+| geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -485,7 +486,6 @@ An example event for `platformlogs` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.full_name | User's full name, if available. | keyword |
@@ -679,7 +679,6 @@ An example event for `auditlogs` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.full_name | User's full name, if available. | keyword |
