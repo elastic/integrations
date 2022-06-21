@@ -234,66 +234,96 @@ An example event for `elb` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:58:30.211Z",
+    "@timestamp": "2022-06-08T18:19:00.000Z",
     "agent": {
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-        "name": "MacBook-Elastic.local",
+        "name": "docker-fleet-agent",
+        "id": "90bfb41e-b925-420f-973e-9c1115297278",
         "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b"
+        "ephemeral_id": "8c94e850-82e2-42ae-bd41-44ce7bbbb50c",
+        "version": "8.2.0"
     },
-    "ecs": {
-        "version": "1.5.0"
+    "elastic_agent": {
+        "id": "90bfb41e-b925-420f-973e-9c1115297278",
+        "version": "8.2.0",
+        "snapshot": false
     },
     "cloud": {
         "provider": "aws",
         "region": "eu-central-1",
         "account": {
-            "id": "428152502467",
-            "name": "elastic-beats"
+            "name": "elastic-beats",
+            "id": "123456789"
         }
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.elb_metrics"
+    },
+    "service": {
+        "type": "aws"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.47-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": true,
+        "ip": [
+            "192.168.96.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02:42:c0:a8:60:07"
+        ],
+        "architecture": "x86_64"
+    },
+    "metricset": {
+        "period": 60000,
+        "name": "cloudwatch"
     },
     "aws": {
         "elb": {
             "metrics": {
-                "EstimatedALBNewConnectionCount": {
-                    "avg": 32
-                },
-                "EstimatedALBConsumedLCUs": {
-                    "avg": 0.00035000000000000005
-                },
-                "EstimatedProcessedBytes": {
-                    "avg": 967
-                },
-                "EstimatedALBActiveConnectionCount": {
-                    "avg": 5
-                },
                 "HealthyHostCount": {
                     "max": 2
                 },
                 "UnHealthyHostCount": {
                     "max": 0
+                },
+                "HTTPCode_Backend_4XX": {
+                    "sum": 2
+                },
+                "HTTPCode_Backend_2XX": {
+                    "sum": 31
+                },
+                "RequestCount": {
+                    "sum": 33
+                },
+                "Latency": {
+                    "avg": 0.0010771534659645772
                 }
             }
         },
         "cloudwatch": {
             "namespace": "AWS/ELB"
-        },
-        "dimensions": {
-            "LoadBalancerName": "filebeat-aws-elb-test-elb"
         }
     },
-    "metricset": {
-        "name": "elb",
-        "period": 60000
-    },
     "event": {
-        "dataset": "aws.elb_metrics",
+        "duration": 15866718200,
+        "agent_id_status": "verified",
+        "ingested": "2022-06-08T18:20:24Z",
         "module": "aws",
-        "duration": 15044430616
-    },
-    "service": {
-        "type": "aws"
+        "dataset": "aws.elb_metrics"
     }
 }
 ```
@@ -303,7 +333,6 @@ An example event for `elb` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.applicationelb.metrics.ActiveConnectionCount.sum | The total number of concurrent TCP connections active from clients to the load balancer and from the load balancer to targets. | long |
 | aws.applicationelb.metrics.ClientTLSNegotiationErrorCount.sum | The number of TLS connections initiated by the client that did not establish a session with the load balancer due to a TLS error. | long |
 | aws.applicationelb.metrics.ConsumedLCUs.avg | The number of load balancer capacity units (LCU) used by your load balancer. | double |
@@ -368,14 +397,14 @@ An example event for `elb` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
