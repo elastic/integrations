@@ -1,6 +1,6 @@
 # Windows Integration
 
-The Windows integration allows you to monitor the Windows OS, services, applications, and more.
+The Windows integration allows you to monitor the [Windows](https://docs.microsoft.com) OS, services, applications, and more.
 
 Use the Windows integration to collect metrics and logs from your machine.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
@@ -21,6 +21,8 @@ See more details in the [Logs reference](#logs-reference).
 Metric data streams collected by the Windows integration include service details and performance counter values.
 See more details in the [Metrics reference](#metrics-reference).
 
+Note: For 7.11, `security`, `application` and `system` logs have been moved to the system package.
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
@@ -39,9 +41,9 @@ Note: Because the Windows integration always applies to the local server, the `h
 ### Ingesting Windows Events via Splunk
 
 This integration allows you to seamlessly ingest data from a Splunk Enterprise instance.
-The integration uses the [`httpjson` input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) in Elastic Agent to run a Splunk search via the Splunk REST API and extract the raw event from the results.
+The integration uses the [`httpjson` input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
 The raw event is then processed via the Elastic Agent.
-You can customized both the Splunk search query and the interval between searches.
+You can customize both the Splunk search query and the interval between searches.
 For more information see [Ingest data from Splunk](https://www.elastic.co/guide/en/observability/current/ingest-splunk.html).
 
 Note: This integration requires Windows Events from Splunk to be in XML format.
