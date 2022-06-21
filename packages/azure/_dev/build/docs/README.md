@@ -1,12 +1,6 @@
 # Azure Logs Integration
 The azure logs integration retrieves different types of log data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
 
-There are several requirements before using the integration, since the logs will actually be read from azure event hubs:
-
-   * The logs have to be exported first to the [event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled)
-   * To export activity logs to event hubs, users can follow the steps in Microsoft's [Legacy collection methods documentation] https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export)
-   * To export audit and sign-in logs to event hubs, users can follow the steps in Microsoft's [Stream Azure Active Directory logs to an Azure event hub tutorial](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub)
-
 ## Data streams
 
 The Azure logs integration collects logs.
@@ -14,6 +8,19 @@ The Azure logs integration collects logs.
 **Logs** help you keep a record of events that happen on your machine.
 Log data streams collected by the Azure logs integration include activity, platform, sign-in, audit, and spring cloud logs.
 See more details in the [Logs reference](#logs-reference).
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+## Setup
+
+Before adding the integration, you must complete the following tasks as logs are read from azure event hubs:
+
+   * Your logs have to first be exported to the [event hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled)
+   * To export activity logs to event hubs, follow the steps in Microsoft's [Legacy collection methods documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export)
+   * To export audit and sign-in logs to event hubs, follow the steps in Microsoft's [Stream Azure Active Directory logs to an Azure event hub tutorial](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub)
 
 ## Settings
 
