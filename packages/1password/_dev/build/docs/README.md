@@ -12,7 +12,7 @@ With 1Password Events Reporting and Elastic SIEM, you can:
 -	Cross-reference 1Password events with the data from other services
 
 You can set up Events Reporting if you’re an owner or administrator.  
-See: [How to get your 1Password Events API credentials](https://support.1password.com/events-reporting/#step-1-set-up-an-events-reporting-integration).
+Ready to get started? [Learn how to set up the Elastic Events Reporting integration](https://support.1password.com/events-reporting).
 
 Events
 ------
