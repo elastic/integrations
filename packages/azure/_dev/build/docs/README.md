@@ -77,8 +77,8 @@ This setting can also be used to define your own endpoints, like for hybrid clou
 
 ## Logs reference
 
-### activitylogs
-Retrieves Azure activity logs. Control-plane events on Azure Resource Manager resources. Activity logs provide insight into the operations that were performed on resources in your subscription.
+### Activity logs
+Retrieves Azure `activitylogs`. Control-plane events on Azure Resource Manager resources. Activity logs provide insight into the operations that were performed on resources in your subscription.
 
 {{event "activitylogs"}}
 
