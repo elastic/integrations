@@ -7,8 +7,6 @@ The goal of each integration doc is to:
 * Provide a comprehensive list of collected fields and the data and metric types for each. The reader can reference this information while evaluating the integration, interpreting collected data, or troubleshooting issues.
 * Set the reader up for a successful installation and setup by connecting them with any other resources they'll need.
 
-<!-- The audience ... -->
-
 Each integration doc should contain several sections, and you should use consistent headings
 to make it easier for a single user to evaluate and use multiple integrations.
 Sections include:
@@ -22,12 +20,14 @@ Sections include:
 
 ## Overview
 
-The overview section explains what the integration is, establishes its relationship to the larger ecosystem of Elastic products,
-and helps the reader understand how it can be used to solve a tangible problem.
+The overview section explains what the integration is, defines the third-party product that is providing data,
+establishes its relationship to the larger ecosystem of Elastic products, and helps the reader understand
+how it can be used to solve a tangible problem.
 
 The overview should answer the following questions:
 
 * What is the integration?
+* What is the third-party product that is providing data?
 * What can you do with it?
   * General description
   * Basic example
@@ -37,7 +37,7 @@ The overview should answer the following questions:
 Use this template language as a starting point, replacing `<placeholder text>` with details about the integration:
 
 ```md
-The <name> integration allows you to monitor <service>.
+The <name> integration allows you to monitor <service>. <service> is <definition>.
 
 Use the <name> integration to <function>. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference <data stream type> when troubleshooting an issue.
 
@@ -47,6 +47,7 @@ For example, if you wanted to <use case> you could <action>. Then you can <visua
 **Example**
 
 >The AWS CloudFront integration allows you to monitor your [AWS CloudFront](https://aws.amazon.com/cloudfront/) usage.
+>AWS CloudFront is a content delivery network (CDN) service.
 >
 >Use the AWS CloudFront integration to collect and parse logs related to content delivery.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
@@ -141,9 +142,15 @@ See a much more detailed example in [`packages/aws/_dev/build/docs/README.md`](.
 ## Setup
 
 The setup section points the reader to the Getting started guide for generic step-by-step instructions.
+
 It should also include any additional setup instructions beyond what's included in the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide,
 which may include updating the configuration of a third-party service.
+For example, for the Cisco ASA integration, users need to configure their Cisco device following the
+[steps found in the Cisco documentation](https://documentation.meraki.com/General_Administration/Monitoring_and_Reporting/Syslog_Server_Overview_and_Configuration#Configuring_a_Syslog_Server).
+
+Note: When possible, use links to point to third-party documentation for configuring non-Elastic products
+since workflows may change without notice.
 
 **Template**
 
@@ -152,13 +159,22 @@ Use this template language as a starting point, including any other setup instru
 ```md
 ## Setup
 
+<!-- Any prerequisite instructions -->
+
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-<!-- Other instructions -->
+<!-- Additional set up instructions -->
 ```
 
-<!-- **Example** -->
+**Example**
+
+>Before sending logs to Elastic from your Cisco device, you must configure your device according to 
+>[Cisco's documentation on configuring a syslog server](https://documentation.meraki.com/General_Administration/Monitoring_and_Reporting/Syslog_Server_Overview_and_Configuration#Configuring_a_Syslog_Server).
+>
+>After you've configured your device, you can set up the Elastic integration.
+>For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 ## Troubleshooting
 
@@ -195,5 +211,3 @@ Each reference section should contain detailed information about:
 
 There is no standard format for the _narrative_ content in reference sections,
 but fields should be generated using the instructions in [Fine-tune the integration](./fine_tune_integration.md).
-
-<!-- **Example** -->
