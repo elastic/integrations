@@ -1,6 +1,6 @@
 # Cisco Umbrella Integration
 
-This integration is for Cisco Umbrella . It includes the following
+This integration is for [Cisco Umbrella](https://docs.umbrella.com/). It includes the following
 datasets for receiving logs from an AWS S3 bucket using an SQS notification queue and Cisco Managed S3 bucket without SQS:
 
 - `log` dataset: supports Cisco Umbrella logs.
@@ -273,4 +273,3 @@ An example event for `log` looks as following:
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
-
