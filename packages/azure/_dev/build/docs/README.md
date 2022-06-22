@@ -1,5 +1,5 @@
 # Azure Logs Integration
-The azure logs integration retrieves activity, platform, sign-in, audit, and spring cloud data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
+The azure logs integration retrieves activity, platform, sign-in, audit, and Spring Cloud data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
 
 Use the Azure Logs integration to collect logs from Azure.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
