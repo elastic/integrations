@@ -121,7 +121,7 @@ require (
 	github.com/santhosh-tekuri/jsonschema v1.2.4 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/spf13/cobra v1.4.0 // indirect
+	github.com/spf13/cobra v1.5.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/xanzy/ssh-agent v0.3.1 // indirect
@@ -163,11 +163,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.9.0 // indirect
 	howett.net/plist v0.0.0-20201203080718-1454fab16a06 // indirect
-	k8s.io/api v0.24.1 // indirect
+	k8s.io/api v0.24.2 // indirect
 	k8s.io/apiextensions-apiserver v0.24.0 // indirect
-	k8s.io/apimachinery v0.24.1 // indirect
-	k8s.io/cli-runtime v0.24.1 // indirect
-	k8s.io/client-go v0.24.1 // indirect
+	k8s.io/apimachinery v0.24.2 // indirect
+	k8s.io/cli-runtime v0.24.2 // indirect
+	k8s.io/client-go v0.24.2 // indirect
 	k8s.io/component-base v0.24.0 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
@@ -179,3 +179,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
+
+replace github.com/elastic/elastic-package => github.com/jsoriano/elastic-package v0.0.0-20220622183626-708db675e93f
