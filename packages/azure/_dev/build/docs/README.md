@@ -17,7 +17,7 @@ fail to start due to an exceed quota limit.
 The Azure Logs integration collects logs.
 
 **Logs** help you keep a record of events that happen on your machine.
-Log data streams collected by the Azure Logs integration include activity, platform, sign-in, audit, and spring cloud logs.
+Log data streams collected by the Azure Logs integration include activity, platform, sign-in, audit, and Spring Cloud logs.
 See more details in the [Logs reference](#logs-reference).
 
 ## Requirements
