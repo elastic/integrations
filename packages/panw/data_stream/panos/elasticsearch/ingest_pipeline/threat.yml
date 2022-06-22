@@ -1,37 +1,38 @@
 ---
-description: Pipeline for PanOS Threat Logs
+description: Pipeline for PanOS Threat Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/threat-log-fields
 processors:
   - csv:
       field: message
       target_fields:
-        - source.ip
-        - destination.ip
-        - source.nat.ip
-        - destination.nat.ip
+        - panw.panos.source.ip
+        - panw.panos.destination.ip
+        - panw.panos.source.nat.ip
+        - panw.panos.destination.nat.ip
         - panw.panos.ruleset
-        - source.user.name
-        - destination.user.name
-        - network.application
+        - panw.panos.source.user
+        - panw.panos.destination.user
+        - panw.panos.network.application
         - panw.panos.virtual_sys
-        - observer.ingress.zone
-        - observer.egress.zone
-        - observer.ingress.interface.name
-        - observer.egress.interface.name
+        - panw.panos.source.zone
+        - panw.panos.destination.zone
+        - panw.panos.inbound_interface
+        - panw.panos.outbound_interface
         - panw.panos.log_profile
         - _temp_.logged_time
         - panw.panos.flow_id
         - panw.panos.repeat_count
-        - source.port
-        - destination.port
-        - source.nat.port
-        - destination.nat.port
+        - panw.panos.source.port
+        - panw.panos.destination.port
+        - panw.panos.source.nat.port
+        - panw.panos.destination.nat.port
         - _temp_.labels
-        - network.transport
+        - panw.panos.protocol
         - panw.panos.action
-        - url.original
+        - panw.panos.misc
         - panw.panos.threat.name
         - panw.panos.url.category
-        - log.level
+        - panw.panos.severity
         - _temp_.direction
         - panw.panos.sequence_number
         - panw.panos.action_flags
@@ -44,23 +45,23 @@ processors:
         - panw.panos.wildfire.name
         - panw.panos.url_idx
         - _temp_.user_agent
-        - file.type
+        - panw.panos.file.type
         - _temp_.forwarded_ip
-        - http.request.referrer
-        - source.user.email
+        - panw.panos.referrer
+        - panw.panos.sender
         - panw.panos.subject
-        - destination.user.email
+        - panw.panos.recipient
         - panw.panos.wildfire.report_id
         - panw.panos.device_group_hierarchy1
         - panw.panos.device_group_hierarchy2
         - panw.panos.device_group_hierarchy3
         - panw.panos.device_group_hierarchy4
         - panw.panos.vsys_name
-        - observer.hostname
+        - panw.panos.device_name
         - _temp_.future_use3
         - panw.panos.source_vm_uuid
         - panw.panos.destination_vm_uuid
-        - http.request.method
+        - panw.panos.http_method
         - panw.panos.imsi
         - panw.panos.imei
         - panw.panos.parent_session.id
@@ -73,7 +74,7 @@ processors:
         - panw.panos.payload_protocol_id
         - panw.panos.http_headers
         - panw.panos.url_category_list
-        - rule.uuid
+        - panw.panos.rule_uuid
         - panw.panos.http2_connection
         - panw.panos.dynamic_user.group.name
         - panw.panos.xff.ip
@@ -128,15 +129,15 @@ processors:
   - set:
       field: network.direction
       value: inbound
-      if: ctx?._temp_?.direction == "0" || ctx?._temp_?.direction == "client-to-server"
+      if: ctx._temp_?.direction == "0" || ctx._temp_?.direction == "client-to-server"
   - set:
       field: network.direction
       value: outbound
-      if: ctx?._temp_?.direction == "1" || ctx?._temp_?.direction == "server-to-client"
+      if: ctx._temp_?.direction == "1" || ctx._temp_?.direction == "server-to-client"
   - set:
       field: network.direction
       value: unknown
-      if: ctx?.network?.direction == null
+      if: ctx.network?.direction == null
 
 # Set event.category.
   - set:
@@ -166,48 +167,48 @@ processors:
       copy_from: _temp_.dstloc
       ignore_failure: true
   - set:
-      field: panw.panos.destination.ip
-      copy_from: destination.ip
+      field: destination.ip
+      copy_from: panw.panos.destination.ip
       ignore_failure: true
   - set:
-      field: panw.panos.destination.nat.ip
-      copy_from: destination.nat.ip
+      field: destination.nat.ip
+      copy_from: panw.panos.destination.nat.ip
       ignore_failure: true
   - set:
-      field: panw.panos.destination.nat.port
-      copy_from: destination.nat.port
+      field: destination.nat.port
+      copy_from: panw.panos.destination.nat.port
       ignore_failure: true
   - set:
-      field: panw.panos.destination.port
-      copy_from: destination.port
+      field: destination.port
+      copy_from: panw.panos.destination.port
       ignore_failure: true
   - set:
-      field: panw.panos.recipient
-      copy_from: destination.user.email
+      field: destination.user.email
+      copy_from: panw.panos.recipient
       ignore_failure: true
   - set:
-      field: panw.panos.destination.user
-      copy_from: destination.user.name
+      field: destination.user.name
+      copy_from: panw.panos.destination.user
       ignore_failure: true
   - set:
-      field: panw.panos.file.type
-      copy_from: file.type
+      field: file.type
+      copy_from: panw.panos.file.type
       ignore_failure: true
   - set:
-      field: panw.panos.http_method
-      copy_from: http.request.method
+      field: http.request.method
+      copy_from: panw.panos.http_method
       ignore_failure: true
   - set:
-      field: panw.panos.referrer
-      copy_from: http.request.referrer
+      field: http.request.referrer
+      copy_from: panw.panos.referrer
       ignore_failure: true
   - set:
-      field: panw.panos.severity
-      copy_from: log.level
+      field: log.level
+      copy_from: panw.panos.severity
       ignore_failure: true
   - set:
-      field: panw.panos.network.application
-      copy_from: network.application
+      field: network.application
+      copy_from: panw.panos.network.application
       ignore_failure: true
   - set:
       field: panw.panos.network.direction
@@ -218,64 +219,64 @@ processors:
       copy_from: network.forwarded_ip
       ignore_failure: true
   - set:
-      field: panw.panos.protocol
-      copy_from: network.transport
+      field: network.transport
+      copy_from: panw.panos.protocol
       ignore_failure: true
   - set:
-      field: panw.panos.outbound_interface
-      copy_from: observer.egress.interface.name
+      field: observer.egress.interface.name
+      copy_from: panw.panos.outbound_interface
       ignore_failure: true
   - set:
-      field: panw.panos.destination.zone
-      copy_from: observer.egress.zone
+      field: observer.egress.zone
+      copy_from: panw.panos.destination.zone
       ignore_failure: true
   - set:
-      field: panw.panos.device_name
-      copy_from: observer.hostname
+      field: observer.hostname
+      copy_from: panw.panos.device_name
       ignore_failure: true
   - set:
-      field: panw.panos.inbound_interface
-      copy_from: observer.ingress.interface.name
+      field: observer.ingress.interface.name
+      copy_from: panw.panos.inbound_interface
       ignore_failure: true
   - set:
-      field: panw.panos.source.zone
-      copy_from: observer.ingress.zone
+      field: observer.ingress.zone
+      copy_from: panw.panos.source.zone
       ignore_failure: true
   - set:
-      field: panw.panos.rule_uuid
-      copy_from: rule.uuid
+      field: rule.uuid
+      copy_from: panw.panos.rule_uuid
       ignore_failure: true
   - set:
       field: panw.panos.source.location
       copy_from: _temp_.srcloc
       ignore_failure: true
   - set:
-      field: panw.panos.source.ip
-      copy_from: source.ip
+      field: source.ip
+      copy_from: panw.panos.source.ip
       ignore_failure: true
   - set:
-      field: panw.panos.source.nat.ip
-      copy_from: source.nat.ip
+      field: source.nat.ip
+      copy_from: panw.panos.source.nat.ip
       ignore_failure: true
   - set:
-      field: panw.panos.source.port
-      copy_from: source.port
+      field: source.port
+      copy_from: panw.panos.source.port
       ignore_failure: true
   - set:
-      field: panw.panos.source.nat.port
-      copy_from: source.nat.port
+      field: source.nat.port
+      copy_from: panw.panos.source.nat.port
       ignore_failure: true
   - set:
-      field: panw.panos.sender
-      copy_from: source.user.email
+      field: source.user.email
+      copy_from: panw.panos.sender
       ignore_failure: true
   - set:
-      field: panw.panos.source.user
-      copy_from: source.user.name
+      field: source.user.name
+      copy_from: panw.panos.source.user
       ignore_failure: true
   - set:
-      field: panw.panos.misc
-      copy_from: url.original
+      field: url.original
+      copy_from: panw.panos.misc
       ignore_failure: true
   - set:
       field: panw.panos.user_agent

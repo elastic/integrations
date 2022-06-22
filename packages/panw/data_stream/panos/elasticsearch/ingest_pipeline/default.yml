@@ -17,7 +17,7 @@ processors:
   - set:
       field: event.timezone
       value: "{{{_conf.tz_offset}}}"
-      if: ctx?._conf?.tz_offset != null && ctx?._conf?.tz_offset != 'local'
+      if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
 
 # Collects the first few parts of the message to be used for conditional parsing later
   - rename:
@@ -35,23 +35,23 @@ processors:
 
 ## TRAFFIC
   - pipeline:
-      if: ctx?.panw?.panos?.type == "TRAFFIC"
+      if: ctx.panw?.panos?.type == "TRAFFIC"
       name: '{{ IngestPipeline "traffic" }}'
 ## THREAT
   - pipeline:
-      if: ctx?.panw?.panos?.type == "THREAT"
+      if: ctx.panw?.panos?.type == "THREAT"
       name: '{{ IngestPipeline "threat" }}'
 ## HIPMATCH
   - pipeline:
-      if: 'ctx?.panw?.panos?.type == "HIPMATCH" || ctx?.panw?.panos?.type == "HIP-MATCH"'
+      if: 'ctx.panw?.panos?.type == "HIPMATCH" || ctx.panw?.panos?.type == "HIP-MATCH"'
       name: '{{ IngestPipeline "hipmatch" }}'
 ## USER ID
   - pipeline:
-      if: ctx?.panw?.panos?.type == "USERID"
+      if: ctx.panw?.panos?.type == "USERID"
       name: '{{ IngestPipeline "userid" }}'
 ## GLOBAL PROTECT
   - pipeline:
-      if: ctx?.panw?.panos?.type == "GLOBALPROTECT"
+      if: ctx.panw?.panos?.type == "GLOBALPROTECT"
       name: '{{ IngestPipeline "globalprotect" }}'
 ## CONFIG
   - pipeline:
@@ -106,14 +106,14 @@ processors:
 
 # Set @timestamp to the time when the entry was generated at the data plane.
   - date:
-      if: "ctx?.event?.timezone == null"
+      if: "ctx.event?.timezone == null"
       field: "_temp_.generated_time"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
         - "strict_date_optional_time_nanos"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
   - date:
-      if: "ctx?.event?.timezone != null"
+      if: "ctx.event?.timezone != null"
       field: "_temp_.generated_time"
       formats:
         - "yyyy/MM/dd HH:mm:ss"
@@ -128,7 +128,7 @@ processors:
 
 # event.created is the time the event was received at the management plane.
   - date:
-      if: "ctx?.event?.timezone == null && ctx?.event?.created != null"
+      if: "ctx.event?.timezone == null && ctx.event?.created != null"
       field: "event.created"
       target_field: "event.created"
       formats:
@@ -136,7 +136,7 @@ processors:
         - "strict_date_optional_time_nanos"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
   - date:
-      if: "ctx?.event?.timezone != null && ctx?.event?.created != null"
+      if: "ctx.event?.timezone != null && ctx.event?.created != null"
       field: "event.created"
       target_field: "event.created"
       formats:
@@ -579,14 +579,15 @@ processors:
 
 # Remove PCAP ID when zero (no packet capture).
   - remove:
-      if: 'ctx?.panw?.panos?.network?.pcap_id == "0"'
+      if: 'ctx.panw?.panos?.network?.pcap_id == "0"'
       field:
         - panw.panos.network.pcap_id
 
 # Extract 'flags' bitfield into labels.
+# https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/decryption-log-fields
   - script:
       lang: painless
-      if: 'ctx?._temp_?.labels != null && ctx._temp_.labels != 0'
+      if: 'ctx._temp_?.labels != null && ctx._temp_.labels != 0'
       params:
         pcap_included: 0x80000000
         connect_to_destination_host: 0x40000000
@@ -611,7 +612,7 @@ processors:
       # TODO: Remove the workaround for https://github.com/elastic/kibana/issues/85486
       # that converts the param values from string to Long.
       source: >
-        def labels = ctx?.labels;
+        def labels = ctx.labels;
         if (labels == null) {
           labels = new HashMap();
           ctx['labels'] = labels;
@@ -630,7 +631,7 @@ processors:
 # normalize event.duration and determine event.end.
   - script:
       lang: painless
-      if: 'ctx?.event?.duration != null'
+      if: 'ctx.event?.duration != null'
       params:
         NANOS_IN_A_SECOND: 1000000000
       source: >
@@ -645,11 +646,11 @@ processors:
   - append:
       field: event.type
       value: allowed
-      if: "ctx?.panw?.panos?.action != null && ['alert', 'allow', 'continue'].contains(ctx.panw.panos.action)"
+      if: "ctx.panw?.panos?.action != null && ['alert', 'allow', 'continue'].contains(ctx.panw.panos.action)"
   - append:
       field: event.type
       value: denied
-      if: "ctx?.panw?.panos?.action != null && ['deny', 'drop', 'reset-client', 'reset-server', 'reset-both', 'block-url', 'block-ip', 'random-drop', 'sinkhole', 'block'].contains(ctx.panw.panos.action)"
+      if: "ctx.panw?.panos?.action != null && ['deny', 'drop', 'reset-client', 'reset-server', 'reset-both', 'block-url', 'block-ip', 'random-drop', 'sinkhole', 'block'].contains(ctx.panw.panos.action)"
   - set:
       field: event.outcome
       value: success
@@ -658,110 +659,110 @@ processors:
   - set:
       field: event.action
       value: flow_started
-      if: 'ctx?.panw?.panos?.sub_type == "start"'
+      if: 'ctx.panw?.panos?.sub_type == "start"'
   - append:
       field: event.type
       value:
         - start
         - connection
-      if: 'ctx?.panw?.panos?.sub_type == "start"'
+      if: 'ctx.panw?.panos?.sub_type == "start"'
   - set:
       field: event.action
       value: flow_terminated
-      if: 'ctx?.panw?.panos?.sub_type == "end"'
+      if: 'ctx.panw?.panos?.sub_type == "end"'
   - append:
       field: event.type
       value:
         - end
         - connection
-      if: 'ctx?.panw?.panos?.sub_type == "end"'
+      if: 'ctx.panw?.panos?.sub_type == "end"'
   - set:
       field: event.action
       value: flow_dropped
-      if: 'ctx?.panw?.panos?.sub_type == "drop"'
+      if: 'ctx.panw?.panos?.sub_type == "drop"'
   - append:
       field: event.type
       value:
         - denied
         - connection
-      if: 'ctx?.panw?.panos?.sub_type == "drop"'
+      if: 'ctx.panw?.panos?.sub_type == "drop"'
   - set:
       field: event.action
       value: flow_denied
-      if: 'ctx?.panw?.panos?.sub_type == "deny"'
+      if: 'ctx.panw?.panos?.sub_type == "deny"'
   - append:
       field: event.type
       value:
         - denied
         - connection
-      if: 'ctx?.panw?.panos?.sub_type == "deny"'
+      if: 'ctx.panw?.panos?.sub_type == "deny"'
 
 # event.action for threat and global-protect logs.
   - set:
       field: event.action
       value: data_match
-      if: 'ctx?.panw?.panos?.sub_type == "data"'
+      if: 'ctx.panw?.panos?.sub_type == "data"'
   - set:
       field: event.action
       value: file_match
-      if: 'ctx?.panw?.panos?.sub_type == "file"'
+      if: 'ctx.panw?.panos?.sub_type == "file"'
   - set:
       field: event.action
       value: flood_detected
-      if: 'ctx?.panw?.panos?.sub_type == "flood"'
+      if: 'ctx.panw?.panos?.sub_type == "flood"'
   - set:
       field: event.action
       value: packet_attack
-      if: 'ctx?.panw?.panos?.sub_type == "packet"'
+      if: 'ctx.panw?.panos?.sub_type == "packet"'
   - set:
       field: event.action
       value: scan_detected
-      if: 'ctx?.panw?.panos?.sub_type == "scan"'
+      if: 'ctx.panw?.panos?.sub_type == "scan"'
   - set:
       field: event.action
       value: spyware_detected
-      if: 'ctx?.panw?.panos?.sub_type == "spyware"'
+      if: 'ctx.panw?.panos?.sub_type == "spyware"'
   - set:
       field: event.action
       value: url_filtering
-      if: 'ctx?.panw?.panos?.sub_type == "url"'
+      if: 'ctx.panw?.panos?.sub_type == "url"'
   - set:
       field: event.action
       value: virus_detected
-      if: 'ctx?.panw?.panos?.sub_type == "virus"'
+      if: 'ctx.panw?.panos?.sub_type == "virus"'
   - set:
       field: event.action
       value: exploit_detected
-      if: 'ctx?.panw?.panos?.sub_type == "vulnerability"'
+      if: 'ctx.panw?.panos?.sub_type == "vulnerability"'
   - set:
       field: event.action
       value: wildfire_verdict
-      if: 'ctx?.panw?.panos?.sub_type == "wildfire"'
+      if: 'ctx.panw?.panos?.sub_type == "wildfire"'
   - set:
       field: event.action
       value: wildfire_virus_detected
-      if: 'ctx?.panw?.panos?.sub_type == "wildfire-virus"'
+      if: 'ctx.panw?.panos?.sub_type == "wildfire-virus"'
 
 # Set numeric log.level from event.severity.
   - set:
       field: "event.severity"
-      if: 'ctx?.log?.level == "critical"'
+      if: 'ctx.log?.level == "critical"'
       value: 1
   - set:
       field: "event.severity"
-      if: 'ctx?.log?.level == "high"'
+      if: 'ctx.log?.level == "high"'
       value: 2
   - set:
       field: "event.severity"
-      if: 'ctx?.log?.level == "medium"'
+      if: 'ctx.log?.level == "medium"'
       value: 3
   - set:
       field: "event.severity"
-      if: 'ctx?.log?.level == "low"'
+      if: 'ctx.log?.level == "low"'
       value: 4
   - set:
       field: "event.severity"
-      if: 'ctx?.log?.level == "informational"'
+      if: 'ctx.log?.level == "informational"'
       value: 5
 
 # Normalize event.outcome.
@@ -769,19 +770,19 @@ processors:
   - set:
       field: panw.panos.action
       value: 'drop-icmp'
-      if: 'ctx?.panw?.panos?.action == "drop icmp" || ctx?.panw?.panos?.action == "drop ICMP"'
+      if: 'ctx.panw?.panos?.action == "drop icmp" || ctx.panw?.panos?.action == "drop ICMP"'
   - set:
       field: panw.panos.action
       value: 'reset-both'
-      if: 'ctx?.panw?.panos?.action == "reset both"'
+      if: 'ctx.panw?.panos?.action == "reset both"'
   - set:
       field: panw.panos.action
       value: 'reset-client'
-      if: 'ctx?.panw?.panos?.action == "reset client"'
+      if: 'ctx.panw?.panos?.action == "reset client"'
   - set:
       field: panw.panos.action
       value: 'reset-server'
-      if: 'ctx?.panw?.panos?.action == "reset server"'
+      if: 'ctx.panw?.panos?.action == "reset server"'
 
 # set network.type from source.ip
   - set:
@@ -795,25 +796,25 @@ processors:
 
 # Build related.ip array from src/dest/NAT IPs.
   - append:
-      if: 'ctx?.source?.ip != null'
+      if: 'ctx.source?.ip != null'
       field: related.ip
       allow_duplicates: false
       value:
         - '{{source.ip}}'
   - append:
-      if: 'ctx?.destination?.ip != null'
+      if: 'ctx.destination?.ip != null'
       field: related.ip
       allow_duplicates: false
       value:
         - '{{destination.ip}}'
   - append:
-      if: 'ctx?.source?.nat?.ip != null'
+      if: 'ctx.source?.nat?.ip != null'
       field: related.ip
       allow_duplicates: false
       value:
         - '{{source.nat.ip}}'
   - append:
-      if: 'ctx?.destination?.nat?.ip != null'
+      if: 'ctx.destination?.nat?.ip != null'
       field: related.ip
       allow_duplicates: false
       value:
@@ -851,21 +852,21 @@ processors:
 
 # Geolocation for source.
   - geoip:
-      if: 'ctx?.source?.ip != null'
+      if: 'ctx.source?.ip != null'
       field: source.ip
       target_field: source.geo
   - geoip:
-      if: 'ctx?.source?.nat?.ip != null && ctx.source?.geo == null'
+      if: 'ctx.source?.nat?.ip != null && ctx.source?.geo == null'
       field: source.nat.ip
       target_field: source.geo
 
 # Geolocation for destination.
   - geoip:
-      if: 'ctx?.destination?.ip != null'
+      if: 'ctx.destination?.ip != null'
       field: destination.ip
       target_field: destination.geo
   - geoip:
-      if: 'ctx?.destination?.nat?.ip != null && ctx.destination?.geo == null'
+      if: 'ctx.destination?.nat?.ip != null && ctx.destination?.geo == null'
       field: destination.nat.ip
       target_field: destination.geo
 
@@ -893,7 +894,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
-      if: 'ctx?.source?.nat?.ip != null && ctx.source?.as == null'
+      if: 'ctx.source?.nat?.ip != null && ctx.source?.as == null'
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -910,7 +911,7 @@ processors:
         - asn
         - organization_name
       ignore_missing: true
-      if: 'ctx?.destination?.nat?.ip != null && ctx.destination?.as == null'
+      if: 'ctx.destination?.nat?.ip != null && ctx.destination?.as == null'
   - rename:
       field: source.as.asn
       target_field: source.as.number
@@ -941,40 +942,40 @@ processors:
   - convert:
       field: source.port
       type: integer
-      if: ctx?.source?.port != null
+      if: ctx.source?.port != null
   - convert:
       field: destination.port
       type: integer
-      if: ctx?.destination?.port != null
+      if: ctx.destination?.port != null
   - convert:
       field: source.nat.port
       type: integer
-      if: ctx?.source?.nat?.port != null
+      if: ctx.source?.nat?.port != null
   - convert:
       field: destination.nat.port
       type: integer
-      if: ctx?.destination?.nat?.port != null
+      if: ctx.destination?.nat?.port != null
 
 # Set community network ID's
   - community_id:
       target_field: network.community_id
-      if: ctx?.source?.port != null && ctx?.source?.port != 0 && ctx?.destination?.port != null && ctx?.destination?.port != 0
+      if: ctx.source?.port != null && ctx.source?.port != 0 && ctx.destination?.port != null && ctx.destination?.port != 0
   - community_id:
       target_field: panw.panos.network.nat.community_id
       source_ip: source.nat.ip
       source_port: source.nat.port
       destination_ip: destination.nat.ip
       destination_port: destination.nat.port
-      if: ctx?.source?.nat?.port != null && ctx?.source?.nat?.port != 0 && ctx?.destination?.nat?.port != null && ctx?.destination?.nat?.port != 0
+      if: ctx.source?.nat?.port != null && ctx.source?.nat?.port != 0 && ctx.destination?.nat?.port != null && ctx.destination?.nat?.port != 0
 
 # Append NAT community_id to network.community_id
   - append:
-      if: 'ctx?.panw?.panos?.network?.nat?.community_id != null && ctx.panw.panos.network.nat.community_id != ctx?.network?.community_id'
+      if: 'ctx.panw?.panos?.network?.nat?.community_id != null && ctx.panw.panos.network.nat.community_id != ctx.network?.community_id'
       field: network.community_id
       value:
       - '{{panw.panos.network.nat.community_id}}'
   - grok:
-      if: 'ctx?.panw?.panos?.threat?.name != null'
+      if: 'ctx.panw?.panos?.threat?.name != null'
       field: panw.panos.threat.name
       ignore_failure: true
       patterns:
@@ -982,7 +983,7 @@ processors:
   - set:
       field: panw.panos.threat.name
       value: 'URL-filtering'
-      if: 'ctx?.panw?.panos?.threat?.id == "9999"'
+      if: 'ctx.panw?.panos?.threat?.id == "9999"'
   - set:
       field: rule.name
       value: "{{panw.panos.ruleset}}"
@@ -992,7 +993,7 @@ processors:
       field: related.user
       allow_duplicates: false
       value: "{{client.user.name}}"
-      if: "ctx?.client?.user?.name != null"
+      if: "ctx.client?.user?.name != null"
   - append:
       field: related.user
       allow_duplicates: false
@@ -1010,17 +1011,17 @@ processors:
       field: related.user
       allow_duplicates: false
       value: "{{server.user.name}}"
-      if: "ctx?.server?.user?.name != null"
+      if: "ctx.server?.user?.name != null"
   - append:
       field: related.user
       allow_duplicates: false
       value: "{{destination.user.name}}"
-      if: "ctx?.destination?.user?.name != null"
+      if: "ctx.destination?.user?.name != null"
   - append:
       field: related.hash
       allow_duplicates: false
       value: "{{panw.panos.file.hash}}"
-      if: "ctx?.panw?.panos?.file?.hash != null"
+      if: "ctx.panw?.panos?.file?.hash != null"
   - append:
       field: related.hash
       value: '{{{tls.client.hash.md5}}}'
@@ -1042,12 +1043,12 @@ processors:
   - append:
       field: related.hosts
       value: "{{observer.hostname}}"
-      if: "ctx?.observer?.hostname != null && ctx.observer?.hostname != ''"
+      if: "ctx.observer?.hostname != null && ctx.observer?.hostname != ''"
       allow_duplicates: false
   - append:
       field: related.hosts
       value: "{{host.name}}"
-      if: "ctx?.host?.name != null && ctx.host?.name != ''"
+      if: "ctx.host?.name != null && ctx.host?.name != ''"
       allow_duplicates: false
   - append:
       field: related.hosts
@@ -1073,16 +1074,16 @@ processors:
       field:
         - source.nat.ip
         - source.nat.port
-      if: 'ctx?.source?.nat?.ip == "0.0.0.0" && ctx?.source?.nat?.port == 0'
+      if: 'ctx.source?.nat?.ip == "0.0.0.0" && ctx.source?.nat?.port == 0'
   - remove:
       field:
         - destination.nat.ip
         - destination.nat.port
-      if: 'ctx?.destination?.nat?.ip == "0.0.0.0" && ctx?.destination?.nat?.port == 0'
+      if: 'ctx.destination?.nat?.ip == "0.0.0.0" && ctx.destination?.nat?.port == 0'
 
 #Remove custom fields
   - remove:
-      if: "!(ctx.tags.contains('preserve_duplicate_custom_fields'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))"
       field:
         - panw.panos.bytes_received
         - panw.panos.bytes_sent
@@ -1159,11 +1160,13 @@ processors:
         - panw.panos.user_by_source
         - panw.panos.subject_common_name.value
         - panw.panos.issuer_common_name.value
+        - panw.panos.hash
+      ignore_failure: true
       ignore_missing: true
 
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 

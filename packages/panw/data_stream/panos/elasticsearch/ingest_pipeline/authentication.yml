@@ -1,14 +1,15 @@
 ---
 description: Pipeline for PanOS Authentication Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/authentication-log-fields
 processors:
   - csv:
       field: message
       ignore_failure: true
       target_fields:
         - panw.panos.virtual_sys
-        - source.ip
+        - panw.panos.source.ip
         - _temp_.user
-        - _temp_.normalize_user
+        - panw.panos.normalize_user
         - panw.panos.object.id
         - panw.panos.authentication.policy
         - panw.panos.repeat_count
@@ -27,10 +28,10 @@ processors:
         - panw.panos.device_group_hierarchy3
         - panw.panos.device_group_hierarchy4
         - panw.panos.vsys_name
-        - observer.hostname
+        - panw.panos.device_name
         - panw.panos.vsys_id
         - panw.panos.authentication.protocol
-        - rule.uuid
+        - panw.panos.rule_uuid
         - _temp_.high_res_timestamp
         - panw.panos.src.category
         - panw.panos.src.profile
@@ -53,8 +54,8 @@ processors:
       ignore_failure: true
   - append:
       field: source.user.name
-      value: '{{{_temp_.normalize_user}}}'
-      if: ctx._temp_?.normalize_user != null && ctx._temp_?.normalize_user != ''
+      value: '{{{panw.panos.normalize_user}}}'
+      if: ctx.panw?.panos?.normalize_user != null && ctx.panw?.panos?.normalize_user != ''
       allow_duplicates: false
       ignore_failure: true
 
@@ -69,24 +70,20 @@ processors:
 
 # Set custom fields to ECS fields
   - set:
-      field: panw.panos.device_name
-      copy_from: observer.hostname
+      field: observer.hostname
+      copy_from: panw.panos.device_name
       ignore_failure: true
   - set:
-      field: panw.panos.rule_uuid
-      copy_from: rule.uuid
+      field: rule.uuid
+      copy_from: panw.panos.rule_uuid
       ignore_failure: true
   - set:
-      field: panw.panos.source.ip
-      copy_from: source.ip
+      field: source.ip
+      copy_from: panw.panos.source.ip
       ignore_failure: true
   - set:
       field: panw.panos.user
       copy_from: _temp_.user
-      ignore_failure: true
-  - set:
-      field: panw.panos.normalize_user
-      copy_from: _temp_.normalize_user
       ignore_failure: true
   - set:
       field: panw.panos.user_agent

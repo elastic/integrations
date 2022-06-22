@@ -1,33 +1,34 @@
 ---
 description: Pipeline for PanOS GTP Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/gtp-log-fields
 processors:
   - csv:
       field: message
       ignore_failure: true
       target_fields:
-        - source.ip
-        - destination.ip
+        - panw.panos.source.ip
+        - panw.panos.destination.ip
         - _temp_.future_use1
         - _temp_.future_use2
         - panw.panos.ruleset
         - _temp_.future_use3
         - _temp_.future_use4
-        - network.application
+        - panw.panos.network.application
         - panw.panos.virtual_sys
-        - observer.ingress.zone
-        - observer.egress.zone
-        - observer.ingress.interface.name
-        - observer.egress.interface.name
+        - panw.panos.source.zone
+        - panw.panos.destination.zone
+        - panw.panos.inbound_interface
+        - panw.panos.outbound_interface
         - panw.panos.log_profile
         - _temp_.future_use5
         - panw.panos.flow_id
         - _temp_.future_use6
-        - source.port
-        - destination.port
+        - panw.panos.source.port
+        - panw.panos.destination.port
         - _temp_.future_use7
         - _temp_.future_use8
         - _temp_.future_use9
-        - network.transport
+        - panw.panos.protocol
         - panw.panos.action
         - panw.panos.event_type
         - panw.panos.msisdn
@@ -39,7 +40,7 @@ processors:
         - panw.panos.tunnel_endpoint.identifier2
         - panw.panos.interface
         - panw.panos.cause_code
-        - log.level
+        - panw.panos.severity
         - panw.panos.mcc
         - panw.panos.mnc
         - panw.panos.area_code
@@ -74,12 +75,12 @@ processors:
         - _temp_.future_use32
         - _temp_.future_use33
         - _temp_.future_use34
-        - event.start
-        - event.duration
-        - rule.name
+        - panw.panos.start_time
+        - panw.panos.elapsed_time
+        - panw.panos.tunnel_inspection_rule
         - panw.panos.remote_user.ip
         - panw.panos.remote_user.id
-        - rule.uuid
+        - panw.panos.rule_uuid
         - panw.panos.pcap_id
         - _temp_.high_res_timestamp
         - panw.panos.nsdsai_sst
@@ -109,68 +110,68 @@ processors:
       copy_from: _temp_.dstloc
       ignore_failure: true
   - set:
-      field: panw.panos.destination.ip
-      copy_from: destination.ip
+      field: destination.ip
+      copy_from: panw.panos.destination.ip
       ignore_failure: true
   - set:
-      field: panw.panos.destination.port
-      copy_from: destination.port
+      field: destination.port
+      copy_from: panw.panos.destination.port
       ignore_failure: true
   - set:
-      field: panw.panos.elapsed_time
-      copy_from: event.duration
+      field: event.duration
+      copy_from: panw.panos.elapsed_time
       ignore_failure: true
   - set:
-      field: panw.panos.start_time
-      copy_from: event.start
+      field: event.start
+      copy_from: panw.panos.start_time
       ignore_failure: true
   - set:
-      field: panw.panos.severity
-      copy_from: log.level
+      field: log.level
+      copy_from: panw.panos.severity
       ignore_failure: true
   - set:
-      field: panw.panos.network.application
-      copy_from: network.application
+      field: network.application
+      copy_from: panw.panos.network.application
       ignore_failure: true
   - set:
-      field: panw.panos.protocol
-      copy_from: network.transport
+      field: network.transport
+      copy_from: panw.panos.protocol
       ignore_failure: true
   - set:
-      field: panw.panos.outbound_interface
-      copy_from: observer.egress.interface.name
+      field: observer.egress.interface.name
+      copy_from: panw.panos.outbound_interface
       ignore_failure: true
   - set:
-      field: panw.panos.destination.zone
-      copy_from: observer.egress.zone
+      field: observer.egress.zone
+      copy_from: panw.panos.destination.zone
       ignore_failure: true
   - set:
-      field: panw.panos.inbound_interface
-      copy_from: observer.ingress.interface.name
+      field: observer.ingress.interface.name
+      copy_from: panw.panos.inbound_interface
       ignore_failure: true
   - set:
-      field: panw.panos.source.zone
-      copy_from: observer.ingress.zone
+      field: observer.ingress.zone
+      copy_from: panw.panos.source.zone
       ignore_failure: true
   - set:
-      field: panw.panos.tunnel_inspection_rule
-      copy_from: rule.name
+      field: rule.name
+      copy_from: panw.panos.tunnel_inspection_rule
       ignore_failure: true
   - set:
-      field: panw.panos.rule_uuid
-      copy_from: rule.uuid
+      field: rule.uuid
+      copy_from: panw.panos.rule_uuid
       ignore_failure: true
   - set:
       field: panw.panos.source.location
       copy_from: _temp_.srcloc
       ignore_failure: true
   - set:
-      field: panw.panos.source.ip
-      copy_from: source.ip
+      field: source.ip
+      copy_from: panw.panos.source.ip
       ignore_failure: true
   - set:
-      field: panw.panos.source.port
-      copy_from: source.port
+      field: source.port
+      copy_from: panw.panos.source.port
       ignore_failure: true
   
 on_failure:

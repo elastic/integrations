@@ -29,8 +29,8 @@ An example event for `panos` looks as following:
 {
     "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "e19f7b06-a6b1-404c-b018-a47b71f0b849",
-        "id": "ae3dd78d-b9c2-47e3-a2f9-beb1c911bfe1",
+        "ephemeral_id": "319271c4-e416-435d-a777-8cd62713212f",
+        "id": "eadb6bf1-e14c-4297-8ca3-7e97ac93a796",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.2.1"
@@ -61,7 +61,7 @@ An example event for `panos` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "ae3dd78d-b9c2-47e3-a2f9-beb1c911bfe1",
+        "id": "eadb6bf1-e14c-4297-8ca3-7e97ac93a796",
         "snapshot": false,
         "version": "8.2.1"
     },
@@ -75,7 +75,7 @@ An example event for `panos` looks as following:
         ],
         "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2022-06-17T06:56:22Z",
+        "ingested": "2022-06-22T06:49:44Z",
         "kind": "alert",
         "outcome": "success",
         "severity": 5,
@@ -94,7 +94,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.144.7:36499"
+            "address": "172.19.0.4:52580"
         },
         "syslog": {
             "facility": {
@@ -441,6 +441,7 @@ An example event for `panos` looks as following:
 | panw.panos.forwarded_ip | Only for the URL Filtering subtype; all other types do not use this field. The X-Forwarded-For field in the HTTP header contains the IP address of the user who requested the web page. It allows you to identify the IP address of the user, which is useful particularly if you have a proxy server on your network that replaces the user IP address with its own address in the source IP address field of the packet header. | ip |
 | panw.panos.gateway | The name of the gateway that is specified on the portal configuration. | keyword |
 | panw.panos.generated_time | Time the log was generated on the dataplane. | date |
+| panw.panos.hash | The authentication algorithm used for the session, for example, SHA, SHA256, SHA384, etc. | keyword |
 | panw.panos.high_resolution_timestamp | Time in milliseconds the log was received at the management plane. The format for this new field is YYYY-MM-DDThh:ss:sssTZD. | date |
 | panw.panos.host.id | Unique ID GlobalProtect assigns to identify the host. | keyword |
 | panw.panos.host.ip | Hostname or IP address of the client machine. | ip |
@@ -464,7 +465,7 @@ An example event for `panos` looks as following:
 | panw.panos.log_profile | The MAC address of the user’s machine or device. | keyword |
 | panw.panos.logged_time | The time the log was received. | date |
 | panw.panos.login_duration | The length of time, in seconds, the user is connected to the GlobalProtect gateway from logging in to logging out. | long |
-| panw.panos.machine.mac | The MAC address of the user’s machine or device. | keyword |
+| panw.panos.machine.mac_address | The MAC address of the user’s machine or device. | keyword |
 | panw.panos.machine.name | The name of the user’s machine. | keyword |
 | panw.panos.machine.os | The operating system installed on the user’s machine or device (or on the client system). | keyword |
 | panw.panos.matchname | Name of the HIP object or profile. | keyword |
