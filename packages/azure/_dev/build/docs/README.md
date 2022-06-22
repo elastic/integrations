@@ -84,28 +84,28 @@ Retrieves Azure `activitylogs`. Control-plane events on Azure Resource Manager r
 
 {{fields "activitylogs"}}
 
-### platformlogs
+### Platform logs
 Retrieves Azure platform logs. Platform logs provide detailed diagnostic and auditing information for Azure resources and the Azure platform they depend on.
 
 {{event "platformlogs"}}
 
 {{fields "platformlogs"}}
 
-### signinlogs
+### Sign-in logs
 Retrieves Azure Active Directory sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
 
 {{event "signinlogs"}}
 
 {{fields "signinlogs"}}
 
-### auditlogs
+### Audit logs
 Retrieves Azure Active Directory audit logs. The audit logs provide traceability through logs for all changes done by various features within Azure AD. Examples of audit logs include changes made to any resources within Azure AD like adding or removing users, apps, groups, roles and policies.
 
 {{event "auditlogs"}}
 
 {{fields "auditlogs"}}
 
-### springcloudlogs
+### Spring Cloud logs
 
 Retrieves Azure Spring Cloud system and application logs.
 

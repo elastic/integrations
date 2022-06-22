@@ -306,7 +306,7 @@ An example event for `activitylogs` looks as following:
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
-### platformlogs
+### Platform logs
 Retrieves Azure platform logs. Platform logs provide detailed diagnostic and auditing information for Azure resources and the Azure platform they depend on.
 
 An example event for `platformlogs` looks as following:
@@ -499,7 +499,7 @@ An example event for `platformlogs` looks as following:
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
-### signinlogs
+### Sign-in logs
 Retrieves Azure Active Directory sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
 
 An example event for `signinlogs` looks as following:
@@ -804,7 +804,7 @@ An example event for `signinlogs` looks as following:
 | user_agent.version | Version of the user agent. | keyword |
 
 
-### auditlogs
+### Audit logs
 Retrieves Azure Active Directory audit logs. The audit logs provide traceability through logs for all changes done by various features within Azure AD. Examples of audit logs include changes made to any resources within Azure AD like adding or removing users, apps, groups, roles and policies.
 
 An example event for `auditlogs` looks as following:
@@ -1000,7 +1000,7 @@ An example event for `auditlogs` looks as following:
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
-### springcloudlogs
+### Spring Cloud logs
 
 Retrieves Azure Spring Cloud system and application logs.
 
