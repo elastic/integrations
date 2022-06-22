@@ -1,12 +1,12 @@
 # Azure Logs Integration
 The azure logs integration retrieves activity, platform, sign-in, audit, and spring cloud data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
 
-Use the Azure logs integration to collect logs from Azure.
+Use the Azure Logs integration to collect logs from Azure.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
 and reference data when troubleshooting an issue.
 
 For example, if you wanted to detect possible brute force sign-in attacks, you
-could install the Azure logs integration to send Azure sign-in logs to Elastic.
+could install the Azure Logs integration to send Azure sign-in logs to Elastic.
 Then, set up a new rule in the Elastic Observability Logs app to alert you when the number of failed sign-in attempts exceeds a certain threshold.
 Or, perhaps you want to better plan your Azure capacity.
 Send Azure activity logs to Elastic to track and visualize when your virtual machines
@@ -14,10 +14,10 @@ fail to start due to an exceed quota limit.
 
 ## Data streams
 
-The Azure logs integration collects logs.
+The Azure Logs integration collects logs.
 
 **Logs** help you keep a record of events that happen on your machine.
-Log data streams collected by the Azure logs integration include activity, platform, sign-in, audit, and spring cloud logs.
+Log data streams collected by the Azure Logs integration include activity, platform, sign-in, audit, and spring cloud logs.
 See more details in the [Logs reference](#logs-reference).
 
 ## Requirements
@@ -34,6 +34,8 @@ Before adding the integration, you must complete the following tasks as logs are
 * To export audit and sign-in logs to event hubs, follow the steps in Microsoft's [Stream Azure Active Directory logs to an Azure Event Hub tutorial](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub)
 
 ## Settings
+
+Use the following settings to configure the Azure Logs integration when you add it to Fleet.
 
 `eventhub` :
 _string_
