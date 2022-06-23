@@ -6,3 +6,5 @@ To download or update the rules, click **Settings** > **Install Prebuilt Securit
 Then [import](https://www.elastic.co/guide/en/security/master/rules-ui-management.html#load-prebuilt-rules)
 the rules into the Detection engine.
 
+## License Notice
+
