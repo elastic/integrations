@@ -58,7 +58,7 @@ https://management.usgovcloudapi.net/
 
 ### firewall_logs 
 
-The `firewall_logs` data stream of the Azure Logs package will collect any firewall log events that have been streamed through an azure event hub.
+The `firewall_logs` data stream of the Azure Logs package will collect any firewall log events that have been streamed through an Azure event hub.
 
 An example event for `firewall` looks as following:
 
