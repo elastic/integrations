@@ -2,7 +2,7 @@
 
 This integration uses [HTTP API](http://www.rabbitmq.com/management.html) created by the management plugin to collect metrics.
 
-The default data streams are `connection`, `node`, `queue`, `exchange` and standard logs.
+The default data streams are `connection`, `node`, `queue`, `exchange`, `shovel` and standard logs.
 
 If `management.path_prefix` is set in RabbitMQ configuration, management_path_prefix has to be set to the same value
 in this integration configuration.
@@ -56,6 +56,8 @@ It supports two modes to collect data which can be selected with the "Collection
 {{fields "queue"}}
 
 ### Shovel Metrics
+
+* Shovel status indicates if messages are being picked up and dropped off from the queue. Checking this plugin is included in the RabbitMQ monitoring guide: https://www.rabbitmq.com/monitoring.html#readiness-probes
 
 {{event "shovel"}}
 
