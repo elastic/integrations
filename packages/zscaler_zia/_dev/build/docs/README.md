@@ -45,7 +45,7 @@ The log message is expected to be in JSON format. The data is mapped to ECS fiel
               - **Tunnel**: 9558  
               - **Web**: 9559  
           - Select JSON as feed output type.  
-          - Add appropriate HTTP headers.  
+          - Add same custom header along with its value on both the side for additional security.  
           ![Cloud NSS Feeds setup image](../img/cloud_nss_feeds.png?raw=true)
 3. Repeat step 2 for each log type.
 
