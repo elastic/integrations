@@ -106,6 +106,24 @@ processors:
       if: "ctx.cef?.device?.vendor == 'Check Point'"
   - community_id: {}
 
+  # Ensure source.mac and destination.mac are formatted to ECS specifications.
+  - gsub:
+      field: destination.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - gsub:
+      field: source.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+
   #
   # Timestamp parsing.
   #
