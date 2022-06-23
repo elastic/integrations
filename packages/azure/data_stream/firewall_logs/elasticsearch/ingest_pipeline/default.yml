@@ -213,10 +213,6 @@ processors:
       target_field: azure.firewall.operation_name
       ignore_missing: true
   - set:
-      field: observer.name
-      copy_from: azure.resource.name
-      ignore_empty_value: true
-  - set:
       field: observer.type
       value: firewall
   - set:
@@ -234,6 +230,10 @@ processors:
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+  - set:
+      field: observer.name
+      copy_from: azure.resource.name
+      ignore_empty_value: true
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
