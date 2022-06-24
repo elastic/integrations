@@ -15,10 +15,11 @@ provider "aws" {
 }
 
 resource "aws_redshift_cluster" "test_cluster" {
-  cluster_identifier = "elastic-package-test-${var.TEST_RUN_ID}"
-  database_name      = "mydb"
-  master_username    = "exampleuser"
-  master_password    = "Mustbe8characters"
-  node_type          = "dc2.large"
-  cluster_type       = "single-node"
+  cluster_identifier  = "elastic-package-test-${var.TEST_RUN_ID}"
+  database_name       = "mydb"
+  master_username     = "exampleuser"
+  master_password     = "Mustbe8characters"
+  node_type           = "dc2.large"
+  cluster_type        = "single-node"
+  skip_final_snapshot = "true"
 }

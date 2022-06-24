@@ -106,37 +106,37 @@ An example event for `redshift` looks as following:
 | aws.dimensions.service_class | This dimension filters the data that you request for a specific WLM service class | keyword |
 | aws.dimensions.stage | This dimension filters the data that you request for a specific execution stage for a query. | keyword |
 | aws.dimensions.wlmid | This dimension filters the data that you request for a specific WLM identifier. | keyword |
-| aws.redshift.cpu.cpu_utilization | The percentage of CPU utilization. For clusters, this metric represents an aggregation of all nodes (leader and compute) CPU utilization values. | scaled_float |
-| aws.redshift.network.network_receive_throughput | The rate at which the node or cluster receives data. | long |
-| aws.redshift.network.network_transmit_throughput | The rate at which the node or cluster writes data. | long |
-| aws.redshift.performance.concurrency_scaling_active_clusters | The number of concurrency scaling clusters that are actively processing queries at any given time. | integer |
-| aws.redshift.performance.concurrency_scaling_seconds | The number of seconds used by concurrency scaling clusters that have active query processing activity. | long |
-| aws.redshift.performance.max_configured_concurrency_scaling_clusters | Maximum number of concurrency scaling clusters configured from the parameter group. | integer |
-| aws.redshift.performance.queries_completed_per_second | The average number of queries completed per second. | long |
-| aws.redshift.performance.query_duration | The average amount of time to complete a query. | long |
-| aws.redshift.performance.query_runtime_breakdown | The total time queries spent running by query stage. | long |
-| aws.redshift.performance.wlm_queries_completed_per_second | The average number of queries completed per second for a workload management (WLM) queue. | long |
-| aws.redshift.performance.wlm_query_duration | The average length of time to complete a query for a workload management (WLM) queue. | long |
-| aws.redshift.performance.wlm_queue_length | The number of queries waiting to enter a workload management (WLM) queue. | long |
-| aws.redshift.performance.wlm_queue_wait_time | The total time queries spent waiting in the workload management (WLM) queue. | long |
-| aws.redshift.performance.wlm_running_queries | The number of queries running from both the main cluster and concurrency scaling cluster per WLM queue. | long |
-| aws.redshift.status.commit_queue_length | The number of transactions waiting to commit at a given point in time. | long |
-| aws.redshift.status.database_connections | The number of database connections to a cluster. | long |
-| aws.redshift.status.health_status | Indicates the health of the cluster. Any value below 1 implies that the cluster was unhealthy | scaled_float |
-| aws.redshift.status.maintenance_mode | Indicates whether the cluster is in maintenance mode. Any value greater than 0 means that the cluster was in maintenance mode. | scaled_float |
-| aws.redshift.status.total_table_count | The number of user tables open at a particular point in time. | long |
-| aws.redshift.storage.auto_vacuum_space_freed | Storage space reclaimed by auto vacuum delete operations. | long |
-| aws.redshift.storage.percentage_disk_space_used | The percent of disk space used. | scaled_float |
-| aws.redshift.storage.percentage_quota_used | The percentage of disk or storage space used relative to the configured schema quota. | long |
-| aws.redshift.storage.read_iops | The average number of disk read operations per second. | long |
-| aws.redshift.storage.read_latency | The average amount of time taken for disk read I/O operations. | long |
-| aws.redshift.storage.read_throughput | The average number of bytes read from disk per second. | long |
-| aws.redshift.storage.schema_quota | The configured quota for a schema. | long |
-| aws.redshift.storage.storage_used | The disk or storage space used by a schema. | long |
-| aws.redshift.storage.write_iops | The average number of write operations per second. | long |
-| aws.redshift.storage.write_latency | The average amount of time taken for disk write I/O operations. | long |
-| aws.redshift.storage.write_throughput | The average number of bytes written to disk per second. | long |
-| aws.redshift.storages.num_exceeds_schema_quotas | The number of schemas with exceeded quotas. | long |
+| aws.redshift.metrics.AutoVacuumSpaceFreed.avg | Storage space reclaimed by auto vacuum delete operations. | long |
+| aws.redshift.metrics.CPUUtilization.avg | The percentage of CPU utilization. For clusters, this metric represents an aggregation of all nodes (leader and compute) CPU utilization values. | scaled_float |
+| aws.redshift.metrics.CommitQueueLength.avg | The number of transactions waiting to commit at a given point in time. | long |
+| aws.redshift.metrics.ConcurrencyScalingActiveClusters.avg | The number of concurrency scaling clusters that are actively processing queries at any given time. | integer |
+| aws.redshift.metrics.ConcurrencyScalingSeconds.avg | The number of seconds used by concurrency scaling clusters that have active query processing activity. | long |
+| aws.redshift.metrics.DatabaseConnections.avg | The number of database connections to a cluster. | long |
+| aws.redshift.metrics.HealthStatus.avg | Indicates the health of the cluster. Any value below 1 implies that the cluster was unhealthy | scaled_float |
+| aws.redshift.metrics.MaintenanceMode.avg | Indicates whether the cluster is in maintenance mode. Any value greater than 0 means that the cluster was in maintenance mode. | scaled_float |
+| aws.redshift.metrics.MaxConfiguredConcurrencyScalingClusters.avg | Maximum number of concurrency scaling clusters configured from the parameter group. | integer |
+| aws.redshift.metrics.NetworkReceiveThroughput.avg | The rate at which the node or cluster receives data. | long |
+| aws.redshift.metrics.NetworkTransmitThroughput.avg | The rate at which the node or cluster writes data. | long |
+| aws.redshift.metrics.NumExceededSchemaQuotas.avg | The number of schemas with exceeded quotas. | long |
+| aws.redshift.metrics.PercentageDiskSpaceUsed.avg | The percent of disk space used. | scaled_float |
+| aws.redshift.metrics.PercentageQuotaUsed.avg | The percentage of disk or storage space used relative to the configured schema quota. | long |
+| aws.redshift.metrics.QueriesCompletedPerSecond.avg | The average number of queries completed per second. | long |
+| aws.redshift.metrics.QueryDuration.avg | The average amount of time to complete a query. | long |
+| aws.redshift.metrics.QueryRuntimeBreakdown.avg | The total time queries spent running by query stage. | long |
+| aws.redshift.metrics.ReadIOPS.avg | The average number of disk read operations per second. | long |
+| aws.redshift.metrics.ReadLatency.avg | The average amount of time taken for disk read I/O operations. | long |
+| aws.redshift.metrics.ReadThroughput.avg | The average number of bytes read from disk per second. | long |
+| aws.redshift.metrics.SchemaQuota.avg | The configured quota for a schema. | long |
+| aws.redshift.metrics.StorageUsed.avg | The disk or storage space used by a schema. | long |
+| aws.redshift.metrics.TotalTableCount.avg | The number of user tables open at a particular point in time. | long |
+| aws.redshift.metrics.WLMQueriesCompletedPerSecond.avg | The average number of queries completed per second for a workload management (WLM) queue. | long |
+| aws.redshift.metrics.WLMQueryDuration.avg | The average length of time to complete a query for a workload management (WLM) queue. | long |
+| aws.redshift.metrics.WLMQueueLength.avg | The number of queries waiting to enter a workload management (WLM) queue. | long |
+| aws.redshift.metrics.WLMQueueWaitTime.avg | The total time queries spent waiting in the workload management (WLM) queue. | long |
+| aws.redshift.metrics.WLMRunningQueries.avg | The number of queries running from both the main cluster and concurrency scaling cluster per WLM queue. | long |
+| aws.redshift.metrics.WriteIOPS.avg | The average number of write operations per second. | long |
+| aws.redshift.metrics.WriteLatency.avg | The average amount of time taken for disk write I/O operations. | long |
+| aws.redshift.metrics.WriteThroughput.avg | The average number of bytes written to disk per second. | long |
 | aws.tags.\* | Tag key value pairs from aws resources. | object |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -148,7 +148,7 @@ An example event for `redshift` looks as following:
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
