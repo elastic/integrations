@@ -1207,49 +1207,76 @@ An example event for `firewall` looks as following:
 
 ```json
 {
-    "destination": {
-        "geo": {
-            "continent_name": "Europe",
-            "region_iso_code": "SE-E",
-            "city_name": "Linköping",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
-            "region_name": "Östergötland County",
-            "location": {
-                "lon": 15.6167,
-                "lat": 58.4167
-            }
+    "@timestamp": "2022-06-08T16:54:58.849Z",
+    "azure": {
+        "firewall": {
+            "action": "Deny",
+            "category": "AzureFirewallNetworkRule",
+            "icmp": {
+                "request": {
+                    "code": "8"
+                }
+            },
+            "operation_name": "AzureFirewallNetworkRuleLog"
         },
+        "resource": {
+            "group": "TEST-FW-RG",
+            "id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01",
+            "name": "TEST-FW01",
+            "provider": "MICROSOFT.NETWORK/AZUREFIREWALLS"
+        },
+        "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129"
+    },
+    "cloud": {
+        "account": {
+            "id": "23103928-B2CF-472A-8CDB-0146E2849129"
+        },
+        "provider": "azure"
+    },
+    "destination": {
+        "address": "89.160.20.156",
         "as": {
             "number": 29518,
             "organization": {
                 "name": "Bredband2 AB"
             }
         },
-        "address": "89.160.20.156",
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
         "ip": "89.160.20.156"
     },
-    "source": {
-        "address": "192.168.0.2",
-        "ip": "192.168.0.2"
+    "ecs": {
+        "version": "8.2.0"
     },
-    "tags": [
-        "preserve_original_event"
-    ],
+    "event": {
+        "category": [
+            "network"
+        ],
+        "kind": "event",
+        "original": "{\"category\":\"AzureFirewallNetworkRule\",\"operationName\":\"AzureFirewallNetworkRuleLog\",\"properties\":{\"msg\":\"ICMP Type=8 request from 192.168.0.2 to 89.160.20.156. Action: Deny. \"},\"resourceId\":\"/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01\",\"time\":\"2022-06-08T16:54:58.8492560Z\"}",
+        "type": [
+            "connection",
+            "denied"
+        ]
+    },
     "network": {
         "transport": "icmp"
     },
-    "cloud": {
-        "provider": "azure"
-    },
     "observer": {
-        "type": "firewall",
+        "name": "TEST-FW01",
         "product": "Network Firewall",
+        "type": "firewall",
         "vendor": "Azure"
-    },
-    "@timestamp": "2022-06-08T16:54:58.849Z",
-    "ecs": {
-        "version": "8.2.0"
     },
     "related": {
         "ip": [
@@ -1257,36 +1284,13 @@ An example event for `firewall` looks as following:
             "89.160.20.156"
         ]
     },
-    "event": {
-        "original": "{\"category\":\"AzureFirewallNetworkRule\",\"operationName\":\"AzureFirewallNetworkRuleLog\",\"properties\":{\"msg\":\"ICMP Type=8 request from 192.168.0.2 to 89.160.20.156. Action: Deny. \"},\"resourceId\":\"/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01\",\"time\":\"2022-06-08T16:54:58.8492560Z\"}",
-        "category": [
-            "network"
-        ],
-        "type": [
-            "connection",
-            "denied"
-        ],
-        "kind": "event"
+    "source": {
+        "address": "192.168.0.2",
+        "ip": "192.168.0.2"
     },
-    "azure": {
-        "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129",
-        "firewall": {
-            "action": "Deny",
-            "category": "AzureFirewallNetworkRule",
-            "operation_name": "AzureFirewallNetworkRuleLog",
-            "icmp": {
-                "request": {
-                    "code": "8"
-                }
-            }
-        },
-        "resource": {
-            "name": "TEST-FW01",
-            "id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01",
-            "provider": "MICROSOFT.NETWORK/AZUREFIREWALLS",
-            "group": "TEST-FW-RG"
-        }
-    }
+    "tags": [
+        "preserve_original_event"
+    ]
 }
 ```
 
