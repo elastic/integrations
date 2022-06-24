@@ -8,7 +8,7 @@ require (
 	github.com/elastic/package-registry v1.9.0
 	github.com/magefile/mage v1.13.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.7.4
+	github.com/stretchr/testify v1.7.5
 	gopkg.in/yaml.v2 v2.4.0
 )
 
