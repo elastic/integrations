@@ -19,13 +19,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-03-12T14:10:18.000Z",
+    "@timestamp": "2022-10-10T07:25:12.000Z",
     "agent": {
-        "ephemeral_id": "6458f441-1385-4115-994d-b082e5735c2a",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "1671d166-d142-4164-a530-8d26e609c135",
+        "id": "de9c1b8e-5967-4715-bc22-6f9dd52f6cc2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.1.3"
     },
     "data_stream": {
         "dataset": "iptables.log",
@@ -34,16 +34,16 @@ An example event for `log` looks as following:
     },
     "destination": {
         "ip": "10.4.0.5",
-        "mac": "90:10:20:76:8d:20",
+        "mac": "90-10-20-76-8D-20",
         "port": 443
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "de9c1b8e-5967-4715-bc22-6f9dd52f6cc2",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.1.3"
     },
     "event": {
         "action": "drop",
@@ -51,8 +51,9 @@ An example event for `log` looks as following:
         "category": [
             "network"
         ],
+        "created": "2022-05-16T21:22:06.206Z",
         "dataset": "iptables.log",
-        "ingested": "2022-01-01T21:48:16Z",
+        "ingested": "2022-05-16T21:22:07Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": [
@@ -91,10 +92,10 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.7:38816"
+            "address": "172.18.0.7:58273"
         },
         "syslog": {
-            "priority": 6
+            "priority": 161
         }
     },
     "message": "Hostname kernel: [wan-lan-default-D]IN=eth0 OUT= MAC=90:10:20:76:8d:20:90:10:65:29:b6:2a:08:00 SRC=67.43.156.15 DST=10.4.0.5 LEN=52 TOS=0x00 PREC=0x00 TTL=63 ID=0 DF PROTO=TCP SPT=38842 DPT=443 WINDOW=2853 RES=0x00 ACK URGP=0",
@@ -136,7 +137,7 @@ An example event for `log` looks as following:
             }
         },
         "ip": "67.43.156.15",
-        "mac": "90:10:65:29:b6:2a",
+        "mac": "90-10-65-29-B6-2A",
         "port": 38842
     },
     "tags": [
@@ -169,6 +170,7 @@ An example event for `log` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -198,6 +200,7 @@ An example event for `log` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -254,6 +257,7 @@ An example event for `log` looks as following:
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |

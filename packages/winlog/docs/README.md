@@ -1,8 +1,8 @@
 # Custom Windows event log package
 
 The custom Windows event log package allows you to ingest events from
-any Windows event log channel.  You can get a list of available event
-log channels by running Get-EventLog * in PowerShell.  Custom ingest
+any [Windows event log](https://docs.microsoft.com/en-us/windows/win32/wes/windows-event-log) channel.  You can get a list of available event
+log channels by running `Get-EventLog *` in PowerShell.  Custom ingest
 pipelines may be added by setting one up in
 [Ingest Node Pipelines](/app/management/ingest/ingest_pipelines/).
 
@@ -14,7 +14,7 @@ This integration offers the ability to seamlessly ingest data from a Splunk Ente
 These integrations work by using the [httpjson input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
 The raw event is then processed via the Elastic Agent.
 The Splunk search is customizable and the interval between searches is customizable.
-For more information on the Splunk API integration please see [here](https://www.elastic.co/guide/en/observability/current/ingest-splunk.html).
+See the [Splunk API integration documentation](https://www.elastic.co/guide/en/observability/current/ingest-splunk.html) for more information.
 
 This integration requires Windows Events from Splunk to be in XML format.
 To achieve this, `renderXml` needs to be set to `1` in your [inputs.conf](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
@@ -34,7 +34,7 @@ To achieve this, `renderXml` needs to be set to `1` in your [inputs.conf](https:
 | event.module | Event module | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | User defined tags | keyword |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
