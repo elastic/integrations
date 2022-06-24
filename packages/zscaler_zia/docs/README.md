@@ -221,8 +221,8 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2022-12-10T13:40:32.000Z",
     "agent": {
-        "ephemeral_id": "5bb93ccb-dbb5-4893-a41d-55adefd0c778",
-        "id": "a1ec349d-2a86-4b0b-a542-873af5028dcd",
+        "ephemeral_id": "d2fdfdcb-eeb4-46e7-a4a6-d68e1a54349c",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -241,21 +241,21 @@ An example event for `alerts` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "a1ec349d-2a86-4b0b-a542-873af5028dcd",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "snapshot": true,
         "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "zscaler_zia.alerts",
-        "ingested": "2022-06-17T17:16:31Z"
+        "ingested": "2022-06-24T06:30:46Z"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.192.7:33854"
+            "address": "172.24.0.4:44326"
         },
         "syslog": {
             "priority": 114
@@ -380,8 +380,8 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "d8fde874-04e6-4539-9728-70bf72be7ff9",
-        "id": "a1ec349d-2a86-4b0b-a542-873af5028dcd",
+        "ephemeral_id": "204d6ae2-9a49-4e6b-8e9b-93ac2a387507",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -426,7 +426,7 @@ An example event for `dns` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "a1ec349d-2a86-4b0b-a542-873af5028dcd",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "snapshot": true,
         "version": "8.3.0"
     },
@@ -437,7 +437,7 @@ An example event for `dns` looks as following:
         ],
         "dataset": "zscaler_zia.dns",
         "duration": 123456000000,
-        "ingested": "2022-06-17T17:20:29Z",
+        "ingested": "2022-06-24T06:32:18Z",
         "kind": "event",
         "type": [
             "info"
@@ -448,7 +448,7 @@ An example event for `dns` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.192.7:52800"
+            "address": "172.24.0.4:36070"
         }
     },
     "network": {
@@ -612,8 +612,8 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "11a8566d-46e1-4354-b55a-e5d2d407f734",
-        "id": "a1ec349d-2a86-4b0b-a542-873af5028dcd",
+        "ephemeral_id": "8e2f1d65-60fb-4859-8c43-f8f6992be4f4",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -635,7 +635,7 @@ An example event for `firewall` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "a1ec349d-2a86-4b0b-a542-873af5028dcd",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "snapshot": true,
         "version": "8.3.0"
     },
@@ -647,7 +647,7 @@ An example event for `firewall` looks as following:
         ],
         "dataset": "zscaler_zia.firewall",
         "duration": 486000000,
-        "ingested": "2022-06-17T17:24:25Z",
+        "ingested": "2022-06-24T06:33:50Z",
         "kind": "event",
         "type": [
             "info"
@@ -661,7 +661,7 @@ An example event for `firewall` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.192.7:32780"
+            "address": "172.24.0.4:39600"
         }
     },
     "network": {
@@ -833,8 +833,8 @@ An example event for `tunnel` looks as following:
 {
     "@timestamp": "2021-12-30T11:20:12.000Z",
     "agent": {
-        "ephemeral_id": "ccc70428-23d9-4318-a321-46c4262d0444",
-        "id": "a1ec349d-2a86-4b0b-a542-873af5028dcd",
+        "ephemeral_id": "d184a946-67f0-49e9-91e5-f879a5e9da68",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -851,7 +851,7 @@ An example event for `tunnel` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "a1ec349d-2a86-4b0b-a542-873af5028dcd",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "snapshot": true,
         "version": "8.3.0"
     },
@@ -862,7 +862,7 @@ An example event for `tunnel` looks as following:
         ],
         "dataset": "zscaler_zia.tunnel",
         "id": "1111111111111111111",
-        "ingested": "2022-06-17T17:28:20Z",
+        "ingested": "2022-06-24T06:35:19Z",
         "kind": "event",
         "type": [
             "info"
@@ -873,7 +873,7 @@ An example event for `tunnel` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.192.7:53242"
+            "address": "172.24.0.4:54942"
         }
     },
     "network": {
@@ -1070,8 +1070,8 @@ An example event for `web` looks as following:
 {
     "@timestamp": "2021-12-17T07:04:57.000Z",
     "agent": {
-        "ephemeral_id": "400d74c5-a02a-4613-a59a-e59ba57c80e3",
-        "id": "a1ec349d-2a86-4b0b-a542-873af5028dcd",
+        "ephemeral_id": "7ce8e22e-e753-4434-9467-9a10cafb770e",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -1088,7 +1088,7 @@ An example event for `web` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "a1ec349d-2a86-4b0b-a542-873af5028dcd",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "snapshot": true,
         "version": "8.3.0"
     },
@@ -1099,7 +1099,7 @@ An example event for `web` looks as following:
             "web"
         ],
         "dataset": "zscaler_zia.web",
-        "ingested": "2022-06-17T17:32:09Z",
+        "ingested": "2022-06-24T06:36:50Z",
         "kind": "event",
         "risk_score": 0,
         "type": [
@@ -1123,7 +1123,7 @@ An example event for `web` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.192.7:55438"
+            "address": "172.24.0.4:52904"
         }
     },
     "network": {
