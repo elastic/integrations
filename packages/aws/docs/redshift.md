@@ -10,10 +10,10 @@ An example event for `redshift` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-15T12:43:00.000Z",
+    "@timestamp": "2022-06-24T11:36:00.000Z",
     "agent": {
-        "ephemeral_id": "61635543-c809-4a99-acc8-bcff893d2f51",
-        "id": "f793915a-7373-423f-9336-8470608ebf56",
+        "ephemeral_id": "8ca601cd-b8f6-44d8-9e6c-683a2a3cf53e",
+        "id": "3daf40f6-736a-4de2-9801-5108cfc000ce",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -23,11 +23,18 @@ An example event for `redshift` looks as following:
             "namespace": "AWS/Redshift"
         },
         "dimensions": {
-            "ClusterIdentifier": "elastic-package-test-19342"
+            "ClusterIdentifier": "elastic-package-test-74651",
+            "service_class": "14",
+            "wlmid": "14"
         },
         "redshift": {
-            "status": {
-                "maintenance_mode": 0
+            "metrics": {
+                "WLMQueueLength": {
+                    "avg": 0
+                },
+                "WLMRunningQueries": {
+                    "avg": 0
+                }
             }
         }
     },
@@ -37,7 +44,7 @@ An example event for `redshift` looks as following:
             "name": "elastic-observability"
         },
         "provider": "aws",
-        "region": "eu-west-1"
+        "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "aws.redshift",
@@ -48,15 +55,15 @@ An example event for `redshift` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f793915a-7373-423f-9336-8470608ebf56",
+        "id": "3daf40f6-736a-4de2-9801-5108cfc000ce",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "aws.redshift",
-        "duration": 1517261817,
-        "ingested": "2022-06-15T12:58:21Z",
+        "duration": 11103403213,
+        "ingested": "2022-06-24T11:51:16Z",
         "module": "aws"
     },
     "host": {
@@ -64,10 +71,10 @@ An example event for `redshift` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.96.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:60:07"
+            "02:42:ac:1f:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
