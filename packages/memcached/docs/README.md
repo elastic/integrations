@@ -38,16 +38,17 @@ The below metrics are fetched from memcached:
 | memcached.stats.written.bytes | Total number of bytes sent to the network by the server. | long | byte | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 
 
 An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-20T16:52:29.036Z",
+    "@timestamp": "2022-06-24T06:06:06.337Z",
     "agent": {
-        "ephemeral_id": "cdd60d9c-66cd-4d17-bc9e-62768d740210",
-        "id": "496dcab0-f4e2-4777-a645-6474194f01b7",
+        "ephemeral_id": "5c05824c-146b-464f-9030-b1e1eccc7c36",
+        "id": "a6434521-6e0b-4509-be07-c1591bcfe768",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -61,15 +62,15 @@ An example event for `stats` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "496dcab0-f4e2-4777-a645-6474194f01b7",
+        "id": "a6434521-6e0b-4509-be07-c1591bcfe768",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "memcached.stats",
-        "duration": 12189959,
-        "ingested": "2022-06-20T16:52:32Z",
+        "duration": 9903333,
+        "ingested": "2022-06-24T06:06:09Z",
         "kind": "metric",
         "module": "memcached"
     },
@@ -78,10 +79,10 @@ An example event for `stats` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.18.0.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -103,7 +104,7 @@ An example event for `stats` looks as following:
             },
             "connections": {
                 "current": 2,
-                "total": 25
+                "total": 24
             },
             "current": {
                 "bytes": 0
@@ -126,7 +127,7 @@ An example event for `stats` looks as following:
             },
             "threads": 4,
             "uptime": {
-                "sec": 25
+                "sec": 28
             },
             "written": {
                 "bytes": 2206
@@ -138,8 +139,11 @@ An example event for `stats` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "tcp://elastic-package-service_memcached_1:11211",
+        "address": "tcp://elastic-package-service-memcached-1:11211",
         "type": "memcached"
-    }
+    },
+    "tags": [
+        "memcached_stats"
+    ]
 }
 ```
