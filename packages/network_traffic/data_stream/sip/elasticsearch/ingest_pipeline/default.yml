@@ -21,6 +21,18 @@ processors:
 - uppercase:
     field: host.mac
     ignore_missing: true
+# Remove invalid "protocol" term added by packetbeat prior to v7.17.4/8.2.1.
+- script:
+    lang: painless
+    source: >
+        if (ctx.event?.category != null) {
+            for (int i=ctx.event.category.length-1; i>=0; i--) {
+                if (ctx.event.category[i] == "protocol") {
+                    ctx.event.category.remove(i);
+                }
+            }
+        }
+
 on_failure:
 - set:
     field: error.message

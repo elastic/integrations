@@ -1,0 +1,44 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: GET
+request.url: {{url}}/v2/siem/messages/delivered
+auth.basic.user: {{principal}}
+auth.basic.password: {{secret}}
+request.transforms:
+  - set:
+      target: url.params.format
+      value: json
+  - set:
+      target: url.params.interval
+      value: '[[if (le (formatDate ((parseDate .cursor.last_received_time "RFC3339").Add (parseDuration "1h"))) (formatDate (now)))]][[formatDate (parseDate .cursor.last_received_time "RFC3339")]]/[[formatDate ((parseDate .cursor.last_received_time "RFC3339").Add (parseDuration "1h"))]][[else]][[formatDate (parseDate .cursor.last_received_time "RFC3339")]]/[[formatDate now]][[end]]'
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]/[[formatDate ((now (parseDuration "-{{initial_interval}}")).Add (parseDuration "1h"))]]'
+response.pagination: 
+  - set:
+      target: url.params.interval 
+      value: '[[if (le (formatDate ((parseDate .last_response.body.queryEndTime "RFC3339").Add (parseDuration "1h"))) (formatDate (now)))]][[formatDate (parseDate .last_response.body.queryEndTime "RFC3339")]]/[[formatDate ((parseDate .last_response.body.queryEndTime "RFC3339").Add (parseDuration "1h"))]][[else]][[.last_response.terminate_pagination]][[end]]'
+      fail_on_template_error: true
+cursor:
+  last_received_time:
+    value: '[[.last_response.body.queryEndTime]]'
+response.split:
+  target: body.messagesDelivered
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
