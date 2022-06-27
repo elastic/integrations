@@ -27,7 +27,7 @@ request.transforms:
       target: url.params.limit
       value: '[[{{limit}}]]'
 
-request.rate_limit.reset: '[[ .last_response.header.Get "Retry-After" ]]'
+request.rate_limit.reset: '[[ add (toInt (.last_response.header.Get "Retry-After")) ((now).Unix) ]]'
 
 response.split:
   target: body.entries
