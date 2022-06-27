@@ -2,7 +2,35 @@
     "attributes": {
         "description": "",
         "kibanaSavedObjectMeta": {
-            "searchSourceJSON": {}
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "event.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "activemq.queue"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.dataset": "activemq.queue"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
         },
         "title": "Queues Messages Expired [Metrics ActiveMQ]",
         "uiStateJSON": {},
@@ -14,10 +42,12 @@
                 "axis_min": "0",
                 "axis_position": "left",
                 "axis_scale": "normal",
+                "drop_last_bucket": 1,
                 "id": "61ca57f0-469d-11e7-af02-69e470af7417",
                 "index_pattern": "metrics-*",
                 "interval": "",
                 "isModelInvalid": false,
+                "max_lines_legend": 1,
                 "series": [
                     {
                         "axis_position": "right",
@@ -54,6 +84,8 @@
                 "show_grid": 1,
                 "show_legend": 1,
                 "time_field": "",
+                "tooltip_mode": "show_all",
+                "truncate_legend": 1,
                 "type": "timeseries",
                 "use_kibana_indexes": false
             },
@@ -61,14 +93,17 @@
             "type": "metrics"
         }
     },
-    "coreMigrationVersion": "7.15.0",
+    "coreMigrationVersion": "8.2.0",
     "id": "activemq-fab93e30-0bbd-11ea-81bb-cf244189d349",
     "migrationVersion": {
-        "visualization": "7.14.0"
+        "visualization": "8.1.0"
     },
-    "namespaces": [
-        "default"
+    "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
     ],
-    "references": [],
     "type": "visualization"
 }

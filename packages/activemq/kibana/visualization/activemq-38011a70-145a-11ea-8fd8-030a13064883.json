@@ -12,20 +12,16 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "data_stream.dataset",
+                            "key": "event.dataset",
                             "negate": false,
                             "params": {
                                 "query": "activemq.audit"
                             },
-                            "type": "phrase",
-                            "value": "activemq.audit"
+                            "type": "phrase"
                         },
                         "query": {
-                            "match": {
-                                "data_stream.dataset": {
-                                    "query": "activemq.audit",
-                                    "type": "phrase"
-                                }
+                            "match_phrase": {
+                                "event.dataset": "activemq.audit"
                             }
                         }
                     }
@@ -45,7 +41,9 @@
                 {
                     "enabled": true,
                     "id": "1",
-                    "params": {},
+                    "params": {
+                        "emptyAsNull": false
+                    },
                     "schema": "metric",
                     "type": "count"
                 },
@@ -54,15 +52,18 @@
                     "id": "2",
                     "params": {
                         "drop_partials": false,
+                        "extendToTimeRange": false,
                         "extended_bounds": {},
                         "field": "@timestamp",
                         "interval": "auto",
                         "min_doc_count": 1,
+                        "scaleMetricValues": false,
                         "timeRange": {
-                            "from": "now-1d",
+                            "from": "now-10y",
                             "to": "now"
                         },
-                        "useNormalizedEsInterval": true
+                        "useNormalizedEsInterval": true,
+                        "used_interval": "30d"
                     },
                     "schema": "segment",
                     "type": "date_histogram"
@@ -79,8 +80,7 @@
                                 },
                                 "label": ""
                             }
-                        ],
-                        "row": false
+                        ]
                     },
                     "schema": "split",
                     "type": "filters"
@@ -179,11 +179,13 @@
                     "show": false
                 },
                 "legendPosition": "right",
+                "maxLegendLines": 1,
                 "palette": {
                     "name": "kibana_palette",
                     "type": "palette"
                 },
                 "radiusRatio": 50,
+                "row": true,
                 "seriesParams": [
                     {
                         "data": {
@@ -206,6 +208,7 @@
                     "width": 1
                 },
                 "times": [],
+                "truncateLegend": true,
                 "type": "histogram",
                 "valueAxes": [
                     {
@@ -235,14 +238,11 @@
             "type": "histogram"
         }
     },
-    "coreMigrationVersion": "7.15.0",
+    "coreMigrationVersion": "8.2.0",
     "id": "activemq-38011a70-145a-11ea-8fd8-030a13064883",
     "migrationVersion": {
-        "visualization": "7.14.0"
+        "visualization": "8.1.0"
     },
-    "namespaces": [
-        "default"
-    ],
     "references": [
         {
             "id": "logs-*",

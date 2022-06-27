@@ -17,14 +17,12 @@
                             "params": {
                                 "query": "ERROR"
                             },
-                            "type": "phrase",
-                            "value": "ERROR"
+                            "type": "phrase"
                         },
                         "query": {
-                            "match": {
+                            "match_phrase": {
                                 "log.level": {
-                                    "query": "ERROR",
-                                    "type": "phrase"
+                                    "query": "ERROR"
                                 }
                             }
                         }
@@ -37,20 +35,16 @@
                             "alias": null,
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "data_stream.dataset",
+                            "key": "event.dataset",
                             "negate": false,
                             "params": {
                                 "query": "activemq.log"
                             },
-                            "type": "phrase",
-                            "value": "activemq.log"
+                            "type": "phrase"
                         },
                         "query": {
-                            "match": {
-                                "data_stream.dataset": {
-                                    "query": "activemq.log",
-                                    "type": "phrase"
-                                }
+                            "match_phrase": {
+                                "event.dataset": "activemq.log"
                             }
                         }
                     }
@@ -63,23 +57,16 @@
             }
         },
         "title": "Top ERROR callers [Logs ActiveMQ]",
-        "uiStateJSON": {
-            "vis": {
-                "params": {
-                    "sort": {
-                        "columnIndex": null,
-                        "direction": null
-                    }
-                }
-            }
-        },
+        "uiStateJSON": {},
         "version": 1,
         "visState": {
             "aggs": [
                 {
                     "enabled": true,
                     "id": "1",
-                    "params": {},
+                    "params": {
+                        "emptyAsNull": false
+                    },
                     "schema": "metric",
                     "type": "count"
                 },
@@ -87,7 +74,7 @@
                     "enabled": true,
                     "id": "3",
                     "params": {
-                        "field": "activemq.caller",
+                        "field": "activemq.log.caller",
                         "missingBucket": false,
                         "missingBucketLabel": "Missing",
                         "order": "desc",
@@ -101,6 +88,7 @@
                 }
             ],
             "params": {
+                "autoFitRowToContent": false,
                 "dimensions": {
                     "buckets": [
                         {
@@ -144,14 +132,11 @@
             "type": "table"
         }
     },
-    "coreMigrationVersion": "7.15.0",
+    "coreMigrationVersion": "8.2.0",
     "id": "activemq-026da780-1463-11ea-8fd8-030a13064883",
     "migrationVersion": {
-        "visualization": "7.14.0"
+        "visualization": "8.1.0"
     },
-    "namespaces": [
-        "default"
-    ],
     "references": [
         {
             "id": "logs-*",
