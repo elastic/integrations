@@ -29,7 +29,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-Use this integration if you only need to collect data from the AWS Billing service.
+Use this integration if you only need to collect billing data from AWS.
 
 If you want to collect data from two or more AWS services, consider using the **AWS** integration. When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
 
