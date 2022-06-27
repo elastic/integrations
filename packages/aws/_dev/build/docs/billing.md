@@ -10,10 +10,10 @@ For example, you could use this data to view your your monthly chargeable costs 
 
 ## Data streams
 
-The AWS Billing Console integration collects one type of data: logs.
+The AWS Billing integration collects one type of data: metrics.
 
-**Logs** help you keep a record of events happening in Billing.
-Log data streams collected by the AWS Billing Console integration include your monthly chargeable costs, along with details of your AWS services and purchases made through AWS Marketplace, and more. See more details in the [Logs](#logs-reference).
+**Metrics** give you insight into the state of your AWS bills including the estimated costs for various AWS services.
+See more details in the [Metrics](#metrics-reference).
 
 ## Requirements
 
