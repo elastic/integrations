@@ -12,7 +12,8 @@ For example, you could use this data to view your your monthly chargeable costs 
 
 The AWS Billing integration collects one type of data: metrics.
 
-**Metrics** give you insight into the state of your AWS bills including the estimated costs for various AWS services.
+**Metrics** give you insight into the state of your AWS bills including the estimated costs for various AWS services ([Cloudwatch](https://aws.amazon.com/cloudwatch/) and AWS [Cost Explorer API](https://docs.aws.amazon.com/cost-management/latest/userguide/ce-api.html)).
+
 See more details in the [Metrics](#metrics-reference).
 
 ## Requirements
