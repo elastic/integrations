@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [AWS Billing Console](https://aws.amazon.com/aws-cost-management/aws-billing/) integration allows you to monitor you AWS Billing usage.
+The AWS Billing integration allows you to monitor your [AWS costs](https://aws.amazon.com/aws-cost-management/aws-billing/).
 
 Use the AWS Billing Console integration to collect and parse logs related to your monthly AWS bills. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
