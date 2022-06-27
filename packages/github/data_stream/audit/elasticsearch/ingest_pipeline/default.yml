@@ -8,14 +8,10 @@ processors:
     field: ecs.version
     value: "8.2.0"
 - append:
-    field: event.type
-    value: access
-- append:
     field: event.category
-    value: web
-- append:
-    field: event.category
-    value: iam
+    value: 
+    - configuration
+    - web
 - rename:
     field: message
     target_field: event.original
@@ -34,6 +30,14 @@ processors:
     - UNIX_MS
     timezone: UTC
     target_field: "@timestamp"
+    if: ctx.json?.created_at != null
+- date:
+    field: json.@timestamp
+    formats:
+    - UNIX_MS
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.json['@timestamp'] != null
 - rename:
     field: json._document_id
     target_field: event.id
@@ -112,12 +116,35 @@ processors:
     field: event.action
     ignore_missing: true
     patterns:
-      - '^%{GH_CAT:github.category}\.%{GREEDYDATA}'
+      - '^%{GH_CAT:github.category}\.%{GREEDYDATA:_temp.action}'
     pattern_definitions:
       GH_CAT: '[a-z_]+'
+- append:
+    field: event.category
+    value: iam
+    if: '["team","org"].contains(ctx.github.category)'
+- append:
+    field: event.type
+    value: 
+      - group
+      - user
+    if: '["team","org"].contains(ctx.github.category)'
+- append:
+    field: event.type
+    value: creation
+    if: 'ctx._temp?.action.contains("create") || ctx._temp?.action.contains("add")'
+- append:
+    field: event.type
+    value: deletion
+    if: 'ctx._temp?.action.contains("delete") || ctx._temp?.action.contains("remove")'
+- append:
+    field: event.type
+    value: change
+    if: 'ctx.event?.type == null || ctx.event?.type.size() == 0'
 - remove:
     field:
       - json
+      - _temp
     ignore_missing: true  
 - remove:
     field: event.original
