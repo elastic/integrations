@@ -36,9 +36,11 @@ If you want to collect data from two or more AWS services, consider using the **
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-## Logs reference
+## Metrics reference
 
-The `billing` data stream collects standard logs (also called access logs) from AWS Billing. Billing standard logs provide detailed records about every request that’s made to the AWS Billing console.
+The `billing` data stream collects billing metrics from AWS.
+
+An example event for `billing` looks as following:
 
 {{event "billing"}}
 
