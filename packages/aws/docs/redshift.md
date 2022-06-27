@@ -10,10 +10,10 @@ An example event for `redshift` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-24T11:36:00.000Z",
+    "@timestamp": "2022-06-27T11:58:00.000Z",
     "agent": {
-        "ephemeral_id": "8ca601cd-b8f6-44d8-9e6c-683a2a3cf53e",
-        "id": "3daf40f6-736a-4de2-9801-5108cfc000ce",
+        "ephemeral_id": "a94b780f-b5b5-49b1-88cd-b7a7835f2996",
+        "id": "d745bccd-73a3-41b4-9fd0-4d9bac14f77b",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -23,16 +23,62 @@ An example event for `redshift` looks as following:
             "namespace": "AWS/Redshift"
         },
         "dimensions": {
-            "ClusterIdentifier": "elastic-package-test-74651",
-            "service_class": "14",
-            "wlmid": "14"
+            "ClusterIdentifier": "test"
         },
         "redshift": {
             "metrics": {
-                "WLMQueueLength": {
+                "CPUUtilization": {
+                    "avg": 2.43551912568288
+                },
+                "CommitQueueLength": {
                     "avg": 0
                 },
-                "WLMRunningQueries": {
+                "ConcurrencyScalingActiveClusters": {
+                    "avg": 0
+                },
+                "DatabaseConnections": {
+                    "avg": 0
+                },
+                "HealthStatus": {
+                    "avg": 1
+                },
+                "MaintenanceMode": {
+                    "avg": 0
+                },
+                "MaxConfiguredConcurrencyScalingClusters": {
+                    "avg": 1
+                },
+                "NetworkReceiveThroughput": {
+                    "avg": 2585.956001900078
+                },
+                "NetworkTransmitThroughput": {
+                    "avg": 23262.257531749852
+                },
+                "NumExceededSchemaQuotas": {
+                    "avg": 0
+                },
+                "PercentageDiskSpaceUsed": {
+                    "avg": 0.2197265625
+                },
+                "ReadIOPS": {
+                    "avg": 0
+                },
+                "ReadLatency": {
+                    "avg": 0
+                },
+                "ReadThroughput": {
+                    "avg": 0
+                },
+                "TotalTableCount": {
+                    "avg": 7
+                },
+                "WriteIOPS": {
+                    "avg": 0
+                },
+                "WriteLatency": {
+                    "avg": 0
+                },
+                "WriteThroughput": {
                     "avg": 0
                 }
             }
@@ -55,15 +101,15 @@ An example event for `redshift` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "3daf40f6-736a-4de2-9801-5108cfc000ce",
+        "id": "d745bccd-73a3-41b4-9fd0-4d9bac14f77b",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "aws.redshift",
-        "duration": 11103403213,
-        "ingested": "2022-06-24T11:51:16Z",
+        "duration": 12571706173,
+        "ingested": "2022-06-27T12:13:13Z",
         "module": "aws"
     },
     "host": {
@@ -71,10 +117,10 @@ An example event for `redshift` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.31.0.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:ac:1f:00:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -149,13 +195,11 @@ An example event for `redshift` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container | Container fields are used for meta information about the specific container that is the source of information. These fields help correlate data based containers from any runtime. | group |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -168,21 +212,12 @@ An example event for `redshift` looks as following:
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
