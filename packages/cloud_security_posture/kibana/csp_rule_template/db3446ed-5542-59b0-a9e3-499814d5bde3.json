@@ -2,30 +2,36 @@
     "id": "db3446ed-5542-59b0-a9e3-499814d5bde3",
     "type": "csp-rule-template",
     "attributes": {
-        "id": "db3446ed-5542-59b0-a9e3-499814d5bde3",
-        "name": "Ensure that the --streaming-connection-idle-timeout argument is not set to 0 (Manual)",
-        "profile_applicability": "* Level 1 - Worker Node\n",
-        "description": "Do not disable timeouts on streaming connections.\n",
-        "rationale": "Setting idle timeouts ensures that you are protected against Denial-of-Service attacks, inactive connections and running out of ephemeral ports. Note: By default, `--streaming-connection-idle-timeout` is set to 4 hours which might be too high for your environment. Setting this as appropriate would additionally ensure that such streaming connections are timed out after serving legitimate use cases.\n",
-        "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nVerify that the `--streaming-connection-idle-timeout` argument is not set to `0`.\nIf the argument is not present, and there is a Kubelet config file specified by `--config`,\n\ncheck that it does not set `streamingConnectionIdleTimeout` to `0`.\n",
-        "remediation": "If using a Kubelet config file, edit the file to set\n`streamingConnectionIdleTimeout` to a value other than `0`.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\n\nset the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.\n```\n--streaming-connection-idle-timeout=5m\n```\nBased on your system, restart the kubelet service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
-        "impact": "Long-lived connections could be interrupted.\n",
-        "default_value": "By default, `--streaming-connection-idle-timeout` is set to 4 hours.\n",
-        "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n2. [https://github.com/kubernetes/kubernetes/pull/18552](https://github.com/kubernetes/kubernetes/pull/18552)\n",
-        "section": "Kubelet",
-        "version": "1.0",
-        "tags": [
-            "CIS",
-            "Kubernetes",
-            "CIS 4.2.5",
-            "Kubelet"
-        ],
-        "benchmark": {
-            "name": "CIS Kubernetes V1.23",
-            "version": "v1.0.0"
-        },
         "enabled": true,
         "muted": false,
-        "rego_rule_id": "cis_4_2_5"
-    }
+        "metadata": {
+            "id": "db3446ed-5542-59b0-a9e3-499814d5bde3",
+            "name": "Ensure that the --streaming-connection-idle-timeout argument is not set to 0 (Manual)",
+            "profile_applicability": "* Level 1 - Worker Node\n",
+            "description": "Do not disable timeouts on streaming connections.\n",
+            "rationale": "Setting idle timeouts ensures that you are protected against Denial-of-Service attacks, inactive connections and running out of ephemeral ports. Note: By default, `--streaming-connection-idle-timeout` is set to 4 hours which might be too high for your environment. Setting this as appropriate would additionally ensure that such streaming connections are timed out after serving legitimate use cases.\n",
+            "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nVerify that the `--streaming-connection-idle-timeout` argument is not set to `0`.\nIf the argument is not present, and there is a Kubelet config file specified by `--config`,\n\ncheck that it does not set `streamingConnectionIdleTimeout` to `0`.\n",
+            "remediation": "If using a Kubelet config file, edit the file to set\n`streamingConnectionIdleTimeout` to a value other than `0`.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\n\nset the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.\n```\n--streaming-connection-idle-timeout=5m\n```\nBased on your system, restart the kubelet service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
+            "impact": "Long-lived connections could be interrupted.\n",
+            "default_value": "By default, `--streaming-connection-idle-timeout` is set to 4 hours.\n",
+            "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n2. [https://github.com/kubernetes/kubernetes/pull/18552](https://github.com/kubernetes/kubernetes/pull/18552)\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.5",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.0"
+            },
+            "rego_rule_id": "cis_4_2_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
 }
