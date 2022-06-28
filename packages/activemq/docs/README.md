@@ -25,8 +25,8 @@ An example event for `log` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "1a8ece7c-33cb-477a-8f69-091ce3e59613",
-        "id": "62c92e95-09b1-48a5-9f13-7e3755f8b89d",
+        "ephemeral_id": "b0508f9b-ea64-4afa-9533-939d237120d9",
+        "id": "7bd0c1fa-9efb-4013-b5ce-bf94ea8fb2e3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.2.0"
@@ -40,14 +40,14 @@ An example event for `log` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "62c92e95-09b1-48a5-9f13-7e3755f8b89d",
+        "id": "7bd0c1fa-9efb-4013-b5ce-bf94ea8fb2e3",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.log",
-        "ingested": "2022-06-28T08:11:34Z",
+        "ingested": "2022-06-28T13:11:12Z",
         "kind": "event",
         "type": "info"
     },
@@ -89,6 +89,7 @@ An example event for `log` looks as following:
 | error.stack_trace | The stack trace of this error in plain text. | wildcard |
 | error.stack_trace.text | Multi-field of `error.stack_trace`. | match_only_text |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | input.type | Input type | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Log flags | keyword |
@@ -106,15 +107,15 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-28T08:08:26.469Z",
+    "@timestamp": "2022-06-28T13:07:39.522Z",
     "activemq": {
         "audit": {
             "thread": "RMI TCP Connection(1)-127.0.0.1"
         }
     },
     "agent": {
-        "ephemeral_id": "a1d884da-d78a-4b6d-9f50-a975b373e0d6",
-        "id": "62c92e95-09b1-48a5-9f13-7e3755f8b89d",
+        "ephemeral_id": "d2625b65-c23a-45f9-a5c1-b728058b89c3",
+        "id": "7bd0c1fa-9efb-4013-b5ce-bf94ea8fb2e3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.2.0"
@@ -128,14 +129,14 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "62c92e95-09b1-48a5-9f13-7e3755f8b89d",
+        "id": "7bd0c1fa-9efb-4013-b5ce-bf94ea8fb2e3",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.audit",
-        "ingested": "2022-06-28T08:08:29Z",
+        "ingested": "2022-06-28T13:07:42Z",
         "kind": "event",
         "type": "info"
     },
@@ -188,6 +189,7 @@ An example event for `audit` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -225,7 +227,7 @@ An example event for `broker` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-28T08:09:57.789Z",
+    "@timestamp": "2022-06-28T13:09:21.570Z",
     "activemq": {
         "broker": {
             "connections": {
@@ -262,8 +264,8 @@ An example event for `broker` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "d6b70f9f-f437-47f6-bf6c-2466a5d8f32d",
-        "id": "62c92e95-09b1-48a5-9f13-7e3755f8b89d",
+        "ephemeral_id": "ba57302c-2128-4509-abcb-ae142c3beb0f",
+        "id": "7bd0c1fa-9efb-4013-b5ce-bf94ea8fb2e3",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -277,15 +279,15 @@ An example event for `broker` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "62c92e95-09b1-48a5-9f13-7e3755f8b89d",
+        "id": "7bd0c1fa-9efb-4013-b5ce-bf94ea8fb2e3",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.broker",
-        "duration": 8966857,
-        "ingested": "2022-06-28T08:10:01Z",
+        "duration": 14907723,
+        "ingested": "2022-06-28T13:09:24Z",
         "module": "activemq"
     },
     "host": {
@@ -293,10 +295,10 @@ An example event for `broker` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.32.7"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:20:07"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -359,7 +361,7 @@ An example event for `queue` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-28T08:12:54.214Z",
+    "@timestamp": "2022-06-28T13:12:46.612Z",
     "activemq": {
         "queue": {
             "consumers": {
@@ -379,7 +381,7 @@ An example event for `queue` looks as following:
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 16,
+                    "count": 20,
                     "time": {
                         "avg": 0,
                         "max": 0,
@@ -400,12 +402,12 @@ An example event for `queue` looks as following:
             "producers": {
                 "count": 0
             },
-            "size": 16
+            "size": 20
         }
     },
     "agent": {
-        "ephemeral_id": "80ebf968-7fba-4be9-99cc-122ddffa60a7",
-        "id": "62c92e95-09b1-48a5-9f13-7e3755f8b89d",
+        "ephemeral_id": "95e398a0-c183-436d-9787-c5fde75bafae",
+        "id": "7bd0c1fa-9efb-4013-b5ce-bf94ea8fb2e3",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -419,15 +421,15 @@ An example event for `queue` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "62c92e95-09b1-48a5-9f13-7e3755f8b89d",
+        "id": "7bd0c1fa-9efb-4013-b5ce-bf94ea8fb2e3",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.queue",
-        "duration": 9606995,
-        "ingested": "2022-06-28T08:12:57Z",
+        "duration": 30587861,
+        "ingested": "2022-06-28T13:12:50Z",
         "module": "activemq"
     },
     "host": {
@@ -435,10 +437,10 @@ An example event for `queue` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.32.7"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:20:07"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -505,7 +507,7 @@ An example event for `topic` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-28T08:14:20.666Z",
+    "@timestamp": "2022-06-28T13:14:09.579Z",
     "activemq": {
         "topic": {
             "consumers": {
@@ -549,8 +551,8 @@ An example event for `topic` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "6d58f765-e46f-4ff4-9068-5988fb7ff2f0",
-        "id": "62c92e95-09b1-48a5-9f13-7e3755f8b89d",
+        "ephemeral_id": "9c2c2c22-718b-41a9-9845-b191183b90f3",
+        "id": "7bd0c1fa-9efb-4013-b5ce-bf94ea8fb2e3",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -564,15 +566,15 @@ An example event for `topic` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "62c92e95-09b1-48a5-9f13-7e3755f8b89d",
+        "id": "7bd0c1fa-9efb-4013-b5ce-bf94ea8fb2e3",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.topic",
-        "duration": 12117410,
-        "ingested": "2022-06-28T08:14:24Z",
+        "duration": 256124299,
+        "ingested": "2022-06-28T13:14:12Z",
         "module": "activemq"
     },
     "host": {
@@ -580,10 +582,10 @@ An example event for `topic` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.32.7"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:20:07"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {

@@ -6,6 +6,11 @@ processors:
       value: "{{{_ingest.timestamp}}}"
       ignore_empty_value: true
       ignore_failure: true
+  - set:
+      field: event.original
+      value: "{{{message}}}"
+      ignore_empty_value: true
+      ignore_failure: true
   - grok:
       field: message
       pattern_definitions:
@@ -52,8 +57,12 @@ processors:
           return false;
         }
         drop(ctx);
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_missing: true
+      ignore_failure: true
 on_failure:
   - set:
       field: error.message
       value: "{{{ _ingest.on_failure_message }}}"
-
