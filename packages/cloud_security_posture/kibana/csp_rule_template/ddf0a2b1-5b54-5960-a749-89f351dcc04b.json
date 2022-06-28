@@ -2,30 +2,36 @@
     "id": "ddf0a2b1-5b54-5960-a749-89f351dcc04b",
     "type": "csp-rule-template",
     "attributes": {
-        "id": "ddf0a2b1-5b54-5960-a749-89f351dcc04b",
-        "name": "Ensure that the --make-iptables-util-chains argument is set to true (Automated)",
-        "profile_applicability": "* Level 1 - Worker Node\n",
-        "description": "Allow Kubelet to manage iptables.\n",
-        "rationale": "Kubelets can automatically manage the required changes to iptables based on how you choose your networking options for the pods. It is recommended to let kubelets manage the changes to iptables. This ensures that the iptables configuration remains in sync with pods networking configuration. Manually configuring iptables with dynamic pod network configuration changes might hamper the communication between pods/containers and to the outside world. You might have iptables rules too restrictive or too open.\n",
-        "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nVerify that if the `--make-iptables-util-chains` argument exists then it is set to `true`.\nIf the `--make-iptables-util-chains` argument does not exist, and there is a Kubelet config\nfile specified by `--config`, verify that the file does not set `makeIPTablesUtilChains` to\n`false`.\n",
-        "remediation": "If using a Kubelet config file, edit the file to set\n`makeIPTablesUtilChains: true`.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nremove the `--make-iptables-util-chains` argument from the\n`KUBELET_SYSTEM_PODS_ARGS` variable.\nBased on your system, restart the `kubelet` service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
-        "impact": "Kubelet would manage the iptables on the system and keep it in sync. If you are using any other iptables management solution, then there might be some conflicts.\n",
-        "default_value": "By default, `--make-iptables-util-chains` argument is set to `true`.\n",
-        "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n",
-        "section": "Kubelet",
-        "version": "1.0",
-        "tags": [
-            "CIS",
-            "Kubernetes",
-            "CIS 4.2.7",
-            "Kubelet"
-        ],
-        "benchmark": {
-            "name": "CIS Kubernetes V1.23",
-            "version": "v1.0.0"
-        },
         "enabled": true,
         "muted": false,
-        "rego_rule_id": "cis_4_2_7"
-    }
+        "metadata": {
+            "id": "ddf0a2b1-5b54-5960-a749-89f351dcc04b",
+            "name": "Ensure that the --make-iptables-util-chains argument is set to true (Automated)",
+            "profile_applicability": "* Level 1 - Worker Node\n",
+            "description": "Allow Kubelet to manage iptables.\n",
+            "rationale": "Kubelets can automatically manage the required changes to iptables based on how you choose your networking options for the pods. It is recommended to let kubelets manage the changes to iptables. This ensures that the iptables configuration remains in sync with pods networking configuration. Manually configuring iptables with dynamic pod network configuration changes might hamper the communication between pods/containers and to the outside world. You might have iptables rules too restrictive or too open.\n",
+            "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nVerify that if the `--make-iptables-util-chains` argument exists then it is set to `true`.\nIf the `--make-iptables-util-chains` argument does not exist, and there is a Kubelet config\nfile specified by `--config`, verify that the file does not set `makeIPTablesUtilChains` to\n`false`.\n",
+            "remediation": "If using a Kubelet config file, edit the file to set\n`makeIPTablesUtilChains: true`.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nremove the `--make-iptables-util-chains` argument from the\n`KUBELET_SYSTEM_PODS_ARGS` variable.\nBased on your system, restart the `kubelet` service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
+            "impact": "Kubelet would manage the iptables on the system and keep it in sync. If you are using any other iptables management solution, then there might be some conflicts.\n",
+            "default_value": "By default, `--make-iptables-util-chains` argument is set to `true`.\n",
+            "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.7",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.0"
+            },
+            "rego_rule_id": "cis_4_2_7"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
 }
