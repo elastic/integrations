@@ -1,7 +1,7 @@
-# AWS Cloudtrail
+# AWS CloudTrail
 
 ## Overview
-The AWS Billing integration allows you to monitor [AWS CloudTrail.](https://aws.amazon.com/cloudtrail/)
+The AWS CloudTrail integration allows you to monitor [AWS CloudTrail.](https://aws.amazon.com/cloudtrail/)
 
 Use the AWS CloudTrail integration to collect and parse logs related to account activity.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
@@ -10,7 +10,7 @@ and reference logs when troubleshooting an issue.
 For example, you could use the data from this integration to spot unusual activity in your AWS accounts, in a given time period. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs, such as the the source of the requests, and more. 
 
 ## Data streams
-The AWS CloudFront integration collects one type of data: logs.
+The AWS CloudTrail integration collects one type of data: logs.
 
 **Logs** help you keep a record of every user request that CloudTrail receives.
 These logs are useful for many scenarios, including security and access audits.
@@ -28,7 +28,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 For more details about these requirements, see the **AWS** integration documentation.
 
 ## Setup
-Use this integration if you only need to collect data from the AWS Cloudtrail service.
+Use this integration if you only need to collect data from the AWS CloudTrail service.
 
 If you want to collect data from two or more AWS services, consider using the **AWS** integration.
 
