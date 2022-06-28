@@ -862,7 +862,7 @@ An example event for `xg` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "dee3c982-4bd2-4c06-b207-fe0ce9ef19c5",

@@ -43,7 +43,7 @@ An example event for `limo` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
@@ -213,7 +213,7 @@ An example event for `threatstream` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",

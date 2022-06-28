@@ -435,7 +435,7 @@ An example event for `amqp` looks as following:
         "port": 5672
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -764,7 +764,7 @@ An example event for `cassandra` looks as following:
         "port": 9042
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -1013,7 +1013,7 @@ An example event for `dhcpv4` looks as following:
         "transaction_id": "0x00003d1d"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -1322,7 +1322,7 @@ An example event for `dns` looks as following:
         "type": "answer"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -1674,7 +1674,7 @@ An example event for `http` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -1927,7 +1927,7 @@ An example event for `icmp` looks as following:
         "ip": "::2"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -2215,7 +2215,7 @@ An example event for `memcached` looks as following:
         "port": 11211
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -2466,7 +2466,7 @@ An example event for `mongodb` looks as following:
         "port": 27017
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -2698,7 +2698,7 @@ An example event for `mysql` looks as following:
         "port": 3306
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -2924,7 +2924,7 @@ An example event for `nfs` looks as following:
         "port": 2049
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -3164,7 +3164,7 @@ An example event for `pgsql` looks as following:
         "port": 5432
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -3381,7 +3381,7 @@ An example event for `redis` looks as following:
         "port": 6380
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "f789afb0-558d-48bd-b448-0fc838efd730",
@@ -3679,7 +3679,7 @@ An example event for `sip` looks as following:
         "port": 5060
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "a82e5ec9-4d24-4491-8d66-470aa321ddae",
@@ -4061,7 +4061,7 @@ An example event for `thrift` looks as following:
         "port": 9090
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "0488c467-eaa0-4733-a81a-326734926bc2",
@@ -4440,7 +4440,7 @@ An example event for `tls` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "0488c467-eaa0-4733-a81a-326734926bc2",

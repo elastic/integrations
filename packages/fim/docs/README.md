@@ -34,7 +34,7 @@ An example event for `event` looks as following:
         "version": "8.3.0"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "7e061f66-bf86-41e2-858d-d5cbe22e06b1",

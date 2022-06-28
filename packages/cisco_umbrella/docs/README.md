@@ -60,7 +60,7 @@ An example event for `log` looks as following:
     },
     "@timestamp": "2020-07-23T23:48:56.000Z",
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "related": {
         "hash": [

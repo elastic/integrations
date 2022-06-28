@@ -63,7 +63,7 @@ An example event for `clicks_blocked` looks as following:
         "ip": "89.160.20.112"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "3dc09e3a-0004-444b-a301-8c632b17172b",
@@ -290,7 +290,7 @@ An example event for `clicks_permitted` looks as following:
         "ip": "89.160.20.112"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "3dc09e3a-0004-444b-a301-8c632b17172b",
@@ -496,7 +496,7 @@ An example event for `message_blocked` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "3dc09e3a-0004-444b-a301-8c632b17172b",
@@ -805,7 +805,7 @@ An example event for `message_delivered` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "3dc09e3a-0004-444b-a301-8c632b17172b",

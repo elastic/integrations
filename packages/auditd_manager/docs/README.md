@@ -184,7 +184,7 @@ An example event for `auditd` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "753ce520-4f32-45b1-9212-c4dcc9d575a1",

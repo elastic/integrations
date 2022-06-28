@@ -347,7 +347,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "df142714-8028-4ef0-a80c-4eb03051c084",
@@ -612,7 +612,7 @@ An example event for `firewall` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "df142714-8028-4ef0-a80c-4eb03051c084",
@@ -873,7 +873,7 @@ An example event for `vpcflow` looks as following:
         "port": 9200
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "df142714-8028-4ef0-a80c-4eb03051c084",
@@ -1103,7 +1103,7 @@ An example event for `dns` looks as following:
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "df142714-8028-4ef0-a80c-4eb03051c084",
