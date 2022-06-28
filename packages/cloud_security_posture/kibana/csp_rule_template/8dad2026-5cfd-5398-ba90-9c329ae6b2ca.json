@@ -2,30 +2,36 @@
     "id": "8dad2026-5cfd-5398-ba90-9c329ae6b2ca",
     "type": "csp-rule-template",
     "attributes": {
-        "id": "8dad2026-5cfd-5398-ba90-9c329ae6b2ca",
-        "name": "Ensure that the --event-qps argument is set to 0 or a level which ensures appropriate event capture (Manual)",
-        "profile_applicability": "* Level 2 - Worker Node\n",
-        "description": "Security relevant information should be captured. \nThe `--event-qps` flag on the Kubelet can be used to limit the rate at which events are gathered.\nSetting this too low could result in relevant events not being logged, however the unlimited setting of `0` could result in a denial\nof service on the kubelet.\n",
-        "rationale": "It is important to capture all events and not restrict event creation. \nEvents are an important source of security information and analytics that ensure that your environment is\nconsistently monitored using the event data.\n",
-        "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nReview the value set for the `--event-qps` argument and determine whether this has been\nset to an appropriate level for the cluster. The value of `0` can be used to ensure that all\nevents are captured.\nIf the `--event-qps` argument does not exist, check that there is a Kubelet config file\nspecified by `--config` and review the value in this location.\n",
-        "remediation": "If using a Kubelet config file, edit the file to set `eventRecordQPS:` to an appropriate level.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nset the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.\nBased on your system, restart the `kubelet` service. \nFor example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
-        "impact": "Setting this parameter to `0` could result in a denial of service condition due to excessive\nevents being created. The cluster's event processing and storage systems should be scaled\nto handle expected event loads.\n",
-        "default_value": "By default, `--event-qps` argument is set to `5`.\n",
-        "references": "1. https://kubernetes.io/docs/admin/kubelet/\n2. https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/apis/kubeletconfig/v1beta1/types.go\n",
-        "section": "Kubelet",
-        "version": "1.0",
-        "tags": [
-            "CIS",
-            "Kubernetes",
-            "CIS 4.2.9",
-            "Kubelet"
-        ],
-        "benchmark": {
-            "name": "CIS Kubernetes V1.23",
-            "version": "v1.0.0"
-        },
         "enabled": true,
         "muted": false,
-        "rego_rule_id": "cis_4_2_9"
-    }
+        "metadata": {
+            "id": "8dad2026-5cfd-5398-ba90-9c329ae6b2ca",
+            "name": "Ensure that the --event-qps argument is set to 0 or a level which ensures appropriate event capture (Manual)",
+            "profile_applicability": "* Level 2 - Worker Node\n",
+            "description": "Security relevant information should be captured. \nThe `--event-qps` flag on the Kubelet can be used to limit the rate at which events are gathered.\nSetting this too low could result in relevant events not being logged, however the unlimited setting of `0` could result in a denial\nof service on the kubelet.\n",
+            "rationale": "It is important to capture all events and not restrict event creation. \nEvents are an important source of security information and analytics that ensure that your environment is\nconsistently monitored using the event data.\n",
+            "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nReview the value set for the `--event-qps` argument and determine whether this has been\nset to an appropriate level for the cluster. The value of `0` can be used to ensure that all\nevents are captured.\nIf the `--event-qps` argument does not exist, check that there is a Kubelet config file\nspecified by `--config` and review the value in this location.\n",
+            "remediation": "If using a Kubelet config file, edit the file to set `eventRecordQPS:` to an appropriate level.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nset the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.\nBased on your system, restart the `kubelet` service. \nFor example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
+            "impact": "Setting this parameter to `0` could result in a denial of service condition due to excessive\nevents being created. The cluster's event processing and storage systems should be scaled\nto handle expected event loads.\n",
+            "default_value": "By default, `--event-qps` argument is set to `5`.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n2. https://github.com/kubernetes/kubernetes/blob/master/pkg/kubelet/apis/kubeletconfig/v1beta1/types.go\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.9",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.0"
+            },
+            "rego_rule_id": "cis_4_2_9"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
 }

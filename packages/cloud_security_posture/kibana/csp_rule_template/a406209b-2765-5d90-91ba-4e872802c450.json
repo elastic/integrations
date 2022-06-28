@@ -2,30 +2,36 @@
     "id": "a406209b-2765-5d90-91ba-4e872802c450",
     "type": "csp-rule-template",
     "attributes": {
-        "id": "a406209b-2765-5d90-91ba-4e872802c450",
-        "name": "Ensure that the --client-ca-file argument is set as appropriate (Automated)",
-        "profile_applicability": "* Level 1 - Worker Node\n",
-        "description": "Enable Kubelet authentication using certificates.\n",
-        "rationale": "The connections from the apiserver to the kubelet are used for fetching logs for pods, attaching (through kubectl) to running pods, and using the kubelet's port-forwarding functionality. These connections terminate at the kubelet's HTTPS endpoint. By default, the apiserver does not verify the kubelet's serving certificate, which makes the connection subject to man-in-the-middle attacks, and unsafe to run over untrusted and/or public networks. Enabling Kubelet certificate authentication ensures that the apiserver could authenticate the Kubelet before submitting any requests.\n",
-        "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nVerify that the `--client-ca-file` argument exists and is set to the location of the client\ncertificate authority file.\nIf the `--client-ca-file` argument is not present, check that there is a Kubelet config file\nspecified by `--config`, and that the file sets `authentication: x509: clientCAFile` to the\nlocation of the client certificate authority file.\n",
-        "remediation": "If using a Kubelet config file, edit the file to set `authentication:\nx509:clientCAFile` \nto\nthe location of the client CA file.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nset the below parameter in `KUBELET_AUTHZ_ARGS` variable.\n```\n--client-ca-file=\u003cpath/to/client-ca-file\u003e\n```\nBased on your system, restart the `kubelet` service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
-        "impact": "You require TLS to be configured on apiserver as well as kubelets.\n",
-        "default_value": "By default, `--client-ca-file` argument is not set.\n",
-        "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n2. [https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/)\n",
-        "section": "Kubelet",
-        "version": "1.0",
-        "tags": [
-            "CIS",
-            "Kubernetes",
-            "CIS 4.2.3",
-            "Kubelet"
-        ],
-        "benchmark": {
-            "name": "CIS Kubernetes V1.23",
-            "version": "v1.0.0"
-        },
         "enabled": true,
         "muted": false,
-        "rego_rule_id": "cis_4_2_3"
-    }
+        "metadata": {
+            "id": "a406209b-2765-5d90-91ba-4e872802c450",
+            "name": "Ensure that the --client-ca-file argument is set as appropriate (Automated)",
+            "profile_applicability": "* Level 1 - Worker Node\n",
+            "description": "Enable Kubelet authentication using certificates.\n",
+            "rationale": "The connections from the apiserver to the kubelet are used for fetching logs for pods, attaching (through kubectl) to running pods, and using the kubelet's port-forwarding functionality. These connections terminate at the kubelet's HTTPS endpoint. By default, the apiserver does not verify the kubelet's serving certificate, which makes the connection subject to man-in-the-middle attacks, and unsafe to run over untrusted and/or public networks. Enabling Kubelet certificate authentication ensures that the apiserver could authenticate the Kubelet before submitting any requests.\n",
+            "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nVerify that the `--client-ca-file` argument exists and is set to the location of the client\ncertificate authority file.\nIf the `--client-ca-file` argument is not present, check that there is a Kubelet config file\nspecified by `--config`, and that the file sets `authentication: x509: clientCAFile` to the\nlocation of the client certificate authority file.\n",
+            "remediation": "If using a Kubelet config file, edit the file to set `authentication:\nx509:clientCAFile` \nto\nthe location of the client CA file.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nset the below parameter in `KUBELET_AUTHZ_ARGS` variable.\n```\n--client-ca-file=\u003cpath/to/client-ca-file\u003e\n```\nBased on your system, restart the `kubelet` service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
+            "impact": "You require TLS to be configured on apiserver as well as kubelets.\n",
+            "default_value": "By default, `--client-ca-file` argument is not set.\n",
+            "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n2. [https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/)\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.3",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.0"
+            },
+            "rego_rule_id": "cis_4_2_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
 }

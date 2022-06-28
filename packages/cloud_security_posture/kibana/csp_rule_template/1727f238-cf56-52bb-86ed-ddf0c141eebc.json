@@ -2,30 +2,36 @@
     "id": "1727f238-cf56-52bb-86ed-ddf0c141eebc",
     "type": "csp-rule-template",
     "attributes": {
-        "id": "1727f238-cf56-52bb-86ed-ddf0c141eebc",
-        "name": "Ensure that the --protect-kernel-defaults argument is set to true (Automated)",
-        "profile_applicability": "* Level 1 - Worker Node\n",
-        "description": "Protect tuned kernel parameters from overriding kubelet default kernel parameter values.\n",
-        "rationale": "Kernel parameters are usually tuned and hardened by the system administrators before putting the systems into production. These parameters protect the kernel and the system. Your kubelet kernel defaults that rely on such parameters should be appropriately set to match the desired secured system state. Ignoring this could potentially lead to running pods with undesired kernel behavior.\n",
-        "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nVerify that the `--protect-kernel-defaults` argument is set to `true`.\nIf the `--protect-kernel-defaults` argument is not present, check that there is a Kubelet\nconfig file specified by `--config`, and that the file sets `protectKernelDefaults` to `true`.\n",
-        "remediation": "If using a Kubelet config file, edit the file to set `protectKernelDefaults:\ntrue`.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nset the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.\n```\n--protect-kernel-defaults=true\n```\nBased on your system, restart the `kubelet` service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
-        "impact": "You would have to re-tune kernel parameters to match kubelet parameters.\n",
-        "default_value": "By default, `--protect-kernel-defaults` is not set.\n",
-        "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n",
-        "section": "Kubelet",
-        "version": "1.0",
-        "tags": [
-            "CIS",
-            "Kubernetes",
-            "CIS 4.2.6",
-            "Kubelet"
-        ],
-        "benchmark": {
-            "name": "CIS Kubernetes V1.23",
-            "version": "v1.0.0"
-        },
         "enabled": true,
         "muted": false,
-        "rego_rule_id": "cis_4_2_6"
-    }
+        "metadata": {
+            "id": "1727f238-cf56-52bb-86ed-ddf0c141eebc",
+            "name": "Ensure that the --protect-kernel-defaults argument is set to true (Automated)",
+            "profile_applicability": "* Level 1 - Worker Node\n",
+            "description": "Protect tuned kernel parameters from overriding kubelet default kernel parameter values.\n",
+            "rationale": "Kernel parameters are usually tuned and hardened by the system administrators before putting the systems into production. These parameters protect the kernel and the system. Your kubelet kernel defaults that rely on such parameters should be appropriately set to match the desired secured system state. Ignoring this could potentially lead to running pods with undesired kernel behavior.\n",
+            "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nVerify that the `--protect-kernel-defaults` argument is set to `true`.\nIf the `--protect-kernel-defaults` argument is not present, check that there is a Kubelet\nconfig file specified by `--config`, and that the file sets `protectKernelDefaults` to `true`.\n",
+            "remediation": "If using a Kubelet config file, edit the file to set `protectKernelDefaults:\ntrue`.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nset the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.\n```\n--protect-kernel-defaults=true\n```\nBased on your system, restart the `kubelet` service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
+            "impact": "You would have to re-tune kernel parameters to match kubelet parameters.\n",
+            "default_value": "By default, `--protect-kernel-defaults` is not set.\n",
+            "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.6",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.0"
+            },
+            "rego_rule_id": "cis_4_2_6"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
 }

@@ -2,30 +2,36 @@
     "id": "307e747c-5998-5bf8-a8e3-d24aab71e558",
     "type": "csp-rule-template",
     "attributes": {
-        "id": "307e747c-5998-5bf8-a8e3-d24aab71e558",
-        "name": "Ensure that the --authorization-mode argument is not set to AlwaysAllow (Automated)",
-        "profile_applicability": "* Level 1 - Worker Node\n",
-        "description": "Do not allow all requests. Enable explicit authorization.\n",
-        "rationale": "Kubelets, by default, allow all authenticated requests (even anonymous ones) without needing explicit authorization checks from the apiserver. You should restrict this behavior and only allow explicitly authorized requests.\n",
-        "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nIf the `--authorization-mode` argument is present check that it is not set to `AlwaysAllow`. If\nit is not present check that there is a Kubelet config file specified by `--config`, and that file\nsets `authorization: mode` to something other than `AlwaysAllow`.\nIt is also possible to review the running configuration of a Kubelet via the `/configz`\nendpoint on the Kubelet API port (typically `10250/TCP`). Accessing these with appropriate\ncredentials will provide details of the Kubelet's configuration.\n",
-        "remediation": "If using a Kubelet config file, edit the file to set `authorization: mode`\nto\n`Webhook`.\nIf using executable arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nset the below parameter in `KUBELET_AUTHZ_ARGS` variable.\n```\n--authorization-mode=Webhook\n```\nBased on your system, restart the `kubelet` service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
-        "impact": "Unauthorized requests will be denied.\n",
-        "default_value": "By default, `--authorization-mode` argument is set to `AlwaysAllow`.\n",
-        "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n2. [https://kubernetes.io/docs/admin/kubelet-authentication-authorization/#kubelet-authentication](https://kubernetes.io/docs/admin/kubelet-authentication-authorization/#kubelet-authentication)\n",
-        "section": "Kubelet",
-        "version": "1.0",
-        "tags": [
-            "CIS",
-            "Kubernetes",
-            "CIS 4.2.2",
-            "Kubelet"
-        ],
-        "benchmark": {
-            "name": "CIS Kubernetes V1.23",
-            "version": "v1.0.0"
-        },
         "enabled": true,
         "muted": false,
-        "rego_rule_id": "cis_4_2_2"
-    }
+        "metadata": {
+            "id": "307e747c-5998-5bf8-a8e3-d24aab71e558",
+            "name": "Ensure that the --authorization-mode argument is not set to AlwaysAllow (Automated)",
+            "profile_applicability": "* Level 1 - Worker Node\n",
+            "description": "Do not allow all requests. Enable explicit authorization.\n",
+            "rationale": "Kubelets, by default, allow all authenticated requests (even anonymous ones) without needing explicit authorization checks from the apiserver. You should restrict this behavior and only allow explicitly authorized requests.\n",
+            "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nIf the `--authorization-mode` argument is present check that it is not set to `AlwaysAllow`. If\nit is not present check that there is a Kubelet config file specified by `--config`, and that file\nsets `authorization: mode` to something other than `AlwaysAllow`.\nIt is also possible to review the running configuration of a Kubelet via the `/configz`\nendpoint on the Kubelet API port (typically `10250/TCP`). Accessing these with appropriate\ncredentials will provide details of the Kubelet's configuration.\n",
+            "remediation": "If using a Kubelet config file, edit the file to set `authorization: mode`\nto\n`Webhook`.\nIf using executable arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nset the below parameter in `KUBELET_AUTHZ_ARGS` variable.\n```\n--authorization-mode=Webhook\n```\nBased on your system, restart the `kubelet` service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
+            "impact": "Unauthorized requests will be denied.\n",
+            "default_value": "By default, `--authorization-mode` argument is set to `AlwaysAllow`.\n",
+            "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n2. [https://kubernetes.io/docs/admin/kubelet-authentication-authorization/#kubelet-authentication](https://kubernetes.io/docs/admin/kubelet-authentication-authorization/#kubelet-authentication)\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.2",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.0"
+            },
+            "rego_rule_id": "cis_4_2_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
 }
