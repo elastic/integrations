@@ -72,12 +72,7 @@ The `Audit Log` dataset collects Modsecurity Audit logs.
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | message | human-readable summary of the event | text |
-| modsec.audit.details.file | Details message of the audit event. | keyword |
-| modsec.audit.details.match | Details message of the audit event. | keyword |
-| modsec.audit.details.msg | Details message of the audit event. | keyword |
-| modsec.audit.details.rule_id | Details message of the audit event. | keyword |
-| modsec.audit.details.severity | Details message of the audit event. | keyword |
-| modsec.audit.details.version | Details message of the audit event. | keyword |
+| modsec.audit.details | Modsecurity audit details. | flattened |
 | modsec.audit.messages | Modsecurity audit message. | keyword |
 | modsec.audit.server | Modsecurity server name. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
