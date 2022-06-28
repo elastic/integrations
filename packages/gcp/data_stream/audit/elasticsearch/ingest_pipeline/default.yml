@@ -243,6 +243,15 @@ processors:
       field: gcp.audit.response
       copy_from: json.protoPayload.response
       if: ctx.json?.protoPayload?.response != null
+  - remove:
+      field: gcp.audit.response.status
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.response?.status != null && !(ctx.json?.protoPayload?.response.status instanceof Map)
+  - rename:
+      field: json.protoPayload.response.status
+      target_field: gcp.audit.response.status_value
+      ignore_missing: true
+      if: ctx.json?.protoPayload?.response?.status != null && !(ctx.json?.protoPayload?.response.status instanceof Map)
   - rename:
       field: json.protoPayload.resourceName
       target_field: gcp.audit.resource_name
