@@ -21,10 +21,10 @@ An example event for `errorlog` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-27T13:52:22.223Z",
+    "@timestamp": "2022-06-28T05:03:41.998Z",
     "agent": {
-        "ephemeral_id": "eb4e26ab-ff63-4f55-89d9-f933e3c27ea9",
-        "id": "7d658995-c79d-4081-9d48-6a6cb771759f",
+        "ephemeral_id": "3d488a36-d758-4474-9ac8-a075f4c69e2b",
+        "id": "9fc2d9f9-b52c-4ad1-8963-e6fb3fbac9fa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.2.0"
@@ -38,21 +38,21 @@ An example event for `errorlog` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "7d658995-c79d-4081-9d48-6a6cb771759f",
+        "id": "9fc2d9f9-b52c-4ad1-8963-e6fb3fbac9fa",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-06-27T13:52:39.034Z",
+        "created": "2022-06-28T05:04:00.615Z",
         "dataset": "ibmmq.errorlog",
-        "ingested": "2022-06-27T13:52:42Z",
+        "ingested": "2022-06-28T05:04:04Z",
         "kind": "event",
         "module": "ibmmq",
         "type": "error"
     },
     "host": {
-        "hostname": "ccbcfd04e863",
+        "hostname": "5c6681e4c597",
         "name": "docker-fleet-agent"
     },
     "ibmmq": {
@@ -86,7 +86,7 @@ An example event for `errorlog` looks as following:
         "offset": 0
     },
     "process": {
-        "pid": 59.1,
+        "pid": 61.1,
         "title": "crtmqm"
     },
     "service": {

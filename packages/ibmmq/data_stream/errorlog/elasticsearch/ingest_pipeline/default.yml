@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing MQ Error logs.
+description: Pipeline for parsing MQ Queue Manager Error logs.
 processors:
 - set:
     field: event.ingested
@@ -91,11 +91,6 @@ processors:
     ignore_missing: true
     ignore_failure: true
 - remove:
-    field: event.original
-    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-    ignore_failure: true
-    ignore_missing: true
-- remove:
     field:
     - log_timestamp
     - ibmmq.errorlog.arithinsert1
@@ -103,6 +98,11 @@ processors:
     - ibmmq.errorlog.commentinsert1
     - ibmmq.errorlog.commentinsert2
     - ibmmq.errorlog.commentinsert3
+    ignore_missing: true
+    ignore_failure: true
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
     ignore_missing: true
     ignore_failure: true
 - script:
