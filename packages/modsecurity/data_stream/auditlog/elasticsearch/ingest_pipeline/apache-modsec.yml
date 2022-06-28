@@ -52,20 +52,26 @@ processors:
       type: long
   - rename:
       field: json.audit_data.messages
-      target_field: modsec.audit.messages
+      target_field: modsec.audit.details
       ignore_missing: true
-  - foreach:
-      field: modsec.audit.messages
-      ignore_missing: true
-      processor:
-        grok:
-          field: '_ingest._value'
-          ignore_failure: true
-          patterns:
-             - '%{GREEDYDATA} \[file "%{GREEDYDATA:modsec.audit.details.file}"\] \[line "%{GREEDYDATA:_temps.line_number}"\] \[id "%{GREEDYDATA:modsec.audit.details.rule_id}"\] \[msg "%{GREEDYDATA:modsec.audit.details.msg}"\] \[data "%{GREEDYDATA:modsec.audit.details.match}"\] \[severity "%{GREEDYDATA:modsec.audit.details.severity}"\] \[ver "%{DATA:modsec.audit.details.version}"\] %{GREEDYDATA:_temps.tags}'
-  - lowercase:
-      field: modsec.audit.details.severity
-      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      source: |
+        if (ctx.modsec?.audit?.details == null || ctx.modsec.audit.details.length == 0) {
+          return;
+        }
+        def details = ctx.modsec.audit.details;
+        def messages = new ArrayList();
+        for (def i = 0; i < details.length; i++) {
+          def idx = details[i].indexOf(' ['); // Find first key value mark.
+          if (idx < 0) {
+            idx = details[i].length;
+          }
+          messages.add(details[i].substring(0, idx));
+        }
+        ctx.modsec.audit.messages = messages
+
 # user agent and geoip enrich
   - user_agent:
       field: json.request.headers.User-Agent

@@ -57,45 +57,20 @@ processors:
       field: json.transaction.messages
       ignore_missing: true
       processor:
-        rename:
+        append:
+          field: modsec.audit.messages
+          value: '{{{_ingest._value.message}}}'
+  - foreach:
+      field: json.transaction.messages
+      ignore_missing: true
+      processor:
+        remove:
           field: _ingest._value.message
-          target_field: modsec.audit.details.msg
-  - foreach:
+  - rename:
       field: json.transaction.messages
-      ignore_missing: true
-      processor:
-        rename:
-          field: _ingest._value.details.match
-          target_field: modsec.audit.details.match
-  - foreach:
-      field: json.transaction.messages
-      ignore_missing: true
-      processor:
-        rename:
-          field: _ingest._value.details.file
-          target_field: modsec.audit.details.file
-  - foreach:
-      field: json.transaction.messages
-      ignore_missing: true
-      processor:
-        rename:
-          field: _ingest._value.details.ruleId
-          target_field: modsec.audit.details.rule_id
-  - foreach:
-      field: json.transaction.messages
-      ignore_missing: true
-      processor:
-        rename:
-          field: _ingest._value.details.ver
-          target_field: modsec.audit.details.version
-  - foreach:
-      field: json.transaction.messages
-      ignore_missing: true
-      processor:
-        rename:
-          field: _ingest._value.details.severity
-          target_field: modsec.audit.details.severity
-          
+      target_field: modsec.audit.details
+      if: ctx.json?.transaction?.messages != null && ctx.json?.transaction?.messages.length != 0
+
 # user agent and geoip enrich
   - user_agent:
       field: json.transaction.request.headers.User-Agent
