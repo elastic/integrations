@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.53.0
+	github.com/elastic/elastic-package v0.54.0
 	github.com/elastic/package-registry v1.9.0
 	github.com/magefile/mage v1.13.0
 	github.com/pkg/errors v0.9.1
@@ -27,7 +27,7 @@ require (
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20220113124808-70ae35bab23f // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20220302105931-303f85f7fe0f // indirect
-	github.com/ProtonMail/gopenpgp/v2 v2.4.7 // indirect
+	github.com/ProtonMail/gopenpgp/v2 v2.4.8 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
@@ -121,7 +121,7 @@ require (
 	github.com/santhosh-tekuri/jsonschema v1.2.4 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/spf13/cobra v1.4.0 // indirect
+	github.com/spf13/cobra v1.5.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/xanzy/ssh-agent v0.3.1 // indirect
@@ -163,11 +163,11 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.9.0 // indirect
 	howett.net/plist v0.0.0-20201203080718-1454fab16a06 // indirect
-	k8s.io/api v0.24.1 // indirect
+	k8s.io/api v0.24.2 // indirect
 	k8s.io/apiextensions-apiserver v0.24.0 // indirect
-	k8s.io/apimachinery v0.24.1 // indirect
-	k8s.io/cli-runtime v0.24.1 // indirect
-	k8s.io/client-go v0.24.1 // indirect
+	k8s.io/apimachinery v0.24.2 // indirect
+	k8s.io/cli-runtime v0.24.2 // indirect
+	k8s.io/client-go v0.24.2 // indirect
 	k8s.io/component-base v0.24.0 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
