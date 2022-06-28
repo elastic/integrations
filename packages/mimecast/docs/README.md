@@ -41,7 +41,7 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -193,7 +193,7 @@ An example event for `dlp` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -318,7 +318,7 @@ An example event for `siem` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -518,7 +518,7 @@ An example event for `threat_intel_malware_customer` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -670,7 +670,7 @@ An example event for `threat_intel_malware_grid` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -825,7 +825,7 @@ An example event for `ttp_ap` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -986,7 +986,7 @@ An example event for `ttp_ip` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -1160,7 +1160,7 @@ An example event for `ttp_url` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
