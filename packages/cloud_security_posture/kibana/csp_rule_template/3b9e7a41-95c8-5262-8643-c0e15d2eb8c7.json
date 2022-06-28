@@ -2,30 +2,36 @@
     "id": "3b9e7a41-95c8-5262-8643-c0e15d2eb8c7",
     "type": "csp-rule-template",
     "attributes": {
-        "id": "3b9e7a41-95c8-5262-8643-c0e15d2eb8c7",
-        "name": "Ensure that the --service-account-lookup argument is set to true (Automated)",
-        "profile_applicability": "* Level 1 - Master Node\n",
-        "description": "Validate service account before validating token.\n",
-        "rationale": "If `--service-account-lookup` is not enabled, the apiserver only verifies that the authentication token is valid, and does not validate that the service account token mentioned in the request is actually present in etcd. This allows using a service account token even after the corresponding service account is deleted. This is an example of time of check to time of use security issue.\n",
-        "audit": "Run the following command on the control plane node:\n```\nps -ef | grep kube-apiserver\n```\nVerify that if the `--service-account-lookup` argument exists it is set to `true`.\n",
-        "remediation": "Edit the API server pod specification file\n`/etc/kubernetes/manifests/kube-apiserver.yaml` \non the control plane node and set the below parameter.\n```\n--service-account-lookup=true\n```\nAlternatively, you can delete the `--service-account-lookup` parameter from this file so\nthat the default takes effect.\n",
-        "impact": "None\n",
-        "default_value": "By default, `--service-account-lookup` argument is set to `true`.\n",
-        "references": "1. [https://kubernetes.io/docs/admin/kube-apiserver/](https://kubernetes.io/docs/admin/kube-apiserver/)\n2. [https://github.com/kubernetes/kubernetes/issues/24167](https://github.com/kubernetes/kubernetes/issues/24167)\n3. [https://en.wikipedia.org/wiki/Time_of_check_to_time_of_use](https://en.wikipedia.org/wiki/Time_of_check_to_time_of_use)\n",
-        "section": "API Server",
-        "version": "1.0",
-        "tags": [
-            "CIS",
-            "Kubernetes",
-            "CIS 1.2.24",
-            "API Server"
-        ],
-        "benchmark": {
-            "name": "CIS Kubernetes V1.23",
-            "version": "v1.0.0"
-        },
         "enabled": true,
         "muted": false,
-        "rego_rule_id": "cis_1_2_24"
-    }
+        "metadata": {
+            "id": "3b9e7a41-95c8-5262-8643-c0e15d2eb8c7",
+            "name": "Ensure that the --service-account-lookup argument is set to true (Automated)",
+            "profile_applicability": "* Level 1 - Master Node\n",
+            "description": "Validate service account before validating token.\n",
+            "rationale": "If `--service-account-lookup` is not enabled, the apiserver only verifies that the authentication token is valid, and does not validate that the service account token mentioned in the request is actually present in etcd. This allows using a service account token even after the corresponding service account is deleted. This is an example of time of check to time of use security issue.\n",
+            "audit": "Run the following command on the control plane node:\n```\nps -ef | grep kube-apiserver\n```\nVerify that if the `--service-account-lookup` argument exists it is set to `true`.\n",
+            "remediation": "Edit the API server pod specification file\n`/etc/kubernetes/manifests/kube-apiserver.yaml` \non the control plane node and set the below parameter.\n```\n--service-account-lookup=true\n```\nAlternatively, you can delete the `--service-account-lookup` parameter from this file so\nthat the default takes effect.\n",
+            "impact": "None\n",
+            "default_value": "By default, `--service-account-lookup` argument is set to `true`.\n",
+            "references": "1. [https://kubernetes.io/docs/admin/kube-apiserver/](https://kubernetes.io/docs/admin/kube-apiserver/)\n2. [https://github.com/kubernetes/kubernetes/issues/24167](https://github.com/kubernetes/kubernetes/issues/24167)\n3. [https://en.wikipedia.org/wiki/Time_of_check_to_time_of_use](https://en.wikipedia.org/wiki/Time_of_check_to_time_of_use)\n",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.24",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.0"
+            },
+            "rego_rule_id": "cis_1_2_24"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
 }
