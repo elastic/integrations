@@ -1,7 +1,5 @@
 # Google Cloud Integration
 
-## Overview
-
 The Google Cloud integration collects and parses Google Cloud [Audit Logs](https://cloud.google.com/logging/docs/audit), [VPC Flow Logs](https://cloud.google.com/vpc/docs/using-flow-logs), [Firewall Rules Logs](https://cloud.google.com/vpc/docs/firewall-rules-logging) and [Cloud DNS Logs](https://cloud.google.com/dns/docs/monitoring) that have been exported from Cloud Logging to a Google Pub/Sub topic sink.
 
 ## Authentication
@@ -349,7 +347,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "df142714-8028-4ef0-a80c-4eb03051c084",
@@ -614,7 +612,7 @@ An example event for `firewall` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "df142714-8028-4ef0-a80c-4eb03051c084",
@@ -875,7 +873,7 @@ An example event for `vpcflow` looks as following:
         "port": 9200
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "df142714-8028-4ef0-a80c-4eb03051c084",
@@ -1105,7 +1103,7 @@ An example event for `dns` looks as following:
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "df142714-8028-4ef0-a80c-4eb03051c084",
