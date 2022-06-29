@@ -2,30 +2,36 @@
     "id": "55983039-6973-57a9-9ed2-fb577c0be1f6",
     "type": "csp-rule-template",
     "attributes": {
-        "id": "55983039-6973-57a9-9ed2-fb577c0be1f6",
-        "name": "Verify that the --read-only-port argument is set to 0 (Manual)",
-        "profile_applicability": "* Level 1 - Worker Node\n",
-        "description": "Disable the read-only port.\n",
-        "rationale": "The Kubelet process provides a read-only API in addition to the main Kubelet API. Unauthenticated access is provided to this read-only API which could possibly retrieve potentially sensitive information about the cluster.\n",
-        "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nVerify that the `--read-only-port` argument exists and is set to `0`.\nIf the `--read-only-port` argument is not present, check that there is a Kubelet config file\nspecified by `--config`. Check that if there is a `readOnlyPort` entry in the file, it is set to `0`.\n",
-        "remediation": "If using a Kubelet config file, edit the file to set `readOnlyPort` to `0`.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nset the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.\n``` \n--read-only-port=0\n```\nBased on your system, restart the kubelet service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
-        "impact": "Removal of the read-only port will require that any service which made use\nof it will need to be re-configured to use the main Kubelet API.\n",
-        "default_value": "By default, `--read-only-port` is set to `10255/TCP`. However, if a config file\nis specified by --config the default value for `readOnlyPort` is `0`.\n",
-        "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n",
-        "section": "Kubelet",
-        "version": "1.0",
-        "tags": [
-            "CIS",
-            "Kubernetes",
-            "CIS 4.2.4",
-            "Kubelet"
-        ],
-        "benchmark": {
-            "name": "CIS Kubernetes V1.23",
-            "version": "v1.0.0"
-        },
         "enabled": true,
         "muted": false,
-        "rego_rule_id": "cis_4_2_4"
-    }
+        "metadata": {
+            "id": "55983039-6973-57a9-9ed2-fb577c0be1f6",
+            "name": "Verify that the --read-only-port argument is set to 0 (Manual)",
+            "profile_applicability": "* Level 1 - Worker Node\n",
+            "description": "Disable the read-only port.\n",
+            "rationale": "The Kubelet process provides a read-only API in addition to the main Kubelet API. Unauthenticated access is provided to this read-only API which could possibly retrieve potentially sensitive information about the cluster.\n",
+            "audit": "Run the following command on each node:\n```\nps -ef | grep kubelet\n```\nVerify that the `--read-only-port` argument exists and is set to `0`.\nIf the `--read-only-port` argument is not present, check that there is a Kubelet config file\nspecified by `--config`. Check that if there is a `readOnlyPort` entry in the file, it is set to `0`.\n",
+            "remediation": "If using a Kubelet config file, edit the file to set `readOnlyPort` to `0`.\nIf using command line arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf` on each worker node and\nset the below parameter in `KUBELET_SYSTEM_PODS_ARGS` variable.\n``` \n--read-only-port=0\n```\nBased on your system, restart the kubelet service. For example:\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\n```\n",
+            "impact": "Removal of the read-only port will require that any service which made use\nof it will need to be re-configured to use the main Kubelet API.\n",
+            "default_value": "By default, `--read-only-port` is set to `10255/TCP`. However, if a config file\nis specified by --config the default value for `readOnlyPort` is `0`.\n",
+            "references": "1. [https://kubernetes.io/docs/admin/kubelet/](https://kubernetes.io/docs/admin/kubelet/)\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 4.2.4",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.0"
+            },
+            "rego_rule_id": "cis_4_2_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
 }

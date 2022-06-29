@@ -53,7 +53,7 @@ An example event for `panos` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "69c5b3bb-a0c8-407c-9f6f-166c94a2d63f",
