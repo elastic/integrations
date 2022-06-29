@@ -41,7 +41,7 @@ An example event for `audit_events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -193,7 +193,7 @@ An example event for `dlp` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -318,7 +318,7 @@ An example event for `siem` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -449,6 +449,7 @@ An example event for `siem` looks as following:
 | mimecast.RcptHdrType | Type of the receipt header. | keyword |
 | mimecast.ReceiptAck | The receipt acknowledgment message received by Mimecast from the receiving mail server. | keyword |
 | mimecast.ReplyMismatch | The reply address does not correspond to the senders address. | keyword |
+| mimecast.Route | Email route. | keyword |
 | mimecast.ScanResultInfo | The reason that the click was blocked. | keyword |
 | mimecast.SenderDomainInternal | The sender domain is a registered internal domain. | keyword |
 | mimecast.SimilarCustomExternalDomain | The senders domain is similar to a custom external domain list. | keyword |
@@ -517,7 +518,7 @@ An example event for `threat_intel_malware_customer` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -669,7 +670,7 @@ An example event for `threat_intel_malware_grid` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -824,7 +825,7 @@ An example event for `ttp_ap` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -985,7 +986,7 @@ An example event for `ttp_ip` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
@@ -1159,7 +1160,7 @@ An example event for `ttp_url` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "2f28c80b-ffde-4202-a4bd-938a8ce174ad",
