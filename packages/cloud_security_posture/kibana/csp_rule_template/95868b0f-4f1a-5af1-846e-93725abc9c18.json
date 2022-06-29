@@ -2,30 +2,36 @@
     "id": "95868b0f-4f1a-5af1-846e-93725abc9c18",
     "type": "csp-rule-template",
     "attributes": {
-        "id": "95868b0f-4f1a-5af1-846e-93725abc9c18",
-        "name": "Ensure that the admission control plugin AlwaysPullImages is set(Manual)",
-        "profile_applicability": "• Level 1 - Master Node\n",
-        "description": "Always pull images.\n",
-        "rationale": "Setting admission control policy to AlwaysPullImages forces every new pod to\npull the required images every time. In a multi-tenant cluster users can be assured that their\nprivate images can only be used by those who have the credentials to pull them. \nWithout this admission control policy, once an image has been pulled to a node, any pod from any\nuser can use it simply by knowing the image’s name, without any authorization check\nagainst the image ownership. When this plug-in is enabled, images are always pulled prior\nto starting containers, which means valid credentials are required.\n",
-        "audit": "Run the following command on the Control Plane node: ``` ps -ef | grep kube-apiserver ``` Verify that the `--enable-admission-plugins` argument is set to a value that includes\n`AlwaysPullImages`.\n",
-        "remediation": "Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml \non the Control Plane node and set the `--enable-admission-plugins` parameter to include `AlwaysPullImages`. ``` --enable-admission-plugins=...,AlwaysPullImages,... ```\n",
-        "impact": "Credentials would be required to pull the private images every time. Also, in trusted\nenvironments, this might increases load on network, registry, and decreases speed.\nThis setting could impact offline or isolated clusters, which have images pre-loaded and do\nnot have access to a registry to pull in-use images. This setting is not appropriate for\nclusters which use this configuration.\n",
-        "default_value": "By default, AlwaysPullImages is not set.\n",
-        "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://kubernetes.io/docs/admin/admission-controllers/#alwayspullimages\n",
-        "section": "API Server",
-        "version": "1.0",
-        "tags": [
-            "CIS",
-            "Kubernetes",
-            "CIS 1.2.12",
-            "API Server"
-        ],
-        "benchmark": {
-            "name": "CIS Kubernetes V1.23",
-            "version": "v1.0.0"
-        },
         "enabled": true,
         "muted": false,
-        "rego_rule_id": "cis_1_2_12"
-    }
+        "metadata": {
+            "id": "95868b0f-4f1a-5af1-846e-93725abc9c18",
+            "name": "Ensure that the admission control plugin AlwaysPullImages is set(Manual)",
+            "profile_applicability": "• Level 1 - Master Node\n",
+            "description": "Always pull images.\n",
+            "rationale": "Setting admission control policy to AlwaysPullImages forces every new pod to\npull the required images every time. In a multi-tenant cluster users can be assured that their\nprivate images can only be used by those who have the credentials to pull them. \nWithout this admission control policy, once an image has been pulled to a node, any pod from any\nuser can use it simply by knowing the image’s name, without any authorization check\nagainst the image ownership. When this plug-in is enabled, images are always pulled prior\nto starting containers, which means valid credentials are required.\n",
+            "audit": "Run the following command on the Control Plane node: ``` ps -ef | grep kube-apiserver ``` Verify that the `--enable-admission-plugins` argument is set to a value that includes\n`AlwaysPullImages`.\n",
+            "remediation": "Edit the API server pod specification file `/etc/kubernetes/manifests/kube-apiserver.yaml \non the Control Plane node and set the `--enable-admission-plugins` parameter to include `AlwaysPullImages`. ``` --enable-admission-plugins=...,AlwaysPullImages,... ```\n",
+            "impact": "Credentials would be required to pull the private images every time. Also, in trusted\nenvironments, this might increases load on network, registry, and decreases speed.\nThis setting could impact offline or isolated clusters, which have images pre-loaded and do\nnot have access to a registry to pull in-use images. This setting is not appropriate for\nclusters which use this configuration.\n",
+            "default_value": "By default, AlwaysPullImages is not set.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kube-apiserver/\n2. https://kubernetes.io/docs/admin/admission-controllers/#alwayspullimages\n",
+            "section": "API Server",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "Kubernetes",
+                "CIS 1.2.12",
+                "API Server"
+            ],
+            "benchmark": {
+                "name": "CIS Kubernetes V1.23",
+                "version": "v1.0.0"
+            },
+            "rego_rule_id": "cis_1_2_12"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
 }
