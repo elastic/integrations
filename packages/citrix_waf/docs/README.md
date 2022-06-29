@@ -52,8 +52,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2012-12-18T21:46:17.000Z",
     "agent": {
-        "ephemeral_id": "2a1fa6a3-5625-444c-85a5-da829bed79dc",
-        "id": "d6691afc-75b2-46b4-9063-ca2ad7f380a1",
+        "ephemeral_id": "08af5b45-97c0-45da-8257-961552c899c2",
+        "id": "68121d3a-7d2b-4164-a4c7-371c9115235b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.2.3"
@@ -91,10 +91,10 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "d6691afc-75b2-46b4-9063-ca2ad7f380a1",
+        "id": "68121d3a-7d2b-4164-a4c7-371c9115235b",
         "snapshot": false,
         "version": "8.2.3"
     },
@@ -104,7 +104,7 @@ An example event for `log` looks as following:
         "cef_format": true,
         "dataset": "citrix_waf.log",
         "id": "465",
-        "ingested": "2022-06-29T06:31:49Z",
+        "ingested": "2022-06-29T06:52:37Z",
         "level": "\u003clocal0.info\u003e",
         "message": "CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
         "original": "Dec 18 21:46:17 \u003clocal0.info\u003e 81.2.69.144 CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
@@ -130,7 +130,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.240.4:44756"
+            "address": "192.168.96.4:41870"
         }
     },
     "message": "Disallow Illegal URL.",
