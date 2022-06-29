@@ -38,7 +38,7 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
