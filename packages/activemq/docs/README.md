@@ -333,7 +333,7 @@ An example event for `broker` looks as following:
 | @timestamp | Event timestamp. | date |
 | activemq.broker.connections.count | Total number of connections. | long |
 | activemq.broker.consumers.count | Number of message consumers. | long |
-| activemq.broker.mbean | Mbean that this event is related to. | keyword |
+| activemq.broker.mbean | MBean that this event is related to. | keyword |
 | activemq.broker.memory.broker.pct | The percentage of the memory limit used. | float |
 | activemq.broker.memory.store.pct | Percent of store limit used. | float |
 | activemq.broker.memory.temp.pct | The percentage of the temp usage limit used. | float |
@@ -474,7 +474,7 @@ An example event for `queue` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | activemq.queue.consumers.count | Number of consumers subscribed to this destination. | long |
-| activemq.queue.mbean | Mbean that this event is related to. | keyword |
+| activemq.queue.mbean | MBean that this event is related to. | keyword |
 | activemq.queue.memory.broker.pct | Percent of memory limit used. | float |
 | activemq.queue.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |
 | activemq.queue.messages.dispatch.count | Number of messages that has been delivered to consumers, including those not acknowledged. | long |
@@ -619,7 +619,7 @@ An example event for `topic` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | activemq.topic.consumers.count | Number of consumers subscribed to this destination. | long |
-| activemq.topic.mbean | Mbean that this event is related to. | keyword |
+| activemq.topic.mbean | MBean that this event is related to. | keyword |
 | activemq.topic.memory.broker.pct | Percent of memory limit used. | float |
 | activemq.topic.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |
 | activemq.topic.messages.dispatch.count | Number of messages that has been delivered to consumers, including those not acknowledged. | long |
