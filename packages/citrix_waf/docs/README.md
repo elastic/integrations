@@ -4,18 +4,25 @@ The Citrix Web App Firewall prevents security breaches, data loss, and possible 
 
 ## Compatibility
 
-FIXME
+This integration has been tested against samples obtained from Citrix ADC 13.1 and NetScaler 10.0 documentation.
 
 ## Configuration
 
 ### Enabling the integration in Elastic
 
-1. In Kibana go to **Management > Integrations**
-2. In "Search for integrations" search bar type **Citrix**
+1. In Kibana go to **Management > Integrations**.
+2. In "Search for integrations" search bar type **Citrix**.
 3. Click on "Citrix WAF" integration from the search results.
 4. Click on **Add Citrix WAF Integration** button to add the integration.
 
 ### Citrix WAF Dashboard Configuration
+
+It is recommended to configure the application firewall to enable CEF-formatted logs.
+
+1. Navigate to Security the NetScaler GUI.
+2. Click Application Firewall node.
+3. Select Change Engine Settings.
+4. Enable CEF Logging.
 
 #### Syslog
 
@@ -37,9 +44,7 @@ Enable to collect Citrix WAF log events for all the applications configured for 
 
 ### Syslog
 
-The `citrix_waf.log` dataset provides events from the configured syslog server. All Citrix WAF syslog specific fields are available in the `citrix_waf.log` field group.
-
-An example event for `log` looks as following:
+The `citrix_waf.log` dataset provides events from the configured syslog server. All Citrix WAF syslog specific fields are available in the `citrix` field group.
 
 An example event for `log` looks as following:
 
@@ -47,11 +52,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2012-12-18T21:46:17.000Z",
     "agent": {
-        "ephemeral_id": "afefcdb1-0256-4955-9771-0150ec9d2986",
-        "id": "c077f5c5-ca69-4197-9db5-7963794bdac3",
+        "ephemeral_id": "2a1fa6a3-5625-444c-85a5-da829bed79dc",
+        "id": "d6691afc-75b2-46b4-9063-ca2ad7f380a1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.2.3"
     },
     "citrix": {
         "cef_version": "0",
@@ -89,9 +94,9 @@ An example event for `log` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c077f5c5-ca69-4197-9db5-7963794bdac3",
+        "id": "d6691afc-75b2-46b4-9063-ca2ad7f380a1",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.2.3"
     },
     "event": {
         "action": "not blocked",
@@ -99,7 +104,7 @@ An example event for `log` looks as following:
         "cef_format": true,
         "dataset": "citrix_waf.log",
         "id": "465",
-        "ingested": "2022-06-21T07:00:16Z",
+        "ingested": "2022-06-29T06:31:49Z",
         "level": "\u003clocal0.info\u003e",
         "message": "CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
         "original": "Dec 18 21:46:17 \u003clocal0.info\u003e 81.2.69.144 CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
@@ -125,7 +130,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.208.4:46446"
+            "address": "192.168.240.4:44756"
         }
     },
     "message": "Disallow Illegal URL.",

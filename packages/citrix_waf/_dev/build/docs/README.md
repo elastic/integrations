@@ -4,18 +4,25 @@ The Citrix Web App Firewall prevents security breaches, data loss, and possible 
 
 ## Compatibility
 
-FIXME
+This integration has been tested against samples obtained from Citrix ADC 13.1 and NetScaler 10.0 documentation.
 
 ## Configuration
 
 ### Enabling the integration in Elastic
 
-1. In Kibana go to **Management > Integrations**
-2. In "Search for integrations" search bar type **Citrix**
+1. In Kibana go to **Management > Integrations**.
+2. In "Search for integrations" search bar type **Citrix**.
 3. Click on "Citrix WAF" integration from the search results.
 4. Click on **Add Citrix WAF Integration** button to add the integration.
 
 ### Citrix WAF Dashboard Configuration
+
+It is recommended to configure the application firewall to enable CEF-formatted logs.
+
+1. Navigate to Security the NetScaler GUI.
+2. Click Application Firewall node.
+3. Select Change Engine Settings.
+4. Enable CEF Logging.
 
 #### Syslog
 
@@ -37,9 +44,7 @@ Enable to collect Citrix WAF log events for all the applications configured for 
 
 ### Syslog
 
-The `citrix_waf.log` dataset provides events from the configured syslog server. All Citrix WAF syslog specific fields are available in the `citrix_waf.log` field group.
-
-An example event for `log` looks as following:
+The `citrix_waf.log` dataset provides events from the configured syslog server. All Citrix WAF syslog specific fields are available in the `citrix` field group.
 
 {{event "log"}}
 

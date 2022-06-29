@@ -30,8 +30,12 @@ processors:
       ignore_missing: true
 
   - set:
-      field: event.timezone
+      field: _conf.tz_offset
       value: UTC
+      override: false
+  - set:
+      field: event.timezone
+      value: '{{{_conf.tz_offset}}}'
       if: ctx.event?.timezone == null || ctx.event?.timezone == ""
   - date:
       if: ctx?._tmp?.timestamp8601 != null
@@ -109,12 +113,14 @@ processors:
   - remove:
       field:
         - _tmp
+        - _conf
       ignore_failure: true
 
 on_failure:
   - remove:
       field:
         - _tmp
+        - _conf
       ignore_failure: true
   - append:
       field: error.message
