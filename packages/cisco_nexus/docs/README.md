@@ -1,6 +1,6 @@
 # Cisco Nexus Integration
 
-This integration is for Cisco Nexus device logs. It includes the following
+This integration is for [Cisco Nexus device](https://developer.cisco.com/docs/nx-os/) logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
 
 - `log` fileset: supports Cisco Nexus switch logs.
@@ -29,7 +29,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
