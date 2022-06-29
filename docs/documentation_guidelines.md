@@ -204,10 +204,46 @@ And each reference section can contain one or more subsections, one for each ind
 
 Each reference section should contain detailed information about:
 
-* Exported fields for logs, metrics, and events with actual types (for example, `counters`, `gauges`, `histograms` vs. `longs` and `doubles`)
-* ML Modules jobs
+* A list of the log or metric types we support within the integration and a link to the relevant third-party docs.
+* (Optional) An example event in JSON format.
+* Exported fields for logs, metrics, and events with actual types (for example, `counters`, `gauges`, `histograms` vs. `longs` and `doubles`). Fields should be generated using the instructions in [Fine-tune the integration](./fine_tune_integration.md).
+* ML Modules jobs.
 
 **Template**
 
-There is no standard format for the _narrative_ content in reference sections,
-but fields should be generated using the instructions in [Fine-tune the integration](./fine_tune_integration.md).
+```md
+<!-- Repeat for both Logs and Metrics if applicable -->
+## <Logs|Metrics> reference
+
+<!-- Repeat for each data stream of the current type -->
+### <Data stream name>
+
+The `<data stream name>` data stream provides events from <source> of the following types: <list types>.
+
+<!-- Optional -->
+<!-- #### Example -->
+<!-- An example event for `<data stream name>` looks as following: -->
+<!-- <code block with example> -->
+
+#### Exported fields
+
+<insert table>
+```
+
+**Example**
+
+>## Logs reference
+>
+>### PAN-OS
+>
+>The `panos` data stream provides events from Palo Alto Networks device of the following types: [GlobalProtect](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/globalprotect-log-fields), [HIP Match](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/hip-match-log-fields), [Threat](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/threat-log-fields), [Traffic](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/traffic-log-fields) and [User-ID](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/user-id-log-fields).
+>
+>#### Example
+>
+>An example event for `panos` looks as following:
+>
+>(code block)
+>
+>#### Exported fields
+>
+>(table of fields)
