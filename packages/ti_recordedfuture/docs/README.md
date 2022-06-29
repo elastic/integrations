@@ -14,13 +14,13 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-11T09:21:48.260Z",
+    "@timestamp": "2022-06-28T00:51:15.439Z",
     "agent": {
-        "ephemeral_id": "b69c55be-abc6-4a16-900f-986a2cc693a0",
-        "id": "967e40bc-86fa-4632-b571-afd40cfbcb8a",
+        "ephemeral_id": "ab36e75a-d84f-4a16-9896-44e791dc923d",
+        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.2.2"
     },
     "data_stream": {
         "dataset": "ti_recordedfuture.threat",
@@ -28,18 +28,18 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "967e40bc-86fa-4632-b571-afd40cfbcb8a",
+        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2022-04-11T09:21:49Z",
+        "ingested": "2022-06-28T00:51:16Z",
         "kind": "enrichment",
         "risk_score": 87,
         "timezone": "+00:00",
