@@ -10,7 +10,7 @@ processors:
     ignore_missing: true
 - json:
     field: event.original
-    target_field: json
+    target_field: github.code_scanning
 - fingerprint:
     fields: 
         - json._document_id
@@ -21,14 +21,14 @@ processors:
     formats:
     - ISO8601
     timezone: UTC
-    target_field: "@timestamp"
+    target_field: "event.created"
     if: ctx.json?.created_at != null
 - date:
     field: json.updated_at
     formats:
     - ISO8601
     timezone: UTC
-    target_field: "@timestamp"
+    target_field: "github.code_scanning.updated_at"
     if: ctx.json?.updated_at != null
 - rename:
     field: json.number
@@ -55,14 +55,6 @@ processors:
     target_field: github.fixed_at
     ignore_missing: true
 - rename:
-    field: json.fixed_at
-    target_field: github.fixed_at
-    ignore_missing: true
-- rename:
-    field: json.fixed_at
-    target_field: github.fixed_at
-    ignore_missing: true
-- rename:
     field: json.rule.id
     target_field: github.rule.id
     ignore_missing: true
@@ -80,7 +72,6 @@ processors:
     ignore_missing: true
 - remove:
     field:
-      - json
       - _temp
     ignore_missing: true
 - remove:
