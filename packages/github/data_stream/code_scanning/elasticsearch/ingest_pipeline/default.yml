@@ -4,6 +4,9 @@ processors:
 - set:
     field: ecs.version
     value: "8.2.0"
+- set:
+    field: event.action
+    value: "code_scanning"
 - rename:
     field: message
     target_field: event.original
@@ -13,66 +16,135 @@ processors:
     target_field: github.code_scanning
 - fingerprint:
     fields: 
-        - json._document_id
+        - github.code_scanning._document_id
     target_field: "_id"
     ignore_missing: true
 - date:
-    field: json.created_at
+    field: github.code_scanning.created_at
     formats:
     - ISO8601
     timezone: UTC
     target_field: "event.created"
-    if: ctx.json?.created_at != null
+    if: ctx.github.code_scanning?.created_at != null
 - date:
-    field: json.updated_at
+    field: github.code_scanning.updated_at
     formats:
     - ISO8601
     timezone: UTC
     target_field: "github.code_scanning.updated_at"
-    if: ctx.json?.updated_at != null
-- rename:
-    field: json.number
-    target_field: github.number
+    if: ctx.github.code_scanning?.updated_at != null
+- date:
+    field: github.code_scanning.fixed_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "github.code_scanning.fixed_at"
+    if: ctx.github.code_scanning?.fixed_at != null
+- date:
+    field: github.code_scanning.dismissed_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "github.code_scanning.dismissed_at"
+    if: ctx.github.code_scanning?.dismissed_at != null
+- set: 
+    field: _temp
+    copy_from: github.code_scanning.repository
+    if: ctx.github.code_scanning?.repository != null
+- remove:
+    field: github.code_scanning.repository
     ignore_missing: true
 - rename:
-    field: json.url
-    target_field: github.url
+    field: _temp.id
+    target_field: github.code_scanning.repository.id
     ignore_missing: true
 - rename:
-    field: json.html_url
-    target_field: github.html_url
+    field: _temp.name
+    target_field: github.code_scanning.repository.name
     ignore_missing: true
 - rename:
-    field: json.instances_url
-    target_field: github.instances_url
+    field: _temp.full_name
+    target_field: github.code_scanning.repository.full_name
     ignore_missing: true
 - rename:
-    field: json.state
-    target_field: github.state
+    field: _temp.private
+    target_field: github.code_scanning.repository.private
     ignore_missing: true
 - rename:
-    field: json.fixed_at
-    target_field: github.fixed_at
+    field: _temp.html_url
+    target_field: github.code_scanning.repository.html_url
     ignore_missing: true
 - rename:
-    field: json.rule.id
-    target_field: github.rule.id
+    field: _temp.url
+    target_field: github.code_scanning.repository.url
     ignore_missing: true
 - rename:
-    field: json.rule.name
-    target_field: github.rule.name
+    field: _temp.description
+    target_field: github.code_scanning.repository.description
     ignore_missing: true
 - rename:
-    field: json.rule.severity
-    target_field: github.rule.severity
+    field: _temp.fork
+    target_field: github.code_scanning.repository.fork
     ignore_missing: true
 - rename:
-    field: json.rule.security_severity_level
-    target_field: github.rule.security_severity_level
+    field: _temp.owner.login
+    target_field: github.code_scanning.repository.owner.login
+    ignore_missing: true
+- rename:
+    field: _temp.owner.id
+    target_field: github.code_scanning.repository.owner.id
+    ignore_missing: true
+- rename:
+    field: _temp.owner.url
+    target_field: github.code_scanning.repository.owner.url
+    ignore_missing: true
+- rename:
+    field: _temp.owner.html_url
+    target_field: github.code_scanning.repository.owner.html_url
+    ignore_missing: true
+- rename:
+    field: _temp.owner.type
+    target_field: github.code_scanning.repository.owner.type
+    ignore_missing: true
+- rename:
+    field: _temp.owner.site_admin
+    target_field: github.code_scanning.repository.owner.site_admin
+    ignore_missing: true
+- set: 
+    field: _temp_dismissed_by
+    copy_from: github.code_scanning.dismissed_by
+    if: ctx.github.code_scanning?.dismissed_by != null
+- remove:
+    field: github.code_scanning.dismissed_by
+    ignore_missing: true
+- rename:
+    field: _temp_dismissed_by.login
+    target_field: github.code_scanning.dismissed_by.login
+    ignore_missing: true
+- rename:
+    field: _temp_dismissed_by.id
+    target_field: github.code_scanning.dismissed_by.id
+    ignore_missing: true
+- rename:
+    field: _temp_dismissed_by.url
+    target_field: github.code_scanning.dismissed_by.url
+    ignore_missing: true
+- rename:
+    field: _temp_dismissed_by.html_url
+    target_field: github.code_scanning.dismissed_by.html_url
+    ignore_missing: true
+- rename:
+    field: _temp_dismissed_by.type
+    target_field: github.code_scanning.dismissed_by.type
+    ignore_missing: true
+- rename:
+    field: _temp_dismissed_by.site_admin
+    target_field: github.code_scanning.dismissed_by.site_admin
     ignore_missing: true
 - remove:
     field:
       - _temp
+      - _temp_dismissed_by
     ignore_missing: true
 - remove:
     field: event.original
