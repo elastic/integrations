@@ -4,27 +4,27 @@ The IBM MQ Integration is used to fetch observability data from [IBM MQ web endp
 
 ## Compatibility
 
-This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`.
+This integration has been tested against `IBM MQ v9.2`.
 
 ## Requirements
 
 In order to ingest data from IBM MQ:
-- User must know the path of IBM MQ queue manager error logs. (default paths: /var/mqm/errors/*.LOG and /var/mqm/qmgrs/*/errors/*.LOG)
+- User must know the path of IBM MQ Queue Manager Error logs. (default paths: /var/mqm/errors/*.LOG and /var/mqm/qmgrs/*/errors/*.LOG)
 
 ## Logs
 
 ### Queue Manager Error logs
 
-The `errorlog` data stream collects Error logs of queue manager like error description, error action, error explanation and error code.
+The `errorlog` data stream collects Error logs of Queue Manager like error description, error action, error explanation and error code.
 
 An example event for `errorlog` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-28T05:03:41.998Z",
+    "@timestamp": "2022-06-29T08:23:34.385Z",
     "agent": {
-        "ephemeral_id": "3d488a36-d758-4474-9ac8-a075f4c69e2b",
-        "id": "9fc2d9f9-b52c-4ad1-8963-e6fb3fbac9fa",
+        "ephemeral_id": "12f21cf2-6df4-459c-8ce2-413e761943ae",
+        "id": "1a4dbf12-3b5c-45ea-9256-3c1754b52588",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.2.0"
@@ -38,21 +38,21 @@ An example event for `errorlog` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "9fc2d9f9-b52c-4ad1-8963-e6fb3fbac9fa",
+        "id": "1a4dbf12-3b5c-45ea-9256-3c1754b52588",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-06-28T05:04:00.615Z",
+        "created": "2022-06-29T08:23:59.009Z",
         "dataset": "ibmmq.errorlog",
-        "ingested": "2022-06-28T05:04:04Z",
+        "ingested": "2022-06-29T08:24:02Z",
         "kind": "event",
         "module": "ibmmq",
         "type": "error"
     },
     "host": {
-        "hostname": "5c6681e4c597",
+        "hostname": "20c2d61f227a",
         "name": "docker-fleet-agent"
     },
     "ibmmq": {
