@@ -1,0 +1,89 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: ecs.version
+      value: 8.3.0
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - grok:
+      field: event.original
+      patterns:
+      - \[%{TIMESTAMP_ISO8601:istio.access.time}\] "%{DATA:http.request.method}
+          %{DATA:url.original} HTTP/%{NUMBER:http.version}"
+          %{NUMBER:http.response.status_code:long}
+          (-|%{DATA:istio.access.response.flags})
+          (-|%{DATA:istio.access.response.code.details})
+          (-|%{DATA:istio.access.response.termination_details})
+          "(-|%{DATA:istio.access.upstream.transport_failure_reason})"
+          %{NUMBER:http.response.body.bytes:long}
+          %{NUMBER:http.request.body.bytes:long}
+          (-|%{NUMBER:istio.access.request.duration:double})
+          (-|%{NUMBER:istio.access.upstream.service_time:double})
+          "(-|%{DATA:istio.access.x-forwarded-for})"
+          "(-|%{DATA:user_agent.original})" "%{DATA:http.request.id}"
+          "(-|%{DATA:istio.access.authority})"
+          "(-|%{ISTIO_HOST:istio.access.upstream.host})"
+          (-|%{DATA:istio.access.upstream.cluster})
+          (-|%{HOSTPORT:istio.access.upstream.address.local})
+          (-|%{HOSTPORT:istio.access.downstream.address.local})
+          (-|%{HOSTPORT:istio.access.downstream.address.remote})
+          (-|%{DATA:istio.access.request.sni}) (-|%{DATA:istio.access.route_name})
+      pattern_definitions:
+      ISTIO_HOST: (%{HOSTPORT}|%{URI})
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: ctx.event.duration = Math.round(ctx.istio.access.upstream.service_time *
+      params.scale)
+      params:
+      scale: 1000000
+      if: ctx.istio?.access?.upstream?.service_time != null
+  - user_agent:
+      field: user_agent.original
+      ignore_failure: true
+  - date:
+      field: istio.access.time
+      formats:
+      - ISO8601
+      target_field: "@timestamp"
+  - remove:
+      field: istio.access.time
+  - set:
+      field: event.id
+      copy_from: http.request.id
+  - set:
+      field: event.created
+      copy_from: "@timestamp"
+  - set:
+      field: event.module
+      value: istio
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: web
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400
+  - remove:
+      field: event.original
+      ignore_missing: true
+      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+on_failure:
+  - set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
+    override: false
