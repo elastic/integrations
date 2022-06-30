@@ -1,13 +1,16 @@
 title: "List user and enterprise events"
 type: logs
 streams:
-  - input: logfile
-    title: Sample logs
-    description: Collect sample logs
+  - input: httpjson
+    template_path: httpjson.yml.hbs
+    title: Box user and enterprise events (httpjson)
+    description: Collect user and enterprise events using httpjson input
     vars:
-      - name: paths
-        type: text
-        title: Paths
-        multi: true
-        default:
-          - /var/log/*.log
+      - name: request_url
+        type: url
+        title: Request URL
+        multi: false
+        required: true
+        show_user: true
+        default: https://api.box.com/2.0/events
+
