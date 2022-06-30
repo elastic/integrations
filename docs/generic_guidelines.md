@@ -79,14 +79,8 @@ In the majority of cases users stick to defaults, because they don’t really kn
 
 #### Updated docs
 
-Integration packages should provide consistent and comprehensive documentation that includes:
-
-- real-world configuration examples for both the package and the target system.
-- integration specific caveats (e.g. enabling this module will incur additional costs).
-- actual metric types (counters, gauges, histograms vs. longs and doubles).
-- metric formats (percent, bytes) with examples.
-- comprehensive description of collected fields.
-- target system compatibility and supported versions.
+Integration packages should provide consistent and comprehensive documentation.
+For more details, see the [Documentation guidelines](./documentation_guidelines.md).
 
 #### Updated integration content
 
