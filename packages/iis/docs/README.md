@@ -415,7 +415,7 @@ The fields reported are:
 | iis.application_pool.process.io_write_operations_per_sec | IO write operations per sec. | float |  | gauge |
 | iis.application_pool.process.page_faults_per_sec | Memory page faults. | float |  | gauge |
 | iis.application_pool.process.private_bytes | Memory private bytes. | float | byte | gauge |
-| iis.application_pool.process.thread_count | The number of threats. | long |  | counter |
+| iis.application_pool.process.thread_count | The number of threads. | long |  | counter |
 | iis.application_pool.process.virtual_bytes | Memory virtual bytes. | float | byte | gauge |
 | iis.application_pool.process.working_set | Memory working set. | float |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
