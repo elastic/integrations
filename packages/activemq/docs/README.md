@@ -25,8 +25,8 @@ An example event for `log` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "c8535dee-1b54-4dc1-beff-311ad212f86d",
-        "id": "c0247a0d-0262-4ef7-9540-e41ffcc45c9c",
+        "ephemeral_id": "638481bc-60c8-45d2-9610-864f2b414cfa",
+        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.2.0"
@@ -40,14 +40,14 @@ An example event for `log` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c0247a0d-0262-4ef7-9540-e41ffcc45c9c",
+        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.log",
-        "ingested": "2022-06-27T17:57:24Z",
+        "ingested": "2022-06-29T16:10:16Z",
         "kind": "event",
         "type": "info"
     },
@@ -107,15 +107,15 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-27T17:52:35.165Z",
+    "@timestamp": "2022-06-29T16:07:25.492Z",
     "activemq": {
         "audit": {
             "thread": "RMI TCP Connection(1)-127.0.0.1"
         }
     },
     "agent": {
-        "ephemeral_id": "05783b12-9f2e-465e-972d-7d8769240968",
-        "id": "c0247a0d-0262-4ef7-9540-e41ffcc45c9c",
+        "ephemeral_id": "34d3eca2-8de6-4429-8ec7-7c470857b23e",
+        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.2.0"
@@ -129,14 +129,14 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c0247a0d-0262-4ef7-9540-e41ffcc45c9c",
+        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.audit",
-        "ingested": "2022-06-27T17:52:38Z",
+        "ingested": "2022-06-29T16:07:29Z",
         "kind": "event",
         "type": "info"
     },
@@ -227,11 +227,11 @@ An example event for `broker` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-27T17:54:47.497Z",
+    "@timestamp": "2022-06-29T16:08:49.982Z",
     "activemq": {
         "broker": {
             "connections": {
-                "count": 16
+                "count": 17
             },
             "consumers": {
                 "count": 0
@@ -249,12 +249,12 @@ An example event for `broker` looks as following:
                 }
             },
             "messages": {
-                "count": 16,
+                "count": 17,
                 "dequeue": {
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 34
+                    "count": 36
                 }
             },
             "name": "localhost",
@@ -264,8 +264,8 @@ An example event for `broker` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "7f458945-f9ce-43ea-8927-d1aacf10b2d0",
-        "id": "c0247a0d-0262-4ef7-9540-e41ffcc45c9c",
+        "ephemeral_id": "2de2c614-b1b2-42a6-adb9-9ecddfc0dc07",
+        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -279,15 +279,15 @@ An example event for `broker` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c0247a0d-0262-4ef7-9540-e41ffcc45c9c",
+        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.broker",
-        "duration": 14779795,
-        "ingested": "2022-06-27T17:54:50Z",
+        "duration": 18482338,
+        "ingested": "2022-06-29T16:08:53Z",
         "module": "activemq"
     },
     "host": {
@@ -295,16 +295,16 @@ An example event for `broker` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:d0:07"
+            "02:42:ac:13:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "3.10.0-1160.66.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -361,7 +361,7 @@ An example event for `queue` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-27T18:00:07.404Z",
+    "@timestamp": "2022-06-29T16:11:38.323Z",
     "activemq": {
         "queue": {
             "consumers": {
@@ -381,7 +381,7 @@ An example event for `queue` looks as following:
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 16,
+                    "count": 18,
                     "time": {
                         "avg": 0,
                         "max": 0,
@@ -402,12 +402,12 @@ An example event for `queue` looks as following:
             "producers": {
                 "count": 0
             },
-            "size": 16
+            "size": 18
         }
     },
     "agent": {
-        "ephemeral_id": "3ab6d47e-83d1-4bea-ad36-56c919b73d21",
-        "id": "c0247a0d-0262-4ef7-9540-e41ffcc45c9c",
+        "ephemeral_id": "ae634fb6-c546-4958-b1b4-5338a04bf27f",
+        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -421,15 +421,15 @@ An example event for `queue` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c0247a0d-0262-4ef7-9540-e41ffcc45c9c",
+        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.queue",
-        "duration": 12333042,
-        "ingested": "2022-06-27T18:00:10Z",
+        "duration": 16655818,
+        "ingested": "2022-06-29T16:11:41Z",
         "module": "activemq"
     },
     "host": {
@@ -437,16 +437,16 @@ An example event for `queue` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:d0:07"
+            "02:42:ac:13:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "3.10.0-1160.66.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -507,7 +507,7 @@ An example event for `topic` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-27T18:02:44.600Z",
+    "@timestamp": "2022-06-29T16:13:05.413Z",
     "activemq": {
         "topic": {
             "consumers": {
@@ -551,8 +551,8 @@ An example event for `topic` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "60911006-8702-4e7f-9ccd-b1b74bb707ea",
-        "id": "c0247a0d-0262-4ef7-9540-e41ffcc45c9c",
+        "ephemeral_id": "97eb0219-9f47-414b-9e73-6b806294b181",
+        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -566,15 +566,15 @@ An example event for `topic` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "c0247a0d-0262-4ef7-9540-e41ffcc45c9c",
+        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
         "snapshot": false,
         "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.topic",
-        "duration": 15358860,
-        "ingested": "2022-06-27T18:02:48Z",
+        "duration": 16295694,
+        "ingested": "2022-06-29T16:13:08Z",
         "module": "activemq"
     },
     "host": {
@@ -582,16 +582,16 @@ An example event for `topic` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.208.7"
+            "172.19.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:d0:07"
+            "02:42:ac:13:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.59.1.el7.x86_64",
+            "kernel": "3.10.0-1160.66.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
