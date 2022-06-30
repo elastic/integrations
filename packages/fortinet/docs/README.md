@@ -55,7 +55,7 @@ An example event for `firewall` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "7cc48d16-ebf0-44b1-9094-fe2082d8f5a4",
@@ -781,7 +781,7 @@ An example event for `clientendpoint` looks as following:
         "port": 3994
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
@@ -1750,7 +1750,7 @@ An example event for `fortimail` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
@@ -2684,7 +2684,7 @@ An example event for `fortimanager` looks as following:
         "port": 6125
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
