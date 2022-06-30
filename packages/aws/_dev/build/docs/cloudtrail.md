@@ -1,7 +1,7 @@
 # AWS CloudTrail
 
 ## Overview
-The AWS CloudTrail integration allows you to monitor [AWS CloudTrail.](https://aws.amazon.com/cloudtrail/)
+The AWS CloudTrail integration allows you to monitor [AWS CloudTrail](https://aws.amazon.com/cloudtrail/).
 
 Use the AWS CloudTrail integration to collect and parse logs related to account activity.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
