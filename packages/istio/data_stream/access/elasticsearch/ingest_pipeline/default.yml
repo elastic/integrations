@@ -23,6 +23,10 @@ processors:
   - pipeline:
       name: istio-json
       if: ctx.first_char == '{'
+  - remove:
+      field: first_char
+      ignore_missing: true
+      ignore_failure: true
   - set:
       field: event.created
       copy_from: "@timestamp"
@@ -38,13 +42,11 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx?.http?.response?.status_code != null && ctx.http.response.status_code <
-        400
+      if: ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400
   - set:
       field: event.outcome
       value: failure
-      if: ctx?.http?.response?.status_code != null && ctx.http.response.status_code >=
-        400
+      if: ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400
   - remove:
       field: event.original
       ignore_missing: true
