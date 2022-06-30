@@ -334,7 +334,7 @@
                             "show_grid": 1,
                             "show_legend": 1,
                             "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
+                            "time_range_mode": "last_value",
                             "tooltip_mode": "show_all",
                             "truncate_legend": 1,
                             "type": "gauge",
@@ -429,7 +429,7 @@
                             "show_grid": 1,
                             "show_legend": 1,
                             "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
+                            "time_range_mode": "last_value",
                             "tooltip_mode": "show_all",
                             "truncate_legend": 1,
                             "type": "gauge",
@@ -459,7 +459,13 @@
                     "savedVis": {
                         "data": {
                             "aggs": [],
-                            "searchSource": {}
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
                         },
                         "description": "",
                         "params": {
@@ -480,6 +486,7 @@
                             "id": "0c761590-1b92-11e7-bec4-a5e9ec5cab8b",
                             "index_pattern": "metrics-*",
                             "interval": "auto",
+                            "isModelInvalid": false,
                             "max_lines_legend": 1,
                             "series": [
                                 {
@@ -521,6 +528,7 @@
                                     "split_mode": "terms",
                                     "stacked": "none",
                                     "terms_field": "system.network.name",
+                                    "time_range_mode": "entire_time_range",
                                     "value_template": "{{value}}/s"
                                 },
                                 {
@@ -564,17 +572,20 @@
                                     "split_mode": "terms",
                                     "stacked": "none",
                                     "terms_field": "system.network.name",
+                                    "time_range_mode": "entire_time_range",
                                     "value_template": "{{value}}"
                                 }
                             ],
                             "show_grid": 1,
                             "show_legend": 1,
                             "time_field": "@timestamp",
+                            "time_range_mode": "last_value",
                             "tooltip_mode": "show_all",
                             "truncate_legend": 1,
                             "type": "metric",
                             "use_kibana_indexes": false
                         },
+                        "title": "",
                         "type": "metrics",
                         "uiState": {}
                     }
@@ -593,85 +604,69 @@
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
-                    "hidePanelTitles": true,
-                    "savedVis": {
-                        "data": {
-                            "aggs": [
-                                {
-                                    "enabled": true,
-                                    "id": "1",
-                                    "params": {
-                                        "customLabel": "Processes",
-                                        "field": "process.pid"
-                                    },
-                                    "schema": "metric",
-                                    "type": "cardinality"
-                                }
-                            ],
-                            "searchSource": {
-                                "filter": [],
-                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
-                                "query": {
-                                    "language": "kuery",
-                                    "query": ""
-                                }
-                            }
-                        },
-                        "description": "",
-                        "params": {
-                            "addLegend": false,
-                            "addTooltip": true,
-                            "filter": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset : \"system.process\""
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
                             },
-                            "metric": {
-                                "colorSchema": "Green to Red",
-                                "colorsRange": [
-                                    {
-                                        "from": 0,
-                                        "to": 100
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9f6d8570-52c1-4af2-a105-b9993b2e8b5c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "9f6d8570-52c1-4af2-a105-b9993b2e8b5c": {
+                                            "columnOrder": [
+                                                "314b8c49-2a3b-464b-bc85-ab7e098fd510"
+                                            ],
+                                            "columns": {
+                                                "314b8c49-2a3b-464b-bc85-ab7e098fd510": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Processes",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "process.pid"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
                                     }
-                                ],
-                                "invertColors": false,
-                                "labels": {
-                                    "color": "black",
-                                    "show": true
-                                },
-                                "metricColorMode": "None",
-                                "percentageMode": false,
-                                "style": {
-                                    "bgColor": false,
-                                    "bgFill": "#000",
-                                    "fontSize": 60,
-                                    "labelColor": false,
-                                    "subText": ""
-                                },
-                                "useRange": false
-                            },
-                            "type": "metric"
-                        },
-                        "type": "metric",
-                        "uiState": {
-                            "vis": {
-                                "defaultColors": {
-                                    "0 - 100": "rgb(0,104,55)"
                                 }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "314b8c49-2a3b-464b-bc85-ab7e098fd510",
+                                "layerId": "9f6d8570-52c1-4af2-a105-b9993b2e8b5c",
+                                "layerType": "data"
                             }
-                        }
-                    }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 8,
-                    "i": "0425f001-5941-4aa8-b9ed-174ef720acd8",
+                    "i": "17f54fe4-ae84-4319-97fd-069225d0a8fb",
                     "w": 12,
                     "x": 0,
                     "y": 15
                 },
-                "panelIndex": "0425f001-5941-4aa8-b9ed-174ef720acd8",
-                "title": "Number of processes [Metrics System]",
-                "type": "visualization",
+                "panelIndex": "17f54fe4-ae84-4319-97fd-069225d0a8fb",
+                "type": "lens",
                 "version": "8.1.0"
             },
             {
@@ -681,7 +676,13 @@
                     "savedVis": {
                         "data": {
                             "aggs": [],
-                            "searchSource": {}
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
                         },
                         "description": "",
                         "params": {
@@ -702,6 +703,7 @@
                             "id": "6bc65720-4d5c-11e7-aa29-87a97a796de6",
                             "index_pattern": "metrics-*",
                             "interval": "auto",
+                            "isModelInvalid": false,
                             "max_lines_legend": 1,
                             "series": [
                                 {
@@ -724,7 +726,8 @@
                                     "seperate_axis": 0,
                                     "split_color_mode": "gradient",
                                     "split_mode": "everything",
-                                    "stacked": "none"
+                                    "stacked": "none",
+                                    "time_range_mode": "entire_time_range"
                                 },
                                 {
                                     "axis_position": "right",
@@ -746,17 +749,20 @@
                                     "seperate_axis": 0,
                                     "split_color_mode": "gradient",
                                     "split_mode": "everything",
-                                    "stacked": "none"
+                                    "stacked": "none",
+                                    "time_range_mode": "entire_time_range"
                                 }
                             ],
                             "show_grid": 1,
                             "show_legend": 1,
                             "time_field": "@timestamp",
+                            "time_range_mode": "last_value",
                             "tooltip_mode": "show_all",
                             "truncate_legend": 1,
                             "type": "metric",
                             "use_kibana_indexes": false
                         },
+                        "title": "",
                         "type": "metrics",
                         "uiState": {}
                     }
@@ -892,7 +898,7 @@
                             "show_grid": 1,
                             "show_legend": 1,
                             "time_field": "@timestamp",
-                            "time_range_mode": "entire_time_range",
+                            "time_range_mode": "last_value",
                             "tooltip_mode": "show_all",
                             "truncate_legend": 1,
                             "type": "gauge",
@@ -922,7 +928,13 @@
                     "savedVis": {
                         "data": {
                             "aggs": [],
-                            "searchSource": {}
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
                         },
                         "description": "",
                         "params": {
@@ -943,6 +955,7 @@
                             "id": "0c761590-1b92-11e7-bec4-a5e9ec5cab8b",
                             "index_pattern": "metrics-*",
                             "interval": "auto",
+                            "isModelInvalid": false,
                             "max_lines_legend": 1,
                             "series": [
                                 {
@@ -984,6 +997,7 @@
                                     "split_mode": "terms",
                                     "stacked": "none",
                                     "terms_field": "system.network.name",
+                                    "time_range_mode": "entire_time_range",
                                     "value_template": "{{value}}/s"
                                 },
                                 {
@@ -1027,12 +1041,14 @@
                                     "split_mode": "terms",
                                     "stacked": "none",
                                     "terms_field": "system.network.name",
+                                    "time_range_mode": "entire_time_range",
                                     "value_template": "{{value}}"
                                 }
                             ],
                             "show_grid": 1,
                             "show_legend": 1,
                             "time_field": "@timestamp",
+                            "time_range_mode": "last_value",
                             "tooltip_mode": "show_all",
                             "truncate_legend": 1,
                             "type": "metric",
@@ -2286,182 +2302,151 @@
             },
             {
                 "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-e8e39df8-0f14-49a1-b6c6-562e61d93838",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "e8e39df8-0f14-49a1-b6c6-562e61d93838": {
-                                            "columnOrder": [
-                                                "9cbaf0b2-fb25-4837-a1c7-e5718ae5e083",
-                                                "919f05f5-0ea5-41d6-ae03-2476586bc60c",
-                                                "1f345c8a-0773-498a-8a4c-17d893efe942",
-                                                "2503534f-cd93-45a1-8222-399009a068ff",
-                                                "98f0b35c-052f-4229-8e2f-a033582bf841"
-                                            ],
-                                            "columns": {
-                                                "1f345c8a-0773-498a-8a4c-17d893efe942": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Maximum of system.diskio.read.bytes",
-                                                    "operationType": "max",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.diskio.read.bytes"
-                                                },
-                                                "2503534f-cd93-45a1-8222-399009a068ff": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "writes",
-                                                    "operationType": "counter_rate",
-                                                    "references": [
-                                                        "98f0b35c-052f-4229-8e2f-a033582bf841"
-                                                    ],
-                                                    "scale": "ratio",
-                                                    "timeScale": "s"
-                                                },
-                                                "919f05f5-0ea5-41d6-ae03-2476586bc60c": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "reads",
-                                                    "operationType": "counter_rate",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 1
-                                                            }
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "1f345c8a-0773-498a-8a4c-17d893efe942"
-                                                    ],
-                                                    "scale": "ratio",
-                                                    "timeScale": "s"
-                                                },
-                                                "98f0b35c-052f-4229-8e2f-a033582bf841": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Maximum of system.diskio.write.bytes",
-                                                    "operationType": "max",
-                                                    "scale": "ratio",
-                                                    "sourceField": "system.diskio.write.bytes"
-                                                },
-                                                "9cbaf0b2-fb25-4837-a1c7-e5718ae5e083": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "interval": "10s"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset : \"system.diskio\""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": false,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "919f05f5-0ea5-41d6-ae03-2476586bc60c",
-                                            "2503534f-cd93-45a1-8222-399009a068ff"
-                                        ],
-                                        "layerId": "e8e39df8-0f14-49a1-b6c6-562e61d93838",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "area",
-                                        "showGridlines": false,
-                                        "xAccessor": "9cbaf0b2-fb25-4837-a1c7-e5718ae5e083",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "2503534f-cd93-45a1-8222-399009a068ff"
-                                            },
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "919f05f5-0ea5-41d6-ae03-2476586bc60c"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "area",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightExtent": {
-                                    "mode": "full"
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
                                 }
                             }
                         },
+                        "description": "",
+                        "params": {
+                            "axis_formatter": "number",
+                            "axis_position": "left",
+                            "axis_scale": "normal",
+                            "drop_last_bucket": 1,
+                            "filter": {
+                                "language": "kuery",
+                                "query": "data_stream.dataset : \"system.diskio\""
+                            },
+                            "id": "d3c67db0-1b1a-11e7-b09e-037021c4f8df",
+                            "index_pattern": "metrics-*",
+                            "interval": "auto",
+                            "isModelInvalid": false,
+                            "max_lines_legend": 1,
+                            "series": [
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "rgba(84,179,153,1)",
+                                    "fill": "00.5",
+                                    "formatter": "bytes",
+                                    "id": "d3c67db1-1b1a-11e7-b09e-037021c4f8df",
+                                    "label": "reads",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "field": "system.diskio.read.bytes",
+                                            "id": "d3c67db2-1b1a-11e7-b09e-037021c4f8df",
+                                            "type": "max"
+                                        },
+                                        {
+                                            "field": "d3c67db2-1b1a-11e7-b09e-037021c4f8df",
+                                            "id": "f55b9910-1b1a-11e7-b09e-037021c4f8df",
+                                            "type": "derivative",
+                                            "unit": "1s"
+                                        },
+                                        {
+                                            "field": "f55b9910-1b1a-11e7-b09e-037021c4f8df",
+                                            "id": "dcbbb100-1b93-11e7-8ada-3df93aab833e",
+                                            "type": "positive_only",
+                                            "unit": ""
+                                        }
+                                    ],
+                                    "palette": {
+                                        "name": "positive",
+                                        "type": "palette"
+                                    },
+                                    "point_size": "0",
+                                    "seperate_axis": 0,
+                                    "split_color_mode": null,
+                                    "split_mode": "everything",
+                                    "stacked": "none",
+                                    "time_range_mode": "entire_time_range",
+                                    "value_template": "{{value}}/s"
+                                },
+                                {
+                                    "axis_position": "right",
+                                    "chart_type": "line",
+                                    "color": "rgba(96,146,192,1)",
+                                    "fill": "00.5",
+                                    "formatter": "bytes",
+                                    "id": "144124d0-1b1b-11e7-b09e-037021c4f8df",
+                                    "label": "writes",
+                                    "line_width": 1,
+                                    "metrics": [
+                                        {
+                                            "field": "system.diskio.write.bytes",
+                                            "id": "144124d1-1b1b-11e7-b09e-037021c4f8df",
+                                            "type": "max"
+                                        },
+                                        {
+                                            "field": "144124d1-1b1b-11e7-b09e-037021c4f8df",
+                                            "id": "144124d2-1b1b-11e7-b09e-037021c4f8df",
+                                            "type": "derivative",
+                                            "unit": "1s"
+                                        },
+                                        {
+                                            "id": "144124d4-1b1b-11e7-b09e-037021c4f8df",
+                                            "script": "params.rate \u003e 0 ? params.rate * -1 : 0",
+                                            "type": "calculation",
+                                            "variables": [
+                                                {
+                                                    "field": "144124d2-1b1b-11e7-b09e-037021c4f8df",
+                                                    "id": "144124d3-1b1b-11e7-b09e-037021c4f8df",
+                                                    "name": "rate"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "palette": {
+                                        "name": "temperature",
+                                        "type": "palette"
+                                    },
+                                    "point_size": "0",
+                                    "seperate_axis": 0,
+                                    "split_color_mode": null,
+                                    "split_mode": "everything",
+                                    "stacked": "none",
+                                    "time_range_mode": "entire_time_range",
+                                    "value_template": "{{value}}/s"
+                                }
+                            ],
+                            "show_grid": 1,
+                            "show_legend": 1,
+                            "time_field": "@timestamp",
+                            "time_range_mode": "entire_time_range",
+                            "tooltip_mode": "show_all",
+                            "truncate_legend": 1,
+                            "type": "timeseries",
+                            "use_kibana_indexes": false
+                        },
                         "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {}
+                        "type": "metrics",
+                        "uiState": {}
+                    }
                 },
                 "gridData": {
                     "h": 10,
-                    "i": "e2e48b6d-558a-4919-a953-e88bd6c992a0",
+                    "i": "4e2ec836-0e0c-4125-9a0b-be26183c524f",
                     "w": 30,
                     "x": 11,
                     "y": 59
                 },
-                "panelIndex": "e2e48b6d-558a-4919-a953-e88bd6c992a0",
-                "type": "lens",
+                "panelIndex": "4e2ec836-0e0c-4125-9a0b-be26183c524f",
+                "title": "Disk IO",
+                "type": "visualization",
                 "version": "8.1.0"
             },
             {
                 "embeddableConfig": {
                     "enhancements": {},
+                    "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
                             "aggs": [],
@@ -3609,7 +3594,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "0425f001-5941-4aa8-b9ed-174ef720acd8:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "name": "17f54fe4-ae84-4319-97fd-069225d0a8fb:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "17f54fe4-ae84-4319-97fd-069225d0a8fb:indexpattern-datasource-layer-9f6d8570-52c1-4af2-a105-b9993b2e8b5c",
             "type": "index-pattern"
         },
         {
@@ -3670,16 +3660,6 @@
         {
             "id": "metrics-*",
             "name": "40c809d8-2728-4ead-a85a-02ac2c3c346e:indexpattern-datasource-layer-7e73c5a0-687d-49a1-9431-d445b9698b64",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "e2e48b6d-558a-4919-a953-e88bd6c992a0:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "e2e48b6d-558a-4919-a953-e88bd6c992a0:indexpattern-datasource-layer-e8e39df8-0f14-49a1-b6c6-562e61d93838",
             "type": "index-pattern"
         },
         {
