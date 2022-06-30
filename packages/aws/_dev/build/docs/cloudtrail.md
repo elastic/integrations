@@ -31,7 +31,6 @@ For more details about these requirements, see the **AWS** integration documenta
 Use this integration if you only need to collect data from the AWS CloudTrail service.
 
 If you want to collect data from two or more AWS services, consider using the **AWS** integration.
-
 When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
 
 For step-by-step instructions on how to set up an integration, see the
