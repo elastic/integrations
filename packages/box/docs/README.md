@@ -1,4 +1,4 @@
-# Box Integration
+# Box
 
 This is a new integration created using the [elastic-package](https://github.com/elastic/elastic-package) tool.
 
