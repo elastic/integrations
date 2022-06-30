@@ -7,6 +7,11 @@ services:
       - MQ_QMGR_NAME=QM1
       - MQ_ENABLE_METRICS=true
     user: root
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9157/metrics"]
+      interval: 15s
+      timeout: 30s
+      retries: 40
     ports:
       - 9157
     volumes:
