@@ -38,7 +38,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs reference
 
-The `cloudtrail` dataset collects the AWS CloudTrail logs. CloudTrail monitors 
+The `cloudtrail` data stream collects the AWS CloudTrail logs. CloudTrail monitors 
 events for the account. If a user creates a trail, it delivers those events as log
  files to a specific Amazon S3 bucket. 
 
