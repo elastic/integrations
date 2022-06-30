@@ -1,13 +1,13 @@
 # AWS CloudTrail
 
 ## Overview
-The AWS CloudTrail integration allows you to monitor [AWS CloudTrail.](https://aws.amazon.com/cloudtrail/)
+The AWS CloudTrail integration allows you to monitor [AWS CloudTrail](https://aws.amazon.com/cloudtrail/).
 
 Use the AWS CloudTrail integration to collect and parse logs related to account activity.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
 and reference logs when troubleshooting an issue.
 
-For example, you could use the data from this integration to spot unusual activity in your AWS accounts, in a given time period. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs, such as the the source of the requests, and more. 
+For example, you could use the data from this integration to spot unusual activity in your AWS accounts, in a given time period. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs, such as the source of the requests, and more. 
 
 ## Data streams
 The AWS CloudTrail integration collects one type of data: logs.
@@ -31,7 +31,6 @@ For more details about these requirements, see the **AWS** integration documenta
 Use this integration if you only need to collect data from the AWS CloudTrail service.
 
 If you want to collect data from two or more AWS services, consider using the **AWS** integration.
-
 When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
 
 For step-by-step instructions on how to set up an integration, see the
@@ -39,13 +38,13 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs reference
 
-The `cloudtrail` dataset collects the AWS CloudTrail logs. CloudTrail monitors 
+The `cloudtrail` data stream collects the AWS CloudTrail logs. CloudTrail monitors 
 events for the account. If a user creates a trail, it delivers those events as log
  files to a specific Amazon S3 bucket. 
 
->Note: The `cloudtrail` dataset does not read 
- the CloudTrail Digest files that are delivered to the S3 bucket when Log File 
- Integrity is turned on;  it only reads the CloudTrail logs.
+> Note: If Log File Integrity is turned on, the `cloudtrail` data stream will not read
+the CloudTrail Digest files that are delivered to the S3 bucket.
+The data stream will only read the CloudTrail logs.
 
 **Exported fields**
 
