@@ -8,7 +8,6 @@ type: integration
 categories:
   - cloud
   - custom
-  - datastore
 conditions:
   kibana.version: "^8.2.0"
 screenshots:
@@ -29,5 +28,65 @@ policy_templates:
       - type: httpjson
         title: "Collect BOX Events via API"
         description: "Collecting events from BOX via API"
+        vars:
+          - name: client_id
+            type: password
+            title: CLIENT ID
+            description: >
+              The Client ID of the application that is requesting to authenticate the user. To get 
+              the Client ID for your application, log in to your Box developer console and click 
+              My Apps, then select the application you're working with. Under the Configuration tab,
+              scroll down to OAuth 2.0 Credentials to copy the Client ID.
+            multi: false
+            required: true
+            show_user: true
+          - name: client_secret
+            type: password
+            title: CLIENT SECRET
+            description: >
+              The client secret of the application requesting an access token. To get 
+              the Client Secret for your application, log in to your Box developer console and click 
+              My Apps, then select the application you're working with. Under the Configuration tab,
+              scroll down to OAuth 2.0 Credentials to locate the Client Secret. You may need to
+              enable/use 2FA to retreive this value.
+            multi: false
+            required: true
+            show_user: true
+          - name: token_url
+            type: text
+            title: Token URL
+            description: URL to retrieve the Oauth2 token from the BOX api.
+            default: https://api.box.com/oauth2/token
+            multi: false
+            required: true
+            show_user: false
+          - name: box_subject_id
+            type: password
+            title: Box Subject ID endpoint parameter
+            description: >
+              The ID of the User Account that is leveraged to call the API. To get 
+              the Subject ID for your application, log in to your Box developer console and click 
+              My Apps, then select the application you're working with. Under the General Settings 
+              tab, scroll down to App Info to locate the User ID.
+            multi: false
+            required: true
+            show_user: true
+          - name: box_subject_type
+            type: text
+            title: Box Subject Type endpoint parameter
+            description: Subject Type for the user
+            default: user
+            multi: false
+            required: true
+            show_user: false
+          - name: grant_type
+            type: text
+            title: Grant Type
+            description: Grant Type endpoint parameter
+            default: client_credentials
+            multi: false
+            required: true
+            show_user: false
+
 owner:
-  github: elastic/integrations
+  github: elastic/security-external-integrations
