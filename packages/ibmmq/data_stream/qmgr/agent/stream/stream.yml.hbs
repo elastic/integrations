@@ -1,0 +1,29 @@
+metricsets: ["collector"]
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+metrics_path: /metrics
+metrics_filters:
+  include: ["ibmmq_.*", "^up$"]
+period: {{period}}
+{{#if username}}
+username: "{{username}}"
+{{/if}}
+{{#if password}}
+password: "{{password}}"
+{{/if}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
