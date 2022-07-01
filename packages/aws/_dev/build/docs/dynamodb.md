@@ -4,7 +4,7 @@ The Amazon DynamoDB integration allows you to monitor [Amazon DynamoDB](https://
 
 Use the Amazon DynamoDB integration to collect metrics related to your Amazon DynamoDB databases. 
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
-For example, you could use this data to view the provisioned throughput capacity for a new provisioned table in Amazon DynamoDB. Then you can alert the relevant budget holder about those throughput capacity units by email.
+For example, you could use this data to visualize consumed read and write capacity units. You can then create alerts based on used or unused capacity, so that the relevant users can better scale their provisioned throughput capacity. This might mean they increased the capacity to provide more resources, or reduced capacity to save on costs.
 
 ## Data streams
 The Amazon DynamoDB integration collects one type of data: metrics.
