@@ -14,7 +14,10 @@ request.timeout: {{request_timeout}}
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
 {{/if}}
-
+request.rate_limit:
+  limit: '[[.last_response.header.Get "X-Rate-Limit-Limit"]]'
+  remaining: '[[.last_response.header.Get "X-Rate-Limit-Remaining"]]'
+  reset: '[[(parseDate (.last_response.header.Get "X-Rate-Limit-Reset")).Unix]]'
 request.transforms:
 - set:
     target: header.Authorization
