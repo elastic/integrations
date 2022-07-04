@@ -1,0 +1,123 @@
+- name: cloudflare_logpush.spectrum_event
+  type: group
+  fields:
+    - name: application
+      type: keyword
+      description: The unique public ID of the application on which the event occurred.
+    - name: client
+      type: group
+      fields:
+        - name: asn
+          type: long
+          description: Client AS number.
+        - name: bytes
+          type: long
+          description: The number of bytes read from the client by the Spectrum service.
+        - name: country
+          type: keyword
+          description: Country of the client IP address.
+        - name: ip
+          type: ip
+          description: Client IP address.
+        - name: matched_ip_firewall
+          type: keyword
+          description: Whether the connection matched any IP Firewall rules.
+        - name: port
+          type: long
+          description: Client port.
+        - name: protocol
+          type: keyword
+          description: Transport protocol used by client.
+        - name: tcp_rtt
+          type: long
+          description: The TCP round-trip time in nanoseconds between the client and Spectrum.
+        - name: tls
+          type: group
+          fields:
+            - name: cipher
+              type: keyword
+              description: The cipher negotiated between the client and Spectrum.
+            - name: client_hello_server_name
+              type: keyword
+              description: The server name in the Client Hello message from client to Spectrum.
+            - name: protocol
+              type: keyword
+              description: The TLS version negotiated between the client and Spectrum.
+            - name: status
+              type: keyword
+              description: Indicates state of TLS session from the client to Spectrum.
+    - name: colo
+      type: group
+      fields:
+        - name: code
+          type: keyword
+          description: IATA airport code of data center that received the request.
+    - name: connect
+      type: group
+      fields:
+        - name: time
+          type: date
+          description: Timestamp at which both legs of the connection (client/edge, edge/origin or nexthop) were established.
+    - name: disconnect
+      type: group
+      fields:
+        - name: time
+          type: date
+          description: Timestamp at which the connection was closed.
+    - name: action
+      type: keyword
+      description: Event Action.
+    - name: ip_firewall
+      type: boolean
+      description: Whether IP Firewall was enabled at time of connection.
+    - name: origin
+      type: group
+      fields:
+        - name: bytes
+          type: long
+          description: The number of bytes read from the origin by Spectrum.
+        - name: ip
+          type: ip
+          description: Origin IP address.
+        - name: port
+          type: long
+          description: Origin Port.
+        - name: protocol
+          type: keyword
+          description: Transport protocol used by origin.
+        - name: tcp_rtt
+          type: long
+          description: The TCP round-trip time in nanoseconds between Spectrum and the origin.
+        - name: tls
+          type: group
+          fields:
+            - name: cipher
+              type: keyword
+              description: The cipher negotiated between Spectrum and the origin.
+            - name: fingerprint
+              type: keyword
+              description: SHA256 hash of origin certificate.
+            - name: mode
+              type: keyword
+              description: If and how the upstream connection is encrypted.
+            - name: protocol
+              type: keyword
+              description: The TLS version negotiated between Spectrum and the origin.
+            - name: status
+              type: keyword
+              description: The state of the TLS session from Spectrum to the origin.
+    - name: proxy
+      type: group
+      fields:
+        - name: protocol
+          type: keyword
+          description: Which form of proxy protocol is applied to the given connection.
+    - name: status
+      type: long
+      description: A code indicating reason for connection closure.
+    - name: timestamp
+      type: date
+      description: Timestamp at which the event took place.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.
