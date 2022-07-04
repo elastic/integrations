@@ -135,30 +135,40 @@ An example event for an `ITEM_UPLOAD` might be:
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.hash.sha1 | SHA1 hash. | keyword |
 | box.session.id | The session of the user that performed the action. Not all events will populate this attribute. | keyword |
-| box.source.id | | |
-| box.source.etag | | |
-| box.source.description | | |
-| box.source.path_collection.total_count | | |
-| box.source.path_collection.entries.type[] | | |
-| box.source.path_collection.entries.id[] | | |
-| box.source.path_collection.entries.name[] | | |
-| box.source.created_by.type | | |
-| box.source.created_by.user.id | | |
-| box.source.created_by.user.full_name | | |
-| box.source.created_by.user.email | | |
-| box.source.modified_by.type | | |
-| box.source.modified_by.user.id | | |
-| box.source.modified_by.user.full_name | | |
-| box.source.modified_by.user.email | | |
-| box.source.content_created_at | | |
-| box.source.content_modified_at | | |
-| box.source.owned_by.type | | |
-| box.source.owned_by.user.id | | |
-| box.source.owned_by.user.full_name | | |
-| box.source.owned_by.user.email | | |
-| box.source.parent.type | | |
-| box.source.parent.id | | |
-| box.source.parent.name | | |
-| box.source.item_status | | |
-| box.source.file_version.type | | |
-| box.source.file_version.id | | |
+| box.source.id | The unique identifier that represent a folder. | keyword |
+| box.source.etag | The HTTP etag of this folder. | keyword |
+| box.source.description | The optional description of this folder. | text |
+| box.source.path_collection | The tree of folders that this folder is contained in, starting at the root. | object |
+| box.source.path_collection.total_count | The number of folders in this list. | long |
+| box.source.path_collection.entries | The parent folders for this item. | object |
+| box.source.path_collection.entries.type[] | Value is always `folder`. This field is an array. | keyword |
+| box.source.path_collection.entries.id[] | The unique identifier that represent a folder. This field is an array. | keyword |
+| box.source.path_collection.entries.name[] | The name of the folder. This field is an array. | keyword |
+| box.source.created_by | The user who created this folder. | object |
+| box.source.created_by.type | Value is always `user`. | keyword |
+| box.source.created_by.user | A representation of a user. | object |
+| box.source.created_by.user.id | The unique identifier for this user. | keyword |
+| box.source.created_by.user.full_name | The display name of this user. Maps from **.name. | keyword |
+| box.source.created_by.user.email | The primary email address of this user. Maps from **.login. | keyword |
+| box.source.modified_by | The user who last modified this folder. | object |
+| box.source.modified_by.type | Value is always `user`. | keyword |
+| box.source.modified_by.user | A representation of a user. | object |
+| box.source.modified_by.user.id | The unique identifier for this user. | keyword |
+| box.source.modified_by.user.full_name | The display name of this user. Maps from **.name. | keyword |
+| box.source.modified_by.user.email | The primary email address of this user. Maps from **.login. | keyword |
+| box.source.content_created_at | The date and time at which this folder was originally created. | date |
+| box.source.content_modified_at | The date and time at which this folder was last updated. | date |
+| box.source.owned_by | The user who owns this folder. | keyword |
+| box.source.owned_by.type | Value is always `user`. | keyword |
+| box.source.owned_by.user | A representation of a user. | object |
+| box.source.owned_by.user.id | The unique identifier for this user. | keyword |
+| box.source.owned_by.user.full_name | The display name of this user. Maps from **.name. | keyword |
+| box.source.owned_by.user.email | The primary email address of this user. Maps from **.login. | keyword |
+| box.source.parent | The optional folder that this folder is located within. This value may be null for some folders such as the root folder or the trash folder. | object |
+| box.source.parent.type | Value is always `folder`. | keyword |
+| box.source.parent.id | The unique identifier that represent a folder. | keyword 
+| box.source.parent.name | The name of the folder. | keyword |
+| box.source.item_status | Defines if this item has been deleted or not. active when the item has is not in the trash trashed when the item has been moved to the trash but not deleted deleted when the item has been permanently deleted. Value is one of `active`, `trashed`, `deleted`. | keyword |
+| box.source.file_version | The information about the current version of the file. | object |
+| box.source.file_version.type | Value is always `file_version` | keyword |
+| box.source.file_version.id | The unique identifier that represent a file version. | keyword |
