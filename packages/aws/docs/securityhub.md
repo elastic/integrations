@@ -18,13 +18,14 @@ The [AWS Security Hub](https://docs.aws.amazon.com/securityhub/) integration col
 
 ## Note
 
-For the current integration package, it is recommended to have interval in hours.
+  1. For the current integration package, it is recommended to have interval in hours.
+  2. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
 
 ## Logs
 
 ### Findings
 
-This is the `securityhub_findings` data stream.
+This is the [`securityhub_findings`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream.
 
 An example event for `securityhub_findings` looks as following:
 
@@ -374,6 +375,8 @@ An example event for `securityhub_findings` looks as following:
 | log.offset | Log offset | long |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| organization.name | Organization name. | keyword |
+| organization.name.text | Multi-field of `organization.name`. | match_only_text |
 | process.end | The time the process ended. | date |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -409,7 +412,7 @@ An example event for `securityhub_findings` looks as following:
 
 ### Insights
 
-This is the `securityhub_insights` data stream.
+This is the [`securityhub_insights`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetInsights.html#API_GetInsights_ResponseElements) data stream.
 
 An example event for `securityhub_insights` looks as following:
 

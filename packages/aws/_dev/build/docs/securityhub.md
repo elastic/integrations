@@ -18,13 +18,14 @@ The [AWS Security Hub](https://docs.aws.amazon.com/securityhub/) integration col
 
 ## Note
 
-For the current integration package, it is recommended to have interval in hours.
+  1. For the current integration package, it is recommended to have interval in hours.
+  2. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
 
 ## Logs
 
 ### Findings
 
-This is the `securityhub_findings` data stream.
+This is the [`securityhub_findings`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream.
 
 {{event "securityhub_findings"}}
 
@@ -32,7 +33,7 @@ This is the `securityhub_findings` data stream.
 
 ### Insights
 
-This is the `securityhub_insights` data stream.
+This is the [`securityhub_insights`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetInsights.html#API_GetInsights_ResponseElements) data stream.
 
 {{event "securityhub_insights"}}
 
