@@ -9,14 +9,6 @@ processors:
   - remove:
       field: event.dataset
       ignore_missing: true
-  - pipeline:
-      name: '{{ IngestPipeline "kibana-audit-logs-ecs" }}'
-      if: |-
-        def message = ctx.message;
-        return message != null
-          && message.startsWith('{')
-          && message.endsWith('}')
-          && message.contains('"@timestamp"')
   - set:
       description: Uses event.dataset as a default for data_stream.dataset if the latter is not set.
       field: data_stream.dataset
