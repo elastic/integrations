@@ -181,8 +181,8 @@ The fields reported are:
 | iis.webserver.network.post_requests_per_sec | Number of POST requests per sec. | float |  | gauge |
 | iis.webserver.network.service_uptime | Service uptime. | float |  |  |
 | iis.webserver.network.total_anonymous_users | Total number of anonymous users. | float |  | counter |
-| iis.webserver.network.total_bytes_received | Total size of bytes received. | float | byte | gauge |
-| iis.webserver.network.total_bytes_sent | Total size of bytes sent. | float | byte | gauge |
+| iis.webserver.network.total_bytes_received | Total size of bytes received. | float | byte | counter |
+| iis.webserver.network.total_bytes_sent | Total size of bytes sent. | float | byte | counter |
 | iis.webserver.network.total_connection_attempts | The total number of connection attempts. | float |  |  |
 | iis.webserver.network.total_delete_requests | The total number of DELETE requests. | float |  | counter |
 | iis.webserver.network.total_get_requests | The total number of GET requests. | float |  | counter |
@@ -305,8 +305,8 @@ The fields reported are:
 | iis.website.network.post_requests_per_sec | The number of POST requests per sec. | float |  | gauge |
 | iis.website.network.put_requests_per_sec | The number of PUT requests per sec. | float |  | gauge |
 | iis.website.network.service_uptime | The service uptime. | float |  |  |
-| iis.website.network.total_bytes_received | The total number of bytes received. | float | byte | gauge |
-| iis.website.network.total_bytes_sent | The  total number of bytes sent. | float | byte | gauge |
+| iis.website.network.total_bytes_received | The total number of bytes received. | float | byte | counter |
+| iis.website.network.total_bytes_sent | The  total number of bytes sent. | float | byte | counter |
 | iis.website.network.total_connection_attempts | The total number of connection attempts. | float |  | counter |
 | iis.website.network.total_delete_requests | The total number of DELETE requests. | float |  | counter |
 | iis.website.network.total_get_requests | The total number of GET requests. | float |  | counter |
@@ -570,20 +570,9 @@ The fields reported are:
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | iis.access.cookie | The content of the cookie sent or received, if any. | keyword |
-| iis.access.geoip.city_name |  | alias |
-| iis.access.geoip.continent_name |  | alias |
-| iis.access.geoip.country_iso_code |  | alias |
-| iis.access.geoip.location |  | alias |
-| iis.access.geoip.region_iso_code |  | alias |
-| iis.access.geoip.region_name |  | alias |
 | iis.access.server_name | The name of the server on which the log file entry was generated. | keyword |
 | iis.access.site_name | The site name and instance number. | keyword |
 | iis.access.sub_status | The HTTP substatus code. | long |
-| iis.access.user_agent.device |  | alias |
-| iis.access.user_agent.name |  | alias |
-| iis.access.user_agent.original |  | alias |
-| iis.access.user_agent.os |  | alias |
-| iis.access.user_agent.os_name |  | alias |
 | iis.access.win32_status | The Windows status code. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
@@ -735,12 +724,6 @@ The fields reported are:
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
-| iis.error.geoip.city_name |  | alias |
-| iis.error.geoip.continent_name |  | alias |
-| iis.error.geoip.country_iso_code |  | alias |
-| iis.error.geoip.location |  | alias |
-| iis.error.geoip.region_iso_code |  | alias |
-| iis.error.geoip.region_name |  | alias |
 | iis.error.queue_name | The IIS application pool name. | keyword |
 | iis.error.reason_phrase | The HTTP reason phrase. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
