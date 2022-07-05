@@ -32,6 +32,13 @@ An example event for `securityhub_findings` looks as following:
 ```json
 {
     "@timestamp": "2022-06-17T10:25:14.800Z",
+    "agent": {
+        "ephemeral_id": "87cac067-d9ba-44f5-ad19-44499534f468",
+        "id": "ca870b82-a172-4440-aaad-1bdf20705ca5",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.0"
+    },
     "aws": {
         "securityhub_findings": {
             "aws_account_id": "xxx",
@@ -47,13 +54,11 @@ An example event for `securityhub_findings` looks as following:
                     }
                 ]
             },
-            "created_at": "2022-06-17T10:25:14.800Z",
             "description": "This AWS control checks whether the EBS volumes that are in an attached state are encrypted.",
             "first_observed_at": "2022-06-17T10:25:14.800Z",
             "generator": {
                 "id": "xxx"
             },
-            "id": "xxx",
             "last_observed_at": "2022-06-17T10:25:18.568Z",
             "product": {
                 "arn": "xxx",
@@ -120,23 +125,46 @@ An example event for `securityhub_findings` looks as following:
             }
         }
     },
+    "cloud": {
+        "account": {
+            "id": "xxx"
+        }
+    },
+    "data_stream": {
+        "dataset": "aws.securityhub_findings",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
+    },
+    "elastic_agent": {
+        "id": "ca870b82-a172-4440-aaad-1bdf20705ca5",
+        "snapshot": true,
+        "version": "8.4.0"
     },
     "event": {
-        "category": [
-            "iam"
-        ],
+        "agent_id_status": "verified",
+        "created": "2022-07-05T10:57:15.196Z",
+        "dataset": "aws.securityhub_findings",
         "id": "xxx",
+        "ingested": "2022-07-05T10:57:18Z",
         "kind": "event",
-        "original": "{\"ProductArn\":\"xxx\",\"Types\":[\"Software and Configuration Checks/Industry and Regulatory Standards/AWS-Foundational-Security-Best-Practices\"],\"Description\":\"This AWS control checks whether the EBS volumes that are in an attached state are encrypted.\",\"Compliance\":{\"Status\":\"NOT_AVAILABLE\",\"StatusReasons\":[{\"Description\":\"This finding has a compliance status of NOT AVAILABLE because AWS Config sent Security Hub a finding with a compliance state of Not Applicable. The potential reasons for a Not Applicable finding from Config are that (1) a resource has been moved out of scope of the Config rule; (2) the Config rule has been deleted; (3) the resource has been deleted; or (4) the logic of the Config rule itself includes scenarios where Not Applicable is returned. The specific reason why Not Applicable is returned is not available in the Config rule evaluation.\",\"ReasonCode\":\"CONFIG_RETURNS_NOT_APPLICABLE\"}]},\"ProductName\":\"Security Hub\",\"FirstObservedAt\":\"2022-06-17T10:25:14.800Z\",\"CreatedAt\":\"2022-06-17T10:25:14.800Z\",\"LastObservedAt\":\"2022-06-17T10:25:18.568Z\",\"CompanyName\":\"AWS\",\"FindingProviderFields\":{\"Types\":[\"Software and Configuration Checks/Industry and Regulatory Standards/AWS-Foundational-Security-Best-Practices\"],\"Severity\":{\"Normalized\":40,\"Label\":\"MEDIUM\",\"Product\":40,\"Original\":\"INFORMATIONAL\"}},\"ProductFields\":{\"StandardsArn\":\"xxx\",\"StandardsSubscriptionArn\":\"xxx\",\"ControlId\":\"EC2.3\",\"RecommendationUrl\":\"https://example.com/\",\"RelatedAWSResources:0/name\":\"xxx\",\"RelatedAWSResources:0/type\":\"AWS::Config::ConfigRule\",\"StandardsControlArn\":\"xxx\",\"aws/securityhub/ProductName\":\"Security Hub\",\"aws/securityhub/CompanyName\":\"AWS\",\"aws/securityhub/annotation\":\"This finding has a compliance status of NOT AVAILABLE because AWS Config sent Security Hub a finding with a compliance state of Not Applicable. The potential reasons for a Not Applicable finding from Config are that (1) a resource has been moved out of scope of the Config rule; (2) the Config rule has been deleted; (3) the resource has been deleted; or (4) the logic of the Config rule itself includes scenarios where Not Applicable is returned. The specific reason why Not Applicable is returned is not available in the Config rule evaluation.\",\"Resources:0/Id\":\"xxx\",\"aws/securityhub/FindingId\":\"xxx\"},\"Remediation\":{\"Recommendation\":{\"Text\":\"For directions on how to fix this issue, consult the AWS Security Hub Foundational Security Best Practices documentation.\",\"Url\":\"https://example.com/\"}},\"SchemaVersion\":\"2018-10-08\",\"GeneratorId\":\"xxx\",\"RecordState\":\"ARCHIVED\",\"Title\":\"EC2.3 Attached EBS volumes should be encrypted at-rest\",\"Workflow\":{\"Status\":\"NEW\"},\"Severity\":{\"Normalized\":40,\"Label\":\"MEDIUM\",\"Product\":40,\"Original\":\"INFORMATIONAL\"},\"UpdatedAt\":\"2022-06-17T10:25:14.800Z\",\"WorkflowState\":\"NEW\",\"AwsAccountId\":\"xxx\",\"Region\":\"us-east-1\",\"Id\":\"xxx\",\"Resources\":[{\"Partition\":\"aws\",\"Type\":\"AwsEc2Volume\",\"Region\":\"us-east-1\",\"Id\":\"xxx\"}]        }",
+        "original": "{\"AwsAccountId\":\"xxx\",\"CompanyName\":\"AWS\",\"Compliance\":{\"Status\":\"NOT_AVAILABLE\",\"StatusReasons\":[{\"Description\":\"This finding has a compliance status of NOT AVAILABLE because AWS Config sent Security Hub a finding with a compliance state of Not Applicable. The potential reasons for a Not Applicable finding from Config are that (1) a resource has been moved out of scope of the Config rule; (2) the Config rule has been deleted; (3) the resource has been deleted; or (4) the logic of the Config rule itself includes scenarios where Not Applicable is returned. The specific reason why Not Applicable is returned is not available in the Config rule evaluation.\",\"ReasonCode\":\"CONFIG_RETURNS_NOT_APPLICABLE\"}]},\"CreatedAt\":\"2022-06-17T10:25:14.800Z\",\"Description\":\"This AWS control checks whether the EBS volumes that are in an attached state are encrypted.\",\"FindingProviderFields\":{\"Severity\":{\"Label\":\"MEDIUM\",\"Normalized\":40,\"Original\":\"INFORMATIONAL\",\"Product\":40},\"Types\":[\"Software and Configuration Checks/Industry and Regulatory Standards/AWS-Foundational-Security-Best-Practices\"]},\"FirstObservedAt\":\"2022-06-17T10:25:14.800Z\",\"GeneratorId\":\"xxx\",\"Id\":\"xxx\",\"LastObservedAt\":\"2022-06-17T10:25:18.568Z\",\"ProductArn\":\"xxx\",\"ProductFields\":{\"ControlId\":\"EC2.3\",\"RecommendationUrl\":\"https://example.com/\",\"RelatedAWSResources:0/name\":\"xxx\",\"RelatedAWSResources:0/type\":\"AWS::Config::ConfigRule\",\"Resources:0/Id\":\"xxx\",\"StandardsArn\":\"xxx\",\"StandardsControlArn\":\"xxx\",\"StandardsSubscriptionArn\":\"xxx\",\"aws/securityhub/CompanyName\":\"AWS\",\"aws/securityhub/FindingId\":\"xxx\",\"aws/securityhub/ProductName\":\"Security Hub\",\"aws/securityhub/annotation\":\"This finding has a compliance status of NOT AVAILABLE because AWS Config sent Security Hub a finding with a compliance state of Not Applicable. The potential reasons for a Not Applicable finding from Config are that (1) a resource has been moved out of scope of the Config rule; (2) the Config rule has been deleted; (3) the resource has been deleted; or (4) the logic of the Config rule itself includes scenarios where Not Applicable is returned. The specific reason why Not Applicable is returned is not available in the Config rule evaluation.\"},\"ProductName\":\"Security Hub\",\"RecordState\":\"ARCHIVED\",\"Region\":\"us-east-1\",\"Remediation\":{\"Recommendation\":{\"Text\":\"For directions on how to fix this issue, consult the AWS Security Hub Foundational Security Best Practices documentation.\",\"Url\":\"https://example.com/\"}},\"Resources\":[{\"Id\":\"xxx\",\"Partition\":\"aws\",\"Region\":\"us-east-1\",\"Type\":\"AwsEc2Volume\"}],\"SchemaVersion\":\"2018-10-08\",\"Severity\":{\"Label\":\"MEDIUM\",\"Normalized\":40,\"Original\":\"INFORMATIONAL\",\"Product\":40},\"Title\":\"EC2.3 Attached EBS volumes should be encrypted at-rest\",\"Types\":[\"Software and Configuration Checks/Industry and Regulatory Standards/AWS-Foundational-Security-Best-Practices\"],\"UpdatedAt\":\"2022-06-17T10:25:14.800Z\",\"Workflow\":{\"Status\":\"NEW\"},\"WorkflowState\":\"NEW\"}",
         "type": [
             "info"
         ]
     },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "name": "AWS"
+    },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "aws_securityhub_findings"
     ]
 }
 ```
@@ -418,6 +446,14 @@ An example event for `securityhub_insights` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-07-05T10:58:17.940Z",
+    "agent": {
+        "ephemeral_id": "e28f3a31-9248-47fe-8584-8c6af48b248e",
+        "id": "ca870b82-a172-4440-aaad-1bdf20705ca5",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.0"
+    },
     "aws": {
         "securityhub_insights": {
             "filters": {
@@ -1127,22 +1163,37 @@ An example event for `securityhub_insights` looks as following:
             "name": "string"
         }
     },
+    "data_stream": {
+        "dataset": "aws.securityhub_insights",
+        "namespace": "ep",
+        "type": "logs"
+    },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
+    },
+    "elastic_agent": {
+        "id": "ca870b82-a172-4440-aaad-1bdf20705ca5",
+        "snapshot": true,
+        "version": "8.4.0"
     },
     "event": {
-        "category": [
-            "iam"
-        ],
+        "agent_id_status": "verified",
+        "created": "2022-07-05T10:58:17.940Z",
+        "dataset": "aws.securityhub_insights",
+        "ingested": "2022-07-05T10:58:21Z",
         "kind": "event",
-        "original": "{\"Filters\":{\"AwsAccountId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"CompanyName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ComplianceStatus\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Confidence\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"CreatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"Criticality\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"Description\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsConfidence\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"FindingProviderFieldsCriticality\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"FindingProviderFieldsRelatedFindingsId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsRelatedFindingsProductArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsSeverityLabel\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsSeverityOriginal\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsTypes\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FirstObservedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"GeneratorId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Id\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Keyword\":[{\"Value\":\"string\"}],\"LastObservedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"MalwareName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"MalwarePath\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"MalwareState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"MalwareType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkDestinationDomain\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkDestinationIpV4\":[{\"Cidr\":\"string\"}],\"NetworkDestinationIpV6\":[{\"Cidr\":\"string\"}],\"NetworkDestinationPort\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"NetworkDirection\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkProtocol\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkSourceDomain\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkSourceIpV4\":[{\"Cidr\":\"string\"}],\"NetworkSourceIpV6\":[{\"Cidr\":\"string\"}],\"NetworkSourceMac\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkSourcePort\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"NoteText\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NoteUpdatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"NoteUpdatedBy\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProcessLaunchedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ProcessName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProcessParentPid\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"ProcessPath\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProcessPid\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"ProcessTerminatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ProductArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProductFields\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"ProductName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RecommendationText\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RecordState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Region\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RelatedFindingsId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RelatedFindingsProductArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceIamInstanceProfileArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceImageId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceIpV4Addresses\":[{\"Cidr\":\"string\"}],\"ResourceAwsEc2InstanceIpV6Addresses\":[{\"Cidr\":\"string\"}],\"ResourceAwsEc2InstanceKeyName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceLaunchedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ResourceAwsEc2InstanceSubnetId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceVpcId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamAccessKeyCreatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ResourceAwsIamAccessKeyPrincipalName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamAccessKeyStatus\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamAccessKeyUserName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamUserUserName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsS3BucketOwnerId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsS3BucketOwnerName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceContainerImageId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceContainerImageName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceContainerLaunchedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ResourceContainerName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceDetailsOther\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"ResourceId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourcePartition\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceRegion\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceTags\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"ResourceType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Sample\":[{\"Value\":true}],\"SeverityLabel\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"SeverityNormalized\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"SeverityProduct\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"SourceUrl\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorCategory\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorLastObservedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ThreatIntelIndicatorSource\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorSourceUrl\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorValue\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Title\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Type\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"UpdatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"UserDefinedFields\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"VerificationState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"WorkflowState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"WorkflowStatus\":[{\"Comparison\":\"string\",\"Value\":\"string\"}]},\"GroupByAttribute\":\"string\",\"InsightArn\":\"string\",\"Name\":\"string\"      }",
+        "original": "{\"Filters\":{\"AwsAccountId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"CompanyName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ComplianceStatus\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Confidence\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"CreatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"Criticality\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"Description\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsConfidence\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"FindingProviderFieldsCriticality\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"FindingProviderFieldsRelatedFindingsId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsRelatedFindingsProductArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsSeverityLabel\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsSeverityOriginal\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsTypes\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FirstObservedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"GeneratorId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Id\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Keyword\":[{\"Value\":\"string\"}],\"LastObservedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"MalwareName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"MalwarePath\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"MalwareState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"MalwareType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkDestinationDomain\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkDestinationIpV4\":[{\"Cidr\":\"string\"}],\"NetworkDestinationIpV6\":[{\"Cidr\":\"string\"}],\"NetworkDestinationPort\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"NetworkDirection\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkProtocol\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkSourceDomain\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkSourceIpV4\":[{\"Cidr\":\"string\"}],\"NetworkSourceIpV6\":[{\"Cidr\":\"string\"}],\"NetworkSourceMac\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkSourcePort\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"NoteText\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NoteUpdatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"NoteUpdatedBy\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProcessLaunchedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ProcessName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProcessParentPid\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"ProcessPath\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProcessPid\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"ProcessTerminatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ProductArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProductFields\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"ProductName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RecommendationText\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RecordState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Region\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RelatedFindingsId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RelatedFindingsProductArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceIamInstanceProfileArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceImageId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceIpV4Addresses\":[{\"Cidr\":\"string\"}],\"ResourceAwsEc2InstanceIpV6Addresses\":[{\"Cidr\":\"string\"}],\"ResourceAwsEc2InstanceKeyName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceLaunchedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ResourceAwsEc2InstanceSubnetId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceVpcId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamAccessKeyCreatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ResourceAwsIamAccessKeyPrincipalName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamAccessKeyStatus\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamAccessKeyUserName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamUserUserName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsS3BucketOwnerId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsS3BucketOwnerName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceContainerImageId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceContainerImageName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceContainerLaunchedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ResourceContainerName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceDetailsOther\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"ResourceId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourcePartition\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceRegion\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceTags\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"ResourceType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Sample\":[{\"Value\":true}],\"SeverityLabel\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"SeverityNormalized\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"SeverityProduct\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"SourceUrl\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorCategory\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorLastObservedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ThreatIntelIndicatorSource\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorSourceUrl\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorValue\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Title\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Type\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"UpdatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"UserDefinedFields\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"VerificationState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"WorkflowState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"WorkflowStatus\":[{\"Comparison\":\"string\",\"Value\":\"string\"}]},\"GroupByAttribute\":\"string\",\"InsightArn\":\"string\",\"Name\":\"string\"}",
         "type": [
             "info"
         ]
     },
+    "input": {
+        "type": "httpjson"
+    },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields"
+        "forwarded",
+        "aws_securityhub_insights"
     ]
 }
 ```
