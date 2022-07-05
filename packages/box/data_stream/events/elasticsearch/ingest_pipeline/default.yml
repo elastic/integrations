@@ -4,6 +4,66 @@ processors:
   - set:
       field: ecs.version
       value: "8.0.0"
+  - decode_json_fields:
+      fields: message
+      target: box
+      add_error_key: true
+  - timestamp:
+      field: box.created_at
+      layouts:
+        - '2006-01-02T15:04:05-07:00'
+      test:
+        - '2006-01-02T15:04:05-07:00'
+  - rename:
+      when:
+        not:
+          equals:
+            box.source.type: "folder"
+      fields:
+        - from: box.source.name
+          to: file.name
+      ignore_missing: true
+      fail_on_error: false
+  - rename:
+      when:
+        equals:
+          box.source.type: "folder"
+      fields:
+        - from: box.source.name
+          to: file.directory
+      ignore_missing: true
+      fail_on_error: false
+  - rename:
+      fields:
+        - from: box.created_by.id
+          to: client.user.id
+        - from: box.created_by.name
+          to: client.user.full_name
+        - from: box.created_by.login
+          to: client.user.email
+        - from: box.type
+          to: event.kind
+        - from: box.created_by.type
+          to: event.type
+        - from: box.event_type
+          to: event.action
+        - from: box.source.sequence_id
+          to: event.sequence
+        - from: box.source.type
+          to: file.type
+        - from: box.source.created_at
+          to: file.created
+        - from: box.source.modified_at
+          to: file.mtime
+        - from: box.source.size
+          to: file.size
+        - from: box.source.file_version.sha1
+          to: file.hash.sha1
+      ignore_missing: true
+      fail_on_error: false
+  - drop_fields:
+      fields: ["box.created_at"]
+      ignore_missing: true
 on_failure:
   - set:
       field: error.message
