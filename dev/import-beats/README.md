@@ -1,5 +1,16 @@
 # import-beats
 
+## Deprecated
+
+The `import-beats` script was intended to help with initial migration from Beats modules to Elastic Integrations. A developer
+working on migrating Beats modules used it once to flush the initial skeleton of an integration. Unfortunately,
+the script is not actively maintained and we (@ecosystem team) would rather deprecate it to prevent its accidental future
+adoption in developer workflows (_You shouldn't adopt it for continuous module-integration transformation._).
+
+Please let us know if you're willing to maintain, refactor the script. Otherwise, we'll remove it.
+
+## About
+
 The script is responsible for importing existing beats modules and transforming
 them into integration packages compatible with Elastic Package Registry (EPR).
 
