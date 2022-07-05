@@ -1,6 +1,6 @@
 # Jamf Compliance Reporter
 
-The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documentation/Compliance_Reporter_Overview.html) Integration collects and parses data received from Jamf Compliance Reporter using TLS or HTTP Endpoint.  
+The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documentation/Compliance_Reporter_Overview.html) Integration collects and parses data received from Jamf Compliance Reporter using a TLS or HTTP endpoint.
 
 ## Requirements
 - Enable the Integration with the TLS or HTTP Endpoint input.
@@ -44,7 +44,7 @@ This package has been tested for Compliance Reporter against Jamf pro version 10
 
 ### log
 
-- Default port for HTTP Endpoint: _9551_  
+- Default port for HTTP Endpoint: _9551_
 - Default port for TLS: _9552_
 
 This is the `log` data stream.
@@ -55,9 +55,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-10-02T16:17:08.000Z",
     "agent": {
-        "ephemeral_id": "6149e281-aed5-4797-84b9-34e1a9845e72",
+        "ephemeral_id": "248e5163-7fd7-4ec4-b24f-4fecc38a54e8",
         "hostname": "docker-fleet-agent",
-        "id": "db746ba5-8718-4fd3-abec-6e629eb71821",
+        "id": "985a5119-d47f-4fe6-82fb-657252e78af0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -71,7 +71,7 @@ An example event for `log` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "db746ba5-8718-4fd3-abec-6e629eb71821",
+        "id": "985a5119-d47f-4fe6-82fb-657252e78af0",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -82,7 +82,7 @@ An example event for `log` looks as following:
             "process"
         ],
         "dataset": "jamf_compliance_reporter.log",
-        "ingested": "2022-06-14T06:30:18Z",
+        "ingested": "2022-07-05T06:48:27Z",
         "kind": "event",
         "type": [
             "info"
@@ -166,7 +166,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.27.0.1:60440"
+            "address": "172.27.0.5:39166"
         }
     },
     "related": {

@@ -28,13 +28,13 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      if: ctx.json?.header?.time_seconds_epoch != null
+      if: ctx.json?.header?.time_seconds_epoch != 0
       source: |
         ctx.json.time_milliseconds = (long)ctx.json?.header?.time_seconds_epoch * 1000 + (long)ctx.json?.header?.time_milliseconds_offset;
-  - date: 
+  - date:
       field: json.time_milliseconds
       ignore_failure: true
-      formats: 
+      formats:
         - UNIX_MS
   - convert:
       field: json.header.version
@@ -89,11 +89,11 @@ processors:
   - set:
       field: event.outcome
       value: 'success'
-      if: ctx.error?.code == '0' 
+      if: ctx.error?.code == '0'
   - set:
       field: event.outcome
       value: 'failure'
-      if: ctx.error?.code != '0'  
+      if: ctx.error?.code != '0'
   - convert:
       field: json.return.return_value
       target_field: process.exit_code

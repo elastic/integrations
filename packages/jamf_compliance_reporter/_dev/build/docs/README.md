@@ -1,6 +1,6 @@
 # Jamf Compliance Reporter
 
-The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documentation/Compliance_Reporter_Overview.html) Integration collects and parses data received from Jamf Compliance Reporter using TLS or HTTP Endpoint.  
+The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documentation/Compliance_Reporter_Overview.html) Integration collects and parses data received from Jamf Compliance Reporter using a TLS or HTTP endpoint.
 
 ## Requirements
 - Enable the Integration with the TLS or HTTP Endpoint input.
@@ -44,7 +44,7 @@ This package has been tested for Compliance Reporter against Jamf pro version 10
 
 ### log
 
-- Default port for HTTP Endpoint: _9551_  
+- Default port for HTTP Endpoint: _9551_
 - Default port for TLS: _9552_
 
 This is the `log` data stream.
