@@ -3,63 +3,98 @@ description: Pipeline for parsing Box Events
 processors:
   - set:
       field: ecs.version
-      value: "8.0.0"
-  - timestamp:
-      field: box.created_at
-      layouts:
-        - '2006-01-02T15:04:05-07:00'
-      test:
-        - '2006-01-02T15:04:05-07:00'
+      value: "8.3.0"
   - rename:
-      when:
-        not:
-          equals:
-            box.source.type: "folder"
-      fields:
-        - from: box.source.name
-          to: file.name
+      field: message
+      target_field: event.original
       ignore_missing: true
-      fail_on_error: false
+  - json:
+      field: event.original
+      target_field: json
+  - date:
+      field: json.box.created_at
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd'T'HH:mm:ss-Z
   - rename:
-      when:
-        equals:
-          box.source.type: "folder"
-      fields:
-        - from: box.source.name
-          to: file.directory
+      field: json.box.created_by.id
+      target_field: client.user.id
       ignore_missing: true
-      fail_on_error: false
   - rename:
-      fields:
-        - from: box.created_by.id
-          to: client.user.id
-        - from: box.created_by.name
-          to: client.user.full_name
-        - from: box.created_by.login
-          to: client.user.email
-        - from: box.type
-          to: event.kind
-        - from: box.created_by.type
-          to: event.type
-        - from: box.event_type
-          to: event.action
-        - from: box.source.sequence_id
-          to: event.sequence
-        - from: box.source.type
-          to: file.type
-        - from: box.source.created_at
-          to: file.created
-        - from: box.source.modified_at
-          to: file.mtime
-        - from: box.source.size
-          to: file.size
-        - from: box.source.file_version.sha1
-          to: file.hash.sha1
+      field: json.box.created_by.name
+      target_field: client.user.full_name
       ignore_missing: true
-      fail_on_error: false
-  - drop_fields:
-      fields: ["box.created_at"]
+  - rename:
+      field: json.box.created_by.login
+      target_field: client.user.email
       ignore_missing: true
+  - rename:
+      field: json.box.type
+      target_field: event.kind
+      ignore_missing: true
+  - rename:
+      field: json.box.created_by.type
+      target_field: event.type
+      ignore_missing: true
+  - rename:
+      field: json.box.event_type
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.box.source.sequence_id
+      target_field: event.sequence
+      ignore_missing: true
+  - rename:
+      field: json.box.source.type
+      target_field: file.type
+      ignore_missing: true
+  - rename:
+      if: ctx?.file?.type != "folder"
+      field: json.box.source.name
+      target_field: file.name
+      ignore_missing: true
+  - rename:
+      if: ctx?.file?.type == "folder"
+      field: json.box.source.name
+      target_field: file.directory
+      ignore_missing: true
+  - rename:
+      field: json.box.source.created_at
+      target_field: file.created
+      ignore_missing: true
+  - rename:
+      field: json.box.source.modified_at
+      target_field: file.mtime
+      ignore_missing: true
+  - rename:
+      field: json.box.source.size
+      target_field: file.size
+      ignore_missing: true
+  - rename:
+      field: json.box.source.file_version.sha1
+      target_field: file.hash.sha1
+      ignore_missing: true
+  - remove:
+      field: json.box.created_at
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
 on_failure:
   - set:
       field: error.message
