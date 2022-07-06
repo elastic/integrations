@@ -657,26 +657,72 @@ An example event for `shovel` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
-    "event": {
+    "@timestamp": "2022-07-06T13:26:02.127Z",
+    "agent": {
+        "ephemeral_id": "41e940db-a44b-4d40-bf6a-5b3478b9f662",
+        "id": "defc4130-3f11-42dd-977f-6dfc206e6062",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.4.0"
+    },
+    "data_stream": {
         "dataset": "rabbitmq.shovel",
-        "duration": 115000,
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "defc4130-3f11-42dd-977f-6dfc206e6062",
+        "snapshot": true,
+        "version": "8.4.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "rabbitmq.shovel",
+        "duration": 26034458,
+        "ingested": "2022-07-06T13:26:03Z",
         "module": "rabbitmq"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
         "name": "shovel",
         "period": 10000
     },
     "rabbitmq": {
+        "node": {
+            "name": "rabbit@2b8ba9809218"
+        },
         "shovel": {
-            "name": "testshovel",
+            "name": "my-shovel",
             "state": "running",
             "type": "dynamic"
         },
         "vhost": "/"
     },
     "service": {
-        "address": "127.0.0.1:60847",
+        "address": "http://elastic-package-service_rabbitmq_1:15672",
         "type": "rabbitmq"
     }
 }
@@ -723,6 +769,7 @@ An example event for `shovel` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| rabbitmq.node.name | Node name | keyword |
 | rabbitmq.shovel.name | The name of the shovel with non-ASCII characters escaped as in C. | keyword |
 | rabbitmq.shovel.state | The state of the shovel. Normally 'running', but could be 'starting' or 'terminated'. | keyword |
 | rabbitmq.shovel.type | The type of the shovel. Either 'static' or 'dynamic'. | keyword |
