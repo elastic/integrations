@@ -16,7 +16,7 @@ The AWS CloudWatch integration collects two types of data streams: logs and metr
 The log data stream includes the CloudWatch log message along with contextual information. See more details in the [Logs](#logs-reference).
 
 **Metrics** give you insight into the state of AWS CloudWatch.
-Metric data streams collected by the AWS CloudWatch integration include The cloud account name or alias used to identify different entities in a multi-tenant environment and more. See more details in the [Metrics](#metrics-reference).
+The metric data stream includes the metrics that are returned from a CloudWatch API query along with contextual information. See more details in the [Metrics](#metrics-reference).
 
 ## Requirements
 
