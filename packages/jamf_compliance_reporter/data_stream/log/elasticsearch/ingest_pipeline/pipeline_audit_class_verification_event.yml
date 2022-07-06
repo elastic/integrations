@@ -1,0 +1,25 @@
+---
+description: Pipeline for Jamf Compliance Reporter audit class verification event logs.
+processors:
+  - rename:
+      field: json.audit_class_verification_info.contents
+      target_field: jamf_compliance_reporter.log.audit_class_verification_info.contents
+      ignore_missing: true
+  - rename:
+      field: json.audit_class_verification_info.osversion
+      target_field: jamf_compliance_reporter.log.audit_class_verification_info.os.version
+      ignore_missing: true
+  - convert:
+      field: json.audit_class_verification_info.restored_default
+      target_field: jamf_compliance_reporter.log.audit_class_verification_info.restored_default
+      type: boolean
+      ignore_failure: true
+  - convert:
+      field: json.audit_class_verification_info.status
+      target_field: jamf_compliance_reporter.log.audit_class_verification_info.status
+      type: string
+      ignore_failure: true
+  - rename:
+      field: json.audit_class_verification_info.status_str
+      target_field: jamf_compliance_reporter.log.audit_class_verification_info.status_str
+      ignore_missing: true

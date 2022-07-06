@@ -1,0 +1,12 @@
+---
+description: Pipeline for Jamf Compliance Reporter aue_listen audit logs.
+processors:
+  - convert:
+      field: json.arguments.fd
+      target_field: jamf_compliance_reporter.log.arguments.fd
+      type: string
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
