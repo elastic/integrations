@@ -105,11 +105,12 @@ pipeline {
                               sh(label: 'Configure Git user.email', script: 'git config --global user.email "elasticmachine@users.noreply.github.com"')
                               sh(label: "Publish integration: ${it}", script: '../../build/elastic-package publish -v --fork=false')
                             }
+                          }
 
                             // Publish package to the Package Storage v2
                             sh(label: "Build integration as zip: ${it}", script: '../../build/elastic-package build -v --zip')
                             packageStoragePublish('../../build/packages')
-                          }
+
                         }
                       } finally {
                         dir("${BASE_DIR}") {
