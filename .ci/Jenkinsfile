@@ -110,7 +110,7 @@ pipeline {
 
                             // Publish package to the Package Storage v2
                             sh(label: "Build integration as zip: ${it}", script: '../../build/elastic-package build -v --zip')
-                            packageStoragePublish('../../build/packages')
+                            packageStoragePublish(it, '../../build/packages')
 
                         }
                       } finally {
@@ -307,12 +307,12 @@ def archiveArtifactsSafe(remotePath, artifacts) {
     pattern: artifacts)
 }
 
-def packageStoragePublish(builtPackagesPath) {
-  signUnpublishedArtifactsWithElastic(builtPackagesPath)
+def packageStoragePublish(jobName, builtPackagesPath) {
+  signUnpublishedArtifactsWithElastic(jobName, builtPackagesPath)
   uploadUnpublishedToPackageStorage(builtPackagesPath)
 }
 
-def signUnpublishedArtifactsWithElastic(builtPackagesPath) {
+def signUnpublishedArtifactsWithElastic(jobName, builtPackagesPath) {
   def unpublished = false
   dir(builtPackagesPath) {
     findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
@@ -322,7 +322,7 @@ def signUnpublishedArtifactsWithElastic(builtPackagesPath) {
       }
 
       unpublished = true
-      googleStorageUpload(bucket: env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH,
+      googleStorageUpload(bucket: "${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/${jobName}",
         credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
         pattern: '*.zip',
         sharedPublicly: false,
@@ -338,11 +338,11 @@ def signUnpublishedArtifactsWithElastic(builtPackagesPath) {
     triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
       job: 'https://internal-ci.elastic.co/job/elastic+unified-release+master+sign-artifacts-with-gpg',
       token: TOKEN,
-      parameters: "gcs_input_path=${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
+      parameters: "gcs_input_path=${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/${jobName}",
       useCrumbCache: false,
       useJobInfoCache: false)
   }
-  googleStorageDownload(bucketUri: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*",
+  googleStorageDownload(bucketUri: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/${jobName}/*",
     credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
     localDirectory: builtPackagesPath + '/',
     pathPrefix: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER}")
@@ -382,5 +382,6 @@ def isAlreadyPublished(packageZip) {
   def responseCode = httpRequest(method: "HEAD",
     url: "https://package-storage.elastic.co/artifacts/packages/${packageZip}",
     response_code_only: true)
+  echo "EPR HTTP status code for ${packageZip}: ${responseCode}"
   return responseCode == 200
 }
