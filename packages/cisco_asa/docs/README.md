@@ -141,6 +141,7 @@ An example event for `log` looks as following:
 | cisco.asa.connection_type | The VPN connection type | keyword |
 | cisco.asa.dap_records | The assigned DAP records | keyword |
 | cisco.asa.destination_interface | Destination interface for the flow or event. | keyword |
+| cisco.asa.destination_user_security_group_tag | The Security Group Tag for the destination user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
 | cisco.asa.destination_username | Name of the user that is the destination for this event. | keyword |
 | cisco.asa.icmp_code | ICMP code. | short |
 | cisco.asa.icmp_type | ICMP type. | short |
@@ -158,6 +159,7 @@ An example event for `log` looks as following:
 | cisco.asa.security | Cisco FTD security event fields. | flattened |
 | cisco.asa.session_type | Session type (for example, IPsec or UDP). | keyword |
 | cisco.asa.source_interface | Source interface for the flow or event. | keyword |
+| cisco.asa.source_user_security_group_tag | The Security Group Tag for the source user. Security Group Tag are 16-bit identifiers used to represent logical group privilege. | long |
 | cisco.asa.source_username | Name of the user that is the source for this event. | keyword |
 | cisco.asa.suffix | Optional suffix after %ASA identifier. | keyword |
 | cisco.asa.termination_initiator | Interface name of the side that initiated the teardown | keyword |
@@ -308,8 +310,6 @@ An example event for `log` looks as following:
 | source.user.group.name | Name of the group. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
 | source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
-| syslog.facility.code | Syslog numeric facility of the event. | long |
-| syslog.priority | Syslog priority of the event. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
