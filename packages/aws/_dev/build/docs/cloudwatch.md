@@ -6,7 +6,7 @@ The AWS CloudWatch integration allows you to monitor [AWS CloudWatch](https://aw
 
 Use the AWS CloudWatch integration to collect metrics and logs on the operational health of your AWS resources, applications, and services running on AWS and on-premises. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs and metrics when troubleshooting an issue.
 
-For example, you could use the data from this integration to detect anomalous behavior in your environments. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs and metrics, such as the the source of the behavior, and more.
+For example, you could use the data from this integration to detect anomalous behavior in your environments. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs and metrics, such as the source of the behavior, and more.
 
 ## Data streams
 
