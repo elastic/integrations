@@ -1,22 +1,20 @@
 # AWS CloudWatch
 
-## Overview
+The AWS CloudWatch integration allows you to monitor [AWS CloudWatch](https://aws.amazon.com/cloudwatch/). AWS CloudWatch is a service that provides data and insights for monitoring applications, and changes to system performance. It can also be used for optimizing the use of resources.
 
-The AWS CloudWatch integration allows you to monitor [AWS CloudWatch](https://aws.amazon.com/cloudwatch/). AWS CloudWatch is a monitoring and observability service built for DevOps engineers, developers, site reliability engineers (SREs), IT managers, and product owners. CloudWatch provides you with data and actionable insights to monitor your applications, respond to system-wide performance changes, and optimize resource utilization.
+Use the AWS CloudWatch integration to collect metrics and logs on the operational health of your AWS resources, applications, and services running on AWS and on-premises. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs and metrics when troubleshooting an issue.
 
-Use the AWS CloudWatch integration to Use the AWS Cloudwatch to collect metrics and logs on the operational health of your AWS resources, applications, and services running on AWS and on-premises. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs and metrics when troubleshooting an issue.
-
-For example, you could use the data from this integration to detect anomalous behavior in your environments. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs and metrics, such as the the source of the behavior, and more.
+For example, you could use the data from this integration to detect anomalous behavior in your environments. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs and metrics, such as the source of the behavior, and more.
 
 ## Data streams
 
 The AWS CloudWatch integration collects two types of data streams: logs and metrics.
 
 **Logs** help you keep a record of events happening in AWS CloudWatch.
-Log data streams collected by the AWS CloudWatch integration include The cloud account or organization id used to identify different entities in a multi-tenant environment and more. See more details in the [Logs](#logs-reference).
+The log data stream includes the CloudWatch log message along with contextual information. See more details in the [Logs](#logs-reference).
 
 **Metrics** give you insight into the state of AWS CloudWatch.
-Metric data streams collected by the AWS CloudWatch integration include The cloud account name or alias used to identify different entities in a multi-tenant environment and more. See more details in the [Metrics](#metrics-reference).
+The metric data stream includes the metrics that are returned from a CloudWatch API query along with contextual information. See more details in the [Metrics](#metrics-reference).
 
 ## Requirements
 
@@ -42,7 +40,7 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs reference
 
-The `cloudwatch` dataset collects CloudWatch logs. Users can use Amazon 
+The `cloudwatch` data stream collects CloudWatch logs. Users can use Amazon 
 CloudWatch logs to monitor, store, and access log files from different sources. 
 Export logs from log groups to an Amazon S3 bucket which has SQS notification 
 setup already.
