@@ -1,0 +1,39 @@
+---
+description: Pipeline for Jamf Compliance Reporter license info event logs.
+processors:
+  - rename:
+      field: json.ComplianceReporter_license_info.email
+      target_field: user.email
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
+  - date:
+      field: json.ComplianceReporter_license_info.expiration_date
+      target_field: jamf_compliance_reporter.log.compliancereporter_license_info.expiration_date
+      if: ctx.json?.compliancereporter_license_info?.expiration_date != 0
+      ignore_failure: true
+      formats:
+        - dd/MM/yyyy
+  - rename:
+      field: json.ComplianceReporter_license_info.status
+      target_field: jamf_compliance_reporter.log.compliancereporter_license_info.status
+      ignore_missing: true
+  - date:
+      field: json.ComplianceReporter_license_info.time_seconds_epoch
+      target_field: jamf_compliance_reporter.log.compliancereporter_license_info.time
+      if: ctx.json?.compliancereporter_license_info?.time_seconds_epoch != '0'
+      ignore_failure: true
+      formats:
+        - UNIX
+  - rename:
+      field: json.ComplianceReporter_license_info.type
+      target_field: jamf_compliance_reporter.log.compliancereporter_license_info.type
+      ignore_missing: true
+  - rename:
+      field: json.ComplianceReporter_license_info.version
+      target_field: jamf_compliance_reporter.log.compliancereporter_license_info.version
+      ignore_missing: true
