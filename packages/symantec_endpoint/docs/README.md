@@ -140,7 +140,7 @@ See vendor documentation: [External Logging settings and log event severity leve
 | destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | destination.as.organization.name | Organization name. | keyword |
 | destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -204,8 +204,8 @@ See vendor documentation: [External Logging settings and log event severity leve
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
-| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. See the documentation section "Implementing ECS". | keyword |
+| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.type | The type of the observer the data is coming from. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
@@ -225,7 +225,7 @@ See vendor documentation: [External Logging settings and log event severity leve
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -353,120 +353,105 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "process": {
-        "executable": "C:/WINDOWS/system32/NTOSKRNL.EXE",
-        "hash": {
-            "sha256": "5379732000000000000000000000000000000000000000000000000000000000",
-            "md5": "53797320000000000000000000000000"
-        }
+    "@timestamp": "2018-02-16T08:01:33.000Z",
+    "agent": {
+        "ephemeral_id": "360bd055-47f7-487a-b357-e372825d65dd",
+        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.2.2"
     },
-    "log": {
-        "syslog": {
-            "process": {
-                "name": "myproc",
-                "pid": 8710
-            },
-            "hostname": "192.0.2.1",
-            "priority": 165,
-            "version": 1
-        }
+    "data_stream": {
+        "dataset": "symantec_endpoint.log",
+        "namespace": "ep",
+        "type": "logs"
     },
-    "destination": {
-        "geo": {
-            "name": "Default"
-        },
-        "address": "192.168.1.113",
-        "port": 80,
-        "mac": "CC-F9-E4-A9-12-26",
-        "ip": "192.168.1.113"
-    },
-    "rule": {
-        "name": "Block Unapproved Incoming Ports"
-    },
-    "source": {
-        "address": "192.168.1.1",
-        "port": 33424,
-        "mac": "2C-3A-FD-A7-9E-71",
-        "ip": "192.168.1.1"
-    },
-    "tags": [
-        "forwarded",
-        "preserve_original_event"
-    ],
-    "network": {
-        "community_id": "1:TbyoH4bYJO0/cP/YShIpq9J+Z3s=",
-        "transport": "tcp",
-        "type": "ipv4",
-        "direction": "ingress"
-    },
-    "@timestamp": "2021-11-16T12:14:15.000Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.3.0"
     },
-    "related": {
-        "hash": [
-            "53797320000000000000000000000000",
-            "5379732000000000000000000000000000000000000000000000000000000000"
-        ],
-        "ip": [
-            "192.168.1.113",
-            "192.168.1.1"
-        ]
+    "elastic_agent": {
+        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
+        "snapshot": false,
+        "version": "8.2.2"
+    },
+    "event": {
+        "action": "Left alone",
+        "agent_id_status": "verified",
+        "count": 1,
+        "dataset": "symantec_endpoint.log",
+        "end": "2018-02-16T08:01:33.000Z",
+        "ingested": "2022-06-27T23:54:21Z",
+        "kind": "event",
+        "original": "Potential risk found,Computer name: exampleComputer,Detection type: Heuristic,First Seen: Symantec has known about this file approximately 2 days.,Application name: Propsim,Application type: 127,\"Application version: \"\"3\",0,6,\"0\"\"\",Hash type: SHA-256,Application hash: SHA#1234567890,Company name: Dummy Technologies,File size (bytes): 343040,Sensitivity: 2,Detection score: 3,COH Engine Version: 8.1.1.1,Detection Submissions No,Permitted application reason: MDS,Disposition: Bad,Download site: ,Web domain: ,Downloaded by: c:/programdata/oracle/java/javapath_target_2151967445/Host126,Prevalence: Unknown,Confidence: There is not enough information about this file to recommend it.,URL Tracking Status: Off,Risk Level: High,Detection Source: N/A,Source: Heuristic Scan,Risk name: ,Occurrences: 1,f:\\user\\workspace\\baseline package creator\\release\\Host214,'',Actual action: Left alone,Requested action: Left alone,Secondary action: Left alone,Event time: 2018-02-16 08:01:33,Inserted: 2018-02-16 08:02:52,End: 2018-02-16 08:01:33,Domain: Default,Group: My Company\\SEPM Group Name,Server: SEPMServer,User: exampleUser,Source computer: ,Source IP:"
+    },
+    "file": {
+        "pe": {
+            "company": "Dummy Technologies",
+            "file_version": "\"3",
+            "product": "Propsim"
+        },
+        "size": 343040
     },
     "host": {
-        "name": "host-rfc5424",
-        "hostname": "host-rfc5424",
-        "mac": [
-            "CC-F9-E4-A9-12-26"
-        ],
-        "ip": [
-            "192.168.1.113"
-        ]
+        "hostname": "exampleComputer",
+        "name": "exampleComputer"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "source": {
+            "address": "172.19.0.4:51285"
+        }
+    },
+    "process": {
+        "executable": "c:/programdata/oracle/java/javapath_target_2151967445/Host126"
     },
     "symantec_endpoint": {
         "log": {
-            "occurrences": "4",
-            "sha-256": "5379732000000000000000000000000000000000000000000000000000000000",
-            "local_port": "80",
-            "user_name": "sampleuser4",
-            "remote_port": "33424",
-            "rule": "Block Unapproved Incoming Ports",
-            "md-5": "53797320000000000000000000000000",
-            "network_protocol": "TCP",
-            "traffic_direction": "Inbound",
-            "remote_host_ip": "192.168.1.1",
-            "remote_host_mac": "2C3AFDA79E71",
-            "domain_name": "SMPL",
-            "application": "C:/WINDOWS/system32/NTOSKRNL.EXE",
-            "local_host_ip": "192.168.1.113",
-            "action": "blocked",
-            "end": "2020-11-11 19:25:28",
-            "location": "Default",
-            "local_host_mac": "CCF9E4A91226",
-            "begin": "2020-11-11 19:25:21"
+            "actual_action": "Left alone",
+            "application_hash": "SHA#1234567890",
+            "application_name": "Propsim",
+            "application_type": "127",
+            "application_version": "\"3",
+            "coh_engine_version": "8.1.1.1",
+            "company_name": "Dummy Technologies",
+            "computer_name": "exampleComputer",
+            "confidence": "There is not enough information about this file to recommend it.",
+            "detection_score": "3",
+            "detection_source": "N/A",
+            "detection_type": "Heuristic",
+            "disposition": "Bad",
+            "domain_name": "Default",
+            "downloaded_by": "c:/programdata/oracle/java/javapath_target_2151967445/Host126",
+            "end": "2018-02-16 08:01:33",
+            "event_time": "2018-02-16T08:01:33.000Z",
+            "file_size_bytes": "343040",
+            "first_seen": "Symantec has known about this file approximately 2 days.",
+            "group": "My Company\\SEPM Group Name",
+            "hash_type": "SHA-256",
+            "inserted": "2018-02-16T08:02:52.000Z",
+            "occurrences": "1",
+            "permitted_application_reason": "MDS",
+            "prevalence": "Unknown",
+            "requested_action": "Left alone",
+            "risk_level": "High",
+            "secondary_action": "Left alone",
+            "sensitivity": 2,
+            "server": "SEPMServer",
+            "source": "Heuristic Scan",
+            "url_tracking_status": "Off",
+            "user_name": "exampleUser"
         }
     },
-    "event": {
-        "original": "\u003c165\u003e1 2021-11-16T05:14:15.000003-07:00 192.0.2.1 myproc 8710 - - host-rfc5424,Local Host IP: 192.168.1.113,Local Port: 80,Local Host MAC: CCF9E4A91226,Remote Host IP: 192.168.1.1,Remote Host Name: ,Remote Port: 33424,Remote Host MAC: 2C3AFDA79E71,TCP,Inbound,Begin: 2020-11-11 19:25:21,End Time: 2020-11-11 19:25:28,Occurrences: 4,Application: C:/WINDOWS/system32/NTOSKRNL.EXE,Rule: Block Unapproved Incoming Ports,Location: Default,User Name: sampleuser4,Domain Name: SMPL,Action: Blocked,SHA-256: 5379732000000000000000000000000000000000000000000000000000000000,MD-5: 53797320000000000000000000000000",
-        "provider": "Agent Traffic Log",
-        "kind": "event",
-        "start": "2020-11-11T19:25:21.000Z",
-        "count": 4,
-        "action": "blocked",
-        "end": "2020-11-11T19:25:28.000Z",
-        "category": [
-            "intrusion_detection",
-            "network",
-            "process"
-        ],
-        "type": [
-            "connection",
-            "denied"
-        ]
-    },
+    "tags": [
+        "preserve_original_event",
+        "symantec-endpoint-log",
+        "forwarded"
+    ],
     "user": {
-        "name": "sampleuser4",
-        "domain": "SMPL"
+        "domain": "Default",
+        "name": "exampleUser"
     }
 }
 ```
