@@ -433,7 +433,7 @@ Replace `127.0.0.1` with your server’s IP address and make sure that this page
 
 #### Tested versions
 
-The Nginx `stubstatus` stream was tested with Nginx 1.19.5 and is expected to work with all versions >= 1.9.
+The Nginx `stubstatus` stream was tested with Nginx 1.19.5 and is expected to work with all versions >= 1.19.
 
 An example event for `stubstatus` looks as following:
 
