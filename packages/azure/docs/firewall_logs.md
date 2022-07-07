@@ -113,7 +113,7 @@ An example event for `firewall` looks as following:
         "ip": "89.160.20.156"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "event": {
         "category": [
