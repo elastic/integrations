@@ -34,7 +34,8 @@ When you configure the AWS integration, you can collect data from as many AWS se
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-## Metrics reference 
+## Metrics reference
+ 
 The `ebs` data stream collects EBS metrics from AWS.
 An example event for `ebs` looks as following:
 
