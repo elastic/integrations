@@ -1,6 +1,6 @@
 # Amazon EC2
 
-The Amazon EC2 integration allows you to monitor [Amazon Elastic Compute Cloud (Amazon EC2)](https://aws.amazon.com/ec2/). Amazon EC2 is a web service that enables users to rent virtual computers ("instances") on which to run their own computer applications. 
+The Amazon EC2 integration allows you to monitor [Amazon Elastic Compute Cloud (Amazon EC2)](https://aws.amazon.com/ec2/). Amazon EC2 is a web service that allows you to use virtual computers, or "instances", operated by AWS to perform computing for your own applications.
 
 Use the Amazon EC2 integration to collect logs and metrics related to your instances hosted on Amazon EC2. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the logs and metrics when troubleshooting an issue.
 
