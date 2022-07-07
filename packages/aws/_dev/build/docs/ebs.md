@@ -1,5 +1,4 @@
 # Amazon EBS
-## Overview 
 The Amazon EBS integration allows you to monitor [Amazon Elastic Block Store (EBS)](https://aws.amazon.com/ebs/). Amazon EBS is a block-storage service designed for Amazon Elastic Compute Cloud (Amazon EC2).
 Use the Amazon EBS integration to collect metrics related to your Amazon EBS storage.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
