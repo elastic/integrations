@@ -27,6 +27,7 @@ Before using any AWS integration you will need:
  * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
 For more details about these requirements, see the **AWS** integration documentation.
+
 ## Setup
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
