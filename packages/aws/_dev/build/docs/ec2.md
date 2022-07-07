@@ -15,6 +15,7 @@ Log data streams collected by the Amazon EC2 integration include the region in w
 
 **Metrics** give you insight into the state of Amazon EC2 and its instances.
 Metric data streams collected by the Amazon EC2 integration include the Amazon EC2 instance ID, the number of earned CPU credits that an instance has accrued since it was launched or started, and more. See more details in the [Metrics reference](#metrics-reference).
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
