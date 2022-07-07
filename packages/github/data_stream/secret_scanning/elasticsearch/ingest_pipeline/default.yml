@@ -16,7 +16,8 @@ processors:
     target_field: github.secret_scanning
 - fingerprint:
     fields: 
-        - github.secret_scanning._document_id
+        - github.secret_scanning.number
+        - github.secret_scanning.updated_at
     target_field: "_id"
     ignore_missing: true
 - date:
@@ -32,6 +33,14 @@ processors:
     - ISO8601
     timezone: UTC
     target_field: "github.secret_scanning.updated_at"
+    if: ctx.github.secret_scanning?.updated_at != null
+- set:
+    field: "@timestamp"
+    copy_from: github.secret_scanning.created_at
+    if: ctx.github.secret_scanning?.created_at != null
+- set:
+    field: "@timestamp"
+    copy_from: github.secret_scanning.updated_at
     if: ctx.github.secret_scanning?.updated_at != null
 - date:
     field: github.secret_scanning.resolved_at
@@ -133,6 +142,23 @@ processors:
     field: _temp.push_protection_bypassed_by.site_admin
     target_field: github.secret_scanning.push_protection_bypassed_by.site_admin
     ignore_missing: true
+- script:
+    lang: painless
+    description: Mask the secret if hide_secret is true
+    if: ctx.tags != null && ctx.tags.contains('hide_secret') && ctx.github?.secret_scanning?.secret != null
+    source: |
+        def secret = ctx.github.secret_scanning.secret.toString();
+        def masked_secret = secret;
+        int num_start = 2;
+        int num_end = 2;
+        def masked_value = String.join("", Collections.nCopies(secret.length()-(num_start+num_end), "X"));
+        def hide_secret = ctx.tags.hide_secret;
+        masked_secret = secret.substring(0,num_start) + masked_value + secret.substring(secret.length()-num_end);
+        ctx.github.secret_scanning.secret = masked_secret;
+
+  ###########
+  # Cleanup #
+  ###########
 - remove:
     field:
       - _temp

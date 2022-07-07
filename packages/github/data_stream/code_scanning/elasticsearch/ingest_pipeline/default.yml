@@ -3,7 +3,7 @@ description: Pipeline for parsing GitHub audit logs
 processors:
 - set:
     field: ecs.version
-    value: "8.2.0"
+    value: "8.3.0"
 - set:
     field: event.action
     value: "code_scanning"
@@ -19,7 +19,8 @@ processors:
     target_field: github.code_scanning
 - fingerprint:
     fields: 
-        - github.code_scanning._document_id
+        - github.code_scanning.number
+        - github.code_scanning.updated_at
     target_field: "_id"
     ignore_missing: true
 - date:
@@ -35,6 +36,14 @@ processors:
     - ISO8601
     timezone: UTC
     target_field: "github.code_scanning.updated_at"
+    if: ctx.github.code_scanning?.updated_at != null
+- set:
+    field: "@timestamp"
+    copy_from: github.code_scanning.created_at
+    if: ctx.github.code_scanning?.created_at != null
+- set:
+    field: "@timestamp"
+    copy_from: github.code_scanning.updated_at
     if: ctx.github.code_scanning?.updated_at != null
 - date:
     field: github.code_scanning.fixed_at
@@ -144,6 +153,37 @@ processors:
     field: _temp.dismissed_by.site_admin
     target_field: github.code_scanning.dismissed_by.site_admin
     ignore_missing: true
+
+  ###################
+  # Rule ECS Fields #
+  ###################
+- rename:
+    field: github.code_scanning.rule.id
+    target_field: rule.id
+    if: ctx.github.code_scanning?.rule?.id != null
+- rename:
+    field: github.code_scanning.rule.name
+    target_field: rule.name
+    if: ctx.github.code_scanning?.rule?.name != null
+- rename:
+    field: github.code_scanning.rule.description
+    target_field: rule.description
+    if: ctx.github.code_scanning?.rule?.description != null
+- foreach:
+    field: "github.code_scanning.rule.tags"
+    processor:
+        append:
+            field: tags
+            value: "{{_ingest._value}}"
+    ignore_missing: true
+    if: ctx.github.code_scanning?.rule?.tags != null
+- remove: 
+    field: github.code_scanning.rule.tags
+    ignore_missing: true
+
+  ###########
+  # Cleanup #
+  ###########
 - remove:
     field:
       - _temp

@@ -1,10 +1,8 @@
 # GitHub Integration
 
-The GitHub integration collects audit events from the [GitHub API](https://docs.github.com/en/rest ).
+The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest ).
 
-## Logs
-
-### Audit
+## Audit Logs
 
 The GitHub audit log records all events related to the GitHub organization. See [Audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) for more details.
 
@@ -73,11 +71,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "95d78df4-1364-43b9-ab4f-62fc70d21b04",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "3d0e7837-d036-40b6-a109-c4b0c8869289",
+        "id": "34b0503f-9c18-4cca-b22a-b1fef5552a93",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "github.audit",
@@ -88,34 +86,31 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "34b0503f-9c18-4cca-b22a-b1fef5552a93",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.3.0"
     },
     "event": {
         "action": "repo.destroy",
         "agent_id_status": "verified",
         "category": [
-            "web",
-            "iam"
+            "configuration",
+            "web"
         ],
-        "created": "2022-02-03T12:34:05.664Z",
+        "created": "2022-07-07T10:14:52.061Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2022-02-03T12:34:06Z",
+        "ingested": "2022-07-07T10:14:53Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
-            "access"
+            "change"
         ]
     },
     "github": {
         "category": "repo",
         "org": "mona-org",
         "repo": "mona-org/mona-test-repo"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -135,3 +130,17 @@ An example event for `audit` looks as following:
     }
 }
 ```
+
+
+## Code Scanning
+
+The Code Scanning lets you retrieve all security vulnerabilities and coding errors from a repository setup using Github Advanced Security Code Scanning feature. See [About code scanning](https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/about-code-scanning) for more details.
+
+To use this integration, you must use an access token with the `security_events` scope for private repos or `public_repo` scope for public repos.
+
+
+## Secret Scanning
+
+The Github Secret Scanning lets you retrieve secret scanning for advanced security alerts from a repository setup using Github Advanced Security Secret Scanning feature. See [About Secret scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/about-secret-scanning) for more details.
+
+To use this integration, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the public_repo scope.
