@@ -1,7 +1,7 @@
 # ActiveMQ Integration
 
 This integration periodically fetches metrics from [ActiveMQ](https://activemq.apache.org/) servers. It can parse broker, queue and topic.
-logs created by the ActiveMQ server - system logs and audit logs.
+System logs and Audit logs are also collected using this integration.
 
 ## Compatibility
 
@@ -328,29 +328,29 @@ An example event for `broker` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| activemq.broker.connections.count | Total number of connections. | long |
-| activemq.broker.consumers.count | Number of message consumers. | long |
-| activemq.broker.mbean | MBean that this event is related to. | keyword |
-| activemq.broker.memory.broker.pct | The percentage of the memory limit used. | float |
-| activemq.broker.memory.store.pct | Percent of store limit used. | float |
-| activemq.broker.memory.temp.pct | The percentage of the temp usage limit used. | float |
-| activemq.broker.messages.count | Number of unacknowledged messages on the broker. | long |
-| activemq.broker.messages.dequeue.count | Number of messages that have been acknowledged on the broker. | long |
-| activemq.broker.messages.enqueue.count | Number of messages that have been sent to the destination. | long |
-| activemq.broker.name | Broker name. | keyword |
-| activemq.broker.producers.count | Number of message producers active on destinations on the broker. | long |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| activemq.broker.connections.count | Total number of connections. | long |  |
+| activemq.broker.consumers.count | Number of message consumers. | long |  |
+| activemq.broker.mbean | MBean that this event is related to. | keyword |  |
+| activemq.broker.memory.broker.pct | The percentage of the memory limit used. | float | percent |
+| activemq.broker.memory.store.pct | Percent of store limit used. | float | percent |
+| activemq.broker.memory.temp.pct | The percentage of the temp usage limit used. | float | percent |
+| activemq.broker.messages.count | Number of unacknowledged messages on the broker. | long |  |
+| activemq.broker.messages.dequeue.count | Number of messages that have been acknowledged on the broker. | long |  |
+| activemq.broker.messages.enqueue.count | Number of messages that have been sent to the destination. | long |  |
+| activemq.broker.name | Broker name. | keyword |  |
+| activemq.broker.producers.count | Number of message producers active on destinations on the broker. | long |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ### Queue Metrics
@@ -470,33 +470,33 @@ An example event for `queue` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| activemq.queue.consumers.count | Number of consumers subscribed to this destination. | long |
-| activemq.queue.mbean | MBean that this event is related to. | keyword |
-| activemq.queue.memory.broker.pct | Percent of memory limit used. | float |
-| activemq.queue.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |
-| activemq.queue.messages.dispatch.count | Number of messages that has been delivered to consumers, including those not acknowledged. | long |
-| activemq.queue.messages.enqueue.count | Number of messages that have been sent to the destination. | long |
-| activemq.queue.messages.enqueue.time.avg | Average time a message was held on this destination. | double |
-| activemq.queue.messages.enqueue.time.max | The longest time a message was held on this destination. | long |
-| activemq.queue.messages.enqueue.time.min | The shortest time a message was held on this destination. | long |
-| activemq.queue.messages.expired.count | Number of messages that have been expired. | long |
-| activemq.queue.messages.inflight.count | Number of messages that have been dispatched to, but not acknowledged by, consumers. | long |
-| activemq.queue.messages.size.avg | Average message size on this destination. | long |
-| activemq.queue.name | Queue name | keyword |
-| activemq.queue.producers.count | Number of producers attached to this destination. | long |
-| activemq.queue.size | Queue size | long |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| activemq.queue.consumers.count | Number of consumers subscribed to this destination. | long |  |
+| activemq.queue.mbean | MBean that this event is related to. | keyword |  |
+| activemq.queue.memory.broker.pct | Percent of memory limit used. | float | percent |
+| activemq.queue.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |  |
+| activemq.queue.messages.dispatch.count | Number of messages that has been delivered to consumers, including those not acknowledged. | long |  |
+| activemq.queue.messages.enqueue.count | Number of messages that have been sent to the destination. | long |  |
+| activemq.queue.messages.enqueue.time.avg | Average time a message was held on this destination. | double |  |
+| activemq.queue.messages.enqueue.time.max | The longest time a message was held on this destination. | long |  |
+| activemq.queue.messages.enqueue.time.min | The shortest time a message was held on this destination. | long |  |
+| activemq.queue.messages.expired.count | Number of messages that have been expired. | long |  |
+| activemq.queue.messages.inflight.count | Number of messages that have been dispatched to, but not acknowledged by, consumers. | long |  |
+| activemq.queue.messages.size.avg | Average message size on this destination. | long |  |
+| activemq.queue.name | Queue name | keyword |  |
+| activemq.queue.producers.count | Number of producers attached to this destination. | long |  |
+| activemq.queue.size | Queue size | long |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ### Topic Metrics
@@ -615,31 +615,31 @@ An example event for `topic` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| activemq.topic.consumers.count | Number of consumers subscribed to this destination. | long |
-| activemq.topic.mbean | MBean that this event is related to. | keyword |
-| activemq.topic.memory.broker.pct | Percent of memory limit used. | float |
-| activemq.topic.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |
-| activemq.topic.messages.dispatch.count | Number of messages that has been delivered to consumers, including those not acknowledged. | long |
-| activemq.topic.messages.enqueue.count | Number of messages that have been sent to the destination. | long |
-| activemq.topic.messages.enqueue.time.avg | Average time a message was held on this destination. | double |
-| activemq.topic.messages.enqueue.time.max | The longest time a message was held on this destination. | long |
-| activemq.topic.messages.enqueue.time.min | The shortest time a message was held on this destination. | long |
-| activemq.topic.messages.expired.count | Number of messages that have been expired. | long |
-| activemq.topic.messages.inflight.count | Number of messages that have been dispatched to, but not acknowledged by, consumers. | long |
-| activemq.topic.messages.size.avg | Average message size on this destination. | long |
-| activemq.topic.name | Topic name | keyword |
-| activemq.topic.producers.count | Number of producers attached to this destination. | long |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| activemq.topic.consumers.count | Number of consumers subscribed to this destination. | long |  |
+| activemq.topic.mbean | MBean that this event is related to. | keyword |  |
+| activemq.topic.memory.broker.pct | Percent of memory limit used. | float | percent |
+| activemq.topic.messages.dequeue.count | Number of messages that has been acknowledged (and removed) from the destination. | long |  |
+| activemq.topic.messages.dispatch.count | Number of messages that has been delivered to consumers, including those not acknowledged. | long |  |
+| activemq.topic.messages.enqueue.count | Number of messages that have been sent to the destination. | long |  |
+| activemq.topic.messages.enqueue.time.avg | Average time a message was held on this destination. | double |  |
+| activemq.topic.messages.enqueue.time.max | The longest time a message was held on this destination. | long |  |
+| activemq.topic.messages.enqueue.time.min | The shortest time a message was held on this destination. | long |  |
+| activemq.topic.messages.expired.count | Number of messages that have been expired. | long |  |
+| activemq.topic.messages.inflight.count | Number of messages that have been dispatched to, but not acknowledged by, consumers. | long |  |
+| activemq.topic.messages.size.avg | Average message size on this destination. | long |  |
+| activemq.topic.name | Topic name | keyword |  |
+| activemq.topic.producers.count | Number of producers attached to this destination. | long |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 

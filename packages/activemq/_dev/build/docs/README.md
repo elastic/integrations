@@ -1,7 +1,7 @@
 # ActiveMQ Integration
 
 This integration periodically fetches metrics from [ActiveMQ](https://activemq.apache.org/) servers. It can parse broker, queue and topic.
-logs created by the ActiveMQ server - system logs and audit logs.
+System logs and Audit logs are also collected using this integration.
 
 ## Compatibility
 
