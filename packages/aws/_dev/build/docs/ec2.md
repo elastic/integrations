@@ -29,13 +29,14 @@ Before using any AWS integration you will need:
 For more details about these requirements, see the **AWS** integration documentation.
 
 ## Setup
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 Use this integration if you only need to collect data from the Amazon EC2 service.
 
 If you want to collect data from two or more AWS services, consider using the **AWS** integration.
 When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 ## Logs reference
 
