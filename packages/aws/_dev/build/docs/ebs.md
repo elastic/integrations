@@ -7,6 +7,7 @@ Then visualize that data in Kibana, create alerts to notify you if something goe
 For example, you could use this data to view the total number of seconds spent by all write operations that completed in a specified period of time for an EBS volume. Then you can alert the relevant budget holder about that throughput data by email.
 
 ## Data streams
+
 The Amazon EBS integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of Amazon EBS.
