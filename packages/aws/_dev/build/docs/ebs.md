@@ -24,10 +24,13 @@ Before using any AWS integration you will need:
  * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
 For more details about these requirements, see the **AWS** integration documentation.
+
 ## Setup
+
 Use this integration if you only need to collect data from the Amazon EBS service.
 If you want to collect data from two or more AWS services, consider using the **AWS** integration.
 When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
