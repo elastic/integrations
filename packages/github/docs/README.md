@@ -71,8 +71,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "62ef7adf-abb2-4890-8eaa-cf5dfa9b62d5",
-        "id": "211f268c-b468-477c-ba32-cad2dc9d07a8",
+        "ephemeral_id": "d0cf44d8-94c2-4abc-9dfa-35d578cdc6c1",
+        "id": "ebe22132-9915-461a-a7d2-5abbdbf7d4f1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -86,7 +86,7 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "211f268c-b468-477c-ba32-cad2dc9d07a8",
+        "id": "ebe22132-9915-461a-a7d2-5abbdbf7d4f1",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -97,10 +97,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2022-07-07T20:25:22.000Z",
+        "created": "2022-07-08T08:40:24.066Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2022-07-07T20:25:23Z",
+        "ingested": "2022-07-08T08:40:25Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
