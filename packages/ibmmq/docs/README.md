@@ -10,7 +10,7 @@ This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`.
 
 In order to ingest data from IBM MQ:
 
-- User must provide Hostname and Port (example: localhost:9157) of Prometheus endpoint (/metrics).
+- User should specify Hostname and Port (example: localhost:9157) of Prometheus endpoint (/metrics).
 
 ## Metrics
 
