@@ -59,11 +59,8 @@ processors:
     timezone: UTC
     target_field: "github.code_scanning.dismissed_at"
     if: ctx.github.code_scanning?.dismissed_at != null
-- set: 
-    field: _temp
-    copy_from: github.code_scanning.repository
-    if: ctx.github.code_scanning?.repository != null
-- remove:
+- rename: 
+    target_field: _temp
     field: github.code_scanning.repository
     ignore_missing: true
 - rename:
@@ -122,10 +119,10 @@ processors:
     field: _temp.owner.site_admin
     target_field: github.code_scanning.repository.owner.site_admin
     ignore_missing: true
-- set: 
-    field: _temp.dismissed_by
-    copy_from: github.code_scanning.dismissed_by
-    if: ctx.github.code_scanning?.dismissed_by != null
+- rename: 
+    target_field: _temp.dismissed_by
+    field: github.code_scanning.dismissed_by
+    ignore_missing: true
 - remove:
     field: github.code_scanning.dismissed_by
     ignore_missing: true
@@ -152,6 +149,10 @@ processors:
 - rename:
     field: _temp.dismissed_by.site_admin
     target_field: github.code_scanning.dismissed_by.site_admin
+    ignore_missing: true
+- rename:
+    field: github.code_scanning.most_recent_instance.message.text
+    target_field: message
     ignore_missing: true
 
   ###################
