@@ -1,6 +1,6 @@
 # IBM MQ integration
 
-The IBM MQ Integration is used to fetch observability data from [IBM MQ web endpoints](https://www.ibm.com/docs/en/ibm-mq/9.2?topic=operator-metrics-published-when-using-mq) and ingest it into Elasticsearch.
+The IBM MQ Integration is used to fetch observability data from [IBM MQ web endpoints](https://www.ibm.com/docs/en/ibm-mq) and ingest it into Elasticsearch.
 
 ## Compatibility
 
@@ -16,7 +16,7 @@ In order to ingest data from IBM MQ:
 
 ### Queue Manager performance metrics
 
-The `qmgr` data stream collects performance metrics of Queue Manager like messages, topics, subscriptions and calls.
+The `qmgr` data stream collects [performance metrics of Queue Manager](https://www.ibm.com/docs/en/ibm-mq/9.2?topic=operator-metrics-published-when-using-mq) like messages, topics, subscriptions and calls.
 
 {{event "qmgr"}}
 
