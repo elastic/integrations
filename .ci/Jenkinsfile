@@ -340,24 +340,26 @@ def packageStoragePublish() {
     }
 
     // Sign unpublished packages
-    googleStorageUpload(bucket: "${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
-      credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
-      pattern: '*.zip',
-      sharedPublicly: false,
-      showInline: true)
-    withCredentials([string(credentialsId: env.JOB_SIGNING_CREDENTIALS, variable: 'TOKEN')]) {
-      triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
-        job: 'https://internal-ci.elastic.co/job/elastic+unified-release+master+sign-artifacts-with-gpg',
-        token: TOKEN,
-        parameters: "gcs_input_path=${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
-        useCrumbCache: false,
-        useJobInfoCache: false)
+    dir("${BASE_DIR}/build/packages") {
+      googleStorageUpload(bucket: "${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
+        credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
+        pattern: '*.zip',
+        sharedPublicly: false,
+        showInline: true)
+      withCredentials([string(credentialsId: env.JOB_SIGNING_CREDENTIALS, variable: 'TOKEN')]) {
+        triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
+          job: 'https://internal-ci.elastic.co/job/elastic+unified-release+master+sign-artifacts-with-gpg',
+          token: TOKEN,
+          parameters: "gcs_input_path=${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
+          useCrumbCache: false,
+          useJobInfoCache: false)
+      }
+      googleStorageDownload(bucketUri: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*",
+        credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
+        localDirectory: '.',
+        pathPrefix: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER}")
+        sh(label: 'Rename .asc to .sig', script: 'for f in *.asc; do mv "$f" "${f%.asc}.sig"; done')
     }
-    googleStorageDownload(bucketUri: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*",
-      credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
-      localDirectory: builtPackagesPath + '/',
-      pathPrefix: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER}")
-      sh(label: 'Rename .asc to .sig', script: 'for f in ' + builtPackagesPath + '/*.asc; do mv "$f" "${f%.asc}.sig"; done')
 
     // Publish packages with signatures. Only packages with generated signatures haven't been published yet.
     withGCPEnv(secret: env.PACKAGE_STORAGE_UPLOADER_GCP_SERVICE_ACCOUNT) {
@@ -389,6 +391,8 @@ def isAlreadyPublished(packageZip) {
   def responseCode = httpRequest(method: "HEAD",
     url: "https://package-storage.elastic.co/artifacts/packages/${packageZip}",
     response_code_only: true)
-  echo "EPR HTTP status code for ${packageZip}: ${responseCode}"
+  if (responseCode != 200) {
+    echo "Package Registry HTTP status code for ${packageZip}: ${responseCode}"
+  }
   return responseCode == 200
 }
