@@ -313,7 +313,11 @@ def packageStoragePublish() {
     unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
     useElasticPackage()
     dir("${BASE_DIR}/packages") {
-      sh(label: "Build integration as zip: ${it}", script: '../../build/elastic-package build -v --zip')
+      findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
+        dir("${BASE_DIR}/packages/${it}") {
+          sh(label: "Build integration as zip: ${it}", script: '../../build/elastic-package build -v --zip')
+        }
+      }
     }
     dir("${BASE_DIR}/build/packages") {
       findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
