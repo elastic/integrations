@@ -31,34 +31,19 @@ processors:
     target_field: "event.created"
     if: ctx.github.code_scanning?.created_at != null
 - date:
+    field: github.code_scanning.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.code_scanning?.created_at != null
+- date:
     field: github.code_scanning.updated_at
     formats:
     - ISO8601
     timezone: UTC
-    target_field: "github.code_scanning.updated_at"
+    target_field: "@timestamp"
     if: ctx.github.code_scanning?.updated_at != null
-- set:
-    field: "@timestamp"
-    copy_from: github.code_scanning.created_at
-    if: ctx.github.code_scanning?.created_at != null
-- set:
-    field: "@timestamp"
-    copy_from: github.code_scanning.updated_at
-    if: ctx.github.code_scanning?.updated_at != null
-- date:
-    field: github.code_scanning.fixed_at
-    formats:
-    - ISO8601
-    timezone: UTC
-    target_field: "github.code_scanning.fixed_at"
-    if: ctx.github.code_scanning?.fixed_at != null
-- date:
-    field: github.code_scanning.dismissed_at
-    formats:
-    - ISO8601
-    timezone: UTC
-    target_field: "github.code_scanning.dismissed_at"
-    if: ctx.github.code_scanning?.dismissed_at != null
 - rename: 
     target_field: _temp
     field: github.code_scanning.repository
