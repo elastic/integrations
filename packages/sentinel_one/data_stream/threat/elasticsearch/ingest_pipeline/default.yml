@@ -34,6 +34,17 @@ processors:
       formats:
           - ISO8601
       ignore_failure: true
+  - set:
+      field: event.action
+      copy_from: json.threatInfo.engines
+  - set:
+      field: user.name
+      copy_from: json.threatInfo.processUser
+      if: ctx.json.threatInfo.processUser != null
+  - set:
+      field: process.name
+      copy_from: json.threatInfo.originatorProcess
+      if: ctx.json.threatInfo.originatorProcess != null
   - rename:
       field: json.agentDetectionInfo.accountId 
       target_field: sentinel_one.threat.detection.account.id
