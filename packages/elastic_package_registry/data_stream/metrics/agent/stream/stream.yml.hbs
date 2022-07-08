@@ -1,0 +1,39 @@
+metricsets: ["collector"]
+period: {{period}}
+use_types: {{use_types}}
+rate_counters: {{rate_counters}}
+
+hosts:
+{{#each hosts}}
+    - {{this}}
+{{/each}}
+
+metrics_path: /metrics
+{{#if notfound }}
+query:
+  format: prometheus
+{{/if}}
+
+{{#if metrics_filters.exclude}}
+metrics_filters.exclude:
+{{#each metrics_filters.exclude}}
+    - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if metrics_filters.include}}
+metrics_filters.include:
+{{#each metrics_filters.include}}
+    - {{this}}
+{{/each}}
+{{/if}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+tags:
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
