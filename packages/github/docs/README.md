@@ -354,7 +354,7 @@ To use this integration, you must be an administrator for the repository or for 
 | github.secret_scanning.push_protection_bypassed_by.html_url |  | keyword |
 | github.secret_scanning.push_protection_bypassed_by.id |  | integer |
 | github.secret_scanning.push_protection_bypassed_by.login |  | keyword |
-| github.secret_scanning.push_protection_bypassed_by.name |  | text |
+| github.secret_scanning.push_protection_bypassed_by.name |  | keyword |
 | github.secret_scanning.push_protection_bypassed_by.node_id |  | keyword |
 | github.secret_scanning.push_protection_bypassed_by.site_admin |  | boolean |
 | github.secret_scanning.push_protection_bypassed_by.type |  | keyword |
@@ -365,14 +365,14 @@ To use this integration, you must be an administrator for the repository or for 
 | github.secret_scanning.resolved_by.html_url |  | keyword |
 | github.secret_scanning.resolved_by.id |  | integer |
 | github.secret_scanning.resolved_by.login |  | keyword |
-| github.secret_scanning.resolved_by.name |  | text |
+| github.secret_scanning.resolved_by.name |  | keyword |
 | github.secret_scanning.resolved_by.node_id |  | keyword |
 | github.secret_scanning.resolved_by.site_admin |  | boolean |
 | github.secret_scanning.resolved_by.type |  | keyword |
 | github.secret_scanning.resolved_by.url |  | keyword |
-| github.secret_scanning.secret | The secret that was detected | text |
-| github.secret_scanning.secret_type | The type of secret that secret scanning detected | text |
-| github.secret_scanning.secret_type_display_name | User-friendly name for the detected secret, matching the `secret_type` | text |
+| github.secret_scanning.secret | The secret that was detected | keyword |
+| github.secret_scanning.secret_type | The type of secret that secret scanning detected | keyword |
+| github.secret_scanning.secret_type_display_name | User-friendly name for the detected secret, matching the `secret_type` | keyword |
 | github.secret_scanning.state | Sets the state of the secret scanning alert. | keyword |
 | github.secret_scanning.updated_at | The time that the alert was last updated in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |
 | github.secret_scanning.url | The REST API URL of the alert resource | keyword |

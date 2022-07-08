@@ -28,39 +28,21 @@ processors:
     target_field: "event.created"
     if: ctx.github.secret_scanning?.created_at != null
 - date:
+    field: github.secret_scanning.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.secret_scanning?.created_at != null
+- date:
     field: github.secret_scanning.updated_at
     formats:
     - ISO8601
     timezone: UTC
-    target_field: "github.secret_scanning.updated_at"
+    target_field: "@timestamp"
     if: ctx.github.secret_scanning?.updated_at != null
-- set:
-    field: "@timestamp"
-    copy_from: github.secret_scanning.created_at
-    if: ctx.github.secret_scanning?.created_at != null
-- set:
-    field: "@timestamp"
-    copy_from: github.secret_scanning.updated_at
-    if: ctx.github.secret_scanning?.updated_at != null
-- date:
-    field: github.secret_scanning.resolved_at
-    formats:
-    - ISO8601
-    timezone: UTC
-    target_field: "github.secret_scanning.resolved_at"
-    if: ctx.github.secret_scanning?.resolved_at != null
-- date:
-    field: github.secret_scanning.push_protection_bypassed_at
-    formats:
-    - ISO8601
-    timezone: UTC
-    target_field: "github.secret_scanning.push_protection_bypassed_at"
-    if: ctx.github.secret_scanning?.push_protection_bypassed_at != null
-- set: 
-    field: _temp.resolved_by
-    copy_from: github.secret_scanning.resolved_by
-    if: ctx.github.secret_scanning?.resolved_by != null
-- remove:
+- rename: 
+    target_field: _temp.resolved_by
     field: github.secret_scanning.resolved_by
     ignore_missing: true
 - rename:
@@ -99,11 +81,8 @@ processors:
     field: _temp.resolved_by.site_admin
     target_field: github.secret_scanning.resolved_by.site_admin
     ignore_missing: true
-- set: 
-    field: _temp.push_protection_bypassed_by
-    copy_from: github.secret_scanning.push_protection_bypassed_by
-    if: ctx.github.secret_scanning?.push_protection_bypassed_by != null
-- remove: 
+- rename: 
+    target_field: _temp.push_protection_bypassed_by
     field: github.secret_scanning.push_protection_bypassed_by
     ignore_missing: true
 - rename:
