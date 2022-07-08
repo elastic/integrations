@@ -107,11 +107,6 @@ pipeline {
                               sh(label: "Publish integration: ${it}", script: '../../build/elastic-package publish -v --fork=false')
                             }
                           }
-
-                            // Publish package to the Package Storage v2
-                            sh(label: "Build integration as zip: ${it}", script: '../../build/elastic-package build -v --zip')
-                            packageStoragePublish(it, '../../build/packages')
-
                         }
                       } finally {
                         dir("${BASE_DIR}") {
@@ -139,6 +134,7 @@ pipeline {
   post {
     always {
       publishCoverageReports()
+      packageStoragePublish()
     }
     cleanup {
       notifyBuildResult(prComment: true)
@@ -307,8 +303,15 @@ def archiveArtifactsSafe(remotePath, artifacts) {
     pattern: artifacts)
 }
 
-def packageStoragePublish(jobName, builtPackagesPath) {
-  dir(builtPackagesPath) {
+def packageStoragePublish() {
+  //if (env.BRANCH_NAME != 'main') {
+  //  echo "packageStoragePublish: not a main branch, nothing will be published"
+  //  return
+  //}
+  dir("${BASE_DIR}/packages") {
+    sh(label: "Build integration as zip: ${it}", script: '../../build/elastic-package build -v --zip')
+  }
+  dir("${BASE_DIR}/build/packages") {
     findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
       def packageZip = it
       if (isAlreadyPublished(packageZip)) {
@@ -316,7 +319,7 @@ def packageStoragePublish(jobName, builtPackagesPath) {
       }
 
       // Sign package before publishing
-      googleStorageUpload(bucket: "${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/${jobName}",
+      googleStorageUpload(bucket: "${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
         credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
         pattern: '*.zip',
         sharedPublicly: false,
@@ -325,11 +328,11 @@ def packageStoragePublish(jobName, builtPackagesPath) {
         triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
           job: 'https://internal-ci.elastic.co/job/elastic+unified-release+master+sign-artifacts-with-gpg',
           token: TOKEN,
-          parameters: "gcs_input_path=${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}/${jobName}",
+          parameters: "gcs_input_path=${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
           useCrumbCache: false,
           useJobInfoCache: false)
       }
-      googleStorageDownload(bucketUri: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/${jobName}/*",
+      googleStorageDownload(bucketUri: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*",
         credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
         localDirectory: builtPackagesPath + '/',
         pathPrefix: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER}")
