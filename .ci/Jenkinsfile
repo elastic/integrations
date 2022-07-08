@@ -320,16 +320,13 @@ def packageStoragePublish() {
     unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
     useElasticPackage()
 
-    // Build all integrations
-    def integrations = []
     dir("${BASE_DIR}/packages") {
       findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-        integrations += it
-      }
-    }
-    integrations.each { integration ->
-      dir("${BASE_DIR}/packages/${integration}") {
-        sh(label: "Build integration as zip: ${integration}", script: '../../build/elastic-package build -v --zip')
+        dir("${it}") {
+          sh(label: "Build integration as zip: ${it}", script: """
+            PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}
+            elastic-package build -v --zip""")
+        }
       }
     }
 
