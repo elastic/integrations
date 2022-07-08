@@ -128,6 +128,11 @@ processors:
       field: destination.domain
       value: '{{suricata.eve.tls.sni}}'
       ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{suricata.eve.tls.sni}}}'
+      if: ctx.suricata?.eve?.tls?.sni != null && ctx.suricata.eve.tls.sni != ""
+      allow_duplicates: false
   - set:
       field: tls.server.ja3s
       value: '{{suricata.eve.tls.ja3s.hash}}'

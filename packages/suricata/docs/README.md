@@ -17,11 +17,11 @@ An example event for `eve` looks as following:
 {
     "@timestamp": "2018-07-05T19:01:09.820Z",
     "agent": {
-        "ephemeral_id": "5087d9af-5bd8-452b-90e2-96bb9c5e4770",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "01b06085-bdec-4eda-9816-aee2080bfe18",
+        "id": "543eeec2-6585-484f-9f7b-34db47abcd9c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.3"
     },
     "data_stream": {
         "dataset": "suricata.eve",
@@ -30,24 +30,25 @@ An example event for `eve` looks as following:
     },
     "destination": {
         "address": "192.168.253.112",
+        "ip": "192.168.253.112",
         "port": 22
     },
     "ecs": {
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "543eeec2-6585-484f-9f7b-34db47abcd9c",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "created": "2022-01-03T01:09:30.084Z",
+        "created": "2022-07-08T00:57:26.903Z",
         "dataset": "suricata.eve",
-        "ingested": "2022-01-03T01:09:31Z",
+        "ingested": "2022-07-08T00:57:27Z",
         "kind": "event",
         "type": [
             "protocol"
@@ -63,12 +64,14 @@ An example event for `eve` looks as following:
         "offset": 0
     },
     "network": {
+        "community_id": "1:NLm1MbaBR6humQxEQI2Ai7h/XiI=",
         "protocol": "ssh",
         "transport": "tcp"
     },
     "related": {
         "ip": [
-            "192.168.86.85"
+            "192.168.86.85",
+            "192.168.253.112"
         ]
     },
     "source": {
