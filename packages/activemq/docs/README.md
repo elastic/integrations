@@ -483,7 +483,7 @@ An example event for `queue` looks as following:
 | activemq.queue.messages.enqueue.time.max | The longest time a message was held on this destination. | long |  |
 | activemq.queue.messages.enqueue.time.min | The shortest time a message was held on this destination. | long |  |
 | activemq.queue.messages.expired.count | Number of messages that have been expired. | long |  |
-| activemq.queue.messages.inflight.count | Number of messages that have been dispatched to, but not acknowledged by, consumers. | long |  |
+| activemq.queue.messages.inflight.count | Number of messages that have been dispatched to consumers but not acknowledged by consumers. | long |  |
 | activemq.queue.messages.size.avg | Average message size on this destination. | long |  |
 | activemq.queue.name | Queue name | keyword |  |
 | activemq.queue.producers.count | Number of producers attached to this destination. | long |  |
