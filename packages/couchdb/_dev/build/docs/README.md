@@ -22,6 +22,8 @@ Example Host Configuration: `http://admin:changeme@localhost:5984`
 
 This is the `server` data stream.
 
+Reference: https://docs.couchdb.org/en/stable/api/server/common.html#node-node-name-stats
+
 {{event "server"}}
 
 {{fields "server"}}
