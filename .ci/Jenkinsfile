@@ -320,13 +320,13 @@ def packageStoragePublish() {
     unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
     useElasticPackage()
 
-    // FIXME Build only unpublished files (need to read version from manifest.yml)
+    // Build only unpublished files (need to read version from manifest.yml)
     dir("${BASE_DIR}/packages") {
       findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
         dir("${it}") {
-          def manifest = readYaml(file: "${it}/manifest.yml")
-          if (manifest != null && manifest["name"] != null && manifest["version"] != null) {
-            def packageZip = manifest["name"] + "-" + manifest["version"] + ".zip"
+          def manifest = readYaml(file: "manifest.yml")
+          if (manifest != null && manifest["version"] != null) {
+            def packageZip = it + "-" + manifest["version"] + ".zip"
             if (isAlreadyPublished(packageZip)) {
               return
             }
