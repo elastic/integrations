@@ -1,6 +1,6 @@
 # IBM MQ integration
 
-The IBM MQ Integration is used to fetch observability data from [IBM MQ web endpoints](https://www.ibm.com/docs/en/ibm-mq/9.2?topic=operator-metrics-published-when-using-mq) and ingest it into Elasticsearch.
+The IBM MQ Integration is used to fetch observability data from [IBM MQ web endpoints](https://www.ibm.com/docs/en/ibm-mq) and ingest it into Elasticsearch.
 
 ## Compatibility
 
@@ -15,7 +15,7 @@ In order to ingest data from IBM MQ:
 
 ### Queue Manager Error logs
 
-The `errorlog` data stream collects Error logs of Queue Manager which include the description, action, explanation and code of the error.
+The `errorlog` data stream collects [Error logs of Queue Manager](https://www.site24x7.com/help/log-management/ibm-mq-error-logs.html) which include the description, action, explanation and code of the error.
 
 An example event for `errorlog` looks as following:
 
