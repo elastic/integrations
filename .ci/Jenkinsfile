@@ -61,6 +61,13 @@ pipeline {
         stashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
       }
     }
+    stage('T') {
+      steps {
+        script {
+          packageStoragePublish()
+        }
+      }
+    }
     stage('Check Go sources') {
       steps {
         dir("${BASE_DIR}"){
@@ -312,13 +319,21 @@ def packageStoragePublish() {
     deleteDir()
     unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
     useElasticPackage()
+
+    // Build all integrations
+    def integrations = []
     dir("${BASE_DIR}/packages") {
       findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
-        dir("${BASE_DIR}/packages/${it}") {
-          sh(label: "Build integration as zip: ${it}", script: '../../build/elastic-package build -v --zip')
-        }
+        integrations += it
       }
     }
+    integrations.each { it ->
+      dir("${it}") {
+        sh(label: "Build integration as zip: ${it}", script: '../../build/elastic-package build -v --zip')
+      }
+    }
+
+    // Start publishing procedure
     dir("${BASE_DIR}/build/packages") {
       findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
         def packageZip = it
