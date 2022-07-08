@@ -17,7 +17,7 @@ An example event for `eve` looks as following:
 {
     "@timestamp": "2018-07-05T19:01:09.820Z",
     "agent": {
-        "ephemeral_id": "01b06085-bdec-4eda-9816-aee2080bfe18",
+        "ephemeral_id": "1766b03e-b9fd-4e5b-9c37-bb972c55d7c5",
         "id": "543eeec2-6585-484f-9f7b-34db47abcd9c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -46,9 +46,9 @@ An example event for `eve` looks as following:
         "category": [
             "network"
         ],
-        "created": "2022-07-08T00:57:26.903Z",
+        "created": "2022-07-08T01:02:15.499Z",
         "dataset": "suricata.eve",
-        "ingested": "2022-07-08T00:57:27Z",
+        "ingested": "2022-07-08T01:02:16Z",
         "kind": "event",
         "type": [
             "protocol"
