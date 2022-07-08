@@ -31,10 +31,10 @@ The below metrics are fetched from memcached:
 | memcached.stats.items.total | Number of items ever stored on the server. The count increases by every new item stored in the cache. | long |  | counter |
 | memcached.stats.limit.bytes | Number of bytes the server is allowed to use for storage. | long | byte | gauge |
 | memcached.stats.pid | Current process ID of the Memcached task. | long |  |  |
-| memcached.stats.read.bytes | Total number of bytes received by the server from the network. | long | byte | gauge |
+| memcached.stats.read.bytes | Total number of bytes received by the server from the network. | long | byte | counter |
 | memcached.stats.threads | Number of threads used by the current Memcached server process. | long |  | counter |
 | memcached.stats.uptime.sec | Memcached server uptime. | long | s | gauge |
-| memcached.stats.written.bytes | Total number of bytes sent to the network by the server. | long | byte | gauge |
+| memcached.stats.written.bytes | Total number of bytes sent to the network by the server. | long | byte | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
