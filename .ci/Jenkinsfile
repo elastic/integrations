@@ -61,13 +61,6 @@ pipeline {
         stashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
       }
     }
-    stage('T') {
-      steps {
-        script {
-          packageStoragePublish()
-        }
-      }
-    }
     stage('Check Go sources') {
       steps {
         dir("${BASE_DIR}"){
@@ -312,10 +305,11 @@ def archiveArtifactsSafe(remotePath, artifacts) {
 
 def packageStoragePublish() {
   stage('Publish to Package Storage v2') {
-    //if (env.BRANCH_NAME != 'main') {
-    //  echo "packageStoragePublish: not a main branch, nothing will be published"
-    //  return
-    //}
+    if (env.BRANCH_NAME != 'main') {
+      echo "packageStoragePublish: not the main branch, nothing will be published"
+      return
+    }
+
     deleteDir()
     unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
     useElasticPackage()
