@@ -24,7 +24,7 @@ An example event for `log` looks as following:
         "version": "7.14.0"
     },
     "data_stream": {
-        "dataset": "fortinet.firewall",
+        "dataset": "fortinet_fortigate.log",
         "namespace": "ep",
         "type": "logs"
     },
@@ -61,7 +61,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "code": "1059028704",
-        "dataset": "fortinet.firewall",
+        "dataset": "fortinet_fortigate.log",
         "ingested": "2021-06-03T12:38:44.458586716Z",
         "kind": "event",
         "module": "fortinet",
