@@ -23,7 +23,7 @@ An example event for `log` looks as following:
         "version": "8.0.0"
     },
     "data_stream": {
-        "dataset": "fortinet.fortimail",
+        "dataset": "fortinet_fortimail.log",
         "namespace": "ep",
         "type": "logs"
     },
@@ -39,7 +39,7 @@ An example event for `log` looks as following:
         "action": "event",
         "agent_id_status": "verified",
         "code": "nes",
-        "dataset": "fortinet.fortimail",
+        "dataset": "fortinet_fortimail.log",
         "ingested": "2022-01-25T12:29:32Z",
         "original": "date=2016-1-29 time=06:09:59 device_id=pexe log_id=nes log_part=eab type=event subtype=update pri=high msg=\"boNemoe\"\n",
         "timezone": "+00:00"
