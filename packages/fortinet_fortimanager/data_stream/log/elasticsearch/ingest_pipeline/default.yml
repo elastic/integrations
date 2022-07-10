@@ -76,6 +76,23 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+# Ensure source.mac and destination.mac are formatted to ECS specifications.
+  - gsub:
+      field: destination.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - gsub:
+      field: source.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
   - append:
       field: related.hosts
       value: '{{host.name}}'
