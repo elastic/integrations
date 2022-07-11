@@ -1,0 +1,98 @@
+type: logs
+title: GHAS Secret Scanning
+release: beta
+streams:
+  - input: httpjson
+    vars:
+      - name: access_token
+        type: text
+        title: Personal Access Token
+        description: the GitHub Personal Access Token.  Requires `admin` access to the repository or organization owning the repository along with a personal access token with 'public_repo' scope for public repositories and `repo` or `security_events` scope for private repositories. \nSee [List secret scanning alerts for a repository](https://docs.github.com/en/enterprise-cloud@latest/rest/secret-scanning#list-secret-scanning-alerts-for-a-repository)
+        multi: false
+        required: true
+        show_user: true
+      - name: owner
+        type: text
+        title: Repository owner
+        description: The owner of GitHub Repository
+        multi: false
+        required: true
+        show_user: true
+      - name: repo
+        type: text
+        title: Repository
+        description: The GitHub Repository
+        multi: false
+        required: true
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: true
+        default: 60s
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        description: Interval at which the alerts will be pulled. The value must be between 2m and 1h.
+        default: 10m
+      - name: hide_secret
+        required: true
+        show_user: true
+        title: Hide Secret
+        description: To reveal the full secret from the Secret Scanning alert, set this to false
+        type: bool
+        multi: false
+        default: true
+      - name: api_url
+        type: text
+        title: API URL.
+        description: The API URL without the path.
+        multi: false
+        required: true
+        show_user: false
+        default: https://api.github.com
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - github-secret-scanning
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
+    template_path: httpjson.yml.hbs
+    title: GHAS Secret Scanning
+    description: Collect GitHub Advanced Security Secret Scanning alerts via the API
