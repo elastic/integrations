@@ -29,8 +29,8 @@ An example event for `panos` looks as following:
 {
     "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "319271c4-e416-435d-a777-8cd62713212f",
-        "id": "eadb6bf1-e14c-4297-8ca3-7e97ac93a796",
+        "ephemeral_id": "7020cf01-7612-4194-9da0-390244968573",
+        "id": "9cfce01d-2b4b-49d1-8777-572f0a4da3bc",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.2.1"
@@ -61,7 +61,7 @@ An example event for `panos` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "eadb6bf1-e14c-4297-8ca3-7e97ac93a796",
+        "id": "9cfce01d-2b4b-49d1-8777-572f0a4da3bc",
         "snapshot": false,
         "version": "8.2.1"
     },
@@ -75,7 +75,7 @@ An example event for `panos` looks as following:
         ],
         "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2022-06-22T06:49:44Z",
+        "ingested": "2022-07-11T14:27:45Z",
         "kind": "alert",
         "outcome": "success",
         "severity": 5,
@@ -94,7 +94,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "172.19.0.4:52580"
+            "address": "192.168.208.7:36957"
         },
         "syslog": {
             "facility": {

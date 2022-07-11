@@ -30,18 +30,18 @@ processors:
       description: Set Event Action.
       lang: painless
       ignore_failure: true
-      source: |
-        Map map = new HashMap();
-        map.put("add", "cmd-add");
-        map.put("clone", "cmd-clone");
-        map.put("commit", "cmd-commit");
-        map.put("delete", "cmd-delete");
-        map.put("edit", "cmd-edit");
-        map.put("move", "cmd-move");
-        map.put("rename", "cmd-rename");
-        map.put("set", "cmd-set");
-        ctx.event.action = map.get(ctx.panw?.panos?.cmd);
-
+      if: ctx.panw?.panos?.cmd != null
+      params:
+        add: cmd-add
+        clone: cmd-clone
+        commit: cmd-commit
+        delete: cmd-delete
+        edit: cmd-edit
+        move: cmd-move
+        rename: cmd-rename
+        set: cmd-set
+      source:
+        ctx.event.action = params.get(ctx.panw.panos.cmd);
   - set:
       field: event.outcome
       value: success
