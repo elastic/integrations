@@ -1,0 +1,43 @@
+- name: zscaler_zpa.audit
+  type: group
+  fields:
+    - name: client_audit_update
+      type: long
+      description: |
+        The flag to represent if the event is a client Audit log.
+    - name: object
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            The ID associated with the object name.
+        - name: name
+          type: keyword
+          description: |
+            The name of the object. This corresponds to the Resource Name in the Audit Log page.
+        - name: type
+          type: keyword
+          description: |
+            The location within the ZPA Admin Portal where the Action was performed.
+    - name: operation_type
+      type: keyword
+      description: |
+        The type of action performed.
+    - name: session.id
+      type: keyword
+      description: |
+        The ID for the administrator's session in the ZPA Admin Portal. This corresponds to a successful sign in action occurring.
+    - name: value
+      type: group
+      fields:
+        - name: new
+          type: flattened
+          description: |
+            The new value that was changed if the action type is create, sign in, or update.
+        - name: old
+          type: flattened
+          description: The previous value that was changed if the action type is delete, sign out, or update.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

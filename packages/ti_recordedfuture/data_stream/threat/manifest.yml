@@ -1,0 +1,125 @@
+type: logs
+title: Recorded Future
+streams:
+  - input: logfile
+    enabled: false
+    template_path: logfile.yml.hbs
+    title: Recorded Future CSV file
+    description: Reads indicators from a Recorded Future CSV file.
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - recordedfuture
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+  - input: httpjson
+    template_path: httpjson.yml.hbs
+    title: Recorded Future risklist
+    description: Receives indicators from Recorded Future risklist endpoints.
+    vars:
+      - name: entity
+        type: text
+        title: Entity
+        description: The type of entity to fetch. One of domain, hash, ip or url.
+        multi: false
+        required: true
+        show_user: true
+        default: domain
+      - name: list
+        type: text
+        title: List
+        description: List to fetch for the given entity.
+        default: default
+        multi: false
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval between risklist downloads.
+        description: Use Go Duration syntax (eg. 1h)
+        default: "1h"
+        multi: false
+        required: true
+        show_user: true
+      - name: api_token
+        type: text
+        title: API Token
+        description: Recorded Future API Token (RF_TOKEN).
+        multi: false
+        required: true
+        show_user: true
+      - name: custom_url
+        type: url
+        title: Custom URL
+        description: URL to download a custom Fusion File.
+        multi: false
+        required: false
+        show_user: false
+      - name: endpoint
+        type: url
+        title: API Endpoint
+        description: Base API URL.
+        multi: false
+        required: true
+        show_user: false
+        default: https://api.recordedfuture.com/v2
+      - name: proxy_url
+        type: url
+        title: Proxy URL
+        description: Optional proxy server to use.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - recordedfuture
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+

@@ -1,0 +1,91 @@
+{
+    "attributes": {
+        "columns": [
+            "event.action",
+            "source.ip",
+            "message"
+        ],
+        "description": "Saved search for attacks detected and blocked by SonicWall Firewall",
+        "grid": {
+            "columns": {
+                "event.action": {
+                    "width": 134.5
+                },
+                "source.ip": {
+                    "width": 126.25
+                }
+            }
+        },
+        "hideChart": false,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "event.action",
+                            "negate": false,
+                            "params": [
+                                "attack-blocked",
+                                "attack-detected"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "event.action": "attack-blocked"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "event.action": "attack-detected"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": "data_stream.dataset :\"sonicwall_firewall.log\" "
+                }
+            }
+        },
+        "sort": [
+            [
+                "@timestamp",
+                "desc"
+            ]
+        ],
+        "title": "SonicWall Firewall attacks"
+    },
+    "coreMigrationVersion": "8.2.0",
+    "id": "sonicwall_firewall-93af7ae0-d796-11ec-bc4f-47419689dcde",
+    "migrationVersion": {
+        "search": "8.0.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "search"
+}

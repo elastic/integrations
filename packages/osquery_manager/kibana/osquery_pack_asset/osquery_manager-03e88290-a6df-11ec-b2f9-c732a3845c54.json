@@ -1,0 +1,249 @@
+{
+    "attributes": {
+        "name": "windows-hardening",
+        "version": 1,
+        "queries": [
+            {
+                "id": "OpenType_Font_Driver_Vulnerability",
+                "interval": 3600,
+                "platform": "windows",
+                "query": "select * from registry where path like 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Windows\\%' AND name = 'DisableATMFD' AND data != '1';",
+                "version": "2.2.1"
+            },
+            {
+                "id": "Protecting_Against_Weak_Crypto_Algo",
+                "interval": 3600,
+                "platform": "windows",
+                "query": "select * from registry where path like 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography\\OID\\EncodingType 0\\CertDllCreateCertificateChainEngine\\Config\\Default\\%' AND name IN ('WeakSha1ThirdPartyFlags','WeakMd5ThirdPartyFlags') AND type = 'REG_DWORD' AND data not like '-2%';",
+                "version": "2.2.1"
+            },
+            {
+                "id": "UAC_Disabled",
+                "interval": 3600,
+                "platform": "windows",
+                "query": "SELECT * FROM registry WHERE path='HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\EnableLUA' AND data=0;",
+                "version": "2.2.1"
+            },
+            {
+                "id": "SecureBoot",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\SecureBoot\\State\\UEFISecureBootEnabled'"
+            },
+            {
+                "id": "FontBlocking",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\MitigationOptions\\MitigationOptions_FontBlocking'"
+            },
+            {
+                "id": "DepPolicy",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\SystemStartOptions'"
+            },
+            {
+                "id": "MitigationOptions",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Kernel\\MitigationOptions'"
+            },
+            {
+                "id": "MoveImages",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\moveImages'"
+            },
+            {
+                "id": "KernelSehopEnabled",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Kernel\\KernelSEHOPEnabled'"
+            },
+            {
+                "id": "EnableCertPaddingCheck",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography\\WinTrust\\Config\\EnableCertPaddingCheck'"
+            },
+            {
+                "id": "EnableCertPaddingCheck_wow64",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Cryptography\\WinTrust\\Config\\EnableCertPaddingCheck'"
+            },
+            {
+                "id": "CwdIllegalInDllSearch",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\CWDIllegalInDllSearch'"
+            },
+            {
+                "id": "DisabledExceptionChainValidation",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\kernel\\DisableExceptionChainValidation'"
+            },
+            {
+                "id": "EnableLowVaAccess",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\EnableLowVaAccess'"
+            },
+            {
+                "id": "ControlFlowGuard",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\EnableCfg'"
+            },
+            {
+                "id": "App_ExecuteOptions",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_LOCAL_MACHINE\\SOFTWARE\\%Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\%\\executeOptions'"
+            },
+            {
+                "id": "App_MitigationOptions",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_LOCAL_MACHINE\\SOFTWARE\\%Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\%\\MitigationOptions'"
+            },
+            {
+                "id": "AppCompat",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\%Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers'"
+            },
+            {
+                "id": "App_disabledExceptionChainValidation",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_LOCAL_MACHINE\\SOFTWARE\\%Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\%\\DisableExceptionChainValidation'"
+            },
+            {
+                "id": "DefaultLevelMachine",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\DefaultLevel'"
+            },
+            {
+                "id": "DefaultLevelUser",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_USERS\\%\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\DefaultLevel'"
+            },
+            {
+                "id": "PolicyScopeMachine",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\PolicyScope'"
+            },
+            {
+                "id": "PolicyScopeUser",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_USERS\\%\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\PolicyScope'"
+            },
+            {
+                "id": "ExecutableTryMachine",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\ExecutableTry'"
+            },
+            {
+                "id": "ExecutableTryUser",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_USERS\\%\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\ExecutableTry'"
+            },
+            {
+                "id": "TransparentEnabledMachine",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\TransparentEnabled'"
+            },
+            {
+                "id": "TransparentEnabledUser",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_USERS\\%\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\TransparentEnabled'"
+            },
+            {
+                "id": "Unrestricted",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\262144'"
+            },
+            {
+                "id": "Unrestricted_Paths",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\262144\\Paths'"
+            },
+            {
+                "id": "Unrestricted_Paths_ItemData",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\262144\\Paths\\%\\ItemData'"
+            },
+            {
+                "id": "Disallowed",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\0'"
+            },
+            {
+                "id": "Disallowed_Paths",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\0\\Paths'"
+            },
+            {
+                "id": "Disallowed_Paths_ItemData",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\0\\Paths\\%\\ItemData'"
+            },
+            {
+                "id": "SaferFlags",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\Safer\\CodeIdentifiers\\%\\%\\%\\SaferFlags'"
+            },
+            {
+                "id": "RuleSetEnforcementMode",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\SrpV2\\%\\EnforcementMode'"
+            },
+            {
+                "id": "Rule",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key like 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Policies\\Microsoft\\Windows\\SrpV2\\%\\%\\Value'"
+            },
+            {
+                "id": "AuditSpecialGroups",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\Audit'"
+            },
+            {
+                "id": "SysmonConfig",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SYSTEM\\CCS\\Services\\SysmonDrv\\Parameters'"
+            },
+            {
+                "id": "DeveloperMode",
+                "interval": 86400,
+                "platform": "windows",
+                "query": "select * from registry where key='HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppModelUnlock'"
+            }
+        ]
+    },
+    "coreMigrationVersion": "8.2.0",
+    "id": "osquery_manager-03e88290-a6df-11ec-b2f9-c732a3845c54",
+    "references": [],
+    "type": "osquery-pack-asset"
+}

@@ -1,0 +1,1240 @@
+- name: netskope.events
+  type: group
+  fields:
+    - name: url
+      type: flattened
+      description: |
+        URL of the application that the user visited as provided by the log or data plane traffic
+    - name: cci
+      type: keyword
+      description: |
+        N/A
+    - name: access_method
+      type: keyword
+      description: |
+        Cloud app traffic can be steered to the Netskope cloud using different deployment methods such as Client (Netskope Client), Secure Forwarder etc. Administrators can also upload firewall and/or proxy logs for log analytics. This field shows the actual access method that triggered the event.
+        For log uploads this shows the actual log type such as PAN, Websense, etc.
+    - name: ack
+      type: boolean
+      description: |
+        Whether user acknowledged the alert or not.
+    - name: activity
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            Description of the user performed activity.
+        - name: status
+          type: keyword
+          description: |
+            Displayed when the user is denied access while performing some activity.
+        - name: type
+          type: keyword
+          description: |
+            Displayed when only admins can perform the activity in question.
+    - name: alarm
+      type: group
+      fields:
+        - name: description
+          type: keyword
+          description: |
+            N/A
+        - name: name
+          type: keyword
+          description: |
+            N/A
+    - name: alert
+      type: group
+      fields:
+        - name: is_present
+          type: boolean
+          description: |
+            Indicates whether alert is generated or not.
+            Populated as yes for all alerts.
+        - name: name
+          type: keyword
+          description: |
+            Name of the alert.
+        - name: type
+          type: keyword
+          description: |
+            Type of the alert.
+    - name: app
+      type: group
+      fields:
+        - name: activity
+          type: keyword
+          description: |
+            N/A
+        - name: category
+          type: keyword
+          description: |
+            N/A
+        - name: name
+          type: keyword
+          description: |
+            Specific cloud application used by the user (e.g. app = Dropbox).
+        - name: region
+          type: keyword
+          description: |
+            N/A
+        - name: session.id
+          type: keyword
+          description: |
+            Unique App/Site Session ID for traffic_type = CloudApp and Web.
+            An app session starts when a user starts using a cloud app/site on and ends once they have been inactive for a certain period of time(15 mins). Use app_session_id to check all the user activities in a single app session. app_session_id is unique for a user, device, browser and domain.
+    - name: attachment
+      type: keyword
+      description: |
+        File name.
+    - name: audit
+      type: group
+      fields:
+        - name: category
+          type: keyword
+          description: |
+            The subcategories in an application such as IAM, EC in AWS, login, token, file, etc., in case of Google.
+        - name: log.event
+          type: keyword
+          description: |
+            N/A
+        - name: type
+          type: keyword
+          description: |
+            The sub category in audit according to SaaS / IaaS apps.
+    - name: browser
+      type: group
+      fields:
+        - name: session.id
+          type: keyword
+          description: |
+            Browser session ID. If there is an idle timeout of 15 minutes, it will timeout the session.
+    - name: bucket
+      type: keyword
+      description: |
+        N/A
+    - name: category
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Matching category ID according to policy. Populated for both cloud and web traffic.
+        - name: name
+          type: keyword
+          description: |
+            N/A
+    - name: ccl
+      type: keyword
+      description: |
+        Cloud Confidence Level. CCL measures the enterprise readiness of the cloud apps taking into consideration those apps security, auditability and business continuity.
+        Each app is assigned one of five cloud confidence levels: excellent, high, medium, low, or poor. Useful for querying if users are accessing a cloud app with a lower CCL.
+    - name: channel
+      type: keyword
+      description: |
+        Channel of the user for slack and slack enterprise apps.
+    - name: client
+      type: group
+      fields:
+        - name: bytes
+          type: long
+          description: |
+            Total number of bytes uploaded from client to server.
+        - name: packets
+          type: long
+          description: |
+            N/A
+    - name: connection
+      type: group
+      fields:
+        - name: duration
+          type: long
+          description: |
+            Duration of the connection in milliseconds. Useful for querying long-lived sessions.
+        - name: end_time
+          type: long
+          description: |
+            Connection end time.
+        - name: id
+          type: keyword
+          description: |
+            Each connection has a unique ID. Shows the ID for the connection event.
+        - name: start_time
+          type: long
+          description: |
+            Connection start time.
+    - name: count
+      type: long
+      description: |
+        Number of raw log lines/events sessionized or suppressed during the suppressed interval.
+    - name: description
+      type: keyword
+      description: |
+        N/A
+    - name: destination
+      type: group
+      fields:
+        - name: geoip.source
+          type: long
+          description: |
+            Source from where the location of Destination IP was derived.
+    - name: detail
+      type: keyword
+      description: |
+        N/A
+    - name: detection
+      type: group
+      fields:
+        - name: engine
+          type: keyword
+          description: |
+            Customer exposed detection engine name.
+        - name: type
+          type: keyword
+          description: |
+            Same as malware type. Duplicate.
+    - name: device
+      type: group
+      fields:
+        - name: classification
+          type: keyword
+          description: |
+            Designation of device as determined by the Netskope Client as to whether the device is managed or not.
+        - name: name
+          type: keyword
+          description: |
+            N/A
+        - name: type
+          type: keyword
+          description: |
+            Device type from where the user accessed the cloud app. It could be Macintosh Windows device, iPad etc.
+    - name: dlp
+      type: group
+      fields:
+        - name: count
+          type: long
+          description: |
+            Count of rule hits.
+        - name: file
+          type: keyword
+          description: |
+            File/Object name extracted from the file/object.
+        - name: fingerprint.classificaiton
+          type: keyword
+          description: |
+            Fingerprint classification.
+        - name: fingerprint.match
+          type: keyword
+          description: |
+            Fingerprint classification match file name.
+        - name: fingerprint.score
+          type: long
+          description: |
+            Fingerprint classification score.
+        - name: fv
+          type: long
+          description: |
+            N/A
+        - name: incident.id
+          type: keyword
+          description: |
+            Incident ID associated with sub-file. In the case of main file, this is same as the parent incident ID.
+        - name: is_unique_count
+          type: boolean
+          description: |
+            True or false depending upon if rule is unique counted per rule data.
+        - name: mail.parent_id
+          type: keyword
+          description: |
+            N/A
+        - name: parent.id
+          type: keyword
+          description: |
+            Incident ID associated with main container (or non-container) file that was scanned.
+        - name: profile
+          type: keyword
+          description: |
+            DLP profile name.
+        - name: score
+          type: long
+          description: |
+            DLP rule score for weighted dictionaries.
+        - name: severity
+          type: keyword
+          description: |
+            Severity of rule.
+        - name: unique_count
+          type: long
+          description: |
+            Integer value of number of unique matches seen per rule data. Only present if rule is uniquely counted.
+    - name: domain
+      type: keyword
+      description: |
+        Domain value. This will hold the host header value or SNI or extracted from absolute URI.
+    - name: domain_shared_with
+      type: long
+      description: |
+        N/A
+    - name: drive
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            N/A
+    - name: encrypt
+      type: group
+      fields:
+        - name: failure
+          type: keyword
+          description: |
+            Reason of failure while encrypting.
+    - name: end_time
+      type: keyword
+      description: |
+        N/A
+    - name: enterprise
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            EnterpriseID in case of Slack for Enterprise.
+        - name: name
+          type: keyword
+          description: |
+            Enterprise name in case of Slack for Enterprise.
+    - name: event
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: |
+            Anomaly type.
+    - name: exposure
+      type: keyword
+      description: |
+        Exposure of a document.
+    - name: external_collaborator_count
+      type: long
+      description: |
+        Count of external collaborators on a file/folder. Supported for some apps.
+    - name: file
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Unique identifier of the file.
+        - name: is_password_protected
+          type: keyword
+          description: |
+            N/A
+        - name: lang
+          type: keyword
+          description: |
+            Language of the file.
+    - name: from
+      type: group
+      fields:
+        - name: object
+          type: keyword
+          description: |
+            Initial name of an object that has been renamed, copied or moved.
+        - name: user_category
+          type: keyword
+          description: |
+            Type of from_user.
+        - name: storage
+          type: keyword
+          description: |
+            N/A
+        - name: logs
+          type: keyword
+          description: |
+            Shows if the event was generated from the Risk Insights log.
+    - name: gateway
+      type: keyword
+      description: |
+        N/A
+    - name: graph
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            N/A
+    - name: http_status
+      type: keyword
+      description: |
+        N/A
+    - name: http_transaction_count
+      type: long
+      description: |
+        HTTP transaction count.
+    - name: iaas_asset_tags
+      type: keyword
+      description: |
+        List of tags associated with the asset for which alert is raised. Each tag is a key/value pair.
+    - name: id
+      type: keyword
+      description: |
+        N/A
+    - name: insertion
+      type: group
+      fields:
+        - name: timestamp
+          type: long
+          description: |
+            Insertion timestamp.
+    - name: instance_name
+      type: keyword
+      description: |
+        Instance associated with an organization application instance.
+    - name: instance
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Unique ID associated with an organization application instance.
+        - name: name
+          type: keyword
+          description: |
+            Instance name associated with an organization application instance.
+        - name: type
+          type: keyword
+          description: |
+            Instance type.
+    - name: internal_collaborator_count
+      type: long
+      description: |
+        Count of internal collaborators on a file/folder. Supported for some apps.
+    - name: ip
+      type: group
+      fields:
+        - name: protocol
+          type: keyword
+          description: |
+            N/A
+    - name: is_bypass_traffic
+      type: boolean
+      description: |
+        Tells if traffic is bypassed by Netskope.
+    - name: is_malicious
+      type: boolean
+      description: |
+        Only exists if some HTTP transaction belonging to the page event resulted in a malsite alert.
+    - name: item
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            N/A
+    - name: justification
+      type: group
+      fields:
+        - name: reason
+          type: keyword
+          description: |
+            Justification reason provided by user. For following policies, justification events are raised. User is displayed a notification popup, user enters justification and can select to proceed or block: useralert policy, dlp block policy, block policy with custom template which contains justification text box.
+        - name: type
+          type: keyword
+          description: |
+            Type of justification provided by user when user bypasses the policy block.
+    - name: last
+      type: group
+      fields:
+        - name: app
+          type: keyword
+          description: |
+            Last application (app in the first/older event). Applies to only proximity anomaly alert.
+        - name: country
+          type: keyword
+          description: |
+            Last location (Country). Applies to only proximity anomaly alert.
+        - name: device
+          type: keyword
+          description: |
+            Last device name (Device Name in the first/older event). Applies to only proximity anomaly alert.
+        - name: location
+          type: keyword
+          description: |
+            Last location (City). Applies to only proximity anomaly alert.
+        - name: region
+          type: keyword
+          description: |
+            Applies to only proximity anomaly alert.
+        - name: timestamp
+          type: long
+          description: |
+            Last timestamp (timestamp in the first/older event). Applies to only proximity anomaly alert.
+    - name: latency
+      type: group
+      fields:
+        - name: max
+          type: long
+          description: |
+            Max latency for a connection in milliseconds.
+        - name: min
+          type: long
+          description: |
+            Min latency for a connection in milliseconds.
+        - name: total
+          type: long
+          description: |
+            Total latency from proxy to app in milliseconds.
+    - name: legal_hold_profile_name
+      type: keyword
+      description: |
+        Legal hold profile name.
+    - name: lh
+      type: group
+      fields:
+        - name: custodian.name
+          type: keyword
+          description: |
+            Custodian name of legal hold profile.
+        - name: destination.app
+          type: keyword
+          description: |
+            Destination appname of legalhold action.
+        - name: destination.instance
+          type: keyword
+          description: |
+            Destination instance of legal hold action.
+        - name: file_id
+          type: keyword
+          description: |
+            File ID of legal hold file.
+        - name: filename
+          type: keyword
+          description: |
+            File name of legal hold file.
+        - name: filename_original
+          type: keyword
+          description: |
+            Original filename of legal hold file.
+        - name: filepath
+          type: keyword
+          description: |
+            File path of legal hold file.
+        - name: shared
+          type: keyword
+          description: |
+            Shared type of legal hold file.
+        - name: shared_with
+          type: keyword
+          description: |
+            User shared with the legal hold file.
+        - name: version
+          type: keyword
+          description: |
+            File version of original file.
+    - name: list
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            N/A
+    - name: log_file
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            Log file name for Risk Insights.
+    - name: login
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: |
+            Salesforce login type.
+        - name: url
+          type: flattened
+          description: |
+            Salesforce login URL.
+    - name: malsite_category
+      type: keyword
+      description: |
+        Category of malsite [ Phishing / Botnet / Malicous URL, etc. ].
+    - name: malware
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            md5 hash of the malware name as provided by the scan engine.
+        - name: name
+          type: keyword
+          description: |
+            Netskope detection name.
+        - name: profile
+          type: keyword
+          description: |
+            tss_profile: profile which user has selected. Data comes from WebUI. Its a json structure.
+        - name: severity
+          type: keyword
+          description: |
+            Malware severity.
+        - name: type
+          type: keyword
+          description: |
+            Malware Type.
+    - name: managed_app
+      type: boolean
+      description: |
+        Whether or not the app in question is managed.
+    - name: management
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Management ID.
+    - name: metric_value
+      type: long
+      description: |
+        N/A
+    - name: modified_at
+      type: date
+      description: |
+        Timestamp corresponding to the modification time of the entity (file, etc.).
+    - name: netskope_pop
+      type: keyword
+      description: |
+        N/A
+    - name: network
+      type: keyword
+      description: |
+        N/A
+    - name: new_value
+      type: keyword
+      description: |
+        New value for a given file for salesforce.com.
+    - name: notify_template
+      type: keyword
+      description: |
+        N/A
+    - name: ns
+      type: group
+      fields:
+        - name: activity
+          type: keyword
+          description: |
+            Maps app activity to Netskope standard activity.
+        - name: device_uid
+          type: keyword
+          description: |
+            Device identifiers on macOS and Windows.
+    - name: num_sessions
+      type: long
+      description: |
+        N/A
+    - name: numbytes
+      type: long
+      description: |
+        Total number of bytes that were transmitted for the connection - numbytes = client_bytes + server_bytes.
+    - name: obfuscate
+      type: boolean
+      description: |
+        N/A
+    - name: object
+      type: group
+      fields:
+        - name: count
+          type: long
+          description: |
+            Displayed when the activity is Delete. Shows the number of objects being deleted.
+        - name: id
+          type: keyword
+          description: |
+            Unique ID associated with an object.
+        - name: name
+          type: keyword
+          description: |
+            Name of the object which is being acted on. It could be a filename, folder name, report name, document name, etc.
+        - name: type
+          type: keyword
+          description: |
+            Type of the object which is being acted on. Object type could be a file, folder, report, document, message, etc.
+    - name: old_value
+      type: keyword
+      description: |
+        Old value for a given file for salesforce.com.
+    - name: org
+      type: keyword
+      description: |
+        Search for events from a specific organization. Organization name is derived from the user ID.
+    - name: organization_unit
+      type: keyword
+      description: |
+        Org Units for which the event correlates to. This ties to user information extracted from Active Directory using the Directory Importer/AD Connector application.
+    - name: orig_ty
+      type: keyword
+      description: |
+        Event Type of original event.
+    - name: original_file_path
+      type: keyword
+      description: |
+        If the file is moved, then keep original path of the file in this field.
+    - name: other
+      type: group
+      fields:
+        - name: categories
+          type: keyword
+          description: |
+            N/A
+    - name: owner
+      type: keyword
+      description: |
+        Owner of the file.
+    - name: page
+      type: keyword
+      description: |
+        The URL of the originating page.
+    - name: page_site
+      type: keyword
+      description: |
+        N/A
+    - name: parent
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            N/A
+    - name: path_id
+      type: long
+      description: |
+        Path ID of the file in the application.
+    - name: policy
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            The Netskope internal ID for the policy created by an admin.
+        - name: name
+          type: keyword
+          description: |
+            Name of the policy configured by an admin.
+    - name: profile
+      type: group
+      fields:
+        - name: emails
+          type: keyword
+          description: |
+            List of profile emails per policy.
+        - name: id
+          type: keyword
+          description: |
+            Anomaly profile ID.
+    - name: publisher_cn
+      type: keyword
+      description: |
+        N/A
+    - name: quarantine
+      type: group
+      fields:
+        - name: action.reason
+          type: keyword
+          description: |
+            Reason for the action taken for quarantine.
+        - name: admin
+          type: keyword
+          description: |
+            Quarantine profile custodian email/name.
+        - name: app
+          type: keyword
+          description: |
+            Quarantine app name.
+        - name: app_name
+          type: keyword
+          description: |
+            N/A
+        - name: failure
+          type: keyword
+          description: |
+            Reason of failure.
+        - name: file.id
+          type: keyword
+          description: |
+            File ID of the quarantined file.
+        - name: file.name
+          type: keyword
+          description: |
+            File name of the quarantine file.
+        - name: instance
+          type: keyword
+          description: |
+            Quarantine instance name.
+        - name: original.file.name
+          type: keyword
+          description: |
+            Original file name which got quarantined.
+        - name: original.file.path
+          type: keyword
+          description: |
+            Original file path which got quarantined.
+        - name: original.version
+          type: keyword
+          description: |
+            Original version of file which got quarantined.
+        - name: shared_with
+          type: keyword
+          description: |
+            N/A
+        - name: profile.id
+          type: keyword
+          description: |
+            Quarantine profile ID.
+        - name: profile.name
+          type: keyword
+          description: |
+            Quarantine profile name of policy for quarantine action.
+        - name: original.shared
+          type: keyword
+          description: |
+            Original file shared user details.
+    - name: qar
+      type: keyword
+      description: |
+        N/A
+    - name: referer
+      type: flattened
+      description: |
+        Referer URL of the application(with http) that the user visited as provided by the log or data plane traffic.
+    - name: region
+      type: keyword
+      description: |
+        N/A
+    - name: region
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Region ID (as provided by the cloud provider).
+    - name: repo
+      type: keyword
+      description: |
+        N/A
+    - name: request
+      type: group
+      fields:
+        - name: count
+          type: long
+          description: |
+            Total number of HTTP requests (equal to number of transaction events for this page event) sent from client to server over one underlying TCP connection.
+        - name: id
+          type: keyword
+          description: |
+            Unique request ID for the event.
+    - name: response
+      type: group
+      fields:
+        - name: content.length
+          type: long
+          description: |
+            N/A
+        - name: content.type
+          type: keyword
+          description: |
+            N/A
+        - name: count
+          type: long
+          description: |
+            Total number of HTTP responses (equal to number of transaction events for this page event) from server to client.
+    - name: retro_scan_name
+      type: keyword
+      description: |
+        Retro scan name.
+    - name: risk_level
+      type: keyword
+      description: |
+        Corresponding field to risk_level_id. Name.
+    - name: risk_level_id
+      type: keyword
+      description: |
+        This field is set by both role-based access (RBA) and MLAD.
+    - name: role
+      type: keyword
+      description: |
+        Roles for Box.
+    - name: run_id
+      type: long
+      description: |
+        Run ID.
+    - name: sa
+      type: group
+      fields:
+        - name: profile.id
+          type: keyword
+          description: |
+            CSA profile ID.
+        - name: profile.name
+          type: keyword
+          description: |
+            CSA profile name.
+        - name: rule.severity
+          type: keyword
+          description: |
+            Rule severity.
+    - name: scan
+      type: group
+      fields:
+        - name: time
+          type: long
+          description: |
+            Time when the scan is done.
+        - name: type
+          type: keyword
+          description: |
+            Generated during retroactive scan or new ongoing activity.
+    - name: scopes
+      type: keyword
+      description: |
+        List of permissions for google apps.
+    - name: serial
+      type: keyword
+      description: |
+        N/A
+    - name: server
+      type: group
+      fields:
+        - name: bytes
+          type: long
+          description: |
+            Total number of downloaded from server to client.
+        - name: packets
+          type: long
+          description: |
+            N/A
+    - name: session
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Session ID for Dropbox application.
+        - name: packets
+          type: long
+          description: |
+            N/A
+        - name: duration
+          type: long
+          description: |
+            N/A
+    - name: severity
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Severity ID used by watchlist and malware alerts.
+        - name: level
+          type: keyword
+          description: |
+            Severity used by watchlist and malware alerts.
+        - name: type
+          type: keyword
+          description: |
+            Severity type used by watchlist and malware alerts
+    - name: sfwder
+      type: keyword
+      description: |
+        N/A
+    - name: shared
+      type: group
+      fields:
+        - name: domains
+          type: keyword
+          description: |
+            List of domains of users the document is shared with.
+        - name: is_shared
+          type: boolean
+          description: |
+            If the file is shared or not.
+        - name: type
+          type: keyword
+          description: |
+            Shared Type.
+        - name: with
+          type: keyword
+          description: |
+            Array of emails with whom a document is shared with.
+    - name: site
+      type: keyword
+      description: |
+        For traffic_type = CloudApp, site = app and for traffic_type = Web, it will be the second level domain name + top-level domain name. For example, in "www.cnn.com", it is "cnn.com".
+    - name: slc
+      type: group
+      fields:
+        - name: geo.location
+          type: geo_point
+          description: |
+            Longitude and latitude.
+    - name: source
+      type: group
+      fields:
+        - name: geoip_src
+          type: long
+          description: |
+            Source from where the location of Source IP was derived.
+    - name: ssl_decrypt_policy
+      type: keyword
+      description: |
+        Applicable to only bypass events. There are 2 ways to create rules for bypass: Bypass due to Exception Configuration, Bypass due to SSL Decrypt Policy.The existing flag bypass_traffic only gives information that a flow has been bypassed, but does not tell exactly which policy was responsible for it. ssl_decrypt_policy field will provide this extra information. In addition, policy field will be also set for every Bypass event.
+    - name: start_time
+      type: keyword
+      description: |
+        N/A
+    - name: sub_type
+      type: keyword
+      description: |
+        Workplace by Facebook post sub category (files, comments, status etc).
+    - name: supporting_data
+      type: keyword
+      description: |
+        N/A
+    - name: suppression
+      type: group
+      fields:
+        - name: end_time
+          type: long
+          description: |
+            When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence.
+        - name: key
+          type: keyword
+          description: |
+            To limit the number of events. Example: Suppress block event for browse.
+        - name: start_time
+          type: long
+          description: |
+            When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence.
+    - name: team
+      type: keyword
+      description: |
+        Slack team name.
+    - name: telemetry_app
+      type: keyword
+      description: |
+        Typically SaaS app web sites use web analytics code within the pages to gather analytic data.
+        When a SaaS app action or page is shown, there is subsequent traffic generated to tracking apps such as doubleclick.net, Optimizely, etc. These tracking apps are listed if applicable in the
+        Telemetry App field.
+    - name: temp_user
+      type: keyword
+      description: |
+        N/A
+    - name: tenant
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Tenant id.
+    - name: threat
+      type: group
+      fields:
+        - name: match_field
+          type: keyword
+          description: |
+            Threat match field, either from domain or URL or IP.
+        - name: source.id
+          type: keyword
+          description: |
+            Threat source id: 1 - NetskopeThreatIntel, 2 - Zvelodb.
+    - name: threshold
+      type: long
+      description: |
+        Threshold (Count at which the anomaly should trigger). Applicable to Bulk Anomaly types( Bulk Upload/ Download/ Delete) and Failed Login Anomaly type.
+    - name: tnetwork_session_id
+      type: keyword
+      description: |
+        N/A
+    - name: to
+      type: group
+      fields:
+        - name: object
+          type: keyword
+          description: |
+            Changed name of an object that has been renamed, copied, or moved.
+        - name: storage
+          type: keyword
+          description: |
+            N/A
+        - name: user
+          type: keyword
+          description: |
+            Used when a file is moved from user A to user B. Shows the email address of user B.
+        - name: user_category
+          type: keyword
+          description: |
+            Type of user to which move is done.
+    - name: total_packets
+      type: long
+      description: |
+        N/A
+    - name: total
+      type: group
+      fields:
+        - name: collaborator_count
+          type: long
+          description: |
+            Count of collaborators on a file/folder. Supported for some apps.
+    - name: traffic
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: |
+            Type of the traffic: CloudApp or Web. CloudApp indicates CASB and web indicates HTTP traffic. Web traffic is only captured for inline access method. It is currently not captured for Risk Insights.
+    - name: transaction
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Unique ID for a given request/response.
+    - name: tss_mode
+      type: keyword
+      description: |
+        Malware scanning mode, specifies whether it's Real-time Protection or API Data Protection.
+    - name: tunnel
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Shows the Client installation ID. Only available for the Client steering configuration.
+        - name: type
+          type: keyword
+          description: |
+            N/A
+        - name: up_time
+          type: long
+          description: |
+            N/A
+    - name: two_factor_auth
+      type: keyword
+      description: |
+        N/A
+    - name: type
+      type: keyword
+      description: |
+        Shows if it is an application event or a connection event. Application events are recorded to track user events inside a cloud app. Connection events shows the actual HTTP connection.
+    - name: universal_connector
+      type: keyword
+      description: |
+        N/A
+    - name: url
+      type: flattened
+      description: |
+        URL of the application that the user visited as provided by the log or data plane traffic.
+    - name: url_to_activity
+      type: keyword
+      description: |
+        Populated if the activity from the URL matches certain activities. This field applies to Risk Insights only.
+    - name: user
+      type: group
+      fields:
+        - name: category
+          type: keyword
+          description: |
+            Type of user in an enterprise - external / internal.
+        - name: group
+          type: keyword
+          description: |
+            N/A
+        - name: generated
+          type: boolean
+          description: |
+            Tells whether it is user generated page event.
+        - name: ip
+          type: keyword
+          description: |
+            IP address of User.
+        - name: is_aggregated
+          type: boolean
+          description: |
+            N/A
+    - name: violating
+      type: group
+      fields:
+        - name: user.name
+          type: keyword
+          description: |
+            User who caused a vioaltion. Populated for Workplace by Facebook.
+        - name: user.type
+          type: keyword
+          description: |
+            Category of the user who caused a violation. Populated for Workplace by Facebook.
+    - name: web_universal_connector
+      type: keyword
+      description: |
+        N/A
+    - name: web
+      type: group
+      fields:
+        - name: url
+          type: flattened
+          description: |
+            File preview URL.
+    - name: workspace
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            Workspace ID in case of Slack for Enterprise.
+        - name: name
+          type: keyword
+          description: |
+            Workspace name in case of Slack for Enterprise.
+    - name: event_type
+      type: keyword
+      description: |
+        N/A
+    - name: zip_password
+      type: keyword
+      description: |
+        Zip the malacious file and put pwd to it and send it back to caller.
+    - name: user
+      type: group
+      fields:
+        - name: geo.city_name
+          type: keyword
+          description: |
+            N/A
+        - name: geo.continent_name
+          type: keyword
+          description: |
+            N/A
+        - name: geo.country_iso_code
+          type: keyword
+          description: |
+            N/A
+        - name: geo.country_name
+          type: keyword
+          description: |
+            N/A
+        - name: geo.location
+          type: geo_point
+          description: |
+            Longitude and latitude.
+        - name: geo.region_iso_code
+          type: keyword
+          description: |
+            N/A
+        - name: geo.region_name
+          type: keyword
+          description: |
+            N/A
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

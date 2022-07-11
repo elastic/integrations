@@ -119,6 +119,7 @@ An example event for `route53_public` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.edge_location | The edge location that served the request. Each edge location is identified by a three-letter code and an arbitrarily assigned number (for example, DFW3). The three-letter code typically corresponds with the International Air Transport Association (IATA) airport code for an airport near the edge location’s geographic location. | alias |
 | aws.route53.edge_location | The Route 53 edge location that responded to the query. Each edge location is identified by a three-letter code and an arbitrary number, for example, DFW3. The three-letter code typically corresponds with the International Air Transport Association airport code for an airport near the edge location. (These abbreviations might change in the future.) | keyword |
 | aws.route53.edns_client_subnet | A partial IP address for the client that the request originated from, if available from the DNS resolver. | keyword |
 | aws.route53.hosted_zone_id | The ID of the hosted zone that is associated with all the DNS queries in this log. | keyword |
@@ -164,6 +165,7 @@ An example event for `route53_public` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -179,6 +181,7 @@ An example event for `route53_public` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -253,7 +256,7 @@ An example event for `route53_resolver` looks as following:
     },
     "dns": {
         "question": {
-            "name": "15.3.4.32.in-addr.arpa",
+            "name": "15.199.16.175.in-addr.arpa",
             "subdomain": "15.3.4",
             "registered_domain": "32.in-addr.arpa",
             "type": "PTR",
@@ -280,7 +283,7 @@ An example event for `route53_resolver` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2021-12-12T00:28:02.201047005Z",
-        "original": "{\"srcaddr\":\"4.5.64.102\",\"vpc_id\":\"vpc-7example\",\"answers\":[{\"Rdata\":\"203.0.113.9\",\"Type\":\"PTR\",\"Class\":\"IN\"}],\"firewall_rule_group_id\":\"rslvr-frg-01234567890abcdef\",\"firewall_rule_action\":\"BLOCK\",\"query_name\":\"15.3.4.32.in-addr.arpa.\",\"firewall_domain_list_id\":\"rslvr-fdl-01234567890abcdef\",\"query_class\":\"IN\",\"srcids\":{\"instance\":\"i-0d15cd0d3example\"},\"rcode\":\"NOERROR\",\"query_type\":\"PTR\",\"transport\":\"UDP\",\"version\":\"1.100000\",\"account_id\":\"111122223333\",\"srcport\":\"56067\",\"query_timestamp\":\"2021-02-04T17:51:55Z\",\"region\":\"us-east-1\"}",
+        "original": "{\"srcaddr\":\"4.5.64.102\",\"vpc_id\":\"vpc-7example\",\"answers\":[{\"Rdata\":\"203.0.113.9\",\"Type\":\"PTR\",\"Class\":\"IN\"}],\"firewall_rule_group_id\":\"rslvr-frg-01234567890abcdef\",\"firewall_rule_action\":\"BLOCK\",\"query_name\":\"15.199.16.175.in-addr.arpa.\",\"firewall_domain_list_id\":\"rslvr-fdl-01234567890abcdef\",\"query_class\":\"IN\",\"srcids\":{\"instance\":\"i-0d15cd0d3example\"},\"rcode\":\"NOERROR\",\"query_type\":\"PTR\",\"transport\":\"UDP\",\"version\":\"1.100000\",\"account_id\":\"111122223333\",\"srcport\":\"56067\",\"query_timestamp\":\"2021-02-04T17:51:55Z\",\"region\":\"us-east-1\"}",
         "category": [
             "network"
         ],
@@ -303,7 +306,7 @@ An example event for `route53_resolver` looks as following:
     },
     "related": {
         "hosts": [
-            "15.3.4.32.in-addr.arpa"
+            "15.199.16.175.in-addr.arpa"
         ],
         "ip": [
             "4.5.64.102"
@@ -391,6 +394,7 @@ An example event for `route53_resolver` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -406,6 +410,7 @@ An example event for `route53_resolver` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |

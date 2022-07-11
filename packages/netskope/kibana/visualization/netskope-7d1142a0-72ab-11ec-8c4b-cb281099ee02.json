@@ -1,0 +1,142 @@
+{
+    "attributes": {
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "netskope.events.event_type",
+                            "negate": false,
+                            "params": {
+                                "query": "network"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "netskope.events.event_type": "network"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "netskope.events.ip.protocol",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "netskope.events.ip.protocol"
+                            }
+                        }
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": "data_stream.dataset : \"netskope.events\" "
+                }
+            }
+        },
+        "title": "[Netskope] Distribution of Networks Events by IP Protocol",
+        "uiStateJSON": {
+            "vis": {
+                "legendOpen": true
+            }
+        },
+        "version": 1,
+        "visState": {
+            "aggs": [
+                {
+                    "enabled": true,
+                    "id": "1",
+                    "params": {
+                        "customLabel": "Count"
+                    },
+                    "schema": "metric",
+                    "type": "count"
+                },
+                {
+                    "enabled": true,
+                    "id": "2",
+                    "params": {
+                        "customLabel": "IP Protocol",
+                        "field": "netskope.events.ip.protocol",
+                        "missingBucket": false,
+                        "missingBucketLabel": "Missing",
+                        "order": "desc",
+                        "orderBy": "1",
+                        "otherBucket": false,
+                        "otherBucketLabel": "Other",
+                        "size": 5
+                    },
+                    "schema": "segment",
+                    "type": "terms"
+                }
+            ],
+            "params": {
+                "addLegend": true,
+                "addTooltip": true,
+                "distinctColors": false,
+                "isDonut": false,
+                "labels": {
+                    "last_level": false,
+                    "percentDecimals": 2,
+                    "position": "default",
+                    "show": true,
+                    "truncate": 100,
+                    "values": true,
+                    "valuesFormat": "percent"
+                },
+                "legendPosition": "right",
+                "maxLegendLines": 1,
+                "nestedLegend": false,
+                "palette": {
+                    "name": "default",
+                    "type": "palette"
+                },
+                "truncateLegend": true,
+                "type": "pie"
+            },
+            "title": "[Netskope] Distribution of Networks Events by IP Protocol",
+            "type": "pie"
+        }
+    },
+    "coreMigrationVersion": "7.16.2",
+    "id": "netskope-7d1142a0-72ab-11ec-8c4b-cb281099ee02",
+    "migrationVersion": {
+        "visualization": "7.14.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "visualization"
+}

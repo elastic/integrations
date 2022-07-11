@@ -73,7 +73,6 @@ An example event for `sns` looks as following:
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.Application | Filters on application objects, which represent an app and device registered with one of the supported push notification services, such as APNs and FCM. | keyword |
-| aws.dimensions.Application,Platform | Filters on application and platform objects, where the platform objects are for the supported push notification services, such as APNs and FCM. | keyword |
 | aws.dimensions.Country | Filters on the destination country or region of an SMS message. | keyword |
 | aws.dimensions.Platform | Filters on platform objects for the push notification services, such as APNs and FCM. | keyword |
 | aws.dimensions.SMSType | Filters on the message type of SMS message. | keyword |
@@ -127,6 +126,7 @@ An example event for `sns` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |

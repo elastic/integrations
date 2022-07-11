@@ -1,0 +1,182 @@
+---
+description: Pipeline for parsing sophos firewall logs (systemhealth pipeline)
+processors:
+#######################
+## ECS Event Mapping ##
+#######################
+- set:
+    field: event.kind
+    value: event
+- rename:
+    field: sophos.xg.idle
+    target_field: sophos.xg.idle_cpu
+    ignore_missing: true
+- gsub:
+    field: sophos.xg.idle_cpu
+    pattern: "%$"
+    replacement: ""
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: sophos.xg.idle_cpu
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.idle_cpu
+- rename:
+    field: sophos.xg.system
+    target_field: sophos.xg.system_cpu
+    ignore_missing: true
+- gsub:
+    field: sophos.xg.system_cpu
+    pattern: "%$"
+    replacement: ""
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: sophos.xg.system_cpu
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.system_cpu
+- rename:
+    field: sophos.xg.user
+    target_field: sophos.xg.user_cpu
+    ignore_missing: true
+- gsub:
+    field: sophos.xg.user_cpu
+    pattern: "%$"
+    replacement: ""
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: sophos.xg.user_cpu
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.user_cpu
+- convert:
+    field: sophos.xg.used
+    type: integer
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.used
+- convert:
+    field: sophos.xg.total_memory
+    type: integer
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.total_memory
+- convert:
+    field: sophos.xg.free
+    type: integer
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.free
+- gsub:
+    field: sophos.xg.configuration
+    pattern: "%$"
+    replacement: ""
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: sophos.xg.configuration
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field:
+            - sophos.xg.configuration
+
+- gsub:
+    field: sophos.xg.reports
+    pattern: "%$"
+    replacement: ""
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: sophos.xg.reports
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.reports
+- gsub:
+    field: sophos.xg.temp
+    pattern: "%$"
+    replacement: ""
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: sophos.xg.temp
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.temp
+- gsub:
+    field: sophos.xg.signature
+    pattern: "%$"
+    replacement: ""
+    ignore_missing: true
+    ignore_failure: true
+- convert:
+    field: sophos.xg.signature
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.signature
+- convert:
+    field: sophos.xg.users
+    type: integer
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.users
+- convert:
+    field: sophos.xg.transmittedkbits
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.transmittedkbits
+- convert:
+    field: sophos.xg.receivedkbits
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.receivedkbits
+- convert:
+    field: sophos.xg.collisions
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.collisions
+- convert:
+    field: sophos.xg.receiveddrops
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.receiveddrops
+- convert:
+    field: sophos.xg.transmitteddrops
+    type: float
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: sophos.xg.transmitteddrops
+
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
