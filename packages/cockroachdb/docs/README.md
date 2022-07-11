@@ -26,7 +26,7 @@ exposing metrics in Prometheus format.
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
 | cockroachdb.status.\*.counter | Prometheus counter metric | object |
-| cockroachdb.status.\*.histogram | Prometheus histogram metric | object |
+| cockroachdb.status.\*.histogram.\* | Prometheus histogram metric | object |
 | cockroachdb.status.\*.rate | Prometheus rated counter metric | object |
 | cockroachdb.status.\*.value | Prometheus gauge metric | object |
 | cockroachdb.status.labels.\* | Prometheus metric labels | object |
@@ -67,661 +67,2507 @@ An example event for `status` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-07-11T09:54:22.527Z",
+    "agent": {
+        "ephemeral_id": "61694f44-1708-4fe0-9026-bde80b6c7dd0",
+        "id": "cdc6a9bf-9269-4de8-a490-ce48a2f4596d",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.3.0"
+    },
     "cockroachdb": {
         "status": {
-            "raft_rcvd_prevote": {
+            "admission_admitted_kv": {
+                "counter": 836
+            },
+            "admission_admitted_kv_stores": {
+                "counter": 208
+            },
+            "admission_admitted_sql_kv_response": {
+                "counter": 124
+            },
+            "admission_admitted_sql_leaf_start": {
                 "counter": 0
             },
-            "rocksdb_bloom_filter_prefix_useful": {
+            "admission_admitted_sql_root_start": {
+                "counter": 0
+            },
+            "admission_admitted_sql_sql_response": {
+                "counter": 0
+            },
+            "admission_errored_kv": {
+                "counter": 0
+            },
+            "admission_errored_kv_stores": {
+                "counter": 0
+            },
+            "admission_errored_sql_kv_response": {
+                "counter": 0
+            },
+            "admission_errored_sql_leaf_start": {
+                "counter": 0
+            },
+            "admission_errored_sql_root_start": {
+                "counter": 0
+            },
+            "admission_errored_sql_sql_response": {
+                "counter": 0
+            },
+            "admission_granter_io_tokens_exhausted_duration_kv": {
+                "counter": 0
+            },
+            "admission_granter_total_slots_kv": {
+                "value": 4
+            },
+            "admission_granter_used_slots_kv": {
                 "value": 0
             },
-            "keycount": {
+            "admission_granter_used_slots_sql_leaf_start": {
                 "value": 0
             },
-            "queue_gc_info_resolvefailed": {
-                "counter": 0
-            },
-            "queue_gc_info_resolvetotal": {
-                "counter": 0
-            },
-            "raft_process_tickingnanos": {
-                "counter": 0
-            },
-            "raft_rcvd_dropped": {
-                "counter": 0
-            },
-            "tscache_skl_rotations": {
-                "counter": 0
-            },
-            "txnwaitqueue_pusher_waiting": {
+            "admission_granter_used_slots_sql_root_start": {
                 "value": 0
             },
-            "queue_merge_processingnanos": {
+            "admission_requested_kv": {
+                "counter": 836
+            },
+            "admission_requested_kv_stores": {
+                "counter": 208
+            },
+            "admission_requested_sql_kv_response": {
+                "counter": 124
+            },
+            "admission_requested_sql_leaf_start": {
                 "counter": 0
             },
-            "queue_gc_info_transactionspangccommitted": {
+            "admission_requested_sql_root_start": {
                 "counter": 0
             },
-            "queue_gc_info_intenttxns": {
+            "admission_requested_sql_sql_response": {
                 "counter": 0
             },
-            "queue_raftsnapshot_process_success": {
-                "counter": 0
+            "admission_wait_durations_kv": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
             },
-            "range_snapshots_applied_non_voter": {
-                "counter": 0
+            "admission_wait_durations_kv_stores": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
             },
-            "rebalancing_range_rebalances": {
-                "counter": 0
+            "admission_wait_durations_sql_kv_response": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
             },
-            "follower_reads_success_count": {
-                "counter": 0
+            "admission_wait_durations_sql_leaf_start": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
             },
-            "abortspanbytes": {
+            "admission_wait_durations_sql_root_start": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "admission_wait_durations_sql_sql_response": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "admission_wait_queue_length_kv": {
                 "value": 0
             },
-            "queue_tsmaintenance_processingnanos": {
+            "admission_wait_queue_length_kv_stores": {
+                "value": 0
+            },
+            "admission_wait_queue_length_sql_kv_response": {
+                "value": 0
+            },
+            "admission_wait_queue_length_sql_leaf_start": {
+                "value": 0
+            },
+            "admission_wait_queue_length_sql_root_start": {
+                "value": 0
+            },
+            "admission_wait_queue_length_sql_sql_response": {
+                "value": 0
+            },
+            "admission_wait_sum_kv": {
                 "counter": 0
             },
-            "rocksdb_bloom_filter_prefix_checked": {
+            "admission_wait_sum_kv_stores": {
+                "counter": 0
+            },
+            "admission_wait_sum_sql_kv_response": {
+                "counter": 0
+            },
+            "admission_wait_sum_sql_leaf_start": {
+                "counter": 0
+            },
+            "admission_wait_sum_sql_root_start": {
+                "counter": 0
+            },
+            "admission_wait_sum_sql_sql_response": {
+                "counter": 0
+            },
+            "changefeed_admit_latency": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "changefeed_backfill_count": {
                 "value": 0
+            },
+            "changefeed_backfill_pending_ranges": {
+                "value": 0
+            },
+            "changefeed_buffer_entries_in": {
+                "counter": 0
+            },
+            "changefeed_buffer_entries_mem_acquired": {
+                "counter": 0
+            },
+            "changefeed_buffer_entries_mem_released": {
+                "counter": 0
+            },
+            "changefeed_buffer_entries_out": {
+                "counter": 0
+            },
+            "changefeed_buffer_entries_released": {
+                "counter": 0
+            },
+            "changefeed_buffer_pushback_nanos": {
+                "counter": 0
+            },
+            "changefeed_bytes_messages_pushback_nanos": {
+                "counter": 0
+            },
+            "changefeed_checkpoint_hist_nanos": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "changefeed_commit_latency": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "changefeed_emitted_bytes": {
+                "counter": 0
+            },
+            "changefeed_emitted_messages": {
+                "counter": 0
+            },
+            "changefeed_error_retries": {
+                "counter": 0
+            },
+            "changefeed_failures": {
+                "counter": 0
+            },
+            "changefeed_flush_hist_nanos": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "changefeed_flush_messages_pushback_nanos": {
+                "counter": 0
+            },
+            "changefeed_flushed_bytes": {
+                "counter": 0
+            },
+            "changefeed_flushes": {
+                "counter": 0
+            },
+            "changefeed_forwarded_resolved_messages": {
+                "counter": 0
+            },
+            "changefeed_frontier_updates": {
+                "counter": 0
+            },
+            "changefeed_max_behind_nanos": {
+                "value": 0
+            },
+            "changefeed_message_size_hist": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "changefeed_messages_messages_pushback_nanos": {
+                "counter": 0
+            },
+            "changefeed_queue_time_nanos": {
+                "counter": 0
+            },
+            "changefeed_running": {
+                "value": 0
+            },
+            "changefeed_sink_batch_hist_nanos": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "changefeed_table_metadata_nanos": {
+                "counter": 0
+            },
+            "clock_offset_meannanos": {
+                "value": 466354
+            },
+            "clock_offset_stddevnanos": {
+                "value": 1201396
+            },
+            "distsender_batches": {
+                "counter": 775
+            },
+            "distsender_batches_async_sent": {
+                "counter": 18
+            },
+            "distsender_batches_async_throttled": {
+                "counter": 0
+            },
+            "distsender_batches_partial": {
+                "counter": 104
+            },
+            "distsender_errors_inleasetransferbackoffs": {
+                "counter": 0
+            },
+            "distsender_errors_notleaseholder": {
+                "counter": 4
+            },
+            "distsender_rangefeed_catchup_ranges": {
+                "value": 0
+            },
+            "distsender_rangefeed_error_catchup_ranges": {
+                "counter": 0
+            },
+            "distsender_rangefeed_total_ranges": {
+                "value": 10
+            },
+            "distsender_rangelookups": {
+                "counter": 14
+            },
+            "distsender_rpc_addsstable_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_adminchangereplicas_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_adminmerge_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_adminrelocaterange_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_adminscatter_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_adminsplit_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_admintransferlease_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_adminunsplit_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_adminverifyprotectedtimestamp_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_barrier_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_checkconsistency_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_clearrange_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_computechecksum_sent": {
+                "counter": 9
+            },
+            "distsender_rpc_conditionalput_sent": {
+                "counter": 107
+            },
+            "distsender_rpc_delete_sent": {
+                "counter": 48
+            },
+            "distsender_rpc_deleterange_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_endtxn_sent": {
+                "counter": 92
+            },
+            "distsender_rpc_err_ambiguousresulterrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_batchtimestampbeforegcerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_communicationerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_conditionfailederrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_errordetailtype_0_": {
+                "counter": 0
+            },
+            "distsender_rpc_err_errordetailtype_15_": {
+                "counter": 0
+            },
+            "distsender_rpc_err_errordetailtype_19_": {
+                "counter": 0
+            },
+            "distsender_rpc_err_errordetailtype_20_": {
+                "counter": 0
+            },
+            "distsender_rpc_err_errordetailtype_21_": {
+                "counter": 0
+            },
+            "distsender_rpc_err_errordetailtype_23_": {
+                "counter": 0
+            },
+            "distsender_rpc_err_errordetailtype_24_": {
+                "counter": 0
+            },
+            "distsender_rpc_err_errordetailtype_29_": {
+                "counter": 0
+            },
+            "distsender_rpc_err_errordetailtype_30_": {
+                "counter": 0
+            },
+            "distsender_rpc_err_errordetailtype_33_": {
+                "counter": 0
+            },
+            "distsender_rpc_err_indeterminatecommiterrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_integeroverflowerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_intentmissingerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_internalerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_invalidleaseerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_leaserejectederrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_mergeinprogresserrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_mintimestampboundunsatisfiableerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_mvcchistorymutationerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_nodeunavailableerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_notleaseholdererrtype": {
+                "counter": 4
+            },
+            "distsender_rpc_err_oprequirestxnerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_optimisticevalconflictserrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_raftgroupdeletederrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_rangefeedretryerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_rangekeymismatcherrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_rangenotfounderrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_readwithinuncertaintyintervalerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_refreshfailederrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_replicacorruptionerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_replicatooolderrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_storenotfounderrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_transactionabortederrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_transactionpusherrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_transactionretryerrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_transactionretrywithprotorefresherrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_transactionstatuserrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_txnalreadyencounterederrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_unsupportedrequesterrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_writeintenterrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_err_writetooolderrtype": {
+                "counter": 0
+            },
+            "distsender_rpc_export_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_gc_sent": {
+                "counter": 10
+            },
+            "distsender_rpc_get_sent": {
+                "counter": 484
+            },
+            "distsender_rpc_heartbeattxn_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_increment_sent": {
+                "counter": 4
+            },
+            "distsender_rpc_initput_sent": {
+                "counter": 8
+            },
+            "distsender_rpc_leaseinfo_sent": {
+                "counter": 1
+            },
+            "distsender_rpc_merge_sent": {
+                "counter": 1352
+            },
+            "distsender_rpc_migrate_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_probe_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_pushtxn_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_put_sent": {
+                "counter": 153
+            },
+            "distsender_rpc_queryintent_sent": {
+                "counter": 273
+            },
+            "distsender_rpc_querylocks_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_queryresolvedtimestamp_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_querytxn_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_rangestats_sent": {
+                "counter": 2
+            },
+            "distsender_rpc_recomputestats_sent": {
+                "counter": 1
+            },
+            "distsender_rpc_recovertxn_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_refresh_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_refreshrange_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_requestlease_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_resolveintent_sent": {
+                "counter": 54
+            },
+            "distsender_rpc_resolveintentrange_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_reversescan_sent": {
+                "counter": 6
+            },
+            "distsender_rpc_revertrange_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_scan_sent": {
+                "counter": 149
+            },
+            "distsender_rpc_scaninterleavedintents_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_sent": {
+                "counter": 836
+            },
+            "distsender_rpc_sent_local": {
+                "counter": 836
+            },
+            "distsender_rpc_sent_nextreplicaerror": {
+                "counter": 4
+            },
+            "distsender_rpc_subsume_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_transferlease_sent": {
+                "counter": 0
+            },
+            "distsender_rpc_truncatelog_sent": {
+                "counter": 3
+            },
+            "distsender_rpc_writebatch_sent": {
+                "counter": 0
+            },
+            "engine_stalls": {
+                "counter": 0
+            },
+            "exec_error": {
+                "counter": 4
+            },
+            "exec_success": {
+                "counter": 832
+            },
+            "gossip_bytes_received": {
+                "counter": 0
+            },
+            "gossip_bytes_sent": {
+                "counter": 0
+            },
+            "gossip_connections_incoming": {
+                "value": 0
+            },
+            "gossip_connections_outgoing": {
+                "value": 0
+            },
+            "gossip_connections_refused": {
+                "counter": 0
+            },
+            "gossip_infos_received": {
+                "counter": 0
+            },
+            "gossip_infos_sent": {
+                "counter": 0
+            },
+            "jobs_adopt_iterations": {
+                "counter": 0
+            },
+            "jobs_auto_create_stats_currently_idle": {
+                "value": 0
+            },
+            "jobs_auto_create_stats_currently_running": {
+                "value": 0
+            },
+            "jobs_auto_create_stats_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_auto_create_stats_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_auto_create_stats_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_auto_create_stats_resume_completed": {
+                "counter": 0
+            },
+            "jobs_auto_create_stats_resume_failed": {
+                "counter": 0
+            },
+            "jobs_auto_create_stats_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_auto_span_config_reconciliation_currently_idle": {
+                "value": 1
+            },
+            "jobs_auto_span_config_reconciliation_currently_running": {
+                "value": 1
+            },
+            "jobs_auto_span_config_reconciliation_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_auto_span_config_reconciliation_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_auto_span_config_reconciliation_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_auto_span_config_reconciliation_resume_completed": {
+                "counter": 0
+            },
+            "jobs_auto_span_config_reconciliation_resume_failed": {
+                "counter": 0
+            },
+            "jobs_auto_span_config_reconciliation_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_auto_sql_stats_compaction_currently_idle": {
+                "value": 0
+            },
+            "jobs_auto_sql_stats_compaction_currently_running": {
+                "value": 0
+            },
+            "jobs_auto_sql_stats_compaction_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_auto_sql_stats_compaction_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_auto_sql_stats_compaction_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_auto_sql_stats_compaction_resume_completed": {
+                "counter": 0
+            },
+            "jobs_auto_sql_stats_compaction_resume_failed": {
+                "counter": 0
+            },
+            "jobs_auto_sql_stats_compaction_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_backup_currently_idle": {
+                "value": 0
+            },
+            "jobs_backup_currently_running": {
+                "value": 0
+            },
+            "jobs_backup_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_backup_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_backup_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_backup_resume_completed": {
+                "counter": 0
+            },
+            "jobs_backup_resume_failed": {
+                "counter": 0
+            },
+            "jobs_backup_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_changefeed_currently_idle": {
+                "value": 0
+            },
+            "jobs_changefeed_currently_running": {
+                "value": 0
+            },
+            "jobs_changefeed_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_changefeed_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_changefeed_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_changefeed_resume_completed": {
+                "counter": 0
+            },
+            "jobs_changefeed_resume_failed": {
+                "counter": 0
+            },
+            "jobs_changefeed_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_claimed_jobs": {
+                "counter": 0
+            },
+            "jobs_create_stats_currently_idle": {
+                "value": 0
+            },
+            "jobs_create_stats_currently_running": {
+                "value": 0
+            },
+            "jobs_create_stats_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_create_stats_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_create_stats_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_create_stats_resume_completed": {
+                "counter": 0
+            },
+            "jobs_create_stats_resume_failed": {
+                "counter": 0
+            },
+            "jobs_create_stats_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_import_currently_idle": {
+                "value": 0
+            },
+            "jobs_import_currently_running": {
+                "value": 0
+            },
+            "jobs_import_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_import_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_import_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_import_resume_completed": {
+                "counter": 0
+            },
+            "jobs_import_resume_failed": {
+                "counter": 0
+            },
+            "jobs_import_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_migration_currently_idle": {
+                "value": 0
+            },
+            "jobs_migration_currently_running": {
+                "value": 0
+            },
+            "jobs_migration_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_migration_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_migration_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_migration_resume_completed": {
+                "counter": 0
+            },
+            "jobs_migration_resume_failed": {
+                "counter": 0
+            },
+            "jobs_migration_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_new_schema_change_currently_idle": {
+                "value": 0
+            },
+            "jobs_new_schema_change_currently_running": {
+                "value": 0
+            },
+            "jobs_new_schema_change_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_new_schema_change_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_new_schema_change_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_new_schema_change_resume_completed": {
+                "counter": 0
+            },
+            "jobs_new_schema_change_resume_failed": {
+                "counter": 0
+            },
+            "jobs_new_schema_change_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_restore_currently_idle": {
+                "value": 0
+            },
+            "jobs_restore_currently_running": {
+                "value": 0
+            },
+            "jobs_restore_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_restore_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_restore_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_restore_resume_completed": {
+                "counter": 0
+            },
+            "jobs_restore_resume_failed": {
+                "counter": 0
+            },
+            "jobs_restore_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_resumed_claimed_jobs": {
+                "counter": 1
+            },
+            "jobs_row_level_ttl_currently_idle": {
+                "value": 0
+            },
+            "jobs_row_level_ttl_currently_running": {
+                "value": 0
+            },
+            "jobs_row_level_ttl_delete_duration": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "jobs_row_level_ttl_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_row_level_ttl_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_row_level_ttl_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_row_level_ttl_num_active_ranges": {
+                "value": 0
+            },
+            "jobs_row_level_ttl_range_total_duration": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "jobs_row_level_ttl_resume_completed": {
+                "counter": 0
+            },
+            "jobs_row_level_ttl_resume_failed": {
+                "counter": 0
+            },
+            "jobs_row_level_ttl_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_row_level_ttl_rows_deleted": {
+                "counter": 0
+            },
+            "jobs_row_level_ttl_rows_selected": {
+                "counter": 0
+            },
+            "jobs_row_level_ttl_select_duration": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "jobs_row_level_ttl_total_expired_rows": {
+                "value": 0
+            },
+            "jobs_row_level_ttl_total_rows": {
+                "value": 0
+            },
+            "jobs_running_non_idle": {
+                "value": 0
+            },
+            "jobs_schema_change_currently_idle": {
+                "value": 0
+            },
+            "jobs_schema_change_currently_running": {
+                "value": 0
+            },
+            "jobs_schema_change_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_schema_change_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_schema_change_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_schema_change_gc_currently_idle": {
+                "value": 0
+            },
+            "jobs_schema_change_gc_currently_running": {
+                "value": 0
+            },
+            "jobs_schema_change_gc_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_schema_change_gc_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_schema_change_gc_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_schema_change_gc_resume_completed": {
+                "counter": 0
+            },
+            "jobs_schema_change_gc_resume_failed": {
+                "counter": 0
+            },
+            "jobs_schema_change_gc_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_schema_change_resume_completed": {
+                "counter": 0
+            },
+            "jobs_schema_change_resume_failed": {
+                "counter": 0
+            },
+            "jobs_schema_change_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_stream_ingestion_currently_idle": {
+                "value": 0
+            },
+            "jobs_stream_ingestion_currently_running": {
+                "value": 0
+            },
+            "jobs_stream_ingestion_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_stream_ingestion_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_stream_ingestion_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_stream_ingestion_resume_completed": {
+                "counter": 0
+            },
+            "jobs_stream_ingestion_resume_failed": {
+                "counter": 0
+            },
+            "jobs_stream_ingestion_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_stream_replication_currently_idle": {
+                "value": 0
+            },
+            "jobs_stream_replication_currently_running": {
+                "value": 0
+            },
+            "jobs_stream_replication_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_stream_replication_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_stream_replication_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_stream_replication_resume_completed": {
+                "counter": 0
+            },
+            "jobs_stream_replication_resume_failed": {
+                "counter": 0
+            },
+            "jobs_stream_replication_resume_retry_error": {
+                "counter": 0
+            },
+            "jobs_typedesc_schema_change_currently_idle": {
+                "value": 0
+            },
+            "jobs_typedesc_schema_change_currently_running": {
+                "value": 0
+            },
+            "jobs_typedesc_schema_change_fail_or_cancel_completed": {
+                "counter": 0
+            },
+            "jobs_typedesc_schema_change_fail_or_cancel_failed": {
+                "counter": 0
+            },
+            "jobs_typedesc_schema_change_fail_or_cancel_retry_error": {
+                "counter": 0
+            },
+            "jobs_typedesc_schema_change_resume_completed": {
+                "counter": 0
+            },
+            "jobs_typedesc_schema_change_resume_failed": {
+                "counter": 0
+            },
+            "jobs_typedesc_schema_change_resume_retry_error": {
+                "counter": 0
+            },
+            "kv_prober_planning_attempts": {
+                "counter": 0
+            },
+            "kv_prober_planning_failures": {
+                "counter": 0
+            },
+            "kv_prober_read_attempts": {
+                "counter": 0
+            },
+            "kv_prober_read_failures": {
+                "counter": 0
+            },
+            "kv_prober_read_latency": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "kv_prober_write_attempts": {
+                "counter": 0
+            },
+            "kv_prober_write_failures": {
+                "counter": 0
+            },
+            "kv_prober_write_latency": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "kv_protectedts_reconciliation_errors": {
+                "counter": 0
+            },
+            "kv_protectedts_reconciliation_num_runs": {
+                "counter": 1
+            },
+            "kv_protectedts_reconciliation_records_processed": {
+                "counter": 0
+            },
+            "kv_protectedts_reconciliation_records_removed": {
+                "counter": 0
+            },
+            "kv_rangefeed_mem_shared": {
+                "value": 0
+            },
+            "kv_rangefeed_mem_system": {
+                "value": 20480
             },
             "labels": {
-                "instance": "host.docker.internal:8082",
-                "store": "2",
-                "job": "cockroachdb"
+                "instance": "elastic-package-service_cockroachdb_1:8080",
+                "job": "prometheus"
             },
-            "raft_enqueued_pending": {
+            "liveness_epochincrements": {
+                "counter": 0
+            },
+            "liveness_heartbeatfailures": {
+                "counter": 0
+            },
+            "liveness_heartbeatlatency": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        4718591.5,
+                        11534335,
+                        20447231,
+                        40894463
+                    ]
+                }
+            },
+            "liveness_heartbeatsinflight": {
                 "value": 0
             },
-            "rebalancing_writespersecond": {
-                "value": 0
+            "liveness_heartbeatsuccesses": {
+                "counter": 3
             },
-            "queue_tsmaintenance_process_success": {
-                "counter": 0
-            },
-            "rocksdb_block_cache_misses": {
-                "value": 12
-            },
-            "raft_rcvd_snap": {
-                "counter": 0
-            },
-            "queue_merge_process_success": {
-                "counter": 0
-            },
-            "raft_entrycache_accesses": {
-                "counter": 0
-            },
-            "kv_closed_timestamp_failures_to_close": {
-                "value": 0
-            },
-            "replicas_leaders": {
-                "value": 0
-            },
-            "queue_split_pending": {
-                "value": 0
-            },
-            "queue_raftsnapshot_processingnanos": {
-                "counter": 0
-            },
-            "ranges_overreplicated": {
-                "value": 0
-            },
-            "leases_transfers_error": {
-                "counter": 0
-            },
-            "rebalancing_queriespersecond": {
-                "value": 0
-            },
-            "queue_gc_info_numkeysaffected": {
-                "counter": 0
-            },
-            "raft_rcvd_prop": {
-                "counter": 0
-            },
-            "queue_replicagc_pending": {
-                "value": 0
-            },
-            "rebalancing_lease_transfers": {
-                "counter": 0
-            },
-            "queue_replicate_process_success": {
-                "counter": 0
-            },
-            "leases_success": {
-                "counter": 0
-            },
-            "raftlog_truncated": {
-                "counter": 0
-            },
-            "queue_replicate_addreplica": {
-                "counter": 0
-            },
-            "storage_disk_stalled": {
-                "value": 0
-            },
-            "queue_raftlog_process_failure": {
-                "counter": 0
-            },
-            "rocksdb_memtable_total_size": {
-                "value": 1310720.0
-            },
-            "queue_replicagc_process_failure": {
-                "counter": 0
-            },
-            "raft_rcvd_timeoutnow": {
-                "counter": 0
-            },
-            "range_removes": {
-                "counter": 0
-            },
-            "queue_merge_pending": {
-                "value": 0
-            },
-            "raft_rcvd_appresp": {
-                "counter": 0
-            },
-            "range_adds": {
-                "counter": 0
-            },
-            "queue_replicate_processingnanos": {
-                "counter": 0
-            },
-            "addsstable_delay_enginebackpressure": {
-                "counter": 0
-            },
-            "valcount": {
-                "value": 0
-            },
-            "rocksdb_block_cache_pinned_usage": {
-                "value": 0
-            },
-            "queue_replicate_pending": {
-                "value": 0
-            },
-            "queue_consistency_pending": {
-                "value": 0
-            },
-            "raft_entrycache_size": {
-                "value": 0
-            },
-            "queue_tsmaintenance_pending": {
-                "value": 0
-            },
-            "requests_slow_raft": {
-                "value": 0
-            },
-            "addsstable_copies": {
-                "counter": 0
-            },
-            "addsstable_proposals": {
-                "counter": 0
-            },
-            "rocksdb_block_cache_usage": {
-                "value": 1264
-            },
-            "queue_gc_info_transactionspangcaborted": {
-                "counter": 0
-            },
-            "raft_entrycache_bytes": {
-                "value": 0
-            },
-            "txnwaitqueue_pushee_waiting": {
-                "value": 0
-            },
-            "livebytes": {
-                "value": 0
-            },
-            "txnrecovery_failures": {
-                "counter": 0
-            },
-            "syscount": {
-                "value": 0
-            },
-            "rocksdb_num_sstables": {
+            "liveness_livenodes": {
                 "value": 1
             },
-            "leases_epoch": {
+            "requests_slow_distsender": {
                 "value": 0
             },
-            "queue_split_purgatory": {
+            "round_trip_latency": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        1245183.5,
+                        3604479,
+                        111411199,
+                        431489023
+                    ]
+                }
+            },
+            "rpc_batches_recv": {
+                "counter": 836
+            },
+            "rpc_heartbeats_failed": {
                 "value": 0
             },
-            "ranges": {
+            "rpc_heartbeats_initializing": {
                 "value": 0
             },
-            "txnrecovery_attempts_total": {
+            "rpc_heartbeats_loops_exited": {
                 "counter": 0
             },
-            "queue_merge_purgatory": {
-                "value": 0
+            "rpc_heartbeats_loops_started": {
+                "counter": 1
             },
-            "queue_gc_info_transactionspangcstaging": {
-                "counter": 0
-            },
-            "queue_gc_info_resolvesuccess": {
-                "counter": 0
-            },
-            "kv_tenant_rate_limit_write_bytes_admitted": {
-                "counter": 0
-            },
-            "queue_tsmaintenance_process_failure": {
-                "counter": 0
-            },
-            "capacity_used": {
-                "value": 1.0439201E7
-            },
-            "txnrecovery_attempts_pending": {
-                "value": 0
-            },
-            "queue_merge_process_failure": {
-                "counter": 0
-            },
-            "rocksdb_flushed_bytes": {
-                "value": 0
-            },
-            "addsstable_delay_total": {
-                "counter": 0
-            },
-            "txnrecovery_successes_aborted": {
-                "counter": 0
-            },
-            "raft_rcvd_voteresp": {
-                "counter": 0
-            },
-            "capacity_available": {
-                "value": 5.37076989952E11
-            },
-            "raft_rcvd_vote": {
-                "counter": 0
-            },
-            "range_snapshots_applied_voter": {
-                "counter": 0
-            },
-            "txnrecovery_successes_committed": {
-                "counter": 0
-            },
-            "requests_slow_lease": {
-                "value": 0
-            },
-            "replicas": {
-                "value": 0
-            },
-            "rocksdb_estimated_pending_compaction": {
-                "value": 0
-            },
-            "raftlog_behind": {
-                "value": 0
-            },
-            "storage_disk_slow": {
-                "value": 0
-            },
-            "raft_commandsapplied": {
-                "counter": 0
-            },
-            "queue_gc_info_transactionspangcpending": {
-                "counter": 0
-            },
-            "requests_backpressure_split": {
-                "value": 0
-            },
-            "requests_slow_latch": {
-                "value": 0
-            },
-            "kv_tenant_rate_limit_current_blocked": {
-                "value": 0
-            },
-            "kv_tenant_rate_limit_read_bytes_admitted": {
-                "counter": 0
-            },
-            "rocksdb_block_cache_hits": {
-                "value": 21
-            },
-            "rocksdb_compacted_bytes_read": {
-                "value": 2583
-            },
-            "txnrecovery_successes_pending": {
-                "counter": 0
-            },
-            "queue_raftsnapshot_process_failure": {
-                "counter": 0
-            },
-            "rocksdb_table_readers_mem_estimate": {
-                "value": 616
-            },
-            "queue_replicate_purgatory": {
-                "value": 0
-            },
-            "valbytes": {
-                "value": 0
-            },
-            "intentage": {
-                "value": 0
-            },
-            "queue_replicate_removedeadreplica": {
-                "counter": 0
-            },
-            "gcbytesage": {
-                "value": 0
-            },
-            "queue_replicagc_processingnanos": {
-                "counter": 0
-            },
-            "queue_replicate_process_failure": {
-                "counter": 0
-            },
-            "leases_expiration": {
-                "value": 0
-            },
-            "rocksdb_compactions": {
+            "rpc_heartbeats_nominal": {
                 "value": 1
             },
-            "queue_replicate_removelearnerreplica": {
+            "rpc_method_addsstable_recv": {
                 "counter": 0
             },
-            "raft_heartbeats_pending": {
+            "rpc_method_adminchangereplicas_recv": {
+                "counter": 0
+            },
+            "rpc_method_adminmerge_recv": {
+                "counter": 0
+            },
+            "rpc_method_adminrelocaterange_recv": {
+                "counter": 0
+            },
+            "rpc_method_adminscatter_recv": {
+                "counter": 0
+            },
+            "rpc_method_adminsplit_recv": {
+                "counter": 0
+            },
+            "rpc_method_admintransferlease_recv": {
+                "counter": 0
+            },
+            "rpc_method_adminunsplit_recv": {
+                "counter": 0
+            },
+            "rpc_method_adminverifyprotectedtimestamp_recv": {
+                "counter": 0
+            },
+            "rpc_method_barrier_recv": {
+                "counter": 0
+            },
+            "rpc_method_checkconsistency_recv": {
+                "counter": 0
+            },
+            "rpc_method_clearrange_recv": {
+                "counter": 0
+            },
+            "rpc_method_computechecksum_recv": {
+                "counter": 9
+            },
+            "rpc_method_conditionalput_recv": {
+                "counter": 107
+            },
+            "rpc_method_delete_recv": {
+                "counter": 48
+            },
+            "rpc_method_deleterange_recv": {
+                "counter": 0
+            },
+            "rpc_method_endtxn_recv": {
+                "counter": 92
+            },
+            "rpc_method_export_recv": {
+                "counter": 0
+            },
+            "rpc_method_gc_recv": {
+                "counter": 10
+            },
+            "rpc_method_get_recv": {
+                "counter": 486
+            },
+            "rpc_method_heartbeattxn_recv": {
+                "counter": 0
+            },
+            "rpc_method_increment_recv": {
+                "counter": 4
+            },
+            "rpc_method_initput_recv": {
+                "counter": 8
+            },
+            "rpc_method_leaseinfo_recv": {
+                "counter": 1
+            },
+            "rpc_method_merge_recv": {
+                "counter": 1352
+            },
+            "rpc_method_migrate_recv": {
+                "counter": 0
+            },
+            "rpc_method_probe_recv": {
+                "counter": 0
+            },
+            "rpc_method_pushtxn_recv": {
+                "counter": 0
+            },
+            "rpc_method_put_recv": {
+                "counter": 155
+            },
+            "rpc_method_queryintent_recv": {
+                "counter": 273
+            },
+            "rpc_method_querylocks_recv": {
+                "counter": 0
+            },
+            "rpc_method_queryresolvedtimestamp_recv": {
+                "counter": 0
+            },
+            "rpc_method_querytxn_recv": {
+                "counter": 0
+            },
+            "rpc_method_rangestats_recv": {
+                "counter": 2
+            },
+            "rpc_method_recomputestats_recv": {
+                "counter": 1
+            },
+            "rpc_method_recovertxn_recv": {
+                "counter": 0
+            },
+            "rpc_method_refresh_recv": {
+                "counter": 0
+            },
+            "rpc_method_refreshrange_recv": {
+                "counter": 0
+            },
+            "rpc_method_requestlease_recv": {
+                "counter": 0
+            },
+            "rpc_method_resolveintent_recv": {
+                "counter": 54
+            },
+            "rpc_method_resolveintentrange_recv": {
+                "counter": 0
+            },
+            "rpc_method_reversescan_recv": {
+                "counter": 6
+            },
+            "rpc_method_revertrange_recv": {
+                "counter": 0
+            },
+            "rpc_method_scan_recv": {
+                "counter": 149
+            },
+            "rpc_method_scaninterleavedintents_recv": {
+                "counter": 0
+            },
+            "rpc_method_subsume_recv": {
+                "counter": 0
+            },
+            "rpc_method_transferlease_recv": {
+                "counter": 0
+            },
+            "rpc_method_truncatelog_recv": {
+                "counter": 3
+            },
+            "rpc_method_writebatch_recv": {
+                "counter": 0
+            },
+            "schedules_BACKUP_failed": {
+                "counter": 0
+            },
+            "schedules_BACKUP_last_completed_time": {
                 "value": 0
             },
-            "leases_error": {
+            "schedules_BACKUP_started": {
                 "counter": 0
             },
-            "queue_gc_info_transactionresolvefailed": {
+            "schedules_BACKUP_succeeded": {
                 "counter": 0
             },
-            "intentcount": {
+            "schedules_error": {
                 "value": 0
             },
-            "capacity": {
-                "value": 1.004205502464E12
-            },
-            "queue_raftlog_process_success": {
-                "counter": 0
-            },
-            "leases_transfers_success": {
-                "counter": 0
-            },
-            "intents_poison_attempts": {
-                "counter": 0
-            },
-            "queue_replicate_removereplica": {
-                "counter": 0
-            },
-            "range_splits": {
-                "counter": 0
-            },
-            "intents_resolve_attempts": {
-                "counter": 0
-            },
-            "replicas_quiescent": {
+            "schedules_malformed": {
                 "value": 0
             },
-            "queue_raftlog_processingnanos": {
-                "counter": 0
-            },
-            "txnwaitqueue_pusher_slow": {
+            "schedules_round_jobs_started": {
                 "value": 0
             },
-            "raft_rcvd_transferleader": {
-                "counter": 0
-            },
-            "keybytes": {
+            "schedules_round_reschedule_skip": {
                 "value": 0
             },
-            "kv_tenant_rate_limit_read_requests_admitted": {
-                "counter": 0
-            },
-            "rocksdb_ingested_bytes": {
+            "schedules_round_reschedule_wait": {
                 "value": 0
             },
-            "range_snapshots_generated": {
+            "schedules_scheduled_row_level_ttl_executor_failed": {
                 "counter": 0
             },
-            "rocksdb_compacted_bytes_written": {
-                "value": 1210
+            "schedules_scheduled_row_level_ttl_executor_started": {
+                "counter": 0
             },
-            "sysbytes": {
+            "schedules_scheduled_row_level_ttl_executor_succeeded": {
+                "counter": 0
+            },
+            "schedules_scheduled_sql_stats_compaction_executor_failed": {
+                "counter": 0
+            },
+            "schedules_scheduled_sql_stats_compaction_executor_started": {
+                "counter": 0
+            },
+            "schedules_scheduled_sql_stats_compaction_executor_succeeded": {
+                "counter": 0
+            },
+            "seconds_until_enterprise_license_expiry": {
                 "value": 0
             },
-            "queue_gc_info_pushtxn": {
+            "spanconfig_kvsubscriber_update_behind_nanos": {
+                "value": 3112762833
+            },
+            "sql_bytesin": {
+                "counter": 319
+            },
+            "sql_bytesout": {
+                "counter": 981
+            },
+            "sql_conn_failures": {
                 "counter": 0
             },
-            "capacity_reserved": {
+            "sql_conn_latency": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        1900543.5,
+                        9502719,
+                        26607615
+                    ]
+                }
+            },
+            "sql_conns": {
                 "value": 0
             },
-            "raft_rcvd_heartbeatresp": {
+            "sql_contention_resolver_failed_resolutions": {
                 "counter": 0
             },
-            "intentresolver_async_throttled": {
-                "counter": 0
-            },
-            "range_raftleadertransfers": {
-                "counter": 0
-            },
-            "queue_gc_info_abortspanscanned": {
-                "counter": 0
-            },
-            "replicas_reserved": {
+            "sql_contention_resolver_queue_size": {
                 "value": 0
             },
-            "queue_gc_info_transactionspanscanned": {
+            "sql_contention_resolver_retries": {
                 "counter": 0
             },
-            "ranges_unavailable": {
+            "sql_contention_txn_id_cache_miss": {
+                "counter": 0
+            },
+            "sql_contention_txn_id_cache_read": {
+                "counter": 0
+            },
+            "sql_copy_count": {
+                "counter": 0
+            },
+            "sql_copy_count_internal": {
+                "counter": 0
+            },
+            "sql_copy_started_count": {
+                "counter": 0
+            },
+            "sql_copy_started_count_internal": {
+                "counter": 0
+            },
+            "sql_ddl_count": {
+                "counter": 0
+            },
+            "sql_ddl_count_internal": {
+                "counter": 2
+            },
+            "sql_ddl_started_count": {
+                "counter": 0
+            },
+            "sql_ddl_started_count_internal": {
+                "counter": 2
+            },
+            "sql_delete_count": {
+                "counter": 0
+            },
+            "sql_delete_count_internal": {
+                "counter": 1
+            },
+            "sql_delete_started_count": {
+                "counter": 0
+            },
+            "sql_delete_started_count_internal": {
+                "counter": 1
+            },
+            "sql_disk_distsql_current": {
                 "value": 0
             },
-            "txnwaitqueue_query_waiting": {
+            "sql_disk_distsql_max": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "sql_disk_distsql_spilled_bytes_read": {
+                "counter": 0
+            },
+            "sql_disk_distsql_spilled_bytes_written": {
+                "counter": 0
+            },
+            "sql_distsql_contended_queries_count": {
+                "counter": 0
+            },
+            "sql_distsql_flows_active": {
                 "value": 0
             },
-            "replicas_leaders_not_leaseholders": {
+            "sql_distsql_flows_queue_wait": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "sql_distsql_flows_queued": {
                 "value": 0
             },
-            "queue_replicate_transferlease": {
+            "sql_distsql_flows_scheduled": {
                 "counter": 0
             },
-            "queue_split_process_success": {
+            "sql_distsql_flows_total": {
                 "counter": 0
             },
-            "totalbytes": {
+            "sql_distsql_queries_active": {
                 "value": 0
             },
-            "queue_split_process_failure": {
+            "sql_distsql_queries_spilled": {
                 "counter": 0
             },
-            "intents_abort_attempts": {
+            "sql_distsql_queries_total": {
+                "counter": 120
+            },
+            "sql_distsql_select_count": {
                 "counter": 0
             },
-            "raft_rcvd_app": {
+            "sql_distsql_select_count_internal": {
                 "counter": 0
             },
-            "intents_resolve_conflicting_rejected": {
-                "counter": 0
+            "sql_distsql_service_latency": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
             },
-            "kv_rangefeed_catchup_scan_nanos": {
-                "counter": 0
+            "sql_distsql_service_latency_internal": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
             },
-            "kv_closed_timestamp_max_behind_nanos": {
+            "sql_distsql_vec_openfds": {
                 "value": 0
             },
-            "addsstable_applications": {
+            "sql_failure_count": {
                 "counter": 0
             },
-            "queue_replicagc_removereplica": {
+            "sql_failure_count_internal": {
                 "counter": 0
             },
-            "queue_consistency_process_success": {
+            "sql_feature_flag_denial": {
                 "counter": 0
             },
-            "rocksdb_read_amplification": {
-                "value": 1
-            },
-            "queue_replicate_voterdemotions": {
+            "sql_full_scan_count": {
                 "counter": 0
             },
-            "range_merges": {
+            "sql_full_scan_count_internal": {
+                "counter": 26
+            },
+            "sql_guardrails_full_scan_rejected_count": {
                 "counter": 0
             },
-            "replicas_leaseholders": {
+            "sql_guardrails_full_scan_rejected_count_internal": {
+                "counter": 0
+            },
+            "sql_guardrails_max_row_size_err_count": {
+                "counter": 0
+            },
+            "sql_guardrails_max_row_size_err_count_internal": {
+                "counter": 0
+            },
+            "sql_guardrails_max_row_size_log_count": {
+                "counter": 0
+            },
+            "sql_guardrails_max_row_size_log_count_internal": {
+                "counter": 0
+            },
+            "sql_guardrails_transaction_rows_read_err_count": {
+                "counter": 0
+            },
+            "sql_guardrails_transaction_rows_read_err_count_internal": {
+                "counter": 0
+            },
+            "sql_guardrails_transaction_rows_read_log_count": {
+                "counter": 0
+            },
+            "sql_guardrails_transaction_rows_read_log_count_internal": {
+                "counter": 0
+            },
+            "sql_guardrails_transaction_rows_written_err_count": {
+                "counter": 0
+            },
+            "sql_guardrails_transaction_rows_written_err_count_internal": {
+                "counter": 0
+            },
+            "sql_guardrails_transaction_rows_written_log_count": {
+                "counter": 0
+            },
+            "sql_guardrails_transaction_rows_written_log_count_internal": {
+                "counter": 0
+            },
+            "sql_hydrated_table_cache_hits": {
+                "counter": 0
+            },
+            "sql_hydrated_table_cache_misses": {
+                "counter": 0
+            },
+            "sql_insert_count": {
+                "counter": 0
+            },
+            "sql_insert_count_internal": {
+                "counter": 56
+            },
+            "sql_insert_started_count": {
+                "counter": 0
+            },
+            "sql_insert_started_count_internal": {
+                "counter": 56
+            },
+            "sql_leases_active": {
+                "value": 16
+            },
+            "sql_mem_bulk_current": {
                 "value": 0
             },
-            "kv_tenant_rate_limit_num_tenants": {
+            "sql_mem_bulk_max": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "sql_mem_distsql_current": {
                 "value": 0
             },
-            "queue_gc_process_success": {
-                "counter": 0
-            },
-            "rocksdb_encryption_algorithm": {
+            "sql_mem_internal_session_current": {
                 "value": 0
             },
-            "range_snapshots_applied_initial": {
-                "counter": 0
-            },
-            "queue_raftlog_pending": {
+            "sql_mem_internal_txn_current": {
                 "value": 0
             },
-            "ranges_underreplicated": {
+            "sql_mem_root_current": {
+                "value": 808960
+            },
+            "sql_mem_root_max": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "sql_mem_sql_session_current": {
                 "value": 0
             },
-            "raft_rcvd_heartbeat": {
-                "counter": 0
+            "sql_mem_sql_session_max": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
             },
-            "queue_replicagc_process_success": {
-                "counter": 0
-            },
-            "queue_replicate_rebalancereplica": {
-                "counter": 0
-            },
-            "raft_ticks": {
-                "counter": 79959
-            },
-            "queue_consistency_process_failure": {
-                "counter": 0
-            },
-            "queue_gc_processingnanos": {
-                "counter": 0
-            },
-            "rocksdb_flushes": {
+            "sql_mem_sql_txn_current": {
                 "value": 0
             },
-            "queue_gc_info_intentsconsidered": {
+            "sql_misc_count": {
                 "counter": 0
             },
-            "queue_gc_info_abortspanconsidered": {
+            "sql_misc_count_internal": {
+                "counter": 12
+            },
+            "sql_misc_started_count": {
                 "counter": 0
             },
-            "txnwaitqueue_deadlocks_total": {
+            "sql_misc_started_count_internal": {
+                "counter": 12
+            },
+            "sql_new_conns": {
+                "counter": 2
+            },
+            "sql_optimizer_fallback_count": {
                 "counter": 0
             },
-            "intents_finalized_txns_timed_out": {
+            "sql_optimizer_fallback_count_internal": {
                 "counter": 0
             },
-            "queue_gc_pending": {
+            "sql_optimizer_plan_cache_hits": {
+                "counter": 0
+            },
+            "sql_optimizer_plan_cache_hits_internal": {
+                "counter": 43
+            },
+            "sql_optimizer_plan_cache_misses": {
+                "counter": 1
+            },
+            "sql_optimizer_plan_cache_misses_internal": {
+                "counter": 62
+            },
+            "sql_pgwire_cancel_ignored": {
+                "counter": 0
+            },
+            "sql_pgwire_cancel_successful": {
+                "counter": 0
+            },
+            "sql_pgwire_cancel_total": {
+                "counter": 0
+            },
+            "sql_query_count": {
+                "counter": 1
+            },
+            "sql_query_count_internal": {
+                "counter": 119
+            },
+            "sql_query_started_count": {
+                "counter": 1
+            },
+            "sql_query_started_count_internal": {
+                "counter": 119
+            },
+            "sql_restart_savepoint_count": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_count_internal": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_release_count": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_release_count_internal": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_release_started_count": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_release_started_count_internal": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_rollback_count": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_rollback_count_internal": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_rollback_started_count": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_rollback_started_count_internal": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_started_count": {
+                "counter": 0
+            },
+            "sql_restart_savepoint_started_count_internal": {
+                "counter": 0
+            },
+            "sql_savepoint_count": {
+                "counter": 0
+            },
+            "sql_savepoint_count_internal": {
+                "counter": 0
+            },
+            "sql_savepoint_release_count": {
+                "counter": 0
+            },
+            "sql_savepoint_release_count_internal": {
+                "counter": 0
+            },
+            "sql_savepoint_release_started_count": {
+                "counter": 0
+            },
+            "sql_savepoint_release_started_count_internal": {
+                "counter": 0
+            },
+            "sql_savepoint_rollback_count": {
+                "counter": 0
+            },
+            "sql_savepoint_rollback_count_internal": {
+                "counter": 0
+            },
+            "sql_savepoint_rollback_started_count": {
+                "counter": 0
+            },
+            "sql_savepoint_rollback_started_count_internal": {
+                "counter": 0
+            },
+            "sql_savepoint_started_count": {
+                "counter": 0
+            },
+            "sql_savepoint_started_count_internal": {
+                "counter": 0
+            },
+            "sql_schema_changer_permanent_errors": {
+                "counter": 0
+            },
+            "sql_schema_changer_retry_errors": {
+                "counter": 0
+            },
+            "sql_schema_changer_running": {
                 "value": 0
             },
-            "raft_process_workingnanos": {
+            "sql_schema_changer_successes": {
                 "counter": 0
             },
-            "raft_entrycache_hits": {
-                "counter": 0
+            "sql_select_count": {
+                "counter": 1
             },
-            "raft_rcvd_prevoteresp": {
-                "counter": 0
+            "sql_select_count_internal": {
+                "counter": 43
             },
-            "queue_split_processingnanos": {
-                "counter": 0
+            "sql_select_started_count": {
+                "counter": 1
             },
-            "kv_tenant_rate_limit_write_requests_admitted": {
-                "counter": 0
+            "sql_select_started_count_internal": {
+                "counter": 43
             },
-            "queue_gc_info_abortspangcnum": {
-                "counter": 0
+            "sql_service_latency": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0
+                    ],
+                    "values": [
+                        6291455.5,
+                        25165822
+                    ]
+                }
             },
-            "queue_replicate_nonvoterpromotions": {
-                "counter": 0
+            "sql_service_latency_internal": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        950271.5,
+                        1966079,
+                        2195455,
+                        2424831,
+                        2555903,
+                        2686975,
+                        2818047,
+                        2949119,
+                        3080191,
+                        3211263,
+                        3342335,
+                        3473407,
+                        3604479,
+                        3866623,
+                        4128767,
+                        4325375,
+                        4587519,
+                        4849663,
+                        5111807,
+                        5373951,
+                        5636095,
+                        6029311,
+                        6553599,
+                        7077887,
+                        7471103,
+                        7733247,
+                        7995391,
+                        8257535,
+                        9175039,
+                        10223615,
+                        11534335,
+                        12845055,
+                        13631487,
+                        14417919,
+                        14942207,
+                        15990783,
+                        17825791,
+                        19398655,
+                        20447231,
+                        21495807,
+                        23068671,
+                        25690111,
+                        28311551,
+                        30408703,
+                        34603007,
+                        39845887,
+                        42991615,
+                        45088767,
+                        52428799,
+                        65011711,
+                        83886079,
+                        136314879,
+                        230686719,
+                        293601279,
+                        327155711,
+                        478150655,
+                        855638015
+                    ]
+                }
             },
-            "tscache_skl_pages": {
-                "value": 1
-            },
-            "queue_gc_process_failure": {
-                "counter": 0
-            },
-            "queue_raftsnapshot_pending": {
+            "sql_statements_active": {
                 "value": 0
             },
-            "livecount": {
+            "sql_statements_active_internal": {
                 "value": 0
             },
-            "intentresolver_finalized_txns_failed": {
+            "sql_stats_cleanup_rows_removed": {
                 "counter": 0
             },
-            "txn_commit_waits_before_commit_trigger": {
+            "sql_stats_discarded_current": {
                 "counter": 0
             },
-            "intentbytes": {
+            "sql_stats_flush_count": {
+                "counter": 0
+            },
+            "sql_stats_flush_duration": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "sql_stats_flush_error": {
+                "counter": 0
+            },
+            "sql_stats_mem_current": {
+                "value": 471040
+            },
+            "sql_stats_mem_max": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "sql_stats_reported_mem_current": {
                 "value": 0
             },
-            "queue_consistency_processingnanos": {
+            "sql_stats_reported_mem_max": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "sql_temp_object_cleaner_active_cleaners": {
+                "value": 0
+            },
+            "sql_temp_object_cleaner_schemas_deletion_error": {
+                "counter": 0
+            },
+            "sql_temp_object_cleaner_schemas_deletion_success": {
+                "counter": 0
+            },
+            "sql_temp_object_cleaner_schemas_to_delete": {
+                "counter": 0
+            },
+            "sql_txn_abort_count": {
+                "counter": 0
+            },
+            "sql_txn_abort_count_internal": {
+                "counter": 0
+            },
+            "sql_txn_begin_count": {
+                "counter": 0
+            },
+            "sql_txn_begin_count_internal": {
+                "counter": 0
+            },
+            "sql_txn_begin_started_count": {
+                "counter": 0
+            },
+            "sql_txn_begin_started_count_internal": {
+                "counter": 0
+            },
+            "sql_txn_commit_count": {
+                "counter": 0
+            },
+            "sql_txn_commit_count_internal": {
+                "counter": 0
+            },
+            "sql_txn_commit_started_count": {
+                "counter": 0
+            },
+            "sql_txn_commit_started_count_internal": {
+                "counter": 0
+            },
+            "sql_txn_contended_count": {
+                "counter": 0
+            },
+            "sql_txn_contended_count_internal": {
+                "counter": 0
+            },
+            "sql_txn_latency": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0
+                    ],
+                    "values": [
+                        6553599.5,
+                        26214398
+                    ]
+                }
+            },
+            "sql_txn_latency_internal": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        1966079.5,
+                        4718591,
+                        5636095,
+                        5898239,
+                        6684671,
+                        7733247,
+                        8257535,
+                        9437183,
+                        10747903,
+                        14417919,
+                        18350079,
+                        19398655,
+                        20447231,
+                        22020095,
+                        25165823,
+                        27787263,
+                        28835839,
+                        29884415,
+                        30932991,
+                        34603007,
+                        38797311,
+                        46137343,
+                        61865983,
+                        75497471,
+                        85983231,
+                        171966463,
+                        276824063,
+                        335544319,
+                        436207615
+                    ]
+                }
+            },
+            "sql_txn_rollback_count": {
+                "counter": 0
+            },
+            "sql_txn_rollback_count_internal": {
+                "counter": 0
+            },
+            "sql_txn_rollback_started_count": {
+                "counter": 0
+            },
+            "sql_txn_rollback_started_count_internal": {
+                "counter": 0
+            },
+            "sql_txns_open": {
+                "value": 0
+            },
+            "sql_txns_open_internal": {
+                "value": 0
+            },
+            "sql_update_count": {
+                "counter": 0
+            },
+            "sql_update_count_internal": {
+                "counter": 5
+            },
+            "sql_update_started_count": {
+                "counter": 0
+            },
+            "sql_update_started_count_internal": {
+                "counter": 5
+            },
+            "sqlliveness_is_alive_cache_hits": {
+                "counter": 0
+            },
+            "sqlliveness_is_alive_cache_misses": {
+                "counter": 1
+            },
+            "sqlliveness_sessions_deleted": {
+                "counter": 0
+            },
+            "sqlliveness_sessions_deletion_runs": {
+                "counter": 0
+            },
+            "sqlliveness_write_failures": {
+                "counter": 0
+            },
+            "sqlliveness_write_successes": {
+                "counter": 2
+            },
+            "streaming_events_ingested": {
+                "counter": 0
+            },
+            "streaming_flushes": {
+                "counter": 0
+            },
+            "streaming_ingested_bytes": {
+                "counter": 0
+            },
+            "streaming_resolved_events_ingested": {
+                "counter": 0
+            },
+            "sys_cgo_allocbytes": {
+                "value": 0
+            },
+            "sys_cgo_totalbytes": {
+                "value": 0
+            },
+            "sys_cgocalls": {
+                "value": 0
+            },
+            "sys_cpu_combined_percent_normalized": {
+                "value": 0
+            },
+            "sys_cpu_now_ns": {
+                "value": 0
+            },
+            "sys_cpu_sys_ns": {
+                "value": 0
+            },
+            "sys_cpu_sys_percent": {
+                "value": 0
+            },
+            "sys_cpu_user_ns": {
+                "value": 0
+            },
+            "sys_cpu_user_percent": {
+                "value": 0
+            },
+            "sys_fd_open": {
+                "value": 0
+            },
+            "sys_fd_softlimit": {
+                "value": 0
+            },
+            "sys_gc_count": {
+                "value": 0
+            },
+            "sys_gc_pause_ns": {
+                "value": 0
+            },
+            "sys_gc_pause_percent": {
+                "value": 0
+            },
+            "sys_go_allocbytes": {
+                "value": 0
+            },
+            "sys_go_totalbytes": {
+                "value": 0
+            },
+            "sys_goroutines": {
+                "value": 0
+            },
+            "sys_host_disk_io_time": {
+                "value": 0
+            },
+            "sys_host_disk_iopsinprogress": {
+                "value": 0
+            },
+            "sys_host_disk_read_bytes": {
+                "value": 0
+            },
+            "sys_host_disk_read_count": {
+                "value": 0
+            },
+            "sys_host_disk_read_time": {
+                "value": 0
+            },
+            "sys_host_disk_weightedio_time": {
+                "value": 0
+            },
+            "sys_host_disk_write_bytes": {
+                "value": 0
+            },
+            "sys_host_disk_write_count": {
+                "value": 0
+            },
+            "sys_host_disk_write_time": {
+                "value": 0
+            },
+            "sys_host_net_recv_bytes": {
+                "value": 0
+            },
+            "sys_host_net_recv_packets": {
+                "value": 0
+            },
+            "sys_host_net_send_bytes": {
+                "value": 0
+            },
+            "sys_host_net_send_packets": {
+                "value": 0
+            },
+            "sys_rss": {
+                "value": 0
+            },
+            "sys_runnable_goroutines_per_cpu": {
+                "value": 0
+            },
+            "sys_uptime": {
+                "value": 0
+            },
+            "tenant_consumption_pgwire_egress_bytes": {
+                "value": 0
+            },
+            "tenant_consumption_read_bytes": {
+                "value": 0
+            },
+            "tenant_consumption_read_requests": {
+                "value": 0
+            },
+            "tenant_consumption_request_units": {
+                "value": 0
+            },
+            "tenant_consumption_sql_pods_cpu_seconds": {
+                "value": 0
+            },
+            "tenant_consumption_write_bytes": {
+                "value": 0
+            },
+            "tenant_consumption_write_requests": {
+                "value": 0
+            },
+            "timeseries_write_bytes": {
+                "counter": 139512
+            },
+            "timeseries_write_errors": {
+                "counter": 0
+            },
+            "timeseries_write_samples": {
+                "counter": 1352
+            },
+            "txn_aborts": {
+                "counter": 0
+            },
+            "txn_commit_waits": {
+                "counter": 0
+            },
+            "txn_commits": {
+                "counter": 104
+            },
+            "txn_commits1PC": {
+                "counter": 12
+            },
+            "txn_condensed_intent_spans": {
+                "counter": 0
+            },
+            "txn_condensed_intent_spans_gauge": {
+                "value": 0
+            },
+            "txn_condensed_intent_spans_rejected": {
+                "counter": 0
+            },
+            "txn_parallelcommits": {
+                "counter": 39
+            },
+            "txn_refresh_auto_retries": {
+                "counter": 0
+            },
+            "txn_refresh_fail": {
+                "counter": 0
+            },
+            "txn_refresh_fail_with_condensed_spans": {
+                "counter": 0
+            },
+            "txn_refresh_memory_limit_exceeded": {
+                "counter": 0
+            },
+            "txn_refresh_success": {
+                "counter": 0
+            },
+            "txn_restarts": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
+            },
+            "txn_restarts_asyncwritefailure": {
+                "counter": 0
+            },
+            "txn_restarts_commitdeadlineexceeded": {
+                "counter": 0
+            },
+            "txn_restarts_readwithinuncertainty": {
+                "counter": 0
+            },
+            "txn_restarts_serializable": {
+                "counter": 0
+            },
+            "txn_restarts_txnaborted": {
+                "counter": 0
+            },
+            "txn_restarts_txnpush": {
+                "counter": 0
+            },
+            "txn_restarts_unknown": {
+                "counter": 0
+            },
+            "txn_restarts_writetooold": {
+                "counter": 0
+            },
+            "txn_restarts_writetoooldmulti": {
+                "counter": 0
+            },
+            "txn_rollbacks_async_failed": {
+                "counter": 0
+            },
+            "txn_rollbacks_failed": {
                 "counter": 0
             }
         }
     },
-    "agent": {
-        "hostname": "docker-fleet-agent",
-        "name": "docker-fleet-agent",
-        "id": "f81e793d-14ff-4995-9e2a-df5401a0def6",
-        "type": "metricbeat",
-        "ephemeral_id": "c4046388-5b3c-4a5e-8329-081bacffcda7",
-        "version": "7.15.0"
+    "data_stream": {
+        "dataset": "cockroachdb.status",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "f81e793d-14ff-4995-9e2a-df5401a0def6",
-        "version": "7.15.0",
-        "snapshot": true
-    },
-    "@timestamp": "2021-10-06T09:24:38.976Z",
-    "ecs": {
-        "version": "1.11.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "cockroachdb.status"
-    },
-    "service": {
-        "address": "http://host.docker.internal:8082/_status/vars",
-        "type": "cockroachdb"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "4.19.128-microsoft-standard",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
-        "containerized": true,
-        "ip": [
-            "172.24.0.7"
-        ],
-        "name": "docker-fleet-agent",
-        "id": "6505f7ca36739e7eb909bdb52bf3ec18",
-        "mac": [
-            "02:42:ac:18:00:07"
-        ],
-        "architecture": "x86_64"
-    },
-    "metricset": {
-        "period": 10000,
-        "name": "status"
+        "id": "cdc6a9bf-9269-4de8-a490-ce48a2f4596d",
+        "snapshot": false,
+        "version": "8.3.0"
     },
     "event": {
-        "duration": 22405300,
         "agent_id_status": "verified",
-        "ingested": "2021-10-06T09:24:40Z",
-        "module": "cockroachdb",
-        "dataset": "cockroachdb.status"
+        "dataset": "cockroachdb.status",
+        "duration": 115894125,
+        "ingested": "2022-07-11T09:54:23Z",
+        "module": "prometheus"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://elastic-package-service_cockroachdb_1:8080/_status/vars",
+        "type": "prometheus"
     }
 }
 ```
