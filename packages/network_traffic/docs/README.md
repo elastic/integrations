@@ -209,6 +209,14 @@ The default value is 10s.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -377,6 +385,14 @@ Fields published for AMQP packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -401,13 +417,13 @@ An example event for `amqp` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T07:37:02.033Z",
+    "@timestamp": "2022-06-28T23:30:50.532Z",
     "agent": {
-        "ephemeral_id": "ff9ccf25-9d67-46a5-b661-aa01e3db9b84",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "a929a7a7-1dba-4961-8b38-b7ef8ed7f1e2",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "amqp": {
         "auto-delete": false,
@@ -435,12 +451,12 @@ An example event for `amqp` looks as following:
         "port": 5672
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "action": "amqp.queue.declare",
@@ -449,11 +465,11 @@ An example event for `amqp` looks as following:
             "network"
         ],
         "dataset": "network_traffic.amqp",
-        "duration": 1325900,
-        "end": "2022-03-09T07:37:02.035Z",
-        "ingested": "2022-03-09T07:37:03Z",
+        "duration": 1407200,
+        "end": "2022-06-28T23:30:50.533Z",
+        "ingested": "2022-06-28T23:30:54Z",
         "kind": "event",
-        "start": "2022-03-09T07:37:02.033Z",
+        "start": "2022-06-28T23:30:50.532Z",
         "type": [
             "connection",
             "protocol"
@@ -461,23 +477,23 @@ An example event for `amqp` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "method": "queue.declare",
@@ -686,6 +702,14 @@ Fields published for Apache Cassandra packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -710,13 +734,13 @@ An example event for `cassandra` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T07:43:05.888Z",
+    "@timestamp": "2022-06-28T23:35:47.332Z",
     "agent": {
-        "ephemeral_id": "20d6eb94-1319-473d-9e2f-05621a4d2494",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "46bab0be-0856-406c-97e9-57a9158301fd",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "cassandra": {
         "request": {
@@ -764,12 +788,12 @@ An example event for `cassandra` looks as following:
         "port": 9042
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -777,11 +801,11 @@ An example event for `cassandra` looks as following:
             "network"
         ],
         "dataset": "network_traffic.cassandra",
-        "duration": 131589500,
-        "end": "2022-03-09T07:43:06.019Z",
-        "ingested": "2022-03-09T07:43:09Z",
+        "duration": 131617200,
+        "end": "2022-06-28T23:35:47.464Z",
+        "ingested": "2022-06-28T23:35:50Z",
         "kind": "event",
-        "start": "2022-03-09T07:43:05.888Z",
+        "start": "2022-06-28T23:35:47.332Z",
         "type": [
             "connection",
             "protocol"
@@ -789,23 +813,23 @@ An example event for `cassandra` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "network": {
@@ -947,6 +971,14 @@ Fields published for DHCPv4 packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -971,13 +1003,13 @@ An example event for `dhcpv4` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T07:43:52.712Z",
+    "@timestamp": "2022-06-28T23:36:31.507Z",
     "agent": {
-        "ephemeral_id": "b98a43ba-d050-42e6-ab2f-2eba352e9cb0",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "6a85ac0c-2e83-40dd-a6e1-c0a248acd710",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "client": {
         "bytes": 272,
@@ -1013,12 +1045,12 @@ An example event for `dhcpv4` looks as following:
         "transaction_id": "0x00003d1d"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1026,9 +1058,9 @@ An example event for `dhcpv4` looks as following:
             "network"
         ],
         "dataset": "network_traffic.dhcpv4",
-        "ingested": "2022-03-09T07:43:53Z",
+        "ingested": "2022-06-28T23:36:32Z",
         "kind": "event",
-        "start": "2022-03-09T07:43:52.712Z",
+        "start": "2022-06-28T23:36:31.507Z",
         "type": [
             "connection",
             "protocol"
@@ -1036,23 +1068,23 @@ An example event for `dhcpv4` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "network": {
@@ -1215,6 +1247,14 @@ Fields published for DNS packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -1239,13 +1279,13 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T07:48:42.751Z",
+    "@timestamp": "2022-06-28T23:41:49.970Z",
     "agent": {
-        "ephemeral_id": "1d099984-2551-49e1-9e6a-c1dff964be0f",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "a41de8df-ad9b-45e1-9e6a-eeac1a007fa3",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "client": {
         "bytes": 28,
@@ -1322,12 +1362,12 @@ An example event for `dns` looks as following:
         "type": "answer"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1335,11 +1375,11 @@ An example event for `dns` looks as following:
             "network"
         ],
         "dataset": "network_traffic.dns",
-        "duration": 68515700,
-        "end": "2022-03-09T07:48:42.819Z",
-        "ingested": "2022-03-09T07:48:43Z",
+        "duration": 68729900,
+        "end": "2022-06-28T23:41:50.039Z",
+        "ingested": "2022-06-28T23:41:51Z",
         "kind": "event",
-        "start": "2022-03-09T07:48:42.751Z",
+        "start": "2022-06-28T23:41:49.970Z",
         "type": [
             "connection",
             "protocol"
@@ -1347,23 +1387,23 @@ An example event for `dns` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "method": "QUERY",
@@ -1613,6 +1653,14 @@ Fields published for HTTP packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -1649,13 +1697,13 @@ An example event for `http` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T07:54:42.031Z",
+    "@timestamp": "2022-06-28T23:47:52.462Z",
     "agent": {
-        "ephemeral_id": "822947c0-15fd-4278-ba0d-2cc64d687bb2",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "af51eb1c-712d-4702-ac11-ec9fb4eb6e90",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "client": {
         "bytes": 211,
@@ -1674,12 +1722,12 @@ An example event for `http` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1687,11 +1735,11 @@ An example event for `http` looks as following:
             "network"
         ],
         "dataset": "network_traffic.http",
-        "duration": 141490400,
-        "end": "2022-03-09T07:54:42.172Z",
-        "ingested": "2022-03-09T07:54:43Z",
+        "duration": 140568500,
+        "end": "2022-06-28T23:47:52.602Z",
+        "ingested": "2022-06-28T23:47:55Z",
         "kind": "event",
-        "start": "2022-03-09T07:54:42.031Z",
+        "start": "2022-06-28T23:47:52.462Z",
         "type": [
             "connection",
             "protocol"
@@ -1699,23 +1747,23 @@ An example event for `http` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "http": {
@@ -1881,6 +1929,14 @@ Fields published for ICMP packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -1905,13 +1961,13 @@ An example event for `icmp` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T07:57:32.766Z",
+    "@timestamp": "2022-06-28T23:51:01.257Z",
     "agent": {
-        "ephemeral_id": "34e079a4-8dee-40db-a820-2296c225fbbe",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "8f36054a-c6a7-4611-b340-e0f09dc105cb",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "client": {
         "bytes": 4,
@@ -1927,12 +1983,12 @@ An example event for `icmp` looks as following:
         "ip": "::2"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1940,34 +1996,34 @@ An example event for `icmp` looks as following:
             "network"
         ],
         "dataset": "network_traffic.icmp",
-        "duration": 13336600,
-        "end": "2022-03-09T07:57:32.779Z",
-        "ingested": "2022-03-09T07:57:36Z",
+        "duration": 12420200,
+        "end": "2022-06-28T23:51:01.270Z",
+        "ingested": "2022-06-28T23:51:04Z",
         "kind": "event",
-        "start": "2022-03-09T07:57:32.766Z",
+        "start": "2022-06-28T23:51:01.257Z",
         "type": [
             "connection"
         ]
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "icmp": {
@@ -2168,6 +2224,14 @@ Fields published for Memcached packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -2192,13 +2256,13 @@ An example event for `memcached` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T08:09:26.564Z",
+    "@timestamp": "2022-06-29T00:03:53.173Z",
     "agent": {
-        "ephemeral_id": "53c3aab1-4c1d-4f33-87a9-1d1d4ce75205",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "99655ed9-2f0d-4598-954d-14b2fb979d4c",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "client": {
         "ip": "192.168.188.37",
@@ -2215,12 +2279,12 @@ An example event for `memcached` looks as following:
         "port": 11211
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2228,9 +2292,9 @@ An example event for `memcached` looks as following:
             "network"
         ],
         "dataset": "network_traffic.memcached",
-        "ingested": "2022-03-09T08:09:37Z",
+        "ingested": "2022-06-29T00:04:04Z",
         "kind": "event",
-        "start": "2022-03-09T08:09:26.564Z",
+        "start": "2022-06-29T00:03:53.173Z",
         "type": [
             "connection",
             "protocol"
@@ -2239,23 +2303,23 @@ An example event for `memcached` looks as following:
     "event.action": "memcache.store",
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "memcache": {
@@ -2418,6 +2482,14 @@ Fields published for MongoDB packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -2442,13 +2514,13 @@ An example event for `mongodb` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T08:15:48.570Z",
+    "@timestamp": "2022-06-29T00:10:02.060Z",
     "agent": {
-        "ephemeral_id": "fafaeb02-c623-46a0-a3e0-72e035bd12ba",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "1b28af7e-1112-4544-805b-028d3d9fd21f",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "client": {
         "bytes": 50,
@@ -2466,12 +2538,12 @@ An example event for `mongodb` looks as following:
         "port": 27017
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2479,11 +2551,11 @@ An example event for `mongodb` looks as following:
             "network"
         ],
         "dataset": "network_traffic.mongodb",
-        "duration": 1365900,
-        "end": "2022-03-09T08:15:48.571Z",
-        "ingested": "2022-03-09T08:15:49Z",
+        "duration": 1360700,
+        "end": "2022-06-29T00:10:02.061Z",
+        "ingested": "2022-06-29T00:10:05Z",
         "kind": "event",
-        "start": "2022-03-09T08:15:48.570Z",
+        "start": "2022-06-29T00:10:02.060Z",
         "type": [
             "connection",
             "protocol"
@@ -2491,23 +2563,23 @@ An example event for `mongodb` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "method": "find",
@@ -2650,6 +2722,14 @@ Fields published for MySQL packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -2674,13 +2754,13 @@ An example event for `mysql` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T08:20:44.667Z",
+    "@timestamp": "2022-06-29T00:14:38.122Z",
     "agent": {
-        "ephemeral_id": "43167926-7ebd-4acd-8216-daf3664fe286",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "b593f6e6-b815-46ae-bce4-0ae257977384",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "client": {
         "bytes": 23,
@@ -2698,12 +2778,12 @@ An example event for `mysql` looks as following:
         "port": 3306
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2711,11 +2791,11 @@ An example event for `mysql` looks as following:
             "network"
         ],
         "dataset": "network_traffic.mysql",
-        "duration": 5532500,
-        "end": "2022-03-09T08:20:44.673Z",
-        "ingested": "2022-03-09T08:20:45Z",
+        "duration": 5606500,
+        "end": "2022-06-29T00:14:38.127Z",
+        "ingested": "2022-06-29T00:14:39Z",
         "kind": "event",
-        "start": "2022-03-09T08:20:44.667Z",
+        "start": "2022-06-29T00:14:38.122Z",
         "type": [
             "connection",
             "protocol"
@@ -2723,23 +2803,23 @@ An example event for `mysql` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "method": "SELECT",
@@ -2865,6 +2945,14 @@ Fields published for NFS packets.
 | nfs.version | NFS protocol version number. | long |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -2899,13 +2987,13 @@ An example event for `nfs` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T08:24:00.569Z",
+    "@timestamp": "2022-06-29T00:18:10.093Z",
     "agent": {
-        "ephemeral_id": "62904593-11a1-4706-8487-78b14fb72c08",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "bdd76998-c3b1-4bc5-a61d-376e00170b20",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "client": {
         "bytes": 208,
@@ -2924,12 +3012,12 @@ An example event for `nfs` looks as following:
         "port": 2049
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "action": "nfs.CLOSE",
@@ -2938,11 +3026,11 @@ An example event for `nfs` looks as following:
             "network"
         ],
         "dataset": "network_traffic.nfs",
-        "duration": 6573500,
-        "end": "2022-03-09T08:24:00.575Z",
-        "ingested": "2022-03-09T08:24:01Z",
+        "duration": 6469300,
+        "end": "2022-06-29T00:18:10.099Z",
+        "ingested": "2022-06-29T00:18:13Z",
         "kind": "event",
-        "start": "2022-03-09T08:24:00.569Z",
+        "start": "2022-06-29T00:18:10.093Z",
         "type": [
             "connection",
             "protocol"
@@ -2951,23 +3039,23 @@ An example event for `nfs` looks as following:
     "group.id": 48,
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "host.hostname": "desycloud03.desy.de",
@@ -3116,6 +3204,14 @@ Fields published for PostgreSQL packets.
 | pgsql.error_severity | The PostgreSQL error severity. | keyword |
 | pgsql.num_fields | If the SELECT query if successful, this field is set to the number of fields returned. | long |
 | pgsql.num_rows | If the SELECT query if successful, this field is set to the number of rows returned. | long |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -3140,13 +3236,13 @@ An example event for `pgsql` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T08:29:39.675Z",
+    "@timestamp": "2022-06-29T00:22:14.651Z",
     "agent": {
-        "ephemeral_id": "1e05998c-1d97-426b-8d9e-f5f92c446612",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "26a40a58-254d-4daa-840f-1b17ac2c4f5d",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "client": {
         "bytes": 34,
@@ -3164,12 +3260,12 @@ An example event for `pgsql` looks as following:
         "port": 5432
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -3177,11 +3273,11 @@ An example event for `pgsql` looks as following:
             "network"
         ],
         "dataset": "network_traffic.pgsql",
-        "duration": 2568100,
-        "end": "2022-03-09T08:29:39.678Z",
-        "ingested": "2022-03-09T08:29:40Z",
+        "duration": 2559700,
+        "end": "2022-06-29T00:22:14.654Z",
+        "ingested": "2022-06-29T00:22:15Z",
         "kind": "event",
-        "start": "2022-03-09T08:29:39.675Z",
+        "start": "2022-06-29T00:22:14.651Z",
         "type": [
             "connection",
             "protocol"
@@ -3189,23 +3285,23 @@ An example event for `pgsql` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "method": "SELECT",
@@ -3331,6 +3427,14 @@ Fields published for Redis packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | redis.error | If the Redis command has resulted in an error, this field contains the error message returned by the Redis server. | keyword |
 | redis.return_value | The return value of the Redis command in a human readable format. | keyword |
@@ -3357,13 +3461,13 @@ An example event for `redis` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-09T08:30:57.254Z",
+    "@timestamp": "2022-06-29T00:23:34.687Z",
     "agent": {
-        "ephemeral_id": "b68277a8-8012-4ada-bbdd-6ce88a51c5ce",
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "ephemeral_id": "9c08996e-b0af-414a-a48a-64d90c5fb4ea",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "client": {
         "bytes": 31,
@@ -3381,12 +3485,12 @@ An example event for `redis` looks as following:
         "port": 6380
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f789afb0-558d-48bd-b448-0fc838efd730",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.3"
     },
     "event": {
         "action": "redis.set",
@@ -3395,11 +3499,11 @@ An example event for `redis` looks as following:
             "network"
         ],
         "dataset": "network_traffic.redis",
-        "duration": 1421600,
-        "end": "2022-03-09T08:30:57.256Z",
-        "ingested": "2022-03-09T08:30:58Z",
+        "duration": 1319100,
+        "end": "2022-06-29T00:23:34.688Z",
+        "ingested": "2022-06-29T00:23:35Z",
         "kind": "event",
-        "start": "2022-03-09T08:30:57.254Z",
+        "start": "2022-06-29T00:23:34.687Z",
         "type": [
             "connection",
             "protocol"
@@ -3407,23 +3511,23 @@ An example event for `redis` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.176.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.47-linuxkit",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "method": "SET",
@@ -3555,6 +3659,14 @@ Fields published for SIP packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -3657,13 +3769,13 @@ An example event for `sip` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-13T07:10:35.715Z",
+    "@timestamp": "2022-06-29T00:26:22.037Z",
     "agent": {
-        "ephemeral_id": "008322ce-0d84-45f0-beaf-153cf4786013",
-        "id": "a82e5ec9-4d24-4491-8d66-470aa321ddae",
+        "ephemeral_id": "2e09944f-2c6e-4ea1-9908-c23d2a8af731",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.2.0"
+        "version": "8.2.3"
     },
     "client": {
         "ip": "10.0.2.20",
@@ -3679,12 +3791,12 @@ An example event for `sip` looks as following:
         "port": 5060
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "a82e5ec9-4d24-4491-8d66-470aa321ddae",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.2.3"
     },
     "event": {
         "action": "sip-invite",
@@ -3694,14 +3806,15 @@ An example event for `sip` looks as following:
         ],
         "dataset": "network_traffic.sip",
         "duration": 0,
-        "end": "2022-05-13T07:10:35.715Z",
-        "ingested": "2022-05-13T07:10:39Z",
+        "end": "2022-06-29T00:26:22.037Z",
+        "ingested": "2022-06-29T00:26:23Z",
         "kind": "event",
         "original": "INVITE sip:test@10.0.2.15:5060 SIP/2.0\r\nVia: SIP/2.0/UDP 10.0.2.20:5060;branch=z9hG4bK-2187-1-0\r\nFrom: \"DVI4/8000\" \u003csip:sipp@10.0.2.20:5060\u003e;tag=1\r\nTo: test \u003csip:test@10.0.2.15:5060\u003e\r\nCall-ID: 1-2187@10.0.2.20\r\nCSeq: 1 INVITE\r\nContact: sip:sipp@10.0.2.20:5060\r\nMax-Forwards: 70\r\nContent-Type: application/sdp\r\nContent-Length:   123\r\n\r\nv=0\r\no=- 42 42 IN IP4 10.0.2.20\r\ns=-\r\nc=IN IP4 10.0.2.20\r\nt=0 0\r\nm=audio 6000 RTP/AVP 5\r\na=rtpmap:5 DVI4/8000\r\na=recvonly\r\n",
         "sequence": 1,
-        "start": "2022-05-13T07:10:35.715Z",
+        "start": "2022-06-29T00:26:22.037Z",
         "type": [
-            "info"
+            "info",
+            "protocol"
         ]
     },
     "host": {
@@ -3709,10 +3822,10 @@ An example event for `sip` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.31.0.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-AC-1F-00-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -4009,6 +4122,14 @@ Fields published for Thrift packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | request | For text protocols, this is the request as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
@@ -4037,13 +4158,13 @@ An example event for `thrift` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-23T10:59:35.668Z",
+    "@timestamp": "2022-06-29T00:28:33.760Z",
     "agent": {
-        "ephemeral_id": "016dcea4-c82a-4499-9069-e4e0ff6d04ff",
-        "id": "0488c467-eaa0-4733-a81a-326734926bc2",
+        "ephemeral_id": "714ec0d5-e654-462a-961d-003f2fc9113e",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.2.0"
+        "version": "8.2.3"
     },
     "client": {
         "bytes": 25,
@@ -4061,12 +4182,12 @@ An example event for `thrift` looks as following:
         "port": 9090
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "0488c467-eaa0-4733-a81a-326734926bc2",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -4074,11 +4195,11 @@ An example event for `thrift` looks as following:
             "network"
         ],
         "dataset": "network_traffic.thrift",
-        "duration": 1275700,
-        "end": "2022-05-23T10:59:35.669Z",
-        "ingested": "2022-05-23T10:59:36Z",
+        "duration": 2979900,
+        "end": "2022-06-29T00:28:33.763Z",
+        "ingested": "2022-06-29T00:28:34Z",
         "kind": "event",
-        "start": "2022-05-23T10:59:35.668Z",
+        "start": "2022-06-29T00:28:33.760Z",
         "type": [
             "connection",
             "protocol"
@@ -4089,10 +4210,10 @@ An example event for `thrift` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.224.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-E0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -4282,6 +4403,14 @@ Fields published for TLS packets.
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | params | The request parameters. For HTTP, these are the POST or GET parameters. For Thrift-RPC, these are the parameters from the request. | text |
 | path | The path the transaction refers to. For HTTP, this is the URL. For SQL databases, this is the table name. For key-value stores, this is the key. | keyword |
+| process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.start | The time the process started. | date |
+| process.working_directory | The working directory of the process. | keyword |
+| process.working_directory.text | Multi-field of `process.working_directory`. | match_only_text |
 | query | The query in a human readable format. For HTTP, it will typically be something like `GET /users/_search?name=test`. For MySQL, it is something like `SELECT id from users where name=test`. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -4417,13 +4546,13 @@ An example event for `tls` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-23T11:01:14.376Z",
+    "@timestamp": "2022-06-29T00:31:01.877Z",
     "agent": {
-        "ephemeral_id": "d7d5fdf6-998d-488e-bfb7-176a86d6860d",
-        "id": "0488c467-eaa0-4733-a81a-326734926bc2",
+        "ephemeral_id": "b97fc2e6-1b8c-4606-999e-34f4666385db",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.2.0"
+        "version": "8.2.3"
     },
     "client": {
         "ip": "192.168.1.35",
@@ -4440,12 +4569,12 @@ An example event for `tls` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "0488c467-eaa0-4733-a81a-326734926bc2",
+        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -4453,11 +4582,11 @@ An example event for `tls` looks as following:
             "network"
         ],
         "dataset": "network_traffic.tls",
-        "duration": 365887700,
-        "end": "2022-05-23T11:01:14.741Z",
-        "ingested": "2022-05-23T11:01:17Z",
+        "duration": 367171900,
+        "end": "2022-06-29T00:31:02.244Z",
+        "ingested": "2022-06-29T00:31:03Z",
         "kind": "event",
-        "start": "2022-05-23T11:01:14.376Z",
+        "start": "2022-06-29T00:31:01.877Z",
         "type": [
             "connection",
             "protocol"
@@ -4468,10 +4597,10 @@ An example event for `tls` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.224.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02-42-C0-A8-E0-07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -4492,6 +4621,9 @@ An example event for `tls` looks as following:
         "type": "ipv4"
     },
     "related": {
+        "hash": [
+            "e6573e91e6eb777c0933c5b8f97f10cd"
+        ],
         "ip": [
             "192.168.1.35",
             "93.184.216.34"
