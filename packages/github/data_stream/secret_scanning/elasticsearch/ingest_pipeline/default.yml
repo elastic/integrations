@@ -1,0 +1,177 @@
+---
+description: Pipeline for parsing GitHub audit logs
+processors:
+- set:
+    field: ecs.version
+    value: "8.3.0"
+- set:
+    field: event.action
+    value: "secret_scanning"
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- json:
+    field: event.original
+    target_field: github.secret_scanning
+- fingerprint:
+    fields: 
+        - github.secret_scanning.number
+        - github.secret_scanning.updated_at
+    target_field: "_id"
+    ignore_missing: true
+- date:
+    field: github.secret_scanning.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "event.created"
+    if: ctx.github.secret_scanning?.created_at != null
+- date:
+    field: github.secret_scanning.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.secret_scanning?.created_at != null
+- date:
+    field: github.secret_scanning.updated_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.secret_scanning?.updated_at != null
+- rename: 
+    target_field: _temp.resolved_by
+    field: github.secret_scanning.resolved_by
+    ignore_missing: true
+- rename:
+    field: _temp.resolved_by.name
+    target_field: github.secret_scanning.resolved_by.name
+    ignore_missing: true
+- rename:
+    field: _temp.resolved_by.email
+    target_field: github.secret_scanning.resolved_by.email
+    ignore_missing: true
+- rename:
+    field: _temp.resolved_by.login
+    target_field: github.secret_scanning.resolved_by.login
+    ignore_missing: true
+- rename:
+    field: _temp.resolved_by.id
+    target_field: github.secret_scanning.resolved_by.id
+    ignore_missing: true
+- rename:
+    field: _temp.resolved_by.node_id
+    target_field: github.secret_scanning.resolved_by.node_id
+    ignore_missing: true
+- rename:
+    field: _temp.resolved_by.url
+    target_field: github.secret_scanning.resolved_by.url
+    ignore_missing: true
+- rename:
+    field: _temp.resolved_by.html_url
+    target_field: github.secret_scanning.resolved_by.html_url
+    ignore_missing: true
+- rename:
+    field: _temp.resolved_by.type
+    target_field: github.secret_scanning.resolved_by.type
+    ignore_missing: true
+- rename:
+    field: _temp.resolved_by.site_admin
+    target_field: github.secret_scanning.resolved_by.site_admin
+    ignore_missing: true
+- rename: 
+    target_field: _temp.push_protection_bypassed_by
+    field: github.secret_scanning.push_protection_bypassed_by
+    ignore_missing: true
+- rename:
+    field: _temp.push_protection_bypassed_by.name
+    target_field: github.secret_scanning.push_protection_bypassed_by.name
+    ignore_missing: true
+- rename:
+    field: _temp.push_protection_bypassed_by.email
+    target_field: github.secret_scanning.push_protection_bypassed_by.email
+    ignore_missing: true
+- rename:
+    field: _temp.push_protection_bypassed_by.login
+    target_field: github.secret_scanning.push_protection_bypassed_by.login
+    ignore_missing: true
+- rename:
+    field: _temp.push_protection_bypassed_by.id
+    target_field: github.secret_scanning.push_protection_bypassed_by.id
+    ignore_missing: true
+- rename:
+    field: _temp.push_protection_bypassed_by.node_id
+    target_field: github.secret_scanning.push_protection_bypassed_by.node_id
+    ignore_missing: true
+- rename:
+    field: _temp.push_protection_bypassed_by.url
+    target_field: github.secret_scanning.push_protection_bypassed_by.url
+    ignore_missing: true
+- rename:
+    field: _temp.push_protection_bypassed_by.html_url
+    target_field: github.secret_scanning.push_protection_bypassed_by.html_url
+    ignore_missing: true
+- rename:
+    field: _temp.push_protection_bypassed_by.type
+    target_field: github.secret_scanning.push_protection_bypassed_by.type
+    ignore_missing: true
+- rename:
+    field: _temp.push_protection_bypassed_by.site_admin
+    target_field: github.secret_scanning.push_protection_bypassed_by.site_admin
+    ignore_missing: true
+- script:
+    lang: painless
+    description: Mask the secret if hide_secret is true
+    if: ctx.tags != null && ctx.tags.contains('hide_secret') && ctx.github?.secret_scanning?.secret != null
+    source: |
+        def secret = ctx.github.secret_scanning.secret.toString();
+        def masked_secret = secret;
+        int num_start = 2;
+        int num_end = 2;
+        def masked_value = String.join("", Collections.nCopies(secret.length()-(num_start+num_end), "X"));
+        masked_secret = secret.substring(0,num_start) + masked_value + secret.substring(secret.length()-num_end);
+        ctx.github.secret_scanning.secret = masked_secret;
+
+  ###########
+  # Cleanup #
+  ###########
+- remove:
+    field:
+      - _temp
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

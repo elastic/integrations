@@ -1,0 +1,210 @@
+---
+description: Pipeline for parsing GitHub audit logs
+processors:
+- set:
+    field: ecs.version
+    value: "8.3.0"
+- set:
+    field: event.action
+    value: "code_scanning"
+- set:
+    field: event.kind
+    value: "alert"
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- json:
+    field: event.original
+    target_field: github.code_scanning
+- fingerprint:
+    fields: 
+        - github.code_scanning.number
+        - github.code_scanning.updated_at
+    target_field: "_id"
+    ignore_missing: true
+- date:
+    field: github.code_scanning.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "event.created"
+    if: ctx.github.code_scanning?.created_at != null
+- date:
+    field: github.code_scanning.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.code_scanning?.created_at != null
+- date:
+    field: github.code_scanning.updated_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.code_scanning?.updated_at != null
+- rename: 
+    target_field: _temp
+    field: github.code_scanning.repository
+    ignore_missing: true
+- rename:
+    field: _temp.id
+    target_field: github.code_scanning.repository.id
+    ignore_missing: true
+- rename:
+    field: _temp.name
+    target_field: github.code_scanning.repository.name
+    ignore_missing: true
+- rename:
+    field: _temp.full_name
+    target_field: github.code_scanning.repository.full_name
+    ignore_missing: true
+- rename:
+    field: _temp.private
+    target_field: github.code_scanning.repository.private
+    ignore_missing: true
+- rename:
+    field: _temp.html_url
+    target_field: github.code_scanning.repository.html_url
+    ignore_missing: true
+- rename:
+    field: _temp.url
+    target_field: github.code_scanning.repository.url
+    ignore_missing: true
+- rename:
+    field: _temp.description
+    target_field: github.code_scanning.repository.description
+    ignore_missing: true
+- rename:
+    field: _temp.fork
+    target_field: github.code_scanning.repository.fork
+    ignore_missing: true
+- rename:
+    field: _temp.owner.login
+    target_field: github.code_scanning.repository.owner.login
+    ignore_missing: true
+- rename:
+    field: _temp.owner.id
+    target_field: github.code_scanning.repository.owner.id
+    ignore_missing: true
+- rename:
+    field: _temp.owner.url
+    target_field: github.code_scanning.repository.owner.url
+    ignore_missing: true
+- rename:
+    field: _temp.owner.html_url
+    target_field: github.code_scanning.repository.owner.html_url
+    ignore_missing: true
+- rename:
+    field: _temp.owner.type
+    target_field: github.code_scanning.repository.owner.type
+    ignore_missing: true
+- rename:
+    field: _temp.owner.site_admin
+    target_field: github.code_scanning.repository.owner.site_admin
+    ignore_missing: true
+- rename: 
+    target_field: _temp.dismissed_by
+    field: github.code_scanning.dismissed_by
+    ignore_missing: true
+- remove:
+    field: github.code_scanning.dismissed_by
+    ignore_missing: true
+- rename:
+    field: _temp.dismissed_by.login
+    target_field: github.code_scanning.dismissed_by.login
+    ignore_missing: true
+- rename:
+    field: _temp.dismissed_by.id
+    target_field: github.code_scanning.dismissed_by.id
+    ignore_missing: true
+- rename:
+    field: _temp.dismissed_by.url
+    target_field: github.code_scanning.dismissed_by.url
+    ignore_missing: true
+- rename:
+    field: _temp.dismissed_by.html_url
+    target_field: github.code_scanning.dismissed_by.html_url
+    ignore_missing: true
+- rename:
+    field: _temp.dismissed_by.type
+    target_field: github.code_scanning.dismissed_by.type
+    ignore_missing: true
+- rename:
+    field: _temp.dismissed_by.site_admin
+    target_field: github.code_scanning.dismissed_by.site_admin
+    ignore_missing: true
+- rename:
+    field: github.code_scanning.most_recent_instance.message.text
+    target_field: message
+    ignore_missing: true
+
+  ###################
+  # Rule ECS Fields #
+  ###################
+- rename:
+    field: github.code_scanning.rule.id
+    target_field: rule.id
+    if: ctx.github.code_scanning?.rule?.id != null
+- rename:
+    field: github.code_scanning.rule.name
+    target_field: rule.name
+    if: ctx.github.code_scanning?.rule?.name != null
+- rename:
+    field: github.code_scanning.rule.description
+    target_field: rule.description
+    if: ctx.github.code_scanning?.rule?.description != null
+- foreach:
+    field: "github.code_scanning.rule.tags"
+    processor:
+        append:
+            field: tags
+            value: "{{_ingest._value}}"
+    ignore_missing: true
+    if: ctx.github.code_scanning?.rule?.tags != null
+- remove: 
+    field: github.code_scanning.rule.tags
+    ignore_missing: true
+
+  ###########
+  # Cleanup #
+  ###########
+- remove:
+    field:
+      - _temp
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
