@@ -167,6 +167,7 @@ An example event for `host` looks as following:
     "agent": {
         "ephemeral_id": "ca4d915a-c131-4cd1-8222-663116839c0f",
         "id": "80013756-a481-4a72-9022-53568d5085f3",
+
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -181,6 +182,7 @@ An example event for `host` looks as following:
     },
     "elastic_agent": {
         "id": "80013756-a481-4a72-9022-53568d5085f3",
+
         "snapshot": false,
         "version": "8.2.0"
     },
