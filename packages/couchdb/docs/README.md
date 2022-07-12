@@ -28,13 +28,13 @@ An example event for `server` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-29T07:00:07.693Z",
+    "@timestamp": "2022-07-12T07:30:31.520Z",
     "agent": {
-        "ephemeral_id": "d379abc3-298b-421f-98b1-4afb699cd18b",
-        "id": "e44ba99c-0019-49ca-b1b1-cd1a80f38f73",
+        "ephemeral_id": "72329e62-3db2-46a9-a9fa-241b7b8ae07a",
+        "id": "3b13422f-f792-46e0-bdac-02f3f1792aac",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "couchdb": {
         "server": {
@@ -51,17 +51,17 @@ An example event for `server` looks as following:
                 "request_methods": {
                     "copy": 0,
                     "delete": 0,
-                    "get": 0,
+                    "get": 1,
                     "head": 0,
                     "post": 0,
                     "put": 0
                 },
                 "requests": {
                     "bulk": 0,
-                    "count": 0
+                    "count": 1
                 },
                 "status_codes": {
-                    "200": 0,
+                    "200": 1,
                     "201": 0,
                     "202": 0,
                     "301": 0,
@@ -93,12 +93,12 @@ An example event for `server` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "e44ba99c-0019-49ca-b1b1-cd1a80f38f73",
+        "id": "3b13422f-f792-46e0-bdac-02f3f1792aac",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -106,8 +106,8 @@ An example event for `server` looks as following:
             "database"
         ],
         "dataset": "couchdb.server",
-        "duration": 5239857,
-        "ingested": "2022-06-29T07:00:11Z",
+        "duration": 5410700,
+        "ingested": "2022-07-12T07:30:35Z",
         "kind": "metric",
         "module": "couchdb",
         "type": [
@@ -119,10 +119,10 @@ An example event for `server` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.112.5"
+            "192.168.176.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:05"
+            "02:42:c0:a8:b0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -152,52 +152,52 @@ An example event for `server` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| couchdb.server.auth_cache.hits | Number of authentication cache hits. | long |
-| couchdb.server.auth_cache.misses | Number of authentication cache misses. | long |
-| couchdb.server.database.reads | Number of times a document was read from a database. | long |
-| couchdb.server.database.writes | Number of times a database was changed. | long |
-| couchdb.server.httpd.clients_requesting_changes | Number of clients for continuous changes. | long |
-| couchdb.server.httpd.request_methods.copy | Number of HTTP COPY requests. | long |
-| couchdb.server.httpd.request_methods.delete | Number of HTTP DELETE requests. | long |
-| couchdb.server.httpd.request_methods.get | Number of HTTP GET requests. | long |
-| couchdb.server.httpd.request_methods.head | Number of HTTP HEAD requests. | long |
-| couchdb.server.httpd.request_methods.post | Number of HTTP POST requests. | long |
-| couchdb.server.httpd.request_methods.put | Number of HTTP PUT requests. | long |
-| couchdb.server.httpd.requests.bulk | Number of bulk requests. | long |
-| couchdb.server.httpd.requests.count | Number of HTTP requests. | long |
-| couchdb.server.httpd.status_codes.200 | Number of HTTP 200 OK responses. | long |
-| couchdb.server.httpd.status_codes.201 | Number of HTTP 201 Created responses. | long |
-| couchdb.server.httpd.status_codes.202 | Number of HTTP 202 Accepted responses. | long |
-| couchdb.server.httpd.status_codes.301 | Number of HTTP 301 Moved Permanently responses. | long |
-| couchdb.server.httpd.status_codes.304 | Number of HTTP 304 Not Modified responses. | long |
-| couchdb.server.httpd.status_codes.400 | Number of HTTP 400 Bad Request responses. | long |
-| couchdb.server.httpd.status_codes.401 | Number of HTTP 401 Unauthorized responses. | long |
-| couchdb.server.httpd.status_codes.403 | Number of HTTP 403 Forbidden responses. | long |
-| couchdb.server.httpd.status_codes.404 | Number of HTTP 404 Not Found responses. | long |
-| couchdb.server.httpd.status_codes.405 | Number of HTTP 405 Method Not Allowed responses. | long |
-| couchdb.server.httpd.status_codes.409 | Number of HTTP 409 Conflict responses. | long |
-| couchdb.server.httpd.status_codes.412 | Number of HTTP 412 Precondition Failed responses. | long |
-| couchdb.server.httpd.status_codes.500 | Number of HTTP 500 Internal Server Error responses. | long |
-| couchdb.server.httpd.view_reads.count | Number of view reads. | long |
-| couchdb.server.httpd.view_reads.temporary | Number of temporary view reads. | long |
-| couchdb.server.open_databases | Number of open databases. | long |
-| couchdb.server.open_os_files | Number of file descriptors CouchDB has open. | long |
-| couchdb.server.request_time.avg | Arithmetic mean of the request time inside CouchDB. | float |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| couchdb.server.auth_cache.hits | Number of authentication cache hits. | long | counter |
+| couchdb.server.auth_cache.misses | Number of authentication cache misses. | long | counter |
+| couchdb.server.database.reads | Number of times a document was read from a database. | long | counter |
+| couchdb.server.database.writes | Number of times a database was changed. | long | counter |
+| couchdb.server.httpd.clients_requesting_changes | Number of clients for continuous changes. | long | counter |
+| couchdb.server.httpd.request_methods.copy | Number of HTTP COPY requests. | long | counter |
+| couchdb.server.httpd.request_methods.delete | Number of HTTP DELETE requests. | long | counter |
+| couchdb.server.httpd.request_methods.get | Number of HTTP GET requests. | long | counter |
+| couchdb.server.httpd.request_methods.head | Number of HTTP HEAD requests. | long | counter |
+| couchdb.server.httpd.request_methods.post | Number of HTTP POST requests. | long | counter |
+| couchdb.server.httpd.request_methods.put | Number of HTTP PUT requests. | long | counter |
+| couchdb.server.httpd.requests.bulk | Number of bulk requests. | long | counter |
+| couchdb.server.httpd.requests.count | Number of HTTP requests. | long | counter |
+| couchdb.server.httpd.status_codes.200 | Number of HTTP 200 OK responses. | long | counter |
+| couchdb.server.httpd.status_codes.201 | Number of HTTP 201 Created responses. | long | counter |
+| couchdb.server.httpd.status_codes.202 | Number of HTTP 202 Accepted responses. | long | counter |
+| couchdb.server.httpd.status_codes.301 | Number of HTTP 301 Moved Permanently responses. | long | counter |
+| couchdb.server.httpd.status_codes.304 | Number of HTTP 304 Not Modified responses. | long | counter |
+| couchdb.server.httpd.status_codes.400 | Number of HTTP 400 Bad Request responses. | long | counter |
+| couchdb.server.httpd.status_codes.401 | Number of HTTP 401 Unauthorized responses. | long | counter |
+| couchdb.server.httpd.status_codes.403 | Number of HTTP 403 Forbidden responses. | long | counter |
+| couchdb.server.httpd.status_codes.404 | Number of HTTP 404 Not Found responses. | long | counter |
+| couchdb.server.httpd.status_codes.405 | Number of HTTP 405 Method Not Allowed responses. | long | counter |
+| couchdb.server.httpd.status_codes.409 | Number of HTTP 409 Conflict responses. | long | counter |
+| couchdb.server.httpd.status_codes.412 | Number of HTTP 412 Precondition Failed responses. | long | counter |
+| couchdb.server.httpd.status_codes.500 | Number of HTTP 500 Internal Server Error responses. | long | counter |
+| couchdb.server.httpd.view_reads.count | Number of view reads. | long | counter |
+| couchdb.server.httpd.view_reads.temporary | Number of temporary view reads. | long | counter |
+| couchdb.server.open_databases | Number of open databases. | long | counter |
+| couchdb.server.open_os_files | Number of file descriptors CouchDB has open. | long | counter |
+| couchdb.server.request_time.avg | Arithmetic mean of the request time inside CouchDB. | float |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 
