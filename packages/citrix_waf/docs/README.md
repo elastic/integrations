@@ -52,20 +52,24 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2012-12-18T21:46:17.000Z",
     "agent": {
-        "ephemeral_id": "2b961d83-c4f1-43f2-a412-833c69c058e5",
-        "id": "e9acb304-3e34-46a6-9ede-abe810d8e04b",
+        "ephemeral_id": "9153862d-f83f-4bd1-bbc9-c3ff3d96e726",
+        "id": "e30119bc-b47d-4e56-86e3-4a9683305c6e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.2.3"
     },
     "citrix": {
+        "cef_format": true,
         "cef_version": "0",
+        "detail": "CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
         "device_event_class_id": "APPFW",
         "device_product": "NetScaler",
         "device_vendor": "Citrix",
         "device_version": "NS10.0",
+        "facility": "local0",
         "name": "APPFW_STARTURL",
         "ppe_id": "PPE0",
+        "priority": "info",
         "profile_name": "profile1",
         "session_id": "IliG4Dxp1SjOhKVRDVBXmqvAaIcA000",
         "severity": "ALERT"
@@ -94,19 +98,16 @@ An example event for `log` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "e9acb304-3e34-46a6-9ede-abe810d8e04b",
+        "id": "e30119bc-b47d-4e56-86e3-4a9683305c6e",
         "snapshot": false,
         "version": "8.2.3"
     },
     "event": {
         "action": "not blocked",
         "agent_id_status": "verified",
-        "cef_format": true,
         "dataset": "citrix_waf.log",
         "id": "465",
-        "ingested": "2022-07-11T03:24:21Z",
-        "level": "\u003clocal0.info\u003e",
-        "message": "CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
+        "ingested": "2022-07-12T00:06:17Z",
         "original": "Dec 18 21:46:17 \u003clocal0.info\u003e 81.2.69.144 CEF:0|Citrix|NetScaler|NS10.0|APPFW|APPFW_STARTURL|6|src=175.16.199.1 spt=54711 method=GET request=http://vpx247.example.net/FFC/login_post.html?abc\\=def msg=Disallow Illegal URL. cn1=465 cn2=535 cs1=profile1 cs2=PPE0 cs3=IliG4Dxp1SjOhKVRDVBXmqvAaIcA000 cs4=ALERT cs5=2012 act=not blocked",
         "severity": 6,
         "timezone": "+00:00"
@@ -122,7 +123,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.22.0.4:59592"
+            "address": "172.22.0.4:41588"
         }
     },
     "message": "Disallow Illegal URL.",
@@ -163,16 +164,20 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| citrix.cef_format | Whether the logging is in Citrix CEF format. | boolean |
 | citrix.cef_version | The CEF format version used in the logs. | keyword |
 | citrix.default_class | Whether the event class was the default. | boolean |
+| citrix.detail | The CEF or Citrix Native format details for the event. | keyword |
 | citrix.device_event_class_id | The ID of the event class. | keyword |
 | citrix.device_product | The model of the appliance. | keyword |
 | citrix.device_vendor | The name of the vendor for the device. | keyword |
 | citrix.device_version | The version of the device. | keyword |
 | citrix.extended | Additional data associated with the event. | flattened |
+| citrix.facility | The logging facility. | keyword |
 | citrix.host | The name of the host receiving the logs. | keyword |
 | citrix.name | The name of the security check. | keyword |
 | citrix.ppe_id | Packet Processing Engine ID. | keyword |
+| citrix.priority | The logging priority. | keyword |
 | citrix.profile_name | The name of the profile that raised the event. | keyword |
 | citrix.session_id | The ID for the session. | keyword |
 | citrix.severity | The severity of the event. | keyword |

@@ -2,11 +2,11 @@
 description: Pipeline for Citrix CEF messages
 processors:
   - set:
-      field: event.cef_format
+      field: citrix.cef_format
       value: true
   # https://docs.citrix.com/en-us/citrix-adc/downloads/cef-log-components.pdf
   - dissect:
-      field: event.message
+      field: citrix.detail
       pattern: "CEF:%{citrix.cef_version}|%{citrix.device_vendor}|%{citrix.device_product}|%{citrix.device_version}|%{citrix.device_event_class_id}|%{citrix.name}|%{event.severity}|%{citrix.extended.message}"
   - kv:
       field: citrix.extended.message
