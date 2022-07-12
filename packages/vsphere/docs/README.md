@@ -6,8 +6,422 @@ This integration periodically fetches logs and metrics from [vSphere](https://ww
 
 The vSphere metrics datasets were tested with VMware vCenter 6.7.0.31000 and vSphere (ESXi) 6.7.0 Update 1 (Build 10764712) and are expected to work with all versions >= 6.7. The log dataset was tested on VMware vCenter 6.7.0.31000 and is expected to work with all versions >= 6.7.
 
-## Logs
+## Metrics
 
+### Virtual Machine Metrics
+ The virtual machine consists of a set of specification and configuration files and is backed by the physical resources of a host. Every virtual machine has virtual devices that provide the same functionality as physical hardware but are more portable, secure and easier to manage.
+
+An example event for `virtualmachine` looks as following:
+
+```json
+{
+    "@timestamp": "2022-07-06T08:10:23.936Z",
+    "agent": {
+        "ephemeral_id": "7b1c7f41-9102-4338-8bb7-c4a8f16f8840",
+        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.2.0"
+    },
+    "data_stream": {
+        "dataset": "vsphere.virtualmachine",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "vsphere.virtualmachine",
+        "duration": 77308917,
+        "ingested": "2022-07-06T08:10:27Z",
+        "module": "vsphere"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "virtualmachine",
+        "period": 10000
+    },
+    "service": {
+        "address": "https://elastic-package-service_vsphere-metrics_1:8989/sdk",
+        "type": "vsphere"
+    },
+    "vsphere": {
+        "virtualmachine": {
+            "cpu": {
+                "used": {
+                    "mhz": 0
+                }
+            },
+            "host.hostname": "DC0_H0",
+            "host.id": "host-21",
+            "memory": {
+                "free": {
+                    "guest": {
+                        "bytes": 33554432
+                    }
+                },
+                "total": {
+                    "guest": {
+                        "bytes": 33554432
+                    }
+                },
+                "used": {
+                    "guest": {
+                        "bytes": 0
+                    },
+                    "host": {
+                        "bytes": 0
+                    }
+                }
+            },
+            "name": "DC0_H0_VM0",
+            "os": "otherGuest"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| vsphere.virtualmachine.cpu.free.mhz | Available CPU in Mhz | long |  | gauge |
+| vsphere.virtualmachine.cpu.total.mhz | Total CPU in Mhz | long |  | gauge |
+| vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz | long |  | gauge |
+| vsphere.virtualmachine.custom_fields | Custom fields | object |  |  |
+| vsphere.virtualmachine.host.hostname | Host name of the host | keyword |  |  |
+| vsphere.virtualmachine.host.id | Host id | keyword |  |  |
+| vsphere.virtualmachine.memory.free.guest.bytes | Free Memory of Guest in bytes | long | byte | gauge |
+| vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes | long | byte | gauge |
+| vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes | long | byte | gauge |
+| vsphere.virtualmachine.memory.used.host.bytes | Used Memory of Host in bytes | long | byte | gauge |
+| vsphere.virtualmachine.name | Virtual Machine name | keyword |  |  |
+| vsphere.virtualmachine.network_names | Network names | keyword |  |  |
+| vsphere.virtualmachine.os | Virtual Machine Operating System name | keyword |  |  |
+
+
+### Host Metrics
+
+ ESX hosts are the servers/data storage devices on which the ESX or ESXi hypervisor has been installed. The use of hypervisors such as ESX and ESXi to create VMs (virtualization) is highly efficient, as one host device can support multiple VMs
+
+An example event for `host` looks as following:
+
+```json
+{
+    "@timestamp": "2022-07-08T15:44:25.214Z",
+    "agent": {
+        "ephemeral_id": "ca4d915a-c131-4cd1-8222-663116839c0f",
+        "id": "80013756-a481-4a72-9022-53568d5085f3",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.2.0"
+    },
+    "data_stream": {
+        "dataset": "vsphere.host",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "80013756-a481-4a72-9022-53568d5085f3",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "vsphere.host",
+        "duration": 143603500,
+        "ingested": "2022-07-08T15:44:26Z",
+        "module": "vsphere"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.25.0.7"
+        ],
+        "mac": [
+            "02:42:ac:19:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "host",
+        "period": 10000
+    },
+    "service": {
+        "address": "https://elastic-package-service_vsphere-metrics_1:8989/sdk",
+        "type": "vsphere"
+    },
+    "vsphere": {
+        "host": {
+            "cpu": {
+                "free": {
+                    "mhz": 4521
+                },
+                "total": {
+                    "mhz": 4588
+                },
+                "used": {
+                    "mhz": 67
+                }
+            },
+            "memory": {
+                "free": {
+                    "bytes": 2822230016
+                },
+                "total": {
+                    "bytes": 4294430720
+                },
+                "used": {
+                    "bytes": 1472200704
+                }
+            },
+            "name": "DC0_H0",
+            "network_names": [
+                "VM Network"
+            ]
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| vsphere.host.cpu.free.mhz | Free CPU in Mhz | long |  | gauge |
+| vsphere.host.cpu.total.mhz | Total CPU in Mhz | long |  | gauge |
+| vsphere.host.cpu.used.mhz | Used CPU in Mhz | long |  | gauge |
+| vsphere.host.cpu.used.pct | Used percent of cpu of the host | scaled_float | percent | gauge |
+| vsphere.host.memory.free.bytes | Free Memory in bytes | long | byte | gauge |
+| vsphere.host.memory.total.bytes | Total Memory in bytes | long | byte | gauge |
+| vsphere.host.memory.used.bytes | Used Memory in bytes | long | byte | gauge |
+| vsphere.host.memory.used.pct | Used percent of memory of the host | scaled_float | percent | gauge |
+| vsphere.host.name | Host name | keyword |  |  |
+| vsphere.host.network_names | Network names | keyword |  |  |
+
+
+### Datastore Metrics
+Datastores are logical containers, analogous to file systems, that hide specifics of physical storage and provide a uniform model for storing virtual machine files. 
+An example event for `datastore` looks as following:
+
+```json
+{
+    "@timestamp": "2022-07-06T08:06:49.831Z",
+    "agent": {
+        "ephemeral_id": "34e20210-abd8-4ef7-b216-3158638cbeab",
+        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.2.0"
+    },
+    "data_stream": {
+        "dataset": "vsphere.datastore",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "d8cbc62c-7f8c-4e0d-98a9-a953f1476f0a",
+        "snapshot": false,
+        "version": "8.2.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "vsphere.datastore",
+        "duration": 52476083,
+        "ingested": "2022-07-06T08:06:50Z",
+        "module": "vsphere"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "datastore",
+        "period": 10000
+    },
+    "service": {
+        "address": "https://elastic-package-service_vsphere-metrics_1:8989/sdk",
+        "type": "vsphere"
+    },
+    "vsphere": {
+        "datastore": {
+            "capacity": {
+                "free": {
+                    "bytes": 10952166604800
+                },
+                "total": {
+                    "bytes": 10995116277760
+                },
+                "used": {
+                    "bytes": 42949672960,
+                    "pct": 0.00390625
+                }
+            },
+            "fstype": "OTHER",
+            "name": "LocalDS_0"
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| vsphere.datastore.capacity.free.bytes | Free bytes of the datastore | long | byte | gauge |
+| vsphere.datastore.capacity.total.bytes | Total bytes of the datastore | long | byte | gauge |
+| vsphere.datastore.capacity.used.bytes | Used bytes of the datastore | long | byte | gauge |
+| vsphere.datastore.capacity.used.pct | Used percent of the datastore | scaled_float | percent | gauge |
+| vsphere.datastore.fstype | Filesystem type | keyword |  |  |
+| vsphere.datastore.name | Datastore name | keyword |  |  |
+
+
+## Logs
 ### vSphere Logs
 
 **Exported fields**
@@ -63,413 +477,3 @@ The vSphere metrics datasets were tested with VMware vCenter 6.7.0.31000 and vSp
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | vsphere.log.datacenter |  | keyword |
-
-
-## Metrics
-
-### Virtual Machine Metrics
-
-An example event for `virtualmachine` looks as following:
-
-```json
-{
-    "@timestamp": "2022-06-30T14:05:54.957Z",
-    "agent": {
-        "ephemeral_id": "caba2d11-e10c-47e3-acfe-2923f46dfd62",
-        "id": "c3c69542-1213-4624-b986-5c17c5c05afb",
-        "name": "docker-fleet-agent",
-        "type": "metricbeat",
-        "version": "8.2.0"
-    },
-    "data_stream": {
-        "dataset": "vsphere.virtualmachine",
-        "namespace": "ep",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "elastic_agent": {
-        "id": "c3c69542-1213-4624-b986-5c17c5c05afb",
-        "snapshot": false,
-        "version": "8.2.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "vsphere.virtualmachine",
-        "duration": 100489708,
-        "ingested": "2022-06-30T14:05:56Z",
-        "module": "vsphere"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.23.0.7"
-        ],
-        "mac": [
-            "02:42:ac:17:00:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.104-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
-        }
-    },
-    "metricset": {
-        "name": "virtualmachine",
-        "period": 10000
-    },
-    "service": {
-        "address": "https://elastic-package-service-vsphere-metrics-1:8989/sdk",
-        "type": "vsphere"
-    },
-    "vsphere": {
-        "virtualmachine": {
-            "cpu": {
-                "used": {
-                    "mhz": 0
-                }
-            },
-            "host.hostname": "DC0_H0",
-            "host.id": "host-21",
-            "memory": {
-                "free": {
-                    "guest": {
-                        "bytes": 33554432
-                    }
-                },
-                "total": {
-                    "guest": {
-                        "bytes": 33554432
-                    }
-                },
-                "used": {
-                    "guest": {
-                        "bytes": 0
-                    },
-                    "host": {
-                        "bytes": 0
-                    }
-                }
-            },
-            "name": "DC0_H0_VM0",
-            "os": "otherGuest"
-        }
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.dataset | Event dataset | constant_keyword |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
-| event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| vsphere.virtualmachine.cpu.free.mhz | Available CPU in Mhz | long | gauge |
-| vsphere.virtualmachine.cpu.total.mhz | Total CPU in Mhz | long | gauge |
-| vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz | long | gauge |
-| vsphere.virtualmachine.custom_fields | Custom fields | object |  |
-| vsphere.virtualmachine.host.hostname | Host name of the host | keyword |  |
-| vsphere.virtualmachine.host.id | Host id | keyword |  |
-| vsphere.virtualmachine.memory.free.guest.bytes | Free Memory of Guest in bytes | long | gauge |
-| vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes | long | gauge |
-| vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes | long | gauge |
-| vsphere.virtualmachine.memory.used.host.bytes | Used Memory of Host in bytes | long | gauge |
-| vsphere.virtualmachine.name | Virtual Machine name | keyword |  |
-| vsphere.virtualmachine.network_names | Network names | keyword |  |
-| vsphere.virtualmachine.os | Virtual Machine Operating System name | keyword |  |
-
-
-### Host Metrics
-
-An example event for `host` looks as following:
-
-```json
-{
-    "@timestamp": "2022-06-30T13:50:59.739Z",
-    "agent": {
-        "ephemeral_id": "db7f6acb-31d3-4169-b541-2ceea286c670",
-        "id": "c3c69542-1213-4624-b986-5c17c5c05afb",
-        "name": "docker-fleet-agent",
-        "type": "metricbeat",
-        "version": "8.2.0"
-    },
-    "data_stream": {
-        "dataset": "vsphere.host",
-        "namespace": "ep",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "elastic_agent": {
-        "id": "c3c69542-1213-4624-b986-5c17c5c05afb",
-        "snapshot": false,
-        "version": "8.2.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "vsphere.host",
-        "duration": 130463167,
-        "ingested": "2022-06-30T13:51:03Z",
-        "module": "vsphere"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.23.0.7"
-        ],
-        "mac": [
-            "02:42:ac:17:00:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.104-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
-        }
-    },
-    "metricset": {
-        "name": "host",
-        "period": 10000
-    },
-    "service": {
-        "address": "https://elastic-package-service-vsphere-metrics-1:8989/sdk",
-        "type": "vsphere"
-    },
-    "vsphere": {
-        "host": {
-            "cpu": {
-                "free": {
-                    "mhz": 4521
-                },
-                "total": {
-                    "mhz": 4588
-                },
-                "used": {
-                    "mhz": 67
-                }
-            },
-            "memory": {
-                "free": {
-                    "bytes": 2822230016
-                },
-                "total": {
-                    "bytes": 4294430720
-                },
-                "used": {
-                    "bytes": 1472200704
-                }
-            },
-            "name": "DC0_H0",
-            "network_names": [
-                "VM Network"
-            ]
-        }
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.dataset | Event dataset | constant_keyword |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
-| event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| vsphere.host.cpu.free.mhz | Free CPU in Mhz | long | gauge |
-| vsphere.host.cpu.total.mhz | Total CPU in Mhz | long | gauge |
-| vsphere.host.cpu.used.mhz | Used CPU in Mhz | long | gauge |
-| vsphere.host.memory.free.bytes | Free Memory in bytes | long | gauge |
-| vsphere.host.memory.total.bytes | Total Memory in bytes | long | gauge |
-| vsphere.host.memory.used.bytes | Used Memory in bytes | long | gauge |
-| vsphere.host.name | Host name | keyword |  |
-| vsphere.host.network_names | Network names | keyword |  |
-
-
-### Datastore Metrics
-
-An example event for `datastore` looks as following:
-
-```json
-{
-    "@timestamp": "2022-07-05T05:58:44.621Z",
-    "agent": {
-        "ephemeral_id": "f77b630d-5f98-4ed5-87c6-68149559e8e4",
-        "id": "2eb0dc4e-9e4d-4571-95bd-00037abafacf",
-        "name": "docker-fleet-agent",
-        "type": "metricbeat",
-        "version": "8.2.0"
-    },
-    "data_stream": {
-        "dataset": "vsphere.datastore",
-        "namespace": "ep",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "elastic_agent": {
-        "id": "2eb0dc4e-9e4d-4571-95bd-00037abafacf",
-        "snapshot": false,
-        "version": "8.2.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "vsphere.datastore",
-        "duration": 36906375,
-        "ingested": "2022-07-05T05:58:47Z",
-        "module": "vsphere"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "ip": [
-            "192.168.80.7"
-        ],
-        "mac": [
-            "02:42:c0:a8:50:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.104-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
-        }
-    },
-    "metricset": {
-        "name": "datastore",
-        "period": 10000
-    },
-    "service": {
-        "address": "https://elastic-package-service_vsphere-metrics_1:8989/sdk",
-        "type": "vsphere"
-    },
-    "vsphere": {
-        "datastore": {
-            "capacity": {
-                "free": {
-                    "bytes": 10952166604800
-                },
-                "total": {
-                    "bytes": 10995116277760
-                },
-                "used": {
-                    "bytes": 42949672960,
-                    "pct": 0.00390625
-                }
-            },
-            "fstype": "OTHER",
-            "name": "LocalDS_0"
-        }
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| error.message | Error message. | match_only_text |  |
-| event.dataset | Event dataset | constant_keyword |  |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
-| event.module | Event module | constant_keyword |  |
-| host.architecture | Operating system architecture. | keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |
-| host.ip | Host ip addresses. | ip |  |
-| host.mac | Host mac addresses. | keyword |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
-| host.os.name | Operating system name, without the version. | keyword |  |
-| host.os.name.text | Multi-field of `host.os.name`. | text |  |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
-| host.os.version | Operating system version as a raw string. | keyword |  |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
-| vsphere.datastore.capacity.free.bytes | Free bytes of the datastore | long | gauge |
-| vsphere.datastore.capacity.total.bytes | Total bytes of the datastore | long | gauge |
-| vsphere.datastore.capacity.used.bytes | Used bytes of the datastore | long | gauge |
-| vsphere.datastore.capacity.used.pct | Used percent of the datastore | scaled_float | gauge |
-| vsphere.datastore.fstype | Filesystem type | keyword |  |
-| vsphere.datastore.name | Datastore name | keyword |  |
