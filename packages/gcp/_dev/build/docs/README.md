@@ -110,19 +110,16 @@ More example filters for different log types:
 resource.type="gce_subnetwork" AND
 log_id("compute.googleapis.com/vpc_flows") AND
 resource.labels.subnetwork_name"=[SUBNET_NAME]"
-
 #
 # Audit: Google Compute Engine firewall rule deletion
 #
 resource.type="gce_firewall_rule" AND
 log_id("cloudaudit.googleapis.com/activity") AND
 protoPayload.methodName:"firewalls.delete"
-
 #
 # DNS: all DNS queries
 #
 resource.type="dns_query"
-
 #
 # Firewall: logs for a given country
 #
@@ -174,14 +171,13 @@ If you specify the wrong "Topic field" or "Subscription Name", you might find er
 
 Solution: double check the integration settings.
 
-## GCP Credentials
-GCP credentials are required for running GCP integration. 
+## Logs
 
-<<<<<<< HEAD
-### Configuration parameters
-* *project_id*: ID of the GCP project.
-* *credentials_file*: Path to JSON file with GCP credentials. Required when not using `credentials_json`.
-* *credentials_json*: Raw JSON text of GCP Credentials. Required when not using `credentials_file`.
+### Audit
+
+The `audit` dataset collects audit logs of administrative activities and accesses within your Google Cloud resources.
+
+{{fields "audit"}}
 
 {{event "audit"}}
 
@@ -208,9 +204,3 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 {{fields "dns"}}
 
 {{event "dns"}}
-
-This is the `dns_public_logs` dataset. This dataset ingest logs for all queries sent to the Google Cloud DNS servers for the Public Hosted Zones within the GCP project. Depending on how many DNS queries are submitted for a domain name (example.com) or subdomain name (www.example.com), which resolvers are used, and the TTL for the record, query logs might contain information about only one query out of every several thousand queries that are submitted to DNS resolvers.
-
-{{fields "dns_public_logs"}}
-
-{{event "dns_public_logs"}}
