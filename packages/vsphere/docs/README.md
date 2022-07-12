@@ -7,7 +7,7 @@ This integration periodically fetches logs and metrics from [vSphere](https://ww
 The vSphere metrics datasets were tested with VMware vCenter 6.7.0.31000 and vSphere (ESXi) 6.7.0 Update 1 (Build 10764712) and are expected to work with all versions >= 6.7. The log dataset was tested on VMware vCenter 6.7.0.31000 and is expected to work with all versions >= 6.7.
 
 ## Metrics
-
+To access the metrices, the url https://host:port(8989)/sdk needs to be passed to the hosts in Kibana UI. 
 ### Virtual Machine Metrics
  The virtual machine consists of a set of specification and configuration files and is backed by the physical resources of a host. Every virtual machine has virtual devices that provide the same functionality as physical hardware but are more portable, secure and easier to manage.
 
@@ -167,7 +167,6 @@ An example event for `host` looks as following:
     "agent": {
         "ephemeral_id": "ca4d915a-c131-4cd1-8222-663116839c0f",
         "id": "80013756-a481-4a72-9022-53568d5085f3",
-
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.2.0"
@@ -182,7 +181,6 @@ An example event for `host` looks as following:
     },
     "elastic_agent": {
         "id": "80013756-a481-4a72-9022-53568d5085f3",
-
         "snapshot": false,
         "version": "8.2.0"
     },
@@ -424,6 +422,8 @@ An example event for `datastore` looks as following:
 
 
 ## Logs
+
+To access the logs, host address (localhost) and host port (9525) needs to be passed in Kibana UI. 
 ### vSphere Logs
 
 **Exported fields**
