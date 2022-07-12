@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing ECS logs
+description: Pipeline for parsing Kibana ECS formatted logs
 processors:
   - remove:
       field: data_stream.dataset
@@ -69,3 +69,7 @@ processors:
   - remove:
       field: right
       ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

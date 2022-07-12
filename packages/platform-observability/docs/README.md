@@ -1,7 +1,26 @@
-# Platform Observability Logs
+# Platform Observability
 
-V3
+## Compatibility
 
-This is a new integration created using the [elastic-package](https://github.com/elastic/elastic-package) tool.
+This package works with Kibana 8.2.0 and later.
 
-Consider using the README template file `_dev/build/docs/README.md`to generate a list of exported fields or include a sample event.
+## Kibana logs
+
+The Kibana integration collects logs from [Kibana](https://www.elastic.co/guide/en/kibana/current/introduction.html) instance.
+
+### Logs
+
+#### Audit
+
+Configure `Path` pointing to the location where audit logs will be created, based on the [Kibana Audit logging settings](https://www.elastic.co/guide/en/kibana/current/security-settings-kb.html#audit-logging-settings) in `kibana.yml`
+
+**Exported fields**
+TODO: define whether all ECS fields will be exported
+
+#### Log
+
+
+Configure `Path` pointing to the location where the logs will be created, based on the [Kibana logging settings](https://www.elastic.co/guide/en/kibana/current/logging-configuration.html#logging-appenders) in `kibana.yml`
+
+**Exported fields**
+TODO: define whether all ECS fields will be exported

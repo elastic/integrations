@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing ECS logs
+description: Pipeline for parsing Kibana Audit ECS formatted logs
 processors:
   - remove:
       field: data_stream.dataset
@@ -35,3 +35,35 @@ processors:
   - set:
       field: event.dataset
       copy_from: data_stream.dataset
+  - rename:
+      field: message
+      target_field: _ecs_json_message
+      if: |-
+        def message = ctx.message;
+        return message != null
+            && message.startsWith('{')
+            && message.endsWith('}')
+            && message.contains('"@timestamp"')
+      ignore_missing: true
+  - json:
+      field: _ecs_json_message
+      add_to_root: true
+      add_to_root_conflict_strategy: merge
+      allow_duplicate_keys: true
+      if: ctx.containsKey('_ecs_json_message')
+      on_failure:
+        - rename:
+            field: _ecs_json_message
+            target_field: message
+            ignore_missing: true
+        - set:
+            field: error.message
+            value: Error while parsing JSON
+            override: false
+  - remove:
+      field: _ecs_json_message
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
