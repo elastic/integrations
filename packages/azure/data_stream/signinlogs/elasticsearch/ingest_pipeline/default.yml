@@ -154,13 +154,22 @@ processors:
       field: azure.signinlogs.properties.risk_level_during_sign_in
       target_field: azure.signinlogs.properties.risk_level_during_signin
       ignore_missing: true
-  - rename:
+  - script:
+      description: Build message field using a combination of failure reason and additional details
+      source: "String reason = ctx?.azure?.signinlogs?.properties?.status?.failure_reason;
+        String details = ctx?.azure?.signinlogs?.properties?.status?.additional_details;
+        if (reason != null && details != null) {
+            ctx['message'] = reason + ' (' + details + ')';
+        } else if (reason != null) {
+            ctx['message'] = reason;
+        } else if (details != null) {
+            ctx['message'] = details;
+        }"
+  - remove: 
       field: azure.signinlogs.properties.status.failure_reason
-      target_field: message
       ignore_missing: true
-  - rename:
+  - remove: 
       field: azure.signinlogs.properties.status.additional_details
-      target_field: message
       ignore_missing: true
   - rename:
       field: azure.signinlogs.properties.location.city
@@ -181,6 +190,7 @@ processors:
   - remove:
       field:
         - azure.signinlogs.properties.location
+    
       ignore_missing: true
   - foreach:
       field: azure.signinlogs.properties.authentication_processing_details
