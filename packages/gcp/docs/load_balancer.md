@@ -35,7 +35,7 @@ The `load_balancer` dataset collects logs of the requests sent to and handled by
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| gcp.load_balancer.backend_service_name | The backend service the load balancer is sending traffic | keyword |
+| gcp.load_balancer.backend_service_name | The backend service to which the load balancer is sending traffic | keyword |
 | gcp.load_balancer.cache_hit | Whether or not an entity was served from cache (with or without validation). | boolean |
 | gcp.load_balancer.cache_id | Indicates the location and cache instance that the cache response was served from. For example, a cache response served from a cache in Amsterdam would have a cacheId value of AMS-85e2bd4b, where AMS is the IATA code, and 85e2bd4b is an opaque identifier of the cache instance  (because some Cloud CDN locations have multiple discrete caches). | keyword |
 | gcp.load_balancer.cache_lookup | Whether or not a cache lookup was attempted. | boolean |
