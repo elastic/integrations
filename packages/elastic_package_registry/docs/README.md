@@ -30,7 +30,7 @@ You can verify that metrics endpoint is enabled by making an HTTP request to:
 
 There are two different data streams to split the different metrics available:
 
-### Elastic Package Registry (EPR)
+### Elastic Package Registry (EPR)
 
 Metrics related to the Elastic Package Registry application itself:
 
