@@ -1,4 +1,4 @@
-ARG IMAGE=${IMAGE:-mcr.microsoft.com/mssql/server:2022-latest}
+ARG IMAGE=${IMAGE:-mcr.microsoft.com/mssql/server:2019-latest}
 FROM ${IMAGE}
 
 ENV ACCEPT_EULA='Y'
