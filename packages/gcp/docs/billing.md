@@ -1,65 +1,47 @@
-# Firestore
+# Billing
 
 ## Metrics
 
-The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.com/firestore/) in Google Cloud Platform. It contains all metrics exported from the [GCP Firestore Monitoring API](https://cloud.google.com/monitoring/api/metrics_gcp#gcp-firestore).
+The `billing` dataset collects [Cloud Billing Reports](https://cloud.google.com/billing/docs/reports) information from Google Cloud BigQuery daily cost detail table. BigQuery is a fully-managed, serverless data warehouse. Cloud Billing export to BigQuery enables you to export detailed Google Cloud billing data (such as usage, cost estimates, and pricing data) automatically throughout the day to a BigQuery dataset that you specify. Then you can access your Cloud Billing data from BigQuery for detailed analysis.
 
-You can specify a single region to fetch metrics like `us-central1`. Be aware that GCP Storage does not use zones so `us-central1-a` will return nothing. If no region is specified, it will return metrics from all buckets.
+Please see [export cloud billing data to BigQuery](https://cloud.google.com/billing/docs/how-to/export-data-bigquery) for more details on how to export billing data.
+
+In BigQuery dataset, detailed Google Cloud daily cost data is loaded into a data table named `gcp_billing_export_v1_<BILLING_ACCOUNT_ID>`. There is a defined schema for Google Cloud daily cost data that is exported to BigQuery. Please see [daily cost detail data schema](https://cloud.google.com/billing/docs/how-to/export-data-bigquery-tables#data-schema) for more details.
 
 ## Sample Event
     
-An example event for `firestore` looks as following:
+An example event for `billing` looks as following:
 
 ```json
 {
     "@timestamp": "2017-10-12T08:05:34.853Z",
     "cloud": {
         "account": {
-            "id": "elastic-obs-integrations-dev",
-            "name": "elastic-obs-integrations-dev"
+            "id": "01475F-5B1080-1137E7"
         },
-        "instance": {
-            "id": "4751091017865185079",
-            "name": "gke-cluster-1-default-pool-6617a8aa-5clh"
+        "project": {
+            "id": "elastic-bi",
+            "name": "elastic-containerlib-prod"
         },
-        "machine": {
-            "type": "e2-medium"
-        },
-        "provider": "gcp",
-        "availability_zone": "us-central1-c",
-        "region": "us-central1"
+        "provider": "gcp"
     },
     "event": {
-        "dataset": "gcp.firestore",
+        "dataset": "gcp.billing",
         "duration": 115000,
         "module": "gcp"
     },
     "gcp": {
-        "firestore": {
-            "document": {
-                "delete": {
-                    "count": 3
-                },
-                "read": {
-                    "count": 10
-                },
-                "write": {
-                    "count": 1
-                }
-            }
-        },
-        "labels": {
-            "user": {
-                "goog-gke-node": ""
-            }
+        "billing": {
+            "billing_account_id": "01475F-5B1080-1137E7",
+            "cost_type": "regular",
+            "invoice_month": "202106",
+            "project_id": "containerlib-prod-12763",
+            "project_name": "elastic-containerlib-prod",
+            "total": 4717.170681
         }
     },
-    "host": {
-        "id": "4751091017865185079",
-        "name": "gke-cluster-1-default-pool-6617a8aa-5clh"
-    },
     "metricset": {
-        "name": "firestore",
+        "name": "billing",
         "period": 10000
     },
     "service": {
@@ -85,7 +67,7 @@ An example event for `firestore` looks as following:
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -98,15 +80,12 @@ An example event for `firestore` looks as following:
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| gcp.firestore.document.delete.count | The number of successful document deletes. | long |
-| gcp.firestore.document.read.count | The number of successful document reads from queries or lookups. | long |
-| gcp.firestore.document.write.count | The number of successful document writes. | long |
-| gcp.labels.metadata.\* |  | object |
-| gcp.labels.metrics.\* |  | object |
-| gcp.labels.resource.\* |  | object |
-| gcp.labels.system.\* |  | object |
-| gcp.labels.user.\* |  | object |
-| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
+| gcp.billing.billing_account_id | Project Billing Account ID. | keyword |
+| gcp.billing.cost_type | Cost types include regular, tax, adjustment, and rounding_error. | keyword |
+| gcp.billing.invoice_month | Billing report month. | keyword |
+| gcp.billing.project_id | Project ID of the billing report belongs to. | keyword |
+| gcp.billing.project_name | Project Name of the billing report belongs to. | keyword |
+| gcp.billing.total | Total billing amount. | float |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
