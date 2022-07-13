@@ -141,13 +141,13 @@ An example event for `virtualmachine` looks as following:
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | vsphere.virtualmachine.cpu.free.mhz | Available CPU in Mhz | long |  | gauge |
-| vsphere.virtualmachine.cpu.total.mhz | Total CPU in Mhz | long |  | gauge |
+| vsphere.virtualmachine.cpu.total.mhz | Total CPU in Mhz | long |  | counter |
 | vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz | long |  | gauge |
 | vsphere.virtualmachine.custom_fields | Custom fields | object |  |  |
 | vsphere.virtualmachine.host.hostname | Host name of the host | keyword |  |  |
 | vsphere.virtualmachine.host.id | Host id | keyword |  |  |
 | vsphere.virtualmachine.memory.free.guest.bytes | Free Memory of Guest in bytes | long | byte | gauge |
-| vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes | long | byte | gauge |
+| vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes | long | byte | counter |
 | vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes | long | byte | gauge |
 | vsphere.virtualmachine.memory.used.host.bytes | Used Memory of Host in bytes | long | byte | gauge |
 | vsphere.virtualmachine.name | Virtual Machine name | keyword |  |  |
@@ -286,11 +286,11 @@ An example event for `host` looks as following:
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | vsphere.host.cpu.free.mhz | Free CPU in Mhz | long |  | gauge |
-| vsphere.host.cpu.total.mhz | Total CPU in Mhz | long |  | gauge |
+| vsphere.host.cpu.total.mhz | Total CPU in Mhz | long |  | counter |
 | vsphere.host.cpu.used.mhz | Used CPU in Mhz | long |  | gauge |
 | vsphere.host.cpu.used.pct | Used percent of cpu of the host | scaled_float | percent | gauge |
 | vsphere.host.memory.free.bytes | Free Memory in bytes | long | byte | gauge |
-| vsphere.host.memory.total.bytes | Total Memory in bytes | long | byte | gauge |
+| vsphere.host.memory.total.bytes | Total Memory in bytes | long | byte | counter |
 | vsphere.host.memory.used.bytes | Used Memory in bytes | long | byte | gauge |
 | vsphere.host.memory.used.pct | Used percent of memory of the host | scaled_float | percent | gauge |
 | vsphere.host.name | Host name | keyword |  |  |
@@ -414,7 +414,7 @@ An example event for `datastore` looks as following:
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | vsphere.datastore.capacity.free.bytes | Free bytes of the datastore | long | byte | gauge |
-| vsphere.datastore.capacity.total.bytes | Total bytes of the datastore | long | byte | gauge |
+| vsphere.datastore.capacity.total.bytes | Total bytes of the datastore | long | byte | counter |
 | vsphere.datastore.capacity.used.bytes | Used bytes of the datastore | long | byte | gauge |
 | vsphere.datastore.capacity.used.pct | Used percent of the datastore | scaled_float | percent | gauge |
 | vsphere.datastore.fstype | Filesystem type | keyword |  |  |
