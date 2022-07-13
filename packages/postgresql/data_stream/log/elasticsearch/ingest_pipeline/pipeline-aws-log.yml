@@ -5,7 +5,7 @@ processors:
       field: raw_message
       ignore_missing: true
       patterns:
-        - '(%{IPORHOST:source.ip}\(%{INT:source.port:int}\))?%{USERNAME:user.name}?@%{POSTGRESQL_DB_NAME:postgresql.log.database}?:(\[%{NUMBER:process.pid:long}\])?:%{WORD:log.level}: %{GREEDYDATA:message}'
+        - '(%{DATA:postgresql.log.client_addr}\(%{NUMBER:postgresql.log.client_port:int}\)|\[%{DATA:postgresql.log.client_addr}\])?:%{USERNAME:user.name}?@%{POSTGRESQL_DB_NAME:postgresql.log.database}?:(\[%{NUMBER:process.pid:long}\])?:%{WORD:log.level}: %{GREEDYDATA:message}'
       pattern_definitions:
         GREEDYDATA: |-
           (.|

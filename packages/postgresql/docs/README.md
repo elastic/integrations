@@ -118,8 +118,6 @@ persistent connections, so enable with care.
 | postgresql.log.virtual_transaction_id | Backend local transaction id. | keyword |
 | process.pid | Process id. | long |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
