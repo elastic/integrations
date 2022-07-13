@@ -41,3 +41,6 @@ Metrics related to the Elastic Package Registry application itself:
 Metrics related to the Go processes:
 
 {{ fields "gometrics" }}
+
+Example of event:
+{{ event "gometrics" }}
