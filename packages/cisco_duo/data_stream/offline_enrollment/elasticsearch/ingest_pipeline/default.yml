@@ -24,9 +24,13 @@ processors:
   - date:
       field: json.timestamp
       target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.timestamp != null
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - json: 
       field: json.description
       target_field: json_description
