@@ -18,20 +18,12 @@ processors:
       formats:
         - yyyy-MM-dd'T'HH:mm:ss-Z
   - rename:
-      field: json.box.created_by.id
-      target_field: client.user.id
-      ignore_missing: true
-  - rename:
-      field: json.box.created_by.name
-      target_field: client.user.full_name
-      ignore_missing: true
-  - rename:
-      field: json.box.created_by.login
-      target_field: client.user.email
-      ignore_missing: true
-  - rename:
       field: json.box.type
       target_field: event.kind
+      ignore_missing: true
+  - rename:
+      field: json.box.recorded_at
+      target_field: event.created
       ignore_missing: true
   - rename:
       field: json.box.created_by.type
@@ -41,9 +33,10 @@ processors:
       field: json.box.event_type
       target_field: event.action
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.box.source.sequence_id
       target_field: event.sequence
+      type: integer
       ignore_missing: true
   - rename:
       field: json.box.source.type
