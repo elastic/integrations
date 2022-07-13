@@ -28,7 +28,7 @@ processors:
   - grok:
       field: _temp_.header
       patterns:
-        - '^<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER:event.sequence}?: (?:%{SYSLOGHOST:log.syslog.hostname}: )?%{CISCO_TIMESTAMP:_temp_.cisco_timestamp}'
+        - '^<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER:event.sequence}?: (?:%{SYSLOGHOST:log.syslog.hostname}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP:_temp_.cisco_timestamp}|%{NOTSPACE:cisco.ios.uptime}:)'
         - '%{SYSLOGHOST:log.syslog.hostname} %{NUMBER:event.sequence}: %{CISCO_TIMESTAMP:_temp_.cisco_timestamp}'
       pattern_definitions:
         CISCO_TIMESTAMP: '%{CISCOTIMESTAMP}(?: %{TZ})?'
