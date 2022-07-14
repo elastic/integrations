@@ -47,14 +47,24 @@ Metrics related to the Elastic Package Registry application itself:
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | package_registry.epr_http_request_duration_seconds.histogram | A histogram of latencies for requests to the http server | histogram |
+| package_registry.epr_http_request_duration_seconds.histogram.counts | Counters of the histogram of latencies for requests to the http server | long |
+| package_registry.epr_http_request_duration_seconds.histogram.values | Bucket values of the histogram of latencies for requests to the http server | double |
 | package_registry.epr_http_request_size_bytes.histogram | A histogram of sizes of requests to the http server | histogram |
+| package_registry.epr_http_request_size_bytes.histogram.counts | Counters of the histogram of sizes of requests to the http server | histogram |
+| package_registry.epr_http_request_size_bytes.histogram.values | Bucket values of the histogram of sizes of requests to the http server | histogram |
 | package_registry.epr_http_requests_total.counter | Counter for requests to the http server | long |
 | package_registry.epr_http_response_size_bytes.histogram | A histogram of response sizes for requests to the http server | histogram |
+| package_registry.epr_http_response_size_bytes.histogram.counts | Counters fo the histogram of response sizes for requests to the http server | histogram |
+| package_registry.epr_http_response_size_bytes.histogram.values | Bucket values of the the histogram of response sizes for requests to the http server | histogram |
 | package_registry.epr_in_flight_requests.value | Requests currently being served by the http server | double |
 | package_registry.epr_number_indexed_packages.value | Number of indexed packages | integer |
 | package_registry.epr_service_info.value | Version information about Elastic Package Registry | short |
 | package_registry.epr_storage_indexer_get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |
+| package_registry.epr_storage_indexer_get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |
+| package_registry.epr_storage_indexer_get_duration_seconds.histogram.values | Bucket values of the histogram of latencies for get processes run by the indexer | histogram |
 | package_registry.epr_storage_indexer_update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the indexer | histogram |
+| package_registry.epr_storage_indexer_update_index_duration_seconds.histogram.counts | Counters of the histogram of latencies for update index processes run by the indexer | histogram |
+| package_registry.epr_storage_indexer_update_index_duration_seconds.histogram.values | Bucket values of the histogram of latencies for update index processes run by the indexer | histogram |
 | package_registry.epr_storage_indexer_update_index_error_total.counter | A counter for all the update index processes that finished with error | long |
 | package_registry.epr_storage_indexer_update_index_success_total.counter | A counter for all the update index processes that finished with error | long |
 | package_registry.epr_storage_requests_total.counter | Counter for requests performed to the storage | long |
@@ -65,13 +75,15 @@ Metrics related to the Elastic Package Registry application itself:
 | package_registry.labels.location | Storage location (remote or local) | keyword |
 | package_registry.labels.method | HTTP method | keyword |
 | package_registry.labels.path | Path of the HTTP request. | keyword |
+| package_registry.labels.version | Elastic Package Registry version. | keyword |
 | package_registry.process_cpu_seconds_total.counter | Total user and system CPU time spent in seconds | double |
 | package_registry.process_max_fds.value | Maximum number of open file descriptors | double |
 | package_registry.process_open_fds.value | Number of open file descriptors | double |
 | package_registry.process_resident_memory_bytes.value | Resident memory size in bytes | double |
 | package_registry.process_start_time_seconds.value | Start time of the process since unix epoch in seconds | double |
-| package_registry.process_virtual_memorty_bytes.value | Virtual memory size in bytes | double |
-| package_registry.process_virtual_memorty_max_bytes.value | Maximum amount of virtual memory available in bytes | double |
+| package_registry.process_virtual_memory_bytes.value | Virtual memory size in bytes | double |
+| package_registry.process_virtual_memory_max_bytes.value | Maximum amount of virtual memory available in bytes | double |
+| package_registry.up.value | Monitoring up metric | short |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
