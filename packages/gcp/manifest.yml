@@ -1,6 +1,6 @@
 name: gcp
 title: Google Cloud Platform
-version: "1.10.0"
+version: 2.0.0
 release: ga
 description: Collect logs from Google Cloud Platform with Elastic Agent.
 type: integration
@@ -14,51 +14,124 @@ license: basic
 categories:
   - google_cloud
   - cloud
-  - network
-  - security
 conditions:
-  kibana.version: ^7.17.0 || ^8.0.0
+  kibana.version: ^8.3.0
 screenshots:
   - src: /img/filebeat-gcp-audit.png
     title: filebeat gcp audit
     size: 1702x996
     type: image/png
+  - src: /img/gcp-billing.png
+    title: GCP Billing Metrics Dashboard
+    size: 2000x1020
+    type: image/png
+  - src: /img/gcp-compute.png
+    title: GCP Compute Metrics Dashboard
+    size: 2000x2021
+    type: image/png
+vars:
+  - name: project_id
+    type: text
+    title: Project Id
+    multi: false
+    required: true
+    show_user: true
+    default: SET_PROJECT_NAME
+  - name: credentials_file
+    type: text
+    title: Credentials File
+    multi: false
+    required: false
+    show_user: true
+  - name: credentials_json
+    type: text
+    title: Credentials Json
+    multi: false
+    required: false
+    show_user: true
 policy_templates:
-  - name: gcp
-    title: Google Cloud Platform (GCP) logs
-    description: Collect logs from Google Cloud Platform (GCP) instances
+  - name: audit
+    title: Google Cloud Platform (GCP) Audit logs
+    description: Collect audit logs from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - security
+    data_streams:
+      - audit
     inputs:
       - type: gcp-pubsub
-        vars:
-          - name: alternative_host
-            type: text
-            title: Alternative host
-            multi: false
-            required: false
-            show_user: false
-          - name: project_id
-            type: text
-            title: Project Id
-            description: Your Google Cloud project ID where the resources exist.
-            multi: false
-            required: true
-            show_user: true
-            default: SET_PROJECT_NAME
-          - name: credentials_file
-            type: text
-            title: Credentials File
-            description: The path to the JSON file with the private key. Make sure that the Elastic Agent has at least read-only privileges to this file.
-            multi: false
-            required: false
-            show_user: true
-          - name: credentials_json
-            type: text
-            title: Credentials JSON
-            description: The content of the JSON file you downloaded from Google Cloud Platform.
-            multi: false
-            required: false
-            show_user: true
-        title: "Collect Google Cloud Platform (GCP) audit, firewall and vpcflow logs (input: gcp-pubsub)"
-        description: "Collecting audit, firewall and vpcflow logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
+        title: "Collect Google Cloud Platform (GCP) audit logs (input: gcp-pubsub)"
+        description: "Collecting audit logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
+        input_group: logs
+    screenshots:
+      - src: /img/filebeat-gcp-audit.png
+        title: filebeat gcp audit
+        size: 1702x996
+        type: image/png
+  - name: firewall
+    title: Google Cloud Platform (GCP) Firewall logs
+    description: Collect firewall logs from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - network
+      - security
+    data_streams:
+      - firewall
+    inputs:
+      - type: gcp-pubsub
+        title: "Collect Google Cloud Platform (GCP) firewall logs (input: gcp-pubsub)"
+        description: "Collecting firewall logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
+        input_group: logs
+  - name: vpcflow
+    title: Google Cloud Platform (GCP) VPC Flow logs
+    description: Collect vpcflow logs from Google Cloud Platform (GCP) with Elastic Agent
+    categories:
+      - network
+      - security
+    data_streams:
+      - vpcflow
+    inputs:
+      - type: gcp-pubsub
+        title: "Collect Google Cloud Platform (GCP) VPC Flow logs (input: gcp-pubsub)"
+        description: "Collecting vpcflow logs from Google Cloud Platform (GCP) instances (input: gcp-pubsub)"
+        input_group: logs
+  - name: billing
+    title: Google Cloud Platform (GCP) Billine metrics
+    description: Collect billing metrics from Google Cloud Platform (GCP) with Elastic Agent
+    data_streams:
+      - billing
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Billing Metrics
+        description: Collect GCP Billing Metrics
+        input_group: metrics
+    screenshots:
+      - src: /img/gcp-billing.png
+        title: GCP Billing Metrics Dashboard
+        size: 2000x1020
+        type: image/png
+  - name: compute
+    title: Google Cloud Platform (GCP) Compute metrics
+    description: Collect compute metrics from Google Cloud Platform (GCP) with Elastic Agent
+    data_streams:
+      - compute
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Compute Metrics
+        description: Collect GCP Compute Metrics
+        input_group: metrics
+    screenshots:
+      - src: /img/gcp-compute.png
+        title: GCP Compute Metrics Dashboard
+        size: 2000x2021
+        type: image/png
+  - name: firestore
+    title: Google Cloud Platform (GCP) Firestore metrics
+    description: Collect firestore metrics from Google Cloud Platform (GCP) with Elastic Agent
+    data_streams:
+      - firestore
+    inputs:
+      - type: gcp/metrics
+        title: Collect GCP Firestore Metrics
+        description: Collect GCP Firestore Metrics
+        input_group: metrics
 owner:
   github: elastic/security-external-integrations
