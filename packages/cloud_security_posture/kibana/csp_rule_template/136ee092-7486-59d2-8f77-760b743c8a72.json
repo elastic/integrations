@@ -1,0 +1,38 @@
+{
+    "id": "136ee092-7486-59d2-8f77-760b743c8a72",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "136ee092-7486-59d2-8f77-760b743c8a72",
+            "name": "Ensure that the --protect-kernel-defaults argument is set to true (Automated)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Protect tuned kernel parameters from overriding kubelet default kernel\nparameter values.\n",
+            "rationale": "Kernel parameters are usually tuned and hardened by the system administrators before putting the systems into production. These parameters protect the kernel and the system. Your kubelet kernel defaults that rely on such parameters should be appropriately set to match the desired secured system state. Ignoring this could potentially lead to running pods with undesired kernel behavior.\n",
+            "audit": "**Audit Method 1:**\nIf using a Kubelet configuration file, check that there is an entry for\n`protectKernelDefaults` is set to `true`.\nFirst, SSH to the relevant node:\nRun the following command on each node to find the appropriate Kubelet config file:\n```\nps -ef | grep kubelet\n```\nThe output of the above command should return something similar to `--config`\n`/etc/kubernetes/kubelet/kubelet-config.json` which is the location of the Kubelet\nconfig file.\nOpen the Kubelet config file:\n```\ncat /etc/kubernetes/kubelet/kubelet-config.json\n```\nVerify that the `--protect-kernel-defaults=true`.\nIf the `--protect-kernel-defaults` argument is not present, check that there is a Kubelet\nconfig file specified by `--config`, and that the file sets `protectKernelDefaults` to `true`.\n**Audit Method 2:**\nIf using the api configz endpoint consider searching for the status of\n`\"protectKernelDefaults\"` by extracting the live configuration from the nodes running\nkubelet.\nSet the local proxy port and the following variables and provide proxy port number and\nnode name;\n`HOSTNAME_PORT=\"localhost-and-port-number\"`\n`NODE_NAME=\"The-Name-Of-Node-To-Extract-Configuration\" from the output of`\n`\"kubectl get nodes\"`\n```\nkubectl proxy --port=8001 \u0026\nexport HOSTNAME_PORT=localhost:8001 (example host and port number)\nexport NODE_NAME=ip-192.168.31.226.ec2.internal (example node name from\n\"kubectl get nodes\")\ncurl -sSL \"http://${HOSTNAME_PORT}/api/v1/nodes/${NODE_NAME}/proxy/configz\"\n```\n",
+            "remediation": "Remediation Method 1:\nIf modifying the Kubelet config file, edit the kubelet-config.json file\n`/etc/kubernetes/kubelet/kubelet-config.json` and set the below parameter to `true`\n```\n\"protectKernelDefaults\":\n```\n**Remediation Method 2:**\nIf using a Kubelet config file, edit the file to set `protectKernelDefaults` to `true`.\nIf using executable arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubelet-args.conf` on each worker node\nand add the below parameter at the end of the `KUBELET_ARGS` variable string.\n```\n----protect-kernel-defaults=true\n```\n**Remediation Method 3:**\nIf using the api configz endpoint consider searching for the status of\n`\"protectKernelDefaults\":` by extracting the live configuration from the nodes running\nkubelet.\n**See detailed step-by-step configmap procedures in Reconfigure a Node's Kubelet in a Live\nCluster, and then rerun the curl statement from audit process to check for kubelet\nconfiguration changes\n```\nkubectl proxy --port=8001 \u0026\nexport HOSTNAME_PORT=localhost:8001 (example host and port number)\nexport NODE_NAME=ip-192.168.31.226.ec2.internal (example node name from\n\"kubectl get nodes\")\ncurl -sSL \"http://${HOSTNAME_PORT}/api/v1/nodes/${NODE_NAME}/proxy/configz\"\n```\n**For all three remediations:**\nBased on your system, restart the kubelet service and check status\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\nsystemctl status kubelet -l\n```\n",
+            "impact": "You would have to re-tune kernel parameters to match kubelet parameters.\n",
+            "default_value": "See the EKS documentation for the default value.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 3.2.6",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_3_2_6"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}
