@@ -1,6 +1,10 @@
 ---
 description: Pipeline to parse Microsoft SQL Server logs
 processors:
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
 - set:
     field: ecs.version
     value: 8.3.0
@@ -8,10 +12,10 @@ processors:
     field: event.ingested
     value: '{{_ingest.timestamp}}'
 - grok:
-    field: message
+    field: event.original
     patterns:
-    - '%{MSSQL_DATE:date} %{DATA:mssql.log.origin} [ ]*%{GREEDYDATA:msg_temp}'
-    - '%{GREEDYDATA:msg_temp}'
+    - '%{MSSQL_DATE:date} %{DATA:microsoft_sqlserver.log.origin} [ ]*%{GREEDYDATA:message}'
+    - '%{GREEDYDATA:message}'
     ignore_missing: true
     pattern_definitions:
       MSSQL_DATE: '%{DATA} %{DATA}'
@@ -38,18 +42,6 @@ processors:
 - remove:
     field: date
     ignore_missing: true
-- rename:
-    field: message
-    target_field: event.original
-- rename:
-    field: mssql.log.origin
-    target_field: microsoft_sqlserver.log.origin
-    ignore_missing: true
-    ignore_failure: true
-- rename:
-    field: msg_temp
-    target_field: message
-    ignore_missing: true
 - set:
     field: event.kind
     value: event
@@ -59,11 +51,7 @@ processors:
 - append:
     field: event.type
     value: info
-- remove:
-    field: mssql
-    ignore_missing: true
-    ignore_failure: true
 on_failure:
-- set:
+- append:
     field: error.message
     value: '{{ _ingest.on_failure_message }}'
