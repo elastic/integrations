@@ -16,6 +16,9 @@ This integration is for Palo Alto Networks PAN-OS firewall monitoring logs recei
 
 To configure syslog monitoring, please follow the steps mentioned in the [_Configure Syslog Monitoring_](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/configure-syslog-monitoring).
 
+## Note
+- If events are getting truncated, then increase `max_message_size` option for TCP and UDP input type.
+  - It can be found under Advanced Options and can be configured as per requirements. The default value of `max_message_size` is set to 50KiB.
 
 ## Logs
 
