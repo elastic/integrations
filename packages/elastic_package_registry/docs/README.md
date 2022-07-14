@@ -59,14 +59,6 @@ Metrics related to the Elastic Package Registry application itself:
 | package_registry.epr_in_flight_requests.value | Requests currently being served by the http server | double |
 | package_registry.epr_number_indexed_packages.value | Number of indexed packages | integer |
 | package_registry.epr_service_info.value | Version information about Elastic Package Registry | short |
-| package_registry.epr_storage_indexer_get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |
-| package_registry.epr_storage_indexer_get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |
-| package_registry.epr_storage_indexer_get_duration_seconds.histogram.values | Bucket values of the histogram of latencies for get processes run by the indexer | histogram |
-| package_registry.epr_storage_indexer_update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the indexer | histogram |
-| package_registry.epr_storage_indexer_update_index_duration_seconds.histogram.counts | Counters of the histogram of latencies for update index processes run by the indexer | histogram |
-| package_registry.epr_storage_indexer_update_index_duration_seconds.histogram.values | Bucket values of the histogram of latencies for update index processes run by the indexer | histogram |
-| package_registry.epr_storage_indexer_update_index_error_total.counter | A counter for all the update index processes that finished with error | long |
-| package_registry.epr_storage_indexer_update_index_success_total.counter | A counter for all the update index processes that finished with error | long |
 | package_registry.epr_storage_requests_total.counter | Counter for requests performed to the storage | long |
 | package_registry.labels.code | HTTP Code | keyword |
 | package_registry.labels.component | Component type of the storage (statics, artifacts, signature...) | keyword |
@@ -83,6 +75,14 @@ Metrics related to the Elastic Package Registry application itself:
 | package_registry.process_start_time_seconds.value | Start time of the process since unix epoch in seconds | double |
 | package_registry.process_virtual_memory_bytes.value | Virtual memory size in bytes | double |
 | package_registry.process_virtual_memory_max_bytes.value | Maximum amount of virtual memory available in bytes | double |
+| package_registry.storage_indexer.get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |
+| package_registry.storage_indexer.get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |
+| package_registry.storage_indexer.get_duration_seconds.histogram.values | Bucket values of the histogram of latencies for get processes run by the indexer | histogram |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the indexer | histogram |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram.counts | Counters of the histogram of latencies for update index processes run by the indexer | histogram |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram.values | Bucket values of the histogram of latencies for update index processes run by the indexer | histogram |
+| package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error | long |
+| package_registry.storage_indexer.update_index_success_total.counter | A counter for all the update index processes that finished with error | long |
 | package_registry.up.value | Monitoring up metric | short |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
