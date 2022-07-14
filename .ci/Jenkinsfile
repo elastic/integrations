@@ -326,9 +326,9 @@ def packageStoragePublish() {
             }
           }
 
-          sh(label: "Build integration as zip: ${it}", script: """
-            PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}
-            elastic-package build --zip""")
+          withEnv(["PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}"]) {
+            sh(label: "Build integration as zip: ${it}", script: "elastic-package build --zip")
+          }
         }
       }
     }
