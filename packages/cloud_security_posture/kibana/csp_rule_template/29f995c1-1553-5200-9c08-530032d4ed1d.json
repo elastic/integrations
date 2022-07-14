@@ -1,0 +1,38 @@
+{
+    "id": "29f995c1-1553-5200-9c08-530032d4ed1d",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "29f995c1-1553-5200-9c08-530032d4ed1d",
+            "name": "Minimize the admission of containers wishing to share the hostprocess ID namespace (Automated)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Do not generally permit containers to be run with the `hostPID` flag set to\n`true`.\n",
+            "rationale": "A container running in the host's PID namespace can inspect processes running outside the container. If the container also has access to ptrace capabilities this can be used to escalate privileges outside of the container. There should be at least one PodSecurityPolicy (PSP) defined which does not permit containers to share the host PID namespace. If you need to run containers which require hostPID, this should be defined in a separate PSP and you should carefully check RBAC controls to ensure that only limited service accounts and users are given permission to access that PSP.\n",
+            "audit": "Get the set of PSPs with the following command:\n```\nkubectl get psp\n```\nFor each PSP, check whether privileged is enabled:\n```\nkubectl get psp \u003cname\u003e -o=jsonpath='{.spec.hostPID}'\n```\nVerify that there is at least one PSP which does not return true.\n",
+            "remediation": "Create a PSP as described in the Kubernetes documentation, ensuring that the\n`.spec.hostPID` field is omitted or set to false.\n",
+            "impact": "Pods defined with `spec.hostPID: true` will not be permitted unless they are\nrun under a specific PSP.\n",
+            "default_value": "By default, PodSecurityPolicies are not defined.\n",
+            "references": "1. https://kubernetes.io/docs/concepts/policy/pod-security-policy\n",
+            "section": "Pod Security Policies",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 4.2.2",
+                "Pod Security Policies"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_4_2_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}

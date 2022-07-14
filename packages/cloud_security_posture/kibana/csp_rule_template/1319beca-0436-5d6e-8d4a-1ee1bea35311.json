@@ -1,0 +1,38 @@
+{
+    "id": "1319beca-0436-5d6e-8d4a-1ee1bea35311",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "1319beca-0436-5d6e-8d4a-1ee1bea35311",
+            "name": "Minimize the admission of privileged containers (Automated)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Do not generally permit containers to be run with the\n`securityContext.privileged` flag set to true.\n",
+            "rationale": "Privileged containers have access to all Linux Kernel capabilities and devices. A container running with full privileges can do almost everything that the host can do. This flag exists to allow special use-cases, like manipulating the network stack and accessing devices. There should be at least one PodSecurityPolicy (PSP) defined which does not permit privileged containers. If you need to run privileged containers, this should be defined in a separate PSP and you should carefully check RBAC controls to ensure that only limited service accounts and users are given permission to access that PSP.\n",
+            "audit": "Get the set of PSPs with the following command:\n```\nkubectl get psp\n```\nFor each PSP, check whether privileged is enabled:\n```\nkubectl get psp -o json\n```\nVerify that there is at least one PSP which does not return `true`.\n`kubectl get psp \u003cname\u003e -o=jsonpath='{.spec.privileged}'`\n",
+            "remediation": "Create a PSP as described in the Kubernetes documentation, ensuring that the\n`.spec.privileged` field is omitted or set to `false`.\n",
+            "impact": "Pods defined with `spec.containers[].securityContext.privileged: true` will not be permitted.\n",
+            "default_value": "By default, when you provision an EKS cluster, a pod security policy called\neks.privileged is automatically created. The manifest for that policy appears below:\n```\napiVersion: extensions/v1beta1\nkind: PodSecurityPolicy\nmetadata:\nannotations:\nkubernetes.io/description: privileged allows full unrestricted access to\npod features,\nas if the PodSecurityPolicy controller was not enabled.\nseccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'\nlabels:\neks.amazonaws.com/component: pod-security-policy\nkubernetes.io/cluster-service: \"true\"\nname: eks.privileged\nspec:\nallowPrivilegeEscalation: true\nallowedCapabilities:\n- '*'\nfsGroup:\nrule: RunAsAny\nhostIPC: true\nhostNetwork: true\nhostPID: true\nhostPorts:\n- max: 65535\nmin: 0\nprivileged: true\nrunAsUser:\nrule: RunAsAny\nseLinux:\nrule: RunAsAny\t\nsupplementalGroups:\nrule: RunAsAny\nvolumes:\n- '*'\n```\n",
+            "references": "1. https://kubernetes.io/docs/concepts/policy/pod-security-policy/#enabling-pod-security-policies\n2. https://aws.github.io/aws-eks-best-practices/pods/#restrict-the-containers-that-can-run-as-privileged\n",
+            "section": "Pod Security Policies",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 4.2.1",
+                "Pod Security Policies"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_4_2_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}

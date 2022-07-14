@@ -1,0 +1,38 @@
+{
+    "id": "4b4dc57c-c46d-5db2-822d-ad702b0dd1d1",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "4b4dc57c-c46d-5db2-822d-ad702b0dd1d1",
+            "name": "Minimize the admission of containers wishing to share the host network namespace (Automated)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Do not generally permit containers to be run with the `hostNetwork` flag set\nto true.\n",
+            "rationale": "A container running in the host's network namespace could access the local\nloopback\ndevice, and could access network traffic to and from other pods.\nThere should be at least one PodSecurityPolicy (PSP) defined which does not permit\ncontainers to share the host network namespace.\nIf you have need to run containers which require hostNetwork, this should be defined in a\nseparate PSP and you should carefully check RBAC controls to ensure that only limited\nservice accounts and users are given permission to access that PSP.\n",
+            "audit": "Get the set of PSPs with the following command:\n```\nkubectl get psp\n```\nFor each PSP, check whether privileged is enabled:\n```\nkubectl get psp \u003cname\u003e -o=jsonpath='{.spec.hostNetwork}'\n```\nVerify that there is at least one PSP which does not return true.\n",
+            "remediation": "Create a PSP as described in the Kubernetes documentation, ensuring that the\n`.spec.hostNetwork` field is omitted or set to false.\n",
+            "impact": "Pods defined with `spec.hostNetwork: true` will not be permitted unless they are run under a specific PSP.\n",
+            "default_value": "By default, PodSecurityPolicies are not defined.\n",
+            "references": "1. https://kubernetes.io/docs/concepts/policy/pod-security-policy\n",
+            "section": "Pod Security Policies",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 4.2.4",
+                "Pod Security Policies"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_4_2_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}
