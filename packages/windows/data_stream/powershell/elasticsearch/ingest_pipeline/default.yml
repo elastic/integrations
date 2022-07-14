@@ -120,15 +120,26 @@ processors:
   # Get user details from the translate_sid processor enrichment
   # if they are available and we don't already have them.
   - rename:
-      field: _user.name
+      field: winlog.event_data._MemberUserName
       target_field: user.name
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: _user.domain
+      field: winlog.event_data._MemberDomain
       target_field: user.domain
       ignore_failure: true
       ignore_missing: true
+  - append:
+      value: '{{{winlog.event_data._MemberAccountType}}}'
+      field: user.roles
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.winlog?.event_data?._MemberAccountType != null
+  - remove:
+      field: winlog.event_data._MemberAccountType
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.roles != null && ctx.winlog?.event_data?._MemberAccountType != null && ctx.user.roles.contains(ctx.winlog.event_data._MemberAccountType)   
 
   ## PowerShell fields.
 
@@ -414,7 +425,6 @@ processors:
   - remove:
       field:
         - _temp
-        - _user
         - winlog.event_data.param1
         - winlog.event_data.param2
         - winlog.event_data.param3
