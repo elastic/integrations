@@ -21,7 +21,13 @@ include_xml: true
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors.length}}
 processors:
+  - translate_sid:
+      field: winlog.event_data.MemberSid
+      account_name_target: _user.name
+      domain_target: _user.domain
+      ignore_missing: true
+      ignore_failure: true
+{{#if processors.length}}
 {{processors}}
 {{/if}}

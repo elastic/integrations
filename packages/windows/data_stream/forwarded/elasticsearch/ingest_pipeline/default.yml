@@ -13,6 +13,23 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "sysmon_operational" }}'
       if: ctx?.winlog?.channel != null && ctx?.winlog?.channel == "Microsoft-Windows-Sysmon/Operational"
+
+  # Get user details from the translate_sid processor enrichment
+  # if they are available and we don't already have them.
+  - rename:
+      field: _user.name
+      target_field: user.name
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: _user.domain
+      target_field: user.domain
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: _user
+      ignore_missing: true
+
 on_failure:
   - set:
       field: "error.message"
