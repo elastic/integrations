@@ -119,7 +119,7 @@ processors:
   - geoip:
       field: source.ip
       target_field: source.geo
-      ignore_failure: true
+      ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
@@ -140,10 +140,12 @@ processors:
       field: event.kind
       value: event
   - script:
+      description: Add event.category/action/output to SSH events.
+      tag: script-categorize-ssh-event
+      if: ctx.system?.auth?.ssh?.event != null
       lang: painless
-      ignore_failure: true
       source: >-
-        if (ctx.system.auth.ssh.event == "Accepted") {
+        if (ctx.system.auth?.ssh.event == "Accepted") {
           ctx.event.type = ["info"];
           ctx.event.category = ["authentication", "session"];
           ctx.event.action = "ssh_login";
@@ -154,7 +156,6 @@ processors:
           ctx.event.action = "ssh_login";
           ctx.event.outcome = "failure";
         }
-
   - append:
       field: event.category
       value: iam
