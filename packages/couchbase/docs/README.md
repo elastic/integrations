@@ -139,10 +139,10 @@ An example event for `bucket` looks as following:
 | couchbase.bucket.data.used.bytes | Size of user data within buckets of the specified state that are resident in RAM. | long | byte | gauge |
 | couchbase.bucket.disk.fetches | Number of disk fetches. | long |  | gauge |
 | couchbase.bucket.disk.used.bytes | Amount of disk used (bytes). | long | byte | gauge |
-| couchbase.bucket.item.count | Number of items associated with the bucket. | long |  |  |
+| couchbase.bucket.item.count | Number of items associated with the bucket. | long |  | counter |
 | couchbase.bucket.memory.used.bytes | Amount of memory used by the bucket (bytes). | long | byte | gauge |
 | couchbase.bucket.name | Name of the bucket. | keyword |  |  |
-| couchbase.bucket.operations_per_sec | Number of operations per second. | long |  |  |
+| couchbase.bucket.operations_per_sec | Number of operations per second. | long |  | gauge |
 | couchbase.bucket.ram.quota.bytes | Amount of RAM used by the bucket (bytes). | long | byte | gauge |
 | couchbase.bucket.ram.quota.used.pct | Percentage of RAM used (for active objects) against the configured bucket size (%). | float | percent | gauge |
 | couchbase.bucket.type | Type of the bucket. | keyword |  |  |
