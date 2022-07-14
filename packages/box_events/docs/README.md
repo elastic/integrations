@@ -50,9 +50,9 @@ The Box events API enables subscribing to live events across the enterprise or f
 | box.source.path_collection.entries.name | The name of the folder. This field is an array. | array |
 | box.source.path_collection.entries.type | Value is always `folder`. This field is an array. | array |
 | box.source.path_collection.total_count | The number of folders in this list. | long |
-| box.source.purged_at | Missing on Box Dev | boolean |
-| box.source.synced | Missing on Box Dev | boolean |
-| box.source.trashed_at | Missing on Box Dev | boolean |
+| box.source.purged_at | The time at which this file is expected to be purged from the trash. | boolean |
+| box.source.synced | Box Dev | boolean |
+| box.source.trashed_at | The time at which this file was put in the trash. | boolean |
 | client.user.email | User email address. | keyword |
 | client.user.full_name | User's full name, if available. | keyword |
 | client.user.full_name.text | Multi-field of `client.user.full_name`. | match_only_text |
