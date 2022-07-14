@@ -1,6 +1,3 @@
-- name: package_registry.*.*
-  dynamic: true
-  description: Package Registry telemetry data from the Prometheus endpoint.
 - name: package_registry.labels
   type: group
   fields:
@@ -10,240 +7,150 @@
       type: keyword
     - name: instance
       type: keyword
-- name: package_registry.*.value
-  type: object
-  object_type: double
-  object_type_mapping_type: "*"
+    - name: version
+      type: keyword
+- name: package_registry.go_gc_duration_seconds.value
+  type: double
   description: >
-    Prometheus gauge metric
+    a summary of the pause duration of garbage collection cycle
 
-- name: package_registry.*.counter
-  type: object
-  object_type: double
-  object_type_mapping_type: "*"
+- name: package_registry.go_gc_duration_seconds_sum.counter
+  type: double
   description: >
-    Prometheus counter metric
+    Sum of pause duration of garbage collection cycle
 
-- name: package_registry.*.rate
-  type: object
-  object_type: double
-  object_type_mapping_type: "*"
+- name: package_registry.go_gc_duration_seconds_count.counter
+  type: double
   description: >
-    Prometheus rated counter metric
+    count of the pause duration of garbage collection cycle
 
-- name: package_registry.*.histogram
-  type: object
-  object_type: histogram
-  object_type_mapping_type: "*"
-  description: >-
-    Prometheus histogram metric
+- name: package_registry.go_goroutines.value
+  type: long
+  description: >
+    Number of goroutines that currently exist
 
-# - name: package_registry.go_gc_duration_seconds.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     A summary of the pause duration of garbage collection cycle
-#
-# - name: package_registry.go_gc_duration_seconds_sum.*
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Sum of pause duration of garbage collection cycle
-#
-# - name: package_registry.go_gc_duration_seconds_count.*
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Count of the pause duration of garbage collection cycle
-#
-# - name: package_registry.go_goroutines.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of goroutines that currently exist
-#
-# - name: package_registry.go_info.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Information about the Go environment
-#
-# - name: package_registry.go_memstats_alloc_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes allocated and still in use
-#
-# - name: package_registry.go_memstats_alloc_bytes_total.counter
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Total number of bytes allocated, even if freed
-#
-# - name: package_registry.go_memstats_alloc_bytes_total.rate
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Rate of the total number of bytes allocated, even if freed
-#
-# - name: package_registry.go_memstats_buck_hash_sys_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes used by the profiling bucket hash table
-#
-# - name: package_registry.go_memstats_frees_total.*
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Total number of frees.
-#
-# - name: package_registry.go_memstats_gc_sys_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes used for garbage collection system metadata
-#
-# - name: package_registry.go_memstats_heap_alloc_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of heap bytes allocated and still in use
-#
-# - name: package_registry.go_memstats_heap_idle_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of heap bytes waiting to be used
-#
-# - name: package_registry.go_memstats_heap_inuse_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of heap bytes that are in use
-#
-# - name: package_registry.go_memstats_heap_objects.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of allocated objects
-#
-# - name: package_registry.go_memstats_heap_released_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of heap bytes released to OS
-#
-# - name: package_registry.go_memstats_heap_sys_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of heap bytes obtained from system
-#
-# - name: package_registry.go_memstats_last_gc_time_seconds.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of seconds since 1970 of last garbage collection
-#
-# - name: package_registry.go_memstats_lookups_total.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Total number of pointer lookups
-#
-# - name: package_registry.go_memstats_mallocs_total.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Total number of mallocs
-#
-# - name: package_registry.go_memstats_mcache_inuse_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes in use by mcache structures
-#
-# - name: package_registry.go_memstats_mcache_sys_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes used for mcache structures obtained from system
-#
-# - name: package_registry.go_memstats_mspan_inuse_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes in use by mspan structures
-#
-# - name: package_registry.go_memstats_mspan_sys_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes used for mspan structures obtained from system
-#
-# - name: package_registry.go_memstats_next_gc_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of heap bytes when next garbage collection will take place
-#
-# - name: package_registry.go_memstats_other_sys_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes used for other system allocations
-#
-# - name: package_registry.go_memstats_stack_inuse_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes in use by the stack allocator
-#
-# - name: package_registry.go_memstats_stack_sys_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes obtained from system for stack allocator
-#
-# - name: package_registry.go_memstats_sys_bytes.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of bytes obtained from system
-#
-# - name: package_registry.go_threads.value
-#   type: object
-#   object_type: double
-#   object_type_mapping_type: "*"
-#   description: >
-#     Number of OS threads created
+- name: package_registry.go_info.value
+  type: short
+  description: >
+    Information about the Go environment
+
+- name: package_registry.go_memstats_alloc_bytes.value
+  type: double
+  description: >
+    Number of bytes allocated and still in use
+
+- name: package_registry.go_memstats_alloc_bytes_total.counter
+  type: double
+  description: >
+    Total number of bytes allocated, even if freed
+
+- name: package_registry.go_memstats_buck_hash_sys_bytes.value
+  type: double
+  description: >
+    Number of bytes used by the profiling bucket hash table
+
+- name: package_registry.go_memstats_frees_total.counter
+  type: double
+  description: >
+    Total number of frees.
+
+- name: package_registry.go_memstats_gc_sys_bytes.value
+  type: double
+  description: >
+    Number of bytes used for garbage collection system metadata
+
+- name: package_registry.go_memstats_heap_alloc_bytes.value
+  type: double
+  description: >
+    Number of heap bytes allocated and still in use
+
+- name: package_registry.go_memstats_heap_idle_bytes.value
+  type: double
+  description: >
+    Number of heap bytes waiting to be used
+
+- name: package_registry.go_memstats_heap_inuse_bytes.value
+  type: double
+  description: >
+    Number of heap bytes that are in use
+
+- name: package_registry.go_memstats_heap_objects.value
+  type: double
+  description: >
+    Number of allocated objects
+
+- name: package_registry.go_memstats_heap_released_bytes.value
+  type: double
+  description: >
+    Number of heap bytes released to OS
+
+- name: package_registry.go_memstats_heap_sys_bytes.value
+  type: double
+  description: >
+    Number of heap bytes obtained from system
+
+- name: package_registry.go_memstats_last_gc_time_seconds.value
+  type: double
+  description: >
+    Number of seconds since 1970 of last garbage collection
+
+- name: package_registry.go_memstats_lookups_total.counter
+  type: double
+  description: >
+    Total number of pointer lookups
+
+- name: package_registry.go_memstats_mallocs_total.counter
+  type: double
+  description: >
+    Total number of mallocs
+
+- name: package_registry.go_memstats_mcache_inuse_bytes.value
+  type: double
+  description: >
+    Number of bytes in use by mcache structures
+
+- name: package_registry.go_memstats_mcache_sys_bytes.value
+  type: double
+  description: >
+    Number of bytes used for mcache structures obtained from system
+
+- name: package_registry.go_memstats_mspan_inuse_bytes.value
+  type: double
+  description: >
+    Number of bytes in use by mspan structures
+
+- name: package_registry.go_memstats_mspan_sys_bytes.value
+  type: double
+  description: >
+    Number of bytes used for mspan structures obtained from system
+
+- name: package_registry.go_memstats_next_gc_bytes.value
+  type: double
+  description: >
+    Number of heap bytes when next garbage collection will take place
+
+- name: package_registry.go_memstats_other_sys_bytes.value
+  type: double
+  description: >
+    Number of bytes used for other system allocations
+
+- name: package_registry.go_memstats_stack_inuse_bytes.value
+  type: double
+  description: >
+    Number of bytes in use by the stack allocator
+
+- name: package_registry.go_memstats_stack_sys_bytes.value
+  type: double
+  description: >
+    Number of bytes obtained from system for stack allocator
+
+- name: package_registry.go_memstats_sys_bytes.value
+  type: double
+  description: >
+    Number of bytes obtained from system
+
+- name: package_registry.go_threads.value
+  type: long
+  description: >
+    Number of OS threads created
+
