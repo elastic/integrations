@@ -188,6 +188,83 @@ The SQL Server audit dataset provides events from the configured Windows event l
 
 The Microsoft SQL Server `log` dataset parses error logs created by Microsoft SQL server.
 
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2022-07-14T07:12:49.210Z",
+    "agent": {
+        "ephemeral_id": "688f9c4d-2ac0-43b6-9421-bf465d5c92f0",
+        "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.3.0"
+    },
+    "cloud": {
+        "account": {},
+        "instance": {
+            "id": "b30e45e6-7900-4900-8d67-e37cb13374bc",
+            "name": "obs-int-windows-dev"
+        },
+        "machine": {
+            "type": "Standard_D16ds_v5"
+        },
+        "provider": "azure",
+        "region": "CentralIndia",
+        "service": {
+            "name": "Virtual Machines"
+        }
+    },
+    "data_stream": {
+        "dataset": "microsoft_sqlserver.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.3.0"
+    },
+    "elastic_agent": {
+        "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
+        "snapshot": false,
+        "version": "8.3.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "microsoft_sqlserver.log",
+        "ingested": "2022-07-14T07:13:12Z",
+        "kind": "event",
+        "original": "2022-07-14 07:12:49.21 Server      Microsoft SQL Server 2019 (RTM-CU16-GDR) (KB5014353) - 15.0.4236.7 (X64) \n\tMay 29 2022 15:55:47 \n\tCopyright (C) 2019 Microsoft Corporation\n\tDeveloper Edition (64-bit) on Linux (Ubuntu 20.04.4 LTS) \u003cX64\u003e",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/errorlog"
+        },
+        "flags": [
+            "multiline"
+        ],
+        "offset": 0
+    },
+    "message": "Microsoft SQL Server 2019 (RTM-CU16-GDR) (KB5014353) - 15.0.4236.7 (X64) \n\tMay 29 2022 15:55:47 \n\tCopyright (C) 2019 Microsoft Corporation\n\tDeveloper Edition (64-bit) on Linux (Ubuntu 20.04.4 LTS) \u003cX64\u003e",
+    "microsoft_sqlserver": {
+        "log": {
+            "origin": "Server"
+        }
+    },
+    "tags": [
+        "mssql-logs"
+    ]
+}
+```
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -252,10 +329,10 @@ An example event for `performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-08T13:35:05.558Z",
+    "@timestamp": "2022-07-14T07:14:13.656Z",
     "agent": {
-        "ephemeral_id": "16ad2de8-8ba3-496f-98d1-cbe19441c168",
-        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
+        "ephemeral_id": "5dffefae-7490-4917-91bf-88e3e9f7a346",
+        "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.3.0"
@@ -284,15 +361,15 @@ An example event for `performance` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
-        "snapshot": true,
+        "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
+        "snapshot": false,
         "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.performance",
-        "duration": 7151724,
-        "ingested": "2022-06-08T13:35:06Z",
+        "duration": 11496204,
+        "ingested": "2022-07-14T07:14:14Z",
         "module": "sql"
     },
     "host": {
@@ -322,11 +399,11 @@ An example event for `performance` looks as following:
     },
     "mssql": {
         "metrics": {
-            "user_connections": 1
+            "user_connections": 2
         }
     },
     "service": {
-        "address": "elastic-package-service-microsoft_sqlserver-1:1433",
+        "address": "elastic-package-service_microsoft_sqlserver_1:1433",
         "type": "sql"
     }
 }
@@ -371,50 +448,83 @@ An example event for `transaction_log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-08T10:20:14.787809Z",
-    "mssql": {
-        "metrics": {
-            "database_name": "msdb",
-            "database_id": 1,
-            "used_log_space_bytes": 41.17647171020508,
-            "log_space_in_bytes_since_last_backup": 397312,
-            "total_log_size_bytes": 2088960,
-            "used_log_space_pct": 860160
-        }
-    },
-    "metricset": {
-        "period": 10000,
-        "name": "query"
-    },
+    "@timestamp": "2022-07-14T07:15:18.194Z",
     "agent": {
-        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
-        "ephemeral_id": "d1a76cf4-2463-478a-a474-36e771218467",
+        "ephemeral_id": "b976c50d-53f8-42b9-81ec-e5c1cc01c120",
+        "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
+        "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.3.0"
     },
-    "service": {
-        "address": "54.90.251.237:1433",
-        "type": "sql"
-    },
-    "elastic_agent": {
-        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
-        "version": "8.3.0",
-        "snapshot": true
-    },
-    "event": {
-        "duration": 5595352584,
-        "agent_id_status": "verified",
-        "ingested": "2022-05-23T10:20:21Z",
-        "module": "sql",
-        "dataset": "microsoft_sqlserver.transaction_log"
+    "cloud": {
+        "account": {},
+        "instance": {
+            "id": "b30e45e6-7900-4900-8d67-e37cb13374bc",
+            "name": "obs-int-windows-dev"
+        },
+        "machine": {
+            "type": "Standard_D16ds_v5"
+        },
+        "provider": "azure",
+        "region": "CentralIndia",
+        "service": {
+            "name": "Virtual Machines"
+        }
     },
     "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "microsoft_sqlserver.transaction_log"
+        "dataset": "microsoft_sqlserver.transaction_log",
+        "namespace": "ep",
+        "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
+        "snapshot": false,
+        "version": "8.3.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "microsoft_sqlserver.transaction_log",
+        "duration": 6669532,
+        "ingested": "2022-07-14T07:15:19Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.16.3-microsoft-standard-WSL2",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 60000
+    },
+    "mssql": {
+        "metrics": {
+            "database_id": 1,
+            "database_name": "master"
+        }
+    },
+    "service": {
+        "address": "elastic-package-service_microsoft_sqlserver_1:1433",
+        "type": "sql"
     }
 }
 ```

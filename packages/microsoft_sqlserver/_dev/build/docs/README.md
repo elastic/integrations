@@ -64,6 +64,8 @@ The SQL Server audit dataset provides events from the configured Windows event l
 
 The Microsoft SQL Server `log` dataset parses error logs created by Microsoft SQL server.
 
+{{event "log"}}
+
 {{fields "log"}}
 
 ## Metrics
