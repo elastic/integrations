@@ -1,0 +1,38 @@
+{
+    "id": "a8592cf4-d913-5906-8499-dc1d5a410e2f",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "a8592cf4-d913-5906-8499-dc1d5a410e2f",
+            "name": "Ensure Image Vulnerability Scanning using Amazon ECR image scanning or a third party provider (Manual)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Scan images being deployed to Amazon EKS for vulnerabilities.\n",
+            "rationale": "Vulnerabilities in software packages can be exploited by hackers or malicious users to obtain unauthorized access to local cloud resources. Amazon ECR and other third party products allow images to be scanned for known vulnerabilities.\n",
+            "audit": "Please follow AWS ECS or your 3rd party image scanning provider's guidelines for enabling Image Scanning.\n",
+            "remediation": "To utilize AWS ECR for Image scanning please follow the steps below:\nTo create a repository configured for scan on push (AWS CLI)\n```\naws ecr create-repository --repository-name $REPO_NAME --image-scanning-\nconfiguration scanOnPush=true --region $REGION_CODE\n```\nTo edit the settings of an existing repository (AWS CLI)\n```\naws ecr put-image-scanning-configuration --repository-name $REPO_NAME --\nimage-scanning-configuration scanOnPush=true --region $REGION_CODE\n```\nUse the following steps to start a manual image scan using the AWS Management Console.\n1. Open the Amazon ECR console at\nhttps://console.aws.amazon.com/ecr/repositories.\n2. From the navigation bar, choose the Region to create your repository in.\n3. In the navigation pane, choose Repositories.\n4. On the Repositories page, choose the repository that contains the image to scan.\n5. On the Images page, select the image to scan and then choose Scan.\n",
+            "impact": "If you are utilizing AWS ECR\nThe following are common image scan failures. You can view errors like this in the Amazon\nECR console by displaying the image details or through the API or AWS CLI by using the\nDescribeImageScanFindings API.\nUnsupportedImageError You may get an UnsupportedImageError error when attempting\nto scan an image that was built using an operating system that Amazon ECR doesn't\nsupport image scanning for. Amazon ECR supports package vulnerability scanning for\nmajor versions of Amazon Linux, Amazon Linux 2, Debian, Ubuntu, CentOS, Oracle Linux,\nAlpine, and RHEL Linux distributions. Amazon ECR does not support scanning images built\nfrom the Docker scratch image.\nAn UNDEFINED severity level is returned You may receive a scan finding that has a severity\nlevel of UNDEFINED. The following are the common causes for this:\nThe vulnerability was not assigned a priority by the CVE source.\nThe vulnerability was assigned a priority that Amazon ECR did not recognize.\nTo determine the severity and description of a vulnerability, you can view the CVE directly\nfrom the source.\n",
+            "default_value": "Images are not scanned by Default.\n",
+            "references": "1. https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-scanning.html\n",
+            "section": "Image Registry and Image Scanning",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 5.1.1",
+                "Image Registry and Image Scanning"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_5_1_1"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}

@@ -1,0 +1,38 @@
+{
+    "id": "737e58cc-60c3-5785-b2e6-7d1bb2ca1cca",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "737e58cc-60c3-5785-b2e6-7d1bb2ca1cca",
+            "name": "Ensure that the --authorization-mode argument is not set to Always Allow (Automated)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Do not allow all requests. Enable explicit authorization.\n",
+            "rationale": "Kubelets, by default, allow all authenticated requests (even anonymous ones)\nwithout\nneeding explicit authorization checks from the apiserver. You should restrict this behavior\nand only allow explicitly authorized requests.\n",
+            "audit": "**Audit Method 1:**\nIf using a Kubelet configuration file, check that there is an entry for `\"authentication\":`\n`\"webhook\": \"enabled\"` set to `true`.\nFirst, SSH to the relevant node:\nRun the following command on each node to find the appropriate Kubelet config file:\n```\nps -ef | grep kubelet\n```\nThe output of the above command should return something similar to `--config`\n`/etc/kubernetes/kubelet/kubelet-config.json` which is the location of the Kubelet\nconfig file.\nOpen the Kubelet config file:\n```\nsudo more /etc/kubernetes/kubelet/kubelet-config.json\n```\nVerify that the `\"authentication\": {\"webhook\": { \"enabled\": is set to true.`\nIf the `\"authentication\": {\"mode\": { argument` is present check that it is not set to\n`AlwaysAllow`. If it is not present check that there is a Kubelet config file specified by \n`--config`, and that file sets `\"authentication\": {\"mode\": { ` to something other than\n`AlwaysAllow`.\n**Audit Method 2:**\nIf using the api configz endpoint consider searching for the status of `authentication...`\n`\"webhook\":{\"enabled\":true}` by extracting the live configuration from the nodes running\nkubelet.\nSet the local proxy port and the following variables and provide proxy port number and\nnode name;\n`HOSTNAME_PORT=\"localhost-and-port-number\"`\n`NODE_NAME=\"The-Name-Of-Node-To-Extract-Configuration\" from the output of`\n`\"kubectl get nodes\"`\n```\nkubectl proxy --port=8001 \u0026\nexport HOSTNAME_PORT=localhost:8001 (example host and port number)\nexport NODE_NAME=ip-192.168.31.226.ec2.internal (example node name from\n\"kubectl get nodes\")\ncurl -sSL \"http://${HOSTNAME_PORT}/api/v1/nodes/${NODE_NAME}/proxy/configz\"\n```\n",
+            "remediation": "**Remediation Method 1:**\nIf modifying the Kubelet config file, edit the kubelet-config.json file\n`/etc/kubernetes/kubelet/kubelet-config.json` and set the below parameter to false\n```\n\"authentication\"... \"webhook\":{\"enabled\":true\n```\n**Remediation Method 2:**\nIf using executable arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubelet-args.conf` on each worker node\nand add the below parameter at the end of the `KUBELET_ARGS` variable string.\n```\n--authorization-mode=Webhook\n```\n**Remediation Method 3:**\nIf using the api configz endpoint consider searching for the status of\n`\"authentication.*webhook\":{\"enabled\":true\"` by extracting the live configuration from\nthe nodes running kubelet.\n**See detailed step-by-step configmap procedures in Reconfigure a Node's Kubelet in a Live\nCluster, and then rerun the curl statement from audit process to check for kubelet\nconfiguration changes\n```\nkubectl proxy --port=8001 \u0026\nexport HOSTNAME_PORT=localhost:8001 (example host and port number)\nexport NODE_NAME=ip-192.168.31.226.ec2.internal (example node name from\n\"kubectl get nodes\")\ncurl -sSL \"http://${HOSTNAME_PORT}/api/v1/nodes/${NODE_NAME}/proxy/configz\"\n```\n**For all three remediations:**\nBased on your system, restart the kubelet service and check status\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\nsystemctl status kubelet -l\n```\n",
+            "impact": "Unauthorized requests will be denied.\n",
+            "default_value": "See the EKS documentation for the default value.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n2. https://kubernetes.io/docs/admin/kubelet-authentication-authorization/#kubelet-authentication\n3. https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 3.2.2",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_3_2_2"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}
