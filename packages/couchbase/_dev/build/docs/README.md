@@ -2,7 +2,7 @@
 
 This Elastic integration collects and parses the [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
 
-This integration uses `http` metricbeat module to collect above metrics.
+This integration uses `http` metricbeat module to collect `bucket` metrics.
 
 ## Compatibility
 
