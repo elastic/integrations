@@ -1,10 +1,10 @@
-# Laodbalancing
+# Loadbalancers
 
 ## Metrics
 
-This is the `loadbalancing` dataset.
+This is the `loadbalancer_metrics` dataset.
 
-An example event for `loadbalancing` looks as following:
+An example event for `loadbalancer` looks as following:
 
 ```json
 {
