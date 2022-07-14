@@ -329,10 +329,10 @@ An example event for `performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-14T07:14:13.656Z",
+    "@timestamp": "2022-06-08T13:35:05.558Z",
     "agent": {
-        "ephemeral_id": "5dffefae-7490-4917-91bf-88e3e9f7a346",
-        "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
+        "ephemeral_id": "16ad2de8-8ba3-496f-98d1-cbe19441c168",
+        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.3.0"
@@ -361,15 +361,15 @@ An example event for `performance` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
-        "snapshot": false,
+        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
+        "snapshot": true,
         "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.performance",
-        "duration": 11496204,
-        "ingested": "2022-07-14T07:14:14Z",
+        "duration": 7151724,
+        "ingested": "2022-06-08T13:35:06Z",
         "module": "sql"
     },
     "host": {
@@ -399,11 +399,11 @@ An example event for `performance` looks as following:
     },
     "mssql": {
         "metrics": {
-            "user_connections": 2
+            "user_connections": 1
         }
     },
     "service": {
-        "address": "elastic-package-service_microsoft_sqlserver_1:1433",
+        "address": "elastic-package-service-microsoft_sqlserver-1:1433",
         "type": "sql"
     }
 }
@@ -448,83 +448,50 @@ An example event for `transaction_log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-14T07:15:18.194Z",
-    "agent": {
-        "ephemeral_id": "b976c50d-53f8-42b9-81ec-e5c1cc01c120",
-        "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
-        "name": "docker-fleet-agent",
-        "type": "metricbeat",
-        "version": "8.3.0"
-    },
-    "cloud": {
-        "account": {},
-        "instance": {
-            "id": "b30e45e6-7900-4900-8d67-e37cb13374bc",
-            "name": "obs-int-windows-dev"
-        },
-        "machine": {
-            "type": "Standard_D16ds_v5"
-        },
-        "provider": "azure",
-        "region": "CentralIndia",
-        "service": {
-            "name": "Virtual Machines"
-        }
-    },
-    "data_stream": {
-        "dataset": "microsoft_sqlserver.transaction_log",
-        "namespace": "ep",
-        "type": "metrics"
-    },
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "elastic_agent": {
-        "id": "42a4484f-4eb2-4802-bd76-1f1118713d64",
-        "snapshot": false,
-        "version": "8.3.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "microsoft_sqlserver.transaction_log",
-        "duration": 6669532,
-        "ingested": "2022-07-14T07:15:19Z",
-        "module": "sql"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.18.0.4"
-        ],
-        "mac": [
-            "02:42:ac:12:00:04"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.16.3-microsoft-standard-WSL2",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+    "@timestamp": "2022-06-08T10:20:14.787809Z",
+    "mssql": {
+        "metrics": {
+            "database_name": "msdb",
+            "database_id": 1,
+            "used_log_space_bytes": 41.17647171020508,
+            "log_space_in_bytes_since_last_backup": 397312,
+            "total_log_size_bytes": 2088960,
+            "used_log_space_pct": 860160
         }
     },
     "metricset": {
-        "name": "query",
-        "period": 60000
+        "period": 10000,
+        "name": "query"
     },
-    "mssql": {
-        "metrics": {
-            "database_id": 1,
-            "database_name": "master"
-        }
+    "agent": {
+        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
+        "ephemeral_id": "d1a76cf4-2463-478a-a474-36e771218467",
+        "type": "metricbeat",
+        "version": "8.3.0"
     },
     "service": {
-        "address": "elastic-package-service_microsoft_sqlserver_1:1433",
+        "address": "54.90.251.237:1433",
         "type": "sql"
+    },
+    "elastic_agent": {
+        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
+        "version": "8.3.0",
+        "snapshot": true
+    },
+    "event": {
+        "duration": 5595352584,
+        "agent_id_status": "verified",
+        "ingested": "2022-05-23T10:20:21Z",
+        "module": "sql",
+        "dataset": "microsoft_sqlserver.transaction_log"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "microsoft_sqlserver.transaction_log"
+    },
+    "ecs": {
+        "version": "8.0.0"
     }
 }
 ```
