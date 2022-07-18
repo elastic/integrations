@@ -9,7 +9,7 @@ pipeline {
     INTEGRATION_JOB = 'Ingest-manager/integrations/main'
   }
   options {
-    timeout(time: 4, unit: 'HOURS')
+    timeout(time: 6, unit: 'HOURS')
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20', daysToKeepStr: '30'))
     timestamps()
     ansiColor('xterm')
