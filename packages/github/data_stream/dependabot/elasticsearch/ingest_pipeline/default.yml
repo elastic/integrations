@@ -7,6 +7,9 @@ processors:
 - set:
     field: event.action
     value: "dependabot"
+- set:
+    field: event.kind
+    value: "alert"
 - rename:
     field: message
     target_field: event.original
@@ -104,6 +107,71 @@ processors:
 - rename:
     field: github.dependabot.vulnerableRequirements
     target_field: github.dependabot.vulnerable_requirements
+    ignore_missing: true
+
+  ############################
+  # Vulnerability ECS Fields #
+  ############################
+- set:
+    field: vulnerability.classification
+    value: "CVSS"
+- rename:
+    target_field: vulnerability.description
+    field: github.dependabot.security_advisory.description
+    ignore_missing: true
+- script: 
+    lang: painless
+    description: Set vulnerability.enumeration and vulnerability.id ECS fields. Defaults to GHSA
+    if: ctx.github.dependabot.security_advisory?.identifiers != null
+    source: |
+        def enumeration = "GHSA";
+        def id = "";
+        def sa_ids = ctx.github.dependabot.security_advisory.identifiers;
+        for (def sa_id: sa_ids) {
+            id = sa_id.value;
+            if (!sa_id.type.equals("GHSA")) {
+                enumeration = sa_id.type;
+                break;
+            }
+        }
+        ctx.vulnerability.enumeration = enumeration;
+        ctx.vulnerability.id = id;
+
+- script:
+    lang: painless
+    description: Set vulnerability.reference ECS field
+    if: ctx.github.dependabot.security_advisory?.references != null
+    source: |
+        List references = new ArrayList();
+        def sa_references = ctx.github.dependabot.security_advisory.references;
+        for (def ref: references) {
+            references.add(ref.url);
+        }
+        ctx.vulnerability.reference = references;
+- remove:
+    field: github.dependabot.security_advisory.references
+    ignore_missing: true
+- set:
+    field: vulnerability.scanner.vendor
+    value: "Github"
+- rename:
+    target_field: vulnerability.score.base
+    field: github.dependabot.security_advisory.cvss.score
+    ignore_missing: true
+- kv:
+    field: github.dependabot.security_advisory.cvss.vector_string
+    target_field: "_temp.score.version"
+    field_split: "/"
+    value_split: ":"
+    include_keys: ["CVSS"]
+    ignore_missing: true
+- rename:
+    target_field: vulnerability.score.version
+    field: _temp.score.version.CVSS
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_vulnerability.severity
+    target_field: vulnerability.severity
     ignore_missing: true
 
   ###########

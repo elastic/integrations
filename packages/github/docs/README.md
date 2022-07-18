@@ -73,8 +73,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "3d4eebce-617b-4f3c-8393-0a4ebb0d832f",
-        "id": "7775dcce-0467-48db-a137-af82b66422a5",
+        "ephemeral_id": "0b1b6b65-5ab7-4e87-b2db-7d4a0fe51744",
+        "id": "b40aebfd-cb7e-4636-ba8a-484d57142a82",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -88,7 +88,7 @@ An example event for `audit` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "7775dcce-0467-48db-a137-af82b66422a5",
+        "id": "b40aebfd-cb7e-4636-ba8a-484d57142a82",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -99,10 +99,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2022-07-18T16:40:17.469Z",
+        "created": "2022-07-18T16:48:14.065Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2022-07-18T16:40:18Z",
+        "ingested": "2022-07-18T16:48:15Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
@@ -239,8 +239,8 @@ An example event for `code_scanning` looks as following:
 {
     "@timestamp": "2022-06-29T18:03:27.000Z",
     "agent": {
-        "ephemeral_id": "9d16c265-afa8-4b16-a62a-79036f2b3a21",
-        "id": "7775dcce-0467-48db-a137-af82b66422a5",
+        "ephemeral_id": "bd78a12f-e5a1-44fc-9793-a8144510da1b",
+        "id": "b40aebfd-cb7e-4636-ba8a-484d57142a82",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -254,7 +254,7 @@ An example event for `code_scanning` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "7775dcce-0467-48db-a137-af82b66422a5",
+        "id": "b40aebfd-cb7e-4636-ba8a-484d57142a82",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -263,7 +263,7 @@ An example event for `code_scanning` looks as following:
         "agent_id_status": "verified",
         "created": "2022-06-29T18:03:27.000Z",
         "dataset": "github.code_scanning",
-        "ingested": "2022-07-18T16:41:05Z",
+        "ingested": "2022-07-18T16:48:59Z",
         "kind": "alert",
         "original": "{\"created_at\":\"2022-06-29T18:03:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/code-scanning/91\",\"most_recent_instance\":{\"analysis_key\":\".github/workflows/codeql-analysis.yml:analyze\",\"category\":\".github/workflows/codeql-analysis.yml:analyze/language:javascript\",\"classifications\":[],\"commit_sha\":\"3244e8b15cc1b8f2732eecd69fc1890b737f0dda\",\"location\":{\"end_column\":50,\"end_line\":67,\"path\":\"routes/chatbot.ts\",\"start_column\":23,\"start_line\":67},\"message\":{\"text\":\"(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.\"},\"ref\":\"refs/heads/master\",\"state\":\"open\"},\"number\":90,\"rule\":{\"description\":\"SQL database query built from user-controlled sources (experimental)\",\"id\":\"js/ml-powered/sql-injection\",\"security_severity_level\":\"high\",\"severity\":\"error\",\"tags\":[\"experimental\",\"external/cwe/cwe-089\",\"security\"]},\"state\":\"open\",\"tool\":{\"name\":\"CodeQL\",\"version\":\"2.9.4\"},\"updated_at\":\"2022-06-29T18:03:27Z\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/code-scanning/alerts/91\"}"
     },
@@ -398,8 +398,8 @@ An example event for `secret_scanning` looks as following:
 {
     "@timestamp": "2022-06-30T18:07:27.000Z",
     "agent": {
-        "ephemeral_id": "183ffdee-46fb-4023-90ba-a5af85bf6db2",
-        "id": "84b3a3da-c733-473b-8c02-cd9e4c7d1d8e",
+        "ephemeral_id": "8dc12c9a-15ef-45eb-9cd5-9fbc1d024af4",
+        "id": "b40aebfd-cb7e-4636-ba8a-484d57142a82",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -413,7 +413,7 @@ An example event for `secret_scanning` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "84b3a3da-c733-473b-8c02-cd9e4c7d1d8e",
+        "id": "b40aebfd-cb7e-4636-ba8a-484d57142a82",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -422,7 +422,7 @@ An example event for `secret_scanning` looks as following:
         "agent_id_status": "verified",
         "created": "2022-06-30T18:07:27.000Z",
         "dataset": "github.secret_scanning",
-        "ingested": "2022-07-08T11:55:25Z",
+        "ingested": "2022-07-18T16:50:32Z",
         "original": "{\"created_at\":\"2022-06-30T18:07:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/secret-scanning/3\",\"number\":3,\"push_protection_bypassed\":true,\"push_protection_bypassed_by\":{\"html_url\":\"https://github.com/sample_owner\",\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"resolution\":\"revoked\",\"resolved_by\":{\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"secret\":\"npm_2vYJ3QzGXoGbEgMYduYS1k2M4D0wDu2opJbl\",\"secret_type\":\"npm_access_token\",\"secret_type_display_name\":\"npm Access Token\",\"state\":\"open\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/secret-scanning/alerts/3\"}"
     },
     "github": {
@@ -461,3 +461,9 @@ An example event for `secret_scanning` looks as following:
     ]
 }
 ```
+
+### Dependabot
+
+The Github Dependabot lets you retrieve known vulnerabilites in dependencies from a repository setup using Github Advanced Security Dependabot feature... See [About Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-alerts) for more details.
+
+To use this integration, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope.
