@@ -73,11 +73,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "95d78df4-1364-43b9-ab4f-62fc70d21b04",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "3d4eebce-617b-4f3c-8393-0a4ebb0d832f",
+        "id": "7775dcce-0467-48db-a137-af82b66422a5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "github.audit",
@@ -88,34 +88,31 @@ An example event for `audit` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "7775dcce-0467-48db-a137-af82b66422a5",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.3.0"
     },
     "event": {
         "action": "repo.destroy",
         "agent_id_status": "verified",
         "category": [
-            "web",
-            "iam"
+            "configuration",
+            "web"
         ],
-        "created": "2022-02-03T12:34:05.664Z",
+        "created": "2022-07-18T16:40:17.469Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2022-02-03T12:34:06Z",
+        "ingested": "2022-07-18T16:40:18Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
-            "access"
+            "change"
         ]
     },
     "github": {
         "category": "repo",
         "org": "mona-org",
         "repo": "mona-org/mona-test-repo"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -242,8 +239,8 @@ An example event for `code_scanning` looks as following:
 {
     "@timestamp": "2022-06-29T18:03:27.000Z",
     "agent": {
-        "ephemeral_id": "eae53315-cdee-41c9-ad1a-4af980c536c6",
-        "id": "84b3a3da-c733-473b-8c02-cd9e4c7d1d8e",
+        "ephemeral_id": "9d16c265-afa8-4b16-a62a-79036f2b3a21",
+        "id": "7775dcce-0467-48db-a137-af82b66422a5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -257,7 +254,7 @@ An example event for `code_scanning` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "84b3a3da-c733-473b-8c02-cd9e4c7d1d8e",
+        "id": "7775dcce-0467-48db-a137-af82b66422a5",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -266,7 +263,7 @@ An example event for `code_scanning` looks as following:
         "agent_id_status": "verified",
         "created": "2022-06-29T18:03:27.000Z",
         "dataset": "github.code_scanning",
-        "ingested": "2022-07-08T11:54:37Z",
+        "ingested": "2022-07-18T16:41:05Z",
         "kind": "alert",
         "original": "{\"created_at\":\"2022-06-29T18:03:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/code-scanning/91\",\"most_recent_instance\":{\"analysis_key\":\".github/workflows/codeql-analysis.yml:analyze\",\"category\":\".github/workflows/codeql-analysis.yml:analyze/language:javascript\",\"classifications\":[],\"commit_sha\":\"3244e8b15cc1b8f2732eecd69fc1890b737f0dda\",\"location\":{\"end_column\":50,\"end_line\":67,\"path\":\"routes/chatbot.ts\",\"start_column\":23,\"start_line\":67},\"message\":{\"text\":\"(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.\"},\"ref\":\"refs/heads/master\",\"state\":\"open\"},\"number\":90,\"rule\":{\"description\":\"SQL database query built from user-controlled sources (experimental)\",\"id\":\"js/ml-powered/sql-injection\",\"security_severity_level\":\"high\",\"severity\":\"error\",\"tags\":[\"experimental\",\"external/cwe/cwe-089\",\"security\"]},\"state\":\"open\",\"tool\":{\"name\":\"CodeQL\",\"version\":\"2.9.4\"},\"updated_at\":\"2022-06-29T18:03:27Z\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/code-scanning/alerts/91\"}"
     },

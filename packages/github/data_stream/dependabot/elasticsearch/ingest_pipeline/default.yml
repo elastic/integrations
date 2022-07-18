@@ -1,0 +1,149 @@
+---
+description: Pipeline for parsing GitHub audit logs
+processors:
+- set:
+    field: ecs.version
+    value: "8.3.0"
+- set:
+    field: event.action
+    value: "dependabot"
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- json:
+    field: event.original
+    target_field: github.dependabot
+- rename:
+    field: github.dependabot.createdAt
+    target_field: github.dependabot.created_at
+    ignore_missing: true
+- rename:
+    field: github.dependabot.dependabotUpdate
+    target_field: github.dependabot.dependabot_update
+    ignore_missing: true
+- rename:
+    field: github.dependabot.dependabot_update.error.errorType
+    target_field: github.dependabot.dependabot_update.error.error_type
+    ignore_missing: true
+- rename:
+    field: github.dependabot.dependencyScope
+    target_field: github.dependabot.dependency_scope
+    ignore_missing: true
+- rename:
+    field: github.dependabot.dismissReason
+    target_field: github.dependabot.dismiss_reason
+    ignore_missing: true
+- rename:
+    field: github.dependabot.dismissedAt
+    target_field: github.dependabot.dismissed_at
+    ignore_missing: true
+- rename:
+    field: github.dependabot.repository.isInOrganization
+    target_field: github.dependabot.repository.is_in_organization
+    ignore_missing: true
+- rename:
+    field: github.dependabot.repository.isPrivate
+    target_field: github.dependabot.repository.is_private
+    ignore_missing: true
+- rename:
+    field: github.dependabot.securityAdvisory
+    target_field: github.dependabot.security_advisory
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_advisory.cvss.vectorString
+    target_field: github.dependabot.security_advisory.cvss.vector_string
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_advisory.ghsaId
+    target_field: github.dependabot.security_advisory.ghsa_id
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_advisory.publishedAt
+    target_field: github.dependabot.security_advisory.published_at
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_advisory.updatedAt
+    target_field: github.dependabot.security_advisory.updated_at
+    ignore_missing: true
+- set: 
+    field: _temp.cwes
+    copy_from: github.dependabot.security_advisory.cwes.nodes
+    if: ctx.github.dependabot?.security_advisory?.cwes?.nodes != null
+- remove:
+    field: github.dependabot.security_advisory.cwes
+    ignore_missing: true
+- set:
+    field: github.dependabot.security_advisory.cwes
+    copy_from: _temp.cwes
+    if: ctx._temp?.cwes != null
+- rename:
+    field: github.dependabot.securityVulnerability
+    target_field: github.dependabot.security_vulnerability
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_vulnerability.firstPatchedVersion
+    target_field: github.dependabot.security_vulnerability.first_patched_version
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_vulnerability.updatedAt
+    target_field: github.dependabot.security_vulnerability.updated_at
+    ignore_missing: true
+- rename:
+    field: github.dependabot.security_vulnerability.vulnerableVersionRange
+    target_field: github.dependabot.security_vulnerability.vulnerable_version_range
+    ignore_missing: true
+- rename:
+    field: github.dependabot.vulnerableManifestFilename
+    target_field: github.dependabot.vulnerable_manifest_filename
+    ignore_missing: true
+- rename:
+    field: github.dependabot.vulnerableManifestPath
+    target_field: github.dependabot.vulnerable_manifest_path
+    ignore_missing: true
+- rename:
+    field: github.dependabot.vulnerableRequirements
+    target_field: github.dependabot.vulnerable_requirements
+    ignore_missing: true
+
+  ###########
+  # Cleanup #
+  ###########
+- remove:
+    field:
+      - _temp
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
