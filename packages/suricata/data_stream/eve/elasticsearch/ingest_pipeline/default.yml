@@ -60,6 +60,19 @@ processors:
       field: destination.mac
       ignore_missing: true
 
+  # Format host.mac addresses.
+  - script:
+      lang: painless
+      if: ctx.host?.mac != null
+      source:
+        def fixup(ArrayList macs) {
+          for (def i = 0; i < macs.length; i++) {
+            macs[i] = macs[i].replace(':','-').toUpperCase();
+          }
+          return macs;
+        }
+        ctx.host['mac'] = fixup(ctx.host?.mac);
+
   - rename:
       field: suricata.eve.src_ip
       target_field: source.address
@@ -666,4 +679,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'
