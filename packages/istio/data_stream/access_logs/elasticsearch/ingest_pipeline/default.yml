@@ -4,6 +4,9 @@ processors:
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
+  - rename:
+      field: '@timestamp'
+      target_field: event.created
   - set:
       field: ecs.version
       value: 8.3.0
@@ -18,18 +21,15 @@ processors:
       pattern_definitions:
         CHAR: .
   - pipeline:
-      name: istio-common
+      name: '{{ IngestPipeline "pipeline-plaintext" }}'
       if: ctx.first_char != '{'
   - pipeline:
-      name: istio-json
+      name: '{{ IngestPipeline "pipeline-json" }}'
       if: ctx.first_char == '{'
   - remove:
       field: first_char
       ignore_missing: true
       ignore_failure: true
-  - set:
-      field: event.created
-      copy_from: "@timestamp"
   - set:
       field: event.module
       value: istio
@@ -56,4 +56,3 @@ on_failure:
   - set:
     field: error.message
     value: '{{ _ingest.on_failure_message }}'
-    override: false
