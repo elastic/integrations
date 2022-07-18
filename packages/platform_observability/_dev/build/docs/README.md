@@ -2,7 +2,7 @@
 
 ## Compatibility
 
-This package works with Kibana 8.0.0 and later.
+This package works with Kibana 8.3.0 and later.
 
 ## Kibana logs
 

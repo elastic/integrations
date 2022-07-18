@@ -2,7 +2,7 @@
 
 ## Compatibility
 
-This package works with Kibana 8.0.0 and later.
+This package works with Kibana 8.3.0 and later.
 
 ## Kibana logs
 
@@ -23,8 +23,16 @@ Configure `Path` pointing to the location where audit logs will be created, base
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
-| kibana.session_id | The ID of the user session associated with this event. Each login attempt results in a unique session id | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
+| kibana.add_to_spaces | The set of space ids that a saved object was shared to. | keyword |
+| kibana.authentication_provider | The authentication provider associated with a login event. | keyword |
+| kibana.authentication_realm | The Elasticsearch authentication realm name which fulfilled a login event. | keyword |
+| kibana.authentication_type | The authentication provider type associated with a login event. | keyword |
+| kibana.delete_from_spaces | The set of space ids that a saved object was removed from. | keyword |
+| kibana.lookup_realm | The Elasticsearch lookup realm which fulfilled a login event. | keyword |
+| kibana.saved_object.id | The id of the saved object associated with this event. | keyword |
+| kibana.saved_object.type | The type of the saved object associated with this event. | keyword |
+| kibana.session_id | The ID of the user session associated with this event. Each login attempt results in a unique session id. | keyword |
 | kibana.space_id | The id of the space associated with this event. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
@@ -56,7 +64,7 @@ Configure `Path` pointing to the location where the logs will be created, based 
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | http.request.id | A unique identifier for each HTTP request to correlate logs between clients and servers in transactions. The id may be contained in a non-standard HTTP header, such as `X-Request-ID` or `X-Correlation-ID`. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
