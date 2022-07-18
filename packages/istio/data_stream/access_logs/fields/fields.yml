@@ -1,0 +1,82 @@
+- name: istio.access
+  type: group
+  fields:
+    - name: log
+      type: keyword
+      description: |
+        Access log in custom Json format
+    - name: response
+      type: group
+      fields:
+        - name: flags
+          type: keyword
+          description: |
+            Additional details about the response or connection.
+        - name: code.details
+          type: keyword
+          description: |
+            Additional information on the response code.
+        - name: termination_details
+          type: keyword
+          description: |
+            Connection termination details may provide additional information about why the connection was terminated by Envoy for L4 reasons.
+    - name: authority
+      type: keyword
+      description: |
+        Authority
+    - name: downstream
+      type: group
+      fields:
+        - name: address.local
+          type: keyword
+          description: |
+            Local address of the downstream connection. If the address is an IP address it includes both address and port.
+        - name: address.remote
+          type: keyword
+          description: |
+            Remote address of the downstream connection. If the address is an IP address it includes both address and port.
+    - name: request
+      type: group
+      fields:
+        - name: duration
+          type: double
+          description: |
+            Total duration in milliseconds.
+        - name: sni
+          type: keyword
+          description: |
+            String value set on ssl connection socket for Server Name Indication (SNI).
+    - name: route_name
+      type: keyword
+      description: |
+        Name of the route.
+    - name: upstream
+      type: group
+      fields:
+        - name: address.local
+          type: keyword
+          description: |
+            Local address of the upstream connection. If the address is an IP address it includes both address and port.
+        - name: cluster
+          type: keyword
+          description: |
+            Upstream cluster to which the upstream host belongs to. alt_stat_name will be used if provided.
+        - name: host
+          type: keyword
+          description: |
+            Upstream host URL (e.g., tcp://ip:port for TCP connections).
+        - name: service_time
+          type: double
+          description: |
+            Upstream service time
+        - name: transport_failure_reason
+          type: keyword
+          description: |
+            If upstream connection failed due to transport socket (e.g. TLS handshake), provides the failure reason from the transport socket. 
+    - name: x-forwarded-for
+      type: keyword
+      description: |
+        x-forwarded-for (XFF) is a standard proxy header which indicates the IP addresses that a request has flowed through on its way from the client to the server.
+
+
+
