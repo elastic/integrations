@@ -1,13 +1,73 @@
-title: "Istio"
+title: "Istio access logs"
 type: logs
+release: experimental  # FIXME or beta
 streams:
-  - input: logfile
-    title: Sample logs
+  - input: filestream
+    title: Collect Istio access logs
     description: Collect sample logs
     vars:
       - name: paths
         type: text
+        required: true
+        show_user: true
         title: Paths
         multi: true
         default:
-          - /var/log/*.log
+          - /var/log/containers/*${kubernetes.container.id}.log  # FIXME
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - istio-access
+      - name: preserve_original_event
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors  # FIXME ???
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      # - name: symlinks
+      #   type: bool
+      #   title: Use Symlinks
+      #   multi: false
+      #   required: true
+      #   show_user: true
+      #   default: true
+      # - name: containerParserStream
+      #   type: text
+      #   title: Container parser's stream configuration  # FIXME
+      #   multi: false
+      #   required: true
+      #   default: all
+      # - name: containerParserFormat
+      #   type: text
+      #   title: Container parser's format configuration  # FIXME
+      #   multi: false
+      #   required: true
+      #   default: auto
+      # - name: additionalParsersConfig
+      #   type: yaml
+      #   title: Additional parsers configuration
+      #   multi: false
+      #   required: true
+      #   default: |
+      #     # - ndjson:
+      #     #     target: json
+      #     #     ignore_decoding_error: true
+      #     # - multiline:
+      #     #     type: pattern
+      #     #     pattern: '^\['
+      #     #     negate: true
+      #     #     match: after
