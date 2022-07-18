@@ -45,7 +45,7 @@ The log message is expected to be in JSON format. The data is mapped to ECS fiel
               - **Tunnel**: 9558  
               - **Web**: 9559  
           - Select JSON as feed output type.  
-          - Add appropriate HTTP headers.  
+          - Add same custom header along with its value on both the side for additional security.  
           ![Cloud NSS Feeds setup image](../img/cloud_nss_feeds.png?raw=true)
 3. Repeat step 2 for each log type.
 
@@ -221,11 +221,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2022-12-10T13:40:32.000Z",
     "agent": {
-        "ephemeral_id": "b7f77db9-92fe-4935-8387-b2cb545bcfc6",
-        "id": "638019f9-173e-4c24-9e28-64b128c92162",
+        "ephemeral_id": "d2fdfdcb-eeb4-46e7-a4a6-d68e1a54349c",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.2"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.alerts",
@@ -241,21 +241,21 @@ An example event for `alerts` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "638019f9-173e-4c24-9e28-64b128c92162",
-        "snapshot": false,
-        "version": "8.1.2"
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
+        "snapshot": true,
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "zscaler_zia.alerts",
-        "ingested": "2022-04-13T17:21:34Z"
+        "ingested": "2022-06-24T06:30:46Z"
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "1.128.3.4:32902"
+            "address": "172.24.0.4:44326"
         },
         "syslog": {
             "priority": 114
@@ -380,11 +380,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "88d27df6-beee-4299-bf35-56742db35e98",
-        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
+        "ephemeral_id": "204d6ae2-9a49-4e6b-8e9b-93ac2a387507",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.2"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.dns",
@@ -426,9 +426,9 @@ An example event for `dns` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
-        "snapshot": false,
-        "version": "8.1.2"
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
+        "snapshot": true,
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -437,7 +437,7 @@ An example event for `dns` looks as following:
         ],
         "dataset": "zscaler_zia.dns",
         "duration": 123456000000,
-        "ingested": "2022-04-20T06:45:24Z",
+        "ingested": "2022-06-24T06:32:18Z",
         "kind": "event",
         "type": [
             "info"
@@ -448,7 +448,7 @@ An example event for `dns` looks as following:
     },
     "log": {
         "source": {
-            "address": "1.128.3.4:32902"
+            "address": "172.24.0.4:36070"
         }
     },
     "network": {
@@ -610,13 +610,13 @@ An example event for `firewall` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-31T07:08:09.000Z",
+    "@timestamp": "2021-12-17T07:27:54.000Z",
     "agent": {
-        "ephemeral_id": "2c292e52-b6ea-4ca0-bfc7-692dadde1a7d",
-        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
+        "ephemeral_id": "8e2f1d65-60fb-4859-8c43-f8f6992be4f4",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.2"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.firewall",
@@ -635,9 +635,9 @@ An example event for `firewall` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
-        "snapshot": false,
-        "version": "8.1.2"
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
+        "snapshot": true,
+        "version": "8.3.0"
     },
     "event": {
         "action": "drop",
@@ -647,7 +647,7 @@ An example event for `firewall` looks as following:
         ],
         "dataset": "zscaler_zia.firewall",
         "duration": 486000000,
-        "ingested": "2021-12-31T05:06:07Z",
+        "ingested": "2022-06-24T06:33:50Z",
         "kind": "event",
         "type": [
             "info"
@@ -661,7 +661,7 @@ An example event for `firewall` looks as following:
     },
     "log": {
         "source": {
-            "address": "1.128.3.4:43634"
+            "address": "172.24.0.4:39600"
         }
     },
     "network": {
@@ -831,13 +831,13 @@ An example event for `tunnel` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-31T11:12:13.000Z",
+    "@timestamp": "2021-12-30T11:20:12.000Z",
     "agent": {
-        "ephemeral_id": "b187ac54-dab8-4e34-b72d-36772d818767",
-        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
+        "ephemeral_id": "d184a946-67f0-49e9-91e5-f879a5e9da68",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.2"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.tunnel",
@@ -851,9 +851,9 @@ An example event for `tunnel` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
-        "snapshot": false,
-        "version": "8.1.2"
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
+        "snapshot": true,
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -862,7 +862,7 @@ An example event for `tunnel` looks as following:
         ],
         "dataset": "zscaler_zia.tunnel",
         "id": "1111111111111111111",
-        "ingested": "2021-12-31T05:06:07Z",
+        "ingested": "2022-06-24T06:35:19Z",
         "kind": "event",
         "type": [
             "info"
@@ -873,7 +873,7 @@ An example event for `tunnel` looks as following:
     },
     "log": {
         "source": {
-            "address": "1.128.3.4:58370"
+            "address": "172.24.0.4:54942"
         }
     },
     "network": {
@@ -1019,6 +1019,8 @@ An example event for `tunnel` looks as following:
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.password | Password of the request. | keyword |
@@ -1068,11 +1070,11 @@ An example event for `web` looks as following:
 {
     "@timestamp": "2021-12-17T07:04:57.000Z",
     "agent": {
-        "ephemeral_id": "6f164483-9eb8-4219-bb09-cd2ff3532390",
-        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
+        "ephemeral_id": "7ce8e22e-e753-4434-9467-9a10cafb770e",
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.1.2"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.web",
@@ -1086,9 +1088,9 @@ An example event for `web` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "f6f3ddbc-7ab7-4a74-aeeb-152405dea56f",
-        "snapshot": false,
-        "version": "8.1.2"
+        "id": "bdbd9f20-b5f7-4441-958a-f1845c343465",
+        "snapshot": true,
+        "version": "8.3.0"
     },
     "event": {
         "action": "blocked",
@@ -1097,7 +1099,7 @@ An example event for `web` looks as following:
             "web"
         ],
         "dataset": "zscaler_zia.web",
-        "ingested": "2021-12-31T05:06:07Z",
+        "ingested": "2022-06-24T06:36:50Z",
         "kind": "event",
         "risk_score": 0,
         "type": [
@@ -1121,7 +1123,7 @@ An example event for `web` looks as following:
     },
     "log": {
         "source": {
-            "address": "1.128.3.4:37608"
+            "address": "172.24.0.4:52904"
         }
     },
     "network": {
@@ -1153,9 +1155,8 @@ An example event for `web` looks as following:
         "zscaler_zia-web"
     ],
     "url": {
-        "extension": "com",
-        "original": "www.example.com",
-        "path": "www.example.com"
+        "full": "www.example.com",
+        "original": "www.example.com"
     },
     "user": {
         "email": "test@example.com"
