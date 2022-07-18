@@ -1,18 +1,33 @@
 # AWS Fargate Integration
 
-The AWS Fargate integration helps to retrieve metadata, network metrics, and Docker stats about your containers and the tasks that are a part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
+The AWS Fargate integration helps you to monitor containers and the tasks that are a part of an [Amazon Elastic Container Service (Amazon ECS)](https://aws.amazon.com/ecs/?pg=ln&sec=hiw) cluster.
 
-## How it works?
+Use the AWS Fargate integration to retrieve metadata, network metrics, and Docker stats about your containers and the tasks. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference task statistics when troubleshooting an issue.
+
+For example, if you wanted to provide an overview of how many running containers you have per host over time, you could use the AWS Fargate integration to collate and correlate metrics per AWS accounts, regions, host identifiers, types, etc. 
+
+## Data streams
 
 The Elastic Agent runs in a container (as a sidecar) defined in the same task definition inside your ECS cluster and collects metrics using the [Amazon ECS task metadata endpoint](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-fargate.html).
 
 The ECS task metadata endpoint is an HTTP endpoint available to each container and enabled by default on [AWS Fargate platform version 1.4.0](https://aws.amazon.com/blogs/containers/aws-fargate-launches-platform-version-1-4/) and later. The Elastic Agent uses [Task metadata endpoint version 4](https://docs.aws.amazon.com/AmazonECS/latest/userguide/task-metadata-endpoint-v4-fargate.html).
 
-## Credentials
+ See more details in the [Metrics reference](#metrics-reference).
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
 No AWS credentials are required for this integration. The ECS task metadata endpoint is accessible inside the cluster only.
 
-## Getting Started
+Before using any AWS integration you will need:
+
+ * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, see the **AWS** integration documentation.
+
+## Setup
 
 This section shows you how to run the Elastic Agent in a ECS cluster, start collecting Fargate on ECS metrics, and send them to an Elastic Stack.
 
@@ -20,7 +35,8 @@ First, we'll see a simple example, setting up a task definition and a service on
 
 Second, we'll see a complete setup from scratch of a cluster, a service, and a task using a CloudFormation template and the AWS CLI.
 
-Let's get started!
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 ### Using the AWS web console
 
@@ -47,6 +63,7 @@ As for the container, you can use the following values:
   - FLEET_ENROLLMENT_TOKEN: `<enrollment-token>`
   - FLEET_URL: `<fleet-server-url>`
   
+
 Tip: use the AWS Secrets Manager to store the Fleet Server enrollment token.
 
 #### Service
@@ -270,7 +287,7 @@ aws cloudformation delete-stack --stack-name elastic-agent-fargate-deployment
 
 If you want to learn more about Amazon ECS metrics, take a look at the blog post [How to monitor Amazon ECS with Elastic Observability](https://www.elastic.co/blog/how-to-monitor-amazon-ecs-with-elastic-observability).
 
-## Metrics
+## Metrics reference
 
 ### Task Stats
 
