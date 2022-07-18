@@ -63,12 +63,17 @@ processors:
   - remove:
       field: _ecs_json_message
       ignore_missing: true
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  ## some scenarios as update_aliases_succeeded type of operation, these 2 fields are present on the logs
   - remove:
       field: _tag
       ignore_missing: true
   - remove:
       field: right
       ignore_missing: true
+
 on_failure:
   - set:
       field: error.message
