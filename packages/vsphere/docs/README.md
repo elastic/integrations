@@ -4,7 +4,7 @@ This integration periodically fetches logs and metrics from [vSphere](https://ww
 
 ## Compatibility
 
-The vSphere metrics datasets were tested with VMware vCenter 6.7.0.31000 and vSphere (ESXi) 6.7.0 Update 1 (Build 10764712) and are expected to work with all versions >= 6.7. The log dataset was tested on VMware vCenter 6.7.0.31000 and is expected to work with all versions >= 6.7.
+The vSphere metrics and logs are expected to work with ESXi and vCenter version >= 6.7.
 
 ## Metrics
 To access the metrices, the url https://host:port(8989)/sdk needs to be passed to the hosts in Kibana UI. 
