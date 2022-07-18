@@ -9,6 +9,7 @@ pipeline {
     CREATED_DATE = "${new Date().getTime()}"
     ENVIRONMENT = "ci"
     REPO = 'integrations'
+    REPO_BUILD_TAG = "${env.REPO}/${env.BUILD_TAG}"
     BASE_DIR = "src/github.com/elastic/${REPO}"
     GITHUB_TOKEN_CREDENTIALS = "2a9602aa-ab9f-4e52-baf3-b71ca88469c7"
     JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
@@ -22,9 +23,22 @@ pipeline {
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
     JOB_GCS_EXT_CREDENTIALS = 'beats-ci-gcs-plugin-file-credentials'
     STACK_VERSION = "${params.stackVersion}"
+
+    // Signing
+    JOB_SIGNING_CREDENTIALS = 'sign-artifacts-with-gpg-job'
+    INFRA_SIGNING_BUCKET_NAME = 'internal-ci-artifacts'
+    INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER = "${env.REPO_BUILD_TAG}/signed-artifacts"
+    INFRA_SIGNING_BUCKET_ARTIFACTS_PATH = "gs://${env.INFRA_SIGNING_BUCKET_NAME}/${env.REPO_BUILD_TAG}"
+    INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH = "gs://${env.INFRA_SIGNING_BUCKET_NAME}/${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER}"
+
+    // Publishing
+    INTERNAL_CI_JOB_GCS_CREDENTIALS = 'internal-ci-gcs-plugin'
+    PACKAGE_STORAGE_UPLOADER_CREDENTIALS = 'upload-package-to-package-storage'
+    PACKAGE_STORAGE_UPLOADER_GCP_SERVICE_ACCOUNT = 'secret/gce/elastic-bekitzur/service-account/package-storage-uploader'
+    PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH = "gs://elastic-bekitzur-package-storage-internal/queue-publishing/${env.REPO_BUILD_TAG}"
   }
   options {
-    timeout(time: 2, unit: 'HOURS')
+    timeout(time: 4, unit: 'HOURS')
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20', daysToKeepStr: '30'))
     timestamps()
     ansiColor('xterm')
@@ -120,6 +134,7 @@ pipeline {
   post {
     always {
       publishCoverageReports()
+      packageStoragePublish()
     }
     cleanup {
       notifyBuildResult(prComment: true)
@@ -286,4 +301,92 @@ def archiveArtifactsSafe(remotePath, artifacts) {
     bucket: "gs://${JOB_GCS_BUCKET_INTERNAL}/${env.JOB_NAME}-${env.BUILD_ID}/${remotePath}",
     credentialsId: "${JOB_GCS_EXT_CREDENTIALS}",
     pattern: artifacts)
+}
+
+def packageStoragePublish() {
+  stage('Publish to Package Storage v2') {
+    if (env.BRANCH_NAME != 'main') {
+      echo "packageStoragePublish: not the main branch, nothing will be published"
+      return
+    }
+
+    deleteDir()
+    unstashV2(name: 'source', bucket: "${JOB_GCS_BUCKET}", credentialsId: "${JOB_GCS_CREDENTIALS}")
+    useElasticPackage()
+
+    // Build only unpublished files (need to read version from manifest.yml)
+    dir("${BASE_DIR}/packages") {
+      findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
+        dir("${it}") {
+          def manifest = readYaml(file: "manifest.yml")
+          if (manifest != null && manifest["version"] != null) {
+            def packageZip = it + "-" + manifest["version"] + ".zip"
+            if (isAlreadyPublished(packageZip)) {
+              return
+            }
+          }
+
+          withEnv(["PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}"]) {
+            sh(label: "Build integration as zip: ${it}", script: "elastic-package build --zip")
+          }
+        }
+      }
+    }
+
+    // Sign unpublished packages
+    dir("${BASE_DIR}/build/packages") {
+      googleStorageUpload(bucket: "${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
+        credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
+        pattern: '*.zip',
+        sharedPublicly: false,
+        showInline: true)
+      withCredentials([string(credentialsId: env.JOB_SIGNING_CREDENTIALS, variable: 'TOKEN')]) {
+        triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
+          job: 'https://internal-ci.elastic.co/job/elastic+unified-release+master+sign-artifacts-with-gpg',
+          token: TOKEN,
+          parameters: "gcs_input_path=${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
+          useCrumbCache: false,
+          useJobInfoCache: false)
+      }
+      googleStorageDownload(bucketUri: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*",
+        credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
+        localDirectory: '.',
+        pathPrefix: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER}")
+        sh(label: 'Rename .asc to .sig', script: 'for f in *.asc; do mv "$f" "${f%.asc}.sig"; done')
+    }
+
+    // Publish packages with signatures. Only packages with generated signatures haven't been published yet.
+    withGCPEnv(secret: env.PACKAGE_STORAGE_UPLOADER_GCP_SERVICE_ACCOUNT) {
+      withCredentials([string(credentialsId: env.PACKAGE_STORAGE_UPLOADER_CREDENTIALS, variable: 'TOKEN')]) {
+        dir("${BASE_DIR}/build/packages") {
+          findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
+            def packageZip = it
+            def packageZipSig = packageZip + ".sig"
+            sh(label: 'Upload package .zip file', script: "gsutil cp ${packageZip} ${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/")
+            sh(label: 'Upload package .sig file', script: "gsutil cp ${packageZipSig} ${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/")
+            triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
+              job: 'https://internal-ci.elastic.co/job/package_storage/job/publishing-job-remote',
+              token: TOKEN,
+              parameters: """
+                dry_run=false
+                gs_package_build_zip_path=${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZip}
+                gs_package_signature_path=${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZipSig}
+                """,
+              useCrumbCache: true,
+              useJobInfoCache: true)
+          }
+        }
+      }
+    }
+  }
+}
+
+def isAlreadyPublished(packageZip) {
+  def responseCode = httpRequest(method: "HEAD",
+    url: "https://package-storage.elastic.co/artifacts/packages/${packageZip}",
+    response_code_only: true)
+  if (responseCode != 200) {
+    echo "Package Registry HTTP status code for ${packageZip}: ${responseCode}"
+  }
+  return responseCode == 200
 }

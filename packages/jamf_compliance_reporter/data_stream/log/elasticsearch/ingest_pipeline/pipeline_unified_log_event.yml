@@ -1,0 +1,123 @@
+---
+description: Pipeline for Jamf Compliance Reporter unified event logs.
+processors:
+  - convert:
+      field: json.event_attributes.activityIdentifier
+      target_field: jamf_compliance_reporter.log.event_attributes.activity_identifier
+      type: string
+      ignore_failure: true
+  - foreach:
+      field: json.event_attributes.backtrace.frames
+      processor:
+        convert:
+          field: _ingest._value.imageOffset
+          target_field: _ingest._value.image_offset
+          type: long
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes.backtrace.frames
+      processor:
+        remove:
+          field: _ingest._value.imageOffset
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes.backtrace.frames
+      processor:
+        rename:
+          field: _ingest._value.imageUUID
+          target_field: _ingest._value.image_uuid
+          ignore_failure: true
+  - rename:
+      field: json.event_attributes.backtrace.frames
+      target_field: jamf_compliance_reporter.log.event_attributes.backtrace.frames
+      ignore_missing: true
+  - rename:
+      field: json.event_attributes.category
+      target_field: jamf_compliance_reporter.log.event_attributes.category
+      ignore_missing: true
+  - rename:
+      field: json.event_attributes.eventMessage
+      target_field: jamf_compliance_reporter.log.event_attributes.event.message
+      ignore_missing: true
+  - rename:
+      field: json.event_attributes.eventType
+      target_field: jamf_compliance_reporter.log.event_attributes.event.type
+      ignore_missing: true
+  - rename:
+      field: json.event_attributes.formatString
+      target_field: jamf_compliance_reporter.log.event_attributes.format_string
+      ignore_missing: true
+  - convert:
+      field: json.event_attributes.machTimestamp
+      target_field: jamf_compliance_reporter.log.event_attributes.mach_timestamp
+      type: string
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: '{{{json.event_attributes.messageType}}}'
+      if: ctx.json?.event_attributes?.messageType != null
+      allow_duplicates: false
+      ignore_failure: true
+  - lowercase:
+      field: event.type
+      ignore_failure: true
+  - convert:
+      field: json.event_attributes.parentActivityIdentifier
+      target_field: jamf_compliance_reporter.log.event_attributes.parent_activity_identifier
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.event_attributes.processID
+      target_field: jamf_compliance_reporter.log.event_attributes.process.id
+      type: long
+      ignore_failure: true
+  - rename:
+      field: json.event_attributes.processImagePath
+      target_field: jamf_compliance_reporter.log.event_attributes.process.image.path
+      ignore_missing: true
+  - rename:
+      field: json.event_attributes.processImageUUID
+      target_field: jamf_compliance_reporter.log.event_attributes.process.image.uuid
+      ignore_missing: true
+  - rename:
+      field: json.event_attributes.senderImagePath
+      target_field: jamf_compliance_reporter.log.event_attributes.sender.image.path
+      ignore_missing: true
+  - rename:
+      field: json.event_attributes.senderImageUUID
+      target_field: jamf_compliance_reporter.log.event_attributes.sender.image.uuid
+      ignore_missing: true
+  - convert:
+      field: json.event_attributes.senderProgramCounter
+      target_field: jamf_compliance_reporter.log.event_attributes.sender.program_counter
+      type: long
+      ignore_failure: true
+  - rename:
+      field: json.event_attributes.source
+      target_field: jamf_compliance_reporter.log.event_attributes.source
+      ignore_missing: true
+  - rename:
+      field: json.event_attributes.subsystem
+      target_field: jamf_compliance_reporter.log.event_attributes.subsystem
+      ignore_missing: true
+  - convert:
+      field: json.event_attributes.threadID
+      target_field: jamf_compliance_reporter.log.event_attributes.thread_id
+      type: string
+      ignore_failure: true
+  - date:
+      field: json.event_attributes.timestamp
+      target_field: jamf_compliance_reporter.log.event_attributes.timestamp
+      if: ctx.json?.event_attributes?.timestamp != 0
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSZ
+  - rename:
+      field: json.event_attributes.timezoneName
+      target_field: jamf_compliance_reporter.log.event_attributes.timezone_name
+      ignore_missing: true
+  - convert:
+      field: json.event_attributes.traceID
+      target_field: jamf_compliance_reporter.log.event_attributes.trace_id
+      type: string
+      ignore_failure: true
