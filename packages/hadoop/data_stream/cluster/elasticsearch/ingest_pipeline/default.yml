@@ -1,0 +1,47 @@
+---
+description: Pipeline for parsing Hadoop Cluster metrics
+processors:
+  - set:
+      field: ecs.version
+      value: '8.1.0'
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.category
+      value: database
+  - rename:
+      field: http
+      target_field: hadoop
+      ignore_missing: true
+      ignore_failure: true
+  - pipeline:
+      if: ctx.hadoop.cluster.containsKey('beans')
+      name: '{{ IngestPipeline "pipeline-cluster" }}' 
+  - pipeline:
+      if: ctx.hadoop.cluster.containsKey('clusterMetrics')
+      name: '{{ IngestPipeline "pipeline-expanded-cluster" }}'
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
