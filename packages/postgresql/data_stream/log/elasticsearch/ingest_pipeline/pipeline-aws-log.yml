@@ -1,0 +1,12 @@
+---
+description: Pipeline for parsing PostgreSQL logs.
+processors:
+  - grok:
+      field: raw_message
+      ignore_missing: true
+      patterns:
+        - '(%{DATA:postgresql.log.client_addr}\(%{NUMBER:postgresql.log.client_port:int}\)|\[%{DATA:postgresql.log.client_addr}\])?:%{USERNAME:user.name}?@%{POSTGRESQL_DB_NAME:postgresql.log.database}?:(\[%{NUMBER:process.pid:long}\])?:%{WORD:log.level}: (%{POSTGRESQL_QUERY_STEP}: %{GREEDYDATA:postgresql.log.query}| %{GREEDYDATA:message}|%{GREEDYDATA:message})'
+      pattern_definitions:
+        GREEDYDATA: '(.|\r|\n)*'
+        POSTGRESQL_DB_NAME: '[a-zA-Z0-9_]+[a-zA-Z0-9_\$]*'
+        POSTGRESQL_QUERY_STEP: '%{SPACE}%{WORD:postgresql.log.query_step}'
