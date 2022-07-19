@@ -4,15 +4,15 @@ description: Pipeline for Suricata DNS Events
 processors:
   - set:
       field: dns.id
-      value: '{{suricata.eve.dns.id}}'
+      value: '{{{suricata.eve.dns.id}}}'
       ignore_empty_value: true
   - set:
       field: dns.response_code
-      value: '{{suricata.eve.dns.rcode}}'
+      value: '{{{suricata.eve.dns.rcode}}}'
       ignore_empty_value: true
   - set:
       field: dns.type
-      value: '{{suricata.eve.dns.type}}'
+      value: '{{{suricata.eve.dns.type}}}'
       ignore_empty_value: true
   - set:
       # V2 events always include the query data.
@@ -20,7 +20,7 @@ processors:
         ctx?.dns?.type == "query" ||
         ctx?.suricata?.eve?.dns?.version == 2
       field: dns.question.name
-      value: '{{suricata.eve.dns.rrname}}'
+      value: '{{{suricata.eve.dns.rrname}}}'
       ignore_empty_value: true
   - set:
       # V2 events always include the query data.
@@ -28,7 +28,7 @@ processors:
         ctx?.dns?.type == "query" ||
         ctx?.suricata?.eve?.dns?.version == 2
       field: dns.question.type
-      value: '{{suricata.eve.dns.rrtype}}'
+      value: '{{{suricata.eve.dns.rrtype}}}'
       ignore_empty_value: true
   - pipeline:
       if: >-
@@ -47,7 +47,7 @@ processors:
         append:
           field: related.ip
           value:
-            - '{{_ingest._value}}'
+            - '{{{_ingest._value}}}'
           allow_duplicates: false
   - script:
       if: ctx?.dns?.question?.registered_domain != null
@@ -90,4 +90,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'
