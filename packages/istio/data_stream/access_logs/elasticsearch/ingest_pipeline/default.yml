@@ -25,11 +25,10 @@ processors:
       if: ctx.first_char == '{'
   - remove:
       field: first_char
-      ignore_missing: true
-      ignore_failure: true
   - rename:
       field: "@timestamp"
       target_field: event.created
+      ignore_missing: true
   - set:
       field: event.module
       value: istio
@@ -52,6 +51,7 @@ processors:
       if: ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400
   - remove:
       field: event.original
-      ignore_missing: true
       if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
+      ignore_missing: true
+      

@@ -1,12 +1,17 @@
 ---
 description: Pipeline for processing sample logs
 processors:
-  - grok:
+  - dissect:
       field: event.original
+      pattern: '[%{istio.access.time}] 
+        "%{http.request.method} 
+        %{url.original} 
+        HTTP/%{http.version}" 
+        %{istio.access.message}'
+  - grok:
+      field: istio.access.message
       patterns:
-        - \[%{TIMESTAMP_ISO8601:istio.access.time}\] "%{DATA:http.request.method}
-          %{DATA:url.original} HTTP/%{NUMBER:http.version}"
-          %{NUMBER:http.response.status_code:long}
+      -  (-|%{NUMBER:http.response.status_code:long})
           (-|%{DATA:istio.access.response.flags})
           (-|%{DATA:istio.access.response.code.details})
           (-|%{DATA:istio.access.response.termination_details})
@@ -16,7 +21,8 @@ processors:
           (-|%{NUMBER:istio.access.request.duration:double})
           (-|%{NUMBER:istio.access.upstream.service_time:double})
           "(-|%{DATA:istio.access.x-forwarded-for})"
-          "(-|%{DATA:user_agent.original})" "%{DATA:http.request.id}"
+          "(-|%{DATA:user_agent.original})" 
+          "%{DATA:http.request.id}"
           "(-|%{DATA:istio.access.authority})"
           "(-|%{ISTIO_HOST:istio.access.upstream.host})"
           (-|%{DATA:istio.access.upstream.cluster})
@@ -27,6 +33,9 @@ processors:
           (-|%{GREEDYDATA:istio.access.route_name})
       pattern_definitions:
         ISTIO_HOST: (%{HOSTPORT}|%{URI})
+      ignore_missing: true
+  - remove:
+      field: istio.access.message
       ignore_missing: true
   - script:
       lang: painless
@@ -45,6 +54,9 @@ processors:
       target_field: "@timestamp"
   - remove:
       field: istio.access.time
+  - convert:
+      field: http.response.status_code
+      type: long
   - set:
       field: event.id
       copy_from: http.request.id
