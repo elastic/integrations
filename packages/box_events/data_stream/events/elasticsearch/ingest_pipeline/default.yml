@@ -10,66 +10,66 @@ processors:
       ignore_missing: true
   - json:
       field: event.original
-      target_field: json
+      target_field: box
   - date:
-      field: json.box.created_at
+      field: box.created_at
       target_field: "@timestamp"
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'HH:mm:ss-Z
   - rename:
-      field: json.box.type
+      field: box.type
       target_field: event.kind
       ignore_missing: true
   - rename:
-      field: json.box.recorded_at
+      field: box.recorded_at
       target_field: event.created
       ignore_missing: true
   - rename:
-      field: json.box.created_by.type
+      field: box.created_by.type
       target_field: event.type
       ignore_missing: true
   - rename:
-      field: json.box.event_type
+      field: box.event_type
       target_field: event.action
       ignore_missing: true
   - convert:
-      field: json.box.source.sequence_id
+      field: box.source.sequence_id
       target_field: event.sequence
       type: integer
       ignore_missing: true
   - rename:
-      field: json.box.source.type
+      field: box.source.type
       target_field: file.type
       ignore_missing: true
   - rename:
       if: ctx?.file?.type != "folder"
-      field: json.box.source.name
+      field: box.source.name
       target_field: file.name
       ignore_missing: true
   - rename:
       if: ctx?.file?.type == "folder"
-      field: json.box.source.name
+      field: box.source.name
       target_field: file.directory
       ignore_missing: true
   - rename:
-      field: json.box.source.created_at
+      field: box.source.created_at
       target_field: file.created
       ignore_missing: true
   - rename:
-      field: json.box.source.modified_at
+      field: box.source.modified_at
       target_field: file.mtime
       ignore_missing: true
   - rename:
-      field: json.box.source.size
+      field: box.source.size
       target_field: file.size
       ignore_missing: true
   - rename:
-      field: json.box.source.file_version.sha1
+      field: box.source.file_version.sha1
       target_field: file.hash.sha1
       ignore_missing: true
   - remove:
-      field: json.box.created_at
+      field: box.created_at
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively
