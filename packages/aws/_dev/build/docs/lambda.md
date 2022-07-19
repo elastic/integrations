@@ -1,8 +1,8 @@
 # AWS Lambda
 
-The AWS Lambda integration allows you to monitor [AWS Lambda](https://aws.amazon.com/lambda/). AWS Lambda is a service for  running code in a way that doesn't require you to provision a server or manage that server. 
+The AWS Lambda integration allows you to monitor [AWS Lambda](https://aws.amazon.com/lambda/). AWS Lambda is a service for running code in a way that doesn't require you to provision a server or manage that server. 
 
-Use the AWS Lambda integration to collect metrics related to your [Lamda functions](https://aws.amazon.com/lambda/faqs/#AWS_Lambda_functions). Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
+Use the AWS Lambda integration to collect metrics related to your [Lambda functions](https://aws.amazon.com/lambda/faqs/#AWS_Lambda_functions). Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
 
 For example, you could use this data to view the events that trigger an AWS Lambda function to run. Then you can alert the relevant project manager about those events by email.
 
@@ -11,7 +11,7 @@ For example, you could use this data to view the events that trigger an AWS Lamb
 The AWS Lambda integration collects one type of data stream: metrics.
 
 **Metrics** give you insight into the state of AWS Lambda.
-Metric data streams collected by the AWS Lambda integration include the  number of times your function code is executed, the amount of time that your function code spends processing an event, the number of invocations that result in a function error and more. See more details in the [Metrics reference](#metrics-reference).
+Metric data streams collected by the AWS Lambda integration include the number of times your function code is executed, the amount of time that your function code spends processing an event, the number of invocations that result in a function error and more. See more details in the [Metrics reference](#metrics-reference).
 
 <!-- etc. -->
 
