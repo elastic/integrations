@@ -33,51 +33,51 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
-| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| package_registry.http.request_duration_seconds.histogram | A histogram of latencies for requests to the http server | histogram |
-| package_registry.http.request_duration_seconds.histogram.counts | Counters of the histogram of latencies for requests to the http server | long |
-| package_registry.http.request_duration_seconds.histogram.values | Bucket values of the histogram of latencies for requests to the http server | double |
-| package_registry.http.request_size_bytes.histogram | A histogram of sizes of requests to the http server | histogram |
-| package_registry.http.request_size_bytes.histogram.counts | Counters of the histogram of sizes of requests to the http server | histogram |
-| package_registry.http.request_size_bytes.histogram.values | Bucket values of the histogram of sizes of requests to the http server | histogram |
-| package_registry.http.response_size_bytes.histogram | A histogram of response sizes for requests to the http server | histogram |
-| package_registry.http.response_size_bytes.histogram.counts | Counters fo the histogram of response sizes for requests to the http server | histogram |
-| package_registry.http.response_size_bytes.histogram.values | Bucket values of the the histogram of response sizes for requests to the http server | histogram |
-| package_registry.http_requests_total.counter | Counter for requests to the http server | double |
-| package_registry.in_flight_requests | Requests currently being served by the http server | double |
-| package_registry.labels.code | HTTP Code | keyword |
-| package_registry.labels.component | Component type of the storage (statics, artifacts, signature...) | keyword |
-| package_registry.labels.instance | Elastic Package Registry instance | keyword |
-| package_registry.labels.job |  | keyword |
-| package_registry.labels.location | Storage location (remote or local) | keyword |
-| package_registry.labels.method | HTTP method | keyword |
-| package_registry.labels.path | Path of the HTTP request. | keyword |
-| package_registry.labels.version | Elastic Package Registry version. | keyword |
-| package_registry.number_indexed_packages | Number of indexed packages | integer |
-| package_registry.process_start_time_seconds.value | Start time of the process since unix epoch in seconds | double |
-| package_registry.storage_indexer.get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |
-| package_registry.storage_indexer.get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |
-| package_registry.storage_indexer.get_duration_seconds.histogram.values | Bucket values of the histogram of latencies for get processes run by the indexer | histogram |
-| package_registry.storage_indexer.update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the indexer | histogram |
-| package_registry.storage_indexer.update_index_duration_seconds.histogram.counts | Counters of the histogram of latencies for update index processes run by the indexer | histogram |
-| package_registry.storage_indexer.update_index_duration_seconds.histogram.values | Bucket values of the histogram of latencies for update index processes run by the indexer | histogram |
-| package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error | long |
-| package_registry.storage_indexer.update_index_success_total.counter | A counter for all the update index processes that finished with error | long |
-| package_registry.storage_requests_total.counter | Counter for requests performed to the storage | long |
-| package_registry.up.value | Monitoring up metric | short |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| package_registry.http.request_duration_seconds.histogram | A histogram of latencies for requests to the http server | histogram |  |  |
+| package_registry.http.request_duration_seconds.histogram.counts | Counters of the histogram of latencies for requests to the http server | long |  |  |
+| package_registry.http.request_duration_seconds.histogram.values | Bucket values of the histogram of latencies for requests to the http server | double |  |  |
+| package_registry.http.request_size_bytes.histogram | A histogram of sizes of requests to the http server | histogram |  |  |
+| package_registry.http.request_size_bytes.histogram.counts | Counters of the histogram of sizes of requests to the http server | histogram |  |  |
+| package_registry.http.request_size_bytes.histogram.values | Bucket values of the histogram of sizes of requests to the http server | histogram |  |  |
+| package_registry.http.response_size_bytes.histogram | A histogram of response sizes for requests to the http server | histogram |  |  |
+| package_registry.http.response_size_bytes.histogram.counts | Counters fo the histogram of response sizes for requests to the http server | histogram |  |  |
+| package_registry.http.response_size_bytes.histogram.values | Bucket values of the the histogram of response sizes for requests to the http server | histogram |  |  |
+| package_registry.http_requests_total.counter | Counter for requests to the http server | double |  | counter |
+| package_registry.in_flight_requests | Requests currently being served by the http server | double |  | gauge |
+| package_registry.labels.code | HTTP Code | keyword |  |  |
+| package_registry.labels.component | Component type of the storage (statics, artifacts, signature...) | keyword |  |  |
+| package_registry.labels.instance | Elastic Package Registry instance | keyword |  |  |
+| package_registry.labels.job |  | keyword |  |  |
+| package_registry.labels.location | Storage location (remote or local) | keyword |  |  |
+| package_registry.labels.method | HTTP method | keyword |  |  |
+| package_registry.labels.path | Path of the HTTP request. | keyword |  |  |
+| package_registry.labels.version | Elastic Package Registry version. | keyword |  |  |
+| package_registry.number_indexed_packages | Number of indexed packages | integer |  | gauge |
+| package_registry.process_start_time_seconds | Start time of the process since unix epoch in seconds | double | s | gauge |
+| package_registry.storage_indexer.get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |  |  |
+| package_registry.storage_indexer.get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |  |  |
+| package_registry.storage_indexer.get_duration_seconds.histogram.values | Bucket values of the histogram of latencies for get processes run by the indexer | histogram |  |  |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the indexer | histogram |  |  |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram.counts | Counters of the histogram of latencies for update index processes run by the indexer | histogram |  |  |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram.values | Bucket values of the histogram of latencies for update index processes run by the indexer | histogram |  |  |
+| package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error | long |  |  |
+| package_registry.storage_indexer.update_index_success_total.counter | A counter for all the update index processes that finished with error | long |  |  |
+| package_registry.storage_requests_total.counter | Counter for requests performed to the storage | long |  | counter |
+| package_registry.up.value | Monitoring up metric | short |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 
 
 An example event for `metrics` looks as following:
