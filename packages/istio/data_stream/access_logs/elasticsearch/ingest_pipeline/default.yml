@@ -33,6 +33,9 @@ processors:
       field: user_agent.original
       ignore_failure: true
       ignore_missing: true
+  - remove:
+      field: user_agent.original
+      if: ctx?.user_agent?.name != null
   - set:
       field: event.module
       value: istio
@@ -42,10 +45,12 @@ processors:
   - append:
       field: event.category
       value: web
+      allow_duplicates: false
       if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
-  - set:
+  - append:
       field: event.type
       value: access
+      allow_duplicates: false
       if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
   - set:
       field: event.outcome
