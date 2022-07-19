@@ -64,13 +64,7 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.labels.path | Path of the HTTP request. | keyword |
 | package_registry.labels.version | Elastic Package Registry version. | keyword |
 | package_registry.number_indexed_packages | Number of indexed packages | integer |
-| package_registry.process_cpu_seconds_total.counter | Total user and system CPU time spent in seconds | double |
-| package_registry.process_max_fds.value | Maximum number of open file descriptors | double |
-| package_registry.process_open_fds.value | Number of open file descriptors | double |
-| package_registry.process_resident_memory_bytes.value | Resident memory size in bytes | double |
 | package_registry.process_start_time_seconds.value | Start time of the process since unix epoch in seconds | double |
-| package_registry.process_virtual_memory_bytes.value | Virtual memory size in bytes | double |
-| package_registry.process_virtual_memory_max_bytes.value | Maximum amount of virtual memory available in bytes | double |
 | package_registry.storage_indexer.get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |
 | package_registry.storage_indexer.get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |
 | package_registry.storage_indexer.get_duration_seconds.histogram.values | Bucket values of the histogram of latencies for get processes run by the indexer | histogram |
