@@ -9,7 +9,7 @@ pipeline {
     INTEGRATION_JOB = 'Ingest-manager/integrations/main'
   }
   options {
-    timeout(time: 4, unit: 'HOURS')
+    timeout(time: 6, unit: 'HOURS')
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20', daysToKeepStr: '30'))
     timestamps()
     ansiColor('xterm')
@@ -35,11 +35,11 @@ pipeline {
             )
           }
         }
-        stage('with stack v8.2') {
+        stage('with stack v8.3') {
           steps {
             build(
               job: env.INTEGRATION_JOB,
-              parameters: [stringParam(name: 'stackVersion', value: '8.2.0-SNAPSHOT')],
+              parameters: [stringParam(name: 'stackVersion', value: '8.3.0-SNAPSHOT')],
               quietPeriod: 0,
               wait: true,
               propagate: true,

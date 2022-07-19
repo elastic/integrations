@@ -1,0 +1,114 @@
+---
+description: Pipeline for parsing Infoblox NIOS DNS logs.
+processors:
+  - grok:
+      field: message
+      patterns:
+        - "^zone %{DATA:dns.question.name}/%{DATA:dns.question.class}: notify from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}' from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^validating %{DATA:dns.question.name}/%{WORD:dns.question.type}: %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? updating zone '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:client.domain}\\): query failed %{GREEDYDATA:infoblox_nios.log.dns.message}$"       
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:infoblox_nios.log.dns.before_query}\\): rewriting query name %{DATA} to '%{DATA:infoblox_nios.log.dns.after_query}', type %{DATA:dns.question.type}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:client.domain}\\): query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:dns.header_flags} \\(%{IP:server.ip}\\)$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:dns.header_flags}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:client.domain}\\): transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*CEF:0\\|Infoblox\\|NIOS\\|%{GREEDYDATA:infoblox_nios.log.dns.version}\\|RPZ-%{DATA:dns.answers.type}\\|%{DATA:infoblox_nios.log.dns.answers_policy}\\|\\d+\\|app=DNS dst=%{IP:server.ip} src=%{IP:client.ip} spt=%{NUMBER:client.port:long} view=%{DATA:infoblox_nios.log.dns.view_name} qtype=%{WORD:dns.question.type} msg=%{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:timestamp} client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:dns.header_flags} %{GREEDYDATA:repeat_message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:timestamp} client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:dns.header_flags}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^%{GREEDYDATA:infoblox_nios.log.dns.message}$"
+  - date:
+      field: timestamp
+      if: ctx.timestamp != null
+      formats:
+        - dd-MMM-yyyy HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSS'Z'
+      ignore_failure: true
+  - split:
+      field: repeat_message
+      if: ctx.repeat_message != null
+      separator: ';'
+      ignore_missing: true
+  - trim:
+      field: repeat_message
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx.repeat_message != null
+      source: 
+        Map map = new HashMap();
+        def arr = ctx.repeat_message;
+        map.put("name", new ArrayList());
+        map.put("ttl", new ArrayList());
+        map.put("class", new ArrayList());
+        map.put("type", new ArrayList());
+        map.put("data", new ArrayList());
+        
+        for (def i = 0; i < arr?.length; i++) {
+          def response = arr[i].splitOnToken(" ");
+          map["name"].add(response[0]);
+          map["ttl"].add(response[1]);
+          map["class"].add(response[2]);
+          map["type"].add(response[3]);
+          map["data"].add(response[4]);
+        }
+        ctx.dns.answers = map;
+  - convert:
+      field: dns.answers.ttl
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: dns.answers.data
+      if: ctx.dns?.answers?.data != null
+      processor:
+        grok: 
+          field: '_ingest._value'
+          patterns:
+            - "%{IP:related.ip}"
+            - "%{HOSTNAME:related.hosts}"
+          ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{server.ip}}}'
+      if: ctx.server?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{client.domain}}}'
+      if: ctx.client?.domain != null
+      allow_duplicates: false
+      ignore_failure: true
+  - foreach:
+      field: dns.answers.name
+      if: ctx.dns?.answers?.name != null
+      processor:
+        append:
+          field: related.hosts
+          value: '{{_ingest._value}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{dns.question.name}}}'
+      if: ctx.dns?.question?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field:
+        - timestamp
+        - repeat_message
+      ignore_missing: true

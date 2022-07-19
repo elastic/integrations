@@ -1,0 +1,36 @@
+---
+description: Pipeline for Jamf Compliance Reporter identity_object audit logs.
+processors:
+  - rename:
+      field: json.identity.cd_hash
+      target_field: jamf_compliance_reporter.log.identity.cd_hash
+      ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{jamf_compliance_reporter.log.identity.cd_hash}}}'
+      if: ctx.jamf_compliance_reporter?.log?.identity?.cd_hash != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.identity.signer_id
+      target_field: jamf_compliance_reporter.log.identity.signer.id
+      ignore_missing: true
+  - convert:
+      field: json.identity.signer_id_truncated
+      target_field: jamf_compliance_reporter.log.identity.signer.id_truncated
+      type: string
+      ignore_failure: true
+  - convert:
+      field: json.identity.signer_type
+      target_field: jamf_compliance_reporter.log.identity.signer.type
+      type: string
+      ignore_failure: true
+  - rename:
+      field: json.identity.team_id
+      target_field: jamf_compliance_reporter.log.identity.team.id
+      ignore_missing: true
+  - convert:
+      field: json.identity.team_id_truncated
+      target_field: jamf_compliance_reporter.log.identity.team.id_truncated
+      type: string
+      ignore_failure: true
