@@ -17,6 +17,11 @@ processors:
 - json:
     field: event.original
     target_field: github.dependabot
+- fingerprint:
+    fields: 
+        - github.dependabot.number
+    target_field: "_id"
+    ignore_missing: true
 - rename:
     field: github.dependabot.createdAt
     target_field: github.dependabot.created_at
@@ -41,6 +46,35 @@ processors:
     field: github.dependabot.dismissedAt
     target_field: github.dependabot.dismissed_at
     ignore_missing: true
+- rename:
+    field: github.dependabot.fixReason
+    target_field: github.dependabot.fix_reason
+    ignore_missing: true
+- rename:
+    field: github.dependabot.fixedAt
+    target_field: github.dependabot.fixed_at
+    ignore_missing: true
+- date:
+    field: github.dependabot.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.dependabot?.created_at != null
+- date:
+    field: github.dependabot.dismissed_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.dependabot?.dismissed_at != null
+- date:
+    field: github.dependabot.fixed_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.dependabot?.fixed_at != null
 - rename:
     field: github.dependabot.repository.isInOrganization
     target_field: github.dependabot.repository.is_in_organization
@@ -144,7 +178,7 @@ processors:
     source: |
         List references = new ArrayList();
         def sa_references = ctx.github.dependabot.security_advisory.references;
-        for (def ref: references) {
+        for (def ref: sa_references) {
             references.add(ref.url);
         }
         ctx.vulnerability.reference = references;
