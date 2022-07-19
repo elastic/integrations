@@ -3,15 +3,15 @@ description: Pipeline for processing sample logs
 processors:
   - dissect:
       field: event.original
-      pattern: '[%{istio.access.time}] 
-        "%{http.request.method} 
-        %{url.original} 
-        HTTP/%{http.version}" 
+      pattern: '[%{istio.access.time}]
+        "%{http.request.method}
+        %{url.original}
         %{istio.access.message}'
   - grok:
       field: istio.access.message
       patterns:
-      -  (-|%{NUMBER:http.response.status_code:long})
+        - (-|HTTP/%{NUMBER:http.version})" 
+          (-|%{NUMBER:http.response.status_code:long})
           (-|%{DATA:istio.access.response.flags})
           (-|%{DATA:istio.access.response.code.details})
           (-|%{DATA:istio.access.response.termination_details})
@@ -21,7 +21,7 @@ processors:
           (-|%{NUMBER:istio.access.request.duration:double})
           (-|%{NUMBER:istio.access.upstream.service_time:double})
           "(-|%{DATA:istio.access.x-forwarded-for})"
-          "(-|%{DATA:user_agent.original})" 
+          "(-|%{DATA:user_agent.original})"
           "%{DATA:http.request.id}"
           "(-|%{DATA:istio.access.authority})"
           "(-|%{ISTIO_HOST:istio.access.upstream.host})"
@@ -39,7 +39,8 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      source: ctx.event.duration = Math.round(ctx.istio.access.upstream.service_time *
+      source:
+        ctx.event.duration = Math.round(ctx.istio.access.upstream.service_time *
         params.scale)
       params:
         scale: 1000000
