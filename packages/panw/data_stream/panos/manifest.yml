@@ -53,6 +53,14 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
+        type: bool
+        multi: false
+        default: false
       - name: tz_offset
         type: text
         title: Time Zone Offset
@@ -68,9 +76,8 @@ streams:
         multi: false
         required: false
         show_user: false
-        description: >
+        description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-
       - name: ssl
         type: yaml
         title: SSL Configuration
@@ -107,6 +114,7 @@ streams:
         required: false
         show_user: false
         default: |
+          max_message_size: 50KiB
           #max_connections: 1
           #framing: delimitier
           #line_delimiter: "\n"
@@ -163,6 +171,14 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
+        type: bool
+        multi: false
+        default: false
       - name: tz_offset
         type: text
         title: Time Zone Offset
@@ -178,9 +194,18 @@ streams:
         multi: false
         required: false
         show_user: false
-        description: >
+        description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-
+      - name: udp_options
+        type: yaml
+        title: Custom UDP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          max_message_size: 50KiB
+          #timeout: 300s
+        description: Specify custom configuration options for the UDP input.
   - input: logfile
     vars:
       - name: tz_offset
@@ -222,6 +247,14 @@ streams:
         show_user: true
         title: Preserve original event
         description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
         type: bool
         multi: false
         default: false
