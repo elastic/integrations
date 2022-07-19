@@ -25,10 +25,9 @@ This integration requires Elastic Package Registry version >= 1.10.0.
 ## Metrics
 
 Elastic Package Registry can provide Prometheus metrics in the `/metrics` endpoint.
-You can verify that metrics endpoint is enabled by making an HTTP request to:
+You can verify that metrics endpoint is enabled by making an HTTP request to
 `http://localhost:9000/metrics` on your package registry instance.
 
-There are two different data streams to split the different metrics available:
 
 ### Elastic Package Registry metrics
 
@@ -38,12 +37,3 @@ Metrics related to the Elastic Package Registry application itself:
 
 Example of event:
 {{ event "metrics" }}
-
-### Go metrics
-
-Metrics related to the Go processes:
-
-{{ fields "gometrics" }}
-
-Example of event:
-{{ event "gometrics" }}
