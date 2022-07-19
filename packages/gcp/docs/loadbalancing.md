@@ -1,10 +1,10 @@
-# Loadbalancers
+# Load balancing
 
 ## Metrics
 
-The `loadbalancer_metrics` dataset fetches HTTPS, HTTP, and Layer 3 metrics from https://cloud.google.com/load-balancing/[Load Balancing] in Google Cloud Platform. It contains all metrics exported from the https://cloud.google.com/monitoring/api/metrics_gcp#gcp-loadbalancing[GCP Load Balancing Monitoring API].
+The `loadbalancer_metrics` dataset fetches HTTPS, HTTP, and Layer 3 metrics from [Load Balancing](https://cloud.google.com/load-balancing/) in Google Cloud Platform. It contains all metrics exported from the [GCP Load Balancing Monitoring API](https://cloud.google.com/monitoring/api/metrics_gcp#gcp-loadbalancing).
 
-An example event for `loadbalancer` looks as following:
+An example event for `loadbalancing` looks as following:
 
 ```json
 {
