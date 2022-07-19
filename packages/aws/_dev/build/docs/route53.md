@@ -1,6 +1,6 @@
 # Route 53
 
-The Route 53 integration allows you to monitor [Amazon Route 53](https://aws.amazon.com/route53/). Amazon Route 53 is Domain Name System (DNS) web service It connects user requests to the relevant IP addresses for the internet applications that are running on Amazon Web Services or on-premises.
+The Route 53 integration allows you to monitor [Amazon Route 53](https://aws.amazon.com/route53/). Amazon Route 53 is Domain Name System (DNS) web service. It connects user requests to the relevant IP addresses for the internet applications that are running on Amazon Web Services or on-premises.
 
 Use the Route 53 integration to collect and parse logs related to DNS activity across your AWS infrastructure. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
