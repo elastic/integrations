@@ -1,13 +1,10 @@
 ---
 description: Pipeline for parsing system authorization and secure logs.
 processors:
-  - set:
-      if: ctx.message != null
-      copy_from: message
-      field: event.original
-      override: false
-  - remove:
+  - rename:
+      if: ctx.event?.original == null
       field: message
+      target_field: event.original
       ignore_missing: true
   - grok:
       description: Grok the message header.
