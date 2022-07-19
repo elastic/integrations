@@ -1,0 +1,305 @@
+---
+description: Pipeline for PanOS Decryption Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/decryption-log-fields
+processors:
+  - csv:
+      field: message
+      ignore_failure: true
+      target_fields:
+        - panw.panos.source.ip
+        - panw.panos.destination.ip
+        - panw.panos.source.nat.ip
+        - panw.panos.destination.nat.ip
+        - panw.panos.ruleset
+        - _temp_.srcuser
+        - panw.panos.destination.user
+        - panw.panos.network.application
+        - panw.panos.virtual_sys
+        - panw.panos.source.zone
+        - panw.panos.destination.zone
+        - panw.panos.inbound_interface
+        - panw.panos.outbound_interface
+        - panw.panos.log_profile
+        - _temp_.logged_time
+        - panw.panos.flow_id
+        - panw.panos.repeat_count
+        - panw.panos.source.port
+        - panw.panos.destination.port
+        - panw.panos.source.nat.port
+        - panw.panos.destination.nat.port
+        - _temp_.labels
+        - panw.panos.protocol
+        - panw.panos.action
+        - panw.panos.tunnel_type
+        - _temp_.future_use1
+        - _temp_.future_use2
+        - panw.panos.source_vm_uuid
+        - panw.panos.destination_vm_uuid
+        - panw.panos.rule_uuid
+        - panw.panos.hs_stage_c2f
+        - panw.panos.hs_stage_f2s
+        - _temp_.tls
+        - panw.panos.tls.key_exchange_algorithm
+        - panw.panos.tls.encryption
+        - panw.panos.tls.auth
+        - panw.panos.policy.name
+        - panw.panos.elliptic_curve
+        - panw.panos.tls.error_type
+        - panw.panos.root_certificate_status
+        - panw.panos.chain_status
+        - panw.panos.proxy_type
+        - panw.panos.certificate.serial_number
+        - _temp_.hash
+        - panw.panos.certificate.not_before
+        - panw.panos.certificate.not_after
+        - panw.panos.certificate.version
+        - panw.panos.certificate.size
+        - panw.panos.subject_common_name.length
+        - panw.panos.issuer_common_name.length
+        - panw.panos.root_common_name.length
+        - panw.panos.server_name_indication.length
+        - panw.panos.certificate.flags
+        - panw.panos.subject_common_name.value
+        - panw.panos.issuer_common_name.value
+        - panw.panos.root_common_name.value
+        - panw.panos.server_name_indication.value
+        - panw.panos.error_message
+        - panw.panos.container.id
+        - panw.panos.pod.namespace
+        - panw.panos.pod.name
+        - panw.panos.src.external_dynamic_list
+        - panw.panos.dst.external_dynamic_list
+        - panw.panos.src.dynamic_address_group
+        - panw.panos.dst.dynamic_address_group
+        - _temp_.high_res_timestamp
+        - panw.panos.src.category
+        - panw.panos.src.profile
+        - panw.panos.src.model
+        - panw.panos.src.vendor
+        - panw.panos.src.os.family
+        - panw.panos.src.os.version
+        - panw.panos.src.host
+        - panw.panos.src.mac
+        - panw.panos.dst.category
+        - panw.panos.dst.profile
+        - panw.panos.dst.model
+        - panw.panos.dst.vendor
+        - panw.panos.dst.os.family
+        - panw.panos.dst.os.version
+        - panw.panos.dst.host
+        - panw.panos.dst.mac
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - panw.panos.device_name
+        - panw.panos.vsys_id
+        - panw.panos.application.sub_category
+        - panw.panos.application.category
+        - panw.panos.application.technology
+        - panw.panos.application.risk_level
+        - panw.panos.application.characteristics
+        - panw.panos.application.container
+        - panw.panos.application.tunneled
+        - panw.panos.application.is_saas
+        - panw.panos.application.is_sanctioned
+
+  - rename:
+      field: _temp_.config_version
+      target_field: panw.panos.config_version
+      ignore_missing: true
+  - date:
+      if: ctx.event?.timezone == null
+      field: panw.panos.certificate.not_after
+      target_field: panw.panos.certificate.not_after
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      ignore_failure: true
+  - date:
+      if: ctx.event?.timezone != null
+      field: panw.panos.certificate.not_after
+      target_field: panw.panos.certificate.not_after
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      timezone: '{{{ event.timezone }}}'
+      ignore_failure: true
+  - date:
+      if: ctx.event?.timezone == null
+      field: panw.panos.certificate.not_before
+      target_field: panw.panos.certificate.not_before
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      ignore_failure: true
+  - date:
+      if: ctx.event?.timezone != null
+      field: panw.panos.certificate.not_before
+      target_field: panw.panos.certificate.not_before
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+        - "strict_date_optional_time_nanos"
+      timezone: '{{{ event.timezone }}}'
+      ignore_failure: true
+
+# Set event.kind & event.category field.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+
+# Set custom fields to ECS fields
+  - set:
+      field: panw.panos.hash
+      copy_from: _temp_.hash
+      ignore_failure: true
+  - set:
+      field: panw.panos.tls.version
+      copy_from: _temp_.tls
+      ignore_failure: true
+  - set:
+      field: destination.ip
+      copy_from: panw.panos.destination.ip
+      ignore_failure: true
+  - set:
+      field: destination.nat.ip
+      copy_from: panw.panos.destination.nat.ip
+      ignore_failure: true
+  - set:
+      field: destination.nat.port
+      copy_from: panw.panos.destination.nat.port
+      ignore_failure: true
+  - set:
+      field: destination.port
+      copy_from: panw.panos.destination.port
+      ignore_failure: true
+  - set:
+      field: destination.user.name
+      copy_from: panw.panos.destination.user
+      ignore_failure: true
+  - set:
+      field: network.application
+      copy_from: panw.panos.network.application
+      ignore_failure: true
+  - set:
+      field: network.transport
+      copy_from: panw.panos.protocol
+      ignore_failure: true
+  - set:
+      field: observer.egress.interface.name
+      copy_from: panw.panos.outbound_interface
+      ignore_failure: true
+  - set:
+      field: observer.egress.zone
+      copy_from: panw.panos.destination.zone
+      ignore_failure: true
+  - set:
+      field: observer.hostname
+      copy_from: panw.panos.device_name
+      ignore_failure: true
+  - set:
+      field: observer.ingress.interface.name
+      copy_from: panw.panos.inbound_interface
+      ignore_failure: true
+  - set:
+      field: observer.ingress.zone
+      copy_from: panw.panos.source.zone
+      ignore_failure: true
+  - set:
+      field: x509.subject.common_name
+      copy_from: panw.panos.subject_common_name.value
+      ignore_failure: true
+  - set:
+      field: x509.issuer.common_name
+      copy_from: panw.panos.issuer_common_name.value
+      ignore_failure: true
+  - set:
+      field: rule.uuid
+      copy_from: panw.panos.rule_uuid
+      ignore_failure: true
+  - set:
+      field: source.ip
+      copy_from: panw.panos.source.ip
+      ignore_failure: true
+  - set:
+      field: source.nat.ip
+      copy_from: panw.panos.source.nat.ip
+      ignore_failure: true
+  - set:
+      field: source.port
+      copy_from: panw.panos.source.port
+      ignore_failure: true
+  - set:
+      field: source.nat.port
+      copy_from: panw.panos.source.nat.port
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.user
+      copy_from: _temp_.srcuser
+      ignore_failure: true
+  - set:
+      field: tls.cipher
+      copy_from: panw.panos.tls.encryption
+      ignore_failure: true
+  - set:
+      field: tls.client.not_after
+      copy_from: panw.panos.certificate.not_after
+      ignore_failure: true
+  - set:
+      field: tls.client.not_before
+      copy_from: panw.panos.certificate.not_before
+      ignore_failure: true
+  - set:
+      field: tls.client.server_name
+      copy_from: panw.panos.server_name_indication.value
+      ignore_failure: true
+  - set:
+      field: tls.client.x509.public_key_size
+      copy_from: panw.panos.certificate.size
+      ignore_failure: true
+  - set:
+      field: tls.client.x509.serial_number
+      copy_from: panw.panos.certificate.serial_number
+      ignore_failure: true
+  - set:
+      field: tls.client.x509.version_number
+      copy_from: panw.panos.certificate.version
+      ignore_failure: true
+  - set:
+      field: tls.curve
+      copy_from: panw.panos.elliptic_curve
+      ignore_failure: true
+
+  - script:
+      description: Dynamically map fingerprint hash to MD5, SHA1 and SHA256 hash.
+      lang: painless
+      if: ctx._temp_?.hash != null
+      source: |
+        ctx.tls.client.hash = new HashMap();
+        if (ctx._temp_.hash.length() == 32) {ctx.tls.client.hash.md5 = ctx._temp_.hash}
+        else if (ctx._temp_.hash.length() == 40) {ctx.tls.client.hash.sha1 = ctx._temp_.hash}
+        else if (ctx._temp_.hash.length() == 64) {ctx.tls.client.hash.sha256 = ctx._temp_.hash}
+
+  - script:
+      description: Dynamically map fingerprint hash to MD5, SHA1 and SHA256 hash.
+      lang: painless
+      if: ctx._temp_?.tls != null
+      source: |
+        ctx.tls.version = new HashMap();
+        ctx.tls.version_protocol = ctx._temp_?.tls.substring(0,3).toLowerCase();
+        ctx.tls.version = ctx._temp_?.tls.substring(3,6);
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in Decryption pipeline:
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{_ingest.on_failure_message}}}
