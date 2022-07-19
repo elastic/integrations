@@ -1,11 +1,11 @@
 # Elastic Package Registry
 
-This integration collects metrics from Elastic Package Registry (EPR).
+This integration collects metrics from [Elastic Package Registry](https://github.com/elastic/package-registry).
 There is one data stream:
 
 - metrics: Telemetry data from the /metrics API.
 
-In order to enable this telemetry in your EPR instance, you must set the metrics
+In order to enable this telemetry in your Elastic Package Registry instance, you must set the metrics
 address parameter. Or, as an alternative, set the environment variable
 `EPR_METRICS_ADDRESS`. As an example:
 
@@ -20,7 +20,7 @@ Remember to expose the port used in the above setting (e.g. 9000) in your deploy
 
 ## Compatibility
 
-This integration requires EPR >= 1.10.0.
+This integration requires Elastic Package Registry version >= 1.10.0.
 
 ## Metrics
 
@@ -30,11 +30,14 @@ You can verify that metrics endpoint is enabled by making an HTTP request to:
 
 There are two different data streams to split the different metrics available:
 
-### Elastic Package Registry (EPR)
+### Elastic Package Registry metrics
 
 Metrics related to the Elastic Package Registry application itself:
 
 {{ fields "metrics" }}
+
+Example of event:
+{{ event "metrics" }}
 
 ### Go metrics
 
