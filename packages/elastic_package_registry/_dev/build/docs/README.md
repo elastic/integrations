@@ -15,8 +15,8 @@ package-registry -metrics-address 0.0.0.0:9000
 EPR_METRICS_ADDRESS="0.0.0.0:9000" package-regsitry
 ```
 
-Remember to expose the port used in the above setting (e.g. 9000) in your deployments
-(k8s, docker-compose, etc.).
+Remember to expose the port used in the above setting (e.g. 9000) in your deployments:
+k8s, docker-compose, etc..
 
 ## Compatibility
 
@@ -31,9 +31,6 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 
 ### Elastic Package Registry metrics
 
-Metrics related to the Elastic Package Registry application itself:
-
 {{ fields "metrics" }}
 
-Example of event:
 {{ event "metrics" }}
