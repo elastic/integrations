@@ -48,7 +48,7 @@ The fields reported are:
 The IIS module has been tested with logs from version 7.5 and version 10.
 
 ### access
-This dataset will collect and parse access IIS logs.
+This dataset will collect and parse access IIS logs. The supported log format is IIS (W3C).
 
 {{event "access"}}
 
