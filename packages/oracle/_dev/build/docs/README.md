@@ -1,6 +1,6 @@
 # Oracle Integration
 
-This integration is for ingesting Audit Trail logs from Oracle Databases.
+This integration is for ingesting Audit Trail logs and fetching performance, tablespace and sysmetric metrics from Oracle Databases.
 
 The integration expects an *.aud audit file that is generated from Oracle Databases by default. If this has been disabled then please see the [Oracle Database Audit Trail Documentation](https://docs.oracle.com/en/database/oracle/oracle-database/19/dbseg/introduction-to-auditing.html#GUID-8D96829C-9151-4FA4-BED9-831D088F12FF).
 
@@ -15,3 +15,21 @@ The `database_audit` dataset collects Oracle Audit logs.
 {{fields "database_audit"}}
 
 {{event "database_audit"}}
+
+### Database Performance Metrics
+
+{{fields "performance"}}
+
+{{event "performance"}}
+
+### Database Tablespace Metrics
+
+{{fields "tablespace"}}
+
+{{event "tablespace"}}
+
+### Database Sysmetrics 
+
+{{fields "sysmetric"}}
+
+{{event "sysmetric"}}

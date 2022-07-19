@@ -1,0 +1,124 @@
+---
+description: Pipeline for processing oracle performance
+processors:
+    - remove:
+        field: sql.driver
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: sql.query
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: sql
+        target_field: oracle
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: "oracle.metrics"
+        target_field: "oracle.performance"
+        ignore_missing: true
+    - set:
+        field: oracle.performance.cache.buffer.hit.pct
+        copy_from: oracle.performance.hit_ratio
+        if: "ctx.oracle?.performance?.hit_ratio != null"
+        ignore_failure: true
+    - set:
+        field: oracle.performance.cache.get.consistent
+        copy_from: oracle.performance.consistent_gets
+        if: "ctx.oracle?.performance?.consistent_gets != null"
+        ignore_failure: true
+    - set:
+        field: oracle.performance.cache.get.db_blocks
+        copy_from: oracle.performance.db_block_gets
+        if: "ctx.oracle?.performance?.db_block_gets != null"
+        ignore_failure: true
+    - set:
+        field: oracle.performance.cache.physical_reads
+        copy_from: oracle.performance.physical_reads
+        if: "ctx.oracle?.performance?.physical_reads != null"
+        ignore_failure: true
+    - set:
+        field: oracle.performance.buffer_pool
+        copy_from: oracle.performance.name
+        if: "ctx.oracle?.performance?.name != null"
+        ignore_failure: true
+    - remove:
+        field: oracle.performance.hit_ratio
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: oracle.performance.consistent_gets
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: oracle.performance.db_block_gets
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: oracle.performance.physical_reads
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: oracle.performance.name
+        ignore_missing: true
+        ignore_failure: true
+    - set:
+        field: oracle.performance.cursors.avg
+        copy_from: oracle.performance.avg_cur
+        if: "ctx.oracle?.performance?.avg_cur != null"
+    - set:
+        field: oracle.performance.cursors.max
+        copy_from: oracle.performance.max_cur
+        if: "ctx.oracle?.performance?.max_cur != null"
+    - set:
+        field: oracle.performance.cursors.total
+        copy_from: oracle.performance.total_cur
+        if: "ctx.oracle?.performance?.total_cur != null"
+    - remove:
+        field: oracle.performance.avg_cur
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: oracle.performance.max_cur
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: oracle.performance.total_cur
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.performance.cachehits_totalcursors_ratio
+        target_field: oracle.performance.cursors.cache_hit.pct
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.performance.current_cursors
+        target_field: oracle.performance.cursors.opened.current
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.performance.total_cursors
+        target_field: oracle.performance.cursors.opened.total
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.performance.real_parses
+        target_field: oracle.performance.cursors.parse.real
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.performance.total_cursors
+        target_field: oracle.performance.cursors.opened.total
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.performance.sess_cur_cache_hits
+        target_field: oracle.performance.cursors.session.cache_hits
+        ignore_missing: true
+        ignore_failure: true
+
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
