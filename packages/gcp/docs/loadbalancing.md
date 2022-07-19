@@ -1,8 +1,8 @@
-# Load Balancer
+# Load Balancing
 
 ## Logs
 
-The `load_balancer` dataset collects logs of the requests sent to and handled by GCP Load Balancers.
+The `loadbalancing_logs` dataset collects logs of the requests sent to and handled by GCP Load Balancers.
 
 **Exported fields**
 
@@ -107,7 +107,7 @@ The `load_balancer` dataset collects logs of the requests sent to and handled by
 | user_agent.version | Version of the user agent. | keyword |
 
 
-An example event for `load_balancer` looks as following:
+An example event for `loadbalancing` looks as following:
 
 ```json
 {
