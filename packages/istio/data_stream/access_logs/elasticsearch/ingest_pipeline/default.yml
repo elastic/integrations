@@ -18,10 +18,10 @@ processors:
       pattern_definitions:
         CHAR: .
   - pipeline:
-      name: '{{ IngestPipeline "pipeline-plaintext" }}'
+      name: '{{ IngestPipeline "format-common" }}'
       if: ctx.first_char != '{'
   - pipeline:
-      name: '{{ IngestPipeline "pipeline-json" }}'
+      name: '{{ IngestPipeline "format-json" }}'
       if: ctx.first_char == '{'
   - remove:
       field: first_char
@@ -29,18 +29,24 @@ processors:
       field: "@timestamp"
       target_field: event.created
       ignore_missing: true
+  - user_agent:
+      field: user_agent.original
+      ignore_failure: true
+      ignore_missing: true
   - set:
       field: event.module
       value: istio
   - set:
       field: event.kind
       value: event
-  - set:
+  - append:
       field: event.category
       value: web
+      if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
   - set:
       field: event.type
       value: access
+      if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
   - set:
       field: event.outcome
       value: success
@@ -54,4 +60,7 @@ processors:
       if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
-      
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'      

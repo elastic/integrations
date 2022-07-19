@@ -44,9 +44,6 @@ processors:
       params:
         scale: 1000000
       if: ctx.istio?.access?.upstream?.service_time != null
-  - user_agent:
-      field: user_agent.original
-      ignore_failure: true
   - date:
       field: istio.access.time
       formats:
@@ -54,9 +51,6 @@ processors:
       target_field: "@timestamp"
   - remove:
       field: istio.access.time
-  - convert:
-      field: http.response.status_code
-      type: long
   - set:
       field: event.id
       copy_from: http.request.id
