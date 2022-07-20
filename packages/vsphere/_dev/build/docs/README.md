@@ -3,7 +3,7 @@
 This integration periodically fetches logs and metrics from [vSphere](https://www.vmware.com/products/vsphere.html) vCenter servers. 
 
 ## Compatibility
-The integration uses the https://github.com/vmware/govmomi[Govmomi] library to collect metrics and logs from any Vmware SDK URL (ESXi/VCenter). This library is built for and tested against ESXi and vCenter 6.5, 6.7 and 7.0.
+The integration uses the (https://github.com/vmware/govmomi) [Govmomi] library to collect metrics and logs from any Vmware SDK URL (ESXi/VCenter). This library is built for and tested against ESXi and vCenter 6.5, 6.7 and 7.0.
 
 ## Metrics
 To access the metrices, the url https://host:port(8989)/sdk needs to be passed to the hosts in Kibana UI. 

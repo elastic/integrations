@@ -3,7 +3,7 @@
 This integration periodically fetches logs and metrics from [vSphere](https://www.vmware.com/products/vsphere.html) vCenter servers. 
 
 ## Compatibility
-The integration uses the https://github.com/vmware/govmomi[Govmomi] library to collect metrics and logs from any Vmware SDK URL (ESXi/VCenter). This library is built for and tested against ESXi and vCenter 6.5, 6.7 and 7.0.
+The integration uses the (https://github.com/vmware/govmomi) [Govmomi] library to collect metrics and logs from any Vmware SDK URL (ESXi/VCenter). This library is built for and tested against ESXi and vCenter 6.5, 6.7 and 7.0.
 
 ## Metrics
 To access the metrices, the url https://host:port(8989)/sdk needs to be passed to the hosts in Kibana UI. 
@@ -139,12 +139,12 @@ An example event for `virtualmachine` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
-| vsphere.virtualmachine.cpu.free.mhz | Available CPU in Mhz | long |  | gauge |
-| vsphere.virtualmachine.cpu.total.mhz | Total CPU in Mhz | long |  | counter |
-| vsphere.virtualmachine.cpu.used.mhz | Used CPU in Mhz | long |  | gauge |
+| vsphere.virtualmachine.cpu.free.mhz | Available CPU of virtualmachine in Mhz | long |  | gauge |
+| vsphere.virtualmachine.cpu.total.mhz | Total CPU of virtualmachine in Mhz | long |  | counter |
+| vsphere.virtualmachine.cpu.used.mhz | Used CPU of virtualmachine in Mhz | long |  | gauge |
 | vsphere.virtualmachine.custom_fields | Custom fields | object |  |  |
-| vsphere.virtualmachine.host.hostname | Host name of the host | keyword |  |  |
-| vsphere.virtualmachine.host.id | Host id | keyword |  |  |
+| vsphere.virtualmachine.host.hostname | Name of the host hosting the virtualmachine | keyword |  |  |
+| vsphere.virtualmachine.host.id | Id of the host hosting the virtualmachine | keyword |  |  |
 | vsphere.virtualmachine.memory.free.guest.bytes | Free Memory of Guest in bytes | long | byte | gauge |
 | vsphere.virtualmachine.memory.total.guest.bytes | Total Memory of Guest in bytes | long | byte | counter |
 | vsphere.virtualmachine.memory.used.guest.bytes | Used Memory of Guest in bytes | long | byte | gauge |
@@ -284,14 +284,14 @@ An example event for `host` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
-| vsphere.host.cpu.free.mhz | Free CPU in Mhz | long |  | gauge |
-| vsphere.host.cpu.total.mhz | Total CPU in Mhz | long |  | counter |
-| vsphere.host.cpu.used.mhz | Used CPU in Mhz | long |  | gauge |
-| vsphere.host.cpu.used.pct | Used percent of cpu of the host | scaled_float | percent | gauge |
-| vsphere.host.memory.free.bytes | Free Memory in bytes | long | byte | gauge |
-| vsphere.host.memory.total.bytes | Total Memory in bytes | long | byte | counter |
-| vsphere.host.memory.used.bytes | Used Memory in bytes | long | byte | gauge |
-| vsphere.host.memory.used.pct | Used percent of memory of the host | scaled_float | percent | gauge |
+| vsphere.host.cpu.free.mhz | Free CPU of host in Mhz | long |  | gauge |
+| vsphere.host.cpu.total.mhz | Total CPU of host in Mhz | long |  | counter |
+| vsphere.host.cpu.used.mhz | Used CPU of host in Mhz | long |  | gauge |
+| vsphere.host.cpu.used.pct | CPU Utilization % of the host | scaled_float | percent | gauge |
+| vsphere.host.memory.free.bytes | Free Memory of host in bytes | long | byte | gauge |
+| vsphere.host.memory.total.bytes | Total Memory of host in bytes | long | byte | counter |
+| vsphere.host.memory.used.bytes | Used Memory of host in bytes | long | byte | gauge |
+| vsphere.host.memory.used.pct | Memory utilization % of the host | scaled_float | percent | gauge |
 | vsphere.host.name | Host name | keyword |  |  |
 | vsphere.host.network_names | Network names | keyword |  |  |
 
