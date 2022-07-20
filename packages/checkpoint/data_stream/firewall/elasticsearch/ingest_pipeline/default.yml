@@ -239,7 +239,11 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: "['Log In', 'Failed Log In'].contains(ctx.checkpoint?.action)"
+      if: ctx.checkpoint?.action == 'Log In'
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.checkpoint?.action == 'Failed Log In'
   - append:
       field: event.category
       value: authentication
