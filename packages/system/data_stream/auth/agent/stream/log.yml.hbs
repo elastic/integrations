@@ -1,10 +1,27 @@
 paths:
 {{#each paths as |path i|}}
- - {{path}}
+  - {{path}}
 {{/each}}
 exclude_files: [".gz$"]
+
 multiline:
   pattern: "^\\s"
   match: after
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
 processors:
-  - add_locale: ~
+- add_locale: ~
+{{#if processors}}
+{{processors}}
+{{/if}}
