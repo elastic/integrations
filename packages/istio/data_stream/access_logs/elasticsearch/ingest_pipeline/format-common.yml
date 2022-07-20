@@ -28,11 +28,12 @@ processors:
           (-|%{DATA:istio.access.upstream.cluster})
           (-|%{HOSTPORT:istio.access.upstream.address.local})
           (-|%{HOSTPORT:istio.access.downstream.address.local})
-          (-|%{HOSTPORT:istio.access.downstream.address.remote})
+          (-|%{ISTIO_HOSTPORT:istio.access.downstream.address.remote})
           (-|%{DATA:istio.access.request.sni})
           (-|%{GREEDYDATA:istio.access.route_name})
       pattern_definitions:
         ISTIO_HOST: (%{HOSTPORT}|%{URI})
+        ISTIO_HOSTPORT: (%{HOSTPORT}|%{IPORHOST}:%{NONNEGINT})
       ignore_missing: true
   - remove:
       field: istio.access.message
