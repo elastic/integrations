@@ -50,7 +50,6 @@ The following two types of host configurations are supported:
     - `hosts: ['user="user" password="password" connectString="host:port/service_name" sysdba=true']`
 
 
-
 Note: If the password contains the backslash (`\`) character, it must be escaped with a backslash. For example, if the password is `my\_password`, it should be written as `my\\_password`.
 
 
@@ -499,3 +498,4 @@ An example event for `sysmetric` looks as following:
     }
 }
 ```
+
