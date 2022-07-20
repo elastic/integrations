@@ -1,6 +1,6 @@
 # Keycloak Integration
 
-The Keycloak integration collects events from the Keycloak log files.
+The Keycloak integration collects events from the [Keycloak](https://www.keycloak.org/server/logging) log files.
 
 To enable logging of all Keycloak events like logins, user creation/updates/deletions.... add the below 
 ```
@@ -146,7 +146,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",

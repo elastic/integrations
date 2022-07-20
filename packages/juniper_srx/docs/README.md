@@ -1,6 +1,6 @@
 # Juniper SRX integration
 
-This is an integration for ingesting logs from Juniper SRX.
+This is an integration for ingesting logs from [Juniper SRX](https://www.juniper.net/documentation/en_US/release-independent/junos/information-products/pathway-pages/srx-series/product/).
 
 ### Log
 
@@ -47,7 +47,7 @@ The following processes and tags are supported:
 | agent.build.original | Extended build information for the agent. This field is intended to contain any build information that a data source may provide, no specific formatting is required. | keyword |
 | agent.ephemeral_id | Ephemeral identifier of this agent (if one exists). This id normally changes across restarts, but `agent.id` does not. | keyword |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. If no name is given, the name is often left empty. | keyword |
+| agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
 | agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
 | agent.version | Version of the agent. | keyword |
 | as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
@@ -576,7 +576,7 @@ The following processes and tags are supported:
 | process.parent.pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
 | process.parent.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | process.parent.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| process.parent.pgid | Identifier of the group of processes the process belongs to. | long |
+| process.parent.pgid | Deprecated for removal in next major version release. This field is superseded by `process.group_leader.pid`. Identifier of the group of processes the process belongs to. | long |
 | process.parent.pid | Process id. | long |
 | process.parent.start | The time the process started. | date |
 | process.parent.thread.id | Thread ID. | long |
@@ -593,7 +593,7 @@ The following processes and tags are supported:
 | process.pe.imphash | A hash of the imports in a PE file. An imphash -- or import hash -- can be used to fingerprint binaries even after recompilation or other code-level transformations have occurred, which would change more traditional hash values. Learn more at https://www.fireeye.com/blog/threat-research/2014/01/tracking-malware-import-hashing.html. | keyword |
 | process.pe.original_file_name | Internal name of the file, provided at compile-time. | keyword |
 | process.pe.product | Internal product name of the file, provided at compile-time. | keyword |
-| process.pgid | Identifier of the group of processes the process belongs to. | long |
+| process.pgid | Deprecated for removal in next major version release. This field is superseded by `process.group_leader.pid`. Identifier of the group of processes the process belongs to. | long |
 | process.pid | Process id. | long |
 | process.start | The time the process started. | date |
 | process.thread.id | Thread ID. | long |
