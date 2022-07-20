@@ -12,7 +12,7 @@ Connectivity to Oracle can be facilitated in two ways either by using official O
 
 To get connected with the Oracle Database ORACLE_SID, ORACLE_BASE, ORACLE_HOME environment variables should be set.
 
-For example: Let’s consider Oracle Database 21c installation using RPM manually by following https://docs.oracle.com/en/database/oracle/oracle-database/21/ladbi/running-rpm-packages-to-install-oracle-database.html[this] link, environment variables should be set as follows:
+For example: Let’s consider Oracle Database 21c installation using RPM manually by following [Oracle Installation](https://docs.oracle.com/en/database/oracle/oracle-database/21/ladbi/running-rpm-packages-to-install-oracle-database.html), environment variables should be set as follows:
     `ORACLE_SID=ORCLCDB`
     `ORACLE_BASE=/opt/oracle/oradata`
     `ORACLE_HOME=/opt/oracle/product/21c/dbhome_1`
@@ -22,11 +22,11 @@ Also, add `ORACLE_HOME/bin` to the `PATH` environment variable.
 
 Oracle Instant Client enables development and deployment of applications that connect to Oracle Database. The Instant Client libraries provide the necessary network connectivity and advanced data features to make full use of Oracle Database. If you have OCI Oracle server which comes with these libraries pre-installed, you don't need a separate client installation.
 
-The OCI library install few Client Shared Libraries that must be referenced on the machine where Metricbeat is installed. Please follow https://docs.oracle.com/en/database/oracle/oracle-database/21/lacli/install-instant-client-using-zip.html#GUID-D3DCB4FB-D3CA-4C25-BE48-3A1FB5A22E84[this] link for OCI Instant Client set up. The OCI Instant Client is available with the Oracle Universal Installer, RPM file or ZIP file. Download links can be found https://www.oracle.com/database/technologies/instant-client/downloads.html[here].
+The OCI library install few Client Shared Libraries that must be referenced on the machine where Metricbeat is installed. Please follow [Oracle Client Installation](https://docs.oracle.com/en/database/oracle/oracle-database/21/lacli/install-instant-client-using-zip.html#GUID-D3DCB4FB-D3CA-4C25-BE48-3A1FB5A22E84) link for OCI Instant Client set up. The OCI Instant Client is available with the Oracle Universal Installer, RPM file or ZIP file. Download links can be found [Oracle Instant Client Download](https://www.oracle.com/database/technologies/instant-client/downloads.html)
 
 ####  Enable Listener
 
-The Oracle listener is a service that runs on the database host and receives requests from Oracle clients. Make sure that https://docs.oracle.com/cd/B19306_01/network.102/b14213/lsnrctl.htm[listener] should be running. 
+The Oracle listener is a service that runs on the database host and receives requests from Oracle clients. Make sure that [Listener](https://docs.oracle.com/cd/B19306_01/network.102/b14213/lsnrctl.htm) should be running. 
 To check if the listener is running or not, run: 
 
 `lsnrctl STATUS`
@@ -42,12 +42,12 @@ Then, Metricbeat can be launched.
 The following two types of host configurations are supported:
 
 1. Old style host configuration for backwards compatibility:
-    a. `hosts: ["user/pass@0.0.0.0:1521/ORCLPDB1.localdomain"]`
-    b. `hosts: ["user/password@0.0.0.0:1521/ORCLPDB1.localdomain as sysdba"]`
+    - `hosts: ["user/pass@0.0.0.0:1521/ORCLPDB1.localdomain"]`
+    - `hosts: ["user/password@0.0.0.0:1521/ORCLPDB1.localdomain as sysdba"]`
 
 2. DSN host configuration:
-    a. `hosts: ['user="user" password="pass" connectString="0.0.0.0:1521/ORCLPDB1.localdomain"']`
-    b. `hosts: ['user="user" password="password" connectString="host:port/service_name" sysdba=true']`
+    - `hosts: ['user="user" password="pass" connectString="0.0.0.0:1521/ORCLPDB1.localdomain"']`
+    - `hosts: ['user="user" password="password" connectString="host:port/service_name" sysdba=true']`
 
 
 
