@@ -1,10 +1,6 @@
 ---
 description: Pipeline for modsecurity audit log.
-
 processors:
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - set:
       field: ecs.version
       value: '8.3.0'
@@ -16,129 +12,24 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
-# parse date
+      allow_duplicate_keys: true
+
+# according to check apache modesec log or nginx modsec log
   - set:
-     field: _temps.date
-     if: ctx?.tz_offset != null
-     value: '{{json.transaction.time_stamp}}{{tz_offset}}'
+      field: modsec.audit.server
+      copy_from: json.audit_data.server
+      ignore_empty_value: true
   - set:
-     field: _temps.date
-     if: ctx?.tz_offset == null
-     value: '{{json.transaction.time_stamp}}{{event.timezone }}'
-  - date:
-     field: _temps.date
-     formats:
-        - E MMM d HH:mm:ss yyyyZ
-        - E MMM d HH:mm:ss yyyyXXX
-# rename ecs
-  - rename:
-      field: json.transaction.client_ip
-      target_field: source.ip
-      ignore_missing: true
-  - rename:
-      field: json.transaction.client_port
-      target_field: source.port
-      ignore_missing: true
-  - rename:
-      field: json.transaction.request.method
-      target_field: http.request.method
-      ignore_missing: true
-  - convert:
-      field: json.transaction.request.http_version
-      target_field: http.version
-      type: string
-      ignore_missing: true
-  - set:
-      field: _temps.url
-      if: ctx.json.transaction.host_port == 443
-      value: "https://{{{json.transaction.request.headers.Host}}}:{{json.transaction.host_port}}{{{json.transaction.request.uri}}}"
-  - set:
-      field: _temps.url
-      if: ctx.json.transaction.host_port == 80
-      value: "http://{{{json.transaction.request.headers.Host}}}:{{json.transaction.host_port}}{{{json.transaction.request.uri}}}"
-  - uri_parts:
-      field: _temps.url
-      ignore_failure: true
-      keep_original: true
-      remove_if_successful: true
-  - rename:
-      field: json.transaction.response.http_code
-      target_field: http.response.status_code
-      ignore_missing: true
-  - rename:
-      field: json.transaction.response.headers.Content-Type
-      target_field: http.response.mime_type
-      ignore_missing: true
-  - rename:
-      field: json.transaction.response.Content-Length
-      target_field: http.response.bytes
-      ignore_missing: true
-  - foreach:
-      field: json.transaction.messages
-      ignore_missing: true
-      processor:
-        rename:
-          field: _ingest._value.message
-          target_field: message
-  - foreach:
-      field: json.transaction.messages
-      ignore_missing: true
-      processor:
-        rename:
-          field: _ingest._value.details.match
-          target_field: modsec.audit.detail
-  - foreach:
-      field: json.transaction.messages
-      ignore_missing: true
-      processor:
-        rename:
-          field: _ingest._value.details.ruleId
-          target_field: rule.id
-# user agent and geoip enrich
-  - user_agent:
-      field: json.transaction.request.headers.User-Agent
-      ignore_missing: true
-  - geoip:
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-      - asn
-      - organization_name
-      ignore_missing: true
-  - rename:
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-  - rename:
-      field: source.as.organization_name
-      target_field: source.as.organization.name
-      ignore_missing: true
-  - set:
-      field: event.kind
-      value: event
-  - append:
-      field: event.category
-      value: web
-  - append:
-      field: event.type
-      value: access
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
-      field:
-        - json
-        - _temps
-        - tz_offset
-      ignore_failure: true
-      ignore_missing: true
+      field: modsec.audit.server
+      copy_from: json.transaction.response.headers.Server
+      ignore_empty_value: true
+  - pipeline:
+      name: '{{ IngestPipeline "nginx-modsec" }}'
+      if: ctx.modsec.audit.server.toLowerCase().contains('nginx')
+  - pipeline:
+      name: '{{ IngestPipeline "apache-modsec" }}'
+      if: ctx.modsec.audit.server.toLowerCase().contains('apache')
+
 on_failure:
   - set:
       field: error.message

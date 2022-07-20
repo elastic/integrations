@@ -4,13 +4,16 @@ This integration periodically fetches audit logs from [Modsecurity](https://gith
 
 ## Compatibility
 
-The logs were tested with Modsecurity v3 with nginx connector.Change the default modsecurity logging format to json as per configuration
+The logs were tested with ModSecurity v3 with nginx connector and ModSecurity v3 with Apache Connector. Change the default ModSecurity logging format to json as per configuration.
 
 ```
+SecAuditLogParts ABDEFHIJZ
 SecAuditLogType Serial
 SecAuditLog /var/log/modsec_audit.json
 SecAuditLogFormat JSON
 ```
+
+> Be careful to drop **the list of all rules that matched for the transaction (K)** in SecAuditLogParts. That part can make raw logs too long to parse.
 
 ### Audit Log
 

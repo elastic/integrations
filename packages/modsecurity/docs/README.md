@@ -4,13 +4,16 @@ This integration periodically fetches audit logs from [Modsecurity](https://gith
 
 ## Compatibility
 
-The logs were tested with Modsecurity v3 with nginx connector.Change the default modsecurity logging format to json as per configuration
+The logs were tested with ModSecurity v3 with nginx connector and ModSecurity v3 with Apache Connector. Change the default ModSecurity logging format to json as per configuration.
 
 ```
+SecAuditLogParts ABDEFHIJZ
 SecAuditLogType Serial
 SecAuditLog /var/log/modsec_audit.json
 SecAuditLogFormat JSON
 ```
+
+> Be careful to drop **the list of all rules that matched for the transaction (K)** in SecAuditLogParts. That part can make raw logs too long to parse.
 
 ### Audit Log
 
@@ -62,7 +65,7 @@ The `Audit Log` dataset collects Modsecurity Audit logs.
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
-| http.response.body.bytes | Size in bytes of the response body. | long |
+| http.response.bytes | Total size in bytes of the response (body and headers). | long |
 | http.response.mime_type | Mime type of the body of the response. This value must only be populated based on the content of the response body, not on the `Content-Type` header. Comparing the mime type of a response with the response's Content-Type header can be helpful in detecting misconfigured servers. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
@@ -70,7 +73,9 @@ The `Audit Log` dataset collects Modsecurity Audit logs.
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | message | human-readable summary of the event | text |
-| modsec.audit.detail | Details message of the audit event. | keyword |
+| modsec.audit.details | Modsecurity audit details. | flattened |
+| modsec.audit.messages | Modsecurity audit message. | keyword |
+| modsec.audit.server | Modsecurity server name. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |

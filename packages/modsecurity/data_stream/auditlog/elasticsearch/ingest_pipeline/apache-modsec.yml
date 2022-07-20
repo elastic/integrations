@@ -1,0 +1,118 @@
+---
+description: Pipeline for apache modsecurity audit log.
+processors:
+  - rename:
+      field: json.transaction.time
+      target_field: _temps.date
+      ignore_missing: true
+  - date:
+      field: _temps.date
+      formats:
+         - d/MMM/yyyy:HH:mm:ss Z
+# rename ecs
+  - rename:
+      field: json.transaction.remote_address
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: json.transaction.remote_port
+      target_field: source.port
+      ignore_missing: true
+  - grok:
+      field: json.request.request_line
+      patterns:
+        - "%{NOTSPACE:http.request.method} %{URIPATHPARAM:url.original}(?: HTTP/%{NUMBER:http.version})"
+  - set:
+      field: _temps.url
+      if: ctx.json.transaction.local_port == 443
+      value: "https://{{json.request.headers.Host}}:{{json.transaction.#local_port}}{{url.original}}"
+  - set:
+      field: _temps.url
+      if: ctx.json.transaction.local_port == 80
+      value: "http://{{json.request.headers.Host}}:{{json.transaction.#local_port}}{{url.original}}"
+  - uri_parts:
+      field: _temps.url
+      ignore_failure: true
+      keep_original: true
+      remove_if_successful: true
+  - rename:
+      field: json.response.status
+      target_field: http.response.status_code
+      ignore_missing: true
+  - rename:
+      field: json.response.headers.Content-Type
+      target_field: http.response.mime_type
+      ignore_missing: true
+  - rename:
+      field: json.response.headers.Content-Length
+      target_field: http.response.bytes
+      ignore_missing: true
+  - convert:
+      field: http.response.bytes
+      type: long
+  - rename:
+      field: json.audit_data.messages
+      target_field: modsec.audit.details
+      ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      source: |
+        if (ctx.modsec?.audit?.details == null || ctx.modsec.audit.details.length == 0) {
+          return;
+        }
+        def details = ctx.modsec.audit.details;
+        def messages = new ArrayList();
+        for (def i = 0; i < details.length; i++) {
+          def idx = details[i].indexOf(' ['); // Find first key value mark.
+          if (idx < 0) {
+            idx = details[i].length;
+          }
+          messages.add(details[i].substring(0, idx));
+        }
+        ctx.modsec.audit.messages = messages
+
+# user agent and geoip enrich
+  - user_agent:
+      field: json.request.headers.User-Agent
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: web
+  - append:
+      field: event.type
+      value: access
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+        - _temps
+      ignore_failure: true
+      ignore_missing: true
