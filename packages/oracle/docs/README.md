@@ -265,7 +265,7 @@ An example event for `database_audit` looks as following:
 }
 ```
 
-### Database Performance Metrics
+<!-- ### Database Performance Metrics
 
 **Exported fields**
 
@@ -497,5 +497,5 @@ An example event for `sysmetric` looks as following:
         "type": "sql"
     }
 }
-```
+``` -->
 

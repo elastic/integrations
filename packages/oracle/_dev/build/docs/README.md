@@ -65,7 +65,7 @@ The `database_audit` dataset collects Oracle Audit logs.
 
 {{event "database_audit"}}
 
-### Database Performance Metrics
+<!-- ### Database Performance Metrics
 
 {{fields "performance"}}
 
@@ -81,5 +81,5 @@ The `database_audit` dataset collects Oracle Audit logs.
 
 {{fields "sysmetric"}}
 
-{{event "sysmetric"}}
+{{event "sysmetric"}} -->
 
