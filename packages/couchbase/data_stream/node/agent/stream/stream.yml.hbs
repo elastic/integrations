@@ -1,0 +1,22 @@
+metricsets: ["node"]
+namespace: "node"
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+period: {{period}}
+json.is_array: true
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
