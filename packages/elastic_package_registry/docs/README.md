@@ -64,6 +64,7 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.labels.path | Path of the HTTP request. | keyword |  |  |
 | package_registry.labels.version | Elastic Package Registry version. | keyword |  |  |
 | package_registry.number_indexed_packages | Number of indexed packages | integer |  | gauge |
+| package_registry.start_time | Date where Elastic Package Registry started | date |  | gauge |
 | package_registry.start_time_seconds | Start time of the process since unix epoch in seconds | double | s | gauge |
 | package_registry.storage_indexer.get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |  |  |
 | package_registry.storage_indexer.get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |  |  |
@@ -74,6 +75,7 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error | long |  |  |
 | package_registry.storage_indexer.update_index_success_total.counter | A counter for all the update index processes that finished with error | long |  |  |
 | package_registry.storage_requests_total.counter | Counter for requests performed to the storage | long |  | counter |
+| package_registry.uptime | Elastic Package Registry uptime in seconds | long | s | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
@@ -83,10 +85,10 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-20T07:25:05.158Z",
+    "@timestamp": "2022-07-20T11:27:54.752Z",
     "agent": {
-        "ephemeral_id": "40121c14-e5ef-415b-9a53-18f0bcffaba6",
-        "id": "d3e87281-0fe7-40dc-9657-ee6d0573d108",
+        "ephemeral_id": "016c32cb-875b-4971-a7fb-b9f870639ec4",
+        "id": "2e45add1-61b2-41ee-9011-86f0faefaea4",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.3.2"
@@ -100,15 +102,15 @@ An example event for `metrics` looks as following:
         "version": "8.3.1"
     },
     "elastic_agent": {
-        "id": "d3e87281-0fe7-40dc-9657-ee6d0573d108",
+        "id": "2e45add1-61b2-41ee-9011-86f0faefaea4",
         "snapshot": false,
         "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "elastic_package_registry.metrics",
-        "duration": 3708878,
-        "ingested": "2022-07-20T07:25:08Z",
+        "duration": 7691449,
+        "ingested": "2022-07-20T11:27:55Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -117,10 +119,10 @@ An example event for `metrics` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.192.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02:42:c0:a8:c0:07"
+            "02:42:c0:a8:30:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -229,7 +231,7 @@ An example event for `metrics` looks as following:
             }
         },
         "http_requests_total": {
-            "counter": 16
+            "counter": 20
         },
         "labels": {
             "code": "200",
