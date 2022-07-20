@@ -34,7 +34,12 @@ processors:
         - cisco.umbrella.identity_types
         - cisco.umbrella.blocked_categories
       if: ctx?.log?.file?.path.contains('dnslogs')
-
+  - gsub:
+      description: Strip tailing dot from DNS names.
+      field: dns.question.name
+      pattern: '\.$'
+      replacement: ''
+      ignore_missing: true
   - set:
       field: observer.type
       value: dns
@@ -189,6 +194,14 @@ processors:
       field: dns.type
       value: query
       if: ctx?.cisco?.umbrella?.action != null
+  - registered_domain:
+      field: dns.question.name
+      target_field: dns.question
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: dns.question.domain
+      ignore_missing: true
   ######################
   # Network ECS Fields #
   ######################
