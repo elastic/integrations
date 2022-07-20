@@ -1,11 +1,23 @@
 paths:
-{{#each paths as |path i|}}
- - {{path}}
+{{#each paths as |path|}}
+  - {{path}}
 {{/each}}
 exclude_files: [".gz$"]
-multiline:
-  pattern: '^\d{4}-\d{2}-\d{2} '
-  negate: true
-  match: after
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains tags "forwarded"}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
 processors:
-  - add_locale: ~
+{{processors}}
+{{/if}}
+multiline:
+    pattern: '^\d{4}-\d{2}-\d{2} '
+    negate: true
+    match: after
