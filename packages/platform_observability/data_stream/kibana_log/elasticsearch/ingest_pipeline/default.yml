@@ -1,12 +1,6 @@
 ---
 description: Pipeline for parsing Kibana ECS formatted logs
 processors:
-  - remove:
-      field: data_stream.dataset
-      ignore_missing: true
-  - remove:
-      field: event.dataset
-      ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "ecs-logs-pipeline" }}'
       if: |-
@@ -16,30 +10,14 @@ processors:
           && message.endsWith('}')
           && message.contains('"@timestamp"')
   - set:
-      description: Uses event.dataset as a default for data_stream.dataset if the latter is not set.
-      field: data_stream.dataset
-      copy_from: event.dataset
-      if: ctx.event?.dataset instanceof String && ctx.event.dataset.length() > 1
-      override: false
-  - script:
-      source: |
-        ctx.data_stream.dataset = /[\/*?"<>|, #:-]/.matcher(ctx.data_stream.dataset).replaceAll('_')
-      if: ctx.data_stream?.dataset != null
-  - script:
-      source: |
-        ctx.data_stream.namespace = /[\/*?"<>|, #:]/.matcher(ctx.data_stream.namespace).replaceAll('_')
-      if: ctx.data_stream?.namespace != null
-  - set:
       field: data_stream.type
       value: logs
   - set:
       field: data_stream.dataset
       value: kibana-logs
-      override: false
   - set:
       field: data_stream.namespace
       value: platform-observability
-      override: false
   - set:
       field: event.dataset
       copy_from: data_stream.dataset
@@ -57,14 +35,6 @@ processors:
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
-  ## some scenarios as update_aliases_succeeded type of operation, these 2 fields are present on the logs
-  - remove:
-      field: _tag
-      ignore_missing: true
-  - remove:
-      field: right
-      ignore_missing: true
-
 on_failure:
   - set:
       field: error.message

@@ -12,12 +12,16 @@ The Kibana integration collects logs from [Kibana](https://www.elastic.co/guide/
 
 #### Audit
 
-Configure `Path` pointing to the location where audit logs will be created, based on the [Kibana Audit logging settings](https://www.elastic.co/guide/en/kibana/current/security-settings-kb.html#audit-logging-settings) in `kibana.yml`
+Audit logs collects the [Kibana audit logs](https://www.elastic.co/guide/en/kibana/current/security-settings-kb.html).
+
+{{event "kibana_audit"}}
 
 {{fields "kibana_audit"}}
 
 #### Log
 
-Configure `Path` pointing to the location where the logs will be created, based on the [Kibana logging settings](https://www.elastic.co/guide/en/kibana/current/logging-configuration.html#logging-appenders) in `kibana.yml`
+Log collects the [Kibana logs](https://www.elastic.co/guide/en/kibana/current/logging-configuration.html).
+
+{{event "kibana_log"}}
 
 {{fields "kibana_log"}}
