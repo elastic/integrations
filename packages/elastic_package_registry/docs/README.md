@@ -85,10 +85,10 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-20T11:27:54.752Z",
+    "@timestamp": "2022-07-20T12:31:14.439Z",
     "agent": {
-        "ephemeral_id": "016c32cb-875b-4971-a7fb-b9f870639ec4",
-        "id": "2e45add1-61b2-41ee-9011-86f0faefaea4",
+        "ephemeral_id": "2e34ed1d-357c-482c-9640-d0ab91f43e0b",
+        "id": "2e305fba-81f6-49b1-be45-f7198c6aaa53",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.3.2"
@@ -102,15 +102,15 @@ An example event for `metrics` looks as following:
         "version": "8.3.1"
     },
     "elastic_agent": {
-        "id": "2e45add1-61b2-41ee-9011-86f0faefaea4",
+        "id": "2e305fba-81f6-49b1-be45-f7198c6aaa53",
         "snapshot": false,
         "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "elastic_package_registry.metrics",
-        "duration": 7691449,
-        "ingested": "2022-07-20T11:27:55Z",
+        "duration": 27108917,
+        "ingested": "2022-07-20T12:31:15Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -119,10 +119,10 @@ An example event for `metrics` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.48.7"
+            "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:30:07"
+            "02:42:c0:a8:70:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -140,8 +140,16 @@ An example event for `metrics` looks as following:
         "period": 30000
     },
     "package_registry": {
-        "http": {
-            "request_duration_seconds": {
+        "in_flight_requests": 0,
+        "labels": {
+            "instance": "elastic-package-service_elastic_package_registry_1:9110",
+            "job": "prometheus"
+        },
+        "number_indexed_packages": 1434,
+        "start_time": "2022-07-20T12:30:46.030Z",
+        "start_time_seconds": 1658320246.03,
+        "storage_indexer": {
+            "get_duration_seconds": {
                 "histogram": {
                     "counts": [
                         0,
@@ -173,9 +181,11 @@ An example event for `metrics` looks as following:
                     ]
                 }
             },
-            "request_size_bytes": {
+            "update_index_duration_seconds": {
                 "histogram": {
                     "counts": [
+                        0,
+                        0,
                         0,
                         0,
                         0,
@@ -188,58 +198,29 @@ An example event for `metrics` looks as following:
                         0
                     ],
                     "values": [
-                        8,
-                        24,
-                        48,
-                        96,
-                        192,
-                        384,
-                        768,
-                        33280,
-                        163840,
-                        458752
+                        0.0025,
+                        0.0075,
+                        0.0175,
+                        0.037500000000000006,
+                        0.07500000000000001,
+                        0.175,
+                        0.375,
+                        0.75,
+                        1.75,
+                        3.75,
+                        7.5,
+                        15
                     ]
                 }
             },
-            "response_size_bytes": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        8,
-                        24,
-                        48,
-                        96,
-                        192,
-                        384,
-                        768,
-                        33280,
-                        163840,
-                        458752
-                    ]
-                }
+            "update_index_error_total": {
+                "counter": 0
+            },
+            "update_index_success_total": {
+                "counter": 0
             }
         },
-        "http_requests_total": {
-            "counter": 20
-        },
-        "labels": {
-            "code": "200",
-            "instance": "elastic-package-service_elastic_package_registry_1:9110",
-            "job": "prometheus",
-            "method": "get",
-            "path": "/"
-        }
+        "uptime": 28
     },
     "service": {
         "address": "http://elastic-package-service_elastic_package_registry_1:9110/metrics",

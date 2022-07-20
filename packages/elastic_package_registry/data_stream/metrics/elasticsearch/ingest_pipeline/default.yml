@@ -74,17 +74,14 @@ processors:
       formats: ["UNIX"]
       target_field: package_registry.start_time
       if: ctx?.package_registry?.containsKey("start_time_seconds")
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - script:
       description: Get process uptime
       lang: painless
       source: >-
-        if (ctx.package_registry.containsKey("start_time") && ctx.event.containsKey("ingested")) {
-            ZonedDateTime ingested = ZonedDateTime.parse(ctx.event["ingested"]);
+        if (ctx.package_registry.containsKey("start_time") && ctx.containsKey("@timestamp")) {
+            ZonedDateTime created = ZonedDateTime.parse(ctx["@timestamp"]);
             ZonedDateTime start = ZonedDateTime.parse(ctx.package_registry['start_time']);
-            long uptime = ChronoUnit.MILLIS.between(start, ingested)/1000;
+            long uptime = ChronoUnit.MILLIS.between(start, created)/1000;
             ctx.package_registry["uptime"] = uptime;
         }
 on_failure:
