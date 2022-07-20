@@ -315,6 +315,7 @@ def packageStoragePublish() {
     useElasticPackage()
 
     // Build only unpublished files (need to read version from manifest.yml)
+    def unpublishedPresent = false
     dir("${BASE_DIR}/packages") {
       findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
         dir("${it}") {
@@ -329,8 +330,13 @@ def packageStoragePublish() {
           withEnv(["PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}"]) {
             sh(label: "Build integration as zip: ${it}", script: "elastic-package build --zip")
           }
+          unpublishedPresent = true
         }
       }
+    }
+    if (!unpublishedPresent) {
+      echo 'All packages are in sync'
+      return
     }
 
     // Sign unpublished packages
