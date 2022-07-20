@@ -5,7 +5,7 @@ System logs and Audit logs are also collected using this integration.
 
 ## Compatibility
 
-The ActiveMQ datasets were tested with ActiveMQ 5.15.9 or higher (independent from operating system).
+The ActiveMQ datasets were tested with ActiveMQ 5.17.1 or higher (independent from operating system).
 
 ## Logs
 
