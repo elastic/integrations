@@ -83,10 +83,10 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-19T15:38:36.605Z",
+    "@timestamp": "2022-07-20T07:25:05.158Z",
     "agent": {
-        "ephemeral_id": "6ddaaa99-8a54-435d-a36a-cee8bad84f01",
-        "id": "0bb271e0-9540-4c53-b44b-a197503085ad",
+        "ephemeral_id": "40121c14-e5ef-415b-9a53-18f0bcffaba6",
+        "id": "d3e87281-0fe7-40dc-9657-ee6d0573d108",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.3.2"
@@ -97,18 +97,18 @@ An example event for `metrics` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.3.1"
     },
     "elastic_agent": {
-        "id": "0bb271e0-9540-4c53-b44b-a197503085ad",
+        "id": "d3e87281-0fe7-40dc-9657-ee6d0573d108",
         "snapshot": false,
         "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "elastic_package_registry.metrics",
-        "duration": 2813144,
-        "ingested": "2022-07-19T15:38:37Z",
+        "duration": 3708878,
+        "ingested": "2022-07-20T07:25:08Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -117,10 +117,10 @@ An example event for `metrics` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.224.4"
+            "192.168.192.7"
         ],
         "mac": [
-            "02:42:c0:a8:e0:04"
+            "02:42:c0:a8:c0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -138,108 +138,105 @@ An example event for `metrics` looks as following:
         "period": 30000
     },
     "package_registry": {
-        "epr_in_flight_requests": {
-            "value": 0
+        "http": {
+            "request_duration_seconds": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        0.0025,
+                        0.0075,
+                        0.0175,
+                        0.037500000000000006,
+                        0.07500000000000001,
+                        0.175,
+                        0.375,
+                        0.75,
+                        1.75,
+                        3.75,
+                        7.5,
+                        15
+                    ]
+                }
+            },
+            "request_size_bytes": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        8,
+                        24,
+                        48,
+                        96,
+                        192,
+                        384,
+                        768,
+                        33280,
+                        163840,
+                        458752
+                    ]
+                }
+            },
+            "response_size_bytes": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        8,
+                        24,
+                        48,
+                        96,
+                        192,
+                        384,
+                        768,
+                        33280,
+                        163840,
+                        458752
+                    ]
+                }
+            }
         },
-        "epr_number_indexed_packages": {
-            "value": 1434
+        "http_requests_total": {
+            "counter": 16
         },
         "labels": {
+            "code": "200",
             "instance": "elastic-package-service_elastic_package_registry_1:9110",
-            "job": "prometheus"
-        },
-        "process_cpu_seconds_total": {
-            "counter": 7.62
-        },
-        "process_max_fds": {
-            "value": 1048576
-        },
-        "process_open_fds": {
-            "value": 10
-        },
-        "process_resident_memory_bytes": {
-            "value": 100343808
-        },
-        "process_start_time_seconds": {
-            "value": 1658245088.52
-        },
-        "process_virtual_memory_bytes": {
-            "value": 1419386880
-        },
-        "process_virtual_memory_max_bytes": {
-            "value": 18446744073709552000
-        },
-        "storage_indexer": {
-            "get_duration_seconds": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        0.0025,
-                        0.0075,
-                        0.0175,
-                        0.037500000000000006,
-                        0.07500000000000001,
-                        0.175,
-                        0.375,
-                        0.75,
-                        1.75,
-                        3.75,
-                        7.5,
-                        15
-                    ]
-                }
-            },
-            "update_index_duration_seconds": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        0.0025,
-                        0.0075,
-                        0.0175,
-                        0.037500000000000006,
-                        0.07500000000000001,
-                        0.175,
-                        0.375,
-                        0.75,
-                        1.75,
-                        3.75,
-                        7.5,
-                        15
-                    ]
-                }
-            },
-            "update_index_error_total": {
-                "counter": 0
-            },
-            "update_index_success_total": {
-                "counter": 0
-            }
+            "job": "prometheus",
+            "method": "get",
+            "path": "/"
         }
     },
     "service": {
