@@ -149,7 +149,7 @@ Below is an overview of the type of data you can collect from each AWS service.
 Visit the page for each individual AWS integration to see details about exported fields.
 
 | Service          | Metrics | Logs    |
-| ---------------- |:-------:|:-------:|
+|------------------|:-------:|:-------:|
 | Billing          |    x    |         |
 | CloudFront       |         |    x    |
 | CloudTrail       |         |    x    |
@@ -173,4 +173,5 @@ Visit the page for each individual AWS integration to see details about exported
 | VPC Flow         |         |    x    |
 | VPN              |    x    |         |
 | WAF              |         |    x    |
+| Redshift         |    x    |         |
 | Custom           |         |    x    |
