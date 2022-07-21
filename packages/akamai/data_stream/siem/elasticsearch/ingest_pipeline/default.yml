@@ -260,6 +260,8 @@ processors:
     source: |
         ArrayList items = new ArrayList(["rules", "ruleActions", "ruleData", "ruleMessages", "ruleTags", "ruleSelectors", "ruleVersions"]);
         ArrayList rules_array = new ArrayList();
+        ArrayList rule_actions = new ArrayList();
+        ArrayList rule_tags = new ArrayList();
         for (def i = 0; i < ctx.json.attackData.rules.length; i++) {
             HashMap map = new HashMap();
             for (def j = 0; j < items.length; j++) {
@@ -267,11 +269,42 @@ processors:
                 if (i < ctx.json.attackData[key].length ) {
                     String value = ctx.json.attackData[key][i].replace(" ", "").decodeBase64();
                     map.put(key, value);
+                    if (key == "ruleTags") {
+                        rule_tags.add(value.toLowerCase());
+                    } else if (key == "ruleActions") {
+                        rule_actions.add(value.toLowerCase());
+                    }
                 }
             }
             rules_array.add(map);
         }
         ctx.akamai.siem.rules = rules_array;
+        ctx._rule_actions = rule_actions;
+        ctx._rule_tags = rule_tags;
+- foreach:
+    field: _rule_actions
+    ignore_missing: true
+    processor:
+      append:
+        field: akamai.siem.rule_actions
+        value: '{{{_ingest._value}}}'
+        allow_duplicates: false
+- remove:
+    field: _rule_actions
+    ignore_missing: true
+    ignore_failure: true
+- foreach:
+    field: _rule_tags
+    ignore_missing: true
+    processor:
+      append:
+        field: akamai.siem.rule_tags
+        value: '{{{_ingest._value}}}'
+        allow_duplicates: false
+- remove:
+    field: _rule_tags
+    ignore_missing: true
+    ignore_failure: true
 - rename:
     field: json.attackData.configId
     target_field: akamai.siem.config_id
