@@ -173,4 +173,5 @@ Visit the page for each individual AWS integration to see details about exported
 | VPC Flow         |         |    x    |
 | VPN              |    x    |         |
 | WAF              |         |    x    |
+| Redshift         |    x    |         |
 | Custom           |         |    x    |
