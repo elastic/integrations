@@ -37,9 +37,9 @@ To access the `events` endpoint, the user making the API call will need to have 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| box.recorded_at | The date and time at which this event occurred. | date |
 | box.session.id | The session of the user that performed the action. Not all events will populate this attribute. | keyword |
-| box.source.content_created_at | The date and time at which this folder was originally created. | date |
-| box.source.content_modified_at | The date and time at which this folder was last updated. | date |
+| box.source.created_at | The date and time at which this folder was originally created. | date |
 | box.source.created_by | The user who created this folder. | object |
 | box.source.created_by.id | The unique identifier for this user. | keyword |
 | box.source.created_by.login | The primary email address of this user. Maps from \*\*.login. | keyword |
@@ -52,6 +52,7 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.source.file_version.type | Value is always `file_version` | keyword |
 | box.source.id | The unique identifier that represent a folder. | keyword |
 | box.source.item_status | Defines if this item has been deleted or not. active when the item has is not in the trash trashed when the item has been moved to the trash but not deleted deleted when the item has been permanently deleted. Value is one of `active`, `trashed`, `deleted`. | keyword |
+| box.source.modified_at | The date and time at which this folder was last updated. | date |
 | box.source.modified_by | The user who last modified this folder. | object |
 | box.source.modified_by.id | The unique identifier for this user. | keyword |
 | box.source.modified_by.login | The primary email address of this user. Maps from \*\*.login. | keyword |
@@ -63,8 +64,10 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.source.owned_by.name | The display name of this user. Maps from \*\*.name. | keyword |
 | box.source.owned_by.type | Value is always `user`. | keyword |
 | box.source.parent | The optional folder that this folder is located within. This value may be null for some folders such as the root folder or the trash folder. | object |
+| box.source.parent.etag | The HTTP etag of this folder. | keyword |
 | box.source.parent.id | The unique identifier that represent a folder. | keyword |
 | box.source.parent.name | The name of the folder. | keyword |
+| box.source.parent.sequence_id | A numeric identifier that represents the most recent user event that has been applied to this item (parent). | keyword |
 | box.source.parent.type | Value is always `folder`. | keyword |
 | box.source.path_collection | The tree of folders that this folder is contained in, starting at the root. | object |
 | box.source.path_collection.entries | The parent folders for this item. | object |
@@ -73,6 +76,8 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.source.path_collection.entries.type | Value is always `folder`. This field is an array. | array |
 | box.source.path_collection.total_count | The number of folders in this list. | long |
 | box.source.purged_at | The time at which this file is expected to be purged from the trash. | boolean |
+| box.source.sequence_id | A numeric identifier that represents the most recent user event that has been applied to this item. | keyword |
+| box.source.sha1 | SHA1 hash of the item concerned. | keyword |
 | box.source.synced | Legacy property for compatibility with Box Desktop | boolean |
 | box.source.trashed_at | The time at which this file was put in the trash. | boolean |
 | client.user.email | User email address. | keyword |
@@ -92,6 +97,9 @@ To access the `events` endpoint, the user making the API call will need to have 
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
+| created_by.id | The unique identifier for the connection user. | keyword |
+| created_by.login | The primary email address of the connection user. Maps from \*\*.login. |  |
+| created_by.name | The display name of the connection user. Maps from \*\*.name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -136,6 +144,7 @@ To access the `events` endpoint, the user making the API call will need to have 
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 

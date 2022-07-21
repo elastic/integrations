@@ -1,6 +1,17 @@
+- name: created_by.id
+  description: The unique identifier for the connection user.
+  type: keyword
+- name: created_by.name
+  description: The display name of the connection user. Maps from **.name.
+  type: keyword
+- name: created_by.login
+  description: The primary email address of the connection user. Maps from **.login.
 - name: box.session.id
   description: The session of the user that performed the action. Not all events will populate this attribute.
   type: keyword
+- name: box.recorded_at
+  description: The date and time at which this event occurred.
+  type: date
 - name: box.source
   type: object
   fields:
@@ -61,10 +72,10 @@
     - name: modified_by.login
       description: The primary email address of this user. Maps from **.login.
       type: keyword
-    - name: content_created_at
+    - name: created_at
       description: The date and time at which this folder was originally created.
       type: date
-    - name: content_modified_at
+    - name: modified_at
       description: The date and time at which this folder was last updated.
       type: date
     - name: owned_by
@@ -82,6 +93,12 @@
     - name: owned_by.login
       description: The primary email address of this user. Maps from **.login.
       type: keyword
+    - name: sequence_id
+      description: A numeric identifier that represents the most recent user event that has been applied to this item.
+      type: keyword
+    - name: sha1
+      description: SHA1 hash of the item concerned.
+      type: keyword
     - name: parent
       description: The optional folder that this folder is located within. This value may be null for some folders such as the root folder or the trash folder.
       type: object
@@ -93,6 +110,12 @@
       type: keyword
     - name: parent.name
       description: The name of the folder.
+      type: keyword
+    - name: parent.etag
+      description: The HTTP etag of this folder.
+      type: keyword
+    - name: parent.sequence_id
+      description: A numeric identifier that represents the most recent user event that has been applied to this item (parent).
       type: keyword
     - name: item_status
       description: Defines if this item has been deleted or not. active when the item has is not in the trash trashed when the item has been moved to the trash but not deleted deleted when the item has been permanently deleted. Value is one of `active`, `trashed`, `deleted`.
