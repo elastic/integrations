@@ -1,486 +1,177 @@
+- name: "@timestamp"
+  external: ecs
+  type: date
+- name: agent.ephemeral_id
+  external: ecs
+  type: keyword
+- name: agent.id
+  external: ecs
+  type: keyword
+- name: agent.name
+  external: ecs
+  type: keyword
+- name: agent.type
+  external: ecs
+  type: keyword
+- name: agent.version
+  external: ecs
+  type: keyword
+- name: ecs.version
+  external: ecs
+  type: keyword
+- name: event.agent_id_status
+  external: ecs
+  type: keyword
+- name: event.ingested
+  external: ecs
+  type: date
+- name: file.accessed
+  external: ecs
+  type: date
+- name: file.ctime
+  external: ecs
+  type: date
+- name: file.directory
+  external: ecs
+  type: keyword
+- name: file.extension
+  external: ecs
+  type: keyword
+- name: file.gid
+  external: ecs
+  type: keyword
+- name: file.group
+  external: ecs
+  type: keyword
+- name: file.inode
+  external: ecs
+  type: keyword
+- name: file.mode
+  external: ecs
+  type: keyword
+- name: file.mtime
+  external: ecs
+  type: date
+- name: file.name
+  external: ecs
+  type: keyword
+- name: file.owner
+  external: ecs
+  type: keyword
+- name: file.path
+  external: ecs
+  type: keyword
+- name: file.size
+  external: ecs
+  type: long
+- name: file.type
+  external: ecs
+  type: keyword
+- name: file.uid
+  external: ecs
+  type: keyword
+- name: host.architecture
+  external: ecs
+  type: keyword
+- name: host.containerized
+  external: ecs
+  type: boolean
+- name: host.hostname
+  external: ecs
+  type: keyword
+- name: host.ip
+  external: ecs
+  type: ip
+- name: host.mac
+  external: ecs
+  type: keyword
+- name: host.name
+  external: ecs
+  type: keyword
+- name: host.os.codename
+  external: ecs
+  type: keyword
+- name: host.os.family
+  external: ecs
+  type: keyword
+- name: host.os.full
+  external: ecs
+  type: keyword
+- name: host.os.kernel
+  external: ecs
+  type: keyword
+- name: host.os.name
+  external: ecs
+  type: keyword
+- name: host.os.platform
+  external: ecs
+  type: keyword
+- name: host.os.type
+  external: ecs
+  type: keyword
+- name: host.os.version
+  external: ecs
+  type: keyword
 - name: message
-  level: core
+  external: ecs
   type: match_only_text
-  description: 'For log events the message field contains the log message, optimized
-    for viewing in a log viewer.
-
-    For structured logs without an original message field, other fields can be concatenated
-    to form a human-readable summary of the event.
-
-    If multiple messages exist, they can be combined into one message.'
-  example: Hello World
-  default_field: true
-- name: agent
-  title: Agent
-  group: 2
-  description: 'The agent fields contain the data about the software entity, if
-    any, that collects, detects, or observes events on a host, or takes measurements
-    on a host.
-
-    Examples include Beats. Agents may also run on observers. ECS agent.* fields
-    shall be populated with details of the agent running on the host or observer
-    where the event happened or the measurement was taken.'
-  footnote: 'Examples: In the case of Beats for logs, the agent.name is filebeat.
-    For APM, it is the agent running in the app/service. The agent information does
-    not change if data is sent through queuing systems like Kafka, Redis, or processing
-    systems such as Logstash or APM Server.'
-  type: group
-  default_field: true
-  fields:
-  - name: ephemeral_id
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'Ephemeral identifier of this agent (if one exists).
-
-      This id normally changes across restarts, but `agent.id` does not.'
-    example: 8a4f500f
-  - name: id
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Unique identifier of this agent (if one exists).
-
-      Example: For Beats this would be beat.id.'
-    example: 8a4f500d
-  - name: name
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Custom name of the agent.
-
-      This is a name that can be given to an agent. This can be helpful if for example
-      two Filebeat instances are running on the same host but a human readable separation
-      is needed on which Filebeat instance data is coming from.'
-    example: foo
-  - name: type
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Type of the agent.
-
-      The agent type always stays the same and should be given by the agent used.
-      In case of Filebeat the agent would always be Filebeat also if two Filebeat
-      instances are run on the same machine.'
-    example: filebeat
-  - name: version
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Version of the agent.
-    example: 6.0.0-rc2
-- name: ecs
-  title: ECS
-  group: 2
-  description: Meta-information specific to ECS.
-  type: group
-  default_field: true
-  fields:
-  - name: version
-    level: core
-    required: true
-    type: keyword
-    ignore_above: 1024
-    description: 'ECS version this event conforms to. `ecs.version` is a required
-      field and must exist in all events.
-
-      When querying across multiple indices -- which may conform to slightly different
-      ECS versions -- this field lets integrations adjust to the schema version
-      of the events.'
-    example: 1.0.0
-- name: event
-  title: Event
-  group: 2
-  description: 'The event fields are used for context information about the log
-    or metric event itself.
-
-    A log is defined as an event containing details of something that happened.
-    Log events must include the time at which the thing happened. Examples of log
-    events include a process starting on a host, a network packet being sent from
-    a source to a destination, or a network connection between a client and a server
-    being initiated or closed. A metric is defined as an event containing one or
-    more numerical measurements and the time at which the measurement was taken.
-    Examples of metric events include memory pressure measured on a host and device
-    temperature. See the `event.kind` definition in this section for additional
-    details about metric and state events.'
-  type: group
-  default_field: true
-  fields:
-  - name: agent_id_status
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'Agents are normally responsible for populating the `agent.id`
-      field value. If the system receiving events is capable of validating the value
-      based on authentication information for the client then this field can be
-      used to reflect the outcome of that validation.
-
-      For example if the agent''s connection is authenticated with mTLS and the
-      client cert contains the ID of the agent to which the cert was issued then
-      the `agent.id` value in events can be checked against the certificate. If
-      the values match then `event.agent_id_status: verified` is added to the event,
-      otherwise one of the other allowed values should be used.
-
-      If no validation is performed then the field should be omitted.
-
-      The allowed values are:
-
-      `verified` - The `agent.id` field value matches expected value obtained from
-      auth metadata.
-
-      `mismatch` - The `agent.id` field value does not match the expected value
-      obtained from auth metadata.
-
-      `missing` - There was no `agent.id` field in the event to validate.
-
-      `auth_metadata_missing` - There was no auth metadata or it was missing information
-      about the agent ID.'
-    example: verified
-    default_field: false
-  - name: ingested
-    level: core
-    type: date
-    description: 'Timestamp when an event arrived in the central data store.
-
-      This is different from `@timestamp`, which is when the event originally occurred.  It''s
-      also different from `event.created`, which is meant to capture the first time
-      an agent saw the event.
-
-      In normal conditions, assuming no tampering, the timestamps should chronologically
-      look like this: `@timestamp` < `event.created` < `event.ingested`.'
-    example: '2016-05-23T08:05:35.101Z'
-    default_field: false
-- name: file
-  title: File
-  group: 2
-  description: 'A file is defined as a set of information that has been created
-    on, or has existed on a filesystem.
-
-    File objects can be associated with host events, network events, and/or file
-    events (e.g., those produced by File Integrity Monitoring [FIM] products or
-    services). File fields provide details about the affected file associated with
-    the event or metric.'
-  type: group
-  default_field: true
-  fields:
-  - name: accessed
-    level: extended
-    type: date
-    description: 'Last time the file was accessed.
-
-      Note that not all filesystems keep track of access time.'
-  - name: ctime
-    level: extended
-    type: date
-    description: 'Last time the file attributes or metadata changed.
-
-      Note that changes to the file content will update `mtime`. This implies `ctime`
-      will be adjusted at the same time, since `mtime` is an attribute of the file.'
-  - name: directory
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Directory where the file is located. It should include the drive
-      letter, when appropriate.
-    example: /home/alice
-  - name: extension
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'File extension, excluding the leading dot.
-
-      Note that when the file name has multiple extensions (example.tar.gz), only
-      the last one should be captured ("gz", not "tar.gz").'
-    example: png
-  - name: gid
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Primary group ID (GID) of the file.
-    example: '1001'
-  - name: group
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Primary group name of the file.
-    example: alice
-  - name: inode
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Inode representing the file in the filesystem.
-    example: '256383'
-  - name: mode
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Mode of the file in octal representation.
-    example: '0640'
-  - name: mtime
-    level: extended
-    type: date
-    description: Last time the file content was modified.
-  - name: name
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Name of the file including the extension, without the directory.
-    example: example.png
-  - name: owner
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: File owner's username.
-    example: alice
-  - name: path
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: match_only_text
-      default_field: false
-    description: Full path to the file, including the file name. It should include
-      the drive letter, when appropriate.
-    example: /home/alice/example.png
-  - name: size
-    level: extended
-    type: long
-    description: 'File size in bytes.
-
-      Only relevant when `file.type` is "file".'
-    example: 16384
-  - name: type
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: File type (file, dir, or symlink).
-    example: file
-  - name: uid
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: The user ID (UID) or security identifier (SID) of the file owner.
-    example: '1001'
-- name: host
-  title: Host
-  group: 2
-  description: 'A host is defined as a general computing instance.
-
-    ECS host.* fields should be populated with details about the host on which the
-    event happened, or from which the measurement was taken. Host types include
-    hardware, virtual machines, Docker containers, and Kubernetes nodes.'
-  type: group
-  default_field: true
-  fields:
-  - name: architecture
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: Operating system architecture.
-    example: x86_64
-  - name: containerized
-    level: extended
-    type: boolean
-    description: ''
-    default_field: false
-  - name: hostname
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Hostname of the host.
-
-      It normally contains what the `hostname` command returns on the host machine.'
-  - name: ip
-    level: core
-    type: ip
-    description: Host ip addresses.
-  - name: mac
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Host MAC addresses.
-
-      The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit
-      byte) is represented by two [uppercase] hexadecimal digits giving the value
-      of the octet as an unsigned integer. Successive octets are separated by a
-      hyphen.'
-    example: '["00-00-5E-00-53-23", "00-00-5E-00-53-24"]'
-    pattern: ^[A-F0-9]{2}(-[A-F0-9]{2}){5,}$
-  - name: name
-    level: core
-    type: keyword
-    ignore_above: 1024
-    description: 'Name of the host.
-
-      It can contain what `hostname` returns on Unix systems, the fully qualified
-      domain name, or a name specified by the user. The sender decides which value
-      to use.'
-  - name: os.codename
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: ''
-    default_field: false
-  - name: os.family
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: OS family (such as redhat, debian, freebsd, windows).
-    example: debian
-  - name: os.full
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: match_only_text
-      default_field: false
-    description: Operating system name, including the version or code name.
-    example: Mac OS Mojave
-  - name: os.kernel
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Operating system kernel version as a raw string.
-    example: 4.4.0-112-generic
-  - name: os.name
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: match_only_text
-      default_field: false
-    description: Operating system name, without the version.
-    example: Mac OS X
-  - name: os.platform
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Operating system platform (such centos, ubuntu, windows).
-    example: darwin
-  - name: os.type
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'Use the `os.type` field to categorize the operating system into
-      one of the broad commercial families.
-
-      One of these following values should be used (lowercase): linux, macos, unix,
-      windows.
-
-      If the OS you''re dealing with is not in the list, the field should not be
-      populated. Please let us know by opening an issue with ECS, to propose its
-      addition.'
-    example: macos
-    default_field: false
-  - name: os.version
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: Operating system version as a raw string.
-    example: 10.14.1
-- name: process
-  title: Process
-  group: 2
-  description: 'These fields contain information about a process.
-
-    These fields can help you correlate metrics information with a process id/name
-    from a log message.  The `process.pid` often stays in the metric itself and
-    is copied to the global field for correlation.'
-  type: group
-  default_field: true
-  fields:
-  - name: args
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    description: 'Array of process arguments, starting with the absolute path to
-      the executable.
-
-      May be filtered to protect sensitive information.'
-    example: '["/usr/bin/ssh", "-l", "user", "10.0.0.16"]'
-  - name: args_count
-    level: extended
-    type: long
-    description: 'Length of the process.args array.
-
-      This field can be useful for querying or performing bucket analysis on how
-      many arguments were provided to start a process. More arguments may be an
-      indication of suspicious activity.'
-    example: 4
-    default_field: false
-  - name: command_line
-    level: extended
-    type: wildcard
-    multi_fields:
-    - name: text
-      type: match_only_text
-    description: 'Full command line that started the process, including the absolute
-      path to the executable, and all arguments.
-
-      Some arguments may be filtered to protect sensitive information.'
-    example: /usr/bin/ssh -l user 10.0.0.16
-    default_field: false
-  - name: name
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: match_only_text
-      default_field: false
-    description: 'Process name.
-
-      Sometimes called program name or similar.'
-    example: ssh
-  - name: parent.pid
-    level: core
-    type: long
-    format: string
-    description: Process id.
-    example: 4242
-    default_field: false
-  - name: parent.start
-    level: extended
-    type: date
-    description: The time the process started.
-    example: '2016-05-23T08:05:34.853Z'
-    default_field: false
-  - name: pgid
-    level: extended
-    type: long
-    format: string
-    description: 'Deprecated for removal in next major version release. This field
-      is superseded by `process.group_leader.pid`.
-
-      Identifier of the group of processes the process belongs to.'
-  - name: pid
-    level: core
-    type: long
-    format: string
-    description: Process id.
-    example: 4242
-  - name: start
-    level: extended
-    type: date
-    description: The time the process started.
-    example: '2016-05-23T08:05:34.853Z'
-  - name: title
-    level: extended
-    type: keyword
-    ignore_above: 1024
-    multi_fields:
-    - name: text
-      type: match_only_text
-      default_field: false
-    description: 'Process title.
-
-      The proctitle, some times the same as process name. Can also be different:
-      for example a browser setting its title to the web page currently opened.'
-  - name: uptime
-    level: extended
-    type: long
-    description: Seconds the process has been up.
-    example: 1325
+- name: process.args
+  external: ecs
+  type: keyword
+- name: process.args_count
+  external: ecs
+  type: long
+- name: process.command_line
+  external: ecs
+  type: wildcard
+- name: process.name
+  external: ecs
+  type: keyword
+- name: process.parent.pid
+  external: ecs
+  type: long
+- name: process.parent.start
+  external: ecs
+  type: date
+- name: process.pgid
+  external: ecs
+  type: long
+- name: process.pid
+  external: ecs
+  type: long
+- name: process.start
+  external: ecs
+  type: date
+- name: process.title
+  external: ecs
+  type: keyword
+- name: process.uptime
+  external: ecs
+  type: long
+- name: rule.benchmark.id
+  external: ecs
+  type: keyword
+- name: rule.benchmark.name
+  external: ecs
+  type: keyword
+- name: rule.benchmark.version
+  external: ecs
+  type: keyword
+- name: rule.description
+  external: ecs
+  type: keyword
+- name: rule.id
+  external: ecs
+  type: keyword
+- name: rule.name
+  external: ecs
+  type: keyword
+- name: rule.section
+  external: ecs
+  type: keyword
+- name: rule.tags
+  external: ecs
+  type: keyword
+- name: rule.version
+  external: ecs
+  type: keyword
