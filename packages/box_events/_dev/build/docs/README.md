@@ -20,13 +20,12 @@ To retrieve events for the entire enterprise, set the `stream_type` in the Elast
 
 #### Target Repository Authentication Settings
 
-The Elastic Integration for Box Events connects using OAuth 2.0 to interact with a Box Custom App. To configure a Box Custom App see [Setup with OAuth 2.0
-](https://developer.box.com/guides/authentication/oauth2/oauth2-setup/).
+The Elastic Integration for Box Events connects using OAuth 2.0 to interact with a Box Custom App. To configure a Box Custom App see [Setup with OAuth 2.0](https://developer.box.com/guides/authentication/oauth2/oauth2-setup/).
 
 Your app will need:
 
 - A Custom Application using Server Authentication (with Client Credentials Grant) authentication in the Box Developer Console
-- 2FA](https://support.box.com/hc/en-us/articles/360043697154-Two-Factor-Authentication-Set-Up-for-Your-Account) enabled on your Box account for viewing and copying the application's client secret from the configuration tab
+- [2FA](https://support.box.com/hc/en-us/articles/360043697154-Two-Factor-Authentication-Set-Up-for-Your-Account) enabled on your Box account for viewing and copying the application's client secret from the configuration tab
 - The application is [authorized](https://developer.box.com/guides/authorization/custom-app-approval/) in the Box Admin Console
 
 #### Target Repository User Privileges
