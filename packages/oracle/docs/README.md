@@ -58,7 +58,7 @@ Note: If the password contains the backslash (`\`) character, it must be escaped
 
 This integration has been tested with Oracle Database 19c, and should work for 18c as well though it has not been tested.
 
-### Database Audit Log
+### Audit Log
 
 The `database_audit` dataset collects Oracle Audit logs.
 
@@ -266,7 +266,7 @@ An example event for `database_audit` looks as following:
 }
 ```
 
-### Database Performance Metrics
+### Performance Metrics
 
 **Exported fields**
 
@@ -347,7 +347,7 @@ An example event for `performance` looks as following:
 }
 ```
 
-### Database Tablespace Metrics
+### Tablespace Metrics
 
 **Exported fields**
 
@@ -428,7 +428,7 @@ An example event for `tablespace` looks as following:
 }
 ```
 
-### Database Sysmetrics 
+### Sysmetrics 
 
 **Exported fields**
 
