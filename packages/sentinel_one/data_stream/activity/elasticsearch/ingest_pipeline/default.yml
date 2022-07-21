@@ -7,12 +7,6 @@ processors:
   - set:
       field: event.kind
       value: event
-  - set:
-      field: event.category
-      value: [malware]
-  - set:
-      field: event.type
-      value: [info]
   - rename:
       field: message
       target_field: event.original
@@ -28,6 +22,58 @@ processors:
         - json.id 
       target_field: _id
       ignore_missing: true
+  - script:
+      description: Set the value of event.category, event.outcome and event.type.
+      lang: painless
+      source: >
+          def eventCategory = new HashSet();
+          def eventType = new HashSet();
+          if(ctx.json?.threatId != null && ctx.json?.threatId != "") {
+              if(ctx.json?.data?.threatClassification == "Malware") {
+                eventCategory.add("malware");
+                eventType.add("info");
+             }
+             else{
+                 eventCategory.add("threat");
+                 eventType.add("indicator");
+             }
+          }
+          else if(ctx.json?.primaryDescription != null){
+              if(ctx.json?.primaryDescription?.toLowerCase().contains("logged in")){
+                    eventCategory.add("authentication");
+                    eventType.add("start");
+                    ctx.event.outcome = "success";
+              }
+              if(ctx.json?.primaryDescription?.toLowerCase().contains("logged out")){
+                    eventCategory.add("authentication");
+                    eventType.add("end");
+              }
+              if(ctx.json?.primaryDescription?.toLowerCase().contains("created") || ctx.json?.primaryDescription?.toLowerCase().contains("added")){
+                    eventCategory.add("configuration");
+                    eventType.add("creation");
+              }
+              if(ctx.json?.primaryDescription?.toLowerCase().contains("deleted")){
+                    eventCategory.add("configuration");
+                    eventType.add("deletion");
+              }
+              if(ctx.json?.primaryDescription?.toLowerCase().contains("edited") || ctx.json?.primaryDescription?.toLowerCase().contains("updated") || ctx.json?.primaryDescription?.toLowerCase().contains("modified")){
+                    eventCategory.add("configuration");
+                    eventType.add("change");
+              }
+              if(ctx.json?.primaryDescription?.toLowerCase().contains("enabled") || ctx.json?.primaryDescription?.toLowerCase().contains("recovery email")){
+                    eventCategory.add("configuration");
+              }
+              if(ctx.json?.primaryDescription?.toLowerCase().contains("verification email")){
+                    eventCategory.add("email");
+              }
+              if(ctx.json?.primaryDescription?.toLowerCase().contains("failed to log in")){
+                    eventCategory.add("authentication");
+                    ctx.event.outcome = "failure";
+              }
+            eventType.add("info");
+          }
+          ctx.event.category =  eventCategory.size()==0 ? null : eventCategory;
+          ctx.event.type =  eventType.size()==0 ? null : eventType;
   - date: 
       field: json.updatedAt
       target_field: sentinel_one.activity.updated_at
