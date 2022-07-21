@@ -37,12 +37,14 @@ An example event for `storage` looks as following:
     "gcp": {
         "storage": {
             "storage": {
-                "total_bytes": {
-                    "value": 4472520191
+                "total": {
+                    "bytes": 4472520191
                 }
             },
             "network": {
-                "received_bytes_count": 0
+                "received": {
+                    "bytes": 4472520191
+                }
             }
         },
         "labels": {
