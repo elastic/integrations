@@ -37,8 +37,8 @@ An example event for `pubsub` looks as following:
     "gcp": {
         "pubsub": {
             "subscription": {
-                "backlog_bytes": {
-                    "value": 0
+                "backlog": {
+                    "bytes": 0
                 }
             }
         },
