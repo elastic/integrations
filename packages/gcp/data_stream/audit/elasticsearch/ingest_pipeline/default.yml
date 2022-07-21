@@ -127,15 +127,24 @@ processors:
       target_field: gcp.audit.authentication_info.authority_selector
       ignore_missing: true
 
-# TODO remove - duplicated in client.user.email and client.user.id
-  - set:
+  - rename:
       field: gcp.audit.authentication_info.principal_email
-      copy_from: client.user.email
-      if: ctx.client?.user?.email != null
-  - set:
+      target_field: client.user.email
+      if: ctx.client?.user?.email == null
+      ignore_missing: true
+  - remove:
+      field: gcp.audit.authentication_info.principal_email
+      if: ctx.client?.user?.email == ctx.gcp?.audit?.authentication_info?.principal_email
+      ignore_missing: true
+  - rename:
       field: gcp.audit.authentication_info.principal_subject
-      copy_from: client.user.id
-      if: ctx.client?.user?.id != null
+      target_field: client.user.id
+      if: ctx.client?.user?.id == null
+      ignore_missing: true
+  - remove:
+      field: gcp.audit.authentication_info.principal_subject
+      if: ctx.client?.user?.id == ctx.gcp?.audit?.authentication_info?.principal_subject
+      ignore_missing: true
 ##
 # AuthorizationInfo
 # .protoPayload.authorizationInfo
@@ -174,15 +183,10 @@ processors:
       field: json.protoPayload.requestMetadata.callerIp
       target_field: source.ip
       ignore_missing: true
-  # TODO remove - duplicated in useragent
   - rename:
       field: json.protoPayload.requestMetadata.callerSuppliedUserAgent
-      target_field: gcp.audit.request_metadata.caller_supplied_user_agent
+      target_field: user_agent.original
       ignore_missing: true
-  - set:
-      field: user_agent.original
-      value: "{{gcp.audit.request_metadata.caller_supplied_user_agent}}"
-      if: ctx?.gcp?.audit?.request_metadata?.caller_supplied_user_agent != null
   - user_agent:
       field: user_agent.original
       ignore_missing: true
@@ -224,12 +228,8 @@ processors:
 # TODO remove duplicate protoPayload.methodName
   - rename:
       field: json.protoPayload.methodName
-      target_field: gcp.audit.method_name
+      target_field: event.action
       ignore_missing: true
-  - set:
-      field: event.action
-      value: "{{gcp.audit.method_name}}"
-      if: ctx?.gcp?.audit?.method_name != null
   - convert:
       field: json.protoPayload.numResponseItems
       target_field: gcp.audit.num_response_items
@@ -261,15 +261,15 @@ processors:
       field: json.protoPayload.resourceLocation.currentLocations
       target_field: gcp.audit.resource_location.current_locations
       ignore_missing: true
-# TODO remove duplicate json.protoPayload.serviceName
   - rename:
       field: json.protoPayload.serviceName
       target_field: gcp.audit.service_name
       ignore_missing: true
-  - set:
-      field: service.name
-      value: "{{gcp.audit.service_name}}"
-      if: ctx?.gcp?.audit?.service_name != null
+  - rename:
+      field: gcp.audit.service_name
+      target_field: service.name
+      if: ctx.service?.name == null
+      ignore_missing: true
 ##
 # .protoPayload.Status
 # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#Status

@@ -323,12 +323,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "15ffa48e-049a-4ead-9716-cea0236748c4",
-        "hostname": "docker-fleet-agent",
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "ephemeral_id": "9edf0b6c-05b7-451e-83ad-13b2a23bf4e5",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.2.3"
     },
     "client": {
         "user": {
@@ -350,9 +349,9 @@ An example event for `audit` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.2.3"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -361,10 +360,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2022-05-20T07:25:00.534Z",
+        "created": "2022-06-28T02:45:52.230Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2022-05-20T07:25:01Z",
+        "ingested": "2022-06-28T02:45:53Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -375,9 +374,6 @@ An example event for `audit` looks as following:
     },
     "gcp": {
         "audit": {
-            "authentication_info": {
-                "principal_email": "xxx@xxx.xxx"
-            },
             "authorization_info": [
                 {
                     "granted": true,
@@ -389,13 +385,9 @@ An example event for `audit` looks as following:
                     }
                 }
             ],
-            "method_name": "beta.compute.instances.aggregatedList",
             "num_response_items": 61,
             "request": {
                 "@type": "type.googleapis.com/compute.instances.aggregatedList"
-            },
-            "request_metadata": {
-                "caller_supplied_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:71.0) Gecko/20100101 Firefox/71.0,gzip(gfe),gzip(gfe)"
             },
             "resource_location": {
                 "current_locations": [
@@ -413,9 +405,8 @@ An example event for `audit` looks as following:
                     "uid": "2beff34a-945f-11ea-bacf-42010a80007f"
                 },
                 "kind": "Status",
-                "status": "Success"
+                "status_value": "Success"
             },
-            "service_name": "compute.googleapis.com",
             "type": "type.googleapis.com/google.cloud.audit.AuditLog"
         }
     },
@@ -585,12 +576,11 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "1f7633a7-3410-4684-bb55-14b0bd0e2bd4",
-        "hostname": "docker-fleet-agent",
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "ephemeral_id": "da5a2e43-d26c-4ee3-bbf3-ad9d9ab853ec",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.2.3"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
@@ -615,18 +605,18 @@ An example event for `firewall` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.2.3"
     },
     "event": {
         "action": "firewall-rule",
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2022-05-20T07:26:27.445Z",
+        "created": "2022-06-28T02:47:26.097Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2022-05-20T07:26:28Z",
+        "ingested": "2022-06-28T02:47:27Z",
         "kind": "event",
         "type": "connection"
     },
@@ -834,12 +824,11 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "10bb82a5-c0e6-4aed-8589-003f734a7183",
-        "hostname": "docker-fleet-agent",
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "ephemeral_id": "cb760ad9-6bf9-465b-9022-e5de8df2ba82",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.2.3"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
@@ -855,41 +844,29 @@ An example event for `vpcflow` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "67.43.156.14",
-        "as": {
-            "number": 35908
-        },
+        "address": "10.139.99.242",
         "domain": "elasticsearch",
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.14",
+        "ip": "10.139.99.242",
         "port": 9200
     },
     "ecs": {
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2022-05-20T07:27:09.739Z",
+        "created": "2022-06-28T02:48:14.443Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:49:51.821308944Z",
-        "id": "ut8lbrffooxyp",
-        "ingested": "2022-05-20T07:27:10Z",
+        "end": "2019-06-14T03:49:51.821056075Z",
+        "id": "ut8lbrffooxz5",
+        "ingested": "2022-06-28T02:48:15Z",
         "kind": "event",
-        "start": "2019-06-14T03:40:08.469099728Z",
+        "start": "2019-06-14T03:40:20.510622432Z",
         "type": "connection"
     },
     "gcp": {
@@ -918,9 +895,9 @@ An example event for `vpcflow` looks as following:
             }
         },
         "vpcflow": {
-            "reporter": "SRC",
+            "reporter": "DEST",
             "rtt": {
-                "ms": 3
+                "ms": 201
             }
         }
     },
@@ -931,28 +908,40 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 15169,
-        "community_id": "1:NAY9D1IuyJAG+Hm34t3LIlP6/4c=",
+        "bytes": 11773,
+        "community_id": "1:FYaJFSEAKLcBCMFoT6sR5TMHf/s=",
         "direction": "internal",
         "iana_number": "6",
         "name": "default",
-        "packets": 92,
+        "packets": 94,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "10.87.40.76",
-            "67.43.156.14"
+            "67.43.156.13",
+            "10.139.99.242"
         ]
     },
     "source": {
-        "address": "10.87.40.76",
-        "bytes": 15169,
+        "address": "67.43.156.13",
+        "as": {
+            "number": 35908
+        },
+        "bytes": 11773,
         "domain": "kibana",
-        "ip": "10.87.40.76",
-        "packets": 92,
-        "port": 33880
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "packets": 94,
+        "port": 33576
     },
     "tags": [
         "forwarded",
@@ -1057,12 +1046,11 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2022-01-23T09:16:05.341Z",
     "agent": {
-        "ephemeral_id": "0d2f83ac-67e6-454f-84eb-859aa503167a",
-        "hostname": "docker-fleet-agent",
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "ephemeral_id": "0b86920e-9dac-4b22-91c8-e594b22a00b4",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.2.3"
     },
     "cloud": {
         "availability_zone": "europe-west2-a",
@@ -1106,16 +1094,16 @@ An example event for `dns` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-05-20T07:25:43.755Z",
+        "created": "2022-06-28T02:46:41.230Z",
         "dataset": "gcp.dns",
         "id": "vwroyze8pg7y",
-        "ingested": "2022-05-20T07:25:44Z",
+        "ingested": "2022-06-28T02:46:42Z",
         "kind": "event",
         "outcome": "success"
     },
