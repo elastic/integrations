@@ -1,18 +1,19 @@
 ---
-description: Pipeline for PanOS User ID Logs
+description: Pipeline for PanOS User ID Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/user-id-log-fields
 processors:
   - csv:
       field: message
       target_fields:
         - panw.panos.virtual_sys
-        - source.ip
+        - panw.panos.source.ip
         - _temp_.srcuser
         - panw.panos.datasourcename
-        - event.code
+        - panw.panos.event.id
         - panw.panos.repeat_count
         - panw.panos.timeout
-        - source.port
-        - destination.port
+        - panw.panos.source.port
+        - panw.panos.destination.port
         - panw.panos.datasource
         - panw.panos.datasourcetype
         - panw.panos.sequence_number
@@ -22,46 +23,15 @@ processors:
         - panw.panos.device_group_hierarchy3
         - panw.panos.device_group_hierarchy4
         - panw.panos.vsys_name
-        - observer.hostname
+        - panw.panos.device_name
         - panw.panos.vsys_id
         - panw.panos.factortype
         - panw.panos.factorcompletiontime
         - panw.panos.factorno
         - panw.panos.ugflags
-        - source.user.name
-
-  - grok:
-      field: _temp_.srcuser
-      ignore_missing: true
-      ignore_failure: true
-      patterns:
-        - '%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}'
-        - '%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}'
-        - '%{USERNAME:source.user.name}'
-      if: ctx?._temp_?.srcuser != null
-  - set:
-      field: network.type
-      value: 'ipv4'
-      if: 'ctx?.network?.type == null && ctx?.source?.ip.contains(".")'
-  - set:
-      field: network.type
-      value: 'ipv6'
-      if: 'ctx?.network?.type == null && ctx?.source?.ip.contains(":")'
-  - date:
-      if: "ctx?.panw?.panos?.factorcompletiontime != null && ctx.event.timezone == null"
-      field: "panw.panos.factorcompletiontime"
-      target_field: "panw.panos.factorcompletiontime"
-      formats:
-        - "yyyy/MM/dd HH:mm:ss"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
-  - date:
-      if: "ctx?.panw?.panos?.factorcompletiontime != null && ctx.event.timezone != null"
-      field: "panw.panos.factorcompletiontime"
-      target_field: "panw.panos.factorcompletiontime"
-      formats:
-        - "yyyy/MM/dd HH:mm:ss"
-      timezone: "{{{ event.timezone }}}"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+        - panw.panos.user_by_source
+        - panw.panos.tag.name
+        - _temp_.high_res_timestamp
 
 # Set event.category.
   - set:
@@ -72,6 +42,56 @@ processors:
       value:
         - network
         - iam
+
+# Set custom fields to ECS fields
+  - set:
+      field: destination.port
+      copy_from: panw.panos.destination.port
+      ignore_failure: true
+  - set:
+      field: event.code
+      copy_from: panw.panos.event.id
+      ignore_failure: true
+  - set:
+      field: panw.panos.received_time
+      copy_from: event.created
+      ignore_failure: true
+  - set:
+      field: observer.hostname
+      copy_from: panw.panos.device_name
+      ignore_failure: true
+  - set:
+      field: source.ip
+      copy_from: panw.panos.source.ip
+      ignore_failure: true
+  - set:
+      field: source.port
+      copy_from: panw.panos.source.port
+      ignore_failure: true
+  - set:
+      field: source.user.name
+      copy_from: panw.panos.user_by_source
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.user
+      copy_from: _temp_.srcuser
+      ignore_failure: true
+
+  - date:
+      if: "ctx.panw?.panos?.factorcompletiontime != null && ctx.event.timezone == null"
+      field: "panw.panos.factorcompletiontime"
+      target_field: "panw.panos.factorcompletiontime"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+  - date:
+      if: "ctx.panw?.panos?.factorcompletiontime != null && ctx.event.timezone != null"
+      field: "panw.panos.factorcompletiontime"
+      target_field: "panw.panos.factorcompletiontime"
+      formats:
+        - "yyyy/MM/dd HH:mm:ss"
+      timezone: "{{{ event.timezone }}}"
+      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
 
 on_failure:
   - append:
