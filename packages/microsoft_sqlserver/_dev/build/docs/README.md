@@ -34,9 +34,9 @@ See: [Instructions on how to enable auditing for SQL Server](https://docs.micros
 
 Enable to collect SQL Server audit events from the specified windows event log channel.
 
-### errorlog
+### log
 
-The SQL Server `errorlog` contains user-defined events and certain system events you can use for troubleshooting.
+The SQL Server `log` contains user-defined events and certain system events you can use for troubleshooting.
 
 See: [View the SQL Server error log in SQL Server Management Studio](https://docs.microsoft.com/en-us/sql/relational-databases/performance/view-the-sql-server-error-log-sql-server-management-studio?view=sql-server-ver16)
 
