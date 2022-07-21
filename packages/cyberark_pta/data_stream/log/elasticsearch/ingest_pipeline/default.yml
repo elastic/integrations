@@ -1,10 +1,18 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for CyberArk PTA
+
 processors:
-- set:
-    field: sample_field
-    value: "1"
+  - set:
+      field: ecs.version
+      value: '8.3.0'
+
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - remove:
+      field: _tmp
+      ignore_failure: true
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
