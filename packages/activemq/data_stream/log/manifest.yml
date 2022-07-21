@@ -1,6 +1,5 @@
 type: logs
 title: ActiveMQ log logs
-release: beta
 streams:
   - input: logfile
     vars:
@@ -10,8 +9,33 @@ streams:
         multi: true
         required: true
         show_user: true
+        description: ActiveMQ log file path.
         default:
           - /opt/apache-activemq-*/data/activemq.log*
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - forwarded
+          - activemq-log
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
     template_path: log.yml.hbs
-    title: ActiveMQ log logs (log)
+    title: ActiveMQ log
     description: Collect ActiveMQ log logs using log input
