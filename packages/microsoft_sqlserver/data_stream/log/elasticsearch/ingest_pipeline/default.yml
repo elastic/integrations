@@ -1,0 +1,47 @@
+---
+description: Pipeline to parse Microsoft SQL Server logs
+processors:
+- rename:
+    field: message
+    target_field: event.original
+    ignore_missing: true
+- set:
+    field: ecs.version
+    value: 8.3.0
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+- grok:
+    field: event.original
+    patterns:
+    - '%{MSSQL_DATE:date} %{DATA:microsoft_sqlserver.log.origin} [ ]*%{GREEDYDATA:message}'
+    - '%{GREEDYDATA:message}'
+    ignore_missing: true
+    pattern_definitions:
+      MSSQL_DATE: '%{DATA} %{DATA}'
+      GREEDYDATA: '(.|\n)*'
+- date:
+    if: ctx.event.timezone == null
+    field: date
+    formats:
+    - yyyy-MM-dd HH:mm:ss.SS
+    on_failure:
+    - append:
+        field: error.message
+        value: '{{ _ingest.on_failure_message }}'
+- remove:
+    field: date
+    ignore_missing: true
+- set:
+    field: event.kind
+    value: event
+- append:
+    field: event.category
+    value: database
+- append:
+    field: event.type
+    value: info
+on_failure:
+- append:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
