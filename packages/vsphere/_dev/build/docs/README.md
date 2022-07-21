@@ -34,6 +34,7 @@ Datastores are logical containers, analogous to file systems, that hide specific
 ## Logs
 
 To access the logs, host address (localhost) and host port (9525) needs to be passed in Kibana UI. 
+
 ### vSphere Logs
 
 {{fields "log"}}
