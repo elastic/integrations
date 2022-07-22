@@ -1,0 +1,225 @@
+---
+description: Pipeline for parsing CouchDB Server metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.3.0
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.kind
+      value: metric
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.module
+      value: couchdb
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.category
+      value: [database]
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.type
+      value: [info]
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: error.message
+      value: "Unauthorized: You are not a server admin or read-only metrics user"
+      if: ctx.http?.server?.error == "unauthorized"
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: error.message
+      value: "Database does not exist"
+      if: ctx.http?.server?.error == "not_found"
+      ignore_failure: true
+      ignore_empty_value: true
+  - rename:
+      field: http.server.couchdb.auth_cache_hits.value
+      target_field: couchdb.server.auth_cache.hits
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.auth_cache_misses.value
+      target_field: couchdb.server.auth_cache.misses
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.database_reads.value
+      target_field: couchdb.server.database.reads
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.database_writes.value
+      target_field: couchdb.server.database.writes
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.open_databases.value
+      target_field: couchdb.server.database.open
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.open_os_files.value
+      target_field: couchdb.server.open_os_files
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.request_time.value.arithmetic_mean
+      target_field: couchdb.server.request_time.avg
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd.bulk_requests.value
+      target_field: couchdb.server.httpd.requests.bulk
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd.requests.value
+      target_field: couchdb.server.httpd.requests.count
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd.clients_requesting_changes.value
+      target_field: couchdb.server.httpd.clients_requesting_changes
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd.temporary_view_reads.value
+      target_field: couchdb.server.httpd.view_reads.temporary
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd.view_reads.value
+      target_field: couchdb.server.httpd.view_reads.count
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_request_methods.COPY.value
+      target_field: couchdb.server.httpd.request_methods.copy
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_request_methods.DELETE.value
+      target_field: couchdb.server.httpd.request_methods.delete
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_request_methods.GET.value
+      target_field: couchdb.server.httpd.request_methods.get
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_request_methods.HEAD.value
+      target_field: couchdb.server.httpd.request_methods.head
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_request_methods.POST.value
+      target_field: couchdb.server.httpd.request_methods.post
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_request_methods.PUT.value
+      target_field: couchdb.server.httpd.request_methods.put
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.200.value
+      target_field: couchdb.server.httpd.status_codes.200
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.201.value
+      target_field: couchdb.server.httpd.status_codes.201
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.202.value
+      target_field: couchdb.server.httpd.status_codes.202
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.301.value
+      target_field: couchdb.server.httpd.status_codes.301
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.304.value
+      target_field: couchdb.server.httpd.status_codes.304
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.400.value
+      target_field: couchdb.server.httpd.status_codes.400
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.401.value
+      target_field: couchdb.server.httpd.status_codes.401
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.403.value
+      target_field: couchdb.server.httpd.status_codes.403
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.404.value
+      target_field: couchdb.server.httpd.status_codes.404
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.405.value
+      target_field: couchdb.server.httpd.status_codes.405
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.409.value
+      target_field: couchdb.server.httpd.status_codes.409
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.412.value
+      target_field: couchdb.server.httpd.status_codes.412
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: http.server.couchdb.httpd_status_codes.500.value
+      target_field: couchdb.server.httpd.status_codes.500
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: http
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: 
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'
