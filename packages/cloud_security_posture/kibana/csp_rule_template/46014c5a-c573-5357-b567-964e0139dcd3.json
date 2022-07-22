@@ -1,0 +1,38 @@
+{
+    "id": "46014c5a-c573-5357-b567-964e0139dcd3",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "46014c5a-c573-5357-b567-964e0139dcd3",
+            "name": "Ensure that the --client-ca-file argument is set as appropriate (Manual)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Enable Kubelet authentication using certificates.\n",
+            "rationale": "The connections from the apiserver to the kubelet are used for fetching logs for pods, attaching (through kubectl) to running pods, and using the kubelet’s port-forwarding functionality. These connections terminate at the kubelet’s HTTPS endpoint. By default, the apiserver does not verify the kubelet’s serving certificate, which makes the connection subject to man-in-the-middle attacks, and unsafe to run over untrusted and/or public networks. Enabling Kubelet certificate authentication ensures that the apiserver could authenticate the Kubelet before submitting any requests.\n",
+            "audit": "**Audit Method 1:**\nIf using a Kubelet configuration file, check that there is an entry for `\"x509\":`\n`{\"clientCAFile:\"` set to the location of the client certificate authority file.\nFirst, SSH to the relevant node:\nRun the following command on each node to find the appropriate Kubelet config file:\n```\nps -ef | grep kubelet\n```\nThe output of the above command should return something similar to `--config`\n`/etc/kubernetes/kubelet/kubelet-config.json` which is the location of the Kubelet\nconfig file.\nOpen the Kubelet config file:\n```\nsudo more /etc/kubernetes/kubelet/kubelet-config.json\n```\nVerify that the `\"x509\": {\"clientCAFile:\"` argument exists and is set to the location of the\nclient certificate authority file.\nIf the `\"x509\": {\"clientCAFile:\"` argument is not present, check that there is a Kubelet\nconfig file specified by `--config`, and that the file sets `\"authentication\": { \"x509\":`\n`{\"clientCAFile:\"` to the location of the client certificate authority file.\n\n**Audit Method 2:**\nIf using the api configz endpoint consider searching for the status of `authentication..`\n`x509\":(\"clientCAFile\":\"/etc/kubernetes/pki/ca.crt` by extracting the live\nconfiguration from the nodes running kubelet.\nSet the local proxy port and the following variables and provide proxy port number and\nnode name;\n`HOSTNAME_PORT=\"localhost-and-port-number\"`\n`NODE_NAME=\"The-Name-Of-Node-To-Extract-Configuration\" from the output of`\n`\"kubectl get nodes\"`\n```\nkubectl proxy --port=8001 \u0026\nexport HOSTNAME_PORT=localhost:8001 (example host and port number)\nexport NODE_NAME=ip-192.168.31.226.ec2.internal (example node name from\n\"kubectl get nodes\")\ncurl -sSL \"http://${HOSTNAME_PORT}/api/v1/nodes/${NODE_NAME}/proxy/configz\"\n```\n",
+            "remediation": "**Remediation Method 1:**\nIf modifying the Kubelet config file, edit the kubelet-config.json file\n`/etc/kubernetes/kubelet/kubelet-config.json` and set the below parameter to false\n```\n\"authentication\": { \"x509\": {\"clientCAFile:\" to the location of the client CA\nfile.\n```\n**Remediation Method 2:**\nIf using executable arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubelet-args.conf` on each worker node\nand add the below parameter at the end of the `KUBELET_ARGS` variable string.\n```\n--client-ca-file=\u003cpath/to/client-ca-file\u003e\n```\n**Remediation Method 3:**\nIf using the api configz endpoint consider searching for the status of\n`\"authentication.*x509\":(\"clientCAFile\":\"/etc/kubernetes/pki/ca.crt\"` by\nextracting the live configuration from the nodes running kubelet.\n**See detailed step-by-step configmap procedures in Reconfigure a Node's Kubelet in a Live\nCluster, and then rerun the curl statement from audit process to check for kubelet\nconfiguration changes\n```\nkubectl proxy --port=8001 \u0026\nexport HOSTNAME_PORT=localhost:8001 (example host and port number)\nexport NODE_NAME=ip-192.168.31.226.ec2.internal (example node name from\n\"kubectl get nodes\")\ncurl -sSL \"http://${HOSTNAME_PORT}/api/v1/nodes/${NODE_NAME}/proxy/configz\"\n```\n**For all three remediations:**\nBased on your system, restart the kubelet service and check status\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\nsystemctl status kubelet -l\n```\n",
+            "impact": "You require TLS to be configured on apiserver as well as kubelets.\n",
+            "default_value": "See the EKS documentation for the default value.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n2. https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/\n3. https://kubernetes.io/docs/tasks/administer-cluster/reconfigure-kubelet/\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 3.2.3",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_3_2_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}

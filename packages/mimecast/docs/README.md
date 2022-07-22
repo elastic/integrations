@@ -1,6 +1,6 @@
 # Mimecast Integration
 
-The Mimecast integration collects events from the Mimecast API.
+The Mimecast integration collects events from the [Mimecast API](https://integrations.mimecast.com/documentation/).
 
 ## Configuration
 
@@ -11,17 +11,16 @@ time interval between two API requests as well as the API URL. A Mimecast
 representative should also be able to give you this information in case you need
 to change the defaults.
 
-Note that rate limit quotas may require you to set up different credentials for
-the different available log types.
+> Note: Rate limit quotas may require you to set up different credentials for the different available log types.
 
 ## Logs
 
 ### Audit Events
 
 This is the `mimecast.audit_events` dataset. These logs contain Mimecast audit
-events with the following details: audit type, event category, and detailed
-information about the event. More information about these logs [here]
-(https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
+events with the following details: audit type, event category and detailed
+information about the event. More information about [these logs](
+https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
 
 An example event for `audit_events` looks as following:
 
@@ -172,8 +171,8 @@ An example event for `audit_events` looks as following:
 
 This is the `mimecast.dlp_logs` dataset. These logs contain information about
 messages that triggered a DLP or Content Examination policy. More information
-about these logs [here]
-(https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/).
+about [these logs](
+https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
 
 An example event for `dlp` looks as following:
 
@@ -297,8 +296,8 @@ An example event for `dlp` looks as following:
 
 This is the `mimecast.siem_logs` dataset. These logs contain information about
 messages that contains MTA (message transfer agent) log – all inbound,
-outbound, and internal messages. More about these logs
-[here](https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
+outbound, and internal messages. More about [these logs](
+https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
 
 An example event for `siem` looks as following:
 
@@ -497,8 +496,8 @@ An example event for `siem` looks as following:
 
 This is the `mimecast.threat_intel_malware_customer` dataset. These logs contain
 information about messages that return identified malware threats at a customer
-level. More about these logs
-[here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
+level.  Learn more about [these logs](
+https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
 
 An example event for `threat_intel_malware_customer` looks as following:
 
@@ -648,9 +647,9 @@ An example event for `threat_intel_malware_customer` looks as following:
 ### Threat Intel Feed Malware: Grid
 
 This is the `mimecast.threat_intel_malware_grid` dataset. These logs contain
-information about messages that return identified malware threats at a regional
-grid level. More about these logs
-[here](https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
+information about messages that return identified malware threats at a regional 
+grid level. More about [these logs](
+https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
 
 An example event for `threat_intel_malware_grid` looks as following:
 
@@ -801,11 +800,11 @@ An example event for `threat_intel_malware_grid` looks as following:
 
 This is the `mimecast.ttp_ap_logs` dataset. These logs contain Mimecast TTP
 attachment protection logs with the following details: result of attachment
-analysis (if it is malicious or not etc.), date when file is released, sender
-and recipient address, filename and type, action triggered for the attachment,
-the route of the original email containing the attachment and details. Learn
-more about these logs [here]
-(https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
+analysis (if it is malicious or not etc.), date when file is released, sender 
+and recipient address, filename and type, action triggered for the attachment, 
+the route of the original email containing the attachment and details. 
+Learn more about [these logs](
+https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
 
 An example event for `ttp_ap` looks as following:
 
@@ -965,7 +964,7 @@ An example event for `ttp_ap` looks as following:
 
 This is the `mimecast.ttp_ip_logs` dataset. These logs contain information about
 messages containing information flagged by an Impersonation Protection
-configuration. Learn more about these logs [here]
+configuration. Learn more about [these logs]
 (https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/).
 
 An example event for `ttp_ip` looks as following:
@@ -1139,8 +1138,8 @@ email that contained the link, the action defined by the administrator for the
 URL, the date that the URL was clicked, url scan result, the action that was
 taken for the click, the description of the definition that triggered the URL to
 be rewritten by Mimecast, the action requested by the user, an array of
-components of the message where the URL was found. More about these logs
-[here](https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/).
+components of the message where the URL was found. More about [these logs](
+https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/).
 
 An example event for `ttp_url` looks as following:
 

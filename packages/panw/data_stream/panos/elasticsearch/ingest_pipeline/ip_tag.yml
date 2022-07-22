@@ -1,0 +1,59 @@
+---
+description: Pipeline for PanOS IP Tag Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/ip-tag-log-fields
+processors:
+  - csv:
+      field: message
+      ignore_failure: true
+      target_fields:
+        - panw.panos.virtual_sys
+        - panw.panos.source.ip
+        - panw.panos.tag.name
+        - panw.panos.event.id
+        - panw.panos.repeat_count
+        - panw.panos.timeout
+        - panw.panos.datasourcename
+        - panw.panos.datasource_type
+        - panw.panos.datasource_subtype
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - panw.panos.device_name
+        - panw.panos.vsys_id
+        - _temp_.high_res_timestamp
+
+# Set event.kind & event.category field.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+
+# Set custom fields to ECS fields
+  - set:
+      field: event.code
+      copy_from: panw.panos.event.id
+      ignore_failure: true
+  - set:
+      field: observer.hostname
+      copy_from: panw.panos.device_name
+      ignore_failure: true
+  - set:
+      field: source.ip
+      copy_from: panw.panos.source.ip
+      ignore_failure: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in IP Tag pipeline:
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{_ingest.on_failure_message}}}
