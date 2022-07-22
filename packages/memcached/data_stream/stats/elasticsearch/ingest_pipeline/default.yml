@@ -1,0 +1,17 @@
+---
+description: Pipeline for parsing memcached metrics
+processors:
+- rename:
+    field: memcached.stats.bytes.current
+    target_field: memcached.stats.current.bytes
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: memcached.stats.bytes.limit
+    target_field: memcached.stats.limit.bytes
+    ignore_missing: true
+    ignore_failure: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
