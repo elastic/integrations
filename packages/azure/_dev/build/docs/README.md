@@ -112,3 +112,11 @@ Retrieves Azure Spring Cloud system and application logs.
 {{event "springcloudlogs"}}
 
 {{fields "springcloudlogs"}}
+
+### Firewall logs
+
+Retrieves Azure Firewall application rule, network rule, and DNS proxy logs.
+
+{{event "firewall_logs"}}
+
+{{fields "firewall_logs"}}
