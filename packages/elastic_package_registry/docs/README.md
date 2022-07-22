@@ -75,7 +75,7 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error | long |  |  |
 | package_registry.storage_indexer.update_index_success_total.counter | A counter for all the update index processes that finished with error | long |  |  |
 | package_registry.storage_requests_total.counter | Counter for requests performed to the storage | long |  | counter |
-| package_registry.uptime | Elastic Package Registry uptime in seconds | long | s | gauge |
+| package_registry.uptime | Elastic Package Registry uptime in seconds | long | s | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
