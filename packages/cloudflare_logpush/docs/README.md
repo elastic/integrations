@@ -1,6 +1,6 @@
 # Cloudflare Logpush
 
-- The [Cloudflare](https://www.cloudflare.com/) Integration collects and parses data received from Cloudflare using AWS S3 bucket and HTTP Endpoint.
+- The [Cloudflare](https://www.cloudflare.com/) Integration collects and parses data received from Cloudflare via an AWS S3 bucket or directly to an Elastic Agent running the HTTP Endpoint.
 
 ## Compatibility
 
@@ -13,7 +13,7 @@ This package has been tested for Cloudflare version v4.
 2. In the integrations search bar type **Cloudflare Logpush**.
 3. Click the **Cloudflare Logpush** integration from the search results.
 4. Click the **Add Cloudflare Logpush** button to add Cloudflare Logpush integration.
-5. Enable the Integration with the HTTP Endpoint and AWS S3 Bucket input.
+5. Enable the Integration with the HTTP Endpoint or AWS S3 Bucket input.
 6. Configure Cloudflare to send logs to the Elastic Agent.
 
 ### In order to ingest data from the AWS S3 Bucket you must:
