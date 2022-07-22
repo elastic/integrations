@@ -1,6 +1,12 @@
 __ui: {{__ui}}
 type: {{type}}
 name: {{name}}
+{{#if config_id}}
+id: {{config_id}}
+{{/if}}
+{{#if origin}}
+origin: {{origin}}
+{{/if}}
 enabled: {{enabled}}
 {{#if service.name}}
 service.name: {{service.name}}
@@ -25,6 +31,9 @@ source.zip_url.folder: {{source.zip_url.folder}}
 {{/if}}
 {{#if source.inline.script}}
 source.inline.script: {{source.inline.script}}
+{{/if}}
+{{#if source.project.content}}
+source.project.content: {{source.project.content}}
 {{/if}}
 {{#if params}}
 params: {{params}}
@@ -67,9 +76,21 @@ source.zip_url.proxy_url: {{source.zip_url.proxy_url}}
 {{/if}}
 processors:
   - add_observer_metadata:
-      geo: 
-        name: Fleet managed
+      geo:
+        name: {{location_name}}
   - add_fields:
       target: ''
       fields:
         monitor.fleet_managed: true
+        {{#if config_id}}
+        config_id: {{config_id}}
+        {{/if}}
+        {{#if run_once}}
+        run_once: {{run_once}}
+        {{/if}}
+        {{#if monitor.project.name}}
+        monitor.project.name: {{monitor.project.name}}
+        {{/if}}
+        {{#if monitor.project.id}}
+        monitor.project.id: {{monitor.project.id}}
+        {{/if}}
