@@ -23,7 +23,7 @@ processors:
   # Subject
   - set:
       field: tls.server.subject
-      value: '{{suricata.eve.tls.subject}}'
+      value: '{{{suricata.eve.tls.subject}}}'
       ignore_empty_value: true
   - kv:
       field: suricata.eve.tls.subject
@@ -58,7 +58,7 @@ processors:
   # Issuer
   - set:
       field: tls.server.issuer
-      value: '{{suricata.eve.tls.issuerdn}}'
+      value: '{{{suricata.eve.tls.issuerdn}}}'
       ignore_empty_value: true
   - gsub:
       field: suricata.eve.tls.issuerdn
@@ -103,7 +103,7 @@ processors:
       ignore_missing: true
   - set:
       field: tls.server.hash.sha1
-      value: '{{suricata.eve.tls.fingerprint}}'
+      value: '{{{suricata.eve.tls.fingerprint}}}'
       ignore_empty_value: true
   - uppercase:
       field: tls.server.hash.sha1
@@ -122,31 +122,36 @@ processors:
       if: "ctx?.tls?.server?.hash?.sha1 != null"
   - set:
       field: tls.client.server_name
-      value: '{{suricata.eve.tls.sni}}'
+      value: '{{{suricata.eve.tls.sni}}}'
       ignore_empty_value: true
   - set:
       field: destination.domain
-      value: '{{suricata.eve.tls.sni}}'
+      value: '{{{suricata.eve.tls.sni}}}'
       ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{suricata.eve.tls.sni}}}'
+      if: ctx.suricata?.eve?.tls?.sni != null && ctx.suricata.eve.tls.sni != ""
+      allow_duplicates: false
   - set:
       field: tls.server.ja3s
-      value: '{{suricata.eve.tls.ja3s.hash}}'
+      value: '{{{suricata.eve.tls.ja3s.hash}}}'
       ignore_empty_value: true
   - set:
       field: tls.client.ja3
-      value: '{{suricata.eve.tls.ja3.hash}}'
+      value: '{{{suricata.eve.tls.ja3.hash}}}'
       ignore_empty_value: true
   - set:
       field: tls.server.certificate
-      value: '{{suricata.eve.tls.certificate}}'
+      value: '{{{suricata.eve.tls.certificate}}}'
       ignore_empty_value: true
   - set:
       field: tls.server.certificate_chain
-      value: '{{suricata.eve.tls.chain}}'
+      value: '{{{suricata.eve.tls.chain}}}'
       ignore_empty_value: true
   - set:
       field: tls.server.x509.serial_number
-      value: '{{suricata.eve.tls.serial}}'
+      value: '{{{suricata.eve.tls.serial}}}'
       ignore_empty_value: true
   - gsub:
       field: tls.server.x509.serial_number
@@ -167,11 +172,11 @@ processors:
       if: ctx.suricata?.eve?.tls?.notbefore != null
   - set:
       field: tls.server.x509.not_after
-      value: '{{tls.server.not_after}}'
+      value: '{{{tls.server.not_after}}}'
       ignore_empty_value: true
   - set:
       field: tls.server.x509.not_before
-      value: '{{tls.server.not_before}}'
+      value: '{{{tls.server.not_before}}}'
       ignore_empty_value: true
   - remove:
       field:
@@ -181,4 +186,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'
