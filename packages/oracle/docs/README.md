@@ -443,7 +443,7 @@ An example event for `tablespace` looks as following:
 | event.module | Event module | constant_keyword |  |
 | host.ip | Host ip addresses. | ip |  |
 | oracle.sysmetric.average_active_sessions | Average active sessions. | double | gauge |
-| oracle.sysmetric.cpu_usage_per_sec | CPU ssage per second. | double | gauge |
+| oracle.sysmetric.cpu_usage_per_sec | CPU usage per second. | double | gauge |
 | oracle.sysmetric.current_os_load | Current OS load. | double | gauge |
 | oracle.sysmetric.db_block_changes_per_sec | DB Block changes per second. | double | gauge |
 | oracle.sysmetric.host_cpu_utilization_pct | Host CPU utilization (%). | double | gauge |
