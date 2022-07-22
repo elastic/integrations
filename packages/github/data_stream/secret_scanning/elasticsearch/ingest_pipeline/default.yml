@@ -18,6 +18,7 @@ processors:
     fields: 
         - github.secret_scanning.number
         - github.secret_scanning.updated_at
+        - github.secret_scanning.resolved_at
     target_field: "_id"
     ignore_missing: true
 - date:
@@ -41,6 +42,14 @@ processors:
     timezone: UTC
     target_field: "@timestamp"
     if: ctx.github.secret_scanning?.updated_at != null
+- date:
+    field: github.secret_scanning.resolved_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "@timestamp"
+    if: ctx.github.secret_scanning?.resolved_at != null
+
 - rename: 
     target_field: _temp.resolved_by
     field: github.secret_scanning.resolved_by
