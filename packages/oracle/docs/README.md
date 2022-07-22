@@ -289,7 +289,7 @@ An example event for `database_audit` looks as following:
 | oracle.performance.cursors.cache_hit.pct | Ratio of session cursor cache hits from total number of cursors | double | percent | gauge |
 | oracle.performance.cursors.max | Max cursors opened by username and machine | double |  | gauge |
 | oracle.performance.cursors.opened.current | Total number of current open cursors | long |  | gauge |
-| oracle.performance.cursors.opened.total | Total number of cursors opened since the instance started | long |  | gauge |
+| oracle.performance.cursors.opened.total | Total number of cursors opened since the instance started | long |  | counter |
 | oracle.performance.cursors.parse.real | Real number of parses that occurred: session cursor cache hits - parse count (total) | double |  | gauge |
 | oracle.performance.cursors.parse.total | Total number of parse calls (hard and soft). A soft parse is a check on an object already in the shared pool, to verify that the permissions on the underlying object have not changed | long |  | gauge |
 | oracle.performance.cursors.session.cache_hits | Number of hits in the session cursor cache. A hit means that the SQL statement did not have to be reparsed. | double |  | gauge |
