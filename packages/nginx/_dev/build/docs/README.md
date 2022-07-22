@@ -1,30 +1,62 @@
 # Nginx Integration
 
-This integration periodically fetches metrics from [Nginx](https://nginx.org/) servers. It can parse access and error
-logs created by the HTTP server. 
+The Nginx integration allows you to monitor [Nginx](https://nginx.org/) servers.
 
-## Compatibility
+Use the Nginx integration to collect metrics and logs from your server.
+Then visualize that data in Kibana, use the Machine Learning app to find unusual activity in HTTP access logs,
+create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
-The Nginx `stubstatus` metrics was tested with Nginx 1.19.5 and are expected to work with all version >= 1.9.
-The logs were tested with version 1.19.5.
-On Windows, the module was tested with Nginx installed from the Chocolatey repository.
+For example, if you wanted to be notified if a certain number of client requests failed in a given time period,
+you could install the Nginx integration to send logs to Elastic.
+Then, you could view the logs stream into Elastic in real time in the Observability Logs app.
+You could also set up a new log threshold rule in the Logs app to alert you when there are more than
+a certain number of events with a failing status in a given time period.
 
-## Logs
+## Data streams
+
+The Nginx integration collects two types of data: logs and metrics.
+
+**Logs** help you keep a record of events that happen in your Nginx servers.
+This includes when a client request or error occurs.
+
+**Metrics** give you insight into the state of your Nginx servers.
+This includes information like the total number of active client connections by status,
+the total number of client requests, and more.
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Each data source was tested with a specific Nginx version.
+For more information see the [Logs reference](#logs-reference) and [Metrics reference](#metrics-reference).
+
+Note: On Windows, the module was tested with Nginx installed from the Chocolatey repository.
+
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Logs reference
 
 **Timezone support**
 
-This datasource parses logs that don’t contain timezone information. For these logs, the Elastic Agent reads the local
+This data source parses logs that don’t contain timezone information. For these logs, the Elastic Agent reads the local
 timezone and uses it when parsing to convert the timestamp to UTC. The timezone to be used for parsing is included
 in the event in the `event.timezone` field.
 
-To disable this conversion, the event.timezone field can be removed with the drop_fields processor.
+To disable this conversion, the `event.timezone` field can be removed using the `drop_fields` processor.
 
-If logs are originated from systems or applications with a different timezone to the local one, the `event.timezone`
-field can be overwritten with the original timezone using the add_fields processor.
+If logs originate from systems or applications with a timezone that is different than the local one,
+the `event.timezone` field can be overwritten with the original timezone using the `add_fields` processor.
 
 ### Access Logs
 
-Access logs collects the nginx access logs.
+Access logs collects the Nginx access logs.
+
+#### Tested versions
+
+The Nginx access logs stream was tested with Nginx 1.19.5.
 
 {{event "access"}}
 
@@ -32,13 +64,17 @@ Access logs collects the nginx access logs.
 
 ### Error Logs
 
-Error logs collects the nginx error logs.
+Error logs collects the Nginx error logs.
+
+#### Tested versions
+
+The Nginx error logs stream was tested with Nginx 1.19.5.
 
 {{event "error"}}
 
 {{fields "error"}}
 
-## Metrics
+## Metrics reference
 
 ### Stub Status Metrics
 
@@ -54,7 +90,11 @@ location /nginx_status {
 }
 ```
 
-It's highly recommended to replace `127.0.0.1` with your server’s IP address and make sure that this page accessible to only you.
+Replace `127.0.0.1` with your server’s IP address and make sure that this page accessible to only you.
+
+#### Tested versions
+
+The Nginx `stubstatus` stream was tested with Nginx 1.19.5 and is expected to work with all versions >= 1.19.
 
 {{event "stubstatus"}}
 
@@ -72,9 +112,9 @@ Find unusual activity in HTTP access logs.
 
 | Job | Description |
 |---|---|
-| visitor_rate_nginx | HTTP Access Logs: Detect unusual visitor rates |
-| status_code_rate_nginx | HTTP Access Logs: Detect unusual status code rates |
-| source_ip_url_count_nginx | HTTP Access Logs: Detect unusual source IPs - high distinct count of URLs |
-| source_ip_request_rate_nginx | HTTP Access Logs: Detect unusual source IPs - high request rates |
-| low_request_rate_nginx | HTTP Access Logs: Detect low request rates |
+| `visitor_rate_nginx` | HTTP Access Logs: Detect unusual visitor rates |
+| `status_code_rate_nginx` | HTTP Access Logs: Detect unusual status code rates |
+| `source_ip_url_count_nginx` | HTTP Access Logs: Detect unusual source IPs - high distinct count of URLs |
+| `source_ip_request_rate_nginx` | HTTP Access Logs: Detect unusual source IPs - high request rates |
+| `low_request_rate_nginx` | HTTP Access Logs: Detect low request rates |
 

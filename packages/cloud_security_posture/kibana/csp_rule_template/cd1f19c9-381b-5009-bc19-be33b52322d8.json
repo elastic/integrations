@@ -1,0 +1,38 @@
+{
+    "id": "cd1f19c9-381b-5009-bc19-be33b52322d8",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "cd1f19c9-381b-5009-bc19-be33b52322d8",
+            "name": "Ensure that the kubelet configuration file has permissions set to 644 or more restrictive (Manual)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Ensure that if the kubelet refers to a configuration file with the `--config`\nargument, that file has permissions of 644 or more restrictive.\n",
+            "rationale": "The kubelet reads various parameters, including security settings, from a config file\nspecified by the `--config` argument. If this file is specified you should restrict its file\npermissions to maintain the integrity of the file. The file should be writable by only the\nadministrators on the system.\n",
+            "audit": "First, SSH to the relevant worker node:\nTo check to see if the Kubelet Service is running:\n```\nsudo systemctl status kubelet\n```\nThe output should return `Active: active (running) since..`\nRun the following command on each node to find the appropriate Kubelet config file:\n```\nps -ef | grep kubelet\n```\nThe output of the above command should return something similar to `--config`\n`/etc/kubernetes/kubelet/kubelet-config.json` which is the location of the Kubelet\nconfig file.\nRun the following command:\n```\nstat -c %a /etc/kubernetes/kubelet/kubelet-config.json\n```\nThe output of the above command is the Kubelet config file's permissions. Verify that the\npermissions are `644` or more restrictive.\n",
+            "remediation": "Run the following command (using the config file location identied in the\nAudit step)\n```\nchmod 644 /etc/kubernetes/kubelet/kubelet-config.json\n```\n",
+            "impact": "None\n",
+            "default_value": "See the AWS EKS documentation for the default value.\n",
+            "references": "1. https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/\n",
+            "section": "Worker Node Configuration Files",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 3.1.3",
+                "Worker Node Configuration Files"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_3_1_3"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}
