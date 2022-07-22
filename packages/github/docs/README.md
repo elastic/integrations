@@ -569,10 +569,10 @@ An example event for `dependabot` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-18T18:30:27.956Z",
+    "@timestamp": "2022-07-11T11:39:07.000Z",
     "agent": {
-        "ephemeral_id": "de5d9ce0-de3f-41ee-813f-7ca6ede1f422",
-        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
+        "ephemeral_id": "aa2aabc7-22b4-4365-8b1a-4f497d727ad1",
+        "id": "e9ef574e-138d-41d6-bb72-4444c1dd8435",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -586,16 +586,16 @@ An example event for `dependabot` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
+        "id": "e9ef574e-138d-41d6-bb72-4444c1dd8435",
         "snapshot": false,
         "version": "8.3.0"
     },
     "event": {
         "action": "dependabot",
         "agent_id_status": "verified",
-        "created": "2022-07-18T18:30:27.956Z",
+        "created": "2022-07-11T11:39:07.000Z",
         "dataset": "github.dependabot",
-        "ingested": "2022-07-18T18:30:31Z",
+        "ingested": "2022-07-22T06:36:49Z",
         "kind": "alert",
         "original": "{\"createdAt\":\"2022-07-11T11:39:07Z\",\"dependabotUpdate\":{\"error\":{\"body\":\"The currently installed version can't be determined.\\n\\nTo resolve the issue add a supported lockfile (package-lock.json or yarn.lock).\",\"errorType\":\"dependency_file_not_supported\",\"title\":\"Dependabot can't update vulnerable dependencies without a lockfile\"},\"pullRequest\":null},\"dependencyScope\":\"RUNTIME\",\"dismissReason\":null,\"dismissedAt\":null,\"dismisser\":null,\"fixReason\":null,\"fixedAt\":null,\"number\":1,\"repository\":{\"description\":\"OWASP Juice Shop: Probably the most modern and sophisticated insecure web application\",\"isInOrganization\":false,\"isPrivate\":false,\"name\":\"sample_repo\",\"owner\":{\"login\":\"sample_owner\",\"url\":\"https://github.com/sample_owner\"},\"url\":\"https://github.com/sample_owner/sample_repo\"},\"securityAdvisory\":{\"classification\":\"GENERAL\",\"cvss\":{\"score\":0,\"vectorString\":null},\"cwes\":{\"nodes\":[{\"cweId\":\"CWE-20\",\"description\":\"The product receives input or data, but it does not validate or incorrectly validates that the input has the properties that are required to process the data safely and correctly.\",\"name\":\"Improper Input Validation\"}]},\"description\":\"Versions 4.2.1 and earlier of `jsonwebtoken` are affected by a verification bypass vulnerability. This is a result of weak validation of the JWT algorithm type, occuring when an attacker is allowed to arbitrarily specify the JWT algorithm.\\n\\n\\n\\n\\n## Recommendation\\n\\nUpdate to version 4.2.2 or later.\",\"ghsaId\":\"GHSA-c7hr-j4mj-j2w6\",\"identifiers\":[{\"type\":\"GHSA\",\"value\":\"GHSA-c7hr-j4mj-j2w6\"},{\"type\":\"CVE\",\"value\":\"CVE-2015-9235\"}],\"origin\":\"UNSPECIFIED\",\"permalink\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\",\"publishedAt\":\"2018-10-09T00:38:30Z\",\"references\":[{\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2015-9235\"},{\"url\":\"https://github.com/auth0/node-jsonwebtoken/commit/1bb584bc382295eeb7ee8c4452a673a77a68b687\"},{\"url\":\"https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/\"},{\"url\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\"},{\"url\":\"https://www.npmjs.com/advisories/17\"},{\"url\":\"https://www.timmclean.net/2015/02/25/jwt-alg-none.html\"},{\"url\":\"https://nodesecurity.io/advisories/17\"}],\"severity\":\"CRITICAL\",\"summary\":\"Verification Bypass in jsonwebtoken\",\"updatedAt\":\"2021-01-08T19:00:39Z\",\"withdrawnAt\":null},\"securityVulnerability\":{\"firstPatchedVersion\":{\"identifier\":\"4.2.2\"},\"package\":{\"ecosystem\":\"NPM\",\"name\":\"jsonwebtoken\"},\"severity\":\"CRITICAL\",\"updatedAt\":\"2018-11-30T19:54:28Z\",\"vulnerableVersionRange\":\"\\u003c 4.2.2\"},\"state\":\"OPEN\",\"vulnerableManifestFilename\":\"package.json\",\"vulnerableManifestPath\":\"package.json\",\"vulnerableRequirements\":\"= 0.4.0\"}"
     },
@@ -679,6 +679,15 @@ An example event for `dependabot` looks as following:
         "description": "Versions 4.2.1 and earlier of `jsonwebtoken` are affected by a verification bypass vulnerability. This is a result of weak validation of the JWT algorithm type, occuring when an attacker is allowed to arbitrarily specify the JWT algorithm.\n\n\n\n\n## Recommendation\n\nUpdate to version 4.2.2 or later.",
         "enumeration": "CVE",
         "id": "CVE-2015-9235",
+        "reference": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2015-9235",
+            "https://github.com/auth0/node-jsonwebtoken/commit/1bb584bc382295eeb7ee8c4452a673a77a68b687",
+            "https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/",
+            "https://github.com/advisories/GHSA-c7hr-j4mj-j2w6",
+            "https://www.npmjs.com/advisories/17",
+            "https://www.timmclean.net/2015/02/25/jwt-alg-none.html",
+            "https://nodesecurity.io/advisories/17"
+        ],
         "scanner": {
             "vendor": "Github"
         },
