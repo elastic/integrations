@@ -26,25 +26,25 @@ An example event for `bucket` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-07T07:10:04.411Z",
+    "@timestamp": "2022-07-22T10:40:36.032Z",
     "agent": {
-        "ephemeral_id": "a956fa94-d13f-4edc-a2c9-7587850bc048",
-        "id": "db2c5c49-ee5d-473c-8aa1-1f8d0f83ad9a",
+        "ephemeral_id": "b6b8e21b-ded1-41d8-a193-c5aead533ff1",
+        "id": "5d67808a-0fe5-4f5f-9636-ec161f0cdcf0",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "couchbase": {
         "bucket": {
             "data": {
                 "used": {
-                    "bytes": 20118025
+                    "bytes": 20892210
                 }
             },
             "disk": {
                 "fetches": 0,
                 "used": {
-                    "bytes": 20140163
+                    "bytes": 20914347
                 }
             },
             "item": {
@@ -52,7 +52,7 @@ An example event for `bucket` looks as following:
             },
             "memory": {
                 "used": {
-                    "bytes": 34974344
+                    "bytes": 34972008
                 }
             },
             "name": "beer-sample",
@@ -61,7 +61,7 @@ An example event for `bucket` looks as following:
                 "quota": {
                     "bytes": 104857600,
                     "used": {
-                        "pct": 33.35413360595703
+                        "pct": 33.35190582275391
                     }
                 }
             },
@@ -74,12 +74,12 @@ An example event for `bucket` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "db2c5c49-ee5d-473c-8aa1-1f8d0f83ad9a",
+        "id": "5d67808a-0fe5-4f5f-9636-ec161f0cdcf0",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -87,8 +87,8 @@ An example event for `bucket` looks as following:
             "database"
         ],
         "dataset": "couchbase.bucket",
-        "duration": 7721708,
-        "ingested": "2022-07-07T07:10:07Z",
+        "duration": 6674276,
+        "ingested": "2022-07-22T10:40:39Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -100,10 +100,10 @@ An example event for `bucket` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.29.0.7"
+            "172.26.0.7"
         ],
         "mac": [
-            "02:42:ac:1d:00:07"
+            "02:42:ac:1a:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -144,7 +144,7 @@ An example event for `bucket` looks as following:
 | couchbase.bucket.name | Name of the bucket. | keyword |  |  |
 | couchbase.bucket.operations_per_sec | Number of operations per second. | long |  | gauge |
 | couchbase.bucket.ram.quota.bytes | Amount of RAM used by the bucket (bytes). | long | byte | gauge |
-| couchbase.bucket.ram.quota.used.pct | Percentage of RAM used (for active objects) against the configured bucket size (%). | float | percent | gauge |
+| couchbase.bucket.ram.quota.used.pct | Percentage of RAM used (for active objects) against the configured bucket size (%). | scaled_float | percent | gauge |
 | couchbase.bucket.type | Type of the bucket. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
