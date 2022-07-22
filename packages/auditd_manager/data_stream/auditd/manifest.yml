@@ -37,9 +37,11 @@ streams:
           This option can only be used if `multicast` is disabled since `elastic-agent`
           needs to manage the rules to be able to set it.
 
-          It is important to note that with this setting set, the `elastic-agent` should never
-          be stopped, as it won't be able to resume processing `auditd` events until the
-          system is restarted. This includes `elastic-agent` restarts caused by the update process.
+          Please note that if the immutable setting is enabled and the Elastic Agent on
+          your host is stopped or restarted, a full system restart will be required in
+          order to resume processing of Auditd events. Elastic Agent upgrades will also
+          impact the Auditd event processing, and a system restart will be required
+          during Agent upgrades too.
       - name: resolve_ids
         type: bool
         title: Resolve IDs
@@ -63,10 +65,9 @@ streams:
           `printk` so they show up in system's syslog, and `panic` causes the kernel to
           panic to prevent use of the machine.
       - name: audit_rules
-        type: text
+        type: textarea
         title: Audit rules
         required: true
-        multi: true
         show_user: true
         description: |
           List of the audit rules that should be
