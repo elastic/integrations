@@ -17,15 +17,28 @@ processors:
 - json:
     field: event.original
     target_field: github.dependabot
+- set: 
+    field: _temp.updated_at
+    value: "{{{_ingest.timestamp}}}"
 - fingerprint:
     fields: 
         - github.dependabot.number
+        - github.dependabot.created_at
+        - github.dependabot.dismissed_at
+        - github.dependabot.fixed_at
     target_field: "_id"
     ignore_missing: true
 - rename:
     field: github.dependabot.createdAt
     target_field: github.dependabot.created_at
     ignore_missing: true
+- date:
+    field: github.dependabot.created_at
+    formats:
+    - ISO8601
+    timezone: UTC
+    target_field: "event.created"
+    if: ctx.github.dependabot?.created_at != null 
 - rename:
     field: github.dependabot.dependabotUpdate
     target_field: github.dependabot.dependabot_update
