@@ -46,6 +46,16 @@ processors:
                 field: "_ingest._key"
                 pattern: "%"
                 replacement: "pct"
+    
+    - foreach:
+        field: oracle.sysmetric
+        ignore_missing: true
+        ignore_failure: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: "/"
+                replacement: ""
 on_failure:
 - set:
     field: error.message
