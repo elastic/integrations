@@ -1,8 +1,7 @@
 name: activemq
 title: ActiveMQ
-version: 0.3.1
-release: beta
-description: Collect logs and metrics from ActiveMQ instances with Elastic Agent.
+version: 0.4.0
+description: Collects logs and metrics from ActiveMQ with Elastic Agent.
 type: integration
 icons:
   - src: /img/activemq.svg
@@ -12,38 +11,38 @@ icons:
 format_version: 1.0.0
 license: basic
 categories:
-  - web
+  - message_queue
 conditions:
-  kibana.version: "^7.16.0 || ^8.0.0"
+  kibana.version: ^8.2.0
 screenshots:
-  - src: /img/filebeat-activemq-application-events.png
-    title: filebeat activemq application events
+  - src: /img/filebeat-activemq-log.png
+    title: filebeat ActiveMQ application events
     size: 4102x2424
     type: image/png
-  - src: /img/filebeat-activemq-audit-events.png
-    title: filebeat activemq audit events
+  - src: /img/filebeat-activemq-audit.png
+    title: filebeat ActiveMQ audit events
     size: 4102x2480
     type: image/png
-  - src: /img/metricbeat-activemq-broker-overview.png
-    title: metricbeat activemq broker overview
+  - src: /img/metricbeat-activemq-broker.png
+    title: metricbeat ActiveMQ broker overview
     size: 2560x2032
     type: image/png
-  - src: /img/metricbeat-activemq-queues-overview.png
-    title: metricbeat activemq queues overview
+  - src: /img/metricbeat-activemq-queues.png
+    title: metricbeat ActiveMQ queues overview
     size: 2560x3712
     type: image/png
-  - src: /img/metricbeat-activemq-topics-overview.png
-    title: metricbeat activemq topics overview
+  - src: /img/metricbeat-activemq-topics.png
+    title: metricbeat ActiveMQ topics overview
     size: 2560x3712
     type: image/png
 policy_templates:
   - name: activemq
     title: ActiveMQ logs and metrics
-    description: Collect logs and metrics from ActiveMQ instances
+    description: This Elastic integration collects logs and metrics from ActiveMQ instances.
     inputs:
       - type: logfile
-        title: 'Collect ActiveMQ audit and application logs (input: logfile)'
-        description: 'Collecting audit and application logs from ActiveMQ instances (input: logfile)'
+        title: Collect ActiveMQ audit and application logs
+        description: Collecting audit and application logs from ActiveMQ instances.
       - type: activemq/metrics
         vars:
           - name: hosts
@@ -52,21 +51,16 @@ policy_templates:
             multi: true
             required: true
             show_user: true
+            description: Hosts for ActiveMQ.
             default:
               - localhost:8161
-          - name: password
-            type: password
-            title: Password
-            multi: false
-            required: true
-            show_user: true
-            default: admin
           - name: path
             type: text
             title: Path
             multi: false
             required: true
             show_user: true
+            description: Path of jolokia endpoint.
             default: /api/jolokia/?ignoreErrors=true&canonicalNaming=false
           - name: username
             type: text
@@ -74,8 +68,50 @@ policy_templates:
             multi: false
             required: true
             show_user: true
+            description: Username for authentication of ActiveMQ instance.
             default: admin
+          - name: password
+            type: password
+            title: Password
+            multi: false
+            required: true
+            show_user: true
+            description: Password for authentication of ActiveMQ instance.
+            default: admin
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            default: |
+              # ssl.certificate_authorities: |
+              #   -----BEGIN CERTIFICATE-----
+              #   MIID+jCCAuKgAwIBAgIGAJJMzlxLMA0GCSqGSIb3DQEBCwUAMHoxCzAJBgNVBAYT
+              #   AlVTMQwwCgYDVQQKEwNJQk0xFjAUBgNVBAsTDURlZmF1bHROb2RlMDExFjAUBgNV
+              #   BAsTDURlZmF1bHRDZWxsMDExGTAXBgNVBAsTEFJvb3QgQ2VydGlmaWNhdGUxEjAQ
+              #   BgNVBAMTCWxvY2FsaG9zdDAeFw0yMTEyMTQyMjA3MTZaFw0yMjEyMTQyMjA3MTZa
+              #   MF8xCzAJBgNVBAYTAlVTMQwwCgYDVQQKEwNJQk0xFjAUBgNVBAsTDURlZmF1bHRO
+              #   b2RlMDExFjAUBgNVBAsTDURlZmF1bHRDZWxsMDExEjAQBgNVBAMTCWxvY2FsaG9z
+              #   dDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMv5HCsJZIpI5zCy+jXV
+              #   z6lmzNc9UcVSEEHn86h6zT6pxuY90TYeAhlZ9hZ+SCKn4OQ4GoDRZhLPTkYDt+wW
+              #   CV3NTIy9uCGUSJ6xjCKoxClJmgSQdg5m4HzwfY4ofoEZ5iZQ0Zmt62jGRWc0zuxj
+              #   hegnM+eO2reBJYu6Ypa9RPJdYJsmn1RNnC74IDY8Y95qn+WZj//UALCpYfX41hko
+              #   i7TWD9GKQO8SBmAxhjCDifOxVBokoxYrNdzESl0LXvnzEadeZTd9BfUtTaBHhx6t
+              #   njqqCPrbTY+3jAbZFd4RiERPnhLVKMytw5ot506BhPrUtpr2lusbN5svNXjuLeea
+              #   MMUCAwEAAaOBoDCBnTATBgNVHSMEDDAKgAhOatpLwvJFqjAdBgNVHSUEFjAUBggr
+              #   BgEFBQcDAQYIKwYBBQUHAwIwVAYDVR0RBE0wS4E+UHJvZmlsZVVVSUQ6QXBwU3J2
+              #   MDEtQkFTRS05MDkzMzJjMC1iNmFiLTQ2OTMtYWI5NC01Mjc1ZDI1MmFmNDiCCWxv
+              #   Y2FsaG9zdDARBgNVHQ4ECgQITzqhA5sO8O4wDQYJKoZIhvcNAQELBQADggEBAKR0
+              #   gY/BM69S6BDyWp5dxcpmZ9FS783FBbdUXjVtTkQno+oYURDrhCdsfTLYtqUlP4J4
+              #   CHoskP+MwJjRIoKhPVQMv14Q4VC2J9coYXnePhFjE+6MaZbTjq9WaekGrpKkMaQA
+              #   iQt5b67jo7y63CZKIo9yBvs7sxODQzDn3wZwyux2vPegXSaTHR/rop/s/mPk3YTS
+              #   hQprs/IVtPoWU4/TsDN3gIlrAYGbcs29CAt5q9MfzkMmKsuDkTZD0ry42VjxjAmk
+              #   xw23l/k8RoD1wRWaDVbgpjwSzt+kl+vJE/ip2w3h69eEZ9wbo6scRO5lCO2JM4Pr
+              #   7RhLQyWn2u00L7/9Omw=
+              #   -----END CERTIFICATE-----
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
         title: Collect ActiveMQ broker, queue and topic metrics
-        description: Collecting broker, queue and topic metrics from ActiveMQ instances
+        description: Collecting broker, queue and topic metrics from ActiveMQ instances.
 owner:
   github: elastic/obs-service-integrations
