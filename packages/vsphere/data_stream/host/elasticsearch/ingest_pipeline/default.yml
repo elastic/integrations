@@ -1,0 +1,27 @@
+---
+description: Pipeline for parsing Servlet metrics
+processors:
+  - set:
+      field: ecs.version
+      value: '8.2.0'
+  - script: 
+      if: ctx.vsphere?.host?.memory?.used.bytes != null && ctx.vsphere?.host?.memory?.total.bytes != null
+      lang: painless
+      source: >
+        float used_bytes = ctx.vsphere.host.memory.used.bytes;
+        float total_bytes = ctx.vsphere.host.memory.total.bytes;
+        float used_memory_pct = (used_bytes/total_bytes)*100;
+        ctx.vsphere.host.memory.used.pct = used_memory_pct; 
+  - script: 
+      if: ctx.vsphere?.host?.cpu?.used.mhz != null && ctx.vsphere?.host?.cpu?.total.mhz != null
+      lang: painless
+      source: >
+        float used_cpu = ctx.vsphere.host.cpu.used.mhz;
+        float total_cpu = ctx.vsphere.host.cpu.total.mhz;
+        float used_cpu_pct = (used_cpu/total_cpu)*100;
+        ctx.vsphere.host.cpu.used.pct = used_cpu_pct;
+  
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
