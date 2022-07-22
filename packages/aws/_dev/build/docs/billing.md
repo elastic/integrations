@@ -1,7 +1,5 @@
 # AWS Billing
 
-## Overview
-
 The AWS Billing integration allows you to monitor your [AWS costs](https://aws.amazon.com/aws-cost-management/aws-billing/).
 
 Use the AWS Billing integration to collect metrics related to your monthly AWS bills. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
