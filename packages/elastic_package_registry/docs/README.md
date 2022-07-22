@@ -3,7 +3,7 @@
 This integration collects metrics from [Elastic Package Registry](https://github.com/elastic/package-registry).
 There is one data stream:
 
-- metrics: Telemetry data from the /metrics API.
+- metrics: Telemetry data from the `/metrics` endpoint.
 
 In order to enable this telemetry in your Elastic Package Registry instance, you must set the metrics
 address parameter. Or, as an alternative, set the environment variable
