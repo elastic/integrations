@@ -37,6 +37,9 @@ To access the `events` endpoint, the user making the API call will need to have 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| box.created_by.id | The unique identifier for the connection user. | keyword |
+| box.created_by.login | The primary email address of the connection user. Maps from \*\*.login. |  |
+| box.created_by.name | The display name of the connection user. Maps from \*\*.name. | keyword |
 | box.recorded_at | The date and time at which this event occurred. | date |
 | box.session.id | The session of the user that performed the action. Not all events will populate this attribute. | keyword |
 | box.source.created_at | The date and time at which this folder was originally created. | date |
@@ -97,9 +100,6 @@ To access the `events` endpoint, the user making the API call will need to have 
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
-| created_by.id | The unique identifier for the connection user. | keyword |
-| created_by.login | The primary email address of the connection user. Maps from \*\*.login. |  |
-| created_by.name | The display name of the connection user. Maps from \*\*.name. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -114,6 +114,7 @@ To access the `events` endpoint, the user making the API call will need to have 
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.created | File creation time. Note that not all filesystems store the creation time. | date |
+| file.ctime | Last time the file attributes or metadata changed. Note that changes to the file content will update `mtime`. This implies `ctime` will be adjusted at the same time, since `mtime` is an attribute of the file. | date |
 | file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
 | file.hash.sha1 | SHA1 hash. | keyword |
 | file.mtime | Last time the file content was modified. | date |
