@@ -8,13 +8,6 @@ processors:
       on_failure:
         - drop:
             description: Drop if not a query log
-  - set:
-      field: event.kind
-      value: event
-  - append:
-      field: event.category
-      value: network
-      allow_duplicates: false
   - append:
       field: event.type
       value: connection
@@ -58,12 +51,6 @@ processors:
       field: client
       copy_from: source
       ignore_empty_value: true
-  - convert:
-      field: destination.address
-      target_field: destination.ip
-      type: ip
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - append:
       field: error.message

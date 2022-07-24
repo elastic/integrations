@@ -14,6 +14,9 @@ processors:
       field: message
       target_field: event.original
   - set:
+      field: event.kind
+      value: event
+  - set:
       field: event.timezone
       value: "{{_tmp.tz_offset}}"
       if: ctx?._tmp?.tz_offset != null && ctx?._tmp?.tz_offset != 'local'
@@ -61,7 +64,7 @@ processors:
       if: ctx.event.provider == 'charon'
   - pipeline:
       name: '{{ IngestPipeline "dhcp" }}'
-      if: ctx.event.provider == 'dhcpd'
+      if: '["dhcpd", "dhclient", "dhcp6c"].contains(ctx?.event?.provider)'
   - pipeline:
       name: '{{ IngestPipeline "unbound" }}'
       if: ctx.event.provider == 'unbound'
@@ -75,7 +78,31 @@ processors:
       name: '{{ IngestPipeline "squid" }}'
       if: ctx.event.provider == 'squid'
   - drop:
-      if: '!["filterlog", "openvpn", "charon", "dhcpd", "unbound", "haproxy", "php-fpm", "squid"].contains(ctx?.event?.provider)'
+      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid"].contains(ctx?.event?.provider)'
+  - append:
+      field: event.category
+      value: network
+      if: "ctx?.network != null"
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      field: network.type
+      value: ipv6
+      if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
+  - set:
+      field: network.type
+      value: ipv4
+      if: 'ctx.source?.ip != null && ctx.source?.ip.contains(".")'
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -116,6 +143,19 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+  - community_id:
+      target_field: network.community_id
+      ignore_failure: true
+  - grok:
+      field: observer.ingress.interface.name
+      patterns:
+      - "%{DATA}.%{NONNEGINT:observer.ingress.vlan.id}"
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: network.vlan.id
+      copy_from: observer.ingress.vlan.id
+      ignore_empty_value: true
   - append:
       field: related.ip
       value: "{{destination.ip}}"

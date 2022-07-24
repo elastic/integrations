@@ -324,13 +324,19 @@ An example event for `log` looks as following:
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
+| pfsense.dhcp.age | Age of DHCP lease in seconds | long |
+| pfsense.dhcp.duid | The DHCP unique identifier (DUID) is used by a client to get an IP address from a DHCPv6 server. | keyword |
 | pfsense.dhcp.hostname | Hostname of DHCP client | keyword |
+| pfsense.dhcp.iaid | Identity Association Identifier used alongside the DUID to uniquely identify a DHCP client | keyword |
+| pfsense.dhcp.lease_time | The DHCP lease time in seconds | long |
+| pfsense.dhcp.transaction_id | The DHCP transaction ID | keyword |
 | pfsense.icmp.code | ICMP code. | long |
 | pfsense.icmp.destination.ip | Original destination address of the connection that caused this notification | ip |
 | pfsense.icmp.id | ID of the echo request/reply | long |
