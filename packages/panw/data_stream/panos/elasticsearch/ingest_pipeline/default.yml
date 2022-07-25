@@ -20,12 +20,15 @@ processors:
       if: ctx._conf?.tz_offset != null && ctx._conf?.tz_offset != 'local'
 
 # Collects the first few parts of the message to be used for conditional parsing later
+  - set:
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null
   - rename:
       field: message
-      target_field: event.original
-      ignore_missing: true
+      target_field: _temp_.message
   - grok:
-      field: event.original
+      field: _temp_.message
       patterns:
         - "^%{DATA},%{TIMESTAMP:event.created},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD:_temp_.config_version},%{TIMESTAMP:_temp_.generated_time},%{GREEDYDATA:message}$"
       pattern_definitions:
