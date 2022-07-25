@@ -14,6 +14,9 @@
         - name: authority_selector
           type: keyword
           description: "The authority selector specified by the requestor, if any. It is not guaranteed  that the principal was allowed to use this authority."
+        - name: principal_subject
+          type: keyword
+          description: "String representation of identity of requesting party. Populated for both first and third party identities. Only present for APIs that support third-party identities."
     - name: authorization_info
       type: array
       description: |
@@ -25,6 +28,9 @@
         - name: granted
           type: boolean
           description: "Whether or not authorization for resource and permission was granted."
+        - name: resource
+          type: keyword
+          description: "The resource being accessed, as a REST-style string."
         - name: resource_attributes
           type: group
           fields:
@@ -40,6 +46,24 @@
               type: keyword
               description: |
                 The type of the resource.
+    - name: labels
+      type: flattened
+      description: "A map of key, value pairs that provides additional information about the log entry. The labels can be user-defined or system-defined."
+    - name: logentry_operation
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: "Optional. An arbitrary operation identifier. Log entries with the same identifier are assumed to be part of the same operation."
+        - name: producer
+          type: keyword
+          description: "Optional. An arbitrary producer identifier. The combination of id and producer must be globally unique."
+        - name: first
+          type: boolean
+          description: "Optional. Set this to True if this is the first log entry in the operation."
+        - name: last
+          type: boolean
+          description: "Optional. Set this to True if this is the last log entry in the operation."
     - name: method_name
       type: keyword
       description: |
@@ -49,22 +73,7 @@
       description: |
         The number of items returned from a List or Query API method, if applicable.
     - name: request
-      type: group
-      fields:
-        - name: proto_name
-          type: keyword
-          description: |
-            Type property of the request.
-        - name: filter
-          type: keyword
-          description: |
-            Filter of the request.
-        - name: name
-          type: keyword
-          description: "Name of the request."
-        - name: resource_name
-          type: keyword
-          description: "Name of the request resource."
+      type: flattened
     - name: request_metadata
       type: group
       fields:
@@ -79,37 +88,7 @@
           description: |
             The user agent of the caller. This information is not authenticated and  should be treated accordingly.
     - name: response
-      type: group
-      fields:
-        - name: proto_name
-          type: keyword
-          description: |
-            Type property of the response.
-        - name: details
-          type: group
-          fields:
-            - name: group
-              type: keyword
-              description: |
-                The name of the group.
-            - name: kind
-              type: keyword
-              description: |
-                The kind of the response details.
-            - name: name
-              type: keyword
-              description: |
-                The name of the response details.
-            - name: uid
-              type: keyword
-              description: |
-                The uid of the response details.
-        - name: status.allowed
-          type: boolean
-        - name: status.reason
-          type: keyword
-        - name: status.value
-          type: keyword
+      type: flattened
     - name: resource_name
       type: keyword
       description: |
@@ -118,7 +97,7 @@
       type: group
       fields:
         - name: current_locations
-          type: keyword
+          type: array
           description: |
             Current locations of the resource.
     - name: service_name

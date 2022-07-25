@@ -1,0 +1,122 @@
+---
+description: Pipeline for Jamf Compliance Reporter event logs.
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: jamf_compliance_reporter.log.dataset
+      value: event
+  - set:
+      field: event.category
+      value: [process]
+  - set:
+      field: host.os.type
+      value: macos
+  - set:
+      field: event.type
+      value: [info]
+      if: '!["UNIFIED_LOG_EVENT","XPROTECT_EVENT_LOG"].contains(ctx.json.header.event_name)'
+  - convert:
+      field: json._event_score
+      target_field: jamf_compliance_reporter.log.event_score
+      type: long
+      ignore_failure: true
+  - rename:
+      field: json.header.event_name
+      target_field: event.action
+      ignore_missing: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - date:
+      field: json.header.time_seconds_epoch
+      if: ctx.json?.header?.time_seconds_epoch != 0
+      ignore_failure: true
+      formats:
+        - UNIX
+  - rename:
+      field: json.host_info.host_name
+      target_field: host.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.host_info.host_uuid
+      target_field: jamf_compliance_reporter.log.host_info.host.uuid
+      ignore_missing: true
+  - rename:
+      field: json.host_info.osversion
+      target_field: host.os.version
+      ignore_missing: true
+  - append:
+      field: host.mac
+      value: '{{{json.host_info.primary_mac_address}}}'
+      if: ctx.json?.host_info?.primary_mac_address != null
+      allow_duplicates: false
+      ignore_failure: true
+  - gsub:
+      field: host.mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - rename:
+      field: json.host_info.serial_number
+      target_field: host.id
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_audio_video_device_event" }}'
+      if: ctx.event?.action == 'audio_video_device_event'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_audit_class_verification_event" }}'
+      if: ctx.event?.action == 'audit_class_verification_event'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_compliance_reporter_tamper_event_and_file_event_info" }}'
+      if: '["compliance_reporter_tamper_event", "file_event"].contains(ctx.event?.action)'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_gatekeeper_info_event" }}'
+      if: ctx.event?.action == 'gatekeeper_info_event'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_gatekeeper_manual_overrides" }}'
+      if: ctx.event?.action == 'gatekeeper_manual_overrides'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_gatekeeper_quarantine_log" }}'
+      if: ctx.event?.action == 'gatekeeper_quarantine_log'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_hardware_event" }}'
+      if: ctx.event?.action == 'hardware_event'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_license_info_event" }}'
+      if: ctx.event?.action == 'license_info_event'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_preference_list_event" }}'
+      if: ctx.event?.action == 'preference_list_event'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_print_event_information" }}'
+      if: ctx.event?.action == 'print_event_information'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_prohibited_app_blocked" }}'
+      if: ctx.event?.action == 'prohibited_app_blocked'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_signal_event" }}'
+      if: ctx.event?.action == 'signal_event'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_unified_log_event" }}'
+      if: ctx.event?.action == 'unified_log_event'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_xprotect_definitions_version_info" }}'
+      if: ctx.event?.action == 'xprotect_definitions_version_info'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_xprotect_event_log" }}'
+      if: ctx.event?.action == 'xprotect_event_log'
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

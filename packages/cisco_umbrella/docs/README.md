@@ -1,6 +1,6 @@
 # Cisco Umbrella Integration
 
-This integration is for Cisco Umbrella . It includes the following
+This integration is for [Cisco Umbrella](https://docs.umbrella.com/). It includes the following
 datasets for receiving logs from an AWS S3 bucket using an SQS notification queue and Cisco Managed S3 bucket without SQS:
 
 - `log` dataset: supports Cisco Umbrella logs.
@@ -60,7 +60,7 @@ An example event for `log` looks as following:
     },
     "@timestamp": "2020-07-23T23:48:56.000Z",
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "related": {
         "hash": [
@@ -123,26 +123,27 @@ An example event for `log` looks as following:
 | cisco.umbrella.amp_disposition | The status of the files proxied and scanned by Cisco Advanced Malware Protection (AMP) as part of the Umbrella File Inspection feature; can be Clean, Malicious or Unknown. | keyword |
 | cisco.umbrella.amp_malware_name | If Malicious, the name of the malware according to AMP. | keyword |
 | cisco.umbrella.amp_score | The score of the malware from AMP. This field is not currently used and will be blank. | keyword |
+| cisco.umbrella.audit.after | The policy or setting after the change was made. | keyword |
+| cisco.umbrella.audit.before | The policy or setting before the change was made. | keyword |
+| cisco.umbrella.audit.type | Where the change was made, such as settings or a policy. | keyword |
 | cisco.umbrella.av_detections | The detection name according to the antivirus engine used in file inspection. | keyword |
 | cisco.umbrella.blocked_categories | The categories that resulted in the destination being blocked. Available in version 4 and above. | keyword |
 | cisco.umbrella.categories | The security or content categories that the destination matches. | keyword |
-| cisco.umbrella.cisco.umbrella.certificate_errors |  | keyword |
-| cisco.umbrella.cisco.umbrella.destination_lists_id |  | keyword |
-| cisco.umbrella.cisco.umbrella.dlp_status |  | keyword |
-| cisco.umbrella.cisco.umbrella.file_name |  | keyword |
-| cisco.umbrella.cisco.umbrella.identities |  | keyword |
-| cisco.umbrella.cisco.umbrella.identity_types |  | keyword |
-| cisco.umbrella.cisco.umbrella.request_method |  | keyword |
-| cisco.umbrella.cisco.umbrella.rule_id |  | keyword |
-| cisco.umbrella.cisco.umbrella.ruleset_id |  | keyword |
+| cisco.umbrella.certificate_errors |  | keyword |
 | cisco.umbrella.computer_name | The computer name related to the event. | keyword |
 | cisco.umbrella.content_type | The type of web content, typically text/html. | keyword |
 | cisco.umbrella.datacenter | The name of the Umbrella Data Center that processed the user-generated traffic. | keyword |
-| cisco.umbrella.identities | An array of the different identities related to the event. | keyword |
-| cisco.umbrella.identity_types | The type of identity that made the request. For example, Roaming Computer or Network. | keyword |
+| cisco.umbrella.destination_lists_id |  | keyword |
+| cisco.umbrella.dlp_status |  | keyword |
+| cisco.umbrella.file_name |  | keyword |
+| cisco.umbrella.identities |  | keyword |
+| cisco.umbrella.identity_types |  | keyword |
 | cisco.umbrella.origin_id | The unique identity of the network tunnel. | keyword |
 | cisco.umbrella.policy_identity_type | The first identity type matched with this request. Available in version 3 and above. | keyword |
 | cisco.umbrella.puas | A list of all potentially unwanted application (PUA) results for the proxied file as returned by the antivirus scanner. | keyword |
+| cisco.umbrella.request_method |  | keyword |
+| cisco.umbrella.rule_id |  | keyword |
+| cisco.umbrella.ruleset_id |  | keyword |
 | cisco.umbrella.sha_sha256 | Hex digest of the response content. | keyword |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.registered_domain | The highest registered client domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
@@ -183,6 +184,9 @@ An example event for `log` looks as following:
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.port | Port of the destination. | long |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
+| dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.response_code | The DNS response code. | keyword |
 | dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
@@ -243,6 +247,8 @@ An example event for `log` looks as following:
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.mac | MAC address of the source. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | source.nat.ip | Translated ip of source based NAT sessions (e.g. internal client to internet) Typically connections traversing load balancers, firewalls, or routers. | ip |
@@ -262,6 +268,7 @@ An example event for `log` looks as following:
 | url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
 | user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
@@ -269,4 +276,3 @@ An example event for `log` looks as following:
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
-
