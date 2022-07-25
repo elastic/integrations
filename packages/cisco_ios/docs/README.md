@@ -1,6 +1,6 @@
 # Cisco IOS Integration
 
-This integration is for Cisco IOS network device's logs. It includes the following
+This integration is for [Cisco IOS network devices'](https://developer.cisco.com/docs/) logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
 
 ### IOS
@@ -35,7 +35,7 @@ An example event for `log` looks as following:
         "ip": "224.0.0.22"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "18c952cc-80e4-43a5-afa9-79993d53ebf6",

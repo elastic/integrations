@@ -1,6 +1,6 @@
 # Alienvault OTX Integration
 
-This integration is for Alienvault OTX. It retrieves indicators for all pulses subscribed to a specific user account on OTX
+This integration is for [Alienvault OTX](https://otx.alienvault.com/api). It retrieves indicators for all pulses subscribed to a specific user account on OTX
 
 ## Configuration
 
@@ -115,7 +115,7 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "93ca38c5-fdea-4af2-acab-27edbc2b3434",
