@@ -7,7 +7,6 @@
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.ClusterName | This dimension filters the data that you request for all resources in a specified cluster. All Amazon ECS metrics are filtered by ClusterName. | keyword |
