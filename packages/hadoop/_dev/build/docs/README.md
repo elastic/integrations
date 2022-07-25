@@ -25,3 +25,26 @@ This data stream collects Cluster metrics.
 {{event "cluster"}}
 
 {{fields "cluster"}}
+
+## datanode
+
+This data stream collects Datanode metrics.
+
+{{event "datanode"}}
+
+{{fields "datanode"}}
+
+## namenode
+
+This data stream collects Namenode metrics.
+
+{{event "namenode"}}
+
+{{fields "namenode"}}
+## node_manager
+
+This data stream collects Node Manager metrics.
+
+{{event "node_manager"}}
+
+{{fields "node_manager"}}

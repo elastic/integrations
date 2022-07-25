@@ -1,11 +1,12 @@
 # pfSense Integration
 
-This is an integration to parse certain logs from PFsense and OPNsense firewalls. It parses logs
-received over the network via syslog (UDP/TCP/TLS). pfSense natively only supports UDP. OPNsense supports all 3 transports.
-Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, Squid, and PHP-FPM (Authentication) logs.  All other events will be dropped.
-The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration.  Install the HAPrxoy integration assets to utilize them.
+This is an integration to parse certain logs from [pfSense and OPNsense firewalls](https://docs.netgate.com/pfsense/en/latest/). It parses logs received over the network via syslog (UDP/TCP/TLS). pfSense natively only supports UDP. OPNsense supports all 3 transports.
 
-**pfSense Setup**  
+Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, Squid, and PHP-FPM (Authentication) logs.  
+All other events will be dropped.
+The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration. Install the HAPrxoy integration assets to use them.
+
+## pfSense Setup
 1. Navigate to _Status -> System Logs_, then click on _Settings_
 2. At the bottom check _Enable Remote Logging_
 3. (Optional) Select a specific interface to use for forwarding
@@ -13,7 +14,7 @@ The HAProxy logs are setup to be compatible with the dashboards from the HAProxy
 5. Under _Remote Syslog Contents_ select what logs to forward to the agent
    * Select _Everything_ to forward all logs to the agent or select the individual services to forward. Any log entry not in the list above will be dropped. This will cause additional data to be sent to the agent and Elasticsearch. The firewall, VPN, DHCP, DNS, and Authentication (PHP-FPM) logs are able to be individually selected. In order to collect HAProxy and Squid or other "package" logs, the _Everything_ option must be selected.
 
-**OPNsense Setup**
+## OPNsense Setup
 1. Navigate to _System -> Settings -> Logging/Targets_
 2. Add a new _Logging/Target_ (Click the plus icon)
     - Transport = UDP or TCP or TLS
@@ -33,8 +34,8 @@ The pfSense integration supports both the BSD logging format (used by pfSense by
 However the syslog format is recommended. It will provide the firewall hostname and timestamps with timezone information.
 When using the BSD format, the `Timezone Offset` config must be set when deploying the agent or else the timezone will default to the timezone of the agent. See `https://<pfsense url>/status_logs_settings.php` and https://docs.netgate.com/pfsense/en/latest/monitoring/logs/settings.html for more information.
 
+A huge thanks to [a3ilson](https://github.com/a3ilson) for the https://github.com/pfelk/pfelk repo, which is the foundation for the majority of the grok patterns and dashboards in this integration.
 
-A huge thanks to [a3ilson](https://github.com/a3ilson) for the https://github.com/pfelk/pfelk repo which is the foundation for the majority of the grok patterns and dashboards in this integration.
 ## Logs
 
 ### pfSense log
@@ -47,11 +48,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-07-04T00:10:14.578Z",
     "agent": {
-        "ephemeral_id": "238d98ab-083f-4ff7-990f-1651450ce860",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "54ce1a5f-64b9-4475-9d01-4d9fb46c22ba",
+        "id": "1db51880-bfd3-4297-9dd1-f3def809da25",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "data_stream": {
         "dataset": "pfsense.log",
@@ -76,12 +77,12 @@ An example event for `log` looks as following:
         "port": 853
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "1db51880-bfd3-4297-9dd1-f3def809da25",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "event": {
         "action": "block",
@@ -90,10 +91,9 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "pfsense.log",
-        "id": "72237",
-        "ingested": "2022-02-03T09:44:29Z",
+        "ingested": "2022-06-29T13:24:24Z",
         "kind": "event",
-        "original": "\u003c134\u003e1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale\n",
+        "original": "\u003c134\u003e1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
         "provider": "filterlog",
         "reason": "match",
         "timezone": "-05:00",
@@ -103,11 +103,11 @@ An example event for `log` looks as following:
         ]
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.19.0.7:54953"
+            "address": "192.168.128.4:52326"
         },
         "syslog": {
             "priority": 134
@@ -117,7 +117,7 @@ An example event for `log` looks as following:
     "network": {
         "bytes": 60,
         "community_id": "1:pOXVyPJTFJI5seusI/UD6SwvBjg=",
-        "direction": "outbound",
+        "direction": "in",
         "iana_number": "6",
         "transport": "tcp",
         "type": "ipv4"
@@ -131,7 +131,9 @@ An example event for `log` looks as following:
                 "id": "12"
             }
         },
-        "name": "pfSense.example.com"
+        "name": "pfSense.example.com",
+        "type": "firewall",
+        "vendor": "netgate"
     },
     "pfsense": {
         "ip": {
@@ -153,6 +155,10 @@ An example event for `log` looks as following:
             ],
             "window": 64240
         }
+    },
+    "process": {
+        "name": "filterlog",
+        "pid": 72237
     },
     "related": {
         "ip": [
@@ -333,7 +339,7 @@ An example event for `log` looks as following:
 | pfsense.icmp.parameter | ICMP parameter. | long |
 | pfsense.icmp.redirect | ICMP redirect address. | ip |
 | pfsense.icmp.rtime | Receive Timestamp | date |
-| pfsense.icmp.seq | Sequence number of the echo request/reply | long |
+| pfsense.icmp.seq | ICMP sequence number. | long |
 | pfsense.icmp.ttime | Transmit Timestamp | date |
 | pfsense.icmp.type | ICMP type. | keyword |
 | pfsense.icmp.unreachable.iana_number | Protocol ID number that was unreachable | long |

@@ -1,0 +1,61 @@
+---
+description: Pipeline for Jamf Compliance Reporter gatekeeper quarantine event logs.
+processors:
+  - foreach:
+      field: json.event_attributes.attributes
+      processor:
+        rename:
+          field: _ingest._value.QuarantineAgentBundleIdentifier
+          target_field: _ingest._value.quarantine.agent_bundle_identifier
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes.attributes
+      processor:
+        rename:
+          field: _ingest._value.QuarantineAgentName
+          target_field: _ingest._value.quarantine.agent_name
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes.attributes
+      processor:
+        rename:
+          field: _ingest._value.QuarantineDataURLString
+          target_field: _ingest._value.quarantine.data_url_string
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes.attributes
+      processor:
+        rename:
+          field: _ingest._value.QuarantineEventIdentifier
+          target_field: _ingest._value.quarantine.event_identifier
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes.attributes
+      processor:
+        rename:
+          field: _ingest._value.QuarantineOriginURLString
+          target_field: _ingest._value.quarantine.origin_url_string
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes.attributes
+      processor:
+        date:
+          field: _ingest._value.QuarantineTimeStamp
+          target_field: _ingest._value.quarantine.timestamp
+          ignore_failure: true
+          formats:
+            - UNIX
+  - foreach:
+      field: json.event_attributes.attributes
+      processor:
+        remove:
+          field: _ingest._value.QuarantineTimeStamp
+          ignore_failure: true
+  - rename:
+      field: json.event_attributes.attributes
+      target_field: jamf_compliance_reporter.log.event_attributes.attributes
+      ignore_missing: true
+  - rename:
+      field: json.event_attributes.path
+      target_field: jamf_compliance_reporter.log.event_attributes.path
+      ignore_missing: true

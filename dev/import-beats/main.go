@@ -80,6 +80,8 @@ func (o *importerOptions) selectedPackages() []string {
 }
 
 func main() {
+	log.Println("Deprecated: https://github.com/elastic/integrations/blob/main/dev/import-beats/README.md")
+
 	var options importerOptions
 
 	flag.StringVar(&options.beatsDir, "beatsDir", "../beats", "Path to the beats repository")
