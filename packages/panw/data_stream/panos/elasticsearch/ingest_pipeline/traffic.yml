@@ -1,39 +1,40 @@
 ---
-description: Pipeline for PanOS Traffic Logs
+description: Pipeline for PanOS Traffic Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/traffic-log-fields
 processors:
   - csv:
       field: message
       target_fields:
-        - source.ip
-        - destination.ip
-        - source.nat.ip
-        - destination.nat.ip
+        - panw.panos.source.ip
+        - panw.panos.destination.ip
+        - panw.panos.source.nat.ip
+        - panw.panos.destination.nat.ip
         - panw.panos.ruleset
-        - source.user.name
-        - destination.user.name
-        - network.application
-        - panw.panos.related_vsys
-        - observer.ingress.zone
-        - observer.egress.zone
-        - observer.ingress.interface.name
-        - observer.egress.interface.name
+        - panw.panos.source.user
+        - panw.panos.destination.user
+        - panw.panos.network.application
+        - panw.panos.virtual_sys
+        - panw.panos.source.zone
+        - panw.panos.destination.zone
+        - panw.panos.inbound_interface
+        - panw.panos.outbound_interface
         - panw.panos.log_profile
         - _temp_.future_use1
         - panw.panos.flow_id
         - panw.panos.repeat_count
-        - source.port
-        - destination.port
-        - source.nat.port
-        - destination.nat.port
+        - panw.panos.source.port
+        - panw.panos.destination.port
+        - panw.panos.source.nat.port
+        - panw.panos.destination.nat.port
         - _temp_.labels
-        - network.transport
+        - panw.panos.protocol
         - panw.panos.action
-        - network.bytes
-        - source.bytes
-        - destination.bytes
-        - network.packets
-        - event.start
-        - event.duration
+        - panw.panos.network.bytes
+        - panw.panos.bytes_sent
+        - panw.panos.bytes_received
+        - panw.panos.network.packets
+        - panw.panos.start_time
+        - panw.panos.elapsed_time
         - panw.panos.url.category
         - _temp_.future_use2
         - panw.panos.sequence_number
@@ -41,15 +42,15 @@ processors:
         - _temp_.srcloc
         - _temp_.dstloc
         - _temp_.future_use3
-        - source.packets
-        - destination.packets
+        - panw.panos.packets_sent
+        - panw.panos.packets_received
         - panw.panos.endreason
         - panw.panos.device_group_hierarchy1
         - panw.panos.device_group_hierarchy2
         - panw.panos.device_group_hierarchy3
         - panw.panos.device_group_hierarchy4
         - panw.panos.vsys_name
-        - observer.hostname
+        - panw.panos.device_name
         - panw.panos.action_source
         - panw.panos.source_vm_uuid
         - panw.panos.destination_vm_uuid
@@ -58,76 +59,65 @@ processors:
         - panw.panos.parent_session.id
         - panw.panos.parent_session.start_time
         - panw.panos.tunnel_type
-        - panw.panos.scp.assoc_id
-        - panw.panos.scp.chunks
-        - panw.panos.scp.chunks_sent
-        - panw.panos.scp.chunks_received
+        - panw.panos.sctp.assoc_id
+        - panw.panos.sctp.chunks
+        - panw.panos.sctp.chunks_sent
+        - panw.panos.sctp.chunks_received
+        - panw.panos.rule_uuid
+        - panw.panos.http2_connection
+        - panw.panos.link.change_count
+        - panw.panos.policy.id
+        - panw.panos.link.switches
+        - panw.panos.sdwan.cluster.name
+        - panw.panos.sdwan.device_type
+        - panw.panos.sdwan.cluster.type
+        - panw.panos.sdwan.site
+        - panw.panos.dynamic_user.group.name
+        - panw.panos.xff.ip
+        - panw.panos.src.category
+        - panw.panos.src.profile
+        - panw.panos.src.model
+        - panw.panos.src.vendor
+        - panw.panos.src.os.family
+        - panw.panos.src.os.version
+        - panw.panos.src.host
+        - panw.panos.src.mac
+        - panw.panos.dst.category
+        - panw.panos.dst.profile
+        - panw.panos.dst.model
+        - panw.panos.dst.vendor
+        - panw.panos.dst.os.family
+        - panw.panos.dst.os.version
+        - panw.panos.dst.host
+        - panw.panos.dst.mac
+        - panw.panos.container.id
+        - panw.panos.pod.namespace
+        - panw.panos.pod.name
+        - panw.panos.src.external_dynamic_list
+        - panw.panos.dst.external_dynamic_list
+        - panw.panos.host.id
+        - panw.panos.serial_number
+        - panw.panos.src.dynamic_address_group
+        - panw.panos.dst.dynamic_address_group
+        - panw.panos.session.owner
+        - _temp_.high_res_timestamp
+        - panw.panos.nsdsai_sst
+        - panw.panos.nsdsai_sd
+        - panw.panos.application.sub_category
+        - panw.panos.application.category
+        - panw.panos.application.technology
+        - panw.panos.application.risk_level
+        - panw.panos.application.characteristics
+        - panw.panos.application.container
+        - panw.panos.application.tunneled
+        - panw.panos.application.is_saas
+        - panw.panos.application.is_sanctioned
+        - panw.panos.is_offloaded
 
-# Set network.direction using src/dst zone (traffic logs).
   - set:
-      field: network.direction
-      value: inbound
-      if: >
-        ctx?._temp_?.external_zones != null &&
-        ctx?._temp_?.internal_zones != null &&
-        ctx?.observer?.ingress?.zone != null &&
-        ctx?.observer?.egress?.zone != null &&
-        ctx._temp_.external_zones.contains(ctx.observer.ingress.zone) &&
-        ctx._temp_.internal_zones.contains(ctx.observer.egress.zone)
-  - set:
-      field: network.direction
-      value: outbound
-      if: >
-        ctx?._temp_?.external_zones != null &&
-        ctx?._temp_?.internal_zones != null &&
-        ctx?.observer?.ingress?.zone != null &&
-        ctx?.observer?.egress?.zone != null &&
-        ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
-        ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
-  - set:
-      field: network.direction
-      value: internal
-      if: >
-        ctx?._temp_?.internal_zones != null &&
-        ctx?.observer?.ingress?.zone != null &&
-        ctx?.observer?.egress?.zone != null &&
-        ctx._temp_.internal_zones.contains(ctx.observer.egress.zone) &&
-        ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
-  - set:
-      field: network.direction
-      value: external
-      if: >
-        ctx?._temp_?.external_zones != null &&
-        ctx?.observer?.ingress?.zone != null &&
-        ctx?.observer?.egress?.zone != null &&
-        ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
-        ctx._temp_.external_zones.contains(ctx.observer.ingress.zone)
-  - set:
-      field: network.direction
-      value: unknown
-      if: >
-        ctx?._temp_?.external_zones != null &&
-        ctx?._temp_?.internal_zones != null &&
-        (
-          (
-            !ctx._temp_.external_zones.contains(ctx?.observer?.egress?.zone) &&
-            !ctx._temp_.internal_zones.contains(ctx?.observer?.egress?.zone)
-          ) ||
-          (
-            !ctx._temp_.external_zones.contains(ctx?.observer?.ingress?.zone) &&
-            !ctx._temp_.internal_zones.contains(ctx?.observer?.ingress?.zone)
-          )
-        )
-
-# Set network.type.
-  - set:
-      field: network.type
-      value: 'ipv4'
-      if: ctx?.labels?.ipv6_session == null
-  - set:
-      field: network.type
-      value: 'ipv6'
-      if: ctx?.labels?.ipv6_session != null
+      field: http.version
+      value: '2'
+      if: ctx.panw?.panos?.http2_connection != null && ctx.panw?.panos?.http2_connection != 0 && ctx.panw?.panos?.http2_connection != "0"
 
 # Set event.category.
   - set:
@@ -138,28 +128,179 @@ processors:
       value:
         - network
 
-# event.start is the time the session started.
-  - date:
-      if: "ctx?.event?.timezone == null && ctx?.event?.start != null"
-      field: "event.start"
-      target_field: "event.start"
-      formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
-  - date:
-      if: "ctx?.event?.timezone != null && ctx?.event?.start != null"
-      field: "event.start"
-      target_field: "event.start"
-      timezone: "{{{ event.timezone }}}"
-      formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+# Set custom fields to ECS fields
+  - set:
+      field: destination.bytes
+      copy_from: panw.panos.bytes_received
+      ignore_failure: true
+  - set:
+      field: panw.panos.destination.location
+      copy_from: _temp_.dstloc
+      ignore_failure: true
+  - set:
+      field: destination.ip
+      copy_from: panw.panos.destination.ip
+      ignore_failure: true
+  - set:
+      field: destination.nat.ip
+      copy_from: panw.panos.destination.nat.ip
+      ignore_failure: true
+  - set:
+      field: destination.nat.port
+      copy_from: panw.panos.destination.nat.port
+      ignore_failure: true
+  - set:
+      field: destination.packets
+      copy_from: panw.panos.packets_received
+      ignore_failure: true
+  - set:
+      field: destination.port
+      copy_from: panw.panos.destination.port
+      ignore_failure: true
+  - set:
+      field: destination.user.name
+      copy_from: panw.panos.destination.user
+      ignore_failure: true
+  - set:
+      field: event.duration
+      copy_from: panw.panos.elapsed_time
+      ignore_failure: true
+  - set:
+      field: event.start
+      copy_from: panw.panos.start_time
+      ignore_failure: true
+  - set:
+      field: network.application
+      copy_from: panw.panos.network.application
+      ignore_failure: true
+  - set:
+      field: network.bytes
+      copy_from: panw.panos.network.bytes
+      ignore_failure: true
+  - set:
+      field: network.packets
+      copy_from: panw.panos.network.packets
+      ignore_failure: true
+  - set:
+      field: network.transport
+      copy_from: panw.panos.protocol
+      ignore_failure: true
+  - set:
+      field: observer.egress.interface.name
+      copy_from: panw.panos.outbound_interface
+      ignore_failure: true
+  - set:
+      field: observer.egress.zone
+      copy_from: panw.panos.destination.zone
+      ignore_failure: true
+  - set:
+      field: observer.hostname
+      copy_from: panw.panos.device_name
+      ignore_failure: true
+  - set:
+      field: observer.ingress.interface.name
+      copy_from: panw.panos.inbound_interface
+      ignore_failure: true
+  - set:
+      field: observer.ingress.zone
+      copy_from: panw.panos.source.zone
+      ignore_failure: true
+  - set:
+      field: rule.uuid
+      copy_from: panw.panos.rule_uuid
+      ignore_failure: true
+  - set:
+      field: source.bytes
+      copy_from: panw.panos.bytes_sent
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.location
+      copy_from: _temp_.srcloc
+      ignore_failure: true
+  - set:
+      field: source.ip
+      copy_from: panw.panos.source.ip
+      ignore_failure: true
+  - set:
+      field: source.nat.ip
+      copy_from: panw.panos.source.nat.ip
+      ignore_failure: true
+  - set:
+      field: source.packets
+      copy_from: panw.panos.packets_sent
+      ignore_failure: true
+  - set:
+      field: source.port
+      copy_from: panw.panos.source.port
+      ignore_failure: true
+  - set:
+      field: source.nat.port
+      copy_from: panw.panos.source.nat.port
+      ignore_failure: true
+  - set:
+      field: source.user.name
+      copy_from: panw.panos.source.user
+      ignore_failure: true
+
+# Set network.direction using src/dst zone (traffic logs).
+  - set:
+      field: network.direction
+      value: inbound
+      if: >
+        ctx._temp_?.external_zones != null &&
+        ctx._temp_?.internal_zones != null &&
+        ctx.observer?.ingress?.zone != null &&
+        ctx.observer?.egress?.zone != null &&
+        ctx._temp_.external_zones.contains(ctx.observer.ingress.zone) &&
+        ctx._temp_.internal_zones.contains(ctx.observer.egress.zone)
+  - set:
+      field: network.direction
+      value: outbound
+      if: >
+        ctx._temp_?.external_zones != null &&
+        ctx._temp_?.internal_zones != null &&
+        ctx.observer?.ingress?.zone != null &&
+        ctx.observer?.egress?.zone != null &&
+        ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
+        ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
+  - set:
+      field: network.direction
+      value: internal
+      if: >
+        ctx._temp_?.internal_zones != null &&
+        ctx.observer?.ingress?.zone != null &&
+        ctx.observer?.egress?.zone != null &&
+        ctx._temp_.internal_zones.contains(ctx.observer.egress.zone) &&
+        ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
+  - set:
+      field: network.direction
+      value: external
+      if: >
+        ctx._temp_?.external_zones != null &&
+        ctx.observer?.ingress?.zone != null &&
+        ctx.observer?.egress?.zone != null &&
+        ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
+        ctx._temp_.external_zones.contains(ctx.observer.ingress.zone)
+  - set:
+      field: network.direction
+      value: unknown
+      if: >
+        ctx._temp_?.external_zones != null &&
+        ctx._temp_?.internal_zones != null &&
+        (
+          (
+            !ctx._temp_.external_zones.contains(ctx.observer?.egress?.zone) &&
+            !ctx._temp_.internal_zones.contains(ctx.observer?.egress?.zone)
+          ) ||
+          (
+            !ctx._temp_.external_zones.contains(ctx.observer?.ingress?.zone) &&
+            !ctx._temp_.internal_zones.contains(ctx.observer?.ingress?.zone)
+          )
+        )
 
 # Time the parent_session of the tunnel started.
   - date:
-      if: "ctx?.event?.timezone == null && ctx?.panw?.panos?.parent_session?.start_time != null"
+      if: "ctx.event?.timezone == null && ctx.panw?.panos?.parent_session?.start_time != null"
       field: "panw.panos.parent_session.start_time"
       target_field: "panw.panos.parent_session.start_time"
       formats:
@@ -167,7 +308,7 @@ processors:
         - "strict_date_optional_time_nanos"
       on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
   - date:
-      if: "ctx?.event?.timezone != null && ctx?.panw?.panos?.parent_session?.start_time != null"
+      if: "ctx.event?.timezone != null && ctx.panw?.panos?.parent_session?.start_time != null"
       field: "panw.panos.parent_session.start_time"
       target_field: "panw.panos.parent_session.start_time"
       timezone: "{{{ event.timezone }}}"
