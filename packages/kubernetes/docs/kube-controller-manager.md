@@ -148,19 +148,11 @@ An example event for `controllermanager` looks as following:
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.controllermanager.client.request.count | Number of requests as client | long |  | counter |
+| kubernetes.controllermanager.client.request.duration.sec.bucket.\* | Response latency distribution, histogram buckets | object |  |  |
+| kubernetes.controllermanager.client.request.duration.sec.count | Request duration, number of operations | long |  | counter |
+| kubernetes.controllermanager.client.request.duration.sec.sum | Request duration, sum in seconds | long |  | counter |
 | kubernetes.controllermanager.code | HTTP code | keyword |  |  |
-| kubernetes.controllermanager.handler | Request handler | keyword |  |  |
 | kubernetes.controllermanager.host | Request host | keyword |  |  |
-| kubernetes.controllermanager.http.request.count | Request count for response | long |  | counter |
-| kubernetes.controllermanager.http.request.duration.us.count | Request count for duration | long | micros | counter |
-| kubernetes.controllermanager.http.request.duration.us.percentile.\* | Request duration microseconds percentiles | object |  |  |
-| kubernetes.controllermanager.http.request.duration.us.sum | Request duration microseconds cumulative sum | double | micros | counter |
-| kubernetes.controllermanager.http.request.size.bytes.count | Request count for size | long | byte | counter |
-| kubernetes.controllermanager.http.request.size.bytes.percentile.\* | Request size percentiles | object |  |  |
-| kubernetes.controllermanager.http.request.size.bytes.sum | Request size cumulative sum | long | byte | counter |
-| kubernetes.controllermanager.http.response.size.bytes.count | Response count | long | byte | counter |
-| kubernetes.controllermanager.http.response.size.bytes.percentile.\* | Response size percentiles | object |  |  |
-| kubernetes.controllermanager.http.response.size.bytes.sum | Response size cumulative sum | long | byte | counter |
 | kubernetes.controllermanager.leader.is_master | Whether the node is master | boolean |  |  |
 | kubernetes.controllermanager.method | HTTP method | keyword |  |  |
 | kubernetes.controllermanager.name | Name for the resource | keyword |  |  |
@@ -169,15 +161,21 @@ An example event for `controllermanager` looks as following:
 | kubernetes.controllermanager.node.collector.health.pct | Percentage of healthy nodes | long |  | gauge |
 | kubernetes.controllermanager.node.collector.unhealthy.count | Number of unhealthy nodes | long |  | gauge |
 | kubernetes.controllermanager.process.cpu.sec | CPU seconds | double |  | counter |
+| kubernetes.controllermanager.process.fds.max.count | Maximum number of open file descriptors | long |  | gauge |
 | kubernetes.controllermanager.process.fds.open.count | Number of open file descriptors | long |  | gauge |
 | kubernetes.controllermanager.process.memory.resident.bytes | Bytes in resident memory | long | byte | gauge |
 | kubernetes.controllermanager.process.memory.virtual.bytes | Bytes in virtual memory | long | byte | gauge |
 | kubernetes.controllermanager.process.started.sec | Seconds since the process started | double |  | gauge |
+| kubernetes.controllermanager.url | Request url | keyword |  |  |
+| kubernetes.controllermanager.verb | Request verb | keyword |  |  |
 | kubernetes.controllermanager.workqueue.adds.count | Workqueue add count | long |  | counter |
 | kubernetes.controllermanager.workqueue.depth.count | Workqueue depth count | long |  | gauge |
 | kubernetes.controllermanager.workqueue.longestrunning.sec | Longest running processors | double |  | gauge |
 | kubernetes.controllermanager.workqueue.retries.count | Workqueue number of retries | long |  | counter |
 | kubernetes.controllermanager.workqueue.unfinished.sec | Unfinished processors | double |  | gauge |
+| kubernetes.controllermanager.workqueue.work.duration.sec.bucket.\* | Processing time of workqueue item, histogram buckets | object |  |  |
+| kubernetes.controllermanager.workqueue.work.duration.sec.count | Processing time of workqueue item, number of operations | long |  | counter |
+| kubernetes.controllermanager.workqueue.work.duration.sec.sum | Processing time of workqueue item, sum in seconds | long |  | counter |
 | kubernetes.controllermanager.zone | Infrastructure zone | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |

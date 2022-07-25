@@ -142,22 +142,11 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.audit.rejected.count | Number of audit rejected events | long |  | counter |
 | kubernetes.apiserver.client.request.count | Number of requests as client | long |  | counter |
 | kubernetes.apiserver.etcd.object.count | Number of kubernetes objects at etcd | long |  | gauge |
-| kubernetes.apiserver.http.request.count | Request count for response | long |  | counter |
-| kubernetes.apiserver.http.request.duration.us.count | Request count for duration | long | micros | counter |
-| kubernetes.apiserver.http.request.duration.us.percentile.\* | Request duration microseconds percentiles | object |  |  |
-| kubernetes.apiserver.http.request.duration.us.sum | Request duration microseconds cumulative sum | double | micros | counter |
-| kubernetes.apiserver.http.request.size.bytes.count | Request count for size | long | byte | counter |
-| kubernetes.apiserver.http.request.size.bytes.percentile.\* | Request size percentiles | object |  |  |
-| kubernetes.apiserver.http.request.size.bytes.sum | Request size cumulative sum | long | byte | counter |
-| kubernetes.apiserver.http.response.size.bytes.count | Response count | long |  | counter |
-| kubernetes.apiserver.http.response.size.bytes.percentile.\* | Response size percentiles | object |  |  |
-| kubernetes.apiserver.http.response.size.bytes.sum | Response size cumulative sum | long | byte | counter |
 | kubernetes.apiserver.process.cpu.sec | CPU seconds | double |  | counter |
 | kubernetes.apiserver.process.fds.open.count | Number of open file descriptors | long |  | gauge |
 | kubernetes.apiserver.process.memory.resident.bytes | Bytes in resident memory | long | byte | gauge |
 | kubernetes.apiserver.process.memory.virtual.bytes | Bytes in virtual memory | long | byte | gauge |
 | kubernetes.apiserver.process.started.sec | Seconds since the process started | double |  | gauge |
-| kubernetes.apiserver.request.client | Client executing requests | keyword |  |  |
 | kubernetes.apiserver.request.code | HTTP code | keyword |  |  |
 | kubernetes.apiserver.request.component | Component handling the request | keyword |  |  |
 | kubernetes.apiserver.request.content_type | Request HTTP content type | keyword |  |  |
@@ -171,9 +160,6 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.request.handler | Request handler | keyword |  |  |
 | kubernetes.apiserver.request.host | Request host | keyword |  |  |
 | kubernetes.apiserver.request.kind | Kind of request | keyword |  |  |
-| kubernetes.apiserver.request.latency.bucket.\* | Request latency histogram buckets | object |  |  |
-| kubernetes.apiserver.request.latency.count | Request latency, number of requests | long |  | counter |
-| kubernetes.apiserver.request.latency.sum | Requests latency, sum of latencies in microseconds | long |  | counter |
 | kubernetes.apiserver.request.longrunning.count | Number of requests active long running requests | long |  | counter |
 | kubernetes.apiserver.request.method | HTTP method | keyword |  |  |
 | kubernetes.apiserver.request.resource | Requested resource | keyword |  |  |
@@ -181,6 +167,13 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.request.subresource | Requested subresource | keyword |  |  |
 | kubernetes.apiserver.request.verb | HTTP verb | keyword |  |  |
 | kubernetes.apiserver.request.version | version for the group | keyword |  |  |
+| kubernetes.apiserver.response.size.bytes.bucket.\* | Response size distribution in bytes for each group, version, verb, resource, subresource, scope and component. | object |  |  |
+| kubernetes.apiserver.response.size.bytes.count | Number of responses to requests | long |  | counter |
+| kubernetes.apiserver.response.size.bytes.sum | Sum of responses sizes in bytes | long | byte | counter |
+| kubernetes.apiserver.watch.events.kind | Resource kind of the watch event | keyword |  |  |
+| kubernetes.apiserver.watch.events.size.bytes.bucket.\* | Watch event size distribution in bytes | object |  |  |
+| kubernetes.apiserver.watch.events.size.bytes.count | Number of watch events | long |  | counter |
+| kubernetes.apiserver.watch.events.size.bytes.sum | Sum of watch events sizes in bytes | long | byte | counter |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
