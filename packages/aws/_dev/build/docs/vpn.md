@@ -4,7 +4,7 @@ The Amazon VPN integration allows you to monitor the Virtual Private Network (VP
 
 Use the Amazon VPN integration to collect metrics related to your AWS-hosted VPNs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
 
-For example, you could use this data to view the state of each secure VPN tunnels you have. For example:  static VPNs can have a state of DOWN or UP. Then you can alert the relevant project manager to any significant changes by email.
+You could use this data to view the state of each secure VPN tunnels you have. For example: static VPNs can have a state of DOWN or UP. Then you can alert the relevant project manager to any significant changes by email.
 
 ## Data streams
 
