@@ -10,7 +10,7 @@ For example, you could use this data to view the number of the specified resourc
 
 The AWS Usage integration collects one type of data: metrics.
 
-**Metrics** give you insight into the state of your AWS Usage integration include the number of specified API operations performed in your account, the number of the specified resources running in your account, and more . See more details in the [Metrics](#metrics-reference).
+**Metrics** give you insight into the state of your AWS Usage integration include the number of specified API operations performed in your account, the number of the specified resources running in your account, and more. See more details in the [Metrics](#metrics-reference).
 
 ## Requirements
 
