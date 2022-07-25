@@ -159,6 +159,7 @@ Visit the page for each individual AWS integration to see details about exported
 | EC2              |    x    |    x    |
 | ELB              |    x    |    x    |
 | Fargate          |    x    |         |
+| Kinesis          |    x    |         |
 | Network Firewall |    x    |    x    |
 | Lambda           |    x    |         |
 | NAT Gateway      |    x    |         |
