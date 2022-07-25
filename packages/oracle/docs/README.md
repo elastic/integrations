@@ -10,24 +10,23 @@ Connectivity to Oracle can be facilitated in two ways either by using official O
 
 #### Oracle Database Connection Pre-requisites
 
-
 To get connected with the Oracle Database ORACLE_SID, ORACLE_BASE, ORACLE_HOME environment variables should be set.
 
-For example: Let’s consider Oracle Database 21c installation using RPM manually by following [Oracle Installation](https://docs.oracle.com/en/database/oracle/oracle-database/21/ladbi/running-rpm-packages-to-install-oracle-database.html), environment variables should be set as follows:
+For example: Let’s consider Oracle Database 21c installation using RPM manually by following the [Oracle Installation instructions](https://docs.oracle.com/en/database/oracle/oracle-database/21/ladbi/running-rpm-packages-to-install-oracle-database.html). Environment variables should be set as follows:
     `ORACLE_SID=ORCLCDB`
     `ORACLE_BASE=/opt/oracle/oradata`
     `ORACLE_HOME=/opt/oracle/product/21c/dbhome_1`
-Also, add `ORACLE_HOME/bin` to the `PATH` environment variable.
+Also, add `$ORACLE_HOME/bin` to the `PATH` environment variable.
 
 #### Oracle Instant Client
 
 Oracle Instant Client enables development and deployment of applications that connect to Oracle Database. The Instant Client libraries provide the necessary network connectivity and advanced data features to make full use of Oracle Database. If you have OCI Oracle server which comes with these libraries pre-installed, you don't need a separate client installation.
 
-The OCI library install few Client Shared Libraries that must be referenced on the machine where Metricbeat is installed. Please follow [Oracle Client Installation](https://docs.oracle.com/en/database/oracle/oracle-database/21/lacli/install-instant-client-using-zip.html#GUID-D3DCB4FB-D3CA-4C25-BE48-3A1FB5A22E84) link for OCI Instant Client set up. The OCI Instant Client is available with the Oracle Universal Installer, RPM file or ZIP file. Download links can be found [Oracle Instant Client Download](https://www.oracle.com/database/technologies/instant-client/downloads.html)
+The OCI library install few Client Shared Libraries that must be referenced on the machine where Metricbeat is installed. Please follow the [Oracle Client Installation link](https://docs.oracle.com/en/database/oracle/oracle-database/21/lacli/install-instant-client-using-zip.html#GUID-D3DCB4FB-D3CA-4C25-BE48-3A1FB5A22E84) link for OCI Instant Client set up. The OCI Instant Client is available with the Oracle Universal Installer, RPM file or ZIP file. Download links can be found at the [Oracle Instant Client Download page](https://www.oracle.com/database/technologies/instant-client/downloads.html).
 
 ####  Enable Listener
 
-The Oracle listener is a service that runs on the database host and receives requests from Oracle clients. Make sure that [Listener](https://docs.oracle.com/cd/B19306_01/network.102/b14213/lsnrctl.htm) should be running. 
+The Oracle listener is a service that runs on the database host and receives requests from Oracle clients. Make sure that [Listener](https://docs.oracle.com/cd/B19306_01/network.102/b14213/lsnrctl.htm) is be running. 
 To check if the listener is running or not, run: 
 
 `lsnrctl STATUS`
@@ -295,9 +294,9 @@ An example event for `database_audit` looks as following:
 | oracle.performance.cursors.session.cache_hits | Number of hits in the session cursor cache. A hit means that the SQL statement did not have to be reparsed. | double |  | gauge |
 | oracle.performance.cursors.total | Total opened cursors by username and machine | double |  | gauge |
 | oracle.performance.io_reloads | Reloads by Pins ratio. A Reload is any PIN of an object that is not the first PIN performed since the object handle was created, and which requires loading the object from disk. Pins are the number of times a PIN was requested for objects of this namespace. | double |  | gauge |
-| oracle.performance.lock_requests | Average of the ratio between gethits and gets being Gethits the number of times an object’s handle was found in memory and gets the number of times a lock was requested for objects of this namespace. | double |  | gauge |
+| oracle.performance.lock_requests | Average of the ratio between 'gethits' and 'gets' being 'Gethits' the number of times an object's handle was found in memory and 'gets' the number of times a lock was requested for objects of this namespace. | double |  | gauge |
 | oracle.performance.machine | Operating system machine name | keyword |  |  |
-| oracle.performance.pin_requests | Average of all pinhits/pins ratios being PinHits the number of times all of the metadata pieces of the library object were found in memory and pins the number of times a PIN was requested for objects of this namespace. | double |  | gauge |
+| oracle.performance.pin_requests | Average of all pinhits/pins ratios being 'PinHits' the number of times all of the metadata pieces of the library object were found in memory and 'pins' the number of times a PIN was requested for objects of this namespace | double |  | gauge |
 | oracle.performance.username | Oracle username | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
