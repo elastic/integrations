@@ -20,7 +20,7 @@ Example Host Configuration: `http://Administrator:password@localhost:8091`
 
 ### Bucket
 
-This is the `bucket` data stream.
+This is the `bucket` data stream. A bucket is a logical container for a related set of items such as key-value pairs or documents.
 
 {{event "bucket"}}
 
