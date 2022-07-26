@@ -281,8 +281,8 @@ An example event for `database_audit` looks as following:
 | host.ip | Host ip addresses. | ip |  |  |
 | oracle.performance.buffer_pool | Name of the buffer pool in the instance | keyword |  |  |
 | oracle.performance.cache.buffer.hit.pct | The cache hit ratio of the specified buffer pool. | double | percent | gauge |
-| oracle.performance.cache.get.consistent | DB block gets. It is a count of blocks read in CURRENT mode. | long |  | gauge |
-| oracle.performance.cache.get.db_blocks | DB block gets. It is a count of blocks read in CURRENT mode. | long |  | gauge |
+| oracle.performance.cache.get.consistent | Consistent gets statistic | long |  | gauge |
+| oracle.performance.cache.get.db_blocks | Database blocks gotten | long |  | gauge |
 | oracle.performance.cache.physical_reads | Physical reads. This metric represents the number of data blocks read from disk per second during a time period | long |  | gauge |
 | oracle.performance.cursors.avg | Average cursors opened by username and machine | double |  | gauge |
 | oracle.performance.cursors.cache_hit.pct | Ratio of session cursor cache hits from total number of cursors | double | percent | gauge |
