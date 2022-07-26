@@ -1,0 +1,125 @@
+title: "CIFv3 Feed"
+type: logs
+streams:
+  - input: httpjson
+    template_path: httpjson.yml.hbs
+    title: CIFv3 feed indicators
+    description: Collect CIFv3 feed indicators
+    vars:
+      - name: confidence
+        type: text
+        title: Confidence
+        multi: false
+        required: true
+        show_user: true
+        default: 8
+        description: "Minimum confidence (0-10) to return indicator in feed"
+
+      - name: cif_tags
+        type: text
+        title: Filter on indicator tags
+        multi: false
+        required: true
+        show_user: true
+        description: "A comma separated list of indicator tags to retrieve, e.g.: 'botnet,exploit,malware,phishing'"
+
+      - name: type
+        type: text
+        title: Filter on indicator type
+        multi: false
+        required: true
+        show_user: true
+        description: "An indicator type (fqdn|ipv4|url|ssdeep) to retrieve, example: 'md5'"
+
+      - name: limit
+        type: text
+        title: Result size limit
+        multi: false
+        required: true
+        show_user: true
+        default: 100000
+        description: "Maximum result set size, capped at 250000"
+
+      - name: initial_lookback
+        type: text
+        title: Initial lookback period
+        multi: false
+        required: true
+        show_user: true
+        default: 120h
+        description: How far back to look for indicators the first time the agent is started.
+
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 60m
+        description: How frequently to pull the feed.
+      
+      # this doesn't currently work
+      #- name: filters
+      #  type: yaml
+      #  title: Optional REST API filters
+      #  multi: false
+      #  required: false
+      #  show_user: false
+      #  default: |-
+      #    #tlp: white
+      #  description: "Optional REST API Feed filters supported by [CIFv3](https://github.com/csirtgadgets/bearded-avenger/blob/master/cif/httpd/common.py#L7-L9)."
+
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+        description: "Default example enables https verification. Change to 'none' to disable. https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-reference-yml.html"
+        default: |-
+          verification_mode: full
+
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: false
+        default: 120s
+
+      - name: proxy_url
+        type: url
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        description: Tags to add to each event once ingested into Elastic. Ingested indicators' tags will be appended dynamically to this list.
+        default:
+          - forwarded
+          - cif3-indicator
+
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
