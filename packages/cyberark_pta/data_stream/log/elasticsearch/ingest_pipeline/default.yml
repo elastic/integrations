@@ -31,6 +31,12 @@ processors:
       allow_duplicates: false
       if: "ctx?.cef?.extensions?.deviceCustomString4 != null && ctx?.cef?.extensions?.deviceCustomString4 != ''"
 
+  # cleanup 'None' for source or destination ip
+  - remove:
+      field: 
+        - error
+      if: "ctx?.cef?.extensions?.sourceAddress == null || ctx?.cef?.extensions?.destinationAddress == null"
+
 on_failure:
   - append:
       field: error.message
