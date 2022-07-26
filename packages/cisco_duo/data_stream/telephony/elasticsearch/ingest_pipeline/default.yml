@@ -26,9 +26,13 @@ processors:
   - date:
       field: json.timestamp
       target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.timestamp != null
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - rename:
       field: json.context
       target_field: cisco_duo.telephony.event_type
@@ -54,6 +58,6 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{{_ingest.on_failure_message}}}"
