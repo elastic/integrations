@@ -11,6 +11,27 @@ processors:
       field: event.original
       patterns:
         - "%{SYSLOG5424PRI}%{GREEDYDATA:syslog5424_sd}$"
+  - convert:
+      field: syslog5424_pri
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: syslog5424_pri
+      target_field: log.syslog.priority
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      lang: painless
+      source: |
+        if (ctx.log?.syslog?.priority != null) {
+          def severity = new HashMap();
+          severity['code'] = ctx.log.syslog.priority&0x7;
+          ctx.log.syslog['severity'] = severity;
+          def facility = new HashMap();
+          facility['code'] = ctx.log.syslog.priority>>3;
+          ctx.log.syslog['facility'] = facility;
+        }
   - kv:
       field: syslog5424_sd
       field_split: " (?=[a-z\\_\\-]+=)"
@@ -204,7 +225,6 @@ processors:
         - _temp.time
         - _temp
         - syslog5424_sd
-        - syslog5424_pri
         - fortinet.firewall.tz
         - fortinet.firewall.date
         - fortinet.firewall.devid
