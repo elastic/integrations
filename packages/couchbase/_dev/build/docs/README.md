@@ -4,6 +4,8 @@ This Elastic integration collects and parses the [Node](https://docs.couchbase.c
 
 This integration uses `couchbase` metricbeat module to collect `node` metrics.
 
+Note: For Couchbase cluster setup, there is an ideal scenario of single host with administrator access for the entire cluster to collect metrics. Providing multiple host from the same cluster might lead to data duplication. In case of multiple clusters, adding a new integration to collect data from different cluster host is a good option.
+
 ## Compatibility
 
 This integration has been tested against Couchbase `v6.6`, `v7.0` and `v7.1`.
@@ -20,7 +22,7 @@ Example Host Configuration: `http://Administrator:password@localhost:8091`
 
 ### Node
 
-This is the `node` data stream.
+This is the `node` data stream. A Couchbase Server node is a physical or virtual machine that hosts a single instance of Couchbase Server.
 
 {{event "node"}}
 
