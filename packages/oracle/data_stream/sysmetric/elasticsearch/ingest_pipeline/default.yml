@@ -1,0 +1,62 @@
+---
+description: Pipeline for processing oracle sysmetrics data
+processors:
+    - remove:
+        field: sql.driver
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: sql.query
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: sql
+        target_field: oracle
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.metrics
+        target_field: "oracle.sysmetric"
+        ignore_failure: true
+        ignore_missing: true
+    - foreach:
+        field: oracle.sysmetric
+        ignore_missing: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: " "
+                replacement: "_"
+    - foreach:
+        field: oracle.sysmetric
+        ignore_failure: true
+        ignore_missing: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: "\\(%\\)"
+                replacement: "pct"
+                
+    - foreach:
+        field: oracle.sysmetric
+        ignore_missing: true
+        ignore_failure: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: "%"
+                replacement: "pct"
+    
+    - foreach:
+        field: oracle.sysmetric
+        ignore_missing: true
+        ignore_failure: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: "/"
+                replacement: ""
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

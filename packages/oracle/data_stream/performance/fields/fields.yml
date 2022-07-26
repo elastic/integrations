@@ -1,0 +1,119 @@
+- name: oracle.performance
+  type: group
+  release: beta
+  fields:
+    - name: machine
+      type: keyword
+      description: |
+        Operating system machine name.
+    - name: buffer_pool
+      type: keyword
+      description: |
+        Name of the buffer pool in the instance.
+    - name: username
+      type: keyword
+      description: |
+        Oracle username
+    - name: io_reloads
+      type: double
+      metric_type: gauge
+      description: |
+        Reloads by Pins ratio. A Reload is any PIN of an object that is not the first PIN performed since the object handle was created, and which requires loading the object from disk. Pins are the number of times a PIN was requested for objects of this namespace.
+    - name: lock_requests
+      type: double
+      metric_type: gauge
+      description: |
+        Average of the ratio between 'gethits' and 'gets', where 'gethits' the number of times an object's handle was found in memory and 'gets' is the number of times a lock was requested for objects of this namespace.
+    - name: pin_requests
+      type: double
+      metric_type: gauge
+      description: |
+        Average of all pinhits/pins ratios, where 'PinHits' is the number of times all of the metadata pieces of the library object were found in memory and 'pins' is the number of times a PIN was requested for objects of this namespace.
+    - name: cache
+      type: group
+      fields:
+        - name: physical_reads
+          type: long
+          metric_type: gauge
+          description: |
+            Physical reads. This metric represents the number of data blocks read from disk per second during a time period.
+        - name: get
+          type: group
+          fields:
+            - name: db_blocks
+              type: long
+              metric_type: gauge
+              description: |
+                Database blocks gotten.
+            - name: consistent
+              type: long
+              metric_type: gauge
+              description: |
+                Consistent gets statistic.
+        - name: buffer.hit.pct
+          type: double
+          metric_type: gauge
+          unit: percent
+          description: |
+            The cache hit ratio of the specified buffer pool.
+    - name: cursors
+      type: group
+      description: Cursors information
+      fields:
+        - name: parse
+          type: group
+          fields:
+            - name: real
+              type: long
+              metric_type: gauge
+              description: |
+                "Real number of parses that occurred: session cursor cache hits - parse count (total)."
+            - name: total
+              type: long
+              metric_type: gauge
+              description: |
+                Total number of parse calls (hard and soft). A soft parse is a check on an object already in the shared pool, to verify that the permissions on the underlying object have not changed.
+        - name: opened
+          type: group
+          fields:
+            - name: current
+              type: long
+              metric_type: gauge
+              description: |
+                Total number of current open cursors.
+            - name: total
+              type: long
+              metric_type: counter
+              description: |
+                Total number of cursors opened since the instance started.
+        - name: avg
+          type: double
+          metric_type: gauge
+          description: |
+            Average cursors opened by username and machine.
+        - name: max
+          type: double
+          metric_type: gauge
+          description: |
+            Max cursors opened by username and machine.
+        - name: total
+          type: double
+          metric_type: gauge
+          description: |
+            Total opened cursors by username and machine.
+        - name: session.cache_hits
+          type: double
+          metric_type: gauge
+          description: |
+            Number of hits in the session cursor cache. A hit means that the SQL statement did not have to be reparsed.
+        - name: parse.real
+          type: double
+          metric_type: gauge
+          description: |
+            "Real number of parses that occurred: session cursor cache hits - parse count (total)."
+        - name: cache_hit.pct
+          type: double
+          unit: percent
+          metric_type: gauge
+          description: |
+            Ratio of session cursor cache hits from total number of cursors.
