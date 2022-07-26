@@ -4,6 +4,8 @@ This Elastic integration collects and parses the [Bucket](https://docs.couchbase
 
 This integration uses `http` metricbeat module to collect `bucket` metrics.
 
+Note: For Couchbase cluster setup, there is an ideal scenario of single host with administrator access for the entire cluster to collect metrics. Providing multiple host from the same cluster might lead to data duplication. In case of multiple clusters, adding a new integration to collect data from different cluster host is a good option.
+
 ## Compatibility
 
 This integration has been tested against Couchbase `v6.6`, `v7.0` and `v7.1`.
