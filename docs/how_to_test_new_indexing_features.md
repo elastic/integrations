@@ -22,7 +22,7 @@ PUT /_component_template/metrics-nginx.substatus@custom
     "settings": {},
     "mappings": {
       "_source": {
-        "synthetic": true
+        "mode": "synthetic"
       }
     }
   },
