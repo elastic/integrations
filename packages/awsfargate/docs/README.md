@@ -376,6 +376,8 @@ An example event for `task_stats` looks as following:
     "awsfargate": {
         "task_stats": {
             "cluster_name": "default",
+            "task_known_status": "RUNNING",
+            "task_desired_status": "RUNNING",
             "cpu": {
                 "core": null,
                 "kernel": {
