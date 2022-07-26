@@ -4,6 +4,8 @@ This Elastic integration collects and parses the [Cluster](https://docs.couchbas
 
 This integration uses `http` metricbeat module to collect `cluster` metrics.
 
+Note: For Couchbase cluster setup, there is an ideal scenario of single host with administrator access for the entire cluster to collect metrics. Providing multiple host from the same cluster might lead to data duplication. In case of multiple clusters, adding a new integration to collect data from different cluster host is a good option.
+
 ## Compatibility
 
 This integration has been tested against Couchbase `v6.6`, `v7.0` and `v7.1`.
@@ -20,7 +22,7 @@ Example Host Configuration: `http://Administrator:password@localhost:8091`
 
 ### Cluster
 
-This is the `cluster` data stream.
+This is the `cluster` data stream. A cluster is a collection of nodes that are accessed and managed as a single group. Each node is an equal partner in orchestrating the cluster to provide facilities such as operational information (monitoring) or managing cluster membership of nodes and health of nodes.
 
 An example event for `cluster` looks as following:
 
@@ -171,7 +173,7 @@ An example event for `cluster` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
-| couchbase.cluster.buckets.max.count | Max bucket count setting. | long |  |  |
+| couchbase.cluster.buckets.max.count | Maximum number of buckets. | long |  |  |
 | couchbase.cluster.hdd.free.bytes | Free hard drive space in the cluster (bytes). | long | byte | gauge |
 | couchbase.cluster.hdd.quota.total.bytes | Hard drive quota total for the cluster (bytes). | long | byte | gauge |
 | couchbase.cluster.hdd.total.bytes | Total hard drive space available to the cluster (bytes). | long | byte | gauge |
