@@ -279,24 +279,24 @@ An example event for `database_audit` looks as following:
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
-| oracle.performance.buffer_pool | Name of the buffer pool in the instance | keyword |  |  |
+| oracle.performance.buffer_pool | Name of the buffer pool in the instance. | keyword |  |  |
 | oracle.performance.cache.buffer.hit.pct | The cache hit ratio of the specified buffer pool. | double | percent | gauge |
-| oracle.performance.cache.get.consistent | Consistent gets statistic | long |  | gauge |
-| oracle.performance.cache.get.db_blocks | Database blocks gotten | long |  | gauge |
-| oracle.performance.cache.physical_reads | Physical reads. This metric represents the number of data blocks read from disk per second during a time period | long |  | gauge |
-| oracle.performance.cursors.avg | Average cursors opened by username and machine | double |  | gauge |
-| oracle.performance.cursors.cache_hit.pct | Ratio of session cursor cache hits from total number of cursors | double | percent | gauge |
-| oracle.performance.cursors.max | Max cursors opened by username and machine | double |  | gauge |
-| oracle.performance.cursors.opened.current | Total number of current open cursors | long |  | gauge |
-| oracle.performance.cursors.opened.total | Total number of cursors opened since the instance started | long |  | counter |
-| oracle.performance.cursors.parse.real | "Real number of parses that occurred: session cursor cache hits - parse count (total)" | double |  | gauge |
-| oracle.performance.cursors.parse.total | Total number of parse calls (hard and soft). A soft parse is a check on an object already in the shared pool, to verify that the permissions on the underlying object have not changed | long |  | gauge |
+| oracle.performance.cache.get.consistent | Consistent gets statistic. | long |  | gauge |
+| oracle.performance.cache.get.db_blocks | Database blocks gotten. | long |  | gauge |
+| oracle.performance.cache.physical_reads | Physical reads. This metric represents the number of data blocks read from disk per second during a time period. | long |  | gauge |
+| oracle.performance.cursors.avg | Average cursors opened by username and machine. | double |  | gauge |
+| oracle.performance.cursors.cache_hit.pct | Ratio of session cursor cache hits from total number of cursors. | double | percent | gauge |
+| oracle.performance.cursors.max | Max cursors opened by username and machine. | double |  | gauge |
+| oracle.performance.cursors.opened.current | Total number of current open cursors. | long |  | gauge |
+| oracle.performance.cursors.opened.total | Total number of cursors opened since the instance started. | long |  | counter |
+| oracle.performance.cursors.parse.real | "Real number of parses that occurred: session cursor cache hits - parse count (total)." | double |  | gauge |
+| oracle.performance.cursors.parse.total | Total number of parse calls (hard and soft). A soft parse is a check on an object already in the shared pool, to verify that the permissions on the underlying object have not changed. | long |  | gauge |
 | oracle.performance.cursors.session.cache_hits | Number of hits in the session cursor cache. A hit means that the SQL statement did not have to be reparsed. | double |  | gauge |
-| oracle.performance.cursors.total | Total opened cursors by username and machine | double |  | gauge |
+| oracle.performance.cursors.total | Total opened cursors by username and machine. | double |  | gauge |
 | oracle.performance.io_reloads | Reloads by Pins ratio. A Reload is any PIN of an object that is not the first PIN performed since the object handle was created, and which requires loading the object from disk. Pins are the number of times a PIN was requested for objects of this namespace. | double |  | gauge |
-| oracle.performance.lock_requests | Average of the ratio between 'gethits' and 'gets' being 'Gethits' the number of times an object's handle was found in memory and 'gets' the number of times a lock was requested for objects of this namespace. | double |  | gauge |
-| oracle.performance.machine | Operating system machine name | keyword |  |  |
-| oracle.performance.pin_requests | Average of all pinhits/pins ratios being 'PinHits' the number of times all of the metadata pieces of the library object were found in memory and 'pins' the number of times a PIN was requested for objects of this namespace | double |  | gauge |
+| oracle.performance.lock_requests | Average of the ratio between 'gethits' and 'gets', where 'gethits' the number of times an object's handle was found in memory and 'gets' is the number of times a lock was requested for objects of this namespace. | double |  | gauge |
+| oracle.performance.machine | Operating system machine name. | keyword |  |  |
+| oracle.performance.pin_requests | Average of all pinhits/pins ratios, where 'PinHits' is the number of times all of the metadata pieces of the library object were found in memory and 'pins' is the number of times a PIN was requested for objects of this namespace. | double |  | gauge |
 | oracle.performance.username | Oracle username | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
@@ -442,166 +442,166 @@ An example event for `tablespace` looks as following:
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
 | oracle.sysmetric.active_parallel_sessions | Active parallel sessions | double |  | gauge |
-| oracle.sysmetric.active_serial_sessions | Active serial sessions | double |  | gauge |
-| oracle.sysmetric.average_active_sessions | Average active sessions | double |  | gauge |
-| oracle.sysmetric.average_synchronous_single-block_read_latency | Average synchronous single-block read latency | double |  | gauge |
-| oracle.sysmetric.background_checkpoints_per_sec | Background checkpoints per sec | double |  | gauge |
+| oracle.sysmetric.active_serial_sessions | Active serial sessions. | double |  | gauge |
+| oracle.sysmetric.average_active_sessions | Average active sessions. | double |  | gauge |
+| oracle.sysmetric.average_synchronous_single-block_read_latency | Average synchronous single-block read latency. | double |  | gauge |
+| oracle.sysmetric.background_checkpoints_per_sec | Background checkpoints per second. | double |  | gauge |
 | oracle.sysmetric.background_cpu_usage_per_sec | Background CPU usage per sec | double |  | gauge |
-| oracle.sysmetric.background_time_per_sec | Background time per sec | double |  | gauge |
-| oracle.sysmetric.branch_node_splits_per_sec | Branch node splits per sec | double |  | gauge |
-| oracle.sysmetric.branch_node_splits_per_txn | Branch node splits per transaction | double |  | gauge |
+| oracle.sysmetric.background_time_per_sec | Background time per second. | double |  | gauge |
+| oracle.sysmetric.branch_node_splits_per_sec | Branch node splits per second. | double |  | gauge |
+| oracle.sysmetric.branch_node_splits_per_txn | Branch node splits per transaction. | double |  | gauge |
 | oracle.sysmetric.buffer_cache_hit_ratio | Buffer cache hit ratio | double |  | gauge |
-| oracle.sysmetric.captured_user_calls | Captured user calls | double |  | gauge |
-| oracle.sysmetric.cell_physical_io_interconnect_bytes | Cell physical io interconnect bytes | double |  | gauge |
-| oracle.sysmetric.consistent_read_changes_per_sec | Consistent read changes per sec | double |  | gauge |
-| oracle.sysmetric.consistent_read_changes_per_txn | Consistent read changes per transaction | double |  | gauge |
-| oracle.sysmetric.consistent_read_gets_per_sec | Consistent read gets per sec | double |  | gauge |
-| oracle.sysmetric.consistent_read_gets_per_txn | Consistent read gets per transaction | double |  | gauge |
-| oracle.sysmetric.cpu_usage_per_sec | CPU usage per sec | double |  | gauge |
-| oracle.sysmetric.cpu_usage_per_txn | CPU usage per transaction | double |  | gauge |
-| oracle.sysmetric.cr_blocks_created_per_sec | Cr blocks created per sec | double |  | gauge |
-| oracle.sysmetric.cr_blocks_created_per_txn | Cr blocks created per transaction | double |  | gauge |
-| oracle.sysmetric.cr_undo_records_applied_per_sec | Cr undo records applied per sec | double |  | gauge |
-| oracle.sysmetric.cr_undo_records_applied_per_txn | Cr undo records applied per transaction | double |  | gauge |
-| oracle.sysmetric.current_logons_count | Current logons count | double |  | gauge |
+| oracle.sysmetric.captured_user_calls | Captured user calls. | double |  | gauge |
+| oracle.sysmetric.cell_physical_io_interconnect_bytes | Cell physical io interconnect bytes. | double |  | gauge |
+| oracle.sysmetric.consistent_read_changes_per_sec | Consistent read changes per second. | double |  | gauge |
+| oracle.sysmetric.consistent_read_changes_per_txn | Consistent read changes per transaction. | double |  | gauge |
+| oracle.sysmetric.consistent_read_gets_per_sec | Consistent read gets per second. | double |  | gauge |
+| oracle.sysmetric.consistent_read_gets_per_txn | Consistent read gets per transaction. | double |  | gauge |
+| oracle.sysmetric.cpu_usage_per_sec | CPU usage per second. | double |  | gauge |
+| oracle.sysmetric.cpu_usage_per_txn | CPU usage per transaction. | double |  | gauge |
+| oracle.sysmetric.cr_blocks_created_per_sec | Cr blocks created per second. | double |  | gauge |
+| oracle.sysmetric.cr_blocks_created_per_txn | Cr blocks created per transaction. | double |  | gauge |
+| oracle.sysmetric.cr_undo_records_applied_per_sec | Cr undo records applied per second. | double |  | gauge |
+| oracle.sysmetric.cr_undo_records_applied_per_txn | Cr undo records applied per transaction. | double |  | gauge |
+| oracle.sysmetric.current_logons_count | Current logons count. | double |  | gauge |
 | oracle.sysmetric.current_open_cursors_count | Current open cursors count | double |  | gauge |
 | oracle.sysmetric.current_os_load | Current os load | double |  | gauge |
-| oracle.sysmetric.cursor_cache_hit_ratio | Cursor cache hit ratio | double |  | gauge |
+| oracle.sysmetric.cursor_cache_hit_ratio | Cursor cache hit ratio. | double |  | gauge |
 | oracle.sysmetric.database_cpu_time_ratio | Database CPU time ratio | double |  | gauge |
-| oracle.sysmetric.database_time_per_sec | Database time per sec | double |  | gauge |
-| oracle.sysmetric.database_wait_time_ratio | Database wait time ratio | double |  | gauge |
-| oracle.sysmetric.db_block_changes_per_sec | Db block changes per sec | double |  | gauge |
-| oracle.sysmetric.db_block_changes_per_txn | Db block changes per transaction | double |  | gauge |
-| oracle.sysmetric.db_block_changes_per_user_call | Db block changes per user call | double |  | gauge |
+| oracle.sysmetric.database_time_per_sec | Database time per second. | double |  | gauge |
+| oracle.sysmetric.database_wait_time_ratio | Database wait time ratio. | double |  | gauge |
+| oracle.sysmetric.db_block_changes_per_sec | Db block changes per second. | double |  | gauge |
+| oracle.sysmetric.db_block_changes_per_txn | Db block changes per transaction. | double |  | gauge |
+| oracle.sysmetric.db_block_changes_per_user_call | Db block changes per user call. | double |  | gauge |
 | oracle.sysmetric.db_block_gets_per_sec | Db block gets per sec | double |  | gauge |
 | oracle.sysmetric.db_block_gets_per_txn | Db block gets per transaction | double |  | gauge |
-| oracle.sysmetric.db_block_gets_per_user_call | Db block gets per user call | double |  | gauge |
-| oracle.sysmetric.dbwr_checkpoints_per_sec | Dbwr checkpoints per sec | double |  | gauge |
+| oracle.sysmetric.db_block_gets_per_user_call | Db block gets per user call. | double |  | gauge |
+| oracle.sysmetric.dbwr_checkpoints_per_sec | Dbwr checkpoints per sec. | double |  | gauge |
 | oracle.sysmetric.ddl_statements_parallelized_per_sec | Ddl statements parallelized per sec | double |  | gauge |
-| oracle.sysmetric.disk_sort_per_sec | Disk sort per sec | double |  | gauge |
-| oracle.sysmetric.disk_sort_per_txn | Disk sort per transaction | double |  | gauge |
+| oracle.sysmetric.disk_sort_per_sec | Disk sort per second. | double |  | gauge |
+| oracle.sysmetric.disk_sort_per_txn | Disk sort per transaction. | double |  | gauge |
 | oracle.sysmetric.dml_statements_parallelized_per_sec | Dml statements parallelized per sec | double |  | gauge |
 | oracle.sysmetric.enqueue_deadlocks_per_sec | Enqueue deadlocks per sec | double |  | gauge |
-| oracle.sysmetric.enqueue_deadlocks_per_txn | Enqueue deadlocks per transaction | double |  | gauge |
-| oracle.sysmetric.enqueue_requests_per_sec | Enqueue requests per sec | double |  | gauge |
+| oracle.sysmetric.enqueue_deadlocks_per_txn | Enqueue deadlocks per transaction. | double |  | gauge |
+| oracle.sysmetric.enqueue_requests_per_sec | Enqueue requests per second. | double |  | gauge |
 | oracle.sysmetric.enqueue_requests_per_txn | Enqueue requests per transaction | double |  | gauge |
-| oracle.sysmetric.enqueue_timeouts_per_sec | Enqueue timeouts per sec | double |  | gauge |
-| oracle.sysmetric.enqueue_timeouts_per_txn | Enqueue timeouts per transaction | double |  | gauge |
-| oracle.sysmetric.enqueue_waits_per_sec | Enqueue waits per sec | double |  | gauge |
-| oracle.sysmetric.enqueue_waits_per_txn | Enqueue waits per transaction | double |  | gauge |
+| oracle.sysmetric.enqueue_timeouts_per_sec | Enqueue timeouts per second. | double |  | gauge |
+| oracle.sysmetric.enqueue_timeouts_per_txn | Enqueue timeouts per transaction. | double |  | gauge |
+| oracle.sysmetric.enqueue_waits_per_sec | Enqueue waits per second. | double |  | gauge |
+| oracle.sysmetric.enqueue_waits_per_txn | Enqueue waits per transaction. | double |  | gauge |
 | oracle.sysmetric.execute_without_parse_ratio | Execute without parse ratio | double |  | gauge |
-| oracle.sysmetric.executions_per_sec | Executions per sec | double |  | gauge |
-| oracle.sysmetric.executions_per_txn | Executions per transaction | double |  | gauge |
+| oracle.sysmetric.executions_per_sec | Executions per second. | double |  | gauge |
+| oracle.sysmetric.executions_per_txn | Executions per transaction. | double |  | gauge |
 | oracle.sysmetric.executions_per_user_call | Executions per user call | double |  | gauge |
-| oracle.sysmetric.full_index_scans_per_sec | Full index scans per sec | double |  | gauge |
-| oracle.sysmetric.full_index_scans_per_txn | Full index scans per transaction | double |  | gauge |
-| oracle.sysmetric.gc_cr_block_received_per_second | Gc cr block received per second | double |  | gauge |
-| oracle.sysmetric.gc_cr_block_received_per_txn | Gc cr block received per transaction | double |  | gauge |
-| oracle.sysmetric.gc_current_block_received_per_second | Gc current block received per second | double |  | gauge |
+| oracle.sysmetric.full_index_scans_per_sec | Full index scans per second. | double |  | gauge |
+| oracle.sysmetric.full_index_scans_per_txn | Full index scans per transaction. | double |  | gauge |
+| oracle.sysmetric.gc_cr_block_received_per_second | Gc cr block received per second. | double |  | gauge |
+| oracle.sysmetric.gc_cr_block_received_per_txn | Gc cr block received per transaction. | double |  | gauge |
+| oracle.sysmetric.gc_current_block_received_per_second | Gc current block received per second. | double |  | gauge |
 | oracle.sysmetric.gc_current_block_received_per_txn | Gc current block received per transaction | double |  | gauge |
-| oracle.sysmetric.global_cache_average_cr_get_time | Global cache average cr get time | double |  | gauge |
+| oracle.sysmetric.global_cache_average_cr_get_time | Global cache average cr get time. | double |  | gauge |
 | oracle.sysmetric.global_cache_average_current_get_time | Global cache average current get time | double |  | gauge |
-| oracle.sysmetric.global_cache_blocks_corrupted | Global cache blocks corrupted | double |  | gauge |
-| oracle.sysmetric.global_cache_blocks_lost | Global cache blocks lost | double |  | gauge |
+| oracle.sysmetric.global_cache_blocks_corrupted | Global cache blocks corrupted. | double |  | gauge |
+| oracle.sysmetric.global_cache_blocks_lost | Global cache blocks lost. | double |  | gauge |
 | oracle.sysmetric.hard_parse_count_per_sec | Hard parse count per sec | double |  | gauge |
-| oracle.sysmetric.hard_parse_count_per_txn | Hard parse count per transaction | double |  | gauge |
-| oracle.sysmetric.host_cpu_usage_per_sec | Host CPU usage per sec | double |  | gauge |
-| oracle.sysmetric.host_cpu_utilization_pct | Host CPU utilization percentage | double | percent | gauge |
+| oracle.sysmetric.hard_parse_count_per_txn | Hard parse count per transaction. | double |  | gauge |
+| oracle.sysmetric.host_cpu_usage_per_sec | Host CPU usage per sec. | double |  | gauge |
+| oracle.sysmetric.host_cpu_utilization_pct | Host CPU utilization percentage. | double | percent | gauge |
 | oracle.sysmetric.io_megabytes_per_second | IO megabytes per second | double |  | gauge |
 | oracle.sysmetric.io_requests_per_second | IO requests per second | double |  | gauge |
-| oracle.sysmetric.leaf_node_splits_per_sec | Leaf node splits per sec | double |  | gauge |
-| oracle.sysmetric.leaf_node_splits_per_txn | Leaf node splits per transaction | double |  | gauge |
-| oracle.sysmetric.library_cache_hit_ratio | Library cache hit ratio | double |  | gauge |
-| oracle.sysmetric.library_cache_miss_ratio | Library cache miss ratio | double |  | gauge |
-| oracle.sysmetric.logical_reads_per_sec | Logical reads per sec | double |  | gauge |
-| oracle.sysmetric.logical_reads_per_txn | Logical reads per transaction | double |  | gauge |
-| oracle.sysmetric.logical_reads_per_user_call | Logical reads per user call | double |  | gauge |
+| oracle.sysmetric.leaf_node_splits_per_sec | Leaf node splits per second. | double |  | gauge |
+| oracle.sysmetric.leaf_node_splits_per_txn | Leaf node splits per transaction. | double |  | gauge |
+| oracle.sysmetric.library_cache_hit_ratio | Library cache hit ratio. | double |  | gauge |
+| oracle.sysmetric.library_cache_miss_ratio | Library cache miss ratio. | double |  | gauge |
+| oracle.sysmetric.logical_reads_per_sec | Logical reads per sec. | double |  | gauge |
+| oracle.sysmetric.logical_reads_per_txn | Logical reads per transaction. | double |  | gauge |
+| oracle.sysmetric.logical_reads_per_user_call | Logical reads per user call. | double |  | gauge |
 | oracle.sysmetric.logons_per_sec | Logons per sec | double |  | gauge |
-| oracle.sysmetric.logons_per_txn | Logons per transaction | double |  | gauge |
-| oracle.sysmetric.long_table_scans_per_sec | Long table scans per sec | double |  | gauge |
-| oracle.sysmetric.long_table_scans_per_txn | Long table scans per transaction | double |  | gauge |
-| oracle.sysmetric.memory_sorts_ratio | Memory sorts ratio | double |  | gauge |
-| oracle.sysmetric.network_traffic_volume_per_sec | Network traffic volume per sec | double |  | gauge |
+| oracle.sysmetric.logons_per_txn | Logons per transaction. | double |  | gauge |
+| oracle.sysmetric.long_table_scans_per_sec | Long table scans per second. | double |  | gauge |
+| oracle.sysmetric.long_table_scans_per_txn | Long table scans per transaction. | double |  | gauge |
+| oracle.sysmetric.memory_sorts_ratio | Memory sorts ratio. | double |  | gauge |
+| oracle.sysmetric.network_traffic_volume_per_sec | Network traffic volume per second. | double |  | gauge |
 | oracle.sysmetric.open_cursors_per_sec | Open cursors per sec | double |  | gauge |
 | oracle.sysmetric.open_cursors_per_txn | Open cursors per transaction | double |  | gauge |
 | oracle.sysmetric.parse_failure_count_per_sec | Parse failure count per sec | double |  | gauge |
-| oracle.sysmetric.parse_failure_count_per_txn | Parse failure count per transaction | double |  | gauge |
-| oracle.sysmetric.pga_cache_hit_pct | Pga cache hit percentage | double | percent | gauge |
-| oracle.sysmetric.physical_read_bytes_per_sec | Physical read bytes per sec | double |  | gauge |
-| oracle.sysmetric.physical_read_io_requests_per_sec | Physical read io requests per sec | double |  | gauge |
-| oracle.sysmetric.physical_read_total_bytes_per_sec | Physical read total bytes per sec | double |  | gauge |
+| oracle.sysmetric.parse_failure_count_per_txn | Parse failure count per transaction. | double |  | gauge |
+| oracle.sysmetric.pga_cache_hit_pct | Pga cache hit percentage. | double | percent | gauge |
+| oracle.sysmetric.physical_read_bytes_per_sec | Physical read bytes per second. | double |  | gauge |
+| oracle.sysmetric.physical_read_io_requests_per_sec | Physical read io requests per second. | double |  | gauge |
+| oracle.sysmetric.physical_read_total_bytes_per_sec | Physical read total bytes per second. | double |  | gauge |
 | oracle.sysmetric.physical_read_total_io_requests_per_sec | Physical read total io requests per sec | double |  | gauge |
-| oracle.sysmetric.physical_reads_direct_lobs_per_sec | Physical reads direct lobs per sec | double |  | gauge |
-| oracle.sysmetric.physical_reads_direct_lobs_per_txn | Physical reads direct lobs per transaction | double |  | gauge |
-| oracle.sysmetric.physical_reads_direct_per_sec | Physical reads direct per sec | double |  | gauge |
-| oracle.sysmetric.physical_reads_direct_per_txn | Physical reads direct per transaction | double |  | gauge |
-| oracle.sysmetric.physical_reads_per_sec | Physical reads per sec | double |  | gauge |
-| oracle.sysmetric.physical_reads_per_txn | Physical reads per transaction | double |  | gauge |
-| oracle.sysmetric.physical_write_bytes_per_sec | Physical write bytes per sec | double |  | gauge |
-| oracle.sysmetric.physical_write_io_requests_per_sec | Physical write io requests per sec | double |  | gauge |
-| oracle.sysmetric.physical_write_total_bytes_per_sec | Physical write total bytes per sec | double |  | gauge |
-| oracle.sysmetric.physical_write_total_io_requests_per_sec | Physical write total io requests per sec | double |  | gauge |
+| oracle.sysmetric.physical_reads_direct_lobs_per_sec | Physical reads direct lobs per second. | double |  | gauge |
+| oracle.sysmetric.physical_reads_direct_lobs_per_txn | Physical reads direct lobs per transaction. | double |  | gauge |
+| oracle.sysmetric.physical_reads_direct_per_sec | Physical reads direct per second. | double |  | gauge |
+| oracle.sysmetric.physical_reads_direct_per_txn | Physical reads direct per transaction. | double |  | gauge |
+| oracle.sysmetric.physical_reads_per_sec | Physical reads per second. | double |  | gauge |
+| oracle.sysmetric.physical_reads_per_txn | Physical reads per transaction. | double |  | gauge |
+| oracle.sysmetric.physical_write_bytes_per_sec | Physical write bytes per second. | double |  | gauge |
+| oracle.sysmetric.physical_write_io_requests_per_sec | Physical write io requests per second. | double |  | gauge |
+| oracle.sysmetric.physical_write_total_bytes_per_sec | Physical write total bytes per second. | double |  | gauge |
+| oracle.sysmetric.physical_write_total_io_requests_per_sec | Physical write total io requests per second. | double |  | gauge |
 | oracle.sysmetric.physical_writes_direct_lobs__per_txn | Physical writes direct lobs per transaction | double |  | gauge |
 | oracle.sysmetric.physical_writes_direct_lobs_per_sec | Physical writes direct lobs per sec | double |  | gauge |
-| oracle.sysmetric.physical_writes_direct_per_sec | Physical writes direct per sec | double |  | gauge |
-| oracle.sysmetric.physical_writes_direct_per_txn | Physical writes direct per transaction | double |  | gauge |
-| oracle.sysmetric.physical_writes_per_sec | Physical writes per sec | double |  | gauge |
-| oracle.sysmetric.physical_writes_per_txn | Physical writes per transaction | double |  | gauge |
-| oracle.sysmetric.pq_qc_session_count | Pq qc session count | double |  | gauge |
-| oracle.sysmetric.pq_slave_session_count | Pq slave session count | double |  | gauge |
-| oracle.sysmetric.process_limit_pct | Process limit percentage | double | percent | gauge |
-| oracle.sysmetric.px_downgraded_1_to_25pct_per_sec | Px downgraded 1 to 25 percentage per sec | double | percent | gauge |
+| oracle.sysmetric.physical_writes_direct_per_sec | Physical writes direct per second. | double |  | gauge |
+| oracle.sysmetric.physical_writes_direct_per_txn | Physical writes direct per transaction. | double |  | gauge |
+| oracle.sysmetric.physical_writes_per_sec | Physical writes per second. | double |  | gauge |
+| oracle.sysmetric.physical_writes_per_txn | Physical writes per transaction. | double |  | gauge |
+| oracle.sysmetric.pq_qc_session_count | Pq qc session count. | double |  | gauge |
+| oracle.sysmetric.pq_slave_session_count | Pq slave session count. | double |  | gauge |
+| oracle.sysmetric.process_limit_pct | Process limit percentage. | double | percent | gauge |
+| oracle.sysmetric.px_downgraded_1_to_25pct_per_sec | Px downgraded 1 to 25 percentage per second. | double | percent | gauge |
 | oracle.sysmetric.px_downgraded_25_to_50pct_per_sec | Px downgraded 25 to 50 percentage per sec | double | percent | gauge |
-| oracle.sysmetric.px_downgraded_50_to_75pct_per_sec | Px downgraded 50 to 75 percentage per sec | double | percent | gauge |
-| oracle.sysmetric.px_downgraded_75_to_99pct_per_sec | Px downgraded 75 to 99 percentage per sec | double | percent | gauge |
-| oracle.sysmetric.px_downgraded_to_serial_per_sec | Px downgraded to serial per sec | double |  | gauge |
-| oracle.sysmetric.px_operations_not_downgraded_per_sec | Px operations not downgraded per sec | double |  | gauge |
-| oracle.sysmetric.queries_parallelized_per_sec | Queries parallelized per sec | double |  | gauge |
-| oracle.sysmetric.recursive_calls_per_sec | Recursive calls per sec | double |  | gauge |
-| oracle.sysmetric.recursive_calls_per_txn | Recursive calls per transaction | double |  | gauge |
-| oracle.sysmetric.redo_allocation_hit_ratio | Redo allocation hit ratio | double |  | gauge |
-| oracle.sysmetric.redo_generated_per_sec | Redo generated per sec | double |  | gauge |
+| oracle.sysmetric.px_downgraded_50_to_75pct_per_sec | Px downgraded 50 to 75 percentage per second. | double | percent | gauge |
+| oracle.sysmetric.px_downgraded_75_to_99pct_per_sec | Px downgraded 75 to 99 percentage per second. | double | percent | gauge |
+| oracle.sysmetric.px_downgraded_to_serial_per_sec | Px downgraded to serial per sec. | double |  | gauge |
+| oracle.sysmetric.px_operations_not_downgraded_per_sec | Px operations not downgraded per second. | double |  | gauge |
+| oracle.sysmetric.queries_parallelized_per_sec | Queries parallelized per second. | double |  | gauge |
+| oracle.sysmetric.recursive_calls_per_sec | Recursive calls per second. | double |  | gauge |
+| oracle.sysmetric.recursive_calls_per_txn | Recursive calls per transaction. | double |  | gauge |
+| oracle.sysmetric.redo_allocation_hit_ratio | Redo allocation hit ratio. | double |  | gauge |
+| oracle.sysmetric.redo_generated_per_sec | Redo generated per second. | double |  | gauge |
 | oracle.sysmetric.redo_generated_per_txn | Redo generated per transaction | double |  | gauge |
-| oracle.sysmetric.redo_writes_per_sec | Redo writes per sec | double |  | gauge |
-| oracle.sysmetric.redo_writes_per_txn | Redo writes per transaction | double |  | gauge |
+| oracle.sysmetric.redo_writes_per_sec | Redo writes per second. | double |  | gauge |
+| oracle.sysmetric.redo_writes_per_txn | Redo writes per transaction. | double |  | gauge |
 | oracle.sysmetric.replayed_user_calls | Replayed user calls | double |  | gauge |
-| oracle.sysmetric.response_time_per_txn | Response time per transaction | double |  | gauge |
-| oracle.sysmetric.row_cache_hit_ratio | Row cache hit ratio | double |  | gauge |
-| oracle.sysmetric.row_cache_miss_ratio | Row cache miss ratio | double |  | gauge |
-| oracle.sysmetric.rows_per_sort | Rows per sort | double |  | gauge |
-| oracle.sysmetric.run_queue_per_sec | Run queue per sec | double |  | gauge |
-| oracle.sysmetric.session_count | Session count | double |  | gauge |
-| oracle.sysmetric.session_limit_pct | Session limit percentage | double | percent | gauge |
-| oracle.sysmetric.shared_pool_free_pct | Shared pool free percentage | double | percent | gauge |
-| oracle.sysmetric.soft_parse_ratio | Soft parse ratio | double |  | gauge |
+| oracle.sysmetric.response_time_per_txn | Response time per transaction. | double |  | gauge |
+| oracle.sysmetric.row_cache_hit_ratio | Row cache hit ratio. | double |  | gauge |
+| oracle.sysmetric.row_cache_miss_ratio | Row cache miss ratio. | double |  | gauge |
+| oracle.sysmetric.rows_per_sort | Rows per sort. | double |  | gauge |
+| oracle.sysmetric.run_queue_per_sec | Run queue per second. | double |  | gauge |
+| oracle.sysmetric.session_count | Session count. | double |  | gauge |
+| oracle.sysmetric.session_limit_pct | "Session limit percentage." | double | percent | gauge |
+| oracle.sysmetric.shared_pool_free_pct | Shared pool free percentage. | double | percent | gauge |
+| oracle.sysmetric.soft_parse_ratio | Soft parse ratio. | double |  | gauge |
 | oracle.sysmetric.sql_service_response_time | Sql service response time | double |  | gauge |
-| oracle.sysmetric.streams_pool_usage_percentage | Streams pool usage percentage | double |  | gauge |
+| oracle.sysmetric.streams_pool_usage_percentage | Streams pool usage percentage. | double |  | gauge |
 | oracle.sysmetric.temp_space_used | Temp space used | double |  | gauge |
-| oracle.sysmetric.total_index_scans_per_sec | Total index scans per sec | double |  | gauge |
-| oracle.sysmetric.total_index_scans_per_txn | Total index scans per transaction | double |  | gauge |
+| oracle.sysmetric.total_index_scans_per_sec | Total index scans per second. | double |  | gauge |
+| oracle.sysmetric.total_index_scans_per_txn | Total index scans per transaction. | double |  | gauge |
 | oracle.sysmetric.total_parse_count_per_sec | Total parse count per sec | double |  | gauge |
-| oracle.sysmetric.total_parse_count_per_txn | Total parse count per transaction | double |  | gauge |
-| oracle.sysmetric.total_pga_allocated | Total pga allocated | double |  | gauge |
+| oracle.sysmetric.total_parse_count_per_txn | Total parse count per transaction. | double |  | gauge |
+| oracle.sysmetric.total_pga_allocated | Total pga allocated. | double |  | gauge |
 | oracle.sysmetric.total_pga_used_by_sql_workareas | Total pga used by sql workareas | double |  | gauge |
-| oracle.sysmetric.total_sorts_per_user_call | Total sorts per user call | double |  | gauge |
-| oracle.sysmetric.total_table_scans_per_sec | Total table scans per sec | double |  | gauge |
-| oracle.sysmetric.total_table_scans_per_txn | Total table scans per transaction | double |  | gauge |
-| oracle.sysmetric.total_table_scans_per_user_call | Total table scans per user call | double |  | gauge |
-| oracle.sysmetric.txns_per_logon | transactions per logon | double |  | gauge |
-| oracle.sysmetric.user_calls_per_sec | User calls per sec | double |  | gauge |
+| oracle.sysmetric.total_sorts_per_user_call | Total sorts per user call. | double |  | gauge |
+| oracle.sysmetric.total_table_scans_per_sec | Total table scans per second. | double |  | gauge |
+| oracle.sysmetric.total_table_scans_per_txn | Total table scans per transaction. | double |  | gauge |
+| oracle.sysmetric.total_table_scans_per_user_call | Total table scans per user call. | double |  | gauge |
+| oracle.sysmetric.txns_per_logon | transactions per logon. | double |  | gauge |
+| oracle.sysmetric.user_calls_per_sec | User calls per second. | double |  | gauge |
 | oracle.sysmetric.user_calls_per_txn | User calls per transaction | double |  | gauge |
 | oracle.sysmetric.user_calls_ratio | User calls ratio | double |  | gauge |
 | oracle.sysmetric.user_commits_per_sec | User commits per sec | double |  | gauge |
-| oracle.sysmetric.user_commits_percentage | User commits percentage | double |  | gauge |
-| oracle.sysmetric.user_limit_pct | User limit percentage | double | percent | gauge |
-| oracle.sysmetric.user_rollback_undo_records_applied_per_txn | User rollback undo records applied per transaction | double |  | gauge |
-| oracle.sysmetric.user_rollback_undorec_applied_per_sec | User rollback undorec applied per sec | double |  | gauge |
-| oracle.sysmetric.user_rollbacks_per_sec | User rollbacks per sec | double |  | gauge |
-| oracle.sysmetric.user_rollbacks_percentage | User rollbacks percentage | double |  | gauge |
-| oracle.sysmetric.user_transaction_per_sec | User transaction per sec | double |  | gauge |
+| oracle.sysmetric.user_commits_percentage | User commits percentage. | double |  | gauge |
+| oracle.sysmetric.user_limit_pct | User limit percentage. | double | percent | gauge |
+| oracle.sysmetric.user_rollback_undo_records_applied_per_txn | User rollback undo records applied per transaction. | double |  | gauge |
+| oracle.sysmetric.user_rollback_undorec_applied_per_sec | User rollback undorec applied per second. | double |  | gauge |
+| oracle.sysmetric.user_rollbacks_per_sec | User rollbacks per second. | double |  | gauge |
+| oracle.sysmetric.user_rollbacks_percentage | User rollbacks percentage. | double |  | gauge |
+| oracle.sysmetric.user_transaction_per_sec | User transaction per second. | double |  | gauge |
 | oracle.sysmetric.vm_in_bytes_per_sec | Vm in bytes per sec | double |  | gauge |
-| oracle.sysmetric.vm_out_bytes_per_sec | Vm out bytes per sec | double |  | gauge |
-| oracle.sysmetric.workload_capture_and_replay_status | Workload capture and replay status | double |  | gauge |
+| oracle.sysmetric.vm_out_bytes_per_sec | Vm out bytes per second. | double |  | gauge |
+| oracle.sysmetric.workload_capture_and_replay_status | Workload capture and replay status. | double |  | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
