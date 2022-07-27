@@ -224,7 +224,7 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.request.dry_run | Wether the request uses dry run | keyword |  |  |
 | kubernetes.apiserver.request.duration.us.bucket.\* | Request duration, histogram buckets | object |  |  |
 | kubernetes.apiserver.request.duration.us.count | Request duration, number of operations | long |  | counter |
-| kubernetes.apiserver.request.duration.us.sum | Request duration, sum in microseconds | long |  | counter |
+| kubernetes.apiserver.request.duration.us.sum | Request duration, sum in microseconds | long | micros | counter |
 | kubernetes.apiserver.request.group | API group for the resource | keyword |  |  |
 | kubernetes.apiserver.request.handler | Request handler | keyword |  |  |
 | kubernetes.apiserver.request.host | Request host | keyword |  |  |

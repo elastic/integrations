@@ -159,7 +159,7 @@ An example event for `controllermanager` looks as following:
 | kubernetes.controllermanager.client.request.count | Number of requests as client | long |  | counter |
 | kubernetes.controllermanager.client.request.duration.us.bucket.\* | Response latency distribution, histogram buckets | object |  |  |
 | kubernetes.controllermanager.client.request.duration.us.count | Request duration, number of operations | long |  | counter |
-| kubernetes.controllermanager.client.request.duration.us.sum | Request duration, sum in microseconds | long |  | counter |
+| kubernetes.controllermanager.client.request.duration.us.sum | Request duration, sum in microseconds | long | micros | counter |
 | kubernetes.controllermanager.code | HTTP code | keyword |  |  |
 | kubernetes.controllermanager.host | Request host | keyword |  |  |
 | kubernetes.controllermanager.leader.is_master | Whether the node is master | boolean |  |  |
