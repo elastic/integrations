@@ -10,6 +10,8 @@ from multiple entities, it's necessary to define one integration for each.
 Alternatively, it's also possible to use the integration to fetch custom Fusion files
 by supplying the URL to the CSV file as the _Custom_ _URL_ configuration option.
 
+**NOTE:** For large risklist downloads, adjust the timeout setting so that the Agent has enough time to download and process the risklist.
+
 {{event "threat"}}
 
 {{fields "threat"}}
