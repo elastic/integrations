@@ -1,0 +1,44 @@
+---
+description: "Pipeline for SQS metrics"
+
+processors:
+  - rename:
+      field: aws.sqs.metrics.ApproximateAgeOfOldestMessage.avg
+      target_field: aws.sqs.oldest_message_age.sec
+      ignore_missing: true
+  - rename:
+      field: aws.sqs.metrics.ApproximateNumberOfMessagesDelayed.avg
+      target_field: aws.sqs.messages.delayed
+      ignore_missing: true
+  - rename:
+      field: aws.sqs.metrics.ApproximateNumberOfMessagesNotVisible.avg
+      target_field: aws.sqs.messages.not_visible
+      ignore_missing: true
+  - rename:
+      field: aws.sqs.metrics.ApproximateNumberOfMessagesVisible.avg
+      target_field: aws.sqs.messages.visible
+      ignore_missing: true
+  - rename:
+      field: aws.sqs.metrics.NumberOfMessagesDeleted.avg
+      target_field: aws.sqs.messages.deleted
+      ignore_missing: true
+  - rename:
+      field: aws.sqs.metrics.NumberOfMessagesReceived.avg
+      target_field: aws.sqs.messages.received
+      ignore_missing: true
+  - rename:
+      field: aws.sqs.metrics.NumberOfMessagesSent.avg
+      target_field: aws.sqs.messages.sent
+      ignore_missing: true
+  - rename:
+      field: aws.sqs.metrics.NumberOfEmptyReceives.avg
+      target_field: aws.sqs.empty_receives
+      ignore_missing: true
+  - rename:
+      field: aws.sqs.metrics.SentMessageSize.avg
+      target_field: aws.sqs.sent_message_size.bytes
+      ignore_missing: true
+  - remove:
+      field:
+        - aws.sqs.metrics
+      ignore_missing: true
