@@ -23,6 +23,7 @@ processors:
       value: [info]
   - date:
       field: json.Timestamp
+      if: ctx.json?.Timestamp != null && ctx.json?.Timestamp != ''
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX
@@ -31,7 +32,10 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ss.SSSZ
         - UNIX_MS
       timezone: UTC
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: cloudflare_logpush.nel_report.timestamp
       copy_from: '@timestamp'
@@ -47,8 +51,13 @@ processors:
   - convert:
       field: json.ClientIPASN
       target_field: cloudflare_logpush.nel_report.client.ip.asn.value
+      if: ctx.json?.ClientIPASN != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ClientIPASNDescription
       target_field: cloudflare_logpush.nel_report.client.ip.asn.description
@@ -98,6 +107,6 @@ processors:
           }
           dropEmptyFields(ctx);
 on_failure:
-- set:
+- append:
     field: error.message
     value: '{{{ _ingest.on_failure_message }}}'

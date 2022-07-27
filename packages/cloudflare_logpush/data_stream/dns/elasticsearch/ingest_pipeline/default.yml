@@ -23,6 +23,7 @@ processors:
       value: [info]
   - date:
       field: json.Timestamp
+      if: ctx.json?.Timestamp != null  && ctx.json?.Timestamp != ''
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX
@@ -31,7 +32,10 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ss.SSSZ
         - UNIX_MS
       timezone: UTC
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: cloudflare_logpush.dns.timestamp
       copy_from: '@timestamp'
@@ -39,8 +43,13 @@ processors:
   - convert:
       field: json.SourceIP
       target_field: cloudflare_logpush.dns.source.ip
+      if: ctx.json?.SourceIP != ''
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.dns.source.ip
@@ -56,8 +65,13 @@ processors:
   - convert:
       field: json.QueryType
       target_field: cloudflare_logpush.dns.query.type
+      if: ctx.json?.QueryType != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ColoCode
       target_field: cloudflare_logpush.dns.colo.code
@@ -65,13 +79,23 @@ processors:
   - convert:
       field: json.EDNSSubnet
       target_field: cloudflare_logpush.dns.edns.subnet
+      if: ctx.json?.EDNSSubnet != ''
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.EDNSSubnetLength
       target_field: cloudflare_logpush.dns.edns.subnet_length
+      if: ctx.json?.EDNSSubnetLength != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ResponseCached
       target_field: cloudflare_logpush.dns.response.cached
@@ -79,8 +103,13 @@ processors:
   - convert:
       field: json.ResponseCode
       target_field: cloudflare_logpush.dns.response.code
+      if: ctx.json?.ResponseCode != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.hosts
       value: '{{{dns.query.name}}}'
@@ -133,6 +162,6 @@ processors:
           }
           dropEmptyFields(ctx);
 on_failure:
-- set:
+- append:
     field: error.message
     value: '{{{ _ingest.on_failure_message }}}'

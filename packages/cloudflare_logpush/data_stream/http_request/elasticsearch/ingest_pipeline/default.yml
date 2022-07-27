@@ -23,6 +23,7 @@ processors:
       value: [info]
   - date:
       field: json.EdgeEndTimestamp
+      if: ctx.json?.EdgeEndTimestamp != null && ctx.json?.EdgeEndTimestamp != ''
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX
@@ -32,9 +33,13 @@ processors:
         - UNIX_MS
       timezone: UTC
       target_field: cloudflare_logpush.http_request.edge.end_time
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.EdgeStartTimestamp
+      if: ctx.json?.EdgeStartTimestamp != null && ctx.json?.EdgeStartTimestamp != ''
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX
@@ -44,11 +49,16 @@ processors:
         - UNIX_MS
       timezone: UTC
       target_field: cloudflare_logpush.http_request.edge.start_time
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.OriginResponseHTTPExpires
+      if: ctx.json?.OriginResponseHTTPExpires != null && ctx.json?.OriginResponseHTTPExpires != ''
       formats:
         - ISO8601
+        - EEE, dd MMM yyyy HH:mm:ss zzz
         - uuuu-MM-dd'T'HH:mm:ssX
         - uuuu-MM-dd'T'HH:mm:ss.SSSX
         - yyyy-MM-dd'T'HH:mm:ssZ
@@ -56,24 +66,37 @@ processors:
         - UNIX_MS
       timezone: UTC
       target_field: cloudflare_logpush.http_request.origin.response.http.expires
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.OriginResponseHTTPLastModified
+      if: ctx.json?.OriginResponseHTTPLastModified != null && ctx.json?.OriginResponseHTTPLastModified != ''
+      timezone: UTC
       formats:
         - ISO8601
+        - EEE, dd MMM yyyy HH:mm:ss zzz
         - uuuu-MM-dd'T'HH:mm:ssX
         - uuuu-MM-dd'T'HH:mm:ss.SSSX
         - yyyy-MM-dd'T'HH:mm:ssZ
         - yyyy-MM-dd'T'HH:mm:ss.SSSZ
         - UNIX_MS
-      timezone: UTC
       target_field: cloudflare_logpush.http_request.origin.response.http.last_modified
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.OriginIP
       target_field: cloudflare_logpush.http_request.origin.ip
+      if: ctx.json?.OriginIP != ''
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.http_request.origin.ip
@@ -97,8 +120,13 @@ processors:
   - convert:
       field: json.EdgeResponseStatus
       target_field: cloudflare_logpush.http_request.edge.response.status
+      if: ctx.json?.EdgeResponseStatus != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: http.response.status_code
       copy_from: cloudflare_logpush.http_request.edge.response.status
@@ -106,8 +134,13 @@ processors:
   - convert:
       field: json.ClientASN
       target_field: cloudflare_logpush.http_request.client.asn
+      if: ctx.json?.ClientASN != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: source.as.number
       copy_from: cloudflare_logpush.http_request.client.asn
@@ -123,8 +156,13 @@ processors:
   - convert:
       field: json.ClientIP
       target_field: cloudflare_logpush.http_request.client.ip
+      if: ctx.json?.ClientIP != ''
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.http_request.client.ip
@@ -132,8 +170,13 @@ processors:
   - convert:
       field: json.BotScore
       target_field: cloudflare_logpush.http_request.bot.score.value
+      if: ctx.json?.BotScore != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.BotScoreSrc
       target_field: cloudflare_logpush.http_request.bot.score.src
@@ -149,13 +192,23 @@ processors:
   - convert:
       field: json.CacheResponseBytes
       target_field: cloudflare_logpush.http_request.cache.response.bytes
+      if: ctx.json?.CacheResponseBytes != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.CacheResponseStatus
       target_field: cloudflare_logpush.http_request.cache.response.status
+      if: ctx.json?.CacheResponseStatus != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.CacheTieredFill
       target_field: cloudflare_logpush.http_request.cache.tiered_fill
@@ -179,8 +232,13 @@ processors:
   - convert:
       field: json.ClientRequestBytes
       target_field: cloudflare_logpush.http_request.client.request.bytes
+      if: ctx.json?.ClientRequestBytes != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ClientRequestHost
       target_field: cloudflare_logpush.http_request.client.request.host
@@ -247,13 +305,23 @@ processors:
   - convert:
       field: json.ClientSrcPort
       target_field: cloudflare_logpush.http_request.client.src.port
+      if: ctx.json?.ClientSrcPort != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ClientTCPRTTMs
       target_field: cloudflare_logpush.http_request.client.tcp_rtt.ms
+      if: ctx.json?.ClientTCPRTTMs != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ClientXRequestedWith
       target_field: cloudflare_logpush.http_request.client.xrequested_with
@@ -273,8 +341,13 @@ processors:
   - convert:
       field: json.EdgeColoID
       target_field: cloudflare_logpush.http_request.edge.colo.id
+      if: ctx.json?.EdgeColoID != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.EdgePathingOp
       target_field: cloudflare_logpush.http_request.edge.pathing.op
@@ -294,8 +367,13 @@ processors:
   - convert:
       field: json.EdgeRateLimitID
       target_field: cloudflare_logpush.http_request.edge.rate.limit.id
+      if: ctx.json?.EdgeRateLimitID != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.EdgeRequestHost
       target_field: cloudflare_logpush.http_request.edge.request.host
@@ -303,28 +381,53 @@ processors:
   - convert:
       field: json.EdgeResponseBodyBytes
       target_field: cloudflare_logpush.http_request.edge.response.body_bytes
+      if: ctx.json?.EdgeResponseBodyBytes != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.EdgeResponseBytes
       target_field: cloudflare_logpush.http_request.edge.response.bytes
+      if: ctx.json?.EdgeResponseBytes != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.EdgeResponseCompressionRatio
       target_field: cloudflare_logpush.http_request.edge.response.compression_ratio
+      if: ctx.json?.EdgeResponseCompressionRatio != ''
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.EdgeServerIP
       target_field: cloudflare_logpush.http_request.edge.server.ip
+      if: ctx.json?.EdgeServerIP != ''
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.EdgeTimeToFirstByteMs
       target_field: cloudflare_logpush.http_request.edge.time_to_first_byte.ms
+      if: ctx.json?.EdgeTimeToFirstByteMs != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.FirewallMatchesActions
       target_field: cloudflare_logpush.http_request.firewall.match.action
@@ -344,38 +447,73 @@ processors:
   - convert:
       field: json.OriginDNSResponseTimeMs
       target_field: cloudflare_logpush.http_request.origin.dns_response_time.ms
+      if: ctx.json?.OriginDNSResponseTimeMs != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.OriginRequestHeaderSendDurationMs
       target_field: cloudflare_logpush.http_request.origin.request_header_send_duration.ms
+      if: ctx.json?.OriginRequestHeaderSendDurationMs != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.OriginResponseBytes 
+      field: json.OriginResponseBytes
       target_field: cloudflare_logpush.http_request.origin.response.bytes
+      if: ctx.json?.OriginResponseBytes != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.OriginResponseDurationMs
       target_field: cloudflare_logpush.http_request.origin.response.duration.ms
+      if: ctx.json?.OriginResponseDurationMs != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.OriginResponseHeaderReceiveDurationMs
       target_field: cloudflare_logpush.http_request.origin.response.header_recive_duration.ms
+      if: ctx.json?.OriginResponseHeaderReceiveDurationMs != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.OriginResponseStatus
       target_field: cloudflare_logpush.http_request.origin.response.status
+      if: ctx.json?.OriginResponseStatus != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.OriginResponseTime
       target_field: cloudflare_logpush.http_request.origin.response.time
+      if: ctx.json?.OriginResponseTime != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.OriginSSLProtocol
       target_field: cloudflare_logpush.http_request.origin.ssl_protocol
@@ -383,13 +521,23 @@ processors:
   - convert:
       field: json.OriginTCPHandshakeDurationMs
       target_field: cloudflare_logpush.http_request.origin.tcp_handshake_duration.ms
+      if: ctx.json?.OriginTCPHandshakeDurationMs != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.OriginTLSHandshakeDurationMs
       target_field: cloudflare_logpush.http_request.origin.tls_handshake_duration.ms
+      if: ctx.json?.OriginTLSHandshakeDurationMs != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ParentRayID
       target_field: cloudflare_logpush.http_request.parent_ray.id
@@ -413,13 +561,23 @@ processors:
   - convert:
       field: json.SmartRouteColoID
       target_field: cloudflare_logpush.http_request.smart_route.colo.id
+      if: ctx.json?.SmartRouteColoID != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.UpperTierColoID
       target_field: cloudflare_logpush.http_request.upper_tier.colo.id
+      if: ctx.json?.UpperTierColoID != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.WAFAction
       target_field: cloudflare_logpush.http_request.waf.action
@@ -447,8 +605,13 @@ processors:
   - convert:
       field: json.WorkerCPUTime
       target_field: cloudflare_logpush.http_request.worker.cpu_time
+      if: ctx.json?.WorkerCPUTime != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.WorkerStatus
       target_field: cloudflare_logpush.http_request.worker.status
@@ -460,13 +623,23 @@ processors:
   - convert:
       field: json.WorkerSubrequestCount
       target_field: cloudflare_logpush.http_request.worker.subrequest.count
+      if: ctx.json?.WorkerSubrequestCount != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ZoneID
       target_field: cloudflare_logpush.http_request.zone.id
+      if: ctx.json?.ZoneID != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ZoneName
       target_field: cloudflare_logpush.http_request.zone.name
@@ -528,6 +701,6 @@ processors:
           }
           dropEmptyFields(ctx);
 on_failure:
-- set:
+- append:
     field: error.message
     value: '{{{ _ingest.on_failure_message }}}'
