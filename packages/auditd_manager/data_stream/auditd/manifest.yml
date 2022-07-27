@@ -26,6 +26,20 @@ streams:
 
           If it is set to `true`, but the kernel version is less than 3.16 it will be
           automatically disabled.
+      - name: immutable
+        type: bool
+        title: Immutable
+        show_user: true
+        multi: false
+        default: false
+        description: |
+          This boolean setting sets the audit config as immutable (`-e 2`).
+          This option can only be used if `multicast` is disabled since `elastic-agent`
+          needs to manage the rules to be able to set it.
+
+          Please note that with this setting enabled, after Elastic Agent restarts or
+          upgrades, events will continue to be processed but the configuration won't
+          be updated until the system is restarted entirely.
       - name: resolve_ids
         type: bool
         title: Resolve IDs
@@ -49,10 +63,9 @@ streams:
           `printk` so they show up in system's syslog, and `panic` causes the kernel to
           panic to prevent use of the machine.
       - name: audit_rules
-        type: text
+        type: textarea
         title: Audit rules
         required: true
-        multi: true
         show_user: true
         description: |
           List of the audit rules that should be
