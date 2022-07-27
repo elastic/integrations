@@ -157,6 +157,7 @@ Visit the page for each individual AWS integration to see details about exported
 | DynamoDB         |    x    |         |
 | EBS              |    x    |         |
 | EC2              |    x    |    x    |
+| ECS              |    x    |         |
 | ELB              |    x    |    x    |
 | Fargate          |    x    |         |
 | Network Firewall |    x    |    x    |
