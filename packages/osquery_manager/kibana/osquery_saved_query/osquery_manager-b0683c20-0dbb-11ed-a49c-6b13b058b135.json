@@ -1,0 +1,19 @@
+{
+    "attributes": {
+        "created_at": "2022-07-27T14:52:08.802Z",
+        "created_by": "elastic",
+        "description": "Get startup items that have unsigned executables, hash them, and provide a VirusTotal link for the analyst to check for signs of maliciousness.",
+        "id": "unsigned_startup_items_vt_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT concat('https://www.virustotal.com/gui/file/', sha1) AS VtLink, \n    startup_items.path, directory, name, result, status, type FROM startup_items\nJOIN authenticode AS signature ON startup_items.path = signature.path\nJOIN hash ON startup_items.path = hash.path\nWHERE signature.result != \"trusted\"",
+        "updated_at": "2022-07-27T14:52:08.802Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.2",
+    "id": "osquery_manager-b0683c20-0dbb-11ed-a49c-6b13b058b135",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2022-07-27T14:52:08.809Z",
+    "version": "WzIyNzcyLDJd"
+}
