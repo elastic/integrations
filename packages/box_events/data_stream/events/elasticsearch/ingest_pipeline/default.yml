@@ -37,6 +37,7 @@ processors:
       field: box.event_id
       target_field: event.id
       ignore_missing: true
+# If a user or item triggers an event, The response of the GET /events endpoint contains an event source object.
   - convert:
       field: box.source.sequence_id
       target_field: event.sequence
@@ -62,18 +63,27 @@ processors:
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
+  - remove:
+      field: box.source.created_at
+      ignore_missing: true
   - date:
       field: box.source.content_created_at
       target_field: file.created
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
+  - remove:
+      field: box.source.content_created_at
+      ignore_missing: true
   - date:
       field: box.source.content_modified_at
       target_field: file.mtime
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
+  - remove:
+      field: box.source.content_modified_at
+      ignore_missing: true
   - date:
       field: box.source.modified_at
       target_field: file.ctime
@@ -88,20 +98,18 @@ processors:
       field: box.source.file_version.sha1
       target_field: file.hash.sha1
       ignore_missing: true
-  - remove:
-      field: box.created_at
+# Box Shield can add these fields 
+  - rename:
+      field: box.ip_address
+      target_field: client.ip
       ignore_missing: true
-  - remove:
-      field: box.source.content_created_at
-      ignore_missing: true
-  - remove:
-      field: box.source.content_modified_at
-      ignore_missing: true
+# Conditionally, remove event.original
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+# Drop empty/null fields
   - script:
       description: Drops null/empty values recursively
       lang: painless

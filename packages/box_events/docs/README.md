@@ -39,6 +39,7 @@ To access the `events` endpoint, the user making the API call will need to have 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| box.created_at | When the event object was created | date |
 | box.created_by.id | The unique identifier for the connection user. | keyword |
 | box.created_by.login | The primary email address of the connection user. Maps from \*\*.login. |  |
 | box.created_by.name | The display name of the connection user. Maps from \*\*.name. | keyword |
@@ -85,6 +86,7 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.source.sha1 | SHA1 hash of the item concerned. | keyword |
 | box.source.synced | Legacy property for compatibility with Box Desktop | boolean |
 | box.source.trashed_at | The time at which this file was put in the trash. | boolean |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.user.email | User email address. | keyword |
 | client.user.full_name | User's full name, if available. | keyword |
 | client.user.full_name.text | Multi-field of `client.user.full_name`. | match_only_text |
