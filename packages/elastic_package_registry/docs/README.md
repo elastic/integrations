@@ -55,8 +55,12 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.http.response_size_bytes.histogram.values | Bucket values of the the histogram of response sizes for requests to the http server | histogram |  |  |
 | package_registry.http_requests_total.counter | Counter for requests to the http server | double |  | counter |
 | package_registry.in_flight_requests | Requests currently being served by the http server | double |  | gauge |
+| package_registry.indexer.get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |  |  |
+| package_registry.indexer.get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |  |  |
+| package_registry.indexer.get_duration_seconds.histogram.values | Bucket values of the histogram of latencies for get processes run by the indexer | histogram |  |  |
 | package_registry.labels.code | HTTP Code | keyword |  |  |
 | package_registry.labels.component | Component type of the storage (statics, artifacts, signature...) | keyword |  |  |
+| package_registry.labels.indexer | Indexer type | keyword |  |  |
 | package_registry.labels.instance | Elastic Package Registry instance | keyword |  |  |
 | package_registry.labels.job |  | keyword |  |  |
 | package_registry.labels.location | Storage location (remote or local) | keyword |  |  |
@@ -66,14 +70,11 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.number_indexed_packages | Number of indexed packages | integer |  | gauge |
 | package_registry.start_time | Date where Elastic Package Registry started | date |  | gauge |
 | package_registry.start_time_seconds | Start time of the process since unix epoch in seconds | double | s | gauge |
-| package_registry.storage_indexer.get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.get_duration_seconds.histogram.values | Bucket values of the histogram of latencies for get processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.update_index_duration_seconds.histogram.counts | Counters of the histogram of latencies for update index processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.update_index_duration_seconds.histogram.values | Bucket values of the histogram of latencies for update index processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error | long |  |  |
-| package_registry.storage_indexer.update_index_success_total.counter | A counter for all the update index processes that finished with error | long |  |  |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the storage indexer | histogram |  |  |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram.counts | Counters of the histogram of latencies for update index processes run by the storage indexer | histogram |  |  |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram.values | Bucket values of the histogram of latencies for update index processes run by the storage indexer | histogram |  |  |
+| package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error in the storage indexer | long |  |  |
+| package_registry.storage_indexer.update_index_success_total.counter | A counter for all the update index processes that finished with success in the storage indexer | long |  |  |
 | package_registry.storage_requests_total.counter | Counter for requests performed to the storage | long |  | counter |
 | package_registry.uptime | Elastic Package Registry uptime in seconds | long | s | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
