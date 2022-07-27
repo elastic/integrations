@@ -1,6 +1,12 @@
-# Box Integration
+# Box Events Integration
 
-This integration periodically fetches events from [Box](https://app.box.com/). It can parse events created by Box on behalf of the user or enterprise. 
+The Box Events integration allows you to monitor [Box](https://app.box.com/). Box is a secure cloud storage and collaboration service that allows businesses and individuals to easily share files. 
+
+Use the Box Events integration to ingest the activity logs which are generated each time files are uploaded, accessed, or modified in Box, enabling you to monitor data movement to the cloud. If you have opted-in to receive additional events, the Box Events integration will ingest context-rich alerts on potential threats, such as compromised accounts and data theft, based on anomalous user behavior. Combining this data with other events can lead to the detection of data exfiltration attacks.
+
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference `box_events.events` when troubleshooting an issue.
+
+TBC - When Dashboards are available. For example, if you wanted to <use case> you could <action>. Then you can <visualize|alert|troubleshoot> by <action>.
 
 ## Compatibility
 
