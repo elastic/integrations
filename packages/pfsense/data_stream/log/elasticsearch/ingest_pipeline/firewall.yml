@@ -37,24 +37,24 @@ processors:
         field: event.type
         value: connection
         allow_duplicates: false
-        if: ctx?.source?.address != null && ctx?.destination?.address != null
+        if: ctx.source?.address != null && ctx.destination?.address != null
     - append:
         field: event.type
         value: denied
         allow_duplicates: false
-        if: ctx?.event.action == 'block'
+        if: ctx.event.action == 'block'
     - append:
         field: event.type
         value: allowed
         allow_duplicates: false
-        if: ctx?.event.action == 'pass'
+        if: ctx.event.action == 'pass'
     - lowercase:
         field: network.transport
         ignore_missing: true
     - remove:
         field: ack_number
         ignore_missing: true
-        if: ctx?.ack_number == null || ctx?.ack_number == ''
+        if: ctx.ack_number == null || ctx.ack_number == ''
     - network_direction:
         internal_networks_field: _tmp.internal_networks
     - split:

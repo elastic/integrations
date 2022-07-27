@@ -9,18 +9,18 @@ processors:
   - uri_parts:
       field: url.original
       ignore_failure: true
-      if: ctx?.url?.original != null
+      if: ctx.url?.original != null
   - append:
       field: event.category
       value: web
   - set:
       field: event.outcome
       value: success
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
+      if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
       field: event.outcome
       value: failure
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
+      if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
 on_failure:
   - set:
       field: error.message

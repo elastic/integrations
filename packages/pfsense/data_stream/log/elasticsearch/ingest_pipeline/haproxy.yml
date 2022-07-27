@@ -27,14 +27,14 @@ processors:
         - drop:
             description: Drop if not a connection log
   - date:
-      if: ctx?.haproxy?.request_date != null && ctx?.event?.timezone == null
+      if: ctx.haproxy?.request_date != null && ctx.event?.timezone == null
       field: haproxy.request_date
       target_field: '@timestamp'
       formats:
       - dd/MMM/yyyy:HH:mm:ss.SSS
       - MMM dd HH:mm:ss
   - date:
-      if: ctx?.haproxy?.request_date != null && ctx?.event?.timezone != null
+      if: ctx.haproxy?.request_date != null && ctx.event?.timezone != null
       field: haproxy.request_date
       target_field: '@timestamp'
       formats:
@@ -50,7 +50,7 @@ processors:
   - uri_parts:
       field: url.original
       ignore_failure: true
-      if: ctx?.url?.original != null
+      if: ctx.url?.original != null
   - split:
       field: haproxy.http.request.captured_headers
       separator: \|
@@ -76,19 +76,19 @@ processors:
   - append:
       field: event.category
       value: web
-      if: "ctx?.haproxy?.mode == 'HTTP' || ctx?.haproxy?.http != null"
+      if: "ctx.haproxy?.mode == 'HTTP' || ctx.haproxy?.http != null"
   - append:
       field: event.type
       value: connection
-      if: "ctx?.source.address != null && ctx?.destination?.address != null"
+      if: "ctx.source?.address != null && ctx.destination?.address != null"
   - set:
       field: event.outcome
       value: success
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
+      if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
       field: event.outcome
       value: failure
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
+      if: "ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
   - remove:
       field: 
         - _temp

@@ -4,7 +4,7 @@ processors:
   - grok:
       field: message
       patterns:
-        # - '%{DATA:message}/%{DATA:interface}/%{DATA:server.mac}/%{NOTSPACE:subnet}'
+        - '%{DATA:_tmp.action}/%{INTERFACE:observer.ingress.interface.name}/%{MAC_ADDRESS:server.mac}/%{NOTSPACE:pfsense.dhcp.subnet}'
         - '%{DATA:_tmp.action} %{IPV6:client.address}(/%{NUMBER})? on %{INTERFACE:observer.ingress.interface.name}'
         - '%{DATA:_tmp.action} (from|to) %{IPV6:client.address} port %{POSINT:client.port:long}(, transaction ID %{NOTSPACE:pfsense.dhcp.transaction_id})?'
         - '%{DATA:_tmp.action} for: %{IPV6:client.address}(, age %{POSINT:pfsense.dhcp.age:long} secs %{DATA})?%{GREEDYDATA}?'
@@ -19,7 +19,7 @@ processors:
         ON: 'on %{IP:client.address} to %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'
         FOR: 'for %{IP:client.address} \(%{IP:server.address}\)? from %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'
         MIDDLE: '(?:%{FROM}|%{ON}|%{FOR})'
-        DUID: '[0-9a-f]{2}(:[0-9a-f]{2})+'
+        DUID: '(?i)[0-9a-f]{2}(:[0-9a-f]{2})+'
   - append:
       field: event.type
       value: 
@@ -33,7 +33,7 @@ processors:
   - set:
       field: network.protocol
       value: dhcpv6
-      if: ctx.event?.provider == 'dhcp6c' || (ctx?.server?.address != null && ctx?.server?.address.contains(':')) || (ctx?.client?.address != null && ctx?.client?.address.contains(':'))
+      if: ctx.event.provider == 'dhcp6c' || (ctx.server?.address != null && ctx.server.address.contains(':')) || (ctx.client?.address != null && ctx.client.address.contains(':'))
   - set:
       field: network.transport
       value: udp
@@ -57,13 +57,21 @@ processors:
       pattern: '[:]'
       replacement: '-'
       ignore_missing: true
+  - uppercase:
+      field: server.mac
+      ignore_missing: true
+  - gsub:
+      field: server.mac
+      pattern: '[:]'
+      replacement: '-'
+      ignore_missing: true
   - lowercase:
       field: _tmp.action
       ignore_missing: true
   - gsub:
       field: _tmp.action
       target_field: event.action
-      pattern: '[ ]'
+      pattern: ' '
       replacement: '-'
       ignore_missing: true
   - set:
@@ -78,7 +86,7 @@ processors:
       field: related.hosts
       value: "{{pfsense.dhcp.hostname}}"
       allow_duplicates: false
-      if: "ctx?.pfsense?.log?.dhcp?.hostname != null"
+      if: "ctx.pfsense?.log?.dhcp?.hostname != null"
 on_failure:
   - append:
       field: error.message
