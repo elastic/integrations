@@ -29,22 +29,27 @@ processors:
         OBSERVER: '(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})'
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
         SYSLOGPROG: '%{PROG:process.name}(?:\[%{POSINT:process.pid:int}\])?'
+  - gsub:
+      field: snort.tcp.flags
+      pattern: \*
+      replacement: ''
+      ignore_missing: true
   - script:
       lang: painless
       source: >-
-        if (ctx.snort?.ip?.tos != null && ctx.snort?.ip?.tos instanceof String) {
+        if (ctx.snort?.ip?.tos != null && ctx.snort.ip.tos instanceof String) {
             ctx.snort.ip.tos = Long.decode(ctx.snort.ip.tos);
         }
-        if (ctx.snort?.eth?.length != null && ctx.snort?.eth?.length instanceof String) {
+        if (ctx.snort?.eth?.length != null && ctx.snort.eth.length instanceof String) {
             ctx.snort.eth.length = Long.decode(ctx.snort.eth.length);
         }
-        if (ctx.snort?.tcp?.ack != null && ctx.snort?.tcp?.ack instanceof String) {
+        if (ctx.snort?.tcp?.ack != null && ctx.snort.tcp.ack instanceof String) {
             ctx.snort.tcp.ack = Long.decode(ctx.snort.tcp.ack);
         }
-        if (ctx.snort?.tcp?.seq != null && ctx.snort?.tcp?.seq instanceof String) {
+        if (ctx.snort?.tcp?.seq != null && ctx.snort.tcp.seq instanceof String) {
             ctx.snort.tcp.seq = Long.decode(ctx.snort.tcp.seq);
         }
-        if (ctx.snort?.tcp?.window != null && ctx.snort?.tcp?.window instanceof String) {
+        if (ctx.snort?.tcp?.window != null && ctx.snort.tcp.window instanceof String) {
             ctx.snort.tcp.window = Long.decode(ctx.snort.tcp.window);
         }
 on_failure:
