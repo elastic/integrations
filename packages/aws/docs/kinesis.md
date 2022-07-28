@@ -6,18 +6,41 @@ An example event for `kinesis` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "@timestamp": "2022-07-27T20:56:00.000Z",
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "24d50340-a9d0-4d5d-9f42-fe9cb4b8c95d",
+        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
+        "ephemeral_id": "51866723-6dfa-4a72-a68e-f439d5de7f53",
         "type": "metricbeat",
-        "ephemeral_id": "f8282deb-ebc7-4d1f-9386-207f56657244",
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "elastic_agent": {
-        "id": "24d50340-a9d0-4d5d-9f42-fe9cb4b8c95d",
-        "version": "8.2.0",
+        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
+        "version": "8.3.2",
         "snapshot": false
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "us-east-1",
+        "account": {
+            "name": "elastic-beats",
+            "id": "428152502467"
+        }
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.kinesis"
+    },
+    "service": {
+        "type": "aws"
+    },
+    "metricset": {
+        "period": 300000,
+        "name": "cloudwatch"
     },
     "aws": {
         "cloudwatch": {
@@ -49,32 +72,12 @@ An example event for `kinesis` looks as following:
             }
         }
     },
-    "cloud": {
-        "account": {
-            "id": "428152502467",
-            "name": "elastic-beats"
-        },
-        "provider": "aws",
-        "region": "us-west-1"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "aws.kinesis"
-    },
     "event": {
-        "dataset": "aws.kinesis",
-        "duration": 115000,
-        "module": "aws",
+        "duration": 10483932100,
         "agent_id_status": "verified",
-        "ingested": "2022-05-26T12:44:52Z"
-    },
-    "metricset": {
-        "name": "kinesis",
-        "period": 10000
-    },
-    "service": {
-        "type": "aws"
+        "ingested": "2022-07-27T20:56:00.000Z",
+        "module": "aws",
+        "dataset": "aws.kinesis"
     }
 }
 ```
@@ -122,7 +125,7 @@ An example event for `kinesis` looks as following:
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
@@ -146,7 +149,7 @@ An example event for `kinesis` looks as following:
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | long |
 | host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |
@@ -157,7 +160,7 @@ An example event for `kinesis` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
