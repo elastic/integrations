@@ -21,10 +21,20 @@ processors:
       field: box.session_id
       target_field: box.session.id
       ignore_missing: true
-  - rename:
+# `box.type` is always `event`remove to avoid ambiguity with èvent.kind`e`
+  - remove:
       field: box.type
-      target_field: event.kind
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: "event"
+      if: "ctx?.box?.source != null"
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: "alert"
+      if: "ctx?.box?.additional_details?.shield_alert != null"
+      ignore_failure: true
   - rename:
       field: box.created_by.type
       target_field: event.type
