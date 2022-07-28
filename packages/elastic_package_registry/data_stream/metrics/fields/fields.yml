@@ -9,6 +9,10 @@
       type: keyword
       description: Component type of the storage (statics, artifacts, signature...)
       dimension: true
+    - name: indexer
+      type: keyword
+      description: Indexer type
+      dimension: true
     - name: instance
       type: keyword
       description: Elastic Package Registry instance
@@ -104,7 +108,7 @@
   description: >
     Number of indexed packages
 
-- name: package_registry.storage_indexer
+- name: package_registry.indexer
   type: group
   fields:
     - name: get_duration_seconds.histogram
@@ -122,30 +126,33 @@
       description: >
         Bucket values of the histogram of latencies for get processes run by the indexer
 
+- name: package_registry.storage_indexer
+  type: group
+  fields:
     - name: update_index_duration_seconds.histogram
       type: histogram
       description: >
-        A histogram of latencies for update index processes run by the indexer
+        A histogram of latencies for update index processes run by the storage indexer
 
     - name: update_index_duration_seconds.histogram.counts
       type: histogram
       description: >
-        Counters of the histogram of latencies for update index processes run by the indexer
+        Counters of the histogram of latencies for update index processes run by the storage indexer
 
     - name: update_index_duration_seconds.histogram.values
       type: histogram
       description: >
-        Bucket values of the histogram of latencies for update index processes run by the indexer
+        Bucket values of the histogram of latencies for update index processes run by the storage indexer
 
     - name: update_index_error_total.counter
       type: long
       description: >
-        A counter for all the update index processes that finished with error
+        A counter for all the update index processes that finished with error in the storage indexer
 
     - name: update_index_success_total.counter
       type: long
       description: >
-        A counter for all the update index processes that finished with error
+        A counter for all the update index processes that finished with success in the storage indexer
 
 - name: package_registry.start_time_seconds
   type: double
