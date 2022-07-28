@@ -33,8 +33,8 @@ An example event for `securityhub_findings` looks as following:
 {
     "@timestamp": "2017-03-22T13:22:13.933Z",
     "agent": {
-        "ephemeral_id": "6f5ca118-e25a-46bd-9173-3be0ec285b85",
-        "id": "b04f0bc6-4263-4a97-803e-84aba8764906",
+        "ephemeral_id": "01f4fdba-8670-479d-b54f-7d39403bb723",
+        "id": "eea1c0db-3657-4195-add3-da25a54834e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -164,6 +164,7 @@ An example event for `securityhub_findings` looks as following:
             ],
             "note": {
                 "text": "Don't forget to check under the mat.",
+                "updated_at": "2018-08-31T00:15:09.000Z",
                 "updated_by": "jsmith"
             },
             "patch_summary": {
@@ -185,6 +186,8 @@ An example event for `securityhub_findings` looks as following:
                     "count": 100
                 },
                 "operation": {
+                    "end_time": "2018-09-27T23:39:31.000Z",
+                    "start_time": "2018-09-27T23:37:31.000Z",
                     "type": "Install"
                 },
                 "reboot_option": "RebootIfNeeded"
@@ -295,7 +298,6 @@ An example event for `securityhub_findings` looks as following:
                     "category": "BACKDOOR",
                     "source": "Threat Intel Weekly",
                     "source_url": "http://threatintelweekly.org/backdoors/8888",
-                    "type": "IPV4_ADDRESS",
                     "value": "175.16.199.1"
                 }
             ],
@@ -303,6 +305,7 @@ An example event for `securityhub_findings` looks as following:
             "types": [
                 "Software and Configuration Checks/Vulnerabilities/CVE"
             ],
+            "updated_at": "2018-08-31T00:15:09.000Z",
             "user_defined_fields": {
                 "comeBackToLater": "Check this again on Monday",
                 "reviewedByCio": "true"
@@ -312,25 +315,23 @@ An example event for `securityhub_findings` looks as following:
                 {
                     "cvss": [
                         {
+                            "base_score": 4.7,
                             "base_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
                             "version": "V3"
                         },
                         {
+                            "base_score": 4.7,
                             "base_vector": "AV:L/AC:M/Au:N/C:C/I:N/A:N",
                             "version": "V2"
                         }
-                    ],
-                    "id": "CVE-2020-12345",
-                    "reference_urls": [
-                        "http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-12418",
-                        "http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-17563"
                     ],
                     "related_vulnerabilities": [
                         "CVE-2020-12345"
                     ],
                     "vendor": {
-                        "name": "Alas",
+                        "created_at": "2020-01-16T00:01:43.000Z",
                         "severity": "Medium",
+                        "updated_at": "2020-01-16T00:01:43.000Z",
                         "url": "https://alas.aws.amazon.com/ALAS-2020-1337.html"
                     },
                     "vulnerable_packages": [
@@ -372,17 +373,17 @@ An example event for `securityhub_findings` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "b04f0bc6-4263-4a97-803e-84aba8764906",
+        "id": "eea1c0db-3657-4195-add3-da25a54834e7",
         "snapshot": true,
         "version": "8.4.0"
     },
     "event": {
         "action": "port_probe",
         "agent_id_status": "verified",
-        "created": "2022-07-12T10:19:10.990Z",
+        "created": "2022-07-27T12:47:41.799Z",
         "dataset": "aws.securityhub_findings",
         "id": "us-west-2/111111111111/98aebb2207407c87f51e89943f12b1ef",
-        "ingested": "2022-07-12T10:19:14Z",
+        "ingested": "2022-07-27T12:47:45Z",
         "kind": "event",
         "original": "{\"Action\":{\"ActionType\":\"PORT_PROBE\",\"PortProbeAction\":{\"Blocked\":false,\"PortProbeDetails\":[{\"LocalIpDetails\":{\"IpAddressV4\":\"1.128.0.0\"},\"LocalPortDetails\":{\"Port\":80,\"PortName\":\"HTTP\"},\"RemoteIpDetails\":{\"City\":{\"CityName\":\"Example City\"},\"Country\":{\"CountryName\":\"Example Country\"},\"GeoLocation\":{\"Lat\":0,\"Lon\":0},\"Organization\":{\"Asn\":64496,\"AsnOrg\":\"ExampleASO\",\"Isp\":\"ExampleISP\",\"Org\":\"ExampleOrg\"}}}]}},\"AwsAccountId\":\"111111111111\",\"CompanyName\":\"AWS\",\"Compliance\":{\"RelatedRequirements\":[\"Req1\",\"Req2\"],\"Status\":\"PASSED\",\"StatusReasons\":[{\"Description\":\"CloudWatch alarms do not exist in the account\",\"ReasonCode\":\"CLOUDWATCH_ALARMS_NOT_PRESENT\"}]},\"Confidence\":42,\"CreatedAt\":\"2017-03-22T13:22:13.933Z\",\"Criticality\":99,\"Description\":\"The version of openssl found on instance i-abcd1234 is known to contain a vulnerability.\",\"FindingProviderFields\":{\"Confidence\":42,\"Criticality\":99,\"RelatedFindings\":[{\"Id\":\"123e4567-e89b-12d3-a456-426655440000\",\"ProductArn\":\"arn:aws:securityhub:us-west-2::product/aws/guardduty\"}],\"Severity\":{\"Label\":\"MEDIUM\",\"Original\":\"MEDIUM\"},\"Types\":[\"Software and Configuration Checks/Vulnerabilities/CVE\"]},\"FirstObservedAt\":\"2017-03-22T13:22:13.933Z\",\"GeneratorId\":\"acme-vuln-9ab348\",\"Id\":\"us-west-2/111111111111/98aebb2207407c87f51e89943f12b1ef\",\"LastObservedAt\":\"2017-03-23T13:22:13.933Z\",\"Malware\":[{\"Name\":\"Stringler\",\"Path\":\"/usr/sbin/stringler\",\"State\":\"OBSERVED\",\"Type\":\"COIN_MINER\"}],\"Network\":{\"DestinationDomain\":\"example2.com\",\"DestinationIpV4\":\"1.128.0.0\",\"DestinationIpV6\":\"2a02:cf40::\",\"DestinationPort\":\"80\",\"Direction\":\"IN\",\"OpenPortRange\":{\"Begin\":443,\"End\":443},\"Protocol\":\"TCP\",\"SourceDomain\":\"example1.com\",\"SourceIpV4\":\"1.128.0.0\",\"SourceIpV6\":\"2a02:cf40::\",\"SourceMac\":\"00:0d:83:b1:c0:8e\",\"SourcePort\":\"42\"},\"NetworkPath\":[{\"ComponentId\":\"abc-01a234bc56d8901ee\",\"ComponentType\":\"AWS::EC2::InternetGateway\",\"Egress\":{\"Destination\":{\"Address\":[\"1.128.0.0/24\"],\"PortRanges\":[{\"Begin\":443,\"End\":443}]},\"Protocol\":\"TCP\",\"Source\":{\"Address\":[\"175.16.199.1/24\"]}},\"Ingress\":{\"Destination\":{\"Address\":[\"175.16.199.1/24\"],\"PortRanges\":[{\"Begin\":443,\"End\":443}]},\"Protocol\":\"TCP\",\"Source\":{\"Address\":[\"175.16.199.1/24\"]}}}],\"Note\":{\"Text\":\"Don't forget to check under the mat.\",\"UpdatedAt\":\"2018-08-31T00:15:09Z\",\"UpdatedBy\":\"jsmith\"},\"PatchSummary\":{\"FailedCount\":\"0\",\"Id\":\"pb-123456789098\",\"InstalledCount\":\"100\",\"InstalledOtherCount\":\"1023\",\"InstalledPendingReboot\":\"0\",\"InstalledRejectedCount\":\"0\",\"MissingCount\":\"100\",\"Operation\":\"Install\",\"OperationEndTime\":\"2018-09-27T23:39:31Z\",\"OperationStartTime\":\"2018-09-27T23:37:31Z\",\"RebootOption\":\"RebootIfNeeded\"},\"Process\":{\"LaunchedAt\":\"2018-09-27T22:37:31Z\",\"Name\":\"syslogd\",\"ParentPid\":56789,\"Path\":\"/usr/sbin/syslogd\",\"Pid\":12345,\"TerminatedAt\":\"2018-09-27T23:37:31Z\"},\"ProductArn\":\"arn:aws:securityhub:us-east-1:111111111111:product/111111111111/default\",\"ProductFields\":{\"Service_Name\":\"cloudtrail.amazonaws.com\",\"aws/inspector/AssessmentTargetName\":\"My prod env\",\"aws/inspector/AssessmentTemplateName\":\"My daily CVE assessment\",\"aws/inspector/RulesPackageName\":\"Common Vulnerabilities and Exposures\",\"generico/secure-pro/Count\":\"6\"},\"ProductName\":\"Security Hub\",\"RecordState\":\"ACTIVE\",\"Region\":\"us-east-1\",\"RelatedFindings\":[{\"Id\":\"123e4567-e89b-12d3-a456-426655440000\",\"ProductArn\":\"arn:aws:securityhub:us-west-2::product/aws/guardduty\"},{\"Id\":\"AcmeNerfHerder-111111111111-x189dx7824\",\"ProductArn\":\"arn:aws:securityhub:us-west-2::product/aws/guardduty\"}],\"Remediation\":{\"Recommendation\":{\"Text\":\"Run sudo yum update and cross your fingers and toes.\",\"Url\":\"http://myfp.com/recommendations/dangerous_things_and_how_to_fix_them.html\"}},\"Resources\":[{\"Details\":{\"IamInstanceProfileArn\":\"arn:aws:iam::123456789012:role/IamInstanceProfileArn\",\"ImageId\":\"ami-79fd7eee\",\"IpV4Addresses\":[\"175.16.199.1\"],\"IpV6Addresses\":[\"2a02:cf40::\"],\"KeyName\":\"testkey\",\"LaunchedAt\":\"2018-09-29T01:25:54Z\",\"MetadataOptions\":{\"HttpEndpoint\":\"enabled\",\"HttpProtocolIpv6\":\"enabled\",\"HttpPutResponseHopLimit\":1,\"HttpTokens\":\"optional\",\"InstanceMetadataTags\":\"disabled\"},\"NetworkInterfaces\":[{\"NetworkInterfaceId\":\"eni-e5aa89a3\"}],\"SubnetId\":\"PublicSubnet\",\"Type\":\"i3.xlarge\",\"VirtualizationType\":\"hvm\",\"VpcId\":\"TestVPCIpv6\"},\"Id\":\"i-cafebabe\",\"Partition\":\"aws\",\"Region\":\"us-west-2\",\"Tags\":{\"billingCode\":\"Lotus-1-2-3\",\"needsPatching\":\"true\"},\"Type\":\"AwsEc2Instance\"}],\"Sample\":true,\"SchemaVersion\":\"2018-10-08\",\"Severity\":{\"Label\":\"CRITICAL\",\"Original\":\"8.3\"},\"SourceUrl\":\"http://threatintelweekly.org/backdoors/8888\",\"ThreatIntelIndicators\":[{\"Category\":\"BACKDOOR\",\"LastObservedAt\":\"2018-09-27T23:37:31Z\",\"Source\":\"Threat Intel Weekly\",\"SourceUrl\":\"http://threatintelweekly.org/backdoors/8888\",\"Type\":\"IPV4_ADDRESS\",\"Value\":\"175.16.199.1\"}],\"Threats\":[{\"FilePaths\":[{\"FileName\":\"b.txt\",\"FilePath\":\"/tmp/b.txt\",\"Hash\":\"sha256\",\"ResourceId\":\"arn:aws:ec2:us-west-2:123456789012:volume/vol-032f3bdd89aee112f\"}],\"ItemCount\":3,\"Name\":\"Iot.linux.mirai.vwisi\",\"Severity\":\"HIGH\"}],\"Title\":\"EC2.20 Both VPN tunnels for an AWS Site-to-Site VPN connection should be up\",\"Types\":[\"Software and Configuration Checks/Vulnerabilities/CVE\"],\"UpdatedAt\":\"2018-08-31T00:15:09Z\",\"UserDefinedFields\":{\"comeBackToLater\":\"Check this again on Monday\",\"reviewedByCio\":\"true\"},\"VerificationState\":\"UNKNOWN\",\"Vulnerabilities\":[{\"Cvss\":[{\"BaseScore\":4.7,\"BaseVector\":\"AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N\",\"Version\":\"V3\"},{\"BaseScore\":4.7,\"BaseVector\":\"AV:L/AC:M/Au:N/C:C/I:N/A:N\",\"Version\":\"V2\"}],\"Id\":\"CVE-2020-12345\",\"ReferenceUrls\":[\"http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-12418\",\"http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-17563\"],\"RelatedVulnerabilities\":[\"CVE-2020-12345\"],\"Vendor\":{\"Name\":\"Alas\",\"Url\":\"https://alas.aws.amazon.com/ALAS-2020-1337.html\",\"VendorCreatedAt\":\"2020-01-16T00:01:43Z\",\"VendorSeverity\":\"Medium\",\"VendorUpdatedAt\":\"2020-01-16T00:01:43Z\"},\"VulnerablePackages\":[{\"Architecture\":\"x86_64\",\"Epoch\":\"1\",\"Name\":\"openssl\",\"Release\":\"16.amzn2.0.3\",\"Version\":\"1.0.2k\"}]}],\"Workflow\":{\"Status\":\"NEW\"},\"WorkflowState\":\"NEW\"}",
         "type": [
@@ -400,12 +401,14 @@ An example event for `securityhub_findings` looks as following:
         "name": "AWS"
     },
     "process": {
+        "end": "2018-09-27T23:37:31.000Z",
         "executable": "/usr/sbin/syslogd",
         "name": "syslogd",
         "parent": {
             "pid": 56789
         },
-        "pid": 12345
+        "pid": 12345,
+        "start": "2018-09-27T22:37:31.000Z"
     },
     "related": {
         "ip": [
@@ -429,11 +432,14 @@ An example event for `securityhub_findings` looks as following:
     ],
     "threat": {
         "indicator": {
+            "last_seen": "2018-09-27T23:37:31.000Z",
             "type": "IPV4_ADDRESS"
         }
     },
     "url": {
         "domain": "threatintelweekly.org",
+        "full": "http://threatintelweekly.org/backdoors/8888",
+        "original": "http://threatintelweekly.org/backdoors/8888",
         "path": "/backdoors/8888",
         "scheme": "http"
     },
@@ -447,6 +453,7 @@ An example event for `securityhub_findings` looks as following:
             "vendor": "Alas"
         },
         "score": {
+            "base": 4.7,
             "version": "V2"
         }
     }
@@ -616,7 +623,7 @@ An example event for `securityhub_findings` looks as following:
 | aws.securityhub_findings.verification_state | Indicates the veracity of a finding. | keyword |
 | aws.securityhub_findings.vulnerabilities.cvss.adjustments.metric | The metric to adjust. | keyword |
 | aws.securityhub_findings.vulnerabilities.cvss.adjustments.reason | The reason for the adjustment. | keyword |
-| aws.securityhub_findings.vulnerabilities.cvss.base_score | The base CVSS score. | long |
+| aws.securityhub_findings.vulnerabilities.cvss.base_score | The base CVSS score. | double |
 | aws.securityhub_findings.vulnerabilities.cvss.base_vector | The base scoring vector for the CVSS score. | keyword |
 | aws.securityhub_findings.vulnerabilities.cvss.source | The origin of the original CVSS score and vector. | keyword |
 | aws.securityhub_findings.vulnerabilities.cvss.version | The version of CVSS for the CVSS score. | keyword |
@@ -708,6 +715,10 @@ An example event for `securityhub_findings` looks as following:
 | url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| url.full.text | Multi-field of `url.full`. | match_only_text |
+| url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.password | Password of the request. | keyword |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
@@ -730,10 +741,10 @@ An example event for `securityhub_insights` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-12T10:22:35.606Z",
+    "@timestamp": "2022-07-27T12:48:31.384Z",
     "agent": {
-        "ephemeral_id": "e86eb8ea-2d20-48d3-b107-ac5e0c07c710",
-        "id": "b04f0bc6-4263-4a97-803e-84aba8764906",
+        "ephemeral_id": "9a16ab92-dc6a-4607-a737-3e7e7884804e",
+        "id": "eea1c0db-3657-4195-add3-da25a54834e7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -1456,15 +1467,15 @@ An example event for `securityhub_insights` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "b04f0bc6-4263-4a97-803e-84aba8764906",
+        "id": "eea1c0db-3657-4195-add3-da25a54834e7",
         "snapshot": true,
         "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-07-12T10:22:35.606Z",
+        "created": "2022-07-27T12:48:31.384Z",
         "dataset": "aws.securityhub_insights",
-        "ingested": "2022-07-12T10:22:39Z",
+        "ingested": "2022-07-27T12:48:34Z",
         "kind": "event",
         "original": "{\"Filters\":{\"AwsAccountId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"CompanyName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ComplianceStatus\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Confidence\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"CreatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"Criticality\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"Description\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsConfidence\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"FindingProviderFieldsCriticality\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"FindingProviderFieldsRelatedFindingsId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsRelatedFindingsProductArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsSeverityLabel\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsSeverityOriginal\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FindingProviderFieldsTypes\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"FirstObservedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"GeneratorId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Id\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Keyword\":[{\"Value\":\"string\"}],\"LastObservedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"MalwareName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"MalwarePath\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"MalwareState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"MalwareType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkDestinationDomain\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkDestinationIpV4\":[{\"Cidr\":\"string\"}],\"NetworkDestinationIpV6\":[{\"Cidr\":\"string\"}],\"NetworkDestinationPort\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"NetworkDirection\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkProtocol\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkSourceDomain\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkSourceIpV4\":[{\"Cidr\":\"string\"}],\"NetworkSourceIpV6\":[{\"Cidr\":\"string\"}],\"NetworkSourceMac\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NetworkSourcePort\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"NoteText\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"NoteUpdatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"NoteUpdatedBy\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProcessLaunchedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ProcessName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProcessParentPid\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"ProcessPath\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProcessPid\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"ProcessTerminatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ProductArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ProductFields\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"ProductName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RecommendationText\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RecordState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Region\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RelatedFindingsId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"RelatedFindingsProductArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceIamInstanceProfileArn\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceImageId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceIpV4Addresses\":[{\"Cidr\":\"string\"}],\"ResourceAwsEc2InstanceIpV6Addresses\":[{\"Cidr\":\"string\"}],\"ResourceAwsEc2InstanceKeyName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceLaunchedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ResourceAwsEc2InstanceSubnetId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsEc2InstanceVpcId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamAccessKeyCreatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ResourceAwsIamAccessKeyPrincipalName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamAccessKeyStatus\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamAccessKeyUserName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsIamUserUserName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsS3BucketOwnerId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceAwsS3BucketOwnerName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceContainerImageId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceContainerImageName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceContainerLaunchedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ResourceContainerName\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceDetailsOther\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"ResourceId\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourcePartition\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceRegion\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ResourceTags\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"ResourceType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Sample\":[{\"Value\":true}],\"SeverityLabel\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"SeverityNormalized\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"SeverityProduct\":[{\"Eq\":20,\"Gte\":20,\"Lte\":20}],\"SourceUrl\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorCategory\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorLastObservedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"ThreatIntelIndicatorSource\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorSourceUrl\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorType\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"ThreatIntelIndicatorValue\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Title\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"Type\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"UpdatedAt\":[{\"DateRange\":{\"Unit\":\"string\",\"Value\":20},\"End\":\"2020-07-10 15:00:00.000\",\"Start\":\"2020-07-10 15:00:00.000\"}],\"UserDefinedFields\":[{\"Comparison\":\"string\",\"Key\":\"string\",\"Value\":\"string\"}],\"VerificationState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"WorkflowState\":[{\"Comparison\":\"string\",\"Value\":\"string\"}],\"WorkflowStatus\":[{\"Comparison\":\"string\",\"Value\":\"string\"}]},\"GroupByAttribute\":\"string\",\"InsightArn\":\"string\",\"Name\":\"string\"}",
         "type": [

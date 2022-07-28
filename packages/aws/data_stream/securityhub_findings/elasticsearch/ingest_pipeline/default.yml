@@ -54,16 +54,26 @@ processors:
       ignore_missing: true
   - date:
       field: json.Action.AwsApiCallAction.FirstSeen
+      if: ctx.json?.Action?.AwsApiCallAction?.FirstSeen != null && ctx.json?.Action?.AwsApiCallAction?.FirstSeen != ''
       target_field: aws.securityhub_findings.action.aws_api_call.first_seen
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.Action.AwsApiCallAction.LastSeen
+      if: ctx.json?.Action?.AwsApiCallAction?.LastSeen != null && ctx.json?.Action?.AwsApiCallAction?.LastSeen != ''
       target_field: aws.securityhub_findings.action.aws_api_call.last_seen
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Action.AwsApiCallAction.RemoteIpDetails.City.CityName
       target_field: aws.securityhub_findings.action.aws_api_call.remote_ip.city.name
@@ -79,29 +89,43 @@ processors:
   - convert:
       field: json.Action.AwsApiCallAction.RemoteIpDetails.GeoLocation.Lat
       target_field: aws.securityhub_findings.action.aws_api_call.remote_ip.geolocation.latitude
+      if: ctx.json?.Action?.AwsApiCallAction?.RemoteIpDetails?.GeoLocation?.Lat != ''
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.Action.AwsApiCallAction.RemoteIpDetails.GeoLocation.Lon
       target_field: aws.securityhub_findings.action.aws_api_call.remote_ip.geolocation.longitude
+      if: ctx.json?.Action?.AwsApiCallAction?.RemoteIpDetails?.GeoLocation?.Lon != ''
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.Action.AwsApiCallAction.RemoteIpDetails.IpAddressV4
       target_field: aws.securityhub_findings.action.aws_api_call.remote_ip.ip.address_v4
+      if: ctx.json?.Action?.AwsApiCallAction?.RemoteIpDetails?.IpAddressV4 != ''
       type: ip
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: '{{{aws.securityhub_findings.action.aws_api_call.remote_ip.ip.address_v4}}}'
-      if: ctx.aws?.securityhub_findings?.action?.aws_api_call?.remote_ip?.ip?.address_v4 != null
-      allow_duplicates: false
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.Action.AwsApiCallAction.RemoteIpDetails.Organization.Asn
       target_field: aws.securityhub_findings.action.aws_api_call.remote_ip.organization.asn
+      if: ctx.json?.Action?.AwsApiCallAction?.RemoteIpDetails?.Organization?.Asn != ''
       type: string
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Action.AwsApiCallAction.RemoteIpDetails.Organization.AsnOrg
       target_field: aws.securityhub_findings.action.aws_api_call.remote_ip.organization.asn_organization
@@ -121,8 +145,13 @@ processors:
   - convert:
       field: json.Action.DnsRequestAction.Blocked
       target_field: aws.securityhub_findings.action.dns_request.blocked
+      if: ctx.json?.Action?.DnsRequestAction?.Blocked != ''
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Action.DnsRequestAction.Domain
       target_field: aws.securityhub_findings.action.dns_request.domain
@@ -134,8 +163,13 @@ processors:
   - convert:
       field: json.Action.NetworkConnectionAction.Blocked
       target_field: aws.securityhub_findings.action.network_connection.blocked
+      if: ctx.json?.Action?.NetworkConnectionAction?.Blocked != ''
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Action.NetworkConnectionAction.ConnectionDirection
       target_field: aws.securityhub_findings.action.network_connection.direction
@@ -143,8 +177,13 @@ processors:
   - convert:
       field: json.Action.NetworkConnectionAction.LocalPortDetails.Port
       target_field: aws.securityhub_findings.action.network_connection.local.port.number
+      if: ctx.json?.Action?.NetworkConnectionAction?.LocalPortDetails?.Port != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Action.NetworkConnectionAction.LocalPortDetails.PortName
       target_field: aws.securityhub_findings.action.network_connection.local.port.name
@@ -168,29 +207,43 @@ processors:
   - convert:
       field: json.Action.NetworkConnectionAction.RemoteIpDetails.GeoLocation.Lat
       target_field: aws.securityhub_findings.action.network_connection.remote_ip.geolocation.latitude
+      if: ctx.json?.Action?.NetworkConnectionAction?.RemoteIpDetails?.GeoLocation?.Lat != ''
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.Action.NetworkConnectionAction.RemoteIpDetails.GeoLocation.Lon
       target_field: aws.securityhub_findings.action.network_connection.remote_ip.geolocation.longitude
+      if: ctx.json?.Action?.NetworkConnectionAction?.RemoteIpDetails?.GeoLocation?.Lon != ''
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.Action.NetworkConnectionAction.RemoteIpDetails.IpAddressV4
       target_field: aws.securityhub_findings.action.network_connection.remote_ip.ip.address_v4
+      if: ctx.json?.Action?.NetworkConnectionAction?.RemoteIpDetails?.IpAddressV4 != ''
       type: ip
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: '{{{aws.securityhub_findings.action.network_connection.remote_ip.ip.address_v4}}}'
-      if: ctx.aws?.securityhub_findings?.action?.network_connection?.remote_ip?.ip?.address_v4 != null
-      allow_duplicates: false
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.Action.NetworkConnectionAction.RemoteIpDetails.Organization.Asn
       target_field: aws.securityhub_findings.action.network_connection.remote_ip.organization.asn
+      if: ctx.json?.Action?.NetworkConnectionAction?.RemoteIpDetails?.Organization?.Asn != ''
       type: string
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Action.NetworkConnectionAction.RemoteIpDetails.Organization.AsnOrg
       target_field: aws.securityhub_findings.action.network_connection.remote_ip.organization.asn_organization
@@ -206,8 +259,13 @@ processors:
   - convert:
       field: json.Action.NetworkConnectionAction.RemotePortDetails.Port
       target_field: aws.securityhub_findings.action.network_connection.remote.port.number
+      if: ctx.json?.Action?.NetworkConnectionAction?.RemotePortDetails?.Port != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Action.NetworkConnectionAction.RemotePortDetails.PortName
       target_field: aws.securityhub_findings.action.network_connection.remote.port.name
@@ -215,8 +273,13 @@ processors:
   - convert:
       field: json.Action.PortProbeAction.Blocked
       target_field: aws.securityhub_findings.action.port_probe.blocked
+      if: ctx.json?.Action?.PortProbeAction?.Blocked != ''
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.Action.PortProbeAction.PortProbeDetails
       processor:
@@ -224,17 +287,11 @@ processors:
           field: _ingest._value.LocalIpDetails.IpAddressV4
           target_field: _ingest._value.local.ip.address_v4
           type: ip
-          ignore_failure: true
-      ignore_failure: true
-      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
-  - foreach:
-      field: json.Action.PortProbeAction.PortProbeDetails
-      processor:
-        append:
-          field: related.ip
-          value: '{{{_ingest._value.LocalIpDetails.IpAddressV4}}}'
-          allow_duplicates: false
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
   - foreach:
@@ -244,7 +301,11 @@ processors:
           field: _ingest._value.LocalPortDetails.Port
           target_field: _ingest._value.local.port.number
           type: long
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
   - foreach:
@@ -290,7 +351,11 @@ processors:
           field: _ingest._value.RemoteIpDetails.GeoLocation.Lat
           target_field: _ingest._value.remote_ip.geolocation.latitude
           type: double
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
   - foreach:
@@ -300,7 +365,11 @@ processors:
           field: _ingest._value.RemoteIpDetails.GeoLocation.Lon
           target_field: _ingest._value.remote_ip.geolocation.longitude
           type: double
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
   - foreach:
@@ -310,17 +379,11 @@ processors:
           field: _ingest._value.RemoteIpDetails.IpAddressV4
           target_field: _ingest._value.remote_ip.ip.address_v4
           type: ip
-          ignore_failure: true
-      ignore_failure: true
-      if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
-  - foreach:
-      field: json.Action.PortProbeAction.PortProbeDetails
-      processor:
-        append:
-          field: related.ip
-          value: '{{{_ingest._value.RemoteIpDetails.IpAddressV4}}}'
-          allow_duplicates: false
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
   - foreach:
@@ -330,7 +393,11 @@ processors:
           field: _ingest._value.RemoteIpDetails.Organization.Asn
           target_field: _ingest._value.remote_ip.organization.asn
           type: string
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
       if: ctx.json?.Action?.PortProbeAction?.PortProbeDetails != null && ctx.json?.Action?.PortProbeAction?.PortProbeDetails instanceof List
   - foreach:
@@ -424,14 +491,24 @@ processors:
   - convert:
       field: json.Confidence
       target_field: aws.securityhub_findings.confidence
+      if: ctx.json?.Confidence != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.CreatedAt
+      if: ctx.json?.CreatedAt != null && ctx.json?.CreatedAt != ''
       target_field: aws.securityhub_findings.created_at
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
       copy_from : aws.securityhub_findings.created_at
@@ -439,8 +516,13 @@ processors:
   - convert:
       field: json.Criticality
       target_field: aws.securityhub_findings.criticality
+      if: ctx.json?.Criticality != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Description
       target_field: aws.securityhub_findings.description
@@ -448,13 +530,23 @@ processors:
   - convert:
       field: json.FindingProviderFields.Confidence
       target_field: aws.securityhub_findings.provider_fields.confidence
+      if: ctx.json?.FindingProviderFields?.Confidence != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.FindingProviderFields.Criticality
       target_field: aws.securityhub_findings.provider_fields.criticality
+      if: ctx.json?.FindingProviderFields?.Criticality != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.FindingProviderFields.RelatedFindings
       processor:
@@ -488,23 +580,38 @@ processors:
   - convert:
       field: json.FindingProviderFields.Severity.Normalized
       target_field: aws.securityhub_findings.provider_fields.severity.normalized
+      if: ctx.json?.FindingProviderFields?.Severity?.Normalized != ''
       type: string
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.FindingProviderFields.Severity.Product
       target_field: aws.securityhub_findings.provider_fields.severity.product
+      if: ctx.json?.FindingProviderFields?.Severity?.Product != ''
       type: string
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.FindingProviderFields.Types
       target_field: aws.securityhub_findings.provider_fields.types
       ignore_missing: true
   - date:
       field: json.FirstObservedAt
+      if: ctx.json?.FirstObservedAt != null && ctx.json?.FirstObservedAt != ''
       target_field: aws.securityhub_findings.first_observed_at
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.GeneratorId
       target_field: aws.securityhub_findings.generator.id
@@ -519,10 +626,15 @@ processors:
       ignore_failure: true
   - date:
       field: json.LastObservedAt
+      if: ctx.json?.LastObservedAt != null && ctx.json?.LastObservedAt != ''
       target_field: aws.securityhub_findings.last_observed_at
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.Malware
       processor:
@@ -574,14 +686,13 @@ processors:
   - convert:
       field: json.Network.DestinationIpV4
       target_field: aws.securityhub_findings.network.destination.ip.v4
+      if: ctx.json?.Network?.DestinationIpV4 != ''
       type: ip
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: '{{{aws.securityhub_findings.network.destination.ip.v4}}}'
-      if: ctx.aws?.securityhub_findings?.network?.destination?.ip?.v4 != null
-      allow_duplicates: false
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: destination.ip
       value: '{{{aws.securityhub_findings.network.destination.ip.v4}}}'
@@ -591,14 +702,13 @@ processors:
   - convert:
       field: json.Network.DestinationIpV6
       target_field: aws.securityhub_findings.network.destination.ip.v6
+      if: ctx.json?.Network?.DestinationIpV6 != ''
       type: ip
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: '{{{aws.securityhub_findings.network.destination.ip.v6}}}'
-      if: ctx.aws?.securityhub_findings?.network?.destination?.ip?.v6 != null
-      allow_duplicates: false
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: destination.ip
       value: '{{{aws.securityhub_findings.network.destination.ip.v6}}}'
@@ -608,8 +718,13 @@ processors:
   - convert:
       field: json.Network.DestinationPort
       target_field: aws.securityhub_findings.network.destination.port
+      if: ctx.json?.Network?.DestinationPort != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
       copy_from: aws.securityhub_findings.network.destination.port
@@ -625,13 +740,23 @@ processors:
   - convert:
       field: json.Network.OpenPortRange.Begin
       target_field: aws.securityhub_findings.network.open_port_range.begin
+      if: ctx.json?.Network?.OpenPortRange?.Begin != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.Network.OpenPortRange.End
       target_field: aws.securityhub_findings.network.open_port_range.end
+      if: ctx.json?.Network?.OpenPortRange?.End != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Network.Protocol
       target_field: aws.securityhub_findings.network.protocol
@@ -654,14 +779,13 @@ processors:
   - convert:
       field: json.Network.SourceIpV4
       target_field: aws.securityhub_findings.network.source.ip.v4
+      if: ctx.json?.Network?.SourceIpV4 != ''
       type: ip
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: '{{{aws.securityhub_findings.network.source.ip.v4}}}'
-      if: ctx.aws?.securityhub_findings?.network?.source?.ip?.v4 != null
-      allow_duplicates: false
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: source.ip
       value: '{{{aws.securityhub_findings.network.source.ip.v4}}}'
@@ -671,14 +795,13 @@ processors:
   - convert:
       field: json.Network.SourceIpV6
       target_field: aws.securityhub_findings.network.source.ip.v6
+      if: ctx.json?.Network?.SourceIpV6 != ''
       type: ip
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: '{{{aws.securityhub_findings.network.source.ip.v6}}}'
-      if: ctx.aws?.securityhub_findings?.network?.source?.ip?.v6 != null
-      allow_duplicates: false
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: source.ip
       value: '{{{aws.securityhub_findings.network.source.ip.v6}}}'
@@ -704,8 +827,13 @@ processors:
   - convert:
       field: json.Network.SourcePort
       target_field: aws.securityhub_findings.network.source.port
+      if: ctx.json?.Network?.SourcePort != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: source.port
       copy_from: aws.securityhub_findings.network.source.port
@@ -747,7 +875,11 @@ processors:
               field: _ingest._value.Begin
               target_field: _ingest._value.begin
               type: long
-              ignore_failure: true
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
           ignore_missing: true
       ignore_failure: true
@@ -762,7 +894,11 @@ processors:
               field: _ingest._value.End
               target_field: _ingest._value.end
               type: long
-              ignore_failure: true
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
           ignore_missing: true
       ignore_failure: true
@@ -819,7 +955,11 @@ processors:
               field: _ingest._value.Begin
               target_field: _ingest._value.begin
               type: long
-              ignore_failure: true
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
           ignore_missing: true
       ignore_failure: true
@@ -834,7 +974,11 @@ processors:
               field: _ingest._value.End
               target_field: _ingest._value.end
               type: long
-              ignore_failure: true
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
           ignore_missing: true
       ignore_failure: true
@@ -882,7 +1026,11 @@ processors:
               field: _ingest._value.Begin
               target_field: _ingest._value.begin
               type: long
-              ignore_failure: true
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
           ignore_missing: true
       ignore_failure: true
@@ -893,10 +1041,15 @@ processors:
         foreach:
           field: _ingest._value.Ingress.Destination.PortRanges
           processor:
-            rename:
+            convert:
               field: _ingest._value.End
               target_field: _ingest._value.end
+              type: long
               ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
           ignore_missing: true
       ignore_failure: true
@@ -953,6 +1106,11 @@ processors:
               field: _ingest._value.Begin
               target_field: _ingest._value.begin
               type: long
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
               ignore_failure: true
           ignore_failure: true
           ignore_missing: true
@@ -964,10 +1122,15 @@ processors:
         foreach:
           field: _ingest._value.Ingress.Source.PortRanges
           processor:
-            rename:
+            convert:
               field: _ingest._value.End
               target_field: _ingest._value.end
+              type: long
               ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
           ignore_missing: true
       ignore_failure: true
@@ -1006,10 +1169,15 @@ processors:
       ignore_missing: true
   - date:
       field: json.Note.UpdatedAt
+      if: ctx.json?.Note?.UpdatedAt != null && ctx.json?.Note?.UpdatedAt != ''
       target_field: aws.securityhub_findings.note.updated_at
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Note.UpdatedBy
       target_field: aws.securityhub_findings.note.updated_by
@@ -1017,8 +1185,13 @@ processors:
   - convert:
       field: json.PatchSummary.FailedCount
       target_field: aws.securityhub_findings.patch_summary.failed.count
+      if: ctx.json?.PatchSummary?.FailedCount != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.PatchSummary.Id
       target_field: aws.securityhub_findings.patch_summary.id
@@ -1026,54 +1199,94 @@ processors:
   - convert:
       field: json.PatchSummary.InstalledCount
       target_field: aws.securityhub_findings.patch_summary.installed.count
+      if: ctx.json?.PatchSummary?.InstalledCount != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.PatchSummary.InstalledOtherCount
       target_field: aws.securityhub_findings.patch_summary.installed.other.count
+      if: ctx.json?.PatchSummary?.InstalledOtherCount != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.PatchSummary.InstalledPendingReboot
       target_field: aws.securityhub_findings.patch_summary.installed.pending_reboot
+      if: ctx.json?.PatchSummary?.InstalledPendingReboot != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.PatchSummary.InstalledRejectedCount
       target_field: aws.securityhub_findings.patch_summary.installed.rejected.count
+      if: ctx.json?.PatchSummary?.InstalledRejectedCount != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.PatchSummary.MissingCount
       target_field: aws.securityhub_findings.patch_summary.missing.count
+      if: ctx.json?.PatchSummary?.MissingCount != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.PatchSummary.Operation
       target_field: aws.securityhub_findings.patch_summary.operation.type
       ignore_missing: true
   - date:
       field: json.PatchSummary.OperationEndTime
+      if: ctx.json?.PatchSummary?.OperationEndTime != null && ctx.json?.PatchSummary?.OperationEndTime != ''
       target_field: aws.securityhub_findings.patch_summary.operation.end_time
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.PatchSummary.OperationStartTime
+      if: ctx.json?.PatchSummary?.OperationStartTime != null && ctx.json?.PatchSummary?.OperationStartTime != ''
       target_field: aws.securityhub_findings.patch_summary.operation.start_time
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.PatchSummary.RebootOption
       target_field: aws.securityhub_findings.patch_summary.reboot_option
       ignore_missing: true
   - date:
       field: json.Process.LaunchedAt
+      if: ctx.json?.Process?.LaunchedAt != null && ctx.json?.Process?.LaunchedAt != ''
       target_field: aws.securityhub_findings.process.launched_at
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: process.start
       copy_from: aws.securityhub_findings.process.launched_at
@@ -1089,8 +1302,13 @@ processors:
   - convert:
       field: json.Process.ParentPid
       target_field: aws.securityhub_findings.process.parent.pid
+      if: ctx.json?.Process?.ParentPid != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: process.parent.pid
       copy_from: aws.securityhub_findings.process.parent.pid
@@ -1106,18 +1324,28 @@ processors:
   - convert:
       field: json.Process.Pid
       target_field: aws.securityhub_findings.process.pid
+      if: ctx.json?.Process?.Pid != ''
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: process.pid
       copy_from: aws.securityhub_findings.process.pid
       ignore_failure: true
   - date:
       field: json.Process.TerminatedAt
+      if: ctx.json?.Process?.TerminatedAt != null && ctx.json?.Process?.TerminatedAt != ''
       target_field: aws.securityhub_findings.process.terminated_at
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: process.end
       copy_from: aws.securityhub_findings.process.terminated_at
@@ -1179,8 +1407,13 @@ processors:
   - convert:
       field: json.Sample
       target_field: aws.securityhub_findings.sample
+      if: ctx.json?.Sample != ''
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.SchemaVersion
       target_field: aws.securityhub_findings.schema.version
@@ -1192,8 +1425,13 @@ processors:
   - convert:
       field: json.Severity.Normalized
       target_field: aws.securityhub_findings.severity.normalized
+      if: ctx.json?.Severity?.Normalized != ''
       type: string
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.Severity.Original
       target_field: aws.securityhub_findings.severity.original
@@ -1201,12 +1439,28 @@ processors:
   - convert:
       field: json.Severity.Product
       target_field: aws.securityhub_findings.severity.product
+      if: ctx.json?.Severity?.Product != ''
       type: string
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.SourceUrl
       target_field: aws.securityhub_findings.source_url
       ignore_missing: true
+  - uri_parts:
+      field: aws.securityhub_findings.source_url
+      if: ctx.aws?.securityhub_findings?.source_url != '' && ctx.aws?.securityhub_findings?.source_url != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: url.full
+      value: '{{{url.original}}}'
+      ignore_failure: true
   - foreach:
       field: json.ThreatIntelIndicators
       processor:
@@ -1223,6 +1477,7 @@ processors:
           field: _ingest._value.LastObservedAt
           target_field: _ingest._value.last_observed_at
           formats:
+            - ISO8601
             - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
           ignore_failure: true
       ignore_failure: true
@@ -1252,15 +1507,6 @@ processors:
           field: _ingest._value.SourceUrl
           target_field: _ingest._value.source_url
           ignore_missing: true
-      ignore_failure: true
-      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
-  - foreach:
-      field: json.ThreatIntelIndicators
-      processor:
-        uri_parts:
-          field: _ingest._value.source_url
-          keep_original: false
-          ignore_failure: true
       ignore_failure: true
       if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
   - foreach:
@@ -1313,10 +1559,15 @@ processors:
       ignore_missing: true
   - date:
       field: json.UpdatedAt
+      if: ctx.json?.UpdatedAt != null && ctx.json?.UpdatedAt != ''
       target_field: aws.securityhub_findings.updated_at
       formats:
+        - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.UserDefinedFields
       target_field: aws.securityhub_findings.user_defined_fields
@@ -1386,8 +1637,12 @@ processors:
             convert:
               field: _ingest._value.BaseScore
               target_field: _ingest._value.base_score
-              type: long
-              ignore_failure: true
+              type: double
+              ignore_missing: true
+              on_failure:
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
           ignore_missing: true
       ignore_failure: true
@@ -1564,7 +1819,8 @@ processors:
           field: _ingest._value.Vendor.VendorCreatedAt
           target_field: _ingest._value.vendor.created_at
           formats:
-           - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+            - ISO8601
+            - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
           ignore_failure: true
       ignore_failure: true
       if: ctx.json?.Vulnerabilities != null && ctx.json?.Vulnerabilities instanceof List
@@ -1584,6 +1840,7 @@ processors:
           field: _ingest._value.Vendor.VendorUpdatedAt
           target_field: _ingest._value.vendor.updated_at
           formats:
+            - ISO8601
             - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
           ignore_failure: true
       ignore_failure: true
@@ -1734,6 +1991,63 @@ processors:
   - remove:
       field:
         - json
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings.action.aws_api_call.remote_ip.ip.address_v4}}}'
+      if: ctx.aws?.securityhub_findings?.action?.aws_api_call?.remote_ip?.ip?.address_v4 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings.action.network_connection.remote_ip.ip.address_v4}}}'
+      if: ctx.aws?.securityhub_findings?.action?.network_connection?.remote_ip?.ip?.address_v4 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - foreach:
+      field: aws.securityhub_findings.action.port_probe.details
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.local.ip.address_v4}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.aws?.securityhub_findings?.action?.port_probe?.details != null && ctx.aws?.securityhub_findings?.action?.port_probe?.details instanceof List
+  - foreach:
+      field: aws.securityhub_findings.action.port_probe.details
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value.remote_ip.ip.address_v4}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.aws?.securityhub_findings?.action?.port_probe?.details != null && ctx.aws?.securityhub_findings?.action?.port_probe?.details instanceof List
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings.network.destination.ip.v4}}}'
+      if: ctx.aws?.securityhub_findings?.network?.destination?.ip?.v4 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings.network.destination.ip.v6}}}'
+      if: ctx.aws?.securityhub_findings?.network?.destination?.ip?.v6 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings.network.source.ip.v4}}}'
+      if: ctx.aws?.securityhub_findings?.network?.source?.ip?.v4 != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{aws.securityhub_findings.network.source.ip.v6}}}'
+      if: ctx.aws?.securityhub_findings?.network?.source?.ip?.v6 != null
+      allow_duplicates: false
+      ignore_failure: true
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
@@ -1757,14 +2071,32 @@ processors:
         - aws.securityhub_findings.process.path
         - aws.securityhub_findings.process.pid
         - aws.securityhub_findings.process.terminated_at
-        - aws.securityhub_findings.threat_intel_indicators.last_observed_at
-        - aws.securityhub_findings.threat_intel_indicators.type
-        - aws.securityhub_findings.vulnerabilities.cvss.base_score
-        - aws.securityhub_findings.vulnerabilities.cvss.version
-        - aws.securityhub_findings.vulnerabilities.id
-        - aws.securityhub_findings.vulnerabilities.reference_urls
-        - aws.securityhub_findings.vulnerabilities.vendor.name
       ignore_failure: true
+      ignore_missing: true
+  - foreach:
+      field: aws.securityhub_findings.threat_intel_indicators
+      processor:
+        remove:
+          field:
+            - _ingest._value.last_observed_at
+            - _ingest._value.type
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_failure: true
+          ignore_missing: true
+      ignore_missing: true
+  - foreach:
+      field: aws.securityhub_findings.vulnerabilities
+      processor:
+        remove:
+          field:
+            - _ingest._value.cvss.base_score
+            - _ingest._value.cvss.version
+            - _ingest._value.id
+            - _ingest._value.reference_urls
+            - _ingest._value.vendor.name
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+          ignore_failure: true
+          ignore_missing: true
       ignore_missing: true
   - remove:
       field: event.original
@@ -1772,17 +2104,9 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
-      description: Adds all the remaining fields in fields under aws.securityhub_findings
-      lang: painless
-      if: ctx?.json != null
-      source: |
-        for (Map.Entry m : ctx.json.entrySet()) {
-          ctx.aws.securityhub_findings[m.getKey()] = m.getValue();
-        }
-  - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source: 
+      source:
         boolean dropEmptyFields(Object object) {
           if (object == null || object == "") {
             return true;
@@ -1797,6 +2121,6 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-- set:
+- append:
     field: error.message
     value: '{{{ _ingest.on_failure_message }}}'
