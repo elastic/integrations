@@ -178,6 +178,26 @@ processors:
       target_field: azure.waf.hostname
       ignore_missing: true
   - rename:
+      field: json.properties.action
+      target_field: event.action
+      ignore_missing: true      
+  - set:
+      field: json.event.alert.action
+      value: denied
+      if: ctx.azure?.firewall?.action == 'Deny'
+  - set:
+      field: json.event.alert.action
+      value: allowed
+      if: ctx.azure?.firewall?.action == 'Allow'
+  - append:
+      field: event.type
+      value: "allowed"
+      if: 'ctx.event?.action != null && ["Allowed","Matched","Detected"].contains(ctx.event.action)'
+  - append:
+      field: event.type
+      value: "denied"
+      if: 'ctx.event?.action != null && ["Blocked"].contains(ctx.event.action)'
+  - rename:
       field: json.properties.ruleSetType
       target_field: rule.category
       ignore_missing: true
