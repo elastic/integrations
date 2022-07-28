@@ -115,6 +115,7 @@ An example event for `firewall` looks as following:
 | checkpoint.attack_status | In case of a malicious event on an endpoint computer, the status of the attack. | keyword |
 | checkpoint.audit_status | Audit Status. Can be Success or Failure. | keyword |
 | checkpoint.auth_method | Password authentication protocol used (PAP or EAP). | keyword |
+| checkpoint.auth_status | The authentication status for an event. | keyword |
 | checkpoint.authority_rdata | List of authoritative servers. | keyword |
 | checkpoint.authorization | Authorization HTTP header value. | keyword |
 | checkpoint.bcc | List of BCC addresses. | keyword |
@@ -273,6 +274,8 @@ An example event for `firewall` looks as following:
 | checkpoint.icmp_code | In case a connection is ICMP, code info will be added to the log. | long |
 | checkpoint.icmp_type | In case a connection is ICMP, type info will be added to the log. | long |
 | checkpoint.id | Override application ID. | integer |
+| checkpoint.identity_src | The source for authentication identity information. | keyword |
+| checkpoint.identity_type | The type of identity used for authentication. | keyword |
 | checkpoint.ike | IKEMode (PHASE1, PHASE2, etc..). | keyword |
 | checkpoint.ike_ids | All QM ids. | keyword |
 | checkpoint.impacted_files | In case of an infection on an endpoint computer, the list of files that the malware impacted. | keyword |
@@ -394,6 +397,7 @@ An example event for `firewall` looks as following:
 | checkpoint.remediated_files | In case of an infection and a successful cleaning of that infection, this is a list of remediated files on the computer. | keyword |
 | checkpoint.reply_status | ICAP reply status code, e.g. 200 or 204. | integer |
 | checkpoint.risk | Risk level we got from the engine. | keyword |
+| checkpoint.roles | The role of identity. | keyword |
 | checkpoint.rpc_prog | Log for new RPC state - prog values. | integer |
 | checkpoint.rule | Matched rule number. | integer |
 | checkpoint.rule_action | Action of the matched rule in the access policy. | keyword |
@@ -427,6 +431,7 @@ An example event for `firewall` looks as following:
 | checkpoint.similiar_iocs | Other IoCs similar to the ones found, related to the malicious file. | keyword |
 | checkpoint.sip_reason | Explains why 'source_ip' isn't allowed to redirect (handover). | keyword |
 | checkpoint.site_name | Site name. | keyword |
+| checkpoint.snid | The Check Point session ID. | keyword |
 | checkpoint.source_interface | External Interface name for source interface or Null if not found. | keyword |
 | checkpoint.source_object | Matched object name on source column. | keyword |
 | checkpoint.source_os | OS which generated the attack. | keyword |
@@ -616,6 +621,7 @@ An example event for `firewall` looks as following:
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
+| observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |

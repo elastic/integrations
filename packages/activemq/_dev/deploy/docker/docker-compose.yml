@@ -1,13 +1,12 @@
 version: '2.3'
 services:
-  activemq-logfile:
-    image: alpine
-    volumes:
-      - ./sample_logs:/sample_logs:ro
-      - ${SERVICE_LOGS_DIR}:/opt/apache-activemq-*/data/
-    command: /bin/sh -c "cp /sample_logs/* /opt/apache-activemq-*/data/"
   activemq:
     build: .
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/opt/apache-activemq-5.17.1/logs/
+      - ./files/jetty.xml:/opt/apache-activemq-5.17.1/conf/jetty.xml
+      - ./files/jolokia-access.xml:/opt/apache-activemq-5.17.1/conf/jolokia-access.xml
     ports:
       - 8161
       - 61613
