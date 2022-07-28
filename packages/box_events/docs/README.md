@@ -159,4 +159,9 @@ To access the `events` endpoint, the user making the API call will need to have 
 | input.type | Type of Filebeat input. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.indicator.geo.city_name | City name. | keyword |
+| threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
+| threat.indicator.geo.location.lat | Longitude and latitude. | geo_point |
+| threat.indicator.geo.location.lon | Longitude and latitude. | geo_point |
+| threat.indicator.geo.region_name | Region name. | keyword |
 

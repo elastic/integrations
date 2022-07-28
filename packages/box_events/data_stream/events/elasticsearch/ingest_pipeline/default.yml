@@ -21,7 +21,7 @@ processors:
       field: box.session_id
       target_field: box.session.id
       ignore_missing: true
-# `box.type` is always `event`remove to avoid ambiguity with èvent.kind`e`
+# `box.type` is always `event` - remove to avoid ambiguity with `event.kind`
   - remove:
       field: box.type
       ignore_missing: true
@@ -116,6 +116,35 @@ processors:
   - rename:
       field: box.additional_details.shield_alert.risk_score
       target_field: event.risk_score
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.city_name
+      target_field: threat.indicator.geo.city_name
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.country_code
+      target_field: threat.indicator.geo.country_iso_code
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.latitude
+      target_field: threat.indicator.geo.location.lat
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.longitude
+      target_field: threat.indicator.geo.location.lon
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.region_name
+      target_field: threat.indicator.geo.region_name
+      ignore_missing: true
+# already have ip in `client.ip`
+  - remove:
+      field: box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.registrant
+      ignore_failure: true
       ignore_missing: true
 # Conditionally, remove event.original
   - remove:
