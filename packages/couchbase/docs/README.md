@@ -173,13 +173,13 @@ An example event for `cluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-01T09:58:01.561Z",
+    "@timestamp": "2022-07-28T06:12:30.084Z",
     "agent": {
-        "ephemeral_id": "11b11abe-12ba-4fd6-a79b-1b49f8de8b67",
-        "id": "5dba5d8e-f046-4650-807b-8b1728fdde99",
+        "ephemeral_id": "29c9e6b7-8cac-4452-9f3f-b8934052b319",
+        "id": "8afbcf13-ea5f-4341-8d24-1b2826ad8010",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "couchbase": {
         "cluster": {
@@ -190,22 +190,22 @@ An example event for `cluster` looks as following:
             },
             "hdd": {
                 "free": {
-                    "bytes": 33410184192
+                    "bytes": 30303183422
                 },
                 "quota": {
                     "total": {
-                        "bytes": 48420556800
+                        "bytes": 104493735936
                     }
                 },
                 "total": {
-                    "bytes": 48420556800
+                    "bytes": 104493735936
                 },
                 "used": {
                     "data": {
-                        "bytes": 15817084
+                        "bytes": 22595962
                     },
                     "value": {
-                        "bytes": 15010372608
+                        "bytes": 74190552514
                     }
                 }
             },
@@ -237,14 +237,14 @@ An example event for `cluster` looks as following:
                     }
                 },
                 "total": {
-                    "bytes": 10295738368
+                    "bytes": 12527374336
                 },
                 "used": {
                     "data": {
-                        "bytes": 37946136
+                        "bytes": 33342376
                     },
                     "value": {
-                        "bytes": 9925578752
+                        "bytes": 10380521472
                     }
                 }
             }
@@ -256,12 +256,12 @@ An example event for `cluster` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "5dba5d8e-f046-4650-807b-8b1728fdde99",
+        "id": "8afbcf13-ea5f-4341-8d24-1b2826ad8010",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
@@ -269,8 +269,8 @@ An example event for `cluster` looks as following:
             "database"
         ],
         "dataset": "couchbase.cluster",
-        "duration": 5880968,
-        "ingested": "2022-07-01T09:58:05Z",
+        "duration": 7422215,
+        "ingested": "2022-07-28T06:12:33Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -282,16 +282,16 @@ An example event for `cluster` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.144.7"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:90:07"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.45.1.el7.x86_64",
+            "kernel": "5.4.0-110-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
