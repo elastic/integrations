@@ -4,9 +4,9 @@ This integration is for [Snort](https://www.snort.org/).
 
 ## Compatibility
 
-This module has been developed against Snort v2.9, but is expected to work
-with other versions of Snort. This package is designed to read from the PFsense CSV output
-and the Alert Fast output either via reading a local logfile or receiving messages via syslog
+This module has been developed against Snort v2.9 and v3, but is expected to work
+with other versions of Snort. This package is designed to read from the PFsense CSV output,
+the Alert Fast output either via reading a local logfile or receiving messages via syslog and the Snort 3 JSON log file.
 
 ## Log
 
@@ -194,6 +194,7 @@ An example event for `log` looks as following:
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
@@ -211,7 +212,7 @@ An example event for `log` looks as following:
 | rule.version | The version / revision of the rule being used for analysis. | keyword |
 | snort.dgm.length | Length of | long |
 | snort.eth.length | Length of the Ethernet header and payload. | long |
-| snort.gid | The gid keyword (generator id) is used to identify what part of Snort generates the event when a particular rule fires.dd | long |
+| snort.gid | The gid keyword (generator id) is used to identify what part of Snort generates the event when a particular rule fires.dd | keyword |
 | snort.icmp.code | ICMP code. | long |
 | snort.icmp.id | ID of the echo request/reply | long |
 | snort.icmp.seq | ICMP sequence number. | long |
