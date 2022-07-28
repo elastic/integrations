@@ -9,35 +9,19 @@
         },
         "query": {
             "bool": {
+                "minimum_should_match": 1,
                 "should": [
                     {
-                        "bool": {
-                            "filter": [
-                                {
-                                    "exists": {
-                                        "field": "process.name"
-                                    }
-                                },
-                                {
-                                    "exists": {
-                                        "field": "host.hostname"
-                                    }
-                                },
-                                {
-                                    "exists": {
-                                        "field": "process.command_line"
-                                    }
-                                }
-                            ]
+                        "match": {
+                            "problemchild.prediction": 1
                         }
                     },
                     {
-                        "exists": {
-                            "field": "problemchild.prediction_probability"
+                        "match": {
+                            "blocklist_label": 1
                         }
                     }
-                ],
-                "minimum_should_match": 1
+                ]
             }
         },
         "jobs": [
