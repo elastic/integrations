@@ -86,13 +86,13 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-20T12:31:14.439Z",
+    "@timestamp": "2022-07-28T09:29:46.103Z",
     "agent": {
-        "ephemeral_id": "2e34ed1d-357c-482c-9640-d0ab91f43e0b",
-        "id": "2e305fba-81f6-49b1-be45-f7198c6aaa53",
+        "ephemeral_id": "efec1f70-f249-4bd8-abd5-cb1ca18bb67e",
+        "id": "97cba3e2-ea7d-4d80-aa69-75752faa1576",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "elastic_package_registry.metrics",
@@ -103,15 +103,15 @@ An example event for `metrics` looks as following:
         "version": "8.3.1"
     },
     "elastic_agent": {
-        "id": "2e305fba-81f6-49b1-be45-f7198c6aaa53",
+        "id": "97cba3e2-ea7d-4d80-aa69-75752faa1576",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "elastic_package_registry.metrics",
-        "duration": 27108917,
-        "ingested": "2022-07-20T12:31:15Z",
+        "duration": 3341618,
+        "ingested": "2022-07-28T09:29:47Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -120,10 +120,10 @@ An example event for `metrics` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.112.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:07"
+            "02:42:ac:1f:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -133,7 +133,7 @@ An example event for `metrics` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -146,42 +146,10 @@ An example event for `metrics` looks as following:
             "instance": "elastic-package-service_elastic_package_registry_1:9110",
             "job": "prometheus"
         },
-        "number_indexed_packages": 1434,
-        "start_time": "2022-07-20T12:30:46.030Z",
-        "start_time_seconds": 1658320246.03,
+        "number_indexed_packages": 1,
+        "start_time": "2022-07-28T09:29:23.960Z",
+        "start_time_seconds": 1659000563.96,
         "storage_indexer": {
-            "get_duration_seconds": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        0.0025,
-                        0.0075,
-                        0.0175,
-                        0.037500000000000006,
-                        0.07500000000000001,
-                        0.175,
-                        0.375,
-                        0.75,
-                        1.75,
-                        3.75,
-                        7.5,
-                        15
-                    ]
-                }
-            },
             "update_index_duration_seconds": {
                 "histogram": {
                     "counts": [
@@ -221,7 +189,7 @@ An example event for `metrics` looks as following:
                 "counter": 0
             }
         },
-        "uptime": 28
+        "uptime": 22
     },
     "service": {
         "address": "http://elastic-package-service_elastic_package_registry_1:9110/metrics",
