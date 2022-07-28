@@ -68,7 +68,7 @@ processors:
   - convert:
       field: json.gid
       target_field: snort.gid
-      type: long
+      type: string
       ignore_missing: true
 ## ICMP
   - convert:
@@ -91,12 +91,33 @@ processors:
       target_field: snort.icmp.seq
       type: long
       ignore_missing: true
-## IP
-  - convert:
-      field: json.ip_id
-      target_field: snort.ip.id
-      type: long
+## TCP
+  - rename:
+      field: json.tcp_flags
+      target_field: snort.tcp.flags
       ignore_missing: true
+  - rename:
+      field: json.tcp_len
+      target_field: snort.tcp.length
+      ignore_missing: true
+  - rename:
+      field: json.tcp_seq
+      target_field: snort.tcp.seq
+      ignore_missing: true
+  - rename:
+      field: json.tcp_ack
+      target_field: snort.tcp.ack
+      ignore_missing: true
+  - rename:
+      field: json.tcp_win
+      target_field: snort.tcp.window
+      ignore_missing: true
+## UDP
+  - rename:
+      field: json.udp_len
+      target_field: snort.udp.length
+      ignore_missing: true
+## IP
   - convert:
       field: json.ip_id
       target_field: snort.ip.id
