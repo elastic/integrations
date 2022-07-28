@@ -86,9 +86,9 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-28T09:29:46.103Z",
+    "@timestamp": "2022-07-28T09:54:47.993Z",
     "agent": {
-        "ephemeral_id": "efec1f70-f249-4bd8-abd5-cb1ca18bb67e",
+        "ephemeral_id": "fb0962b4-3f3f-48d6-81d6-3df63366f744",
         "id": "97cba3e2-ea7d-4d80-aa69-75752faa1576",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -110,8 +110,8 @@ An example event for `metrics` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "elastic_package_registry.metrics",
-        "duration": 3341618,
-        "ingested": "2022-07-28T09:29:47Z",
+        "duration": 7602509,
+        "ingested": "2022-07-28T09:54:51Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -141,16 +141,8 @@ An example event for `metrics` looks as following:
         "period": 30000
     },
     "package_registry": {
-        "in_flight_requests": 0,
-        "labels": {
-            "instance": "elastic-package-service_elastic_package_registry_1:9110",
-            "job": "prometheus"
-        },
-        "number_indexed_packages": 1,
-        "start_time": "2022-07-28T09:29:23.960Z",
-        "start_time_seconds": 1659000563.96,
-        "storage_indexer": {
-            "update_index_duration_seconds": {
+        "http": {
+            "request_duration_seconds": {
                 "histogram": {
                     "counts": [
                         0,
@@ -182,14 +174,73 @@ An example event for `metrics` looks as following:
                     ]
                 }
             },
-            "update_index_error_total": {
-                "counter": 0
+            "request_size_bytes": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        8,
+                        24,
+                        48,
+                        96,
+                        192,
+                        384,
+                        768,
+                        33280,
+                        163840,
+                        458752
+                    ]
+                }
             },
-            "update_index_success_total": {
-                "counter": 0
+            "response_size_bytes": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        8,
+                        24,
+                        48,
+                        96,
+                        192,
+                        384,
+                        768,
+                        33280,
+                        163840,
+                        458752
+                    ]
+                }
             }
         },
-        "uptime": 22
+        "http_requests_total": {
+            "counter": 20
+        },
+        "labels": {
+            "code": "200",
+            "instance": "elastic-package-service_elastic_package_registry_1:9110",
+            "job": "prometheus",
+            "method": "get",
+            "path": "/"
+        }
     },
     "service": {
         "address": "http://elastic-package-service_elastic_package_registry_1:9110/metrics",
