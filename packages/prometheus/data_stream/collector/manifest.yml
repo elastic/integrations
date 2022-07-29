@@ -40,6 +40,13 @@ streams:
         required: true
         show_user: true
         default: true
+      - name: leaderelection
+        type: bool
+        title: Leader Election
+        multi: false
+        required: true
+        show_user: false
+        default: true
       - name: bearer_token_file
         type: text
         title: Bearer Token File
@@ -53,8 +60,6 @@ streams:
         multi: true
         required: false
         show_user: false
-        default:
-          - /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
       - name: metrics_filters.exclude
         type: text
         title: Metrics Filters Exclude
@@ -117,3 +122,12 @@ streams:
     title: Prometheus collector metrics
     enabled: true
     description: Collect Prometheus collector metrics
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: true
+      dynamic_templates:
+        - histogram:
+            path_match: "prometheus.*.histogram"
+            mapping:
+              type: histogram
