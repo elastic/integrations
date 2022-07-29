@@ -36,65 +36,134 @@ An example event for `apiserver` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-25T12:30:34.616Z",
-    "metricset": {
-        "name": "apiserver",
-        "period": 30000
-    },
-    "service": {
-        "address": "10.96.0.1:443",
-        "type": "kubernetes"
-    },
-    "event": {
-        "dataset": "kubernetes.apiserver",
-        "module": "kubernetes",
-        "duration": 114780772
-    },
     "kubernetes": {
         "apiserver": {
             "request": {
-                "client": "metrics-server/v0.0.0 (linux/amd64) kubernetes/$Format",
-                "version": "v1",
-                "count": 3,
-                "scope": "cluster",
-                "content_type": "application/vnd.kubernetes.protobuf",
-                "code": "200",
-                "verb": "LIST",
+                "duration": {
+                    "us": {
+                        "bucket": {
+                            "50000": 22,
+                            "100000": 22,
+                            "150000": 22,
+                            "200000": 22,
+                            "250000": 22,
+                            "300000": 22,
+                            "350000": 22,
+                            "400000": 22,
+                            "450000": 22,
+                            "500000": 22,
+                            "600000": 22,
+                            "700000": 22,
+                            "800000": 22,
+                            "900000": 22,
+                            "1000000": 22,
+                            "1250000": 22,
+                            "1500000": 22,
+                            "1750000": 22,
+                            "2000000": 22,
+                            "2500000": 22,
+                            "3000000": 22,
+                            "3500000": 22,
+                            "4000000": 22,
+                            "4500000": 22,
+                            "5000000": 22,
+                            "6000000": 22,
+                            "7000000": 22,
+                            "8000000": 22,
+                            "9000000": 22,
+                            "10000000": 22,
+                            "15000000": 22,
+                            "20000000": 22,
+                            "25000000": 22,
+                            "30000000": 22,
+                            "40000000": 22,
+                            "50000000": 22,
+                            "60000000": 22,
+                            "+Inf": 22
+                        },
+                        "count": 22,
+                        "sum": 110989.42699999998
+                    }
+                },
                 "component": "apiserver",
-                "resource": "nodes"
+                "resource": "roles",
+                "scope": "resource",
+                "verb": "DELETE",
+                "version": "v1",
+                "group": "rbac.authorization.k8s.io"
             }
         }
     },
-    "ecs": {
-        "version": "1.5.0"
-    },
     "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "644323b5-5d6a-4dfb-92dd-35ca602db487",
-        "id": "a6147a6e-6626-4a84-9907-f372f6c61eee",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "type": "metricbeat"
+        "name": "kind-control-plane",
+        "id": "d5aadb7a-c9ec-4563-b83a-1c4bb5f1471f",
+        "ephemeral_id": "7ae929a5-2943-43de-98e8-693dc0c381d7",
+        "type": "metricbeat",
+        "version": "8.4.0"
+    },
+    "@timestamp": "2022-07-27T08:47:36.182Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "service": {
+        "address": "https://10.96.0.1:443/metrics",
+        "type": "kubernetes"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "kubernetes.apiserver"
+    },
+    "elastic_agent": {
+        "id": "d5aadb7a-c9ec-4563-b83a-1c4bb5f1471f",
+        "version": "8.4.0",
+        "snapshot": false
     },
     "host": {
-        "id": "b0e83d397c054b8a99a431072fe4617b",
-        "containerized": false,
-        "ip": [
-            "172.17.0.11"
-        ],
-        "mac": [
-            "02:42:ac:11:00:0b"
-        ],
-        "hostname": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
-        "architecture": "x86_64",
-        "name": "agent-ingest-management-clusterscope-674dbb75df-rp8cc",
+        "hostname": "kind-control-plane",
         "os": {
-            "family": "redhat",
-            "name": "CentOS Linux",
-            "kernel": "4.19.81",
-            "codename": "Core",
-            "platform": "centos",
-            "version": "7 (Core)"
-        }
+            "kernel": "5.10.47-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": true,
+        "ip": [
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.23.0.2",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2"
+        ],
+        "name": "kind-control-plane",
+        "mac": [
+            "02:42:ac:12:00:02",
+            "02:42:ac:17:00:02",
+            "06:9c:33:01:a5:e7",
+            "06:f8:26:c9:76:70",
+            "0e:c0:30:20:74:c5",
+            "76:48:b8:c1:a7:ee",
+            "d6:f7:d3:28:f5:9c"
+        ],
+        "architecture": "x86_64"
+    },
+    "metricset": {
+        "period": 30000,
+        "name": "apiserver"
+    },
+    "event": {
+        "duration": 253700715,
+        "agent_id_status": "verified",
+        "ingested": "2022-07-27T08:47:36Z",
+        "module": "kubernetes",
+        "dataset": "kubernetes.apiserver"
     }
 }
 ```
@@ -142,22 +211,11 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.audit.rejected.count | Number of audit rejected events | long |  | counter |
 | kubernetes.apiserver.client.request.count | Number of requests as client | long |  | counter |
 | kubernetes.apiserver.etcd.object.count | Number of kubernetes objects at etcd | long |  | gauge |
-| kubernetes.apiserver.http.request.count | Request count for response | long |  | counter |
-| kubernetes.apiserver.http.request.duration.us.count | Request count for duration | long | micros | counter |
-| kubernetes.apiserver.http.request.duration.us.percentile.\* | Request duration microseconds percentiles | object |  |  |
-| kubernetes.apiserver.http.request.duration.us.sum | Request duration microseconds cumulative sum | double | micros | counter |
-| kubernetes.apiserver.http.request.size.bytes.count | Request count for size | long | byte | counter |
-| kubernetes.apiserver.http.request.size.bytes.percentile.\* | Request size percentiles | object |  |  |
-| kubernetes.apiserver.http.request.size.bytes.sum | Request size cumulative sum | long | byte | counter |
-| kubernetes.apiserver.http.response.size.bytes.count | Response count | long |  | counter |
-| kubernetes.apiserver.http.response.size.bytes.percentile.\* | Response size percentiles | object |  |  |
-| kubernetes.apiserver.http.response.size.bytes.sum | Response size cumulative sum | long | byte | counter |
 | kubernetes.apiserver.process.cpu.sec | CPU seconds | double |  | counter |
 | kubernetes.apiserver.process.fds.open.count | Number of open file descriptors | long |  | gauge |
 | kubernetes.apiserver.process.memory.resident.bytes | Bytes in resident memory | long | byte | gauge |
 | kubernetes.apiserver.process.memory.virtual.bytes | Bytes in virtual memory | long | byte | gauge |
 | kubernetes.apiserver.process.started.sec | Seconds since the process started | double |  | gauge |
-| kubernetes.apiserver.request.client | Client executing requests | keyword |  |  |
 | kubernetes.apiserver.request.code | HTTP code | keyword |  |  |
 | kubernetes.apiserver.request.component | Component handling the request | keyword |  |  |
 | kubernetes.apiserver.request.content_type | Request HTTP content type | keyword |  |  |
@@ -166,14 +224,11 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.request.dry_run | Wether the request uses dry run | keyword |  |  |
 | kubernetes.apiserver.request.duration.us.bucket.\* | Request duration, histogram buckets | object |  |  |
 | kubernetes.apiserver.request.duration.us.count | Request duration, number of operations | long |  | counter |
-| kubernetes.apiserver.request.duration.us.sum | Request duration, sum in microseconds | long |  | counter |
+| kubernetes.apiserver.request.duration.us.sum | Request duration, sum in microseconds | long | micros | counter |
 | kubernetes.apiserver.request.group | API group for the resource | keyword |  |  |
 | kubernetes.apiserver.request.handler | Request handler | keyword |  |  |
 | kubernetes.apiserver.request.host | Request host | keyword |  |  |
 | kubernetes.apiserver.request.kind | Kind of request | keyword |  |  |
-| kubernetes.apiserver.request.latency.bucket.\* | Request latency histogram buckets | object |  |  |
-| kubernetes.apiserver.request.latency.count | Request latency, number of requests | long |  | counter |
-| kubernetes.apiserver.request.latency.sum | Requests latency, sum of latencies in microseconds | long |  | counter |
 | kubernetes.apiserver.request.longrunning.count | Number of requests active long running requests | long |  | counter |
 | kubernetes.apiserver.request.method | HTTP method | keyword |  |  |
 | kubernetes.apiserver.request.resource | Requested resource | keyword |  |  |
@@ -181,6 +236,13 @@ An example event for `apiserver` looks as following:
 | kubernetes.apiserver.request.subresource | Requested subresource | keyword |  |  |
 | kubernetes.apiserver.request.verb | HTTP verb | keyword |  |  |
 | kubernetes.apiserver.request.version | version for the group | keyword |  |  |
+| kubernetes.apiserver.response.size.bytes.bucket.\* | Response size distribution in bytes for each group, version, verb, resource, subresource, scope and component. | object |  |  |
+| kubernetes.apiserver.response.size.bytes.count | Number of responses to requests | long |  | counter |
+| kubernetes.apiserver.response.size.bytes.sum | Sum of responses sizes in bytes | long | byte | counter |
+| kubernetes.apiserver.watch.events.kind | Resource kind of the watch event | keyword |  |  |
+| kubernetes.apiserver.watch.events.size.bytes.bucket.\* | Watch event size distribution in bytes | object |  |  |
+| kubernetes.apiserver.watch.events.size.bytes.count | Number of watch events | long |  | counter |
+| kubernetes.apiserver.watch.events.size.bytes.sum | Sum of watch events sizes in bytes | long | byte | counter |
 | orchestrator.cluster.name | Name of the cluster. | keyword |  |  |
 | orchestrator.cluster.url | URL of the API used to manage the cluster. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
