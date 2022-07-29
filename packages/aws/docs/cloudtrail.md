@@ -3,7 +3,7 @@
 ## Overview
 The AWS CloudTrail integration allows you to monitor [AWS CloudTrail](https://aws.amazon.com/cloudtrail/).
 
-Use the AWS CloudTrail integration to collect and parse logs related to account activity.
+Use the AWS CloudTrail integration to collect and parse logs related to account activity across your AWS infrastructure.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
 and reference logs when troubleshooting an issue.
 
@@ -38,12 +38,12 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs reference
 
-The `cloudtrail` data stream collects the AWS CloudTrail logs. CloudTrail monitors 
-events for the account. If a user creates a trail, it delivers those events as log
- files to a specific Amazon S3 bucket. 
+The `cloudtrail` data stream collects AWS CloudTrail logs. CloudTrail monitors events like
+user activity and API usage in AWS services. If a user creates a trail, it delivers those events as log
+files to a specific Amazon S3 bucket. 
 
-> Note: If Log File Integrity is turned on, the `cloudtrail` data stream will not read
-the CloudTrail Digest files that are delivered to the S3 bucket.
+> Note: If log file integrity is turned on, the `cloudtrail` data stream will not read
+the CloudTrail digest files that are delivered to the S3 bucket.
 The data stream will only read the CloudTrail logs.
 
 **Exported fields**
