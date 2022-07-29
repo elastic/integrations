@@ -455,7 +455,7 @@ An example event for `eve` looks as following:
 | tls.server.not_before | Timestamp indicating when server certificate is first considered valid. | date |
 | tls.server.subject | Subject of the x.509 certificate presented by the server. | keyword |
 | tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| tls.server.x509.issuer.country | List of country (C) codes | keyword |
+| tls.server.x509.issuer.country | List of country \(C) codes | keyword |
 | tls.server.x509.issuer.locality | List of locality names (L) | keyword |
 | tls.server.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
 | tls.server.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
@@ -464,7 +464,7 @@ An example event for `eve` looks as following:
 | tls.server.x509.not_before | Time at which the certificate is first considered valid. | date |
 | tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| tls.server.x509.subject.country | List of country (C) code | keyword |
+| tls.server.x509.subject.country | List of country \(C) code | keyword |
 | tls.server.x509.subject.locality | List of locality names (L) | keyword |
 | tls.server.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | tls.server.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
