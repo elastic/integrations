@@ -1,49 +1,39 @@
-# Route 53
+# AWS Route 53
 
-The Route 53 integration allows you to monitor [Amazon Route 53](https://aws.amazon.com/route53/). Amazon Route 53 is Domain Name System (DNS) web service. It connects user requests to the relevant IP addresses for the internet applications that are running on Amazon Web Services or on-premises.
+The Route 53 integration allows you to monitor [Amazon Route 53](https://aws.amazon.com/route53/)—a DNS web service.
 
-Use the Route 53 integration to collect and parse logs related to DNS activity across your AWS infrastructure. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
+Use the Route 53 integration to collect and parse logs related to DNS activity. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
-For example, you could use the data from this integration to spot unusual activity in your network traffic routing, in a given time period. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs, such as the forwarding rules and DNS endpoints for relevant custom names. 
+For example, you could use the data from this integration to spot unusual activity in your network traffic routing. You could also use the data to troubleshoot the underlying issue by looking at additional context in the logs, such as the forwarding rules and DNS endpoints for relevant custom names.
 
 ## Data streams
 
 The Route 53 integration collects one type of data stream: logs.
 
 **Logs** help you keep a record of events happening in Amazon Route 53.
-It collects Public Hosted Zone logs and Resolver logs. Log data streams collected by the Route 53 integration include the names being queried, the highest registered domain, the DNS response code, the edge location that served the request, and more. See more details in the [Logs reference](#logs-reference).
-
-<!-- etc. -->
-
-<!-- Optional notes -->
+This integration collects Public Hosted Zone logs and Resolver logs. Logs collected by the Route 53 integration include the names being queried, the highest registered domain, the DNS response code, the edge location that served the request, and more. See more details in the [Logs reference](#logs-reference).
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-<!-- Other requirements -->
+Before using any AWS integration you will need:
 
- Before using any AWS integration you will need:
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
- * **AWS Credentials** to connect with your AWS account.
- * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
-
- For more details about these requirements, see the **AWS** integration documentation.
+For more details about these requirements, see the **AWS** integration documentation.
 
 ## Setup
 
-<!-- Any prerequisite instructions -->
+Use this integration if you only need to collect data from the Route 53 service.
+
+If you want to collect data from two or more AWS services, consider using the **AWS** integration.
+When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
 
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
-
-<!-- Additional set up instructions -->
-
- Use this integration if you only need to collect data from the Route 53 service.
-
- If you want to collect data from two or more AWS services, consider using the **AWS** integration.
- When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
 
 ## Logs reference
 
@@ -55,7 +45,7 @@ Query logs contain only the queries that DNS resolvers forward to Route 53. If a
 
 Depending on how many DNS queries are submitted for a domain name (example.com) or subdomain name (www.example.com), which resolvers your users are using, and the TTL for the record, query logs might contain information about only one query out of every several thousand queries that are submitted to DNS resolvers.
 
-See [Route 53 Documentation](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/query-logs.html) for more information
+See the [Route 53 Documentation](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/query-logs.html) for more information.
 
 {{event "route53_public_logs"}}
 
@@ -73,7 +63,7 @@ As is standard for DNS resolvers, resolvers cache DNS queries for a length of ti
 
 For example, suppose that an EC2 instance in one of the VPCs that a query logging configuration is logging queries for, submits a request for accounting.example.com. Resolver caches the response to that query, and logs the query. If the same instance’s elastic network interface makes a query for accounting.example.com within the TTL of the Resolver’s cache, Resolver responds to the query from the cache. The second query is not logged.
 
-See [Route 53 Documentation](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-query-logs.html) for more information
+See the [Route 53 Documentation](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-query-logs.html) for more information.
 
 {{event "route53_resolver_logs"}}
 

@@ -1,20 +1,20 @@
 # Amazon EC2
 
-The Amazon EC2 integration allows you to monitor [Amazon Elastic Compute Cloud (Amazon EC2)](https://aws.amazon.com/ec2/). Amazon EC2 is a web service that allows you to use virtual computers, or "instances", operated by AWS to perform computing for your own applications.
+The Amazon EC2 integration allows you to monitor [Amazon Elastic Compute Cloud (Amazon EC2)](https://aws.amazon.com/ec2/)—a cloud compute platform.
 
 Use the Amazon EC2 integration to collect logs and metrics related to your EC2 instances. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the logs and metrics when troubleshooting an issue.
 
-For example, you could use this data to view Amazon EC2 error messages. Then you can alert the relevant person about that error message by email.
+For example, you could use this data to track Amazon EC2 CPU utilization. Then you can alert when utilization for an instance crosses a predefined threshold.
 
 ## Data streams
 
 The Amazon EC2 integration collects two types of data streams: logs and metrics.
 
 **Logs** help you keep a record of events happening in Amazon EC2.
-Log data streams collected by the Amazon EC2 integration include the region in which an instance  is running, the operating system architecture, and more. See more details in the [Logs reference](#logs-reference).
+Logs collected by the Amazon EC2 integration include the region in which an instance is running, the operating system architecture, container information, and more. See more details in the [Logs reference](#logs-reference).
 
-**Metrics** give you insight into the state of Amazon EC2 and its instances.
-Metric data streams collected by the Amazon EC2 integration include the Amazon EC2 instance ID, the number of earned CPU credits that an instance has accrued since it was launched or started, and more. See more details in the [Metrics reference](#metrics-reference).
+**Metrics** give you insight into the state of your Amazon EC2 instances.
+Metrics collected by the Amazon EC2 integration include the Amazon EC2 instance ID, the number of earned CPU credits that an instance has accrued since it was launched or started, and more. See more details in the [Metrics reference](#metrics-reference).
 
 ## Requirements
 
@@ -23,8 +23,8 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 Before using any AWS integration you will need:
 
- * **AWS Credentials** to connect with your AWS account.
- * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
 For more details about these requirements, see the **AWS** integration documentation.
 
@@ -40,10 +40,11 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs reference
 
-The `ec2` dataset is specifically for EC2 logs stored in AWS CloudWatch. Export logs
+The `ec2` data stream is specifically for EC2 logs stored in AWS CloudWatch. Export logs
 from log groups to Amazon S3 bucket which has SQS notification setup already.
-With this dataset, EC2 logs will be parsed into fields like  `ip_address`
-and `process.name`. For logs from other services, please use `cloudwatch` dataset.
+
+With this data stream, EC2 logs will be parsed into fields like  `ip_address`
+and `process.name`. For logs from other services, please use `cloudwatch` integration.
 
 **Exported fields**
 

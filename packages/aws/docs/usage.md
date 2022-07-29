@@ -4,25 +4,26 @@ The AWS Usage integration allows you to monitor your [AWS usage](https://aws.ama
 
 Use the AWS Usage integration to collect metrics related to your monthly AWS usage and costs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
 
-For example, you could use this data to view the number of the specified resources running in your account, Then you can alert the relevant budget holder about that usage by email.
+For example, you could use this integration to track your API call count per service. Then set up anomaly detection to send an email if the APM call count becomes anomalous.
 
 ## Data streams
 
 The AWS Usage integration collects one type of data: metrics.
 
-**Metrics** give you insight into the state of your AWS Usage integration include the number of specified API operations performed in your account, the number of the specified resources running in your account, and more. See more details in the [Metrics](#metrics-reference).
+**Metrics** give you insight into the state of your AWS Usage.
+Metrics collected by this integration include the number of specified API operations performed in your account, the number of the specified resources running in your account, and more. See more details in the [Metrics](#metrics-reference).
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
- Before using any AWS integration you will need:
+Before using any AWS integration you will need:
 
- * **AWS Credentials** to connect with your AWS account.
- * **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
- For more details about these requirements, see the **AWS** integration documentation.
+For more details about these requirements, see the **AWS** integration documentation.
 
 ## Setup
 
@@ -36,7 +37,7 @@ For step-by-step instructions on how to set up an integration, see the
 ## Metrics reference
 
 The `usage` data stream collects usage metrics from AWS.
-An example event for `usage`looks as following:
+An example event for `usage`looks like this:
 
 An example event for `usage` looks as following:
 
@@ -162,4 +163,3 @@ An example event for `usage` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-
