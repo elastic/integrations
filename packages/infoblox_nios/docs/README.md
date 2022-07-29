@@ -245,7 +245,7 @@ An example event for `log` looks as following:
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
 | dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
-| dns.header_flags | Array of 2 letter DNS header flags. Expected values are: AA, TC, RD, RA, AD, CD, DO. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.type | The type of record being queried. | keyword |
@@ -307,6 +307,7 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dns.before_query |  | text |
 | infoblox_nios.log.dns.category |  | text |
 | infoblox_nios.log.dns.failed_message |  | text |
+| infoblox_nios.log.dns.header_flags |  | keyword |
 | infoblox_nios.log.dns.message |  | text |
 | infoblox_nios.log.dns.version |  | text |
 | infoblox_nios.log.dns.view_name |  | text |
