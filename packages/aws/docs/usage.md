@@ -6,7 +6,42 @@ An example event for `usage` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:58:30.929Z",
+    "@timestamp": "2022-07-25T20:50:00.000Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
+        "type": "metricbeat",
+        "ephemeral_id": "6bab70d4-84d9-411d-887c-f144d4244e78",
+        "version": "8.3.2"
+    },
+    "elastic_agent": {
+        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
+        "version": "8.3.2",
+        "snapshot": false
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "eu-north-1",
+        "account": {
+            "name": "elastic-beats",
+            "id": "428152502467"
+        }
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "service": {
+        "type": "aws"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.usage"
+    },
+    "metricset": {
+        "period": 60000,
+        "name": "cloudwatch"
+    },
     "aws": {
         "usage": {
             "metrics": {
@@ -20,40 +55,17 @@ An example event for `usage` looks as following:
         },
         "dimensions": {
             "Type": "API",
-            "Resource": "GetMetricData",
+            "Resource": "ListMetrics",
             "Service": "CloudWatch",
             "Class": "None"
         }
     },
     "event": {
-        "duration": 1191329839,
-        "dataset": "aws.usage",
-        "module": "aws"
-    },
-    "service": {
-        "type": "aws"
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "cloud": {
-        "provider": "aws",
-        "region": "eu-north-1",
-        "account": {
-            "name": "elastic-beats",
-            "id": "428152502467"
-        }
-    },
-    "metricset": {
-        "name": "usage",
-        "period": 60000
-    },
-    "agent": {
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-        "name": "MacBook-Elastic.local",
-        "type": "metricbeat",
-        "version": "8.0.0"
+        "duration": 1432082500,
+        "agent_id_status": "verified",
+        "ingested": "2022-07-25T20:51:19Z",
+        "module": "aws",
+        "dataset": "aws.usage"
     }
 }
 ```
@@ -63,7 +75,6 @@ An example event for `usage` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.Class | The class of resource being tracked. | keyword |
@@ -77,14 +88,14 @@ An example event for `usage` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |

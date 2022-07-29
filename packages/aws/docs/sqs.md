@@ -6,56 +6,79 @@ An example event for `sqs` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:58:27.154Z",
-    "service": {
-        "type": "aws"
+    "@timestamp": "2022-07-26T21:43:00.000Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
+        "type": "metricbeat",
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "version": "8.3.2"
     },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "aws": {
-        "sqs": {
-            "empty_receives": 0,
-            "messages": {
-                "delayed": 0,
-                "deleted": 0,
-                "not_visible": 0,
-                "received": 0,
-                "sent": 0,
-                "visible": 2
-            },
-            "oldest_message_age": {
-                "sec": 78494
-            },
-            "queue": {
-                "name": "test-s3-notification"
-            },
-            "sent_message_size": {}
-        }
-    },
-    "event": {
-        "dataset": "aws.sqs",
-        "module": "aws",
-        "duration": 10418157072
-    },
-    "metricset": {
-        "period": 60000,
-        "name": "sqs"
+    "elastic_agent": {
+        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
+        "version": "8.3.2",
+        "snapshot": false
     },
     "cloud": {
-        "region": "us-west-2",
+        "provider": "aws",
+        "region": "eu-central-1",
         "account": {
             "name": "elastic-beats",
             "id": "428152502467"
-        },
-        "provider": "aws"
+        }
     },
-    "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-        "name": "MacBook-Elastic.local",
-        "type": "metricbeat"
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "service": {
+        "type": "aws"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.sqs"
+    },
+    "metricset": {
+        "period": 300000,
+        "name": "cloudwatch"
+    },
+    "aws": {
+        "sqs": {
+            "messages": {
+                "visible": 1518.4,
+                "deleted": 0,
+                "not_visible": 0,
+                "delayed": 0,
+                "received": 0,
+                "sent": 0.16666666666666666
+            },
+            "empty_receives": 0,
+            "sent_message_size": {
+                "bytes": 1002
+            },
+            "oldest_message_age": {
+                "sec": 345605.6
+            },
+            "queue": {
+                "name": "filebeat-aws-elb-test"
+            }
+        },
+        "cloudwatch": {
+            "namespace": "AWS/SQS"
+        },
+        "dimensions": {
+            "QueueName": "filebeat-aws-elb-test"
+        },
+        "tags": {
+            "created-by": "kaiyan"
+        }
+    },
+    "event": {
+        "duration": 11576777300,
+        "agent_id_status": "verified",
+        "ingested": "2022-07-26T21:47:48Z",
+        "module": "aws",
+        "dataset": "aws.sqs"
     }
 }
 ```
@@ -65,7 +88,6 @@ An example event for `sqs` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.QueueName | SQS queue name | keyword |
@@ -84,7 +106,7 @@ An example event for `sqs` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |

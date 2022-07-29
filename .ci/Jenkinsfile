@@ -38,7 +38,7 @@ pipeline {
     PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH = "gs://elastic-bekitzur-package-storage-internal/queue-publishing/${env.REPO_BUILD_TAG}"
   }
   options {
-    timeout(time: 2, unit: 'HOURS')
+    timeout(time: 4, unit: 'HOURS')
     buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20', daysToKeepStr: '30'))
     timestamps()
     ansiColor('xterm')
@@ -315,6 +315,7 @@ def packageStoragePublish() {
     useElasticPackage()
 
     // Build only unpublished files (need to read version from manifest.yml)
+    def unpublishedPresent = false
     dir("${BASE_DIR}/packages") {
       findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
         dir("${it}") {
@@ -329,8 +330,13 @@ def packageStoragePublish() {
           withEnv(["PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}"]) {
             sh(label: "Build integration as zip: ${it}", script: "elastic-package build --zip")
           }
+          unpublishedPresent = true
         }
       }
+    }
+    if (!unpublishedPresent) {
+      echo 'All packages are in sync'
+      return
     }
 
     // Sign unpublished packages
