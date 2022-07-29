@@ -1,0 +1,17 @@
+metricsets: ["query"]
+period: {{period}}
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+raw_data.enabled: true
+driver: "oracle"
+sql_queries: 
+  - query: SELECT name, physical_reads, db_block_gets, consistent_gets, 1 - (physical_reads / (db_block_gets + consistent_gets)) "Hit_Ratio" FROM V$BUFFER_POOL_STATISTICS
+    response_format: table
+  - query: SELECT sum(a.value) total_cur, avg(a.value) avg_cur, max(a.value) max_cur, S.username, s.machine FROM v$sesstat a, v$statname b, v$session s WHERE a.statistic# = b.statistic# AND s.sid = a.sid GROUP BY s.username, s.machine
+    response_format: table
+  - query: SELECT total_cursors, current_cursors, sess_cur_cache_hits, parse_count_total, sess_cur_cache_hits / total_cursors as cachehits_totalcursors_ratio , sess_cur_cache_hits - parse_count_total as real_parses FROM ( SELECT sum ( decode ( name, 'opened cursors cumulative', value, 0)) total_cursors, sum ( decode ( name, 'opened cursors current',value,0)) current_cursors, sum ( decode ( name, 'session cursor cache hits',value,0)) sess_cur_cache_hits, sum ( decode ( name, 'parse count (total)',value,0)) parse_count_total FROM v$sysstat WHERE name IN ( 'opened cursors cumulative','opened cursors current','session cursor cache hits', 'parse count (total)' ))
+    response_format: table
+  - query: SELECT 'lock_requests' "Ratio" , AVG(gethitratio) FROM V$LIBRARYCACHE UNION SELECT 'pin_requests' "Ratio", AVG(pinhitratio) FROM V$LIBRARYCACHE UNION SELECT 'io_reloads' "Ratio", (SUM(reloads) / SUM(pins)) FROM V$LIBRARYCACHE
+    response_format: variables
