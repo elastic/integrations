@@ -162,6 +162,7 @@ To access the `events` endpoint, the user making the API call will need to have 
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
 | threat.indicator.geo.city_name | City name. | keyword |
 | threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
 | threat.indicator.geo.location.lat | Longitude and latitude. | geo_point |
