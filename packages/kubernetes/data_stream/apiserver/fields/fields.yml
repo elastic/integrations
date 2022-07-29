@@ -1,11 +1,6 @@
 - name: kubernetes.apiserver
   type: group
   fields:
-    - name: request.client
-      dimension: true
-      type: keyword
-      description: |
-        Client executing requests
     - name: request.resource
       dimension: true
       type: keyword
@@ -101,53 +96,48 @@
           type: double
           metric_type: gauge
           description: Seconds since the process started
-    - name: http
+    - name: watch
       type: group
       fields:
-        - name: request.duration.us.percentile.*
+        - name: events.size.bytes.bucket.*
           type: object
-          description: Request duration microseconds percentiles
-        - name: request.duration.us.sum
-          type: double
-          metric_type: counter
-          unit: micros
-          description: Request duration microseconds cumulative sum
-        - name: request.duration.us.count
-          type: long
-          metric_type: counter
-          unit: micros
-          description: Request count for duration
-        - name: request.size.bytes.percentile.*
-          type: object
-          description: Request size percentiles
-        - name: request.size.bytes.sum
+          object_type: long
+          description: Watch event size distribution in bytes
+        - name: events.size.bytes.sum
           type: long
           format: bytes
           unit: byte
           metric_type: counter
-          description: Request size cumulative sum
-        - name: request.size.bytes.count
+          description: Sum of watch events sizes in bytes
+        - name: events.size.bytes.count
           type: long
-          unit: byte
           metric_type: counter
-          description: Request count for size
-        - name: response.size.bytes.percentile.*
+          description: Number of watch events
+        - name: events.kind
+          type: keyword
+          dimension: true
+          description: >
+            Resource kind of the watch event
+
+    - name: response
+      type: group
+      fields:
+        - name: size.bytes.bucket.*
           type: object
-          description: Response size percentiles
-        - name: response.size.bytes.sum
+          object_type: long
+          description: >
+            Response size distribution in bytes for each group, version, verb, resource, subresource, scope and component.
+
+        - name: size.bytes.sum
           type: long
           format: bytes
           unit: byte
           metric_type: counter
-          description: Response size cumulative sum
-        - name: response.size.bytes.count
+          description: Sum of responses sizes in bytes
+        - name: size.bytes.count
           type: long
           metric_type: counter
-          description: Response count
-        - name: request.count
-          type: long
-          metric_type: counter
-          description: Request count for response
+          description: Number of responses to requests
     - name: client.request.count
       type: long
       metric_type: counter
@@ -159,19 +149,9 @@
           type: long
           metric_type: counter
           description: Number of requests
-        - name: latency.sum
-          type: long
-          metric_type: counter
-          description: Requests latency, sum of latencies in microseconds
-        - name: latency.count
-          type: long
-          metric_type: counter
-          description: Request latency, number of requests
-        - name: latency.bucket.*
-          type: object
-          description: Request latency histogram buckets
         - name: duration.us.sum
           type: long
+          unit: micros
           metric_type: counter
           description: Request duration, sum in microseconds
         - name: duration.us.count
