@@ -511,7 +511,6 @@ An example event for `errorlog` looks as following:
 | ibmmq.errorlog.insert.arith | Changing content based on error.id. | keyword |
 | ibmmq.errorlog.insert.comment | Changing content based on error.id. | keyword |
 | ibmmq.errorlog.installation | This is the installation name which can be given at installation time. Each installation of IBM MQ on UNIX, Linux, and Windows, has a unique identifier known as an installation name. The installation name is used to associate things such as queue managers and configuration files with an installation. | keyword |
-| ibmmq.errorlog.log_timestamp | Error log occur time. | keyword |
 | ibmmq.errorlog.queue_manager | Name of the queue manager. Queue managers provide queuing services to applications, and manages the queues that belong to them. | keyword |
 | input.type | The input type from which the event was generated. This field is set to the value specified for the type option in the input section of the Filebeat config file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
