@@ -48,11 +48,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-07-04T00:10:14.578Z",
     "agent": {
-        "ephemeral_id": "54ce1a5f-64b9-4475-9d01-4d9fb46c22ba",
-        "id": "1db51880-bfd3-4297-9dd1-f3def809da25",
+        "ephemeral_id": "6b82ecb8-3739-4d1c-aeca-3a62c5340c7f",
+        "id": "c5c06c39-0b86-45ec-9ae3-c773f4562eaa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "data_stream": {
         "dataset": "pfsense.log",
@@ -80,9 +80,9 @@ An example event for `log` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "1db51880-bfd3-4297-9dd1-f3def809da25",
+        "id": "c5c06c39-0b86-45ec-9ae3-c773f4562eaa",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "event": {
         "action": "block",
@@ -91,7 +91,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "pfsense.log",
-        "ingested": "2022-06-29T13:24:24Z",
+        "ingested": "2022-07-30T02:57:35Z",
         "kind": "event",
         "original": "\u003c134\u003e1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
         "provider": "filterlog",
@@ -107,7 +107,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.128.4:52326"
+            "address": "172.19.0.6:50688"
         },
         "syslog": {
             "priority": 134
@@ -117,7 +117,7 @@ An example event for `log` looks as following:
     "network": {
         "bytes": 60,
         "community_id": "1:pOXVyPJTFJI5seusI/UD6SwvBjg=",
-        "direction": "in",
+        "direction": "inbound",
         "iana_number": "6",
         "transport": "tcp",
         "type": "ipv4"
@@ -318,7 +318,7 @@ An example event for `log` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
