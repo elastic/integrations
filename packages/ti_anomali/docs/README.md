@@ -21,11 +21,11 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "29217578-e780-4c3e-912d-0f35ce981fb4",
-        "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
+        "ephemeral_id": "5cec6801-c545-4f74-be69-0fd865dc1788",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.3.2"
     },
     "anomali": {
         "limo": {
@@ -43,19 +43,19 @@ An example event for `limo` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-04-11T08:51:02.140Z",
+        "created": "2022-08-01T15:40:11.538Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2022-04-11T08:51:03Z",
+        "ingested": "2022-08-01T15:40:12Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -67,12 +67,7 @@ An example event for `limo` looks as following:
         "preserve_original_event",
         "forwarded",
         "anomali-limo"
-    ],
-    "threat": {
-        "indicator": {
-            "type": "unknown"
-        }
-    }
+    ]
 }
 ```
 
@@ -177,10 +172,10 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-01T15:24:26.529Z",
+    "@timestamp": "2022-08-01T15:43:02.944Z",
     "agent": {
-        "ephemeral_id": "ba097a0d-d9bc-4859-9d60-448ddbb58ecd",
-        "id": "5052d33a-4b29-4eee-9f6e-94597d6d9950",
+        "ephemeral_id": "633e6483-2625-491c-9640-b4e480191a49",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.2"
@@ -213,7 +208,7 @@ An example event for `threatstream` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "5052d33a-4b29-4eee-9f6e-94597d6d9950",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "snapshot": false,
         "version": "8.3.2"
     },
@@ -221,7 +216,7 @@ An example event for `threatstream` looks as following:
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2022-08-01T15:24:27Z",
+        "ingested": "2022-08-01T15:43:03Z",
         "kind": "enrichment",
         "original": "{\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
         "severity": 7,
