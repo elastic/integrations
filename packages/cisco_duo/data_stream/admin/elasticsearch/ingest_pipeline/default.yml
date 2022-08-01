@@ -3,7 +3,7 @@ description: Pipeline for parsing cisco_duo administrator logs
 processors:
   - set:
       field: ecs.version
-      value: '8.3.0'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -24,9 +24,13 @@ processors:
   - date:
       field: json.timestamp
       target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.timestamp != null
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - set:
       field: event.category
       value: iam
@@ -150,6 +154,6 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{{_ingest.on_failure_message}}}"

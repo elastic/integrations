@@ -6,60 +6,72 @@ An example event for `sns` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:58:27.154Z",
+    "@timestamp": "2022-07-26T21:56:00.000Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
+        "ephemeral_id": "51866723-6dfa-4a72-a68e-f439d5de7f53",
+        "type": "metricbeat",
+        "version": "8.3.2"
+    },
+    "elastic_agent": {
+        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
+        "version": "8.3.2",
+        "snapshot": false
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "us-east-1",
+        "account": {
+            "name": "elastic-beats",
+            "id": "428152502467"
+        }
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.sns"
+    },
     "service": {
         "type": "aws"
     },
-    "ecs": {
-        "version": "1.5.0"
+    "metricset": {
+        "period": 300000,
+        "name": "cloudwatch"
     },
     "aws": {
+        "sns": {
+            "metrics": {
+                "NumberOfNotificationsDelivered": {
+                    "sum": 5
+                },
+                "NumberOfMessagesPublished": {
+                    "sum": 6
+                },
+                "PublishSize": {
+                    "avg": 905
+                },
+                "NumberOfNotificationsFailed": {
+                    "sum": 0
+                }
+            }
+        },
         "cloudwatch": {
             "namespace": "AWS/SNS"
         },
         "dimensions": {
-            "TopicName": "test-sns-ks"
-        },
-        "sns": {
-            "metrics": {
-                "NumberOfMessagesPublished": {
-                    "sum": 1
-                },
-                "NumberOfNotificationsFailed": {
-                    "sum": 1
-                },
-                "PublishSize": {
-                    "avg": 5
-                }
-            }
-        },
-        "tags": {
-            "created-by": "ks"
+            "TopicName": "vpc-flow-logs-sns-topic"
         }
     },
     "event": {
-        "dataset": "aws.sns",
+        "duration": 10483932100,
+        "agent_id_status": "verified",
+        "ingested": "2022-07-26T22:01:00Z",
         "module": "aws",
-        "duration": 10418157072
-    },
-    "metricset": {
-        "period": 60000,
-        "name": "sns"
-    },
-    "cloud": {
-        "region": "us-west-2",
-        "account": {
-            "name": "elastic-beats",
-            "id": "428152502467"
-        },
-        "provider": "aws"
-    },
-    "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-        "name": "MacBook-Elastic.local",
-        "type": "metricbeat"
+        "dataset": "aws.sns"
     }
 }
 ```
@@ -69,7 +81,6 @@ An example event for `sns` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.Application | Filters on application objects, which represent an app and device registered with one of the supported push notification services, such as APNs and FCM. | keyword |
@@ -100,7 +111,7 @@ An example event for `sns` looks as following:
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |

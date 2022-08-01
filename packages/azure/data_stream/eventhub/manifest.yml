@@ -14,6 +14,14 @@ streams:
         required: false
         show_user: true
         default: false
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
       - name: data_stream.dataset
         required: true
         default: azure.eventhub
@@ -22,6 +30,15 @@ streams:
           Set the name for your dataset. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
 
         type: text
+      - name: storage_account_container
+        type: text
+        title: Storage Account Container
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          This is the container in the storage account where the integration stores the checkpoint data for the consumer group. The integration generates a default container name if not specified. Each integration MUST have a dedicated container; do not reuse the same container for multiple integrations. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft.
+
       - name: tags
         type: text
         title: Tags
@@ -40,11 +57,3 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
