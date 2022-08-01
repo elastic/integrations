@@ -110,19 +110,16 @@ More example filters for different log types:
 resource.type="gce_subnetwork" AND
 log_id("compute.googleapis.com/vpc_flows") AND
 resource.labels.subnetwork_name"=[SUBNET_NAME]"
-
 #
 # Audit: Google Compute Engine firewall rule deletion
 #
 resource.type="gce_firewall_rule" AND
 log_id("cloudaudit.googleapis.com/activity") AND
 protoPayload.methodName:"firewalls.delete"
-
 #
 # DNS: all DNS queries
 #
 resource.type="dns_query"
-
 #
 # Firewall: logs for a given country
 #

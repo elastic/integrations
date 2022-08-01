@@ -1,16 +1,16 @@
 format_version: 1.0.0
 name: oracle
 title: "Oracle"
-version: 1.1.1
+version: 1.3.0
 license: basic
-description: Collect audit logs from Oracle databases with Elastic Agent.
+description: Oracle Audit Log, Performance metrics, Tablespace metrics, Sysmetrics integration
 type: integration
 categories:
   - security
   - datastore
 release: ga
 conditions:
-  kibana.version: "^7.17.0 || ^8.0.0"
+  kibana.version: "^8.3.0"
 icons:
   - src: /img/oracle_logo.svg
     title: Oracle
@@ -19,10 +19,22 @@ icons:
 policy_templates:
   - name: oracle
     title: Oracle Audit Logs
-    description: Collect Oracle audit logs
+    description: Collect Oracle Audit logs, Performance metrics, Tablespace metrics, Sysmetrics integration
     inputs:
       - type: filestream
         title: Collect logs from Oracle instances
         description: Collecting Oracle audit logs
+      - type: sql/metrics
+        vars:
+          - name: hosts
+            type: text
+            title: Oracle DSN
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1
+        title: Collect Oracle database's performance metrics, tablespace metrics and sysmetrics
+        description: Collecting performance metrics, tablespace metrics and sysmetrics from Oracle database instances
 owner:
   github: elastic/security-external-integrations

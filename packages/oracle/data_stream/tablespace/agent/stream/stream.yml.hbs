@@ -1,0 +1,94 @@
+metricsets: ["query"]
+period: {{period}}
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+raw_data.enabled: true
+driver: "oracle"
+dynamic_metric_name_filter: "{{dynamic_metric_name_filter}}"
+sql_queries: 
+  - query: "WITH data_files
+     AS (SELECT file_name,
+                file_id,
+                tablespace_name,
+                bytes,
+                status,
+                maxbytes,
+                user_bytes,
+                online_status
+         FROM   sys.dba_data_files
+         UNION
+         SELECT file_name,
+                file_id,
+                tablespace_name,
+                bytes,
+                status,
+                maxbytes,
+                user_bytes,
+                status AS ONLINE_STATUS
+         FROM   sys.dba_temp_files),
+     spaces
+     AS (SELECT b.tablespace_name TB_NAME,
+                tbs_size          TB_SIZE_USED,
+                a.free_space      TB_SIZE_FREE
+         FROM   (SELECT tablespace_name,
+                        SUM(bytes) AS free_space
+                 FROM   dba_free_space
+                 GROUP  BY tablespace_name) a,
+                (SELECT tablespace_name,
+                        SUM(bytes) AS tbs_size
+                 FROM   dba_data_files
+                 GROUP  BY tablespace_name) b
+         WHERE  a.tablespace_name(+) = b.tablespace_name
+                AND a.tablespace_name != 'TEMP'),
+     temp_spaces
+     AS (SELECT tablespace_name,
+                tablespace_size,
+                allocated_space,
+                free_space
+         FROM   dba_temp_free_space
+         WHERE  tablespace_name = 'TEMP'),
+     details
+     AS (SELECT df.file_name,
+                df.file_id,
+                df.tablespace_name,
+                df.bytes,
+                df.status,
+                df.maxbytes,
+                df.user_bytes,
+                df.online_status,
+                sp.tb_size_used,
+                sp.tb_size_free
+         FROM   data_files df,
+                spaces sp
+         WHERE  df.tablespace_name = sp.tb_name
+         UNION
+         SELECT df.file_name,
+                df.file_id,
+                df.tablespace_name,
+                df.bytes,
+                df.status,
+                df.maxbytes,
+                df.user_bytes,
+                df.online_status,
+                tsp.tablespace_size - tsp.free_space AS TB_SIZE_USED,
+                tsp.free_space                       AS TB_SIZE_FREE
+         FROM   data_files df,
+                temp_spaces tsp
+         WHERE  df.tablespace_name = tsp.tablespace_name)
+SELECT file_name,
+       file_id,
+       tablespace_name,
+       bytes,
+       status,
+       maxbytes,
+       user_bytes,
+       online_status,
+       tb_size_used,
+       tb_size_free,
+       SUM(bytes)
+         over() AS TOTAL_BYTES
+FROM   details"
+    response_format: table  
+
