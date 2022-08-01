@@ -3,7 +3,7 @@ description: Pipeline for parsing Proofpoint TAP delivered message logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.3.0'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -11,6 +11,11 @@ processors:
   - json:
       field: event.original
       target_field: json
+      ignore_failure: true
+  - date:
+      field: json.messageTime
+      formats:
+        - ISO8601
       ignore_failure: true
   - fingerprint:
       fields:
@@ -86,12 +91,10 @@ processors:
       field: json.ccAddresses
       target_field: email.cc.address
       ignore_missing: true
-  - date:
-      field: json.messageTime
-      target_field: email.delivery_timestamp
+  - set:
+      field: email.delivery_timestamp
+      copy_from: "@timestamp"
       ignore_failure: true
-      formats:
-        - ISO8601
   - rename:
       field: json.fromAddress
       target_field: email.from.address
