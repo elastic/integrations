@@ -66,7 +66,7 @@ By default the indicators will be collected every 1 minute, and deduplication is
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name |  | keyword |
-| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. Expected values are:   \* Not Specified   \* None   \* Low   \* Medium   \* High | keyword |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
 | threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
@@ -76,9 +76,9 @@ By default the indicators will be collected every 1 minute, and deduplication is
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. Recommended values are:   \* WHITE   \* GREEN   \* AMBER   \* RED | keyword |
+| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
@@ -106,11 +106,11 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2021-10-01T18:36:03.000Z",
     "agent": {
-        "ephemeral_id": "12c946b4-2bf4-4d07-8aec-d28310ed16c8",
-        "id": "394964aa-5974-455c-bea7-5c0b89b470bd",
+        "ephemeral_id": "9d50b50e-cf01-4905-b2ed-3557c6d540db",
+        "id": "a7be703c-0d78-40ea-8ad7-a02245cca635",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.3.2"
     },
     "data_stream": {
         "dataset": "ti_threatq.threat",
@@ -118,19 +118,19 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "394964aa-5974-455c-bea7-5c0b89b470bd",
+        "id": "a7be703c-0d78-40ea-8ad7-a02245cca635",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-04-11T09:27:35.244Z",
+        "created": "2022-08-01T16:06:47.804Z",
         "dataset": "ti_threatq.threat",
-        "ingested": "2022-04-11T09:27:36Z",
+        "ingested": "2022-08-01T16:06:48Z",
         "kind": "enrichment",
         "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":5,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893068,\"indicator_id\":106767,\"name\":\"Contact\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"email:Quetzalcoatl_relays[]protonmail.com url:https://quetzalcoatl-relays.org proof:uri-rsa hoster:frantech.ca\"},{\"attribute_id\":9,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893069,\"indicator_id\":106767,\"name\":\"Router Port\",\"touched_at\":\"2021-10-24 18:36:10\",\"updated_at\":\"2021-10-24 18:36:10\",\"value\":\"9000\"},{\"attribute_id\":6,\"created_at\":\"2021-10-01 18:36:06\",\"id\":4893070,\"indicator_id\":106767,\"name\":\"Flags\",\"touched_at\":\"2021-10-02 18:36:08\",\"updated_at\":\"2021-10-02 18:36:08\",\"value\":\"ERDV\"}],\"class\":\"network\",\"created_at\":\"2021-10-01 18:36:03\",\"expires_calculated_at\":\"2021-10-23 18:40:17\",\"hash\":\"69beef49fdbd1f54eef3cab324c7b6cf\",\"id\":106767,\"published_at\":\"2021-10-01 18:36:03\",\"score\":0,\"sources\":[{\"created_at\":\"2021-10-01 18:36:06\",\"creator_source_id\":12,\"id\":3699669,\"indicator_id\":106767,\"indicator_status_id\":1,\"indicator_type_id\":15,\"name\":\"www.dan.me.uk Tor Node List\",\"published_at\":\"2021-10-01 18:36:06\",\"reference_id\":37,\"source_id\":12,\"source_type\":\"connectors\",\"updated_at\":\"2021-10-24 18:36:10\"}],\"status\":{\"description\":\"Poses a threat and is being exported to detection tools.\",\"id\":1,\"name\":\"Active\"},\"status_id\":1,\"touched_at\":\"2021-10-24 18:36:10\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2021-10-01 18:36:03\",\"value\":\"107.189.1.90\"}",
         "type": "indicator"
