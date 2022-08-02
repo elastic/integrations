@@ -3,7 +3,7 @@ description: Pipeline for PFsense
 processors:
   - set:
       field: ecs.version
-      value: '8.3.0'
+      value: '8.4.0'
   - set:
       field: observer.vendor
       value: netgate
@@ -14,9 +14,12 @@ processors:
       field: message
       target_field: event.original
   - set:
+      field: event.kind
+      value: event
+  - set:
       field: event.timezone
       value: "{{_tmp.tz_offset}}"
-      if: ctx?._tmp?.tz_offset != null && ctx?._tmp?.tz_offset != 'local'
+      if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
   - grok:
       description: Parse syslog header
       field: event.original
@@ -31,13 +34,13 @@ processors:
         OBSERVER: '(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})'
         PROCESS: '(\(%{DATA:process.name}\)|(%{UNIXPATH}/)?%{WORD:process.name})'
   - date:
-      if: ctx?._tmp.timestamp8601 != null
+      if: ctx._tmp.timestamp8601 != null
       field: _tmp.timestamp8601
       target_field: '@timestamp'
       formats:
         - ISO8601
   - date:
-      if: ctx?.event?.timezone != null && ctx?._tmp?.timestamp != null
+      if: ctx.event?.timezone != null && ctx._tmp?.timestamp != null
       field: _tmp.timestamp
       target_field: '@timestamp'
       formats:
@@ -61,7 +64,7 @@ processors:
       if: ctx.event.provider == 'charon'
   - pipeline:
       name: '{{ IngestPipeline "dhcp" }}'
-      if: ctx.event.provider == 'dhcpd'
+      if: '["dhcpd", "dhclient", "dhcp6c"].contains(ctx.event.provider)'
   - pipeline:
       name: '{{ IngestPipeline "unbound" }}'
       if: ctx.event.provider == 'unbound'
@@ -75,7 +78,31 @@ processors:
       name: '{{ IngestPipeline "squid" }}'
       if: ctx.event.provider == 'squid'
   - drop:
-      if: '!["filterlog", "openvpn", "charon", "dhcpd", "unbound", "haproxy", "php-fpm", "squid"].contains(ctx?.event?.provider)'
+      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid"].contains(ctx.event?.provider)'
+  - append:
+      field: event.category
+      value: network
+      if: "ctx.network != null"
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      field: network.type
+      value: ipv6
+      if: 'ctx.source?.ip != null && ctx.source.ip.contains(":")'
+  - set:
+      field: network.type
+      value: ipv4
+      if: 'ctx.source?.ip != null && ctx.source.ip.contains(".")'
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -116,33 +143,46 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+  - community_id:
+      target_field: network.community_id
+      ignore_failure: true
+  - grok:
+      field: observer.ingress.interface.name
+      patterns:
+      - "%{DATA}.%{NONNEGINT:observer.ingress.vlan.id}"
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: network.vlan.id
+      copy_from: observer.ingress.vlan.id
+      ignore_empty_value: true
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       allow_duplicates: false
-      if: ctx?.destination?.ip != null
+      if: ctx.destination?.ip != null
   - append:
       field: related.ip
       value: "{{source.ip}}"
       allow_duplicates: false
-      if: ctx?.source?.ip != null
+      if: ctx.source?.ip != null
   - append:
       field: related.ip
       value: "{{source.nat.ip}}"
       allow_duplicates: false
-      if: ctx?.source?.nat?.ip != null
+      if: ctx.source?.nat?.ip != null
   - append:
       field: related.hosts
       value: "{{destination.domain}}"
-      if: "ctx?.destination?.domain != null"
+      if: "ctx.destination?.domain != null"
   - append:
       field: related.user
       value: "{{user.name}}"
-      if: "ctx?.user?.name != null"
+      if: "ctx.user?.name != null"
   - set:
       field: network.direction
       value: "{{network.direction}}bound"
-      if: ctx?.network?.direction != null && ctx?.network?.direction =~ /^(in|out)$/
+      if: ctx.network?.direction != null && ctx.network?.direction =~ /^(in|out)$/
   - remove:
       field:
         - _tmp
@@ -173,7 +213,7 @@ processors:
         handleMap(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:
