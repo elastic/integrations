@@ -1,4 +1,7 @@
-# Proofpoint integration
+# Proofpoint integration (Deprecated)
+
+_This integration is deprecated. Please use one of the other Proofpoint
+integrations that are specific to an Proofpoint product._
 
 This integration is for Proofpoint device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
