@@ -128,6 +128,7 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cisco.asa.aaa_type | The AAA operation type. One of authentication, authorization, or accounting. | keyword |
 | cisco.asa.assigned_ip | The IP address assigned to a VPN client successfully connecting | ip |
 | cisco.asa.burst.avg_rate | The current average burst rate seen | keyword |
 | cisco.asa.burst.configured_avg_rate | The current configured average burst rate allowed | keyword |
