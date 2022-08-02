@@ -233,6 +233,7 @@ An example event for `log` looks as following:
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | destination.port | Port of the destination. | long |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
@@ -324,13 +325,20 @@ An example event for `log` looks as following:
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
+| pfsense.dhcp.age | Age of DHCP lease in seconds | long |
+| pfsense.dhcp.duid | The DHCP unique identifier (DUID) is used by a client to get an IP address from a DHCPv6 server. | keyword |
 | pfsense.dhcp.hostname | Hostname of DHCP client | keyword |
+| pfsense.dhcp.iaid | Identity Association Identifier used alongside the DUID to uniquely identify a DHCP client | keyword |
+| pfsense.dhcp.lease_time | The DHCP lease time in seconds | long |
+| pfsense.dhcp.subnet | The subnet for which the DHCP server is issuing IPs | keyword |
+| pfsense.dhcp.transaction_id | The DHCP transaction ID | keyword |
 | pfsense.icmp.code | ICMP code. | long |
 | pfsense.icmp.destination.ip | Original destination address of the connection that caused this notification | ip |
 | pfsense.icmp.id | ID of the echo request/reply | long |
@@ -371,6 +379,7 @@ An example event for `log` looks as following:
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | server.port | Port of the server. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |

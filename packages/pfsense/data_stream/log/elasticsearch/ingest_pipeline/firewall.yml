@@ -34,54 +34,29 @@ processors:
         field: event.kind
         value: event
     - append:
-        field: event.category
-        value: network
-        allow_duplicates: false
-    - set:
-        field: source.ip
-        value: "{{source.address}}"
-        ignore_empty_value: true
-    - set:
-        field: destination.ip
-        value: "{{destination.address}}"
-        ignore_empty_value: true
-    - append:
         field: event.type
         value: connection
         allow_duplicates: false
-        if: ctx?.source?.ip != null && ctx?.destination?.ip != null
+        if: ctx.source?.address != null && ctx.destination?.address != null
     - append:
         field: event.type
         value: denied
         allow_duplicates: false
-        if: ctx?.event.action == 'block'
+        if: ctx.event.action == 'block'
     - append:
         field: event.type
         value: allowed
         allow_duplicates: false
-        if: ctx?.event.action == 'pass'
-    - set:
-        field: network.type
-        value: ipv{{network.type}}
-        if: ctx?.network?.type == '4' || ctx?.network?.type == '6'
+        if: ctx.event.action == 'pass'
     - lowercase:
         field: network.transport
         ignore_missing: true
     - remove:
         field: ack_number
         ignore_missing: true
-        if: ctx?.ack_number == null || ctx?.ack_number == ''
+        if: ctx.ack_number == null || ctx.ack_number == ''
     - network_direction:
         internal_networks_field: _tmp.internal_networks
-    - community_id:
-        target_field: network.community_id
-        ignore_failure: true
-    - grok:
-        field: observer.ingress.interface.name
-        patterns:
-        - "%{DATA}.%{NONNEGINT:observer.ingress.vlan.id}"
-        ignore_missing: true
-        ignore_failure: true
     - split:
         field: pfsense.tcp.options
         separator: ';'
