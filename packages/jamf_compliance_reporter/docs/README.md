@@ -5,7 +5,7 @@ The Jamf Compliance Reporter integration collects and parses data received from 
 Use the Jamf Compliance Reporter integration to collect logs from your machines.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
-For example, if you wanted to be notified when (something happens) you could (collect data). Then you can (visualize|alert|troubleshoot) by (doing something in Kibana).
+For example, if you wanted to monitor shell script commands performed by the root user, you could [configure Jamf to monitor those events](https://docs.jamf.com/compliance-reporter/documentation/Audit_Log_Levels_in_Compliance_Reporter.html) and then send them to Elastic for further investigation.
 
 ## Data streams
 
