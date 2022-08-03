@@ -336,7 +336,7 @@ An example event for `qmgr` looks as following:
 | ibmmq.qmgr.calls.failed.callback.count | Failed MQCB count. | long |
 | ibmmq.qmgr.calls.failed.close.count | Failed MQCLOSE count. | long |
 | ibmmq.qmgr.calls.failed.connections.count | Failed MQCONN/MQCONNX count. | long |
-| ibmmq.qmgr.calls.failed.get.count | Failed MQGET count. | long |
+| ibmmq.qmgr.calls.failed.get.count | Failed MQGET - count. | long |
 | ibmmq.qmgr.calls.failed.inquire.count | Failed MQINQ count. | long |
 | ibmmq.qmgr.calls.failed.open.count | Failed MQOPEN count. | long |
 | ibmmq.qmgr.calls.failed.set.count | Failed MQSET count. | long |
@@ -351,8 +351,8 @@ An example event for `qmgr` looks as following:
 | ibmmq.qmgr.calls.succeeded.set.count | MQSET count. | long |
 | ibmmq.qmgr.calls.succeeded.status.count | MQSTAT count. | long |
 | ibmmq.qmgr.calls.succeeded.subscription_request.count | MQSUBRQ count. | long |
-| ibmmq.qmgr.destructive.get.bytes | Interval total destructive get byte count. | long |
-| ibmmq.qmgr.destructive.get.count | Interval total destructive get count. | long |
+| ibmmq.qmgr.destructive.get.bytes | Interval total destructive get - byte count. | long |
+| ibmmq.qmgr.destructive.get.count | Interval total destructive get - count. | long |
 | ibmmq.qmgr.log.written.bytes.logical | Log - logical bytes written. | long |
 | ibmmq.qmgr.log.written.bytes.physical | Log - physical bytes written. | long |
 | ibmmq.qmgr.messages.commit.count | Commit count. | long |
@@ -362,22 +362,22 @@ An example event for `qmgr` looks as following:
 | ibmmq.qmgr.messages.failed.mq.put1.count | Failed MQPUT1 count. | long |
 | ibmmq.qmgr.messages.mq.put.bytes | Interval total MQPUT/MQPUT1 byte count. | long |
 | ibmmq.qmgr.messages.mq.put.count | Interval total MQPUT/MQPUT1 count. | long |
-| ibmmq.qmgr.messages.non_persistent.browse.bytes | Non-persistent message browse byte count. | long |
-| ibmmq.qmgr.messages.non_persistent.browse.count | Non-persistent message destructive get count. | long |
-| ibmmq.qmgr.messages.non_persistent.destructive.get.count | Non-persistent message destructive get count. | long |
-| ibmmq.qmgr.messages.non_persistent.get.bytes | Get non-persistent messages byte count. | long |
+| ibmmq.qmgr.messages.non_persistent.browse.bytes | Non-persistent message browse - byte count. | long |
+| ibmmq.qmgr.messages.non_persistent.browse.count | Non-persistent message browse - count. | long |
+| ibmmq.qmgr.messages.non_persistent.destructive.get.count | Non-persistent message destructive get - count. | long |
+| ibmmq.qmgr.messages.non_persistent.get.bytes | Got non-persistent messages - byte count. | long |
 | ibmmq.qmgr.messages.non_persistent.mq.put.count | Non-persistent message MQPUT count. | long |
 | ibmmq.qmgr.messages.non_persistent.mq.put1.count | Non-persistent message MQPUT1 count. | long |
-| ibmmq.qmgr.messages.non_persistent.put.bytes | Put non-persistent messages byte count. | long |
-| ibmmq.qmgr.messages.persistent.browse.bytes | Persistent message browse byte count. | long |
-| ibmmq.qmgr.messages.persistent.browse.count | Persistent message browse count. | long |
-| ibmmq.qmgr.messages.persistent.destructive.get.count | Persistent message destructive get count. | long |
-| ibmmq.qmgr.messages.persistent.get.bytes | Get persistent messages byte count. | long |
+| ibmmq.qmgr.messages.non_persistent.put.bytes | Put non-persistent messages - byte count. | long |
+| ibmmq.qmgr.messages.persistent.browse.bytes | Persistent message browse - byte count. | long |
+| ibmmq.qmgr.messages.persistent.browse.count | Persistent message browse - count. | long |
+| ibmmq.qmgr.messages.persistent.destructive.get.count | Persistent message destructive get - count. | long |
+| ibmmq.qmgr.messages.persistent.get.bytes | Get persistent messages - byte count. | long |
 | ibmmq.qmgr.messages.persistent.mq.put.count | Persistent message MQPUT count. | long |
 | ibmmq.qmgr.messages.persistent.mq.put1.count | Persistent message MQPUT1 count. | long |
-| ibmmq.qmgr.messages.persistent.put.bytes | Put persistent messages byte count. | long |
-| ibmmq.qmgr.messages.published.subscribers.bytes | Published to subscribers byte count. | long |
-| ibmmq.qmgr.messages.published.subscribers.count | Published to subscribers message count. | long |
+| ibmmq.qmgr.messages.persistent.put.bytes | Put persistent messages - byte count. | long |
+| ibmmq.qmgr.messages.published.subscribers.bytes | Published to subscribers - byte count. | long |
+| ibmmq.qmgr.messages.published.subscribers.count | Published to subscribers - message count. | long |
 | ibmmq.qmgr.messages.purged.queue.count | Purged queue count. | long |
 | ibmmq.qmgr.rollback.count | Rollback count. | long |
 | ibmmq.qmgr.subscription.durable.alter.count | Alter durable subscription count. | long |
@@ -390,8 +390,8 @@ An example event for `qmgr` looks as following:
 | ibmmq.qmgr.subscription.non_durable.delete.count | Delete non-durable subscription count. | long |
 | ibmmq.qmgr.topic.mq.put.count | Topic MQPUT/MQPUT1 interval total. | long |
 | ibmmq.qmgr.topic.mq.put.failed.count | Failed topic MQPUT/MQPUT1 count. | long |
-| ibmmq.qmgr.topic.mq.put.non_persistent.count | Non-persistent topic MQPUT/MQPUT1 count. | long |
-| ibmmq.qmgr.topic.mq.put.persistent.count | Persistent topic MQPUT/MQPUT1 count. | long |
+| ibmmq.qmgr.topic.mq.put.non_persistent.count | Non-persistent - topic MQPUT/MQPUT1 count. | long |
+| ibmmq.qmgr.topic.mq.put.persistent.count | Persistent - topic MQPUT/MQPUT1 count. | long |
 | ibmmq.qmgr.topic.put.bytes | Interval total topic bytes put. | long |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
