@@ -109,97 +109,97 @@ The fields reported are:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| iis.webserver.asp_net.application_restarts | Number of applications restarts. | float |
-| iis.webserver.asp_net.request_wait_time | Request wait time. | long |
-| iis.webserver.asp_net_application.errors_total_per_sec | Total number of errors per sec. | float |
-| iis.webserver.asp_net_application.pipeline_instance_count | The pipeline instance count. | float |
-| iis.webserver.asp_net_application.requests_executing | Number of requests executing. | float |
-| iis.webserver.asp_net_application.requests_in_application_queue | Number of requests in the application queue. | float |
-| iis.webserver.asp_net_application.requests_per_sec | Number of requests per sec. | float |
-| iis.webserver.cache.current_file_cache_memory_usage | The current file cache memory usage size. | float |
-| iis.webserver.cache.current_files_cached | The number of current files cached. | float |
-| iis.webserver.cache.current_uris_cached | The number of current uris cached. | float |
-| iis.webserver.cache.file_cache_hits | The number of file cache hits. | float |
-| iis.webserver.cache.file_cache_misses | The number of file cache misses. | float |
-| iis.webserver.cache.maximum_file_cache_memory_usage | The max file cache size. | float |
-| iis.webserver.cache.output_cache_current_items | The number of output cache current items. | float |
-| iis.webserver.cache.output_cache_current_memory_usage | The output cache memory usage size. | float |
-| iis.webserver.cache.output_cache_total_hits | The output cache total hits count. | float |
-| iis.webserver.cache.output_cache_total_misses | The output cache total misses count. | float |
-| iis.webserver.cache.total_files_cached | the total number of files cached. | float |
-| iis.webserver.cache.total_uris_cached | The total number of URIs cached. | float |
-| iis.webserver.cache.uri_cache_hits | The number of URIs cached hits. | float |
-| iis.webserver.cache.uri_cache_misses | The number of URIs cache misses. | float |
-| iis.webserver.network.anonymous_users_per_sec | The number of anonymous users per sec. | float |
-| iis.webserver.network.bytes_received_per_sec | The size of bytes received per sec. | float |
-| iis.webserver.network.bytes_sent_per_sec | The size of bytes sent per sec. | float |
-| iis.webserver.network.current_anonymous_users | The number of current anonymous users. | float |
-| iis.webserver.network.current_connections | The number of current connections. | float |
-| iis.webserver.network.current_non_anonymous_users | The number of current non anonymous users. | float |
-| iis.webserver.network.delete_requests_per_sec | Number of DELETE requests per sec. | float |
-| iis.webserver.network.get_requests_per_sec | Number of GET requests per sec. | float |
-| iis.webserver.network.maximum_connections | Number of maximum connections. | float |
-| iis.webserver.network.post_requests_per_sec | Number of POST requests per sec. | float |
-| iis.webserver.network.service_uptime | Service uptime. | float |
-| iis.webserver.network.total_anonymous_users | Total number of anonymous users. | float |
-| iis.webserver.network.total_bytes_received | Total size of bytes received. | float |
-| iis.webserver.network.total_bytes_sent | Total size of bytes sent. | float |
-| iis.webserver.network.total_connection_attempts | The total number of connection attempts. | float |
-| iis.webserver.network.total_delete_requests | The total number of DELETE requests. | float |
-| iis.webserver.network.total_get_requests | The total number of GET requests. | float |
-| iis.webserver.network.total_non_anonymous_users | The total number of non anonymous users. | float |
-| iis.webserver.network.total_post_requests | The total number of POST requests. | float |
-| iis.webserver.process.cpu_usage_perc | The CPU usage percentage. | float |
-| iis.webserver.process.handle_count | The number of handles. | float |
-| iis.webserver.process.io_read_operations_per_sec | IO read operations per sec. | float |
-| iis.webserver.process.io_write_operations_per_sec | IO write operations per sec. | float |
-| iis.webserver.process.page_faults_per_sec | Memory page faults. | float |
-| iis.webserver.process.private_bytes | Memory private bytes. | float |
-| iis.webserver.process.thread_count | The number of threads. | long |
-| iis.webserver.process.virtual_bytes | Memory virtual bytes. | float |
-| iis.webserver.process.worker_process_count | Number of worker processes running. | float |
-| iis.webserver.process.working_set | Memory working set. | float |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.labels | Image labels. | object |  |  |
+| container.name | Container name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| iis.webserver.asp_net.application_restarts | Number of applications restarts. | float |  | gauge |
+| iis.webserver.asp_net.request_wait_time | Request wait time. | long |  |  |
+| iis.webserver.asp_net_application.errors_total_per_sec | Total number of errors per sec. | float |  | gauge |
+| iis.webserver.asp_net_application.pipeline_instance_count | The pipeline instance count. | float |  | gauge |
+| iis.webserver.asp_net_application.requests_executing | Number of requests executing. | float |  | gauge |
+| iis.webserver.asp_net_application.requests_in_application_queue | Number of requests in the application queue. | float |  |  |
+| iis.webserver.asp_net_application.requests_per_sec | Number of requests per sec. | float |  | gauge |
+| iis.webserver.cache.current_file_cache_memory_usage | The current file cache memory usage size. | float |  |  |
+| iis.webserver.cache.current_files_cached | The number of current files cached. | float |  |  |
+| iis.webserver.cache.current_uris_cached | The number of current uris cached. | float |  |  |
+| iis.webserver.cache.file_cache_hits | The number of file cache hits. | float |  |  |
+| iis.webserver.cache.file_cache_misses | The number of file cache misses. | float |  |  |
+| iis.webserver.cache.maximum_file_cache_memory_usage | The max file cache size. | float |  |  |
+| iis.webserver.cache.output_cache_current_items | The number of output cache current items. | float |  |  |
+| iis.webserver.cache.output_cache_current_memory_usage | The output cache memory usage size. | float |  |  |
+| iis.webserver.cache.output_cache_total_hits | The output cache total hits count. | float |  |  |
+| iis.webserver.cache.output_cache_total_misses | The output cache total misses count. | float |  |  |
+| iis.webserver.cache.total_files_cached | the total number of files cached. | float |  |  |
+| iis.webserver.cache.total_uris_cached | The total number of URIs cached. | float |  |  |
+| iis.webserver.cache.uri_cache_hits | The number of URIs cached hits. | float |  |  |
+| iis.webserver.cache.uri_cache_misses | The number of URIs cache misses. | float |  |  |
+| iis.webserver.network.anonymous_users_per_sec | The number of anonymous users per sec. | float |  | gauge |
+| iis.webserver.network.bytes_received_per_sec | The size of bytes received per sec. | float | byte | gauge |
+| iis.webserver.network.bytes_sent_per_sec | The size of bytes sent per sec. | float | byte | gauge |
+| iis.webserver.network.current_anonymous_users | The number of current anonymous users. | float |  |  |
+| iis.webserver.network.current_connections | The number of current connections. | float |  |  |
+| iis.webserver.network.current_non_anonymous_users | The number of current non anonymous users. | float |  |  |
+| iis.webserver.network.delete_requests_per_sec | Number of DELETE requests per sec. | float |  | gauge |
+| iis.webserver.network.get_requests_per_sec | Number of GET requests per sec. | float |  | gauge |
+| iis.webserver.network.maximum_connections | Number of maximum connections. | float |  | counter |
+| iis.webserver.network.post_requests_per_sec | Number of POST requests per sec. | float |  | gauge |
+| iis.webserver.network.service_uptime | Service uptime. | float |  |  |
+| iis.webserver.network.total_anonymous_users | Total number of anonymous users. | float |  | counter |
+| iis.webserver.network.total_bytes_received | Total size of bytes received. | float | byte | counter |
+| iis.webserver.network.total_bytes_sent | Total size of bytes sent. | float | byte | counter |
+| iis.webserver.network.total_connection_attempts | The total number of connection attempts. | float |  |  |
+| iis.webserver.network.total_delete_requests | The total number of DELETE requests. | float |  | counter |
+| iis.webserver.network.total_get_requests | The total number of GET requests. | float |  | counter |
+| iis.webserver.network.total_non_anonymous_users | The total number of non anonymous users. | float |  | counter |
+| iis.webserver.network.total_post_requests | The total number of POST requests. | float |  | counter |
+| iis.webserver.process.cpu_usage_perc | The CPU usage percentage. | float |  | gauge |
+| iis.webserver.process.handle_count | The number of handles. | float |  |  |
+| iis.webserver.process.io_read_operations_per_sec | IO read operations per sec. | float |  | gauge |
+| iis.webserver.process.io_write_operations_per_sec | IO write operations per sec. | float |  | gauge |
+| iis.webserver.process.page_faults_per_sec | Memory page faults. | float |  | gauge |
+| iis.webserver.process.private_bytes | Memory private bytes. | float | byte | gauge |
+| iis.webserver.process.thread_count | The number of threads. | long |  |  |
+| iis.webserver.process.virtual_bytes | Memory virtual bytes. | float | byte | gauge |
+| iis.webserver.process.worker_process_count | Number of worker processes running. | float |  |  |
+| iis.webserver.process.working_set | Memory working set. | float |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### website
@@ -256,63 +256,63 @@ The fields reported are:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| iis.website.name | website name | keyword |
-| iis.website.network.bytes_received_per_sec | The bytes received per sec size. | float |
-| iis.website.network.bytes_sent_per_sec | The bytes sent per sec size. | float |
-| iis.website.network.current_connections | The number of current connections. | float |
-| iis.website.network.delete_requests_per_sec | The number of DELETE requests per sec. | float |
-| iis.website.network.get_requests_per_sec | The number of GET requests per sec. | float |
-| iis.website.network.maximum_connections | The number of maximum connections. | float |
-| iis.website.network.post_requests_per_sec | The number of POST requests per sec. | float |
-| iis.website.network.put_requests_per_sec | The number of PUT requests per sec. | float |
-| iis.website.network.service_uptime | The service uptime. | float |
-| iis.website.network.total_bytes_received | The total number of bytes received. | float |
-| iis.website.network.total_bytes_sent | The  total number of bytes sent. | float |
-| iis.website.network.total_connection_attempts | The total number of connection attempts. | float |
-| iis.website.network.total_delete_requests | The total number of DELETE requests. | float |
-| iis.website.network.total_get_requests | The total number of GET requests. | float |
-| iis.website.network.total_post_requests | The total number of POST requests. | float |
-| iis.website.network.total_put_requests | The total number of PUT requests. | float |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.labels | Image labels. | object |  |  |
+| container.name | Container name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| iis.website.name | website name | keyword |  |  |
+| iis.website.network.bytes_received_per_sec | The bytes received per sec size. | float | byte | gauge |
+| iis.website.network.bytes_sent_per_sec | The bytes sent per sec size. | float | byte | gauge |
+| iis.website.network.current_connections | The number of current connections. | float |  |  |
+| iis.website.network.delete_requests_per_sec | The number of DELETE requests per sec. | float |  | gauge |
+| iis.website.network.get_requests_per_sec | The number of GET requests per sec. | float |  | gauge |
+| iis.website.network.maximum_connections | The number of maximum connections. | float |  |  |
+| iis.website.network.post_requests_per_sec | The number of POST requests per sec. | float |  | gauge |
+| iis.website.network.put_requests_per_sec | The number of PUT requests per sec. | float |  | gauge |
+| iis.website.network.service_uptime | The service uptime. | float |  |  |
+| iis.website.network.total_bytes_received | The total number of bytes received. | float | byte | counter |
+| iis.website.network.total_bytes_sent | The  total number of bytes sent. | float | byte | counter |
+| iis.website.network.total_connection_attempts | The total number of connection attempts. | float |  | counter |
+| iis.website.network.total_delete_requests | The total number of DELETE requests. | float |  | counter |
+| iis.website.network.total_get_requests | The total number of GET requests. | float |  | counter |
+| iis.website.network.total_post_requests | The total number of POST requests. | float |  | counter |
+| iis.website.network.total_put_requests | The total number of PUT requests. | float |  | counter |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ### application_pool
@@ -365,71 +365,71 @@ The fields reported are:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| iis.application_pool.name | application pool name | keyword |
-| iis.application_pool.net_clr.filters_per_sec | Number of filters per sec. | float |
-| iis.application_pool.net_clr.finallys_per_sec | The number of finallys per sec. | float |
-| iis.application_pool.net_clr.throw_to_catch_depth_per_sec | Throw to catch depth count per sec. | float |
-| iis.application_pool.net_clr.total_exceptions_thrown | Total number of exceptions thrown. | long |
-| iis.application_pool.process.cpu_usage_perc | The CPU usage percentage. | float |
-| iis.application_pool.process.handle_count | The number of handles. | long |
-| iis.application_pool.process.io_read_operations_per_sec | IO read operations per sec. | float |
-| iis.application_pool.process.io_write_operations_per_sec | IO write operations per sec. | float |
-| iis.application_pool.process.page_faults_per_sec | Memory page faults. | float |
-| iis.application_pool.process.private_bytes | Memory private bytes. | float |
-| iis.application_pool.process.thread_count | The number of threats. | long |
-| iis.application_pool.process.virtual_bytes | Memory virtual bytes. | float |
-| iis.application_pool.process.working_set | Memory working set. | float |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.instance.name | Instance name of the host machine. | keyword |  |  |
+| cloud.machine.type | Machine type of the host machine. | keyword |  |  |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.labels | Image labels. | object |  |  |
+| container.name | Container name. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| iis.application_pool.name | application pool name | keyword |  |  |
+| iis.application_pool.net_clr.filters_per_sec | Number of filters per sec. | float |  | gauge |
+| iis.application_pool.net_clr.finallys_per_sec | The number of finallys per sec. | float |  | gauge |
+| iis.application_pool.net_clr.throw_to_catch_depth_per_sec | Throw to catch depth count per sec. | float |  | gauge |
+| iis.application_pool.net_clr.total_exceptions_thrown | Total number of exceptions thrown. | long |  | counter |
+| iis.application_pool.process.cpu_usage_perc | The CPU usage percentage. | float | s | gauge |
+| iis.application_pool.process.handle_count | The number of handles. | long |  |  |
+| iis.application_pool.process.io_read_operations_per_sec | IO read operations per sec. | float |  | gauge |
+| iis.application_pool.process.io_write_operations_per_sec | IO write operations per sec. | float |  | gauge |
+| iis.application_pool.process.page_faults_per_sec | Memory page faults. | float |  | gauge |
+| iis.application_pool.process.private_bytes | Memory private bytes. | float | byte | gauge |
+| iis.application_pool.process.thread_count | The number of threads. | long |  | counter |
+| iis.application_pool.process.virtual_bytes | Memory virtual bytes. | float | byte | gauge |
+| iis.application_pool.process.working_set | Memory working set. | float |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 ## Logs
 
 ### Compatibility
 
-The IIS module has been tested with logs from version 7.5 and version 10.
+The IIS module has been tested with logs from version 7.5, 8 and version 10.
 
 ### access
-This dataset will collect and parse access IIS logs.
+This dataset will collect and parse access IIS logs. The supported log format is IIS (W3C).
 
 An example event for `access` looks as following:
 
@@ -532,7 +532,7 @@ The fields reported are:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -564,7 +564,7 @@ The fields reported are:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.body.bytes | Size in bytes of the request body. | long |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
@@ -690,7 +690,7 @@ The fields reported are:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| destination.domain | Destination domain. | keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -721,7 +721,7 @@ The fields reported are:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | iis.error.queue_name | The IIS application pool name. | keyword |

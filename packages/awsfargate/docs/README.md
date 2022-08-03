@@ -339,6 +339,8 @@ If you want to learn more about Amazon ECS metrics, take a look at the blog post
 | awsfargate.task_stats.network.\*.outbound.dropped | Total number of dropped incoming packets. | long |
 | awsfargate.task_stats.network.\*.outbound.errors | Total errors on incoming packets. | long |
 | awsfargate.task_stats.network.\*.outbound.packets | Total number of incoming packets. | long |
+| awsfargate.task_stats.task_desired_status | The desired status for the task from Amazon ECS. | keyword |
+| awsfargate.task_stats.task_known_status | The known status for the task from Amazon ECS. | keyword |
 | awsfargate.task_stats.task_name | ECS task name | keyword |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -374,6 +376,8 @@ An example event for `task_stats` looks as following:
     "awsfargate": {
         "task_stats": {
             "cluster_name": "default",
+            "task_known_status": "RUNNING",
+            "task_desired_status": "RUNNING",
             "cpu": {
                 "core": null,
                 "kernel": {

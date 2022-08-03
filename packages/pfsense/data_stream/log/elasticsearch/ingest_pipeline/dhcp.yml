@@ -4,7 +4,13 @@ processors:
   - grok:
       field: message
       patterns:
-        - '%{WORD:event.action} %{MIDDLE} via %{INTERFACE:observer.ingress.interface.name}' 
+        - '%{DATA:_tmp.action}/%{INTERFACE:observer.ingress.interface.name}/%{MAC_ADDRESS:server.mac}/%{NOTSPACE:pfsense.dhcp.subnet}'
+        - '%{DATA:_tmp.action} %{IPV6:client.address}(/%{NUMBER})? on %{INTERFACE:observer.ingress.interface.name}'
+        - '%{DATA:_tmp.action} (from|to) %{IPV6:client.address} port %{POSINT:client.port:long}(, transaction ID %{NOTSPACE:pfsense.dhcp.transaction_id})?'
+        - '%{DATA:_tmp.action} for: %{IPV6:client.address}(, age %{POSINT:pfsense.dhcp.age:long} secs %{DATA})?%{GREEDYDATA}?'
+        - '%{DATA:_tmp.action}: address %{IPV6:client.address} to client with duid %{DUID:pfsense.dhcp.duid} iaid = -%{NOTSPACE:pfsense.dhcp.iaid} valid for %{POSINT:pfsense.dhcp.lease_time:long} seconds'
+        - '%{WORD:event.action} %{MIDDLE} via %{INTERFACE:observer.ingress.interface.name}'
+        - '%{DATA:_tmp.action} %{IPV6:client.address}'
         - '%{GREEDYDATA}'
       pattern_definitions:
         INTERFACE: '[a-z0-9\.]+'
@@ -13,53 +19,59 @@ processors:
         ON: 'on %{IP:client.address} to %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'
         FOR: 'for %{IP:client.address} \(%{IP:server.address}\)? from %{MAC_ADDRESS:client.mac} \(%{HOSTNAME:pfsense.dhcp.hostname}\)'
         MIDDLE: '(?:%{FROM}|%{ON}|%{FOR})'
-  - set:
-      field: event.kind
-      value: event
-  - append:
-      field: event.category
-      value: network
-      allow_duplicates: false
+        DUID: '(?i)[0-9a-f]{2}(:[0-9a-f]{2})+'
   - append:
       field: event.type
-      value: connection
-      allow_duplicates: false
-  - append:
-      field: event.type
-      value: protocol
-      allow_duplicates: false
-  - append:
-      field: event.type
-      value: info
+      value: 
+        - connection
+        - protocol
+        - info
       allow_duplicates: false
   - set:
       field: network.protocol
       value: dhcp
   - set:
+      field: network.protocol
+      value: dhcpv6
+      if: ctx.event.provider == 'dhcp6c' || (ctx.server?.address != null && ctx.server.address.contains(':')) || (ctx.client?.address != null && ctx.client.address.contains(':'))
+  - set:
       field: network.transport
       value: udp
-  - set:
-      field: client.port
-      value: 68
-      if: ctx?.client?.port == null
-  - set:
-      field: server.port
-      value: 67
-      if: ctx?.server?.port == null
-  - set:
-      field: client.ip
-      value: "{{client.address}}"
-      ignore_empty_value: true
-  - set:
-      field: server.ip
-      value: "{{server.address}}"
-      ignore_empty_value: true
+  - convert:
+      field: client.address
+      target_field: client.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: server.address
+      target_field: server.ip
+      type: ip
+      ignore_failure: true
+      ignore_missing: true
   - uppercase:
       field: client.mac
       ignore_missing: true
   - gsub:
       field: client.mac
       pattern: '[:]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: server.mac
+      ignore_missing: true
+  - gsub:
+      field: server.mac
+      pattern: '[:]'
+      replacement: '-'
+      ignore_missing: true
+  - lowercase:
+      field: _tmp.action
+      ignore_missing: true
+  - gsub:
+      field: _tmp.action
+      target_field: event.action
+      pattern: ' '
       replacement: '-'
       ignore_missing: true
   - set:
@@ -70,30 +82,11 @@ processors:
       field: destination
       copy_from: server
       ignore_empty_value: true
-  - community_id:
-      target_field: network.community_id
-      ignore_failure: true
-  - grok:
-      field: observer.ingress.interface.name
-      patterns:
-      - "%{DATA}.%{NONNEGINT:observer.ingress.vlan.id}"
-      ignore_missing: true
-      ignore_failure: true
-  - append:
-      field: related.ip
-      value: "{{source.ip}}"
-      allow_duplicates: false
-      if: "ctx?.source?.ip != null"
-  - append:
-      field: related.ip
-      value: "{{destination.ip}}"
-      allow_duplicates: false
-      if: "ctx?.destination?.ip != null"
   - append:
       field: related.hosts
       value: "{{pfsense.dhcp.hostname}}"
       allow_duplicates: false
-      if: "ctx?.pfsense?.log?.dhcp?.hostname != null"
+      if: "ctx.pfsense?.log?.dhcp?.hostname != null"
 on_failure:
   - append:
       field: error.message
