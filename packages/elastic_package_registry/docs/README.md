@@ -55,8 +55,12 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.http.response_size_bytes.histogram.values | Bucket values of the the histogram of response sizes for requests to the http server | histogram |  |  |
 | package_registry.http_requests_total.counter | Counter for requests to the http server | double |  | counter |
 | package_registry.in_flight_requests | Requests currently being served by the http server | double |  | gauge |
+| package_registry.indexer.get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |  |  |
+| package_registry.indexer.get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |  |  |
+| package_registry.indexer.get_duration_seconds.histogram.values | Bucket values of the histogram of latencies for get processes run by the indexer | histogram |  |  |
 | package_registry.labels.code | HTTP Code | keyword |  |  |
 | package_registry.labels.component | Component type of the storage (statics, artifacts, signature...) | keyword |  |  |
+| package_registry.labels.indexer | Indexer type | keyword |  |  |
 | package_registry.labels.instance | Elastic Package Registry instance | keyword |  |  |
 | package_registry.labels.job |  | keyword |  |  |
 | package_registry.labels.location | Storage location (remote or local) | keyword |  |  |
@@ -66,14 +70,11 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 | package_registry.number_indexed_packages | Number of indexed packages | integer |  | gauge |
 | package_registry.start_time | Date where Elastic Package Registry started | date |  | gauge |
 | package_registry.start_time_seconds | Start time of the process since unix epoch in seconds | double | s | gauge |
-| package_registry.storage_indexer.get_duration_seconds.histogram | A histogram of latencies for get processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.get_duration_seconds.histogram.counts | Counters of the histogram of latencies for get processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.get_duration_seconds.histogram.values | Bucket values of the histogram of latencies for get processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.update_index_duration_seconds.histogram.counts | Counters of the histogram of latencies for update index processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.update_index_duration_seconds.histogram.values | Bucket values of the histogram of latencies for update index processes run by the indexer | histogram |  |  |
-| package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error | long |  |  |
-| package_registry.storage_indexer.update_index_success_total.counter | A counter for all the update index processes that finished with error | long |  |  |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram | A histogram of latencies for update index processes run by the storage indexer | histogram |  |  |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram.counts | Counters of the histogram of latencies for update index processes run by the storage indexer | histogram |  |  |
+| package_registry.storage_indexer.update_index_duration_seconds.histogram.values | Bucket values of the histogram of latencies for update index processes run by the storage indexer | histogram |  |  |
+| package_registry.storage_indexer.update_index_error_total.counter | A counter for all the update index processes that finished with error in the storage indexer | long |  |  |
+| package_registry.storage_indexer.update_index_success_total.counter | A counter for all the update index processes that finished with success in the storage indexer | long |  |  |
 | package_registry.storage_requests_total.counter | Counter for requests performed to the storage | long |  | counter |
 | package_registry.uptime | Elastic Package Registry uptime in seconds | long | s | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
@@ -85,13 +86,13 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-20T12:31:14.439Z",
+    "@timestamp": "2022-07-28T09:54:47.993Z",
     "agent": {
-        "ephemeral_id": "2e34ed1d-357c-482c-9640-d0ab91f43e0b",
-        "id": "2e305fba-81f6-49b1-be45-f7198c6aaa53",
+        "ephemeral_id": "fb0962b4-3f3f-48d6-81d6-3df63366f744",
+        "id": "97cba3e2-ea7d-4d80-aa69-75752faa1576",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.2"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "elastic_package_registry.metrics",
@@ -102,15 +103,15 @@ An example event for `metrics` looks as following:
         "version": "8.3.1"
     },
     "elastic_agent": {
-        "id": "2e305fba-81f6-49b1-be45-f7198c6aaa53",
+        "id": "97cba3e2-ea7d-4d80-aa69-75752faa1576",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "elastic_package_registry.metrics",
-        "duration": 27108917,
-        "ingested": "2022-07-20T12:31:15Z",
+        "duration": 7602509,
+        "ingested": "2022-07-28T09:54:51Z",
         "kind": "metric",
         "module": "prometheus"
     },
@@ -119,10 +120,10 @@ An example event for `metrics` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.112.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:07"
+            "02:42:ac:1f:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -132,7 +133,7 @@ An example event for `metrics` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -140,16 +141,8 @@ An example event for `metrics` looks as following:
         "period": 30000
     },
     "package_registry": {
-        "in_flight_requests": 0,
-        "labels": {
-            "instance": "elastic-package-service_elastic_package_registry_1:9110",
-            "job": "prometheus"
-        },
-        "number_indexed_packages": 1434,
-        "start_time": "2022-07-20T12:30:46.030Z",
-        "start_time_seconds": 1658320246.03,
-        "storage_indexer": {
-            "get_duration_seconds": {
+        "http": {
+            "request_duration_seconds": {
                 "histogram": {
                     "counts": [
                         0,
@@ -181,11 +174,9 @@ An example event for `metrics` looks as following:
                     ]
                 }
             },
-            "update_index_duration_seconds": {
+            "request_size_bytes": {
                 "histogram": {
                     "counts": [
-                        0,
-                        0,
                         0,
                         0,
                         0,
@@ -198,29 +189,58 @@ An example event for `metrics` looks as following:
                         0
                     ],
                     "values": [
-                        0.0025,
-                        0.0075,
-                        0.0175,
-                        0.037500000000000006,
-                        0.07500000000000001,
-                        0.175,
-                        0.375,
-                        0.75,
-                        1.75,
-                        3.75,
-                        7.5,
-                        15
+                        8,
+                        24,
+                        48,
+                        96,
+                        192,
+                        384,
+                        768,
+                        33280,
+                        163840,
+                        458752
                     ]
                 }
             },
-            "update_index_error_total": {
-                "counter": 0
-            },
-            "update_index_success_total": {
-                "counter": 0
+            "response_size_bytes": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        8,
+                        24,
+                        48,
+                        96,
+                        192,
+                        384,
+                        768,
+                        33280,
+                        163840,
+                        458752
+                    ]
+                }
             }
         },
-        "uptime": 28
+        "http_requests_total": {
+            "counter": 20
+        },
+        "labels": {
+            "code": "200",
+            "instance": "elastic-package-service_elastic_package_registry_1:9110",
+            "job": "prometheus",
+            "method": "get",
+            "path": "/"
+        }
     },
     "service": {
         "address": "http://elastic-package-service_elastic_package_registry_1:9110/metrics",
