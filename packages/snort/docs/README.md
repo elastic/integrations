@@ -212,7 +212,7 @@ An example event for `log` looks as following:
 | rule.version | The version / revision of the rule being used for analysis. | keyword |
 | snort.dgm.length | Length of | long |
 | snort.eth.length | Length of the Ethernet header and payload. | long |
-| snort.gid | The gid keyword (generator id) is used to identify what part of Snort generates the event when a particular rule fires.dd | keyword |
+| snort.gid | The gid keyword (generator id) is used to identify what part of Snort generates the event when a particular rule fires.dd | long |
 | snort.icmp.code | ICMP code. | long |
 | snort.icmp.id | ID of the echo request/reply | long |
 | snort.icmp.seq | ICMP sequence number. | long |

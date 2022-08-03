@@ -17,8 +17,8 @@ processors:
       pattern_definitions:
         SNORT_DATE: '%{MONTHNUM}/%{MONTHDAY}(/%{YEAR})?-%{TIME}'
         SEP: '(\[\*\*\])'
-        CSV_START: '%{SNORT_DATE:_tmp.timestamp}(%{SPACE})?,%{NONNEGINT:snort.gid},%{NONNEGINT:rule.id},%{NONNEGINT:rule.version},("?%{DATA:rule.description}"?|),%{WORD:network.transport},%{IP:source.address},(%{POSINT:source.port:long}|),%{IP:destination.address},(%{POSINT:destination.port:long}|)'
-        HEADER: '%{SPACE}\[%{NONNEGINT:snort.gid}:%{NONNEGINT:rule.id}:%{NONNEGINT:rule.version}\]%{SPACE}%{DATA:rule.description}%{SPACE}'
+        CSV_START: '%{SNORT_DATE:_tmp.timestamp}(%{SPACE})?,%{NONNEGINT:snort.gid:long},%{NONNEGINT:rule.id},%{NONNEGINT:rule.version},("?%{DATA:rule.description}"?|),%{WORD:network.transport},%{IP:source.address},(%{POSINT:source.port:long}|),%{IP:destination.address},(%{POSINT:destination.port:long}|)'
+        HEADER: '%{SPACE}\[%{NONNEGINT:snort.gid:long}:%{NONNEGINT:rule.id}:%{NONNEGINT:rule.version}\]%{SPACE}%{DATA:rule.description}%{SPACE}'
         FAST_HEADER: '%{SEP}%{HEADER}%{SEP}'
         FAST_BODY: '%{SPACE}%{CLASSIFICATION} %{PRIORITY} \{%{WORD:network.transport}\} %{IP:source.address}(:%{POSINT:source.port:long}|) -> %{IP:destination.address}(:%{POSINT:destination.port:long}|)'
         TCP_DATA: '(%{NOTSPACE:snort.tcp.flags})%{SPACE}(Seq: %{BASE16NUM:snort.tcp.seq})%{SPACE}(Ack: %{BASE16NUM:snort.tcp.ack})%{SPACE}(Win: %{BASE16NUM:snort.tcp.window})%{SPACE}(TcpLen: %{NONNEGINT:snort.tcp.length:long})'
