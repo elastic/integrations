@@ -686,6 +686,7 @@ An example event for `security` looks as following:
 | winlog.event_data.ClientName |  | keyword |
 | winlog.event_data.CommandLine |  | keyword |
 | winlog.event_data.Company |  | keyword |
+| winlog.event_data.ComputerAccountChange |  | keyword |
 | winlog.event_data.CorruptionActionState |  | keyword |
 | winlog.event_data.CrashOnAuditFailValue |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
@@ -697,6 +698,7 @@ An example event for `security` looks as following:
 | winlog.event_data.DeviceVersionMajor |  | keyword |
 | winlog.event_data.DeviceVersionMinor |  | keyword |
 | winlog.event_data.DisplayName |  | keyword |
+| winlog.event_data.DnsHostName |  | keyword |
 | winlog.event_data.DomainBehaviorVersion |  | keyword |
 | winlog.event_data.DomainName |  | keyword |
 | winlog.event_data.DomainPolicyChanged |  | keyword |
@@ -809,6 +811,7 @@ An example event for `security` looks as following:
 | winlog.event_data.ServiceAccount |  | keyword |
 | winlog.event_data.ServiceFileName |  | keyword |
 | winlog.event_data.ServiceName |  | keyword |
+| winlog.event_data.ServicePrincipalNames |  | keyword |
 | winlog.event_data.ServiceSid |  | keyword |
 | winlog.event_data.ServiceStartType |  | keyword |
 | winlog.event_data.ServiceType |  | keyword |
