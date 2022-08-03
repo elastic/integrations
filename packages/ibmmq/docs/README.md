@@ -377,13 +377,13 @@ An example event for `qmgr` looks as following:
 | ibmmq.qmgr.messages.persistent.mq.put1.count | Persistent message MQPUT1 count. | long |
 | ibmmq.qmgr.messages.persistent.put.bytes | Put persistent messages byte count. | long |
 | ibmmq.qmgr.messages.published.subscribers.bytes | Published to subscribers byte count. | long |
-| ibmmq.qmgr.messages.published.subscribers.count | Published to subscribers byte count. | long |
+| ibmmq.qmgr.messages.published.subscribers.count | Published to subscribers message count. | long |
 | ibmmq.qmgr.messages.purged.queue.count | Purged queue count. | long |
 | ibmmq.qmgr.rollback.count | Rollback count. | long |
 | ibmmq.qmgr.subscription.durable.alter.count | Alter durable subscription count. | long |
 | ibmmq.qmgr.subscription.durable.create.count | Create durable subscription count. | long |
 | ibmmq.qmgr.subscription.durable.delete.count | Delete durable subscription count. | long |
-| ibmmq.qmgr.subscription.durable.resume.count | Alter durable subscription count. | long |
+| ibmmq.qmgr.subscription.durable.resume.count | Resume durable subscription count. | long |
 | ibmmq.qmgr.subscription.failed.create_alter_resume.count | Failed create/alter/resume subscription count. | long |
 | ibmmq.qmgr.subscription.failed.delete.count | Subscription delete failure count. | long |
 | ibmmq.qmgr.subscription.non_durable.create.count | Create non-durable subscription count. | long |
