@@ -3,7 +3,7 @@ description: Pipeline for parsing Google Workspace Alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.3.0'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -219,6 +219,10 @@ processors:
       if: ctx.google_workspace?.alert?.data?.email != null
       allow_duplicates: false
       ignore_failure: true
+  - rename:
+      field: json.data.alertDetails
+      target_field: google_workspace.alert.data.alert_details
+      ignore_missing: true
 
 # Pipeline For Domain wide takeout.
   - rename:
@@ -235,6 +239,7 @@ processors:
           target_field: _ingest._value.attachments_sha256_hash
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -250,6 +255,7 @@ processors:
               - yyyy/MM/dd HH:mm:ss z
           ignore_failure: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -258,6 +264,7 @@ processors:
           value: '{{{_ingest._value.date}}}'
           allow_duplicates: false
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -266,6 +273,7 @@ processors:
           target_field: _ingest._value.md5.hash.subject
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -274,6 +282,7 @@ processors:
           target_field: _ingest._value.message_body_snippet
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -282,6 +291,7 @@ processors:
           target_field: _ingest._value.md5.hash.message_body
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -290,6 +300,7 @@ processors:
           target_field: _ingest._value.id
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -298,6 +309,7 @@ processors:
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -306,6 +318,7 @@ processors:
           target_field: _ingest._value.recipient_email
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -314,6 +327,7 @@ processors:
           value: '{{{_ingest._value.recipient_email}}}'
           allow_duplicates: false
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -322,6 +336,7 @@ processors:
           target_field: _ingest._value.subject_text
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.messages
       processor:
@@ -330,6 +345,7 @@ processors:
           value: '{{{_ingest._value.subject_text}}}'
           allow_duplicates: false
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.data.messages
       target_field: google_workspace.alert.data.messages
@@ -345,7 +361,10 @@ processors:
                 value: '{{{_ingest._value}}}'
                 allow_duplicates: false
                 ignore_failure: true
+          ignore_missing: true
+          ignore_failure: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: google_workspace.alert.data.messages
       processor:
@@ -354,6 +373,7 @@ processors:
           value: '{{{_ingest._value.md5.hash.subject}}}'
           allow_duplicates: false
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.data.maliciousEntity.entity.emailAddress
       target_field: google_workspace.alert.data.malicious_entity.entity.email_address
@@ -440,6 +460,36 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.state
+      target_field: google_workspace.alert.data.state
+      ignore_missing: true
+  - rename:
+      field: json.data.appealWindow
+      target_field: google_workspace.alert.data.appeal_window
+      ignore_missing: true
+  - foreach:
+      field: json.data.suspensionDetails
+      processor:
+        rename:
+          field: _ingest._value.abuseReason
+          target_field: _ingest._value.abuse_reason
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.data.suspensionDetails
+      processor:
+        rename:
+          field: _ingest._value.productName
+          target_field: _ingest._value.product_name
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.data.suspensionDetails
+      target_field: google_workspace.alert.data.suspension_details
+      ignore_missing: true
 
 # Pipeline For Google Operations.
   - rename:
@@ -455,6 +505,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.data.title
       target_field: google_workspace.alert.data.title
@@ -494,6 +545,7 @@ processors:
           target_field: _ingest._value.device.id
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.events
       processor:
@@ -502,6 +554,7 @@ processors:
           target_field: _ingest._value.serial.number
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.events
       processor:
@@ -510,6 +563,7 @@ processors:
           target_field: _ingest._value.device.type
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.events
       processor:
@@ -518,6 +572,7 @@ processors:
           target_field: _ingest._value.device.model
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.events
       processor:
@@ -526,6 +581,7 @@ processors:
           target_field: _ingest._value.resource.id
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.events
       processor:
@@ -534,6 +590,7 @@ processors:
           target_field: _ingest._value.ios_vendor.id
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.events
       processor:
@@ -542,6 +599,7 @@ processors:
           target_field: _ingest._value.device_compromised_state
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.events
       processor:
@@ -550,6 +608,7 @@ processors:
           target_field: _ingest._value.device.property
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.events
       processor:
@@ -558,6 +617,7 @@ processors:
           target_field: _ingest._value.old_value
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.events
       processor:
@@ -566,6 +626,7 @@ processors:
           target_field: _ingest._value.new_value
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.data.events
       target_field: google_workspace.alert.data.events
@@ -580,6 +641,7 @@ processors:
           target_field: _ingest._value.app.key
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.requestInfo
       processor:
@@ -588,6 +650,7 @@ processors:
           target_field: _ingest._value.app.developer_email
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.requestInfo
       processor:
@@ -596,6 +659,7 @@ processors:
           target_field: _ingest._value.number_of_requests
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.data.requestInfo
       target_field: google_workspace.alert.data.request.info
@@ -727,6 +791,7 @@ processors:
           target_field: _ingest._value.user_defined_detector.resource.name
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.ruleViolationInfo.matchInfo
       processor:
@@ -735,6 +800,7 @@ processors:
           target_field: _ingest._value.user_defined_detector.display.name
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: json.data.ruleViolationInfo.matchInfo
       processor:
@@ -743,6 +809,7 @@ processors:
           target_field: _ingest._value.predefined_detector.name
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.data.ruleViolationInfo.matchInfo
       target_field: google_workspace.alert.data.rule.violation_info.match_info
@@ -895,6 +962,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
       ignore_missing: true
+      ignore_failure: true
   - foreach:
       field: google_workspace.alert.data.messages.md5.hash.message_body
       processor:
@@ -904,6 +972,7 @@ processors:
           allow_duplicates: false
           ignore_failure: true
       ignore_missing: true
+      ignore_failure: true
   - remove:
       field:
         - json
@@ -944,6 +1013,7 @@ processors:
           ignore_failure: true
           ignore_missing: true
       ignore_missing: true
+      ignore_failure: true
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))

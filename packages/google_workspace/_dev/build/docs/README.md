@@ -70,9 +70,24 @@ The [Google Workspace](https://developers.google.com/admin-sdk/alertcenter) Inte
     27. SSO profile updated
     28. SSO profile deleted
     29. Super admin password reset
-    30. User's Admin privileges revoked
-    31. Deleted User
-    32. User granted admin privilege
+    30. Account suspension warning
+    31. Calendar settings changed
+    32. Chrome devices auto-update expiration warning
+    33. Customer takeout initiated
+    34. Drive settings changed
+    35. Email settings changed
+    36. Gmail potential employee spoofing
+    37. Mobile settings changed
+    38. New user added
+    39. Reporting Rule
+    40. Suspended user made active
+    41. User deleted
+    42. User granted Admin privilege
+    43. User suspended (spam)
+    44. User's Admin privileges revoked
+    45. Users password changed
+    46. Google Voice configuration problem detected
+
 
 ## Requirements
 
@@ -91,10 +106,10 @@ Once Service Account credentials are downloaded as a JSON file, then integration
 
 ### Enabling the integration in Elastic
 1. In Kibana, go to Management > Integrations
-2. In the integrations search bar type **Google Workspace Audit Reports**.
-3. Click the **Google Workspace Audit Reports** integration from the search results.
-4. Click the **Add Google Workspace Audit Reports** button to add Google Workspace Audit Reports integration.
-5. Configure Google Workspace Audit Reports to send logs to the Elastic Agent.
+2. In the integrations search bar type **Google Workspace**.
+3. Click the **Google Workspace** integration from the search results.
+4. Click the **Add Google Workspace** button to add Google Workspace integration.
+5. Configure Google Workspace to send logs to the Elastic Agent.
 5. Click the Advanced option of Alert Data Stream. The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
 >  Note: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement.

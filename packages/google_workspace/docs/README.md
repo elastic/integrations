@@ -70,9 +70,24 @@ The [Google Workspace](https://developers.google.com/admin-sdk/alertcenter) Inte
     27. SSO profile updated
     28. SSO profile deleted
     29. Super admin password reset
-    30. User's Admin privileges revoked
-    31. Deleted User
-    32. User granted admin privilege
+    30. Account suspension warning
+    31. Calendar settings changed
+    32. Chrome devices auto-update expiration warning
+    33. Customer takeout initiated
+    34. Drive settings changed
+    35. Email settings changed
+    36. Gmail potential employee spoofing
+    37. Mobile settings changed
+    38. New user added
+    39. Reporting Rule
+    40. Suspended user made active
+    41. User deleted
+    42. User granted Admin privilege
+    43. User suspended (spam)
+    44. User's Admin privileges revoked
+    45. Users password changed
+    46. Google Voice configuration problem detected
+
 
 ## Requirements
 
@@ -91,10 +106,10 @@ Once Service Account credentials are downloaded as a JSON file, then integration
 
 ### Enabling the integration in Elastic
 1. In Kibana, go to Management > Integrations
-2. In the integrations search bar type **Google Workspace Audit Reports**.
-3. Click the **Google Workspace Audit Reports** integration from the search results.
-4. Click the **Add Google Workspace Audit Reports** button to add Google Workspace Audit Reports integration.
-5. Configure Google Workspace Audit Reports to send logs to the Elastic Agent.
+2. In the integrations search bar type **Google Workspace**.
+3. Click the **Google Workspace** integration from the search results.
+4. Click the **Add Google Workspace** button to add Google Workspace integration.
+5. Configure Google Workspace to send logs to the Elastic Agent.
 5. Click the Advanced option of Alert Data Stream. The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
 >  Note: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement.
@@ -1578,8 +1593,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-07-01T10:49:29.436Z",
     "agent": {
-        "ephemeral_id": "bbb5fa55-1a6b-4349-8561-f61254859b30",
-        "id": "88b3bed9-9710-41a3-a148-3975f4441a4d",
+        "ephemeral_id": "97626033-fc2d-4d8c-bba5-fc7d584c88f6",
+        "id": "1a0a472b-972b-4698-901a-ce81b0ab3561",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -1590,10 +1605,10 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "88b3bed9-9710-41a3-a148-3975f4441a4d",
+        "id": "1a0a472b-972b-4698-901a-ce81b0ab3561",
         "snapshot": true,
         "version": "8.4.0"
     },
@@ -1634,11 +1649,11 @@ An example event for `alert` looks as following:
             "threat",
             "malware"
         ],
-        "created": "2022-07-25T10:49:50.310Z",
+        "created": "2022-08-04T08:00:07.689Z",
         "dataset": "google_workspace.alert",
         "end": "2022-07-01T10:47:04.530Z",
         "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7",
-        "ingested": "2022-07-25T10:49:53Z",
+        "ingested": "2022-08-04T08:00:11Z",
         "kind": "alert",
         "original": "{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"createTime\":\"2022-07-01T10:49:29.436394Z\",\"customerId\":\"02umwv6u\",\"data\":{\"@type\":\"type.googleapis.com/google.apps.alertcenter.type.MailPhishing\",\"domainId\":{\"customerPrimaryDomain\":\"example.com\"},\"isInternal\":true,\"maliciousEntity\":{\"displayName\":\"string\",\"entity\":{\"displayName\":\"example\",\"emailAddress\":\"example@example.com\"},\"fromHeader\":\"header@example.com\"},\"messages\":[{\"attachmentsSha256Hash\":[\"50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c\",\"228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2\"],\"date\":\"2022-07-01T10:38:13.194711Z\",\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings from sales \",\"messageId\":\"decedih843@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"Sales\"},{\"attachmentsSha256Hash\":[\"5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56\"],\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings \",\"messageId\":\"decedih@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"RE: Example salesorderspca JSON request\"}],\"systemActionType\":\"NO_OPERATION\"},\"deleted\":false,\"endTime\":\"2022-07-01T10:47:04.530834Z\",\"etag\":\"wF2Ix2DWDv8=\",\"metadata\":{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"assignee\":\"example@example.com\",\"customerId\":\"02umwv6u\",\"etag\":\"wF2Ix2DWDv8=\",\"severity\":\"HIGH\",\"status\":\"NOT_STARTED\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"},\"securityInvestigationToolLink\":\"string\",\"source\":\"Gmail phishing\",\"startTime\":\"2022-07-01T10:38:13.194711Z\",\"type\":\"User reported phishing\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"}",
         "start": "2022-07-01T10:38:13.194Z",
@@ -1803,6 +1818,8 @@ An example event for `alert` looks as following:
 | google_workspace.alert.data.action.name | List of action names associated with the rule threshold. | keyword |
 | google_workspace.alert.data.actor.email | Email of person who performed the action. | keyword |
 | google_workspace.alert.data.affected.user_emails | The list of emails which correspond to the users directly affected by the incident. | keyword |
+| google_workspace.alert.data.alert_details | alert details of google workspace alert. | keyword |
+| google_workspace.alert.data.appeal_window | appeal window of alert. | keyword |
 | google_workspace.alert.data.attachment.data.csv.data_rows.entries | The data entries in a CSV file row, as a string array rather than a single comma-separated string. | keyword |
 | google_workspace.alert.data.attachment.data.csv.headers | The list of headers for data columns in a CSV file. | keyword |
 | google_workspace.alert.data.create_time | Rule create timestamp. | date |
@@ -1873,10 +1890,13 @@ An example event for `alert` looks as following:
 | google_workspace.alert.data.sso_profile.deleted_event.inbound_sso.profile_name | sso profile name which got deleted. | keyword |
 | google_workspace.alert.data.sso_profile.updated_event.inbound_sso.profile_changes | changes made to sso profile. | keyword |
 | google_workspace.alert.data.sso_profile.updated_event.inbound_sso.profile_name | sso profile name which got updated. | keyword |
+| google_workspace.alert.data.state | state of alert. | keyword |
 | google_workspace.alert.data.status | Current outage status. | keyword |
 | google_workspace.alert.data.super_admin_password_reset_event.user.email | email of person whose password was reset. | keyword |
 | google_workspace.alert.data.superseded_alerts | List of alert IDs superseded by this alert. It is used to indicate that this alert is essentially extension of superseded alerts and we found the relationship after creating these alerts. | keyword |
 | google_workspace.alert.data.superseding_alert | Alert ID superseding this alert. It is used to indicate that superseding alert is essentially extension of this alert and we found the relationship after creating both alerts. | keyword |
+| google_workspace.alert.data.suspension_details.abuse_reason | abuse reason for suspension details. | keyword |
+| google_workspace.alert.data.suspension_details.product_name | product name for suspension details. | keyword |
 | google_workspace.alert.data.system_action_type | System actions on the messages. | keyword |
 | google_workspace.alert.data.takeout.request.id | The takeout request ID. | keyword |
 | google_workspace.alert.data.threshold | Alert threshold is for example “COUNT \> 5”. | keyword |
