@@ -10,7 +10,7 @@ For example, you could use this data to:
 * Monitor the traffic that is reaching your instance
 * Determine the direction of the traffic to and from the network interfaces
 
-Then you can alert the relevant Project Manager about those events by email.
+Then you can alert the relevant project manager about those events by email.
 
 ## Data streams
 
