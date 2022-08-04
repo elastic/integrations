@@ -15,20 +15,59 @@ processors:
   - json:
       field: netskope.alerts.policy.actions
       ignore_failure: true
+  - remove:
+      field: source.geo.location
+      if: ctx.source?.geo?.location?.lat == null || ctx.source?.geo?.location?.lon == null || ctx.source?.geo?.location?.lat < -90.0 || ctx.source?.geo?.location?.lat > 90.0 || ctx.source?.geo?.location?.lon < -180.0 || ctx.source?.geo?.location?.lon > 180.0
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: destination.geo.location
+      if: ctx.destination?.geo?.location?.lat == null || ctx.destination?.geo?.location?.lon == null || ctx.destination?.geo?.location?.lat < -90.0 || ctx.destination?.geo?.location?.lat > 90.0 || ctx.destination?.geo?.location?.lon < -180.0 || ctx.destination?.geo?.location?.lon > 180.0
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: netskope.alerts.user.geo.location
+      if: ctx.netskope?.alerts?.user?.geo?.location?.lat == null || ctx.netskope?.alerts?.user?.geo?.location?.lon == null || ctx.netskope?.alerts?.user?.geo?.location?.lat < -90.0 || ctx.netskope?.alerts?.user?.geo?.location?.lat > 90.0 || ctx.netskope?.alerts?.user?.geo?.location?.lon < -180.0 || ctx.netskope?.alerts?.user?.geo?.location?.lon > 180.0
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: destination.ip
+  - convert:
+      field: netskope.alerts.user.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.alerts.user.ip
+  - convert:
+      field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.ip
   - append: 
       field: related.ip
       value: "{{{destination.ip}}}"
       if: ctx?.destination?.ip != null
+      allow_duplicates: false
       ignore_failure: true
   - append: 
       field: related.ip
       value: "{{{netskope.alerts.user.ip}}}"
       if: ctx?.netskope?.alerts?.user?.ip != null
+      allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
+      allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.hosts
@@ -38,7 +77,7 @@ processors:
       ignore_failure: true
   - append:
       field: related.hosts
-      value: "{{{destination.domain}}}" 
+      value: "{{{netskope.alerts.domain}}}" 
       if: ctx?.netskope?.alerts?.domain != null
       allow_duplicates: false
       ignore_failure: true
@@ -50,7 +89,7 @@ processors:
       ignore_failure: true
   - user_agent:
       field: user_agent.original
-      ignore_failure: true
+      ignore_missing: true
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -68,13 +107,21 @@ processors:
       target_field: netskope.alerts.url
       keep_original: true
       remove_if_successful: false
-      ignore_failure: true
+      on_failure:
+        - rename:
+            field: netskope.alerts.url
+            target_field: netskope.alerts.url.original
+            ignore_missing: true
   - uri_parts:
       field: netskope.alerts.web.url
       target_field: netskope.alerts.web.url
       keep_original: true
       remove_if_successful: false
-      ignore_failure: true
+      on_failure:
+        - rename:
+            field: netskope.alerts.web.url
+            target_field: netskope.alerts.web.url.original
+            ignore_missing: true
   - remove:
       field: netskope.alerts.page.url
       if: ctx?.netskope?.alerts?.page?.url == ' '
@@ -83,19 +130,31 @@ processors:
       target_field: netskope.alerts.page.url
       keep_original: true
       remove_if_successful: false
-      ignore_failure: true
+      on_failure:
+        - rename:
+            field: netskope.alerts.page.url
+            target_field: netskope.alerts.page.url.original
+            ignore_missing: true
   - uri_parts:
       field: netskope.alerts.login.url
       target_field: netskope.alerts.login.url
       keep_original: true
       remove_if_successful: false
-      ignore_failure: true
+      on_failure:
+        - rename:
+            field: netskope.alerts.login.url
+            target_field: netskope.alerts.login.url.original
+            ignore_missing: true
   - uri_parts:
       field: netskope.alerts.referer
-      target_field: netskope.alerts.url
+      target_field: netskope.alerts.referer
       keep_original: true
       remove_if_successful: false
-      ignore_failure: true
+      on_failure:
+        - rename:
+            field: netskope.alerts.referer
+            target_field: netskope.alerts.referer.original
+            ignore_missing: true
   - set: 
       field: netskope.alerts.managed.app
       value: true

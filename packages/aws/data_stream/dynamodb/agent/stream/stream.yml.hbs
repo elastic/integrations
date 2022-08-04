@@ -18,6 +18,9 @@ shared_credential_file: {{shared_credential_file}}
 {{#if role_arn}}
 role_arn: {{role_arn}}
 {{/if}}
+{{#if endpoint}}
+endpoint: {{endpoint}}
+{{/if}}
 {{#if regions}}
 regions:
 {{#each regions as |region i|}}
@@ -33,3 +36,43 @@ tags_filter: {{tags_filter}}
 {{#if proxy_url }}
 proxy_url: {{proxy_url}}
 {{/if}}
+metrics:
+- namespace: AWS/DynamoDB
+  resource_type: dynamodb
+  statistic: ["Average"]
+  name:
+  - SuccessfulRequestLatency
+  - OnlineIndexPercentageProgress
+  - ProvisionedWriteCapacityUnits
+  - ProvisionedReadCapacityUnits
+  - ConsumedReadCapacityUnits
+  - ConsumedWriteCapacityUnits
+  - ReplicationLatency
+  - TransactionConflict
+  - AccountProvisionedReadCapacityUtilization
+  - AccountProvisionedWriteCapacityUtilization
+- namespace: AWS/DynamoDB
+  resource_type: dynamodb
+  statistic: ["Sum"]
+  name:
+  - SystemErrors
+  - ConsumedReadCapacityUnits
+  - ConsumedWriteCapacityUnits
+  - ConditionalCheckFailedRequests
+  - PendingReplicationCount
+  - TransactionConflict
+  - ReadThrottleEvents
+  - ThrottledRequests
+  - WriteThrottleEvents
+- namespace: AWS/DynamoDB
+  resource_type: dynamodb
+  statistic: ["Maximum"]
+  name:
+  - SuccessfulRequestLatency
+  - ReplicationLatency
+  - AccountMaxReads
+  - AccountMaxTableLevelReads
+  - AccountMaxTableLevelWrites
+  - AccountMaxWrites
+  - MaxProvisionedTableReadCapacityUtilization
+  - MaxProvisionedTableWriteCapacityUtilization

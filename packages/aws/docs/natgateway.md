@@ -1,92 +1,159 @@
-# natgateway
+# AWS NAT gateway
 
-## Metrics
+The AWS NAT gateway integration allows you to monitor [NAT gateways](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html) on Amazon Virtual Private Cloud.
+
+Use the AWS NAT gateway integration to to collect metrics related to your NAT gateways. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
+
+For example, you could use this integration to view the total number of concurrent, active TCP connections through the NAT gateway.
+
+## Data streams
+
+The AWS NAT gateway integration collects one type of data streams: metrics.
+
+**Metrics** give you insight into the state of your NAT gateways.
+Metrics collected by this integration include the number of connection attempts made through the NAT gateway, the total number of concurrent, active TCP connections through the NAT gateway, the number of times the NAT gateway could not allocate a source port, and more. See more details in the [Metrics reference](#metrics-reference).
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any AWS integration you will need:
+
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, see the **AWS** integration documentation.
+
+## Setup
+
+Use this integration if you only need to collect AWS NAT gateway metrics.
+
+If you want to collect data from two or more AWS services, consider using the **AWS** integration.
+When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Metrics reference
 
 An example event for `natgateway` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:58:27.154Z",
+    "agent": {
+        "name": "a3fc2d7bc1c5",
+        "id": "8940152e-2f20-4ad1-bc96-4db45cb7fc89",
+        "ephemeral_id": "b7f3d3f4-137a-443f-90a7-ad2a5d81f81b",
+        "type": "metricbeat",
+        "version": "8.1.0"
+    },
+    "elastic_agent": {
+        "id": "8940152e-2f20-4ad1-bc96-4db45cb7fc89",
+        "version": "8.1.0",
+        "snapshot": false
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "eu-west-1"
+    },
+    "@timestamp": "2022-07-27T22:02:00.000Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
     "service": {
         "type": "aws"
     },
-    "ecs": {
-        "version": "1.5.0"
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.natgateway"
+    },
+    "host": {
+        "hostname": "a3fc2d7bc1c5",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.3 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "172.20.0.7"
+        ],
+        "name": "a3fc2d7bc1c5",
+        "mac": [
+            "02:42:ac:14:00:07"
+        ],
+        "architecture": "aarch64"
+    },
+    "metricset": {
+        "period": 180000,
+        "name": "cloudwatch"
     },
     "aws": {
         "cloudwatch": {
             "namespace": "AWS/NATGateway"
         },
-        "dimensions": {
-            "NatGatewayId": "nat-0a5cb7b9807908cc0"
-        },
         "natgateway": {
             "metrics": {
-                "ActiveConnectionCount": {
-                    "max": 0
-                },
-                "BytesInFromDestination": {
-                    "sum": 0
-                },
-                "BytesInFromSource": {
-                    "sum": 0
-                },
-                "BytesOutToDestination": {
-                    "sum": 0
-                },
-                "BytesOutToSource": {
-                    "sum": 0
-                },
-                "ConnectionAttemptCount": {
-                    "sum": 0
-                },
-                "ConnectionEstablishedCount": {
-                    "sum": 0
+                "PacketsInFromSource": {
+                    "sum": 421
                 },
                 "ErrorPortAllocation": {
                     "sum": 0
                 },
+                "PacketsOutToDestination": {
+                    "sum": 421
+                },
+                "PacketsOutToSource": {
+                    "sum": 472
+                },
+                "BytesOutToDestination": {
+                    "sum": 42505
+                },
+                "ConnectionEstablishedCount": {
+                    "sum": 23
+                },
+                "ConnectionAttemptCount": {
+                    "sum": 23
+                },
+                "PacketsInFromDestination": {
+                    "sum": 472
+                },
+                "BytesInFromDestination": {
+                    "sum": 164752
+                },
                 "PacketsDropCount": {
                     "sum": 0
                 },
-                "PacketsInFromDestination": {
+                "BytesInFromSource": {
+                    "sum": 42505
+                },
+                "BytesOutToSource": {
+                    "sum": 164752
+                },
+                "IdleTimeoutCount": {
                     "sum": 0
                 },
-                "PacketsInFromSource": {
-                    "sum": 0
-                },
-                "PacketsOutToDestination": {
-                    "sum": 0
-                },
-                "PacketsOutToSource": {
-                    "sum": 0
+                "ActiveConnectionCount": {
+                    "max": 0
                 }
             }
+        },
+        "dimensions": {
+            "NatGatewayId": "nat-038389b5fc0734aa0"
         }
     },
     "event": {
-        "dataset": "aws.natgateway",
+        "duration": 612193833,
+        "agent_id_status": "verified",
+        "ingested": "2022-07-27T22:05:27Z",
         "module": "aws",
-        "duration": 10418157072
-    },
-    "metricset": {
-        "period": 60000,
-        "name": "natgateway"
-    },
-    "cloud": {
-        "region": "us-west-2",
-        "account": {
-            "name": "elastic-beats",
-            "id": "428152502467"
-        },
-        "provider": "aws"
-    },
-    "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-        "name": "MacBook-Elastic.local",
-        "type": "metricbeat"
+        "dataset": "aws.natgateway"
     }
 }
 ```

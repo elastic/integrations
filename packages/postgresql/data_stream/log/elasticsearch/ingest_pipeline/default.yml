@@ -23,10 +23,13 @@ processors:
           |	)*
   - pipeline:
       name: '{{ IngestPipeline "pipeline-log" }}'
-      if: ctx.separator != ','
+      if: ctx.separator != ',' && ctx.separator != ':'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-csv" }}'
       if: ctx.separator == ','
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-aws-log" }}'
+      if: ctx.separator == ':'
   - date:
       field: postgresql.log.timestamp
       target_field: '@timestamp'

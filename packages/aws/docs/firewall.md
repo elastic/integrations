@@ -1,8 +1,43 @@
 # AWS Network Firewall
 
-This integration is used to fetch logs and metrics from [AWS Network Firewall](https://aws.amazon.com/network-firewall/).
+This integration is used to fetch logs and metrics from [AWS Network Firewall](https://aws.amazon.com/network-firewall/)—a network protections service for Amazon VPCs.
 
-## Logs
+Use the AWS Network Firewall integration to monitor the traffic entering and passing through your AWS Network Firewall. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs and metrics when troubleshooting an issue.
+
+For example, you could use this integration to view and track when firewall rules are triggered, the top firewall source and destination countries, and the total number of events by firewall.
+## Data streams
+
+The AWS Network Firewall integration collects two types of data streams: logs and metrics.
+
+**Logs** help you keep a record of events happening in AWS Network Firewall.
+Logs collected by the AWS Network Firewall integration include the observer name, source and destination IP, port, country, event type, and more. See more details in the [Logs reference](#logs-reference).
+
+**Metrics** give you insight into the state of Network Firewall.
+Metrics collected by the AWS Network Firewall integration include the number of packets received, passed, and blocked by the AWS Network Firewall, and more. See more details in the [Metrics reference](#metrics-reference).
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any AWS integration you will need:
+
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, see the **AWS** integration documentation.
+
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+Use this integration if you only need to collect data from the AWS Network Firewall service.
+
+If you want to collect data from two or more AWS services, consider using the **AWS** integration.
+When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+## Logs reference
 
 The `firewall_logs` dataset collects AWS Network Firewall logs. Users can use these logs to
 monitor network activity.
@@ -279,7 +314,7 @@ An example event for `firewall` looks as following:
 | user_agent.version | Version of the user agent. | keyword |
 
 
-## Metrics
+## Metrics reference
 
 The `firewall_metrics` dataset collects AWS Network Firewall metrics.
 
@@ -364,10 +399,10 @@ An example event for `firewall` looks as following:
 | aws.dimensions.CustomAction | Dimension for a publish metrics custom action that you defined. You can define this for a rule action in a stateless rule group or for a stateless default action in a firewall policy. | keyword |
 | aws.dimensions.Engine | Rules engine that processed the packet. The value for this is either Stateful or Stateless. | keyword |
 | aws.dimensions.FirewallName | Name that you specified for the Network Firewall firewall. | keyword |
-| aws.networkfirewall.DroppedPackets.sum | The number of packets dropped by the Network Firewall. | long |
-| aws.networkfirewall.Packets.sum | Number of packets inspected for a firewall policy or stateless rulegroup for which a custom action is defined. This metric is only used for the dimension CustomAction. | long |
-| aws.networkfirewall.PassedPackets.sum | The number of packets passed by the Network Firewall. | long |
-| aws.networkfirewall.ReceivedPackets.sum | The number of packets received by the Network Firewall. | long |
+| aws.networkfirewall.metrics.DroppedPackets.sum | The number of packets dropped by the Network Firewall. | long |
+| aws.networkfirewall.metrics.Packets.sum | Number of packets inspected for a firewall policy or stateless rulegroup for which a custom action is defined. This metric is only used for the dimension CustomAction. | long |
+| aws.networkfirewall.metrics.PassedPackets.sum | The number of packets passed by the Network Firewall. | long |
+| aws.networkfirewall.metrics.ReceivedPackets.sum | The number of packets received by the Network Firewall. | long |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.\* | Tag key value pairs from aws resources. | object |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
@@ -411,4 +446,3 @@ An example event for `firewall` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-

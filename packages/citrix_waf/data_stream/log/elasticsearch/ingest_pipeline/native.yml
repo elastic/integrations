@@ -1,0 +1,25 @@
+---
+description: Pipeline for Citrix Native messages
+processors:
+  - set:
+      field: citrix.cef_format
+      value: false
+  - grok:
+      description: Extract native header and message.
+      field: citrix.detail
+      patterns:
+        - '^%{HEADER} : %{GREEDYDATA:_tmp.details} : +%{GREEDYDATA:citrix.extended.message}'
+      pattern_definitions:
+        HEADER: '%{NATIVE_TIMESTAMP:_tmp.timestamp_native} %{WORD:event.timezone} %{SYSLOGHOST:citrix.host} %{INT}-PPE-%{INT}'
+        NATIVE_TIMESTAMP: '%{MONTHNUM}/%{MONTHDAY}/%{YEAR}:%{HOUR}:%{MINUTE}:%{SECOND}'
+  - grok:
+      description: Parse out details.
+      field: _tmp.details
+      patterns:
+        - '^%{DEFAULT:_tmp.default}?%{WORD:citrix.device_event_class_id} %{GREEDYDATA:citrix.name} %{INT:event.id} %{INT:event.severity}$'
+      pattern_definitions:
+        DEFAULT: 'default '
+  - set:
+      field: citrix.default_class
+      value: true
+      if: ctx._tmp?.default == 'default ' # The trailing space is intended.

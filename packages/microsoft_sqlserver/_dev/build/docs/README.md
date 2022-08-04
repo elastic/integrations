@@ -34,12 +34,17 @@ See: [Instructions on how to enable auditing for SQL Server](https://docs.micros
 
 Enable to collect SQL Server audit events from the specified windows event log channel.
 
+### log
+
+The SQL Server `log` contains user-defined events and certain system events you can use for troubleshooting.
+
+See: [View the SQL Server error log in SQL Server Management Studio](https://docs.microsoft.com/en-us/sql/relational-databases/performance/view-the-sql-server-error-log-sql-server-management-studio?view=sql-server-ver16)
+
 ### performance metrics
 
 Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
 
-See: [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15
-)
+See: [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15)
 
 ### transaction_log metrics
 
@@ -54,6 +59,14 @@ See: [Instructions and the operations supported by transaction log](https://docs
 The SQL Server audit dataset provides events from the configured Windows event log channel. All SQL Server audit specific fields are available in the `sqlserver.audit` field group.
 
 {{fields "audit"}}
+
+### log
+
+The Microsoft SQL Server `log` dataset parses error logs created by Microsoft SQL server.
+
+{{event "log"}}
+
+{{fields "log"}}
 
 ## Metrics
 

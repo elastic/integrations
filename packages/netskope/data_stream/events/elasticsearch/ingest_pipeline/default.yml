@@ -12,20 +12,64 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+  - remove:
+      field: source.geo.location
+      if: ctx.source?.geo?.location?.lat == null || ctx.source?.geo?.location?.lon == null || ctx.source?.geo?.location?.lat < -90.0 || ctx.source?.geo?.location?.lat > 90.0 || ctx.source?.geo?.location?.lon < -180.0 || ctx.source?.geo?.location?.lon > 180.0
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: destination.geo.location
+      if: ctx.destination?.geo?.location?.lat == null || ctx.destination?.geo?.location?.lon == null || ctx.destination?.geo?.location?.lat < -90.0 || ctx.destination?.geo?.location?.lat > 90.0 || ctx.destination?.geo?.location?.lon < -180.0 || ctx.destination?.geo?.location?.lon > 180.0
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: netskope.events.slc.geo.location
+      if: ctx.netskope?.events?.slc?.geo?.location?.lat == null || ctx.netskope?.events?.slc?.geo?.location?.lon == null || ctx.netskope?.events?.slc?.geo?.location?.lat < -90.0 || ctx.netskope?.events?.slc?.geo?.location?.lat > 90.0 || ctx.netskope?.events?.slc?.geo?.location?.lon < -180.0 || ctx.netskope?.events?.slc?.geo?.location?.lon > 180.0
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: netskope.events.user.geo.location
+      if: ctx.netskope?.events?.user?.geo?.location?.lat == null || ctx.netskope?.events?.user?.geo?.location?.lon == null || ctx.netskope?.events?.user?.geo?.location?.lat < -90.0 || ctx.netskope?.events?.user?.geo?.location?.lat > 90.0 || ctx.netskope?.events?.user?.geo?.location?.lon < -180.0 || ctx.netskope?.events?.user?.geo?.location?.lon > 180.0
+      ignore_failure: true
+      ignore_missing: true
+  - convert:
+      field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: destination.ip
+  - convert:
+      field: netskope.events.user.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: netskope.events.user.ip
+  - convert:
+      field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.ip
   - append: 
       field: related.ip
       value: "{{{destination.ip}}}"
       if: ctx?.destination?.ip != null
+      allow_duplicates: false
       ignore_failure: true
   - append: 
       field: related.ip
       value: "{{{netskope.events.user.ip}}}"
       if: ctx?.netskope?.events?.user?.ip != null
+      allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.ip
       value: "{{{source.ip}}}"
       if: ctx?.source?.ip != null
+      allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.hosts
@@ -59,25 +103,31 @@ processors:
       target_field: netskope.events.url
       keep_original: true
       remove_if_successful: false
-      ignore_failure: true
+      on_failure:
+        - rename:
+            field: netskope.events.url
+            target_field: netskope.events.url.original
+            ignore_missing: true
   - uri_parts:
       field: netskope.events.web.url
       target_field: netskope.events.web.url
       keep_original: true
       remove_if_successful: false
-      ignore_failure: true
+      on_failure:
+        - rename:
+            field: netskope.events.web.url
+            target_field: netskope.events.web.url.original
+            ignore_missing: true
   - uri_parts:
       field: netskope.events.login.url
       target_field: netskope.events.login.url
       keep_original: true
       remove_if_successful: false
-      ignore_failure: true
-  - uri_parts:
-      field: netskope.events.url
-      target_field: netskope.events.url
-      keep_original: true
-      remove_if_successful: false
-      ignore_failure: true
+      on_failure:
+        - rename:
+            field: netskope.events.login.url
+            target_field: netskope.events.login.url.original
+            ignore_missing: true
   - json:
       field: netskope.events.site
       ignore_failure: true
@@ -92,7 +142,11 @@ processors:
       target_field: netskope.events.referer
       keep_original: true
       remove_if_successful: false
-      ignore_failure: true
+      on_failure:
+        - rename:
+            field: netskope.events.referer
+            target_field: netskope.events.referer.original
+            ignore_missing: true
   - set: 
       field: netskope.events.managed_app
       value: true
