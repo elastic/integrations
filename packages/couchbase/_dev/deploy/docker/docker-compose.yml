@@ -9,7 +9,7 @@ services:
       timeout: 2s
       retries: 40
     ports:
-      - 8091:8091
+      - 8091
   sgw:
     image: couchbase/sync-gateway:2.8.0-enterprise
     hostname: sgw
@@ -20,13 +20,13 @@ services:
       - ./files/sync-gateway-config.txt:/etc/sync_gateway/sync_gateway.json
     command: -adminInterface :4985 /etc/sync_gateway/sync_gateway.json
     ports:
-      - 4984-4985:4984-4985
+      - 4985
   exporter:
     build:
       context: ./files/
       dockerfile: Dockerfile
     ports:
-      - 9421:9421
+      - 9421
     depends_on:
       sgw:
         condition: service_started
