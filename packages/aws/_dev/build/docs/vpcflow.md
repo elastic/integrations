@@ -2,7 +2,7 @@
 
 The AWS VPC Flow integration allows you to monitor [Amazon Virtual Private Cloud (Amazon VPC)](https://aws.amazon.com/vpc/) flow logs. Flow logs capture information about the IP traffic going to and from network interfaces in a VPC.
 
-Use the AWS VPC Flow integration to to collect logs related to your Amazon VPCs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
+Use the AWS VPC Flow integration to collect logs related to your Amazon VPCs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
 For example, you could use this data to:
 
