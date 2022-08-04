@@ -2,7 +2,7 @@
 
 The AWS NAT gateway integration allows you to monitor [NAT gateways](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html) on Amazon Virtual Private Cloud.
 
-Use the AWS NAT gateway integration to to collect metrics related to your NAT gateways. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
+Use the AWS NAT gateway integration to collect metrics related to your NAT gateways. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
 
 For example, you could use this integration to view the total number of concurrent, active TCP connections through the NAT gateway.
 
