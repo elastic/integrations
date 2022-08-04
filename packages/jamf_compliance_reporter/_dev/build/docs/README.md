@@ -19,7 +19,7 @@ The log data stream collected by the Jamf Compliance Reporter integration includ
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-Note: This package has been tested for Compliance Reporter against Jamf pro version 10.39.0 and Jamf Compliance Reporter version 1.0.4.
+Note: This package has been tested for Compliance Reporter against Jamf Pro version 10.39.0 and Jamf Compliance Reporter version 1.0.4.
 
 ## Setup
 
@@ -41,12 +41,12 @@ For more information on using configuration profiles in Jamf Pro, see [Creating 
 Then, follow _one_ of the below methods to collect logs from Jamf Compliance Reporter:
 
 **REST Endpoint Remote logging**:
-1. Reference link for configuring [REST Endpoint Remote logging](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html) for Compliance Reporter.
-2. In Jamf Configuration Profile, form the full URL with port in the form `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
+1. Read [Jamf's REST Endpoint Remote logging documentation](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html).
+2. In your Jamf Configuration Profile, form the full URL with port using this format: `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
 
 **TLS Remote Logging**:
-1. Reference link for generating [TLS Remote Logging](https://docs.jamf.com/compliance-reporter/documentation/TLS_Remote_Logging.html) for Compliance Reporter.
-2. In Jamf Configuration Profile, form the full URL with port in the form `tls://{AGENT_ADDRESS}:{AGENT_PORT}`.
+1. Read [Jamf's TLS Remote Logging documentation](https://docs.jamf.com/compliance-reporter/documentation/TLS_Remote_Logging.html).
+2. In your Jamf Configuration Profile, form the full URL with port using this format: `tls://{AGENT_ADDRESS}:{AGENT_PORT}`.
 
 **Configure the Jamf Compliance Reporter integration with REST Endpoint Remote logging for Rest Endpoint Input**:
 1. Enter values for "Listen Address", "Listen Port" and "URL" to form the endpoint URL. Make note of the **Endpoint URL** `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
