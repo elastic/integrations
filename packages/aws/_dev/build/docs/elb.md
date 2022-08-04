@@ -4,7 +4,7 @@ The `elb` dataset collects logs from AWS ELBs. Elastic Load Balancing provides
 access logs that capture .  Users can use these access logs to analyze traffic patterns and to
 troubleshoot issues.
 
-The Amazon ELB integration allows you to monitor [Amazon Elastic Load Blancing (ELB)](https://aws.amazon.com/elasticloadbalancing/)—a tool that distributes application traffic to multiple targets.
+The Amazon ELB integration allows you to monitor [Amazon Elastic Load Balancing (ELB)](https://aws.amazon.com/elasticloadbalancing/)—a tool that distributes application traffic to multiple targets.
 
 Use the Amazon ELB integration to collect logs and metrics with detailed information about requests sent to the load
 balancer. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference those logs and metrics when troubleshooting an issue.
