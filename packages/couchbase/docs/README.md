@@ -318,7 +318,8 @@ An example event for `cbl_replication` looks as following:
     },
     "tags": [
         "forwarded",
-        "couchbase-cbl_replication"
+        "couchbase-cbl_replication",
+        "prometheus"
     ]
 }
 ```

@@ -132,10 +132,6 @@ processors:
       target_field: couchbase.cbl_replication.pull.num.caught_up
       ignore_missing: true
       ignore_failure: true
-  - remove:
-      field: prometheus
-      ignore_failure: true
-      ignore_missing: true
   - script:
       description: Add job to tag list.
       lang: painless
@@ -145,6 +141,10 @@ processors:
             ctx.tags = new ArrayList();
         }
         ctx.tags.add(ctx.prometheus.labels.job)
+  - remove:
+      field: prometheus
+      ignore_failure: true
+      ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
