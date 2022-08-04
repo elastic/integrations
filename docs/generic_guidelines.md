@@ -92,7 +92,7 @@ Integration packages should provide out-of-the-box dashboards.
 
 #### Content for elastic.co/integrations
 
-Each integration will be listed on the public website elastic.co/integrations and the package registry will serve as the source of truth. As a result, our docs and screenshots should be high quality to showcase the integration. Any additional branding material should be reviewed, e.g.:
+Each integration will be listed on the public website elastic.co/integrations and the package registry will serve as the source of truth. As a result, our docs and screenshots should be high quality to showcase the integration. Please ensure to use `svg` for the logo and `png` for all other images. Any additional branding material should be reviewed, e.g.:
 
 - logo format and quality
 - permission to use logos and trademarks

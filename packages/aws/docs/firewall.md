@@ -364,10 +364,10 @@ An example event for `firewall` looks as following:
 | aws.dimensions.CustomAction | Dimension for a publish metrics custom action that you defined. You can define this for a rule action in a stateless rule group or for a stateless default action in a firewall policy. | keyword |
 | aws.dimensions.Engine | Rules engine that processed the packet. The value for this is either Stateful or Stateless. | keyword |
 | aws.dimensions.FirewallName | Name that you specified for the Network Firewall firewall. | keyword |
-| aws.networkfirewall.DroppedPackets.sum | The number of packets dropped by the Network Firewall. | long |
-| aws.networkfirewall.Packets.sum | Number of packets inspected for a firewall policy or stateless rulegroup for which a custom action is defined. This metric is only used for the dimension CustomAction. | long |
-| aws.networkfirewall.PassedPackets.sum | The number of packets passed by the Network Firewall. | long |
-| aws.networkfirewall.ReceivedPackets.sum | The number of packets received by the Network Firewall. | long |
+| aws.networkfirewall.metrics.DroppedPackets.sum | The number of packets dropped by the Network Firewall. | long |
+| aws.networkfirewall.metrics.Packets.sum | Number of packets inspected for a firewall policy or stateless rulegroup for which a custom action is defined. This metric is only used for the dimension CustomAction. | long |
+| aws.networkfirewall.metrics.PassedPackets.sum | The number of packets passed by the Network Firewall. | long |
+| aws.networkfirewall.metrics.ReceivedPackets.sum | The number of packets received by the Network Firewall. | long |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.\* | Tag key value pairs from aws resources. | object |
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
