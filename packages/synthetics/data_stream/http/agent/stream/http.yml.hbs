@@ -1,6 +1,12 @@
 __ui: {{__ui}}
 type: {{type}}
 name: {{name}}
+{{#if config_id}}
+id: {{config_id}}
+{{/if}}
+{{#if origin}}
+origin: {{origin}}
+{{/if}}
 enabled: {{enabled}}
 urls: {{urls}}
 {{#if service.name}}
@@ -63,8 +69,14 @@ ssl.supported_protocols: {{ssl.supported_protocols}}
 processors:
   - add_observer_metadata:
       geo: 
-        name: Fleet managed
+        name: {{location_name}}
   - add_fields:
       target: ''
       fields:
         monitor.fleet_managed: true
+        {{#if config_id}}
+        config_id: {{config_id}}
+        {{/if}}
+        {{#if run_once}}
+        run_once: {{run_once}}
+        {{/if}}

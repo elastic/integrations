@@ -170,7 +170,7 @@ The following processes and tags are supported:
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
 | dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
-| dns.header_flags | Array of 2 letter DNS header flags. Expected values are: AA, TC, RD, RA, AD, CD, DO. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.op_code | The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
@@ -255,7 +255,7 @@ The following processes and tags are supported:
 | file.uid | The user ID (UID) or security identifier (SID) of the file owner. | keyword |
 | file.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
 | file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| file.x509.issuer.country | List of country (C) codes | keyword |
+| file.x509.issuer.country | List of country \(C) codes | keyword |
 | file.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
 | file.x509.issuer.locality | List of locality names (L) | keyword |
 | file.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
@@ -270,7 +270,7 @@ The following processes and tags are supported:
 | file.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
 | file.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
 | file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.country | List of country \(C) code | keyword |
 | file.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |
@@ -448,7 +448,7 @@ The following processes and tags are supported:
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
@@ -724,7 +724,7 @@ The following processes and tags are supported:
 | tls.client.supported_ciphers | Array of ciphers offered by the client during the client hello. | keyword |
 | tls.client.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
 | tls.client.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| tls.client.x509.issuer.country | List of country (C) codes | keyword |
+| tls.client.x509.issuer.country | List of country \(C) codes | keyword |
 | tls.client.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
 | tls.client.x509.issuer.locality | List of locality names (L) | keyword |
 | tls.client.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
@@ -739,7 +739,7 @@ The following processes and tags are supported:
 | tls.client.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
 | tls.client.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
 | tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| tls.client.x509.subject.country | List of country (C) code | keyword |
+| tls.client.x509.subject.country | List of country \(C) code | keyword |
 | tls.client.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
 | tls.client.x509.subject.locality | List of locality names (L) | keyword |
 | tls.client.x509.subject.organization | List of organizations (O) of subject. | keyword |
@@ -762,7 +762,7 @@ The following processes and tags are supported:
 | tls.server.subject | Subject of the x.509 certificate presented by the server. | keyword |
 | tls.server.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
 | tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| tls.server.x509.issuer.country | List of country (C) codes | keyword |
+| tls.server.x509.issuer.country | List of country \(C) codes | keyword |
 | tls.server.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
 | tls.server.x509.issuer.locality | List of locality names (L) | keyword |
 | tls.server.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
@@ -777,7 +777,7 @@ The following processes and tags are supported:
 | tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
 | tls.server.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| tls.server.x509.subject.country | List of country (C) code | keyword |
+| tls.server.x509.subject.country | List of country \(C) code | keyword |
 | tls.server.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
 | tls.server.x509.subject.locality | List of locality names (L) | keyword |
 | tls.server.x509.subject.organization | List of organizations (O) of subject. | keyword |
@@ -846,7 +846,7 @@ The following processes and tags are supported:
 | vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
 | x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
 | x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| x509.issuer.country | List of country (C) codes | keyword |
+| x509.issuer.country | List of country \(C) codes | keyword |
 | x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
 | x509.issuer.locality | List of locality names (L) | keyword |
 | x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
@@ -861,7 +861,7 @@ The following processes and tags are supported:
 | x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
 | x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
 | x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| x509.subject.country | List of country (C) code | keyword |
+| x509.subject.country | List of country \(C) code | keyword |
 | x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
 | x509.subject.locality | List of locality names (L) | keyword |
 | x509.subject.organization | List of organizations (O) of subject. | keyword |
