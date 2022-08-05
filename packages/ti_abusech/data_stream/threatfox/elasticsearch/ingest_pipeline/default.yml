@@ -43,6 +43,9 @@ processors:
   - set:
       field: threat.indicator.provider
       value: AbuseCH Threat Fox
+  - set:
+      field: threat.feed.name
+      value: "AbuseCH Threat Fox"
   - date:
       field: abusech.threatfox.first_seen
       target_field: threat.indicator.first_seen
@@ -59,7 +62,10 @@ processors:
         - "yyyy-MM-dd HH:mm:ss Z"
         - "yyyy-MM-dd HH:mm:ss"
       if: "ctx.abusech?.threatfox?.last_seen != null"
-
+  - rename:
+      field: abusech.threatfox.ioc_type_desc
+      target_field: threat.indicator.description
+      ignore_missing: true    
   ## URL/URI indicator operations
   - set:
       field: threat.indicator.type
@@ -87,7 +93,6 @@ processors:
         - "%{IP:threat.indicator.ip}:%{NUMBER:threat.indicator.port:long}"
       ignore_missing: true
       if: "ctx.abusech?.threatfox?.ioc_type == 'ip:port'"
-
   ######################
   # Cleanup processors #
   ######################
