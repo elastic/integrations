@@ -38,10 +38,10 @@ An example event for `audit_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-26T09:20:13.183Z",
+    "@timestamp": "2022-08-05T09:30:10.644Z",
     "agent": {
-        "ephemeral_id": "e498ab4a-d467-436c-b05a-225cf9434102",
-        "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
+        "ephemeral_id": "575ffec5-bd74-4689-8baa-8486735193f3",
+        "id": "3ab22ca1-4caf-465f-8789-2a45a81ed9b1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -55,17 +55,17 @@ An example event for `audit_events` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
+        "id": "3ab22ca1-4caf-465f-8789-2a45a81ed9b1",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "web",
-        "created": "2022-07-26T09:20:13.183Z",
+        "created": "2022-08-05T09:30:10.644Z",
         "dataset": "spring_boot.audit_events",
-        "ingested": "2022-07-26T09:20:16Z",
-        "kind": "log",
+        "ingested": "2022-08-05T09:30:14Z",
+        "kind": "event",
         "module": "spring_boot",
         "type": "info"
     },
@@ -74,10 +74,10 @@ An example event for `audit_events` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.16.7"
+            "192.168.112.5"
         ],
         "mac": [
-            "02:42:c0:a8:10:07"
+            "02:42:c0:a8:70:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -87,13 +87,13 @@ An example event for `audit_events` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "spring_boot": {
         "audit_events": {
             "data": {
-                "remote_address": "192.168.112.2"
+                "remote_address": "192.168.144.2"
             },
             "principal": "actuator",
             "type": "AUTHENTICATION_SUCCESS"
@@ -135,10 +135,10 @@ An example event for `http_trace` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-26T09:21:46.599Z",
+    "@timestamp": "2022-08-05T09:31:44.895Z",
     "agent": {
-        "ephemeral_id": "d584be8e-7d0c-41d5-b283-c64a967ce811",
-        "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
+        "ephemeral_id": "d55155ad-e1c4-4c29-a809-1d8b7b539e39",
+        "id": "3ab22ca1-4caf-465f-8789-2a45a81ed9b1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -152,18 +152,18 @@ An example event for `http_trace` looks as following:
         "version": "8.1.0"
     },
     "elastic_agent": {
-        "id": "b82deaa8-f456-40b6-9265-b33c84cf0590",
+        "id": "3ab22ca1-4caf-465f-8789-2a45a81ed9b1",
         "snapshot": false,
         "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "web",
-        "created": "2022-07-26T09:21:46.599Z",
+        "created": "2022-08-05T09:31:44.895Z",
         "dataset": "spring_boot.http_trace",
-        "duration": 3,
-        "ingested": "2022-07-26T09:21:50Z",
-        "kind": "log",
+        "duration": 2,
+        "ingested": "2022-08-05T09:31:48Z",
+        "kind": "event",
         "module": "spring_boot",
         "type": "info"
     },
@@ -172,10 +172,10 @@ An example event for `http_trace` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.16.7"
+            "192.168.112.5"
         ],
         "mac": [
-            "02:42:c0:a8:10:07"
+            "02:42:c0:a8:70:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -185,7 +185,7 @@ An example event for `http_trace` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "http": {
