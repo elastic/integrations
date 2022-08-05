@@ -40,12 +40,6 @@ processors:
   #####################
   # Threat ECS Fields #
   #####################
-  - set:
-      field: threat.indicator.provider
-      value: AbuseCH Threat Fox
-  - set:
-      field: threat.feed.name
-      value: "AbuseCH Threat Fox"
   - date:
       field: abusech.threatfox.first_seen
       target_field: threat.indicator.first_seen
@@ -65,7 +59,50 @@ processors:
   - rename:
       field: abusech.threatfox.ioc_type_desc
       target_field: threat.indicator.description
-      ignore_missing: true    
+      ignore_missing: true
+  - rename:
+      field: abusech.threatfox.reporter
+      target_field: threat.indicator.provider
+      ignore_missing: true
+  - split:
+      field: abusech.threatfox.malware_alias
+      target_field: threat.software.alias
+      separator: ","
+      ignore_missing: true
+  - rename:
+      field: abusech.threatfox.reporter
+      target_field: threat.indicator.provider
+      ignore_missing: true
+  - rename:
+      field: abusech.threatfox.reference
+      target_field: threat.indicator.reference
+      ignore_missing: true
+  - rename:
+      field: abusech.threatfox.malware_printable
+      target_field: threat.software.name
+      ignore_missing: true
+  - rename:
+      field: abusech.threatfox.malware_malpedia
+      target_field: threat.software.reference
+      ignore_missing: true
+  #
+  # Convert confidence field (-1..100) to ECS confidence (0..10).
+  #
+  - script:
+      lang: painless
+      if: ctx.abusech?.threatfox?.confidence_level != null
+      description: Normalize confidence level.
+      source: >
+        def value = ctx.abusech.threatfox.confidence_level;
+        def confidence = "None";
+        if (value > 0 && value < 30) {
+          confidence = "Low";
+        } if (value >= 30.0 && value < 70) {
+          confidence = "Medium";
+        } else if (value >= 70 && value <= 100) {
+          confidence = "High";
+        }
+        ctx.threat.indicator.put("confidence", confidence)
   ## URL/URI indicator operations
   - set:
       field: threat.indicator.type
@@ -78,21 +115,47 @@ processors:
       remove_if_successful: true
       if: ctx.abusech?.threatfox?.ioc_type == 'url'
 
-  ## URL/URI indicator operations
+  ## IP/Port indicator operations
+  - set:
+      field: threat.indicator.type
+      value: domain-name
+      if: "ctx.abusech?.threatfox?.ioc_type != null && ['domain'].contains(ctx.abusech?.threatfox?.ioc_type)"
+  - rename:
+      field: abusech.threatfox.ioc
+      target_field: threat.indicator.url.domain
+      ignore_missing: true
+      if: "ctx.abusech?.threatfox?.ioc_type != null && ['domain'].contains(ctx.abusech?.threatfox?.ioc_type)"
   - set:
       field: threat.indicator.type
       value: ipv4-addr
       if: "ctx.abusech?.threatfox?.ioc_type != null && ['ip:port'].contains(ctx.abusech?.threatfox?.ioc_type)"
-  - set:
-      field: threat.indicator.type
-      value: domain
-      if: "ctx.abusech?.threatfox?.ioc_type != null && ['domain'].contains(ctx.abusech?.threatfox?.ioc_type)"
   - grok:
       field: abusech.threatfox.ioc
       patterns:
         - "%{IP:threat.indicator.ip}:%{NUMBER:threat.indicator.port:long}"
       ignore_missing: true
       if: "ctx.abusech?.threatfox?.ioc_type == 'ip:port'"
+  - set:
+      field: threat.indicator.type
+      value: ipv6-addr
+      if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip.contains(':')
+
+  ## File/Hash indicator operations
+  - set:
+      field: threat.indicator.type
+      value: file
+      if: "ctx.abusech?.threatfox?.ioc_type != null && ['md5_hash', 'sha1_hash', 'sha256_hash'].contains(ctx.abusech.threatfox.ioc_type)"
+  - grok:
+      field: abusech.threatfox.ioc_type
+      patterns:
+        - "%{DATA:_tmp.hashtype}_hash"
+      ignore_missing: true
+      if: ctx.abusech?.threatfox?.ioc_type != null && ctx.abusech?.threatfox?.ioc_type.endsWith('_hash')
+  - rename:
+      field: abusech.threatfox.ioc
+      target_field: threat.indicator.file.hash.{{_tmp.hashtype}}
+      if: "ctx.abusech?.threatfox?.ioc_type != null && ctx.abusech.threatfox.ioc_type.endsWith('_hash') && ctx._tmp.hashtype != null"
+
   ######################
   # Cleanup processors #
   ######################
@@ -133,7 +196,12 @@ processors:
       field:
         - abusech.threatfox.first_seen
         - abusech.threatfox.last_seen
+        - threatintel_indicator_confidence
+        - abusech.threatfox.malware_alias
+        - abusech.threatfox.ioc_type
+        - abusech.threatfox.ioc
         - message
+        - _tmp
       ignore_missing: true
 on_failure:
   - set:
