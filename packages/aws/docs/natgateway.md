@@ -6,87 +6,119 @@ An example event for `natgateway` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:58:27.154Z",
+    "agent": {
+        "name": "a3fc2d7bc1c5",
+        "id": "8940152e-2f20-4ad1-bc96-4db45cb7fc89",
+        "ephemeral_id": "b7f3d3f4-137a-443f-90a7-ad2a5d81f81b",
+        "type": "metricbeat",
+        "version": "8.1.0"
+    },
+    "elastic_agent": {
+        "id": "8940152e-2f20-4ad1-bc96-4db45cb7fc89",
+        "version": "8.1.0",
+        "snapshot": false
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "eu-west-1"
+    },
+    "@timestamp": "2022-07-27T22:02:00.000Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
     "service": {
         "type": "aws"
     },
-    "ecs": {
-        "version": "1.5.0"
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.natgateway"
+    },
+    "host": {
+        "hostname": "a3fc2d7bc1c5",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.3 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "172.20.0.7"
+        ],
+        "name": "a3fc2d7bc1c5",
+        "mac": [
+            "02:42:ac:14:00:07"
+        ],
+        "architecture": "aarch64"
+    },
+    "metricset": {
+        "period": 180000,
+        "name": "cloudwatch"
     },
     "aws": {
         "cloudwatch": {
             "namespace": "AWS/NATGateway"
         },
-        "dimensions": {
-            "NatGatewayId": "nat-0a5cb7b9807908cc0"
-        },
         "natgateway": {
             "metrics": {
-                "ActiveConnectionCount": {
-                    "max": 0
-                },
-                "BytesInFromDestination": {
-                    "sum": 0
-                },
-                "BytesInFromSource": {
-                    "sum": 0
-                },
-                "BytesOutToDestination": {
-                    "sum": 0
-                },
-                "BytesOutToSource": {
-                    "sum": 0
-                },
-                "ConnectionAttemptCount": {
-                    "sum": 0
-                },
-                "ConnectionEstablishedCount": {
-                    "sum": 0
+                "PacketsInFromSource": {
+                    "sum": 421
                 },
                 "ErrorPortAllocation": {
                     "sum": 0
                 },
+                "PacketsOutToDestination": {
+                    "sum": 421
+                },
+                "PacketsOutToSource": {
+                    "sum": 472
+                },
+                "BytesOutToDestination": {
+                    "sum": 42505
+                },
+                "ConnectionEstablishedCount": {
+                    "sum": 23
+                },
+                "ConnectionAttemptCount": {
+                    "sum": 23
+                },
+                "PacketsInFromDestination": {
+                    "sum": 472
+                },
+                "BytesInFromDestination": {
+                    "sum": 164752
+                },
                 "PacketsDropCount": {
                     "sum": 0
                 },
-                "PacketsInFromDestination": {
+                "BytesInFromSource": {
+                    "sum": 42505
+                },
+                "BytesOutToSource": {
+                    "sum": 164752
+                },
+                "IdleTimeoutCount": {
                     "sum": 0
                 },
-                "PacketsInFromSource": {
-                    "sum": 0
-                },
-                "PacketsOutToDestination": {
-                    "sum": 0
-                },
-                "PacketsOutToSource": {
-                    "sum": 0
+                "ActiveConnectionCount": {
+                    "max": 0
                 }
             }
+        },
+        "dimensions": {
+            "NatGatewayId": "nat-038389b5fc0734aa0"
         }
     },
     "event": {
-        "dataset": "aws.natgateway",
+        "duration": 612193833,
+        "agent_id_status": "verified",
+        "ingested": "2022-07-27T22:05:27Z",
         "module": "aws",
-        "duration": 10418157072
-    },
-    "metricset": {
-        "period": 60000,
-        "name": "natgateway"
-    },
-    "cloud": {
-        "region": "us-west-2",
-        "account": {
-            "name": "elastic-beats",
-            "id": "428152502467"
-        },
-        "provider": "aws"
-    },
-    "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-        "name": "MacBook-Elastic.local",
-        "type": "metricbeat"
+        "dataset": "aws.natgateway"
     }
 }
 ```
