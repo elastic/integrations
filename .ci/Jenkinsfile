@@ -23,6 +23,7 @@ pipeline {
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
     JOB_GCS_EXT_CREDENTIALS = 'beats-ci-gcs-plugin-file-credentials'
     STACK_VERSION = "${params.stackVersion}"
+    ELASTIC_PACKAGE_GCP_SECRET = 'secret/observability-team/ci/service-account/elastic-package-gcp'
 
     // Signing
     JOB_SIGNING_CREDENTIALS = 'sign-artifacts-with-gpg-job'
@@ -91,11 +92,20 @@ pipeline {
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           prepareStack()
                           withKubernetes() {
-                            withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
-                              sh(label: "Test integration: ${it}", script: '''
+                            def maskedVars = []
+                            // GCP
+                            withGCPEnv(secret: env.ELASTIC_PACKAGE_GCP_SECRET) {
+                              maskedVars.add([var: 'GOOGLE_CREDENTIALS', password: readFile(file: env.GOOGLE_APPLICATION_CREDENTIALS)]);
+                              maskedVars.add([var: 'GCP_PROJECT_ID', password: env.ELASTIC_OBSERVABILITY_PROJECT_ID])
+                            }
+                            // Masking
+                            withEnvMask(vars: maskedVars) {
+                              withSecretVault(secret: "${AWS_ACCOUNT_SECRET}", data: ['access_key': 'AWS_ACCESS_KEY_ID', 'secret_key': 'AWS_SECRET_ACCESS_KEY']) {
+                                sh(label: "Test integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
                                 ''')
+                              }
                             }
                           }
 
