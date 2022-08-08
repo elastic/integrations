@@ -82,3 +82,15 @@ The `database_audit` dataset collects Oracle Audit logs.
 {{fields "sysmetric"}}
 
 {{event "sysmetric"}}
+
+### PGA SGA Metrics 
+
+{{fields "pga_sga"}}
+
+{{event "pga_sga"}}
+
+### System Statistics Metrics 
+
+{{fields "system_statistics"}}
+
+{{event "system_statistics"}}

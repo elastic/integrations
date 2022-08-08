@@ -1,0 +1,32 @@
+---
+description: Pipeline for processing Oracle Program Global Area and System Global Area metrics
+processors:
+    - remove:
+        field: sql.driver
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: sql.query
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: sql
+        target_field: oracle
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: oracle.metrics
+        target_field: oracle.pga_sga
+        ignore_missing: true
+    - foreach:
+        field: oracle.pga_sga
+        ignore_missing: true
+        processor: 
+            gsub:
+                field: "_ingest._key"
+                pattern: " "
+                replacement: "_"
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
