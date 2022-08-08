@@ -104,6 +104,33 @@ processors:
     field: _temp.owner.site_admin
     target_field: github.code_scanning.repository.owner.site_admin
     ignore_missing: true
+- dissect:
+    field: github.code_scanning.url
+    pattern: "https://api.github.com/repos/%{_temp.owner}/%{_temp.repository}/code-scanning/alerts/%{_temp.number}"
+    ignore_missing: true
+- set:
+    field: github.code_scanning.repository.html_url
+    value: "https://github.com/{{_temp.owner}}/{{_temp.repository}}"
+    if: "ctx.github.code_scanning?.repository?.html_url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
+- set:
+    field: github.code_scanning.repository.url
+    value: "https://api.github.com/repos/{{_temp.owner}}/{{_temp.repository}}"
+    if: "ctx.github.code_scanning?.repository?.url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
+- rename:
+    field: _temp.repository
+    target_field: github.code_scanning.repository.name
+    if: ctx.github.code_scanning?.repository?.name == null
+    ignore_missing: true
+- rename:
+    field: _temp.owner
+    target_field: github.code_scanning.repository.owner.login
+    if: ctx.github.code_scanning?.repository?.owner?.login == null
+    ignore_missing: true
+- rename:
+    field: _temp.number
+    target_field: github.code_scanning.number
+    if: ctx.github.code_scanning?.number == null
+    ignore_missing: true
 - rename: 
     target_field: _temp.dismissed_by
     field: github.code_scanning.dismissed_by
@@ -139,6 +166,14 @@ processors:
     field: github.code_scanning.most_recent_instance.message.text
     target_field: message
     ignore_missing: true
+- set:
+    field: github.code_scanning.time_to_resolution
+    value: "{{github.code_scanning.fixed_at}} - {{github.code_scanning.created_at}}"
+    if: ctx.github.code_scanning?.fixed_at != null
+- set:
+    field: github.code_scanning.time_to_resolution
+    value: "{{github.code_scanning.dismissed_at}} - {{github.code_scanning.created_at}}"
+    if: ctx.github.code_scanning?.time_to_resolution != null && ctx.github.code_scanning?.dismissed_at != null
 
   ###################
   # Rule ECS Fields #

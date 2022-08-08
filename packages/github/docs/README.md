@@ -201,7 +201,7 @@ Or use a personal access token with the `security_events` scope for private repo
 | github.code_scanning.repository.owner.type |  | keyword |
 | github.code_scanning.repository.owner.url |  | keyword |
 | github.code_scanning.repository.private | Whether the repository is private. | boolean |
-| github.code_scanning.repository.url | The URL to get more information about the repository from the GitHub API. | integer |
+| github.code_scanning.repository.url | The URL to get more information about the repository from the GitHub API. | keyword |
 | github.code_scanning.rule.full_description | Description of the rule used to detect the alert. | text |
 | github.code_scanning.rule.help | Detailed documentation for the rule as GitHub Flavored Markdown | text |
 | github.code_scanning.rule.security_severity_level | The security severity of the alert | keyword |
