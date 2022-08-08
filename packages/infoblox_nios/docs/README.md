@@ -149,9 +149,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2011-10-19T12:43:47.375Z",
     "agent": {
-        "ephemeral_id": "da63a0df-62f0-41ed-b079-4eff81e8bd3e",
+        "ephemeral_id": "5181186c-7367-49da-8ad7-8120c441b527",
         "hostname": "docker-fleet-agent",
-        "id": "01e9a0b1-491e-4d41-bfad-304b2c1a46a9",
+        "id": "9f26844a-9c52-4403-b9e6-9312b9761765",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -162,10 +162,10 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "01e9a0b1-491e-4d41-bfad-304b2c1a46a9",
+        "id": "9f26844a-9c52-4403-b9e6-9312b9761765",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -174,7 +174,7 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "created": "2022-03-22T14:26:54.000Z",
         "dataset": "infoblox_nios.log",
-        "ingested": "2022-07-27T13:15:28Z"
+        "ingested": "2022-08-08T11:02:32Z"
     },
     "host": {
         "ip": "10.0.0.1"
@@ -193,11 +193,11 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.80.6:34538"
+            "address": "192.168.192.7:57184"
         },
         "syslog": {
             "priority": 29
