@@ -67,10 +67,39 @@ processors:
       field: json.exec_args.args_compiled
       target_field: jamf_compliance_reporter.log.exec_args.args_compiled
       ignore_missing: true
-  - rename:
-      field: json.exec_env.env.ARCH
-      target_field: host.os.type
-      ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.json?.exec_env?.env?.ARCH != null && ctx.json.exec_env.env.ARCH != ""
+      params:
+        'allowed':
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+        'replacements':
+          'macintosh': macos
+      source: |
+        for (entry in params.replacements.entrySet()) {
+          if (ctx.json.exec_env.env.ARCH == entry.getKey()) {
+            ctx.json.exec_env.env.put("ARCH", entry.getValue());
+          }
+        }
+        if (!params.allowed.contains(ctx.json.exec_env.env.ARCH)) {
+          return;
+        }
+        if (ctx.host == null) {
+          HashMap hm = new HashMap();
+          ctx.put("host", hm);
+        }
+        if (ctx.host.os == null) {
+          HashMap hm = new HashMap();
+          ctx.host.put("os", hm);
+        }
+        ctx.host.os.put("type", ctx.json.exec_env.env.ARCH);
+        ctx.json.exec_env.env.remove("ARCH");
+
   - rename:
       field: json.exec_env.env.CPU
       target_field: host.architecture
