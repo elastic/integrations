@@ -207,6 +207,7 @@ Or use a personal access token with the `security_events` scope for private repo
 | github.code_scanning.rule.security_severity_level | The security severity of the alert | keyword |
 | github.code_scanning.rule.severity | The severity of the alert | keyword |
 | github.code_scanning.state | State of a code scanning alert | keyword |
+| github.code_scanning.time_to_resolution | The time taken to either dismiss or fix the alert in seconds. | integer |
 | github.code_scanning.tool.guid | The GUID of the tool used to generate the code scanning analysis, if provided in the uploaded SARIF data. | keyword |
 | github.code_scanning.tool.name | The name of the tool used to generate the code scanning analysis. | keyword |
 | github.code_scanning.tool.version | The version of the tool used to generate the code scanning analysis. | keyword |
