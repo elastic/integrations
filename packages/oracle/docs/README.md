@@ -816,7 +816,7 @@ An example event for `sysmetric` looks as following:
 | oracle.pga_sga.process_count | Number of processes active within up to the last 3 seconds. | double |  | gauge |
 | oracle.pga_sga.sga_free_memory | Amount of free memory in the Shared pool. | double | byte | gauge |
 | oracle.pga_sga.sga_total_memory | Amount of total memory in the Shared pool. | double | byte | gauge |
-| oracle.pga_sga.total_freeable_PGA_memory | Number of bytes of PGA memory in all processes that could be freed back to the operating system. | double | byte | gauge |
+| oracle.pga_sga.total_freeable_pga_memory | Number of bytes of PGA memory in all processes that could be freed back to the operating system. | double | byte | gauge |
 | oracle.pga_sga.total_pga_allocated | Current amount of PGA memory allocated by the instance. | double | byte | gauge |
 | oracle.pga_sga.total_pga_inuse | Indicates how much PGA memory is currently consumed by work areas. This number can be used to determine how much memory is consumed by other consumers of the PGA memory (for example, PL/SQL or Java). | double | byte | gauge |
 | oracle.pga_sga.total_pga_used_for_auto_workareas | Indicates how much PGA memory is currently consumed by work areas running under the automatic memory management mode. This number can be used to determine how much memory is consumed by other consumers of the PGA memory (for example, PL/SQL or Java). | double | byte | gauge |
@@ -831,19 +831,17 @@ An example event for `pga_sga` looks as following:
     "@timestamp": "2022-08-07T04:32:07.853Z",
     "oracle": {
         "pga_sga": {
-            "numeric": {
-                "cache hit percentage": 100,
-                "total freeable pga memory": 12845056,
-                "maximum pga allocated": 599693312,
-                "process count": 81,
-                "total pga inuse": 161502208,
-                "global memory bound": 104857600,
-                "aggregate pga auto target": 583133184,
-                "aggregate pga target parameter": 805306368,
-                "total pga allocated": 198915072,
-                "total pga used for auto workareas": 0,
-                "max processes count": 95
-            }
+            "aggregate_pga_auto_target": 577658880,
+            "aggregate_pga_target_parameter": 805306368,
+            "max_processes_count": 95,
+            "total_pga_allocated": 207594496,
+            "total_pga_used_for_auto_workareas": 0,
+            "process_count": 85,
+            "global_memory_bound": 104857600,
+            "total_pga_inuse": 167798784,
+            "total_freeable_pga_memory": 14221312,
+            "cache_hit_percentage": 100,
+            "maximum_pga_allocated": 599693312
         }
     },
     "service": {
