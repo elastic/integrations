@@ -1,0 +1,87 @@
+---
+description: Pipeline for PanOS Config Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/config-log-fields
+processors:
+  - csv:
+      field: message
+      ignore_failure: true
+      target_fields:
+        - panw.panos.host.ip
+        - panw.panos.virtual_sys
+        - panw.panos.cmd
+        - panw.panos.admin
+        - panw.panos.client_type
+        - panw.panos.result
+        - panw.panos.path
+        - panw.panos.before_change_detail
+        - panw.panos.after_change_detail
+        - panw.panos.sequence_number
+        - panw.panos.action_flags
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - panw.panos.device_name
+        - panw.panos.device_group_id
+        - panw.panos.comment
+
+  - script:
+      description: Set Event Action.
+      lang: painless
+      ignore_failure: true
+      if: ctx.panw?.panos?.cmd != null
+      params:
+        add: cmd-add
+        clone: cmd-clone
+        commit: cmd-commit
+        delete: cmd-delete
+        edit: cmd-edit
+        move: cmd-move
+        rename: cmd-rename
+        set: cmd-set
+      source:
+        ctx.event.action = params.get(ctx.panw.panos.cmd);
+  - set:
+      field: event.outcome
+      value: success
+      ignore_failure: true
+      if: ctx.panw?.panos?.result == 'Succeeded'
+  - set:
+      field: event.outcome
+      value: failure
+      ignore_failure: true
+      if: ctx.panw?.panos?.result == 'Failed'
+  - set:
+      field: event.outcome
+      value: unknown
+      ignore_failure: true
+      if: '!["Succeeded", "Failed"].contains(ctx.panw.panos.action)'
+
+# Set event.kind & event.category field.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - configuration
+
+# Set custom fields to ECS fields
+  - set:
+      field: host.ip
+      copy_from: panw.panos.host.ip
+      ignore_failure: true
+  - set:
+      field: observer.hostname
+      copy_from: panw.panos.device_name
+      ignore_failure: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in Config pipeline:
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{_ingest.on_failure_message}}}

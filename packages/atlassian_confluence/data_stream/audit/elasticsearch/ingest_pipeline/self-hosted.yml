@@ -1,0 +1,81 @@
+---
+description: Pipeline for processing self-hosted Atlassian Confluence audit logs.
+processors:
+- set:
+    field: _tmp.timestamp
+    copy_from: json.timestamp
+    if: ctx.json?.timestamp != null && ctx.json.timestamp instanceof String
+- set:
+    field: _tmp.timestamp
+    value: "{{{json.timestamp.epochSecond}}}.{{{json.timestamp.nano}}}"
+    if: ctx.json?.timestamp != null && ctx.json.timestamp instanceof Map && ctx.json.timestamp?.epochSecond != null && ctx.json.timestamp?.nano != null
+- date:
+    field: _tmp.timestamp
+    formats:
+      - UNIX
+      - ISO8601
+- rename:
+    field: json.source
+    target_field: source.address
+    ignore_missing: true
+- rename:
+    field: json.author.id
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.author.name
+    target_field: user.full_name
+    ignore_missing: true
+- grok:
+    field: json.author.uri
+    ignore_missing: true
+    ignore_failure: true
+    if: ctx?.json?.author?.uri != ""
+    patterns:
+      - '\?username=%{USER:user.name}$'
+- rename:
+    field: json.auditType
+    target_field: confluence.audit.type
+    ignore_missing: true
+- rename:
+    field: json.type
+    target_field: confluence.audit.type
+    ignore_missing: true
+- rename:
+    field: json.method
+    target_field: confluence.audit.method
+    ignore_missing: true
+- rename:
+    field: json.system
+    target_field: service.address
+    ignore_missing: true
+- uri_parts:
+    field: service.address
+    target_field: _tmp.service
+    ignore_failure: true
+    if: ctx.service?.address != null
+- rename:
+    field: json.extraAttributes
+    target_field: confluence.audit.extra_attributes
+    ignore_missing: true
+- rename:
+    field: json.changedValues
+    target_field: confluence.audit.changed_values
+    ignore_missing: true
+- rename:
+    field: json.affectedObjects
+    target_field: confluence.audit.affected_objects
+    ignore_missing: true
+- set:
+    field: event.action
+    copy_from: confluence.audit.type.actionI18nKey
+    ignore_empty_value: true
+- append:
+    field: related.hosts
+    value: '{{_tmp.service.domain}}'
+    allow_duplicates: false
+    if: ctx._tmp?.service?.domain != null
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}' 

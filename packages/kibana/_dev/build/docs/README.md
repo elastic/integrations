@@ -1,5 +1,7 @@
 # Kibana
 
+The Kibana integration collects events from your [Kibana](https://www.elastic.co/guide/en/kibana/current/introduction.html) instance.
+
 ## Configuration parameters
 
 If the Kibana instance is using a basepath in its URL, you must set the `basepath` setting for this integration with the same value.

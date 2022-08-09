@@ -1,0 +1,143 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: [configuration]
+  - append:
+      field: event.type
+      value: [info]
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number == 0
+      patterns: 
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number > 0
+      patterns: 
+        - "^%{GREEDYDATA:cisco_ise.log.log_details},"
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats: 
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+      timezone: '{{{event.timezone}}}'
+      ignore_failure: true
+  - kv:
+      field: cisco_ise.log.log_details
+      field_split: ', '
+      value_split: =
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx?.cisco_ise?.log?.message?.description != null
+      source:
+        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+  - convert:
+      field: ConfigVersionId
+      target_field: cisco_ise.log.config_version.id
+      type: long
+      ignore_failure: true
+  - convert:
+      field: Device IP Address
+      target_field: client.ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}' 
+      if: ctx?.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: Protocol
+      target_field: network.protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true
+  - date: 
+      field: RequestReceivedTime
+      target_field: cisco_ise.log.request.received_time
+      if: ctx?.RequestReceivedTime != "0"
+      ignore_failure: true
+      formats: 
+        - UNIX
+  - rename:
+      field: PolicyType
+      target_field: cisco_ise.log.policy.type
+      ignore_missing: true
+  - rename:
+      field: AcsSessionID
+      target_field: cisco_ise.log.acs.session.id
+      ignore_missing: true
+  - rename:
+      field: AuthorizationPolicyMatchedRule
+      target_field: cisco_ise.log.auth.policy.matched.rule
+      ignore_missing: true
+  - rename:
+      field: CurrentIDStoreName
+      target_field: cisco_ise.log.currentid.store_name
+      ignore_missing: true
+  - rename:
+      field: ISEPolicySetName
+      target_field: cisco_ise.log.ise.policy.set_name
+      ignore_missing: true
+  - rename:
+      field: IdentityPolicyMatchedRule
+      target_field: cisco_ise.log.identity.selection.matched.rule
+      ignore_missing: true
+  - rename:
+      field: IdentitySelectionMatchedRule
+      target_field: cisco_ise.log.identity.policy.matched.rule
+      ignore_missing: true
+  - append:
+      field: user.name
+      value: '{{{OriginalUserName}}}'
+      if: ctx?.OriginalUserName != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{OriginalUserName}}}'
+      if: ctx?.OriginalUserName != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: SelectedAccessService
+      target_field: cisco_ise.log.selected.access.service
+      ignore_missing: true
+  - rename:
+      field: SelectedAuthorizationProfiles
+      target_field: cisco_ise.log.selected.authorization.profiles
+      ignore_missing: true
+  - append:
+      field: user.name
+      value: '{{{UserName}}}'
+      if: ctx?.UserName != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{UserName}}}'
+      if: ctx?.UserName != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: CPMSessionID
+      target_field: cisco_ise.log.cpm.session.id
+      ignore_missing: true
+  - remove:
+      field:
+        - _tmp
+        - ConfigVersionId
+        - Device IP Address
+        - OriginalUserName
+        - UserName
+        - RequestReceivedTime
+        - cisco_ise.log.log_details
+      ignore_missing: true

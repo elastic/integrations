@@ -1,6 +1,6 @@
 # Recorded Future Integration
 
-The Recorded Future integration fetches _risklists_ from the Recorded Future API.
+The Recorded Future integration fetches _risklists_ from the [Recorded Future API](https://api.recordedfuture.com/index.html).
 It supports `domain`, `hash`, `ip` and `url` entities.
 
 In order to use it you need to define the `entity` and `list` to fetch. Check with
@@ -10,17 +10,19 @@ from multiple entities, it's necessary to define one integration for each.
 Alternatively, it's also possible to use the integration to fetch custom Fusion files
 by supplying the URL to the CSV file as the _Custom_ _URL_ configuration option.
 
+**NOTE:** For large risklist downloads, adjust the timeout setting so that the Agent has enough time to download and process the risklist.
+
 An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-01T16:27:26.282Z",
+    "@timestamp": "2022-06-28T00:51:15.439Z",
     "agent": {
-        "ephemeral_id": "92b83568-e480-4476-bd67-d72a81fb5d55",
-        "id": "40cd5b73-5aea-4844-81e1-b15f9c60172e",
+        "ephemeral_id": "ab36e75a-d84f-4a16-9896-44e791dc923d",
+        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.2.2"
     },
     "data_stream": {
         "dataset": "ti_recordedfuture.threat",
@@ -28,98 +30,83 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "40cd5b73-5aea-4844-81e1-b15f9c60172e",
+        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-03-01T16:27:26.282Z",
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2022-03-01T16:27:29Z",
+        "ingested": "2022-06-28T00:51:16Z",
         "kind": "enrichment",
-        "original": "{\"EvidenceDetails\":\"{\\\"EvidenceDetails\\\": [{\\\"Rule\\\": \\\"Historically Reported as a Defanged DNS Name\\\", \\\"CriticalityLabel\\\": \\\"Unusual\\\", \\\"EvidenceString\\\": \\\"21 sightings on 4 sources: Proofpoint, PasteBin, The Daily Advance, @DGAFeedAlerts. Most recent tweet: New ramnit Dom: xohrikvjhiu[.]eu IP: 13[.]90[.]196[.]81 NS: https://t.co/nTqEOuAW2E https://t.co/QdrtFSplyz. Most recent link (Nov 16, 2019): https://twitter.com/DGAFeedAlerts/statuses/1195824847915491329\\\", \\\"Sources\\\": [\\\"QQA438\\\", \\\"Jv_xrR\\\", \\\"SlNfa3\\\", \\\"KvPSaU\\\"], \\\"Timestamp\\\": \\\"2019-11-16T22:03:55.000Z\\\", \\\"Name\\\": \\\"defanged\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Criticality\\\": 1.0}, {\\\"Rule\\\": \\\"Historical Threat Researcher\\\", \\\"CriticalityLabel\\\": \\\"Unusual\\\", \\\"EvidenceString\\\": \\\"18 sightings on 2 sources: Proofpoint, The Daily Advance. Most recent link (Nov 12, 2018): https://www.proofpoint.com/us/threat-insight/post/sload-and-ramnit-pairing-sustained-campaigns-against-uk-and-italy#.W-nmxyGcuiY.twitter\\\", \\\"Sources\\\": [\\\"QQA438\\\", \\\"KvPSaU\\\"], \\\"Timestamp\\\": \\\"2018-11-12T20:48:08.675Z\\\", \\\"Name\\\": \\\"threatResearcher\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Criticality\\\": 1.0}, {\\\"Rule\\\": \\\"Historically Referenced by Insikt Group\\\", \\\"CriticalityLabel\\\": \\\"Unusual\\\", \\\"EvidenceString\\\": \\\"1 sighting on 1 source: Insikt Group. 1 report: Proofpoint Researchers Observe sLoad and Ramnit in Campaigns Against The U.K. and Italy. Most recent link (Oct 23, 2018): https://app.recordedfuture.com/live/sc/4KSWum2M6Lx7\\\", \\\"Sources\\\": [\\\"VKz42X\\\"], \\\"Timestamp\\\": \\\"2018-10-23T00:00:00.000Z\\\", \\\"Name\\\": \\\"relatedNote\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Criticality\\\": 1.0}, {\\\"Rule\\\": \\\"Historically Detected Malware Operation\\\", \\\"CriticalityLabel\\\": \\\"Unusual\\\", \\\"EvidenceString\\\": \\\"1 sighting on 1 source: Bitdefender. Detected malicious behavior from an endpoint agent via global telemetry. Last observed on Mar 23, 2021.\\\", \\\"Sources\\\": [\\\"d3Awkm\\\"], \\\"Timestamp\\\": \\\"2021-03-23T00:00:00.000Z\\\", \\\"Name\\\": \\\"malwareSiteDetected\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Criticality\\\": 1.0}, {\\\"Rule\\\": \\\"Recent C\\u0026C DNS Name\\\", \\\"CriticalityLabel\\\": \\\"Very Malicious\\\", \\\"EvidenceString\\\": \\\"1 sighting on 1 source: Bambenek Consulting C\\u0026C Blocklist.\\\", \\\"Sources\\\": [\\\"report:QhR8Qs\\\"], \\\"Timestamp\\\": \\\"2021-12-29T07:12:02.455Z\\\", \\\"Name\\\": \\\"recentCncSite\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Criticality\\\": 4.0}]}\",\"Name\":\"xohrikvjhiu.eu\",\"Risk\":\"96\",\"RiskString\":\"5/45\"}",
-        "risk_score": 96,
+        "risk_score": 87,
+        "timezone": "+00:00",
         "type": "indicator"
     },
     "input": {
-        "type": "httpjson"
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/rf_url_default.csv"
+        },
+        "offset": 45
     },
     "recordedfuture": {
         "evidence_details": [
             {
                 "Criticality": 1,
                 "CriticalityLabel": "Unusual",
-                "EvidenceString": "21 sightings on 4 sources: Proofpoint, PasteBin, The Daily Advance, @DGAFeedAlerts. Most recent tweet: New ramnit Dom: xohrikvjhiu[.]eu IP: 13[.]90[.]196[.]81 NS: https://t.co/nTqEOuAW2E https://t.co/QdrtFSplyz. Most recent link (Nov 16, 2019): https://twitter.com/DGAFeedAlerts/statuses/1195824847915491329",
+                "EvidenceString": "66 sightings on 22 sources including: Ars Technica, fook.news, urdupresss.com, HackDig Posts, apple.news. Most recent link (Jul 20, 2021): https://techsecuritenews.com/solarwinds-pirates-utilisent-nouvelle-faille-zero-day-attaques/",
                 "MitigationString": "",
-                "Name": "defanged",
-                "Rule": "Historically Reported as a Defanged DNS Name",
+                "Name": "defangedURL",
+                "Rule": "Historically Reported as a Defanged URL",
                 "Sources": [
-                    "QQA438",
-                    "Jv_xrR",
-                    "SlNfa3",
-                    "KvPSaU"
+                    "Ctq",
+                    "idn:fook.news",
+                    "idn:urdupresss.com",
+                    "POs2u-",
+                    "idn:apple.news",
+                    "idn:cryptoinfoos.com.ng",
+                    "g9rk5F",
+                    "idn:thewindowsupdate.com",
+                    "idn:nationalcybersecuritynews.today",
+                    "gBDK5G",
+                    "idn:microsoft.com",
+                    "idn:techsecuritenews.com",
+                    "idn:mblogs.info",
+                    "J6UzbO",
+                    "idn:viralamo.com",
+                    "idn:sellorbuyhomefast.com",
+                    "idn:crazyboy.tech",
+                    "idn:times24h.com",
+                    "idn:buzzfeeg.com",
+                    "idn:dsmenders.com",
+                    "WroSbs",
+                    "idn:vzonetvgh.com"
                 ],
-                "Timestamp": "2019-11-16T22:03:55.000Z"
+                "Timestamp": "2021-07-20T00:00:00.000Z"
             },
             {
-                "Criticality": 1,
-                "CriticalityLabel": "Unusual",
-                "EvidenceString": "18 sightings on 2 sources: Proofpoint, The Daily Advance. Most recent link (Nov 12, 2018): https://www.proofpoint.com/us/threat-insight/post/sload-and-ramnit-pairing-sustained-campaigns-against-uk-and-italy#.W-nmxyGcuiY.twitter",
+                "Criticality": 3,
+                "CriticalityLabel": "Malicious",
+                "EvidenceString": "1 sighting on 1 source: Insikt Group. 1 report: SolarWinds Fixes Critical Vulnerability in Serv-U Managed File Transfer and Secure FTP Products. Most recent link (Jul 10, 2021): https://app.recordedfuture.com/live/sc/1GnDrn8zigTd",
                 "MitigationString": "",
-                "Name": "threatResearcher",
-                "Rule": "Historical Threat Researcher",
-                "Sources": [
-                    "QQA438",
-                    "KvPSaU"
-                ],
-                "Timestamp": "2018-11-12T20:48:08.675Z"
-            },
-            {
-                "Criticality": 1,
-                "CriticalityLabel": "Unusual",
-                "EvidenceString": "1 sighting on 1 source: Insikt Group. 1 report: Proofpoint Researchers Observe sLoad and Ramnit in Campaigns Against The U.K. and Italy. Most recent link (Oct 23, 2018): https://app.recordedfuture.com/live/sc/4KSWum2M6Lx7",
-                "MitigationString": "",
-                "Name": "relatedNote",
-                "Rule": "Historically Referenced by Insikt Group",
+                "Name": "recentAnalystNote",
+                "Rule": "Recently Reported by Insikt Group",
                 "Sources": [
                     "VKz42X"
                 ],
-                "Timestamp": "2018-10-23T00:00:00.000Z"
-            },
-            {
-                "Criticality": 1,
-                "CriticalityLabel": "Unusual",
-                "EvidenceString": "1 sighting on 1 source: Bitdefender. Detected malicious behavior from an endpoint agent via global telemetry. Last observed on Mar 23, 2021.",
-                "MitigationString": "",
-                "Name": "malwareSiteDetected",
-                "Rule": "Historically Detected Malware Operation",
-                "Sources": [
-                    "d3Awkm"
-                ],
-                "Timestamp": "2021-03-23T00:00:00.000Z"
-            },
-            {
-                "Criticality": 4,
-                "CriticalityLabel": "Very Malicious",
-                "EvidenceString": "1 sighting on 1 source: Bambenek Consulting C\u0026C Blocklist.",
-                "MitigationString": "",
-                "Name": "recentCncSite",
-                "Rule": "Recent C\u0026C DNS Name",
-                "Sources": [
-                    "report:QhR8Qs"
-                ],
-                "Timestamp": "2021-12-29T07:12:02.455Z"
+                "Timestamp": "2021-07-10T00:00:00.000Z"
             }
         ],
-        "risk_string": "5/45"
+        "risk_string": "2/24"
     },
     "tags": [
-        "preserve_original_event",
         "forwarded",
         "recordedfuture"
     ],
@@ -128,9 +115,12 @@ An example event for `threat` looks as following:
             "name": "Recorded Future"
         },
         "indicator": {
-            "type": "domain-name",
+            "type": "url",
             "url": {
-                "domain": "xohrikvjhiu.eu"
+                "domain": "144.34.179.162",
+                "original": "http://144.34.179.162/a",
+                "path": "/a",
+                "scheme": "http"
             }
         }
     }
@@ -161,6 +151,7 @@ An example event for `threat` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -198,7 +189,7 @@ An example event for `threat` looks as following:
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.as.organization.name | Organization name. | keyword |
 | threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
-| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. Expected values are:   \* Not Specified   \* None   \* Low   \* Medium   \* High | keyword |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
@@ -210,9 +201,9 @@ An example event for `threat` looks as following:
 | threat.indicator.geo.location.lon | Longitude and latitude. | geo_point |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. Recommended values are:   \* WHITE   \* GREEN   \* AMBER   \* RED | keyword |
+| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |

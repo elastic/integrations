@@ -1,12 +1,12 @@
-# Google Cloud Integration
-
-## Overview
+# Google Cloud Platform Integration
 
 The Google Cloud integration collects and parses Google Cloud [Audit Logs](https://cloud.google.com/logging/docs/audit), [VPC Flow Logs](https://cloud.google.com/vpc/docs/using-flow-logs), [Firewall Rules Logs](https://cloud.google.com/vpc/docs/firewall-rules-logging) and [Cloud DNS Logs](https://cloud.google.com/dns/docs/monitoring) that have been exported from Cloud Logging to a Google Pub/Sub topic sink.
 
 ## Authentication
 
-To use this Google Cloud Platform (GCP) integration, you need to set up a *Service Account* with a few *Roles* and a *Service Account Key* to access data on your GCP project.
+To use this Google Cloud Platform (GCP) integration, you need to set up a
+*Service Account* with a *Role* and a *Service Account Key* to access data on
+your GCP project.
 
 ### Service Account
 
@@ -14,18 +14,27 @@ First, you need to [create a Service Account](https://cloud.google.com/iam/docs/
 
 The Elastic Agent uses the SA to access data on Google Cloud Platform using the Google APIs.
 
-### Roles
+If you haven't already, this might be a good moment to check out the [best
+practices for securing service
+accounts](https://cloud.google.com/iam/docs/best-practices-for-securing-service-accounts)
+guide.
 
-You need to grant your Service Account (SA) access to Google Cloud Platform resources adding one or more roles.
+### Role
 
-For this integration to work, you need to add the following roles to your SA:
+You need to grant your Service Account (SA) access to Google Cloud Platform
+resources by assigning a role to the account. In order to assign minimal
+privileges, create a custom role that has only the privileges required by Agent.
+Those privileges are:
 
-- `Compute Viewer`
-- `Monitoring Viewer`
-- `Pub/Sub Viewer`
-- `Pub/Sub Subscriber`
+- `pubsub.subscriptions.consume`
+- `pubsub.subscriptions.create` *
+- `pubsub.subscriptions.get`
+- `pubsub.topics.attachSubscription` *
 
-Always follow the "principle of least privilege" when adding a new role to your SA. If you haven't already, this might be a good moment to check out the [best practices for securing service accounts](https://cloud.google.com/iam/docs/best-practices-for-securing-service-accounts) guide.
+\* Only required if Agent is expected to create a new subscription. If you
+create the subscriptions yourself you may omit these privileges.
+
+After you have created the custom role, assign the role to your service account.
 
 ### Service Account Keys
 
@@ -36,8 +45,6 @@ From the list of SA:
 1. Click the one you just created to open the detailed view.
 2. From the Keys section, click "Add key" > "Create new key" and select JSON as the type.
 3. Download and store the generated private key securely (remember, the private key can't be recovered from GCP if lost).
-
-Optional: take some time to review the GCP's [best practices for managing service account keys](https://cloud.google.com/iam/docs/best-practices-for-managing-service-account-keys).
 
 ## Configure the Integration Settings
 
@@ -89,7 +96,7 @@ At a high level, the steps required are:
 
 - Visit "Logging" > "Log Router" > "Create Sink" and provide a sink name and description.
 - In "Sink destination", select "Cloud Pub/Sub topic" as the sink service. Select an existing topic or "Create a topic". Note the topic name, as it will be provided in the Topic field in the Elastic agent configuration.
-- If you created a new topic, you must remember to go to that topic and create a subscription for it. A subscription directs messages on a topic to subscribers. Note the "Subscription ID", as it will need to be entered in the "Subscription name" field in the ingtegration settings.
+- If you created a new topic, you must remember to go to that topic and create a subscription for it. A subscription directs messages on a topic to subscribers. Note the "Subscription ID", as it will need to be entered in the "Subscription name" field in the integration settings.
 - Under "Choose logs to include in sink", for example add `logName:"cloudaudit.googleapis.com"` in the "Inclusion filter" to include all audit logs.
 
 This is just an example; you will need to create your filter expression to select the log types you want to export to the Pub/Sub topic.
@@ -103,19 +110,16 @@ More example filters for different log types:
 resource.type="gce_subnetwork" AND
 log_id("compute.googleapis.com/vpc_flows") AND
 resource.labels.subnetwork_name"=[SUBNET_NAME]"
-
 #
 # Audit: Google Compute Engine firewall rule deletion
 #
 resource.type="gce_firewall_rule" AND
 log_id("cloudaudit.googleapis.com/activity") AND
-protoPayload.methodName:"firewalls.delete" 
-
+protoPayload.methodName:"firewalls.delete"
 #
 # DNS: all DNS queries
 #
 resource.type="dns_query"
-
 #
 # Firewall: logs for a given country
 #
@@ -124,7 +128,7 @@ log_id("compute.googleapis.com/firewall") AND
 jsonPayload.remote_location.country=[COUNTRY_ISO_ALPHA_3]
 ```
 
-Start working on your query using the Google Cloud [Logs Explorer](https://console.cloud.google.com/logs/query), so you can preview and pintpoint the exact log types you want to forward to your Elastic Stack.
+Start working on your query using the Google Cloud [Logs Explorer](https://console.cloud.google.com/logs/query), so you can preview and pinpoint the exact log types you want to forward to your Elastic Stack.
 
 To learn more, please read how to [Build queries in the Logs Explorer](https://cloud.google.com/logging/docs/view/building-queries), and take a look at the [Sample queries using the Logs Explorer](https://cloud.google.com/logging/docs/view/query-library-preview) page in the Google Cloud docs.
 
@@ -200,3 +204,29 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 {{fields "dns"}}
 
 {{event "dns"}}
+
+## Metrics
+
+### Billing
+
+The `billing` dataset collects GCP Billing information from Google Cloud BigQuery daily cost detail table.
+
+{{fields "billing"}}
+
+{{event "billing"}}
+
+### Compute
+
+The `compute` dataset is designed to fetch metrics for [Compute Engine](https://cloud.google.com/compute/) Virtual Machines in Google Cloud Platform.
+
+{{fields "compute"}}
+
+{{event "compute"}}
+
+### Firestore
+
+The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.com/firestore/) in Google Cloud Platform.
+
+{{fields "firestore"}}
+
+{{event "firestore"}}

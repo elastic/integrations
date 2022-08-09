@@ -1,4 +1,4 @@
-metricsets: ["lambda"]
+metricsets: ["cloudwatch"]
 period: {{period}}
 {{#if access_key_id}}
 access_key_id: {{access_key_id}}
@@ -18,6 +18,9 @@ shared_credential_file: {{shared_credential_file}}
 {{#if role_arn}}
 role_arn: {{role_arn}}
 {{/if}}
+{{#if endpoint}}
+endpoint: {{endpoint}}
+{{/if}}
 {{#if regions}}
 regions:
 {{#each regions as |region i|}}
@@ -33,3 +36,29 @@ tags_filter: {{tags_filter}}
 {{#if proxy_url }}
 proxy_url: {{proxy_url}}
 {{/if}}
+metrics:
+- namespace: AWS/Lambda
+  resource_type: lambda
+  statistic: ["Average"]
+  name:
+  - Invocations
+  - Errors
+  - DeadLetterErrors
+  - DestinationDeliveryFailures
+  - Duration
+  - Throttles
+  - IteratorAge
+  - ConcurrentExecutions
+  - UnreservedConcurrentExecutions
+- namespace: AWS/Lambda
+  resource_type: lambda
+  statistic: ["Maximum"]
+  name:
+  - ProvisionedConcurrentExecutions
+  - ProvisionedConcurrencyUtilization
+- namespace: AWS/Lambda
+  resource_type: lambda
+  statistic: ["Sum"]
+  name:
+  - ProvisionedConcurrencyInvocations
+  - ProvisionedConcurrencySpilloverInvocations

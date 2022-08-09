@@ -1,0 +1,17 @@
+---
+description: Pipeline for Jamf Compliance Reporter aue_exit audit logs.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
+  - convert:
+      field: json.exit.return_value
+      target_field: jamf_compliance_reporter.log.exit.return.value
+      type: long
+      ignore_failure: true
+  - convert:
+      field: json.exit.status
+      target_field: jamf_compliance_reporter.log.exit.status
+      type: string
+      ignore_failure: true

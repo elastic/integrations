@@ -1,0 +1,29 @@
+---
+description: Pipeline for Jamf Compliance Reporter gatekeeper manual overrides event logs.
+processors:
+  - foreach:
+      field: json.event_attributes.attributes
+      processor:
+        date:
+          field: _ingest._value.ctime
+          target_field: _ingest._value.ctime
+          ignore_failure: true
+          formats:
+            - UNIX
+  - foreach:
+      field: json.event_attributes.attributes
+      processor:
+        date:
+          field: _ingest._value.mtime
+          target_field: _ingest._value.mtime
+          ignore_failure: true
+          formats:
+            - UNIX
+  - rename:
+      field: json.event_attributes.attributes
+      target_field: jamf_compliance_reporter.log.event_attributes.attributes
+      ignore_missing: true
+  - rename:
+      field: json.event_attributes.path
+      target_field: jamf_compliance_reporter.log.event_attributes.path
+      ignore_missing: true

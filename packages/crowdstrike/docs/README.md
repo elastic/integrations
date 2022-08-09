@@ -1,9 +1,9 @@
 # CrowdStrike Integration
 
-This integration is for CrowdStrike products. It includes the
+This integration is for [CrowdStrike](https://www.crowdstrike.com/resources/?cs_query=type=5) products. It includes the
 following datasets for receiving logs:
 
-- `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from Falcon SIEM Connector.
+- `falcon` dataset: consists of endpoint data and Falcon platform audit data forwarded from [Falcon SIEM Connector](https://www.crowdstrike.com/blog/tech-center/integrate-with-your-siem/).
 - `fdr` dataset: consists of logs forwarded using the [Falcon Data Replicator](https://github.com/CrowdStrike/FDR).
 
 ## Compatibility
@@ -22,7 +22,7 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |
-| agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. If no name is given, the name is often left empty. | keyword |
+| agent.name | Custom name of the agent. This is a name that can be given to an agent. This can be helpful if for example two Filebeat instances are running on the same host but a human readable separation is needed on which Filebeat instance data is coming from. | keyword |
 | agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -182,11 +182,11 @@ Contains endpoint data and CrowdStrike Falcon platform audit data forwarded from
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| log.file.path | Path to the log file. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -227,11 +227,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2020-02-12T21:29:10.710Z",
     "agent": {
-        "ephemeral_id": "9060b4e5-b568-47b0-9a7b-62121df53ec9",
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "ephemeral_id": "cc9fb403-5b26-4fe7-aefc-41666b9f4575",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "crowdstrike": {
         "event": {
@@ -278,12 +278,12 @@ An example event for `falcon` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -291,7 +291,7 @@ An example event for `falcon` looks as following:
             "authentication"
         ],
         "dataset": "crowdstrike.falcon",
-        "ingested": "2021-12-30T05:13:25Z",
+        "ingested": "2022-05-09T16:35:19Z",
         "kind": "event",
         "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
         "outcome": "success",
@@ -337,15 +337,15 @@ An example event for `falcon` looks as following:
 
 ### FDR
 
-The CrowdStrike Falcon Data Replicator (FDR) allows CrowdStrike users to replicate FDR data from CrowdStrike 
-managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is 
+The CrowdStrike Falcon Data Replicator (FDR) allows CrowdStrike users to replicate FDR data from CrowdStrike
+managed S3 buckets. CrowdStrike writes notification events to a CrowdStrike managed SQS queue when new data is
 available in S3.
 
-This integration can be used in two ways. It can consume SQS notifications directly from the CrowdStrike managed 
-SQS queue or it can be used in conjunction with the FDR tool that replicates the data to a self-managed S3 bucket 
+This integration can be used in two ways. It can consume SQS notifications directly from the CrowdStrike managed
+SQS queue or it can be used in conjunction with the FDR tool that replicates the data to a self-managed S3 bucket
 and the integration can read from there.
 
-In both cases SQS messages are deleted after they are processed. This allows you to operate more than one Elastic 
+In both cases SQS messages are deleted after they are processed. This allows you to operate more than one Elastic
 Agent with this integration if needed and not have duplicate events, but it means you cannot ingest the data a second time.
 
 #### Use with CrowdStrike managed S3/SQS
@@ -368,24 +368,27 @@ You need to follow the steps below:
 - Configure the integration to read from your self-managed SQS topic.
 - Disable the `Is FDR queue` option in the integration.
 
-**NOTE: While the FDR tool can replicate the files from S3 to your local file system, this integration cannot read those files because they are gzip compressed, and the log file input does not support reading compressed files.**
+>  NOTE: While the FDR tool can replicate the files from S3 to your local file system, this integration cannot read those files because they are gzip compressed, and the log file input does not support reading compressed files.
 
 #### Configuration for the S3 input
 
-AWS credentials are required for running this integration if you want to use the S3 input. 
+AWS credentials are required for running this integration if you want to use the S3 input.
 
 ##### Configuration parameters
-* *access_key_id*: first part of access key.
-* *secret_access_key*: second part of access key.
-* *session_token*: required when using temporary security credentials.
-* *credential_profile_name*: profile name in shared credentials file.
-* *shared_credential_file*: directory of the shared credentials file.
-* *endpoint*: URL of the entry point for an AWS web service.
-* *role_arn*: AWS IAM Role to assume.
+* `access_key_id`: first part of access key.
+* `secret_access_key`: second part of access key.
+* `session_token`: required when using temporary security credentials.
+* `credential_profile_name`: profile name in shared credentials file.
+* `shared_credential_file`: directory of the shared credentials file.
+* `endpoint`: URL of the entry point for an AWS web service.
+* `role_arn`: AWS IAM Role to assume.
 
 ##### Credential Types
-There are three types of AWS credentials can be used: access keys, temporary
-security credentials and IAM role ARN.
+There are three types of AWS credentials can be used:
+
+- access keys,
+- temporary security credentials, and
+- IAM role ARN.
 
 ##### Access keys
 
@@ -398,57 +401,65 @@ for more details.
 
 Temporary security credentials has a limited lifetime and consists of an
 access key ID, a secret access key, and a security token which typically returned
-from `GetSessionToken`. MFA-enabled IAM users would need to submit an MFA code
+from `GetSessionToken`.
+
+MFA-enabled IAM users would need to submit an MFA code
 while calling `GetSessionToken`. `default_region` identifies the AWS Region
-whose servers you want to send your first API request to by default. This is
-typically the Region closest to you, but it can be any Region. Please see
+whose servers you want to send your first API request to by default.
+
+This is typically the Region closest to you, but it can be any Region. Please see
 [Temporary Security Credentials](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html)
 for more details.
 
-`sts get-session-token` AWS CLI can be used to generate temporary credentials. 
+`sts get-session-token` AWS CLI can be used to generate temporary credentials.
 For example. with MFA-enabled:
 ```js
 aws> sts get-session-token --serial-number arn:aws:iam::1234:mfa/your-email@example.com --duration-seconds 129600 --token-code 123456
 ```
 
-Because temporary security credentials are short term, after they expire, the 
+Because temporary security credentials are short term, after they expire, the
 user needs to generate new ones and manually update the package configuration in
-order to continue collecting `aws` metrics. This will cause data loss if the 
-configuration is not updated with new credentials before the old ones expire. 
+order to continue collecting `aws` metrics.
+
+This will cause data loss if the configuration is not updated with new credentials before the old ones expire.
 
 ##### IAM role ARN
 
 An IAM role is an IAM identity that you can create in your account that has
 specific permissions that determine what the identity can and cannot do in AWS.
+
 A role does not have standard long-term credentials such as a password or access
-keys associated with it. Instead, when you assume a role, it provides you with 
-temporary security credentials for your role session. IAM role Amazon Resource 
-Name (ARN) can be used to specify which AWS IAM role to assume to generate 
-temporary credentials. Please see 
-[AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html)
-for more details.
+keys associated with it. Instead, when you assume a role, it provides you with
+temporary security credentials for your role session.
+IAM role Amazon Resource Name (ARN) can be used to specify which AWS IAM role to assume to generate
+temporary credentials.
+
+Please see [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html) for more details.
 
 ##### Supported Formats
-1. Use access keys: Access keys include `access_key_id`, `secret_access_key` 
+1. Use access keys: Access keys include `access_key_id`, `secret_access_key`
 and/or `session_token`.
-2. Use `role_arn`: `role_arn` is used to specify which AWS IAM role to assume 
-for generating temporary credentials. If `role_arn` is given, the package will 
-check if access keys are given. If not, the package will check for credential 
-profile name. If neither is given, default credential profile will be used. 
-Please make sure credentials are given under either a credential profile or 
-access keys.
-3. Use `credential_profile_name` and/or `shared_credential_file`: 
-If `access_key_id`, `secret_access_key` and `role_arn` are all not given, then
-the package will check for `credential_profile_name`. If you use different 
-credentials for different tools or applications, you can use profiles to 
-configure multiple access keys in the same configuration file. If there is 
-no `credential_profile_name` given, the default profile will be used.
-`shared_credential_file` is optional to specify the directory of your shared
-credentials file. If it's empty, the default directory will be used.
-In Windows, shared credentials file is at `C:\Users\<yourUserName>\.aws\credentials`.
-For Linux, macOS or Unix, the file locates at `~/.aws/credentials`. Please see
-[Create Shared Credentials File](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/create-shared-credentials-file.html)
-for more details.
+2. Use `role_arn`: `role_arn` is used to specify which AWS IAM role to assume
+    for generating temporary credentials.
+    If `role_arn` is given, the package will check if access keys are given.
+    If not, the package will check for credential profile name.
+    If neither is given, default credential profile will be used.
+
+  Please make sure credentials are given under either a credential profile or
+  access keys.
+3. Use `credential_profile_name` and/or `shared_credential_file`:
+    If `access_key_id`, `secret_access_key` and `role_arn` are all not given, then
+    the package will check for `credential_profile_name`.
+    If you use different credentials for different tools or applications, you can use profiles to
+    configure multiple access keys in the same configuration file.
+    If there is no `credential_profile_name` given, the default profile will be used.
+    `shared_credential_file` is optional to specify the directory of your shared
+    credentials file.
+    If it's empty, the default directory will be used.
+    In Windows, shared credentials file is at `C:\Users\<yourUserName>\.aws\credentials`.
+    For Linux, macOS or Unix, the file locates at `~/.aws/credentials`.
+    Please see[Create Shared Credentials File](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/create-shared-credentials-file.html)
+    for more details.
 
 **Exported fields**
 
@@ -804,7 +815,7 @@ for more details.
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.address |  | keyword |
@@ -820,13 +831,13 @@ for more details.
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | observer.version | Observer version. | keyword |
-| os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | os.version | Operating system version as a raw string. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
-| process.end |  | date |
+| process.end | The time the process ended. | date |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
@@ -836,7 +847,7 @@ for more details.
 | process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
 | process.parent.name.text | Multi-field of `process.parent.name`. | match_only_text |
-| process.pgid | Identifier of the group of processes the process belongs to. | long |
+| process.pgid | Deprecated for removal in next major version release. This field is superseded by `process.group_leader.pid`. Identifier of the group of processes the process belongs to. | long |
 | process.pid | Process id. | long |
 | process.start | The time the process started. | date |
 | process.thread.id | Thread ID. | long |
@@ -892,11 +903,11 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-11-08T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "33b3f217-19d7-4071-bb17-5dd3176d549d",
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "ephemeral_id": "8cb3a21e-5542-440a-a909-8a2f161001ba",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "crowdstrike": {
         "ConfigStateHash": "1763245019",
@@ -922,12 +933,12 @@ An example event for `fdr` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.0"
     },
     "event": {
         "action": "RansomwareOpenFile",
@@ -938,7 +949,7 @@ An example event for `fdr` looks as following:
         "created": "2020-11-08T17:07:22.091Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-9756-06fe7f8f682f",
-        "ingested": "2021-12-30T05:14:09Z",
+        "ingested": "2022-05-09T16:39:37Z",
         "kind": "alert",
         "original": "{\"ConfigBuild\":\"1007.3.0011603.1\",\"ConfigStateHash\":\"1763245019\",\"ContextProcessId\":\"1016182570608\",\"ContextThreadId\":\"37343520154472\",\"ContextTimeStamp\":\"1604829512.519\",\"DesiredAccess\":\"1179785\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"FileAttributes\":\"0\",\"FileIdentifier\":\"7a9c1c1610045d45a54bd6643ac12ea767a5020000000c00\",\"FileObject\":\"18446670458156489088\",\"Information\":\"1\",\"IrpFlags\":\"2180\",\"MajorFunction\":\"0\",\"MinorFunction\":\"0\",\"OperationFlags\":\"0\",\"Options\":\"16777312\",\"ShareAccess\":\"5\",\"Status\":\"0\",\"TargetFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\user11\\\\Downloads\\\\file.pptx\",\"aid\":\"ffffffffac4148947ed68497e89f3308\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"RansomwareOpenFile\",\"id\":\"ffffffff-1111-11eb-9756-06fe7f8f682f\",\"name\":\"RansomwareOpenFileV4\",\"timestamp\":\"1604855242091\"}",
         "outcome": "success",
