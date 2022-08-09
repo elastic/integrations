@@ -1,6 +1,6 @@
 # Netscout integration
 
-This integration is for [Netscout](https://my.netscout.com/pages/overview.aspx?&ReturnUrl=%2fmcp%2fAddlDocs%2fDocumentation%2f_layouts%2f15%2fAuthenticate.aspx%3fSource%3d%252Fmcp%252FAddlDocs%252FDocumentation&Source=%2Fmcp%2FAddlDocs%2FDocumentation) device's logs. It includes the following
+This integration is for [Netscout](https://www.netscout.com/product/arbor-sightline) device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:
 
 - `sightline` dataset: supports Arbor Peakflow SP logs.
