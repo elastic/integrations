@@ -54,12 +54,12 @@ response.split:
 response.pagination:
   - set:
       target: body.request_data.search_from
-      value: "[[mul .last_response.page 100]]"
+      value: '[[if (ne (len .last_response.body.reply.alerts) 0)]][[mul .last_response.page 100]][[end]]'
       value_type: int
       fail_on_template_error: true
   - set:
       target: body.request_data.search_to
-      value: "[[add (mul .last_response.page 100) 100]]"
+      value: '[[if (ne (len .last_response.body.reply.alerts) 0)]][[add (mul .last_response.page 100) 100]][[end]]'
       value_type: int
       fail_on_template_error: true
 cursor:

@@ -15,13 +15,18 @@ metrics_filters.include:
 metrics_path: {{metrics_path}}
 period: {{period}}
 rate_counters: {{rate_counters}}
+{{#if ssl.certificate_authorities}}
 ssl.certificate_authorities:
 {{#each ssl.certificate_authorities}}
   - {{this}}
 {{/each}}
+{{/if}}
 use_types: {{use_types}}
 username: {{username}}
 password: {{password}}
+{{#if leaderelection}}
+condition: ${kubernetes_leaderelection.leader} == true
+{{/if}}
 {{#if query}}
 {{query}}
 {{/if}}

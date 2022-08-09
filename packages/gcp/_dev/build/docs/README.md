@@ -1,4 +1,4 @@
-# Google Cloud Integration
+# Google Cloud Platform Integration
 
 The Google Cloud integration collects and parses Google Cloud [Audit Logs](https://cloud.google.com/logging/docs/audit), [VPC Flow Logs](https://cloud.google.com/vpc/docs/using-flow-logs), [Firewall Rules Logs](https://cloud.google.com/vpc/docs/firewall-rules-logging) and [Cloud DNS Logs](https://cloud.google.com/dns/docs/monitoring) that have been exported from Cloud Logging to a Google Pub/Sub topic sink.
 
@@ -110,19 +110,16 @@ More example filters for different log types:
 resource.type="gce_subnetwork" AND
 log_id("compute.googleapis.com/vpc_flows") AND
 resource.labels.subnetwork_name"=[SUBNET_NAME]"
-
 #
 # Audit: Google Compute Engine firewall rule deletion
 #
 resource.type="gce_firewall_rule" AND
 log_id("cloudaudit.googleapis.com/activity") AND
 protoPayload.methodName:"firewalls.delete"
-
 #
 # DNS: all DNS queries
 #
 resource.type="dns_query"
-
 #
 # Firewall: logs for a given country
 #
@@ -207,3 +204,29 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 {{fields "dns"}}
 
 {{event "dns"}}
+
+## Metrics
+
+### Billing
+
+The `billing` dataset collects GCP Billing information from Google Cloud BigQuery daily cost detail table.
+
+{{fields "billing"}}
+
+{{event "billing"}}
+
+### Compute
+
+The `compute` dataset is designed to fetch metrics for [Compute Engine](https://cloud.google.com/compute/) Virtual Machines in Google Cloud Platform.
+
+{{fields "compute"}}
+
+{{event "compute"}}
+
+### Firestore
+
+The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.com/firestore/) in Google Cloud Platform.
+
+{{fields "firestore"}}
+
+{{event "firestore"}}

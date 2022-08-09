@@ -20,17 +20,6 @@ CIS Kubernetes Benchmark integration is shipped including default dashboards and
 
 ## Deployment
 
-#### Configure Kibana
-
-In order for the integration to be installed, The Cloud Security Posture Kibana plugin must be enabled.
-
-This could be done by adding the following configuration line to `kibana.yml`:
-```
-xpack.cloudSecurityPosture.enabled: true
-```
-For Cloud users, see [Edit Kibana user settings](https://www.elastic.co/guide/en/cloud/current/ec-manage-kibana-settings.html).
-
-
 #### Deploy the Elastic agent
 
 Just like every other integration, the KSPM integration requires an Elastic agent to be deployed.
