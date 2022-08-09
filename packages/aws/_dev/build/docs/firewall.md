@@ -5,6 +5,7 @@ This integration is used to fetch logs and metrics from [AWS Network Firewall](h
 Use the AWS Network Firewall integration to monitor the traffic entering and passing through your AWS Network Firewall. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs and metrics when troubleshooting an issue.
 
 For example, you could use this integration to view and track when firewall rules are triggered, the top firewall source and destination countries, and the total number of events by firewall.
+
 ## Data streams
 
 The AWS Network Firewall integration collects two types of data streams: logs and metrics.
