@@ -299,7 +299,6 @@ An example event for `status` looks as following:
     },
     "service": {
         "address": "http://kibana:5601/api/status",
-        "name": "kibana",
         "id": "e7e31ce0-d42c-4829-8465-baf52f0b8334",
         "type": "kibana",
         "version": "7.15.0"
