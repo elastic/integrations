@@ -1,0 +1,136 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: [configuration]
+  - append:
+      field: event.type
+      value: [info]
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number == 0
+      patterns: 
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
+  - grok:
+      field: message
+      if: ctx?.cisco_ise?.log?.segment?.number > 0
+      patterns: 
+        - "^%{GREEDYDATA:cisco_ise.log.log_details},"
+  - date:
+      field: _tmp.timestamp
+      target_field: '@timestamp'
+      formats: 
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+      timezone: '{{{event.timezone}}}'
+      ignore_failure: true
+  - kv:
+      field: cisco_ise.log.log_details
+      field_split: ', '
+      value_split: =
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx?.cisco_ise?.log?.message?.description != null
+      source:
+        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+  - convert:
+      field: ConfigVersionId
+      target_field: cisco_ise.log.config_version.id
+      type: long
+      ignore_failure: true
+  - rename:
+      field: UserName
+      target_field: user.name
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: IpAddress
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}' 
+      if: ctx?.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: AuthenticationIdentityStore
+      target_field: cisco_ise.log.authentication.identity_store
+      ignore_missing: true
+  - rename:
+      field: PortalName
+      target_field: cisco_ise.log.portal.name
+      ignore_missing: true
+  - rename:
+      field: IdentityGroup
+      target_field: cisco_ise.log.identity.group
+      ignore_missing: true
+  - rename:
+      field: PsnHostName
+      target_field: cisco_ise.log.psn.hostname
+      ignore_missing: true
+  - rename:
+      field: EPMacAddress
+      target_field: cisco_ise.log.ep.mac.address
+      ignore_missing: true
+  - gsub:
+      field: cisco_ise.log.ep.mac_address
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: cisco_ise.log.ep.mac_address
+      ignore_missing: true
+  - rename: 
+      field: EPIdentityGroup
+      target_field: cisco_ise.log.ep.identity_group
+      ignore_missing: true
+  - convert: 
+      field: Staticassignment
+      target_field: cisco_ise.log.static.assignment
+      type: boolean
+      ignore_failure: true
+  - rename: 
+      field: EndPointProfiler
+      target_field: cisco_ise.log.endpoint.profiler
+      ignore_missing: true
+  - rename: 
+      field: EndPointPolicy
+      target_field: cisco_ise.log.endpoint.policy
+      ignore_missing: true
+  - rename: 
+      field: DeviceName
+      target_field: cisco_ise.log.device.name
+      ignore_missing: true
+  - rename: 
+      field: DeviceRegistrationStatus
+      target_field: cisco_ise.log.device.registration_status
+      ignore_missing: true
+  - convert: 
+      field: ResponseTime
+      target_field: cisco_ise.log.response.time
+      type: long
+      ignore_failure: true
+  - rename: 
+      field: EndpointCoA
+      target_field: cisco_ise.log.endpoint.coa
+      ignore_missing: true
+  - remove:
+      field:
+        - _tmp
+        - ConfigVersionId
+        - IpAddress
+        - cisco_ise.log.log_details
+        - ResponseTime
+        - Staticassignment
+      ignore_missing: true

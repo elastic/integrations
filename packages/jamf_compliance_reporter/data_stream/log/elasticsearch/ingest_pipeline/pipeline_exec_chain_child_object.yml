@@ -1,0 +1,16 @@
+---
+description: Pipeline for Jamf Compliance Reporter exec_chain_child_object audit logs.
+processors:
+  - rename:
+      field: json.exec_chain_child.parent_path
+      target_field: jamf_compliance_reporter.log.exec_chain_child.parent.path
+      ignore_missing: true
+  - convert:
+      field: json.exec_chain_child.parent_pid
+      target_field: process.parent.pid
+      type: long
+      ignore_failure: true
+  - rename:
+      field: json.exec_chain_child.parent_uuid
+      target_field: jamf_compliance_reporter.log.exec_chain_child.parent.uuid
+      ignore_missing: true

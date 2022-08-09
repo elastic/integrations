@@ -8,10 +8,10 @@ Multiple Elastic Agent instances can be configured to read from the same subscri
 
 ## Configuring
 
-1. Create a user-managed service account (you can skip this if Elastic Agent is running in a VM with a service account attached). [Service Accounts](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
+1. Create a user-managed service account (you can skip this if Elastic Agent is running in a VM with a service account attached).  See: [Service Accounts](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
 
-2. Create a Pub/Sub topic and subscription. [Topics and Subscriptions](https://cloud.google.com/pubsub/docs/admin)
+2. Create a Pub/Sub topic and subscription.  See:[Topics and Subscriptions](https://cloud.google.com/pubsub/docs/admin)
 
 3. Configure this integration to read from the Pub/Sub subscription using the service account credentials.
 
-4. Write logs into the Pub/Sub topic yourself or configure a log sink to export GCP logs to the topic. [Managing Sinks](https://cloud.google.com/logging/docs/export/configure_export_v2)
+4. Write logs into the Pub/Sub topic yourself or configure a log sink to export GCP logs to the topic. See: [Managing Sinks](https://cloud.google.com/logging/docs/export/configure_export_v2)

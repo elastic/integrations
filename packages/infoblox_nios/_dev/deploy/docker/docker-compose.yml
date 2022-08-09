@@ -1,0 +1,14 @@
+version: '2.3'
+services:
+  infoblox_nios-log-tcp:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    entrypoint: /bin/bash
+    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9027 -p=tcp /sample_logs/log.log"
+  infoblox_nios-log-udp:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    entrypoint: /bin/bash
+    command: -c "/stream log --start-signal=SIGHUP --delay=5s --addr elastic-agent:9028 -p=udp /sample_logs/log.log"

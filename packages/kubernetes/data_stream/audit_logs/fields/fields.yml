@@ -107,11 +107,80 @@
           type: text
           description: A human-readable description of the status of this operation
     - name: requestObject
-      type: text
+      type: group
       description: API object from the request, in JSON format
+      fields:
+        - name: spec
+          type: group
+          fields:
+            - name: type
+              type: keyword
+            - name: hostNetwork
+              type: boolean
+            - name: hostIPC
+              type: boolean
+            - name: hostPID
+              type: boolean
+            - name: volumes.hostPath
+              type: flattened
+            - name: containers
+              type: group
+              fields:
+                - name: image
+                  type: text
+                - name: volumeMounts
+                  type: flattened
+                - name: securityContext
+                  type: group
+                  fields:
+                    - name: privileged
+                      type: boolean
+                    - name: allowPrivilegeEscalation
+                      type: boolean
+                    - name: runasuser
+                      type: integer
+        - name: rules
+          dynamic: true
+          type: nested
     - name: responseObject
-      type: text
-      description: API object returned in the response, in JSON
+      type: group
+      description: API object returned in the response, in JSON format
+      fields:
+        - name: spec
+          type: group
+          fields:
+            - name: hostNetwork
+              type: boolean
+            - name: hostIPC
+              type: boolean
+            - name: hostPID
+              type: boolean
+            - name: volumes.hostPath
+              type: flattened
+            - name: restartPolicy
+              type: keyword
+            - name: containers
+              type: group
+              fields:
+                - name: volumeMounts
+                  type: flattened
+                - name: securityContext
+                  type: group
+                  fields:
+                    - name: privileged
+                      type: boolean
+                    - name: allowPrivilegeEscalation
+                      type: boolean
+                    - name: runasuser
+                      type: integer
+        - name: rules
+          dynamic: true
+          type: nested
+        - name: roleRef
+          type: group
+          fields:
+            - name: kind
+              type: keyword
     - name: requestReceivedTimestamp
       type: date
       description: Time the request reached the apiserver

@@ -1,9 +1,6 @@
 ---
 description: Pipeline for Security events
 processors:
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - convert:
       field: event.code
       type: string
@@ -15,6 +12,26 @@ processors:
       field: source.ip
       pattern: "::ffff:"
       replacement: ""
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
       ignore_missing: true
   - append:
       field: related.ip

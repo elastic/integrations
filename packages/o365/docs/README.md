@@ -1,6 +1,6 @@
 # Microsoft Office 365 Integration
 
-This integration is for Microsoft Office 365. It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the Office 365 Management Activity API.
+This integration is for [Microsoft Office 365](https://docs.microsoft.com/en-us/previous-versions/office/office-365-api/). It currently supports user, admin, system, and policy actions and events from Office 365 and Azure AD activity logs exposed by the Office 365 Management Activity API.
 
 ## Configuration
 
@@ -49,7 +49,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
@@ -233,6 +233,7 @@ An example event for `audit` looks as following:
 | o365.audit.ClientIP |  | keyword |
 | o365.audit.ClientIPAddress |  | keyword |
 | o365.audit.ClientInfoString |  | keyword |
+| o365.audit.ClientRequestId |  | keyword |
 | o365.audit.Comments |  | text |
 | o365.audit.CorrelationId |  | keyword |
 | o365.audit.CreationTime |  | keyword |

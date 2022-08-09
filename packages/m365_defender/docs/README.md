@@ -26,11 +26,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2020-09-06T12:07:55.32Z",
     "agent": {
-        "ephemeral_id": "73d632b1-bafb-4800-b431-b8180297db7d",
-        "id": "b4a8802d-e9ee-4bd6-9364-9d68f840d4e0",
+        "ephemeral_id": "c642e33c-9a0b-4d7b-8be4-0baa5bbbb9c5",
+        "id": "66ee0cf6-0f3a-4a85-bb44-eb9ba0cc0863",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "cloud": {
         "provider": "azure"
@@ -41,12 +41,12 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "b4a8802d-e9ee-4bd6-9364-9d68f840d4e0",
+        "id": "66ee0cf6-0f3a-4a85-bb44-eb9ba0cc0863",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.1.0"
     },
     "event": {
         "action": "InitialAccess",
@@ -59,7 +59,7 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-09-06T12:04:00Z",
         "id": "faf8edc936-85f8-a603-b800-08d8525cf099",
-        "ingested": "2022-03-22T08:22:25Z",
+        "ingested": "2022-05-17T07:46:27Z",
         "kind": "alert",
         "provider": "OfficeATP",
         "severity": 1,
@@ -192,6 +192,7 @@ An example event for `log` looks as following:
 | m365_defender.alerts.classification | The specification for the incident. The property values are: Unknown, FalsePositive, TruePositive or null. | keyword |
 | m365_defender.alerts.creationTime | Time when alert was first created. | date |
 | m365_defender.alerts.detectionSource | The service that initially detected the threat. | keyword |
+| m365_defender.alerts.detectorId | The detector id. | keyword |
 | m365_defender.alerts.determination | Specifies the determination of the incident. The property values are: NotAvailable, Apt, Malware, SecurityPersonnel, SecurityTesting, UnwantedSoftware, Other or null | keyword |
 | m365_defender.alerts.devices | The devices related to the investigation. | flattened |
 | m365_defender.alerts.entities.accountName | Account name of the related user. | keyword |
@@ -199,6 +200,7 @@ An example event for `log` looks as following:
 | m365_defender.alerts.entities.deliveryAction | The delivery status for the related email message. | keyword |
 | m365_defender.alerts.entities.deviceId | The unique ID of the device related to the event. | keyword |
 | m365_defender.alerts.entities.entityType | Entities that have been identified to be part of, or related to, a given alert. The properties values are: User, Ip, Url, File, Process, MailBox, MailMessage, MailCluster, Registry. | keyword |
+| m365_defender.alerts.entities.evidenceCreationTime | The evidence creation time. | date |
 | m365_defender.alerts.entities.ipAddress | The related IP address to the event. | keyword |
 | m365_defender.alerts.entities.mailboxAddress | The mail address of the related mailbox. | keyword |
 | m365_defender.alerts.entities.mailboxDisplayName | The display name of the related mailbox. | keyword |
@@ -206,15 +208,19 @@ An example event for `log` looks as following:
 | m365_defender.alerts.entities.registryHive | Reference to which Hive in registry the event is related to, if eventType is registry. Example: HKEY_LOCAL_MACHINE. | keyword |
 | m365_defender.alerts.entities.registryKey | Reference to the related registry key to the event. | keyword |
 | m365_defender.alerts.entities.registryValueType | Value type of the registry key/value pair related to the event. | keyword |
+| m365_defender.alerts.entities.remediationStatus | The remediation status. | keyword |
 | m365_defender.alerts.entities.securityGroupId | The Security Group ID for the user related to the email message. | keyword |
 | m365_defender.alerts.entities.securityGroupName | The Security Group Name for the user related to the email message. | keyword |
 | m365_defender.alerts.entities.sender | The sender for the related email message. | keyword |
 | m365_defender.alerts.entities.subject | The subject for the related email message. | keyword |
+| m365_defender.alerts.entities.userSid | The event user Sid. | keyword |
+| m365_defender.alerts.entities.verdict | The event verdict. | keyword |
 | m365_defender.alerts.incidentId | Unique identifier to represent the incident this alert is associated with. | keyword |
 | m365_defender.alerts.investigationId | The automated investigation id triggered by this alert. | keyword |
 | m365_defender.alerts.investigationState | Information on the investigation's current status. | keyword |
 | m365_defender.alerts.lastUpdatedTime | Time when alert was last updated. | date |
 | m365_defender.alerts.mitreTechniques | The attack techniques, as aligned with the MITRE ATT&CK™ framework. | keyword |
+| m365_defender.alerts.providerAlertId | The provider alert id. | keyword |
 | m365_defender.alerts.resolvedTime | Time when alert was resolved. | date |
 | m365_defender.alerts.severity | The severity of the related alert. | keyword |
 | m365_defender.alerts.status | Categorize alerts (as New, Active, or Resolved). | keyword |
@@ -222,10 +228,11 @@ An example event for `log` looks as following:
 | m365_defender.alerts.userSid | The SID of the related user | keyword |
 | m365_defender.assignedTo | Owner of the alert. | keyword |
 | m365_defender.classification | Specification of the alert. Possible values are: 'Unknown', 'FalsePositive', 'TruePositive'. | keyword |
-| m365_defender.comments | Comments attached to the related incident. | keyword |
+| m365_defender.comments | Comments attached to the related incident. | flattened |
 | m365_defender.determination | Specifies the determination of the incident. The property values are: NotAvailable, Apt, Malware, SecurityPersonnel, SecurityTesting, UnwantedSoftware, Other. | keyword |
 | m365_defender.incidentId | Unique identifier to represent the incident. | keyword |
 | m365_defender.incidentName | Name of the Incident. | keyword |
+| m365_defender.incidentUri | The incident URI. | keyword |
 | m365_defender.investigationState | The current state of the Investigation. | keyword |
 | m365_defender.redirectIncidentId | Only populated in case an incident is being grouped together with another incident, as part of the incident processing logic. | keyword |
 | m365_defender.status | Specifies the current status of the alert. Possible values are: 'Unknown', 'New', 'InProgress' and 'Resolved'. | keyword |

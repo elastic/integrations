@@ -1,0 +1,46 @@
+---
+description: Pipeline for parsing Oracle WebLogic ThreadPool metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: "8.2.0"
+      ignore_failure: true
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - rename:
+      field: jolokia.metrics
+      target_field: oracle_weblogic
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.type
+      value: info
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: metric
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: web
+      ignore_failure: true
+  - set:
+      field: event.module
+      value: oracle_weblogic
+      ignore_failure: true
+  - set:
+      field: event.dataset
+      value: oracle_weblogic.threadpool
+      ignore_failure: true
+  - remove:
+      field:
+        - jolokia
+        - oracle_weblogic.mbean
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"

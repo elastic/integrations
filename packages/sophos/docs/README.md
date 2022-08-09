@@ -4,12 +4,12 @@ The Sophos integration collects and parses logs from Sophos Products.
 
 Currently it accepts logs in syslog format or from a file for the following devices:
 
-- `utm` dataset: supports Astaro Security Gateway logs.
-- `xg` dataset: supports Sophos XG SFOS logs.
+- `utm` dataset: supports [Unified Threat Management](https://www.sophos.com/en-us/support/documentation/sophos-utm) (formerly known as Astaro Security Gateway) logs.
+- `xg` dataset: supports [Sophos XG SFOS logs](https://docs.sophos.com/nsg/sophos-firewall/17.5/Help/en-us/webhelp/onlinehelp/nsg/sfos/concepts/Logs.html).
 
 To configure a remote syslog destination, please reference the [SophosXG/SFOS Documentation](https://community.sophos.com/kb/en-us/123184).
 
-The syslog format choosen should be `Default`.
+The syslog format chosen should be `Default`.
 
 ## Compatibility
 
@@ -20,7 +20,7 @@ Versions above this are expected to work but have not been tested.
 
 ### Utm log
 
-The `utm` dataset collects Astaro Security Gateway logs.
+The `utm` dataset collects Unified Threat Management logs.
 
 **Exported fields**
 
@@ -101,7 +101,7 @@ The `utm` dataset collects Astaro Security Gateway logs.
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -840,7 +840,9 @@ The `utm` dataset collects Astaro Security Gateway logs.
 
 ### XG log
 
-This is the Sophos `xg` dataset.
+This is the Sophos `xg` dataset. Reference information about the log formats
+can be found in the [Sophos syslog guide](
+https://docs.sophos.com/nsg/sophos-firewall/18.5/PDF/SF%20syslog%20guide%2018.5.pdf).
 
 An example event for `xg` looks as following:
 
@@ -848,14 +850,11 @@ An example event for `xg` looks as following:
 {
     "@timestamp": "2016-12-02T18:50:20.000Z",
     "agent": {
-        "ephemeral_id": "f43c7a66-9b0a-475c-89c5-16218fb4d7b5",
-        "id": "9a015053-a5c0-4959-99ab-2b6556a2a396",
+        "ephemeral_id": "b1eb8b45-bca7-40b1-b2f4-9d5c87e449bc",
+        "id": "dee3c982-4bd2-4c06-b207-fe0ce9ef19c5",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
-    },
-    "client": {
-        "ip": "10.108.108.49"
+        "version": "8.1.2"
     },
     "data_stream": {
         "dataset": "sophos.xg",
@@ -863,12 +862,12 @@ An example event for `xg` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "9a015053-a5c0-4959-99ab-2b6556a2a396",
-        "snapshot": true,
-        "version": "8.0.0"
+        "id": "dee3c982-4bd2-4c06-b207-fe0ce9ef19c5",
+        "snapshot": false,
+        "version": "8.1.2"
     },
     "event": {
         "action": "alert",
@@ -876,9 +875,9 @@ An example event for `xg` looks as following:
         "category": [
             "network"
         ],
-        "code": "058420116010",
+        "code": "16010",
         "dataset": "sophos.xg",
-        "ingested": "2022-01-25T18:07:40Z",
+        "ingested": "2022-04-20T20:13:02Z",
         "kind": "event",
         "outcome": "success",
         "severity": 1,
@@ -893,7 +892,7 @@ An example event for `xg` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.25.0.7:50257"
+            "address": "172.31.0.8:48162"
         }
     },
     "observer": {
@@ -922,9 +921,9 @@ An example event for `xg` looks as following:
             "direction": "in",
             "file_name": "cgi_echo.pl",
             "log_component": "Web Content Policy",
+            "log_id": "058420116010",
             "log_subtype": "Alert",
             "log_type": "Content Filtering",
-            "message_id": "16010",
             "site_category": "Information Technology",
             "transaction_id": "e4a127f7-a850-477c-920e-a471b38727c1",
             "user": "gi123456",
@@ -946,12 +945,6 @@ An example event for `xg` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| client.bytes | Bytes sent from the client to the server. | long |
-| client.ip | IP address of the client (IPv4 or IPv6). | ip |
-| client.mac | MAC address of the client. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| client.nat.port | Translated port of source based NAT sessions (e.g. internal client to internet). Typically connections traversing load balancers, firewalls, or routers. | long |
-| client.packets | Packets sent from the client to the server. | long |
-| client.port | Port of the client. | long |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -972,6 +965,7 @@ An example event for `xg` looks as following:
 | destination.as.organization.name | Organization name. | keyword |
 | destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | destination.geo.city_name | City name. | keyword |
 | destination.geo.continent_name | Name of the continent. | keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
@@ -988,6 +982,10 @@ An example event for `xg` looks as following:
 | destination.port | Port of the destination. | long |
 | destination.user.email | User email address. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.code | Identification code for this event, if one exists. Some event sources use event codes to identify messages unambiguously, regardless of message language or wording adjustments over time. An example of this is the Windows Event ID. | keyword |
@@ -1003,6 +1001,7 @@ An example event for `xg` looks as following:
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
+| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
@@ -1046,12 +1045,14 @@ An example event for `xg` looks as following:
 | log.source.address |  | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.egress.zone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
+| observer.hostname | Hostname of the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.product | The product name of the observer. | keyword |
@@ -1066,25 +1067,16 @@ An example event for `xg` looks as following:
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
 | rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
-| server.bytes | Bytes sent from the server to the client. | long |
-| server.ip | IP address of the server (IPv4 or IPv6). | ip |
-| server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| server.nat.port | Translated port of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | long |
-| server.packets | Packets sent from the server to the client. | long |
-| server.port | Port of the server. | long |
-| sophos.xg.Configuration | Configuration | float |
-| sophos.xg.FTP_direction | Direction of FTP transfer: Upload or Download | keyword |
-| sophos.xg.FTP_url | FTP URL from which virus was downloaded | keyword |
-| sophos.xg.Mode | Mode | keyword |
-| sophos.xg.PHPSESSID | PHPSESSID | keyword |
-| sophos.xg.Reports | Reports | float |
-| sophos.xg.Signature | Signature | float |
-| sophos.xg.SysLog_SERVER_NAME | SysLog SERVER NAME | keyword |
-| sophos.xg.Temp | Temp | float |
 | sophos.xg.action | Event Action | keyword |
 | sophos.xg.activityname | Web policy activity that matched and caused the policy result. | keyword |
-| sophos.xg.ap | ap | keyword |
+| sophos.xg.ap | Access Point Serial ID or LocalWifi0 or LocalWifi1. | keyword |
+| sophos.xg.app_category | Name of the category under which application falls | keyword |
+| sophos.xg.app_filter_policy_id | Application filter policy ID applied on the traffic | keyword |
 | sophos.xg.app_is_cloud | Application is Cloud | keyword |
+| sophos.xg.app_name | Application name | keyword |
+| sophos.xg.app_resolved_by | Application is resolved by signature or synchronized application | keyword |
+| sophos.xg.app_risk | Risk level assigned to the application | keyword |
+| sophos.xg.app_technology | Technology of the application | keyword |
 | sophos.xg.appfilter_policy_id | Application Filter policy applied on the traffic | integer |
 | sophos.xg.application | Application name | keyword |
 | sophos.xg.application_category | Application is resolved by signature or synchronized application | keyword |
@@ -1103,14 +1095,17 @@ An example event for `xg` looks as following:
 | sophos.xg.classification | Signature classification | keyword |
 | sophos.xg.client_host_name | Client host name | keyword |
 | sophos.xg.client_physical_address | Client physical address | keyword |
-| sophos.xg.clients_conn_ssid | clients connection ssid | keyword |
+| sophos.xg.clients_conn_ssid | Number of client connected to the SSID. | long |
 | sophos.xg.collisions | collisions | long |
+| sophos.xg.con_event | Event Start/Stop | keyword |
 | sophos.xg.con_id | Unique identifier of connection | integer |
+| sophos.xg.configuration | Configuration | float |
 | sophos.xg.conn_id | Unique identifier of connection | integer |
 | sophos.xg.connectionname | Connectionname | keyword |
 | sophos.xg.connectiontype | Connectiontype | keyword |
 | sophos.xg.connevent | Event on which this log is generated | keyword |
 | sophos.xg.connid | Connection ID | keyword |
+| sophos.xg.content_type | Type of the content | keyword |
 | sophos.xg.contenttype | Type of the content | keyword |
 | sophos.xg.context_match | Context Match | keyword |
 | sophos.xg.context_prefix | Content Prefix | keyword |
@@ -1120,6 +1115,7 @@ An example event for `xg` looks as following:
 | sophos.xg.destinationip | Original destination IP address of traffic | ip |
 | sophos.xg.device | device | keyword |
 | sophos.xg.device_id | Serial number of the device | keyword |
+| sophos.xg.device_model | Model number of the device | keyword |
 | sophos.xg.device_name | Model number of the device | keyword |
 | sophos.xg.dictionary_name | Dictionary Name | keyword |
 | sophos.xg.dir_disp | TPacket direction. Possible values:“org”, “reply”, “” | keyword |
@@ -1131,9 +1127,8 @@ An example event for `xg` looks as following:
 | sophos.xg.dst_domainname | Receiver domain name | keyword |
 | sophos.xg.dst_ip | Original destination IP address of traffic | ip |
 | sophos.xg.dst_port | Original destination port of TCP and UDP traffic | integer |
+| sophos.xg.dst_zone_type | Type of destination zone | keyword |
 | sophos.xg.dstdomain | Destination Domain | keyword |
-| sophos.xg.dstzone | Name of destination zone | keyword |
-| sophos.xg.dstzonetype | Type of destination zone, e.g., WAN | keyword |
 | sophos.xg.duration | Durability of traffic (seconds) | long |
 | sophos.xg.email_subject | Email Subject | keyword |
 | sophos.xg.ep_uuid | Endpoint UUID | keyword |
@@ -1152,10 +1147,16 @@ An example event for `xg` looks as following:
 | sophos.xg.filesize | Size of the file that contained virus | integer |
 | sophos.xg.free | free | integer |
 | sophos.xg.from_email_address | Sender email address | keyword |
+| sophos.xg.ftp_direction | Direction of FTP transfer: Upload or Download | keyword |
+| sophos.xg.ftp_url | FTP URL from which virus was downloaded | keyword |
 | sophos.xg.ftpcommand | FTP command used when virus was found | keyword |
 | sophos.xg.fw_rule_id | Firewall Rule ID which is applied on the traffic | integer |
+| sophos.xg.fw_rule_type | Firewall rule type which is applied on the traffic | keyword |
 | sophos.xg.hb_health | Heartbeat status | keyword |
+| sophos.xg.hb_status | Heartbeat status | keyword |
 | sophos.xg.host | Host | keyword |
+| sophos.xg.http_category | HTTP Category | keyword |
+| sophos.xg.http_category_type | HTTP Category Type | keyword |
 | sophos.xg.httpresponsecode | code of HTTP response | long |
 | sophos.xg.iap | Internet Access policy ID applied on the traffic | keyword |
 | sophos.xg.icmp_code | ICMP code of ICMP traffic | keyword |
@@ -1167,32 +1168,36 @@ An example event for `xg` looks as following:
 | sophos.xg.interface | interface | keyword |
 | sophos.xg.ipaddress | Ipaddress | keyword |
 | sophos.xg.ips_policy_id | IPS policy ID applied on the traffic | integer |
+| sophos.xg.lease_time | Lease Time | keyword |
 | sophos.xg.localgateway | Localgateway | keyword |
 | sophos.xg.localnetwork | Localnetwork | keyword |
 | sophos.xg.log_component | Component responsible for logging e.g. Firewall rule | keyword |
 | sophos.xg.log_id | Unique 12 characters code (0101011) | keyword |
 | sophos.xg.log_subtype | Sub type of event | keyword |
 | sophos.xg.log_type | Type of event e.g. firewall event | keyword |
+| sophos.xg.log_version | Log Version | keyword |
 | sophos.xg.login_user | ATP login user | keyword |
 | sophos.xg.mailid | mailid | keyword |
 | sophos.xg.mailsize | mailsize | integer |
 | sophos.xg.message | Message | keyword |
-| sophos.xg.message_id | Message ID | keyword |
+| sophos.xg.mode | Mode | keyword |
+| sophos.xg.nat_rule_id | NAT Rule ID | keyword |
 | sophos.xg.newversion | Newversion | keyword |
 | sophos.xg.oldversion | Oldversion | keyword |
 | sophos.xg.out_interface | Interface for outgoing traffic, e.g., Port B | keyword |
 | sophos.xg.override_authorizer | Override authorizer | keyword |
 | sophos.xg.override_name | Override name | keyword |
 | sophos.xg.override_token | Override token | keyword |
+| sophos.xg.phpsessid | PHP session ID | keyword |
 | sophos.xg.platform | Platform of the traffic. | keyword |
 | sophos.xg.policy_type | Policy type applied to the traffic | keyword |
 | sophos.xg.priority | Severity level of traffic | keyword |
 | sophos.xg.protocol | Protocol number of traffic | keyword |
+| sophos.xg.qualifier | Qualifier | keyword |
 | sophos.xg.quarantine | Path and filename of the file quarantined | keyword |
 | sophos.xg.quarantine_reason | Quarantine reason | keyword |
 | sophos.xg.querystring | querystring | keyword |
 | sophos.xg.raw_data | Raw data | keyword |
-| sophos.xg.reason | Reason why the record was detected as spam/malicious | keyword |
 | sophos.xg.received_pkts | Total number of packets received | long |
 | sophos.xg.receiveddrops | received drops | long |
 | sophos.xg.receivederrors | received errors | keyword |
@@ -1202,13 +1207,16 @@ An example event for `xg` looks as following:
 | sophos.xg.referer | Referer | keyword |
 | sophos.xg.remote_ip | Remote IP | ip |
 | sophos.xg.remotenetwork | remotenetwork | keyword |
-| sophos.xg.responsetime | Responsetime | long |
+| sophos.xg.reported_host | Reported Host | keyword |
+| sophos.xg.reported_ip | Reported IP | keyword |
+| sophos.xg.reports | Reports | float |
 | sophos.xg.rule_priority | Priority of IPS policy | keyword |
 | sophos.xg.sent_bytes | Total number of bytes sent | long |
 | sophos.xg.sent_pkts | Total number of packets sent | long |
 | sophos.xg.server | Server | keyword |
 | sophos.xg.sessionid | Sessionid | keyword |
 | sophos.xg.sha1sum | SHA1 checksum of the item being analyzed | keyword |
+| sophos.xg.signature | Signature | float |
 | sophos.xg.signature_id | Signature ID | keyword |
 | sophos.xg.signature_msg | Signature messsage | keyword |
 | sophos.xg.site_category | Site Category | keyword |
@@ -1221,9 +1229,8 @@ An example event for `xg` looks as following:
 | sophos.xg.src_ip | Original source IP address of traffic | ip |
 | sophos.xg.src_mac | Original source MAC address of traffic | keyword |
 | sophos.xg.src_port | Original source port of TCP and UDP traffic | integer |
-| sophos.xg.srczone | Name of source zone | keyword |
-| sophos.xg.srczonetype | Type of source zone, e.g., LAN | keyword |
-| sophos.xg.ssid | ssid | keyword |
+| sophos.xg.src_zone_type | Type of source zone | keyword |
+| sophos.xg.ssid | Configured SSID name. | keyword |
 | sophos.xg.start_time | Start time | date |
 | sophos.xg.starttime | Starttime | date |
 | sophos.xg.status | Ultimate status of traffic – Allowed or Denied | keyword |
@@ -1232,6 +1239,7 @@ An example event for `xg` looks as following:
 | sophos.xg.syslog_server_name | Syslog server name | keyword |
 | sophos.xg.system_cpu | system | float |
 | sophos.xg.target | Platform of the traffic. | keyword |
+| sophos.xg.temp | Temp | float |
 | sophos.xg.threatname | ATP threatname | keyword |
 | sophos.xg.timestamp | timestamp | date |
 | sophos.xg.timezone | Time (hh:mm:ss) when the event occurred | keyword |
@@ -1239,7 +1247,7 @@ An example event for `xg` looks as following:
 | sophos.xg.total_memory | Total Memory | integer |
 | sophos.xg.trans_dst_ip | Translated destination IP address for outgoing traffic | ip |
 | sophos.xg.trans_dst_port | Translated destination port for outgoing traffic | integer |
-| sophos.xg.trans_src_ ip | Translated source IP address for outgoing traffic | ip |
+| sophos.xg.trans_src_ip | Translated source IP address for outgoing traffic | ip |
 | sophos.xg.trans_src_port | Translated source port for outgoing traffic | integer |
 | sophos.xg.transaction_id | Transaction ID | keyword |
 | sophos.xg.transactionid | Transaction ID of the AV scan. | keyword |
@@ -1252,14 +1260,16 @@ An example event for `xg` looks as following:
 | sophos.xg.upload_file_type | Upload file type | keyword |
 | sophos.xg.url | URL from which virus was downloaded | keyword |
 | sophos.xg.used | used | integer |
+| sophos.xg.used_quota | Used Quota | keyword |
 | sophos.xg.user | User | keyword |
 | sophos.xg.user_cpu | system | float |
 | sophos.xg.user_gp | Group name to which the user belongs. | keyword |
 | sophos.xg.user_group | Group name to which the user belongs | keyword |
 | sophos.xg.user_name | user_name | keyword |
-| sophos.xg.users | users | keyword |
+| sophos.xg.users | Number of users from System Health / Live User events. | long |
 | sophos.xg.vconn_id | Connection ID of the master connection | integer |
 | sophos.xg.virus | virus name | keyword |
+| sophos.xg.web_policy_id | Web policy ID | keyword |
 | sophos.xg.website | Website | keyword |
 | sophos.xg.xss | related XSS caught by the WAF | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |

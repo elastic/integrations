@@ -1,0 +1,83 @@
+{
+    "attributes": {
+        "columns": [
+            "client.ip",
+            "cisco_ise.log.operation_message.text",
+            "cisco_ise.log.message.description",
+            "cisco_ise.log.category.name"
+        ],
+        "description": "",
+        "grid": {},
+        "hideChart": false,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "cisco_ise.log.category.name",
+                            "negate": false,
+                            "params": [
+                                "CISE_Failed_Attempts",
+                                "CISE_Passed_Authentications"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "cisco_ise.log.category.name": "CISE_Failed_Attempts"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "cisco_ise.log.category.name": "CISE_Passed_Authentications"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": "event.dataset : \"cisco_ise.log\" "
+                }
+            }
+        },
+        "sort": [
+            [
+                "@timestamp",
+                "desc"
+            ]
+        ],
+        "title": "AAA Audit search"
+    },
+    "coreMigrationVersion": "7.17.0",
+    "id": "cisco_ise-d1ba7b80-a075-11ec-a0a2-1598702abf83",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "search"
+}

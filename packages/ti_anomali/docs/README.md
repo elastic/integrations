@@ -2,16 +2,15 @@
 
 The Anomali integration supports the following datasets.
 
-- `limo` dataset: Support for Anomali Limo, a freely available Threat Intelligence service
-- `threatstream` dataset: Support for Anomali ThreatStream, a commercial Threat Intelligence service.
+- `limo` dataset: Support for [Anomali Limo](https://www.anomali.com/resources/limo), a freely available Threat Intelligence service
+- `threatstream` dataset: Support for [Anomali ThreatStream](https://www.anomali.com/products/threatstream), a commercial Threat Intelligence service.
 
 ## Logs
 
 ### Anomali Limo
 
 Anomali Limo offers multiple sources called collections. Each collection has a specific ID, which
-then fits into the url used in this configuration. A list of different
-collections can be found using the default guest/guest credentials at https://limo.anomali.com/api/v1/taxii2/feeds/collections/[Limo Collections].
+then fits into the url used in this configuration. A list of different collections can be found using the default guest/guest credentials at [Limo Collections](https://limo.anomali.com/api/v1/taxii2/feeds/collections/).
 
 An example if you want to use the feed with ID 42, the URL to configure would end up like this:
 `https://limo.anomali.com/api/v1/taxii2/feeds/collections/41/objects`
@@ -22,11 +21,11 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "8efe1113-788d-47cf-8e81-b0ebadc3f5ba",
-        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "ephemeral_id": "5cec6801-c545-4f74-be69-0fd865dc1788",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.3.2"
     },
     "anomali": {
         "limo": {
@@ -44,19 +43,19 @@ An example event for `limo` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-01-25T02:58:03.288Z",
+        "created": "2022-08-01T15:40:11.538Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2022-01-25T02:58:04Z",
+        "ingested": "2022-08-01T15:40:12Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -68,12 +67,7 @@ An example event for `limo` looks as following:
         "preserve_original_event",
         "forwarded",
         "anomali-limo"
-    ],
-    "threat": {
-        "indicator": {
-            "type": "unknown"
-        }
-    }
+    ]
 }
 ```
 
@@ -115,6 +109,7 @@ An example event for `limo` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -150,7 +145,7 @@ An example event for `limo` looks as following:
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
@@ -165,55 +160,43 @@ An example event for `limo` looks as following:
 
 ### Anomali Threatstream
 
-To configure the ThreatStream integration you first need to define an output
-in the Anomali ThreatStream Integrator using the Elastic SDK provided by Anomali.
-It will deliver indicators via HTTP or HTTPS to a elastic-agent instance running this integration.
+This integration requires additional software, the _Elastic_ _Extension,_
+to connect the Anomali ThreatStream with this integration. It's available
+at the [ThreatStream download page.](https://ui.threatstream.com/downloads)
 
-Configure an Integrator output with the following settings:
-
-* Indicator Filter: `*` (or use any desired filter).
-* SDK Executable Command: `/path/to/python /path/to/anomali-sdk/main.py`.
-  Adjust the paths to the python executable and the directory where the Elastic SDK
-  has been unpacked.
-* Metadata in JSON Format: `{"url": "https://elastic-agent:8080/", "server_certificate": "/path/to/cert.pem", "secret": "my secret"}`.
-    - `url`: Use the host and port where the integration will be running, and `http` or `https` accordingly.
-    - `server_certificate`: If using HTTPS, absolute path to the server certificate. Otherwise don't set
-        this field.
-    - `secret`: A shared secret string to authenticate messages between the SDK and the integration.
-
+Please refer to the documentation included with the Extension for a detailed
+explanation on how to configure the Anomali ThreatStream to send indicator
+to this integration.
 
 An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-25T03:00:07.167Z",
+    "@timestamp": "2022-08-01T15:43:02.944Z",
     "agent": {
-        "ephemeral_id": "764c192d-9491-492a-b9e0-722495b33397",
-        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "ephemeral_id": "633e6483-2625-491c-9640-b4e480191a49",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.3.2"
     },
     "anomali": {
         "threatstream": {
             "classification": "public",
-            "confidence": 56,
-            "detail2": "imported by user 723",
-            "id": "1785659799",
-            "import_session_id": "244",
-            "itype": "mal_md5",
-            "md5": "6466e2",
-            "resource_uri": "/api/v1/intelligence/P44706407813/",
-            "severity": "very-high",
-            "source_feed_id": "3759",
+            "confidence": 20,
+            "detail2": "imported by user 184",
+            "id": "3135167627",
+            "import_session_id": "1400",
+            "itype": "mal_domain",
+            "resource_uri": "/api/v1/intelligence/P46279656657/",
+            "severity": "high",
+            "source_feed_id": "3143",
             "state": "active",
             "trusted_circle_ids": [
-                "439",
-                "942",
-                "801"
+                "122"
             ],
-            "update_id": "3898969521",
-            "value_type": "md5"
+            "update_id": "3786618776",
+            "value_type": "domain"
         }
     },
     "data_stream": {
@@ -222,21 +205,21 @@ An example event for `threatstream` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "9cb9fa70-f3e9-45d8-b1cb-61425bd93e1a",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2022-01-25T03:00:08Z",
+        "ingested": "2022-08-01T15:43:03Z",
         "kind": "enrichment",
-        "original": "{\"classification\":\"public\",\"confidence\":56,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 723\",\"id\":1785659799,\"import_session_id\":244,\"itype\":\"mal_md5\",\"md5\":\"6466e2\",\"resource_uri\":\"/api/v1/intelligence/P44706407813/\",\"severity\":\"very-high\",\"source\":\"Default Organization\",\"source_feed_id\":3759,\"state\":\"active\",\"trusted_circle_ids\":\"439,942,801\",\"update_id\":3898969521,\"value_type\":\"md5\"}",
-        "severity": 9,
+        "original": "{\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
+        "severity": 7,
         "type": "indicator"
     },
     "input": {
@@ -249,16 +232,32 @@ An example event for `threatstream` looks as following:
     ],
     "threat": {
         "indicator": {
-            "confidence": "Med",
-            "first_seen": "2020-10-08T12:22:16.000Z",
+            "as": {
+                "organization": {
+                    "name": "OVH Hosting"
+                }
+            },
+            "confidence": "Low",
+            "first_seen": "2020-10-08T12:21:50.000Z",
+            "geo": {
+                "country_iso_code": "FR",
+                "location": {
+                    "lat": -49.1,
+                    "lon": 94.4
+                }
+            },
+            "ip": "89.160.20.156",
             "last_seen": "2020-10-08T12:24:42.000Z",
             "marking": {
                 "tlp": [
-                    "White"
+                    "WHITE"
                 ]
             },
             "provider": "Default Organization",
-            "type": "file"
+            "type": "domain-name",
+            "url": {
+                "domain": "d4xgfj.example.net"
+            }
         }
     }
 }
@@ -305,6 +304,7 @@ An example event for `threatstream` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -340,7 +340,7 @@ An example event for `threatstream` looks as following:
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.as.organization.name | Organization name. | keyword |
 | threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
-| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. Expected values are:   \* Not Specified   \* None   \* Low   \* Medium   \* High | keyword |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
@@ -348,13 +348,12 @@ An example event for `threatstream` looks as following:
 | threat.indicator.file.hash.sha512 | SHA512 hash. | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
-| threat.indicator.geo.location.lat | Longitude and latitude. | geo_point |
-| threat.indicator.geo.location.lon | Longitude and latitude. | geo_point |
+| threat.indicator.geo.location | Longitude and latitude. | geo_point |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. Recommended values are:   \* WHITE   \* GREEN   \* AMBER   \* RED | keyword |
+| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
@@ -365,3 +364,4 @@ An example event for `threatstream` looks as following:
 | threat.indicator.url.port | Port of the request, such as 443. | long |
 | threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | threat.indicator.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+
