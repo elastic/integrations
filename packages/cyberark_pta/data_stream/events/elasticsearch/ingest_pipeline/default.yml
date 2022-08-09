@@ -5,31 +5,35 @@ processors:
   - set:
       field: ecs.version
       value: '8.3.0'
-  - append:
+  - set:
       field: event.action
       value: "{{cef.extensions.deviceCustomString5}}"
-      allow_duplicates: false
       if: "ctx?.cef?.extensions?.deviceCustomString5 != null && ctx?.cef?.extensions?.deviceCustomString5 != ''"
-  - append:
-      field: event.created
+  - set:
+      field: '@timestamp'
       value: "{{cef.extensions.deviceCustomDate1}}"
-      allow_duplicates: false
-      if: "ctx?.cef?.extensions?.deviceCustomDate1 != null && ctx?.cef?.extensions?.deviceCustomDate1 != ''"
-  - append:
+      ignore_empty_value: true
+      override: true
+  - set:
       field: event.id
       value: "{{cef.extensions.deviceCustomString2}}"
-      allow_duplicates: false
       if: "ctx?.cef?.extensions?.deviceCustomString2 != null && ctx?.cef?.extensions?.deviceCustomString2 != ''"
-  - append:
+  - set:
       field: event.reference
       value: "{{cef.extensions.deviceCustomString3}}"
-      allow_duplicates: false
       if: "ctx?.cef?.extensions?.deviceCustomString3 != null && ctx?.cef?.extensions?.deviceCustomString3 != ''"
-  - append:
+  - set:
       field: event.url
       value: "{{cef.extensions.deviceCustomString4}}"
-      allow_duplicates: false
       if: "ctx?.cef?.extensions?.deviceCustomString4 != null && ctx?.cef?.extensions?.deviceCustomString4 != ''"
+  - set: 
+      field: cyberark_pta.log.event_type
+      value: "{{cef.device.event_class_id}}"
+      if: "ctx?.cef?.device?.event_class_id != null && ctx?.cef?.device?.event_class_id != ''"
+  - rename:
+      field: message
+      target_field: event.reason
+      if: 'ctx.event?.reason == null'
 
   # cleanup 'None' for source or destination ip
   - remove:
