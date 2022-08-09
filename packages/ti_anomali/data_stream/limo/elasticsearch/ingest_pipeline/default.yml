@@ -6,7 +6,7 @@ processors:
   ####################
   - set:
       field: ecs.version
-      value: "8.3.0"
+      value: '8.4.0'
   - set:
       field: event.kind
       value: enrichment
@@ -84,6 +84,7 @@ processors:
       field: _tmp.threattype
       target_field: threat.indicator.type
       ignore_missing: true
+      if: ctx._tmp?.threattype != null && ['autonomous-system', 'artifact', 'directory', 'domain-name', 'email-addr', 'file', 'ipv4-addr', 'ipv6-addr', 'mac-addr', 'mutex', 'port', 'process', 'software', 'url', 'user-account', 'windows-registry-key', 'x509-certificate'].contains(ctx._tmp.threattype)
   - rename:
       field: _tmp.threatvalue
       target_field: threat.indicator.ip
@@ -109,10 +110,6 @@ processors:
       target_field: threat.indicator.url.domain
       ignore_missing: true
       if: ctx.threat?.indicator?.type == 'domain-name'
-  - set:
-      field: threat.indicator.type
-      value: unknown
-      if: ctx.threat?.indicator?.type == null
   - foreach:
       field: anomali.limo.labels
       ignore_missing: true
