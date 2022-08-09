@@ -147,12 +147,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "15ffa48e-049a-4ead-9716-cea0236748c4",
-        "hostname": "docker-fleet-agent",
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "ephemeral_id": "9edf0b6c-05b7-451e-83ad-13b2a23bf4e5",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.2.3"
     },
     "client": {
         "user": {
@@ -174,9 +173,9 @@ An example event for `audit` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "df142714-8028-4ef0-a80c-4eb03051c084",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.2.3"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -185,10 +184,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2022-05-20T07:25:00.534Z",
+        "created": "2022-06-28T02:45:52.230Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2022-05-20T07:25:01Z",
+        "ingested": "2022-06-28T02:45:53Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -199,9 +198,6 @@ An example event for `audit` looks as following:
     },
     "gcp": {
         "audit": {
-            "authentication_info": {
-                "principal_email": "xxx@xxx.xxx"
-            },
             "authorization_info": [
                 {
                     "granted": true,
@@ -213,13 +209,9 @@ An example event for `audit` looks as following:
                     }
                 }
             ],
-            "method_name": "beta.compute.instances.aggregatedList",
             "num_response_items": 61,
             "request": {
                 "@type": "type.googleapis.com/compute.instances.aggregatedList"
-            },
-            "request_metadata": {
-                "caller_supplied_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:71.0) Gecko/20100101 Firefox/71.0,gzip(gfe),gzip(gfe)"
             },
             "resource_location": {
                 "current_locations": [
@@ -237,9 +229,8 @@ An example event for `audit` looks as following:
                     "uid": "2beff34a-945f-11ea-bacf-42010a80007f"
                 },
                 "kind": "Status",
-                "status": "Success"
+                "status_value": "Success"
             },
-            "service_name": "compute.googleapis.com",
             "type": "type.googleapis.com/google.cloud.audit.AuditLog"
         }
     },

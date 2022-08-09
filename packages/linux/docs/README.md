@@ -5,7 +5,7 @@ The Linux Metrics integration allows you to monitor Linux servers.
 Use the Linux Metrics integration to collect low-level metrics.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
-For example, if you wanted to know ___, you could install the Linux Metrics integration to send ____ metrics to Elastic.
+For example, you could install the Linux Metrics integration to send metrics to Elastic.
 Then, you could view real-time changes to service status in Kibana's _[Metrics Linux] Host Services Overview_ dashboard.
 
 ## Data streams
