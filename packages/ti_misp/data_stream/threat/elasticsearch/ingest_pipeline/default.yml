@@ -6,7 +6,7 @@ processors:
   ####################
   - set:
       field: ecs.version
-      value: "8.3.0"
+      value: '8.4.0'
   - set:
       field: event.kind
       value: enrichment
@@ -295,17 +295,11 @@ processors:
            .collect(Collectors.toList());
         def tlpTags = tags.stream()
            .filter(t -> t.startsWith('tlp:'))
-           .map(t -> t.replace('tlp:', ''))
+           .map(t -> t.replace('tlp:', '').toUpperCase())
            .collect(Collectors.toList());
 
         ctx.tags = tags;
         ctx.threat.indicator.marking = [ 'tlp': tlpTags ];
-
-  # Setting indicator type to unknown if it does not match anything
-  - set:
-      field: threat.indicator.type
-      value: unknown
-      if: ctx.threat?.indicator?.type == null
 
   #################
   # Convert types #
@@ -359,7 +353,7 @@ processors:
       field:
         - misp.attribute.value
       ignore_missing: true
-      if: ctx.threat?.indicator?.type != 'unknown'
+      if: ctx.threat?.indicator?.type != null
   - remove:
       field:
         # This removes a number of fields that may be wanted in the future when

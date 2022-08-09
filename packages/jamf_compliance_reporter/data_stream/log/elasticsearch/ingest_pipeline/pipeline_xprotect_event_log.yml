@@ -1,0 +1,231 @@
+---
+description: Pipeline for Jamf Compliance Reporter xprotect event logs.
+processors:
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.activity_identifier
+          value: '{{{_ingest._value.activityIdentifier}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - convert:
+      field: jamf_compliance_reporter.log.event_attributes.activity_identifier
+      target_field: jamf_compliance_reporter.log.event_attributes.activity_identifier
+      type: string
+      ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        foreach:
+          field: _ingest._value.backtrace.frames
+          processor:
+            append:
+              field: jamf_compliance_reporter.log.event_attributes.backtrace.frames.image_offset
+              value: '{{{_ingest._value.imageOffset}}}'
+              allow_duplicates: false
+              ignore_failure: true
+  - convert:
+      field: jamf_compliance_reporter.log.event_attributes.backtrace.frames.image_offset
+      target_field: jamf_compliance_reporter.log.event_attributes.backtrace.frames.image_offset
+      type: long
+      ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        foreach:
+          field: _ingest._value.backtrace.frames
+          processor:
+            append:
+              field: jamf_compliance_reporter.log.event_attributes.backtrace.frames.image_uuid
+              value: '{{{_ingest._value.imageUUID}}}'
+              allow_duplicates: false
+              ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.category
+          value: '{{{_ingest._value.category}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.event.message
+          value: '{{{_ingest._value.eventMessage}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.event.type
+          value: '{{{_ingest._value.eventType}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.format_string
+          value: '{{{_ingest._value.formatString}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        convert:
+          field: _ingest._value.machTimestamp
+          target_field: jamf_compliance_reporter.log.event_attributes.mach_timestamp
+          type: string
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: event.type
+          value: '{{{_ingest._value.messageType}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - lowercase:
+      field: event.type
+      ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.parent_activity_identifier
+          value: '{{{_ingest._value.parentActivityIdentifier}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - convert:
+      field: jamf_compliance_reporter.log.event_attributes.parent_activity_identifier
+      target_field: jamf_compliance_reporter.log.event_attributes.parent_activity_identifier
+      type: string
+      ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.process.id
+          value: '{{{_ingest._value.processID}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - convert:
+      field: jamf_compliance_reporter.log.event_attributes.process.id
+      target_field: jamf_compliance_reporter.log.event_attributes.process.id
+      type: long
+      ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.process.image.path
+          value: '{{{_ingest._value.processImagePath}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.process.image.uuid
+          value: '{{{_ingest._value.processImageUUID}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.sender.image.path
+          value: '{{{_ingest._value.senderImagePath}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.sender.image.uuid
+          value: '{{{_ingest._value.senderImageUUID}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.sender.program_counter
+          value: '{{{_ingest._value.senderProgramCounter}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - convert:
+      field: jamf_compliance_reporter.log.event_attributes.sender.program_counter
+      target_field: jamf_compliance_reporter.log.event_attributes.sender.program_counter
+      type: long
+      ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.source
+          value: '{{{_ingest._value.source}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.subsystem
+          value: '{{{_ingest._value.subsystem}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.thread_id
+          value: '{{{_ingest._value.threadID}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - convert:
+      field: jamf_compliance_reporter.log.event_attributes.thread_id
+      target_field: jamf_compliance_reporter.log.event_attributes.thread_id
+      type: string
+      ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        date:
+          field: _ingest._value.timestamp
+          target_field: jamf_compliance_reporter.log.event_attributes.timestamp
+          formats:
+            - yyyy-MM-dd HH:mm:ss.SSSSSSZ
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.timezone_name
+          value: '{{{_ingest._value.timezone_name}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.timezoneName
+          value: '{{{_ingest._value.timezoneName}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.event_attributes
+      processor:
+        append:
+          field: jamf_compliance_reporter.log.event_attributes.trace_id
+          value: '{{{_ingest._value.traceID}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - convert:
+      field: jamf_compliance_reporter.log.event_attributes.trace_id
+      target_field: jamf_compliance_reporter.log.event_attributes.trace_id
+      type: string
+      ignore_failure: true

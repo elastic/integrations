@@ -1,11 +1,11 @@
 {
-    "@timestamp": "2018-11-30T16:09:07.000Z",
+    "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "ff87971e-45e3-4ef8-8517-bd986fd8e553",
-        "id": "69c5b3bb-a0c8-407c-9f6f-166c94a2d63f",
+        "ephemeral_id": "7020cf01-7612-4194-9da0-390244968573",
+        "id": "9cfce01d-2b4b-49d1-8777-572f0a4da3bc",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.2.1"
     },
     "data_stream": {
         "dataset": "panw.panos",
@@ -13,7 +13,6 @@
         "type": "logs"
     },
     "destination": {
-        "bytes": 5976,
         "geo": {
             "city_name": "Changchun",
             "continent_name": "Asia",
@@ -28,63 +27,65 @@
             "region_name": "Jilin Sheng"
         },
         "ip": "175.16.199.1",
-        "nat": {
-            "ip": "175.16.199.1",
-            "port": 443
-        },
-        "packets": 20,
-        "port": 443
+        "port": 80
     },
     "ecs": {
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "69c5b3bb-a0c8-407c-9f6f-166c94a2d63f",
+        "id": "9cfce01d-2b4b-49d1-8777-572f0a4da3bc",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.2.1"
     },
     "event": {
-        "action": "flow_terminated",
+        "action": "url_filtering",
         "agent_id_status": "verified",
         "category": [
+            "intrusion_detection",
+            "threat",
             "network"
         ],
-        "created": "2018-11-30T16:09:07.000Z",
+        "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "duration": 586000000000,
-        "end": "2018-11-30T16:08:50.000Z",
-        "ingested": "2022-05-15T06:01:30Z",
-        "kind": "event",
+        "ingested": "2022-07-11T14:27:45Z",
+        "kind": "alert",
         "outcome": "success",
-        "start": "2018-11-30T15:59:04.000Z",
+        "severity": 5,
         "timezone": "+00:00",
         "type": [
-            "allowed",
-            "end",
-            "connection"
+            "allowed"
         ]
     },
-    "hostname": "PA-220",
     "input": {
-        "type": "syslog"
+        "type": "udp"
     },
     "labels": {
-        "nat_translated": true
+        "captive_portal": true,
+        "container_page": true
     },
     "log": {
+        "level": "informational",
         "source": {
-            "address": "192.168.208.4:47747"
+            "address": "192.168.208.7:36957"
+        },
+        "syslog": {
+            "facility": {
+                "code": 1,
+                "name": "user-level"
+            },
+            "hostname": "PA-220",
+            "priority": 14,
+            "severity": {
+                "code": 6,
+                "name": "Informational"
+            }
         }
     },
-    "message": "192.168.15.207,175.16.199.1,192.168.1.63,175.16.199.1,new_outbound_from_trust,,,apple-maps,vsys1,trust,untrust,ethernet1/2,ethernet1/1,send_to_mac,2018/11/30 16:09:07,22751,1,55113,443,16418,443,0x400053,tcp,allow,7734,1758,5976,36,2018/11/30 15:59:04,586,computer-and-internet-info,0,32091112,0x0,192.168.0.0-192.168.255.255,United States,0,16,20,tcp-fin,0,0,0,0,,PA-220,from-policy,,,0,,0,,N/A,0,0,0,0",
+    "message": "192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
     "network": {
-        "application": "apple-maps",
-        "bytes": 7734,
-        "community_id": [
-            "1:La5Jgm/PJBlaHF8BtgJSyZEmW9E=",
-            "1:sKYRL+yp3SWr5aT5SC1cvyWNnnM="
-        ],
-        "packets": 36,
+        "application": "web-browsing",
+        "community_id": "1:CpnxxiYk2GolQXL1AiyOIq2jeIE=",
+        "direction": "inbound",
         "transport": "tcp",
         "type": "ipv4"
     },
@@ -95,7 +96,6 @@
             },
             "zone": "untrust"
         },
-        "hostname": "PA-220",
         "ingress": {
             "interface": {
                 "name": "ethernet1/2"
@@ -103,90 +103,61 @@
             "zone": "trust"
         },
         "product": "PAN-OS",
-        "serial_number": "012801096514",
+        "serial_number": "01606001116",
         "type": "firewall",
         "vendor": "Palo Alto Networks"
     },
     "panw": {
         "panos": {
-            "action": "allow",
+            "action": "alert",
             "action_flags": "0x0",
-            "action_source": "from-policy",
-            "destination": {
-                "nat": {
-                    "ip": "175.16.199.1",
-                    "port": 443
-                }
-            },
-            "device_group_hierarchy1": "0",
-            "device_group_hierarchy2": "0",
-            "device_group_hierarchy3": "0",
-            "device_group_hierarchy4": "0",
-            "endreason": "tcp-fin",
-            "flow_id": "22751",
-            "imsi": "0",
-            "log_profile": "send_to_mac",
-            "network": {
-                "nat": {
-                    "community_id": "1:sKYRL+yp3SWr5aT5SC1cvyWNnnM="
-                }
-            },
-            "parent_session": {
-                "id": "0"
-            },
-            "related_vsys": "vsys1",
+            "flow_id": "25149",
+            "http_content_type": "text/html",
+            "log_profile": "forwardAll",
+            "logged_time": "2012-04-10T04:39:58.000Z",
             "repeat_count": 1,
-            "ruleset": "new_outbound_from_trust",
-            "scp": {
-                "assoc_id": "0",
-                "chunks": 0,
-                "chunks_received": 0,
-                "chunks_sent": 0
+            "ruleset": "rule1",
+            "sequence_number": "0",
+            "sub_type": "url",
+            "threat": {
+                "id": "9999",
+                "name": "URL-filtering"
             },
-            "sequence_number": 32091112,
-            "source": {
-                "nat": {
-                    "ip": "192.168.1.63",
-                    "port": 16418
-                }
-            },
-            "sub_type": "end",
-            "tunnel_type": "N/A",
-            "type": "TRAFFIC",
+            "type": "THREAT",
             "url": {
-                "category": "computer-and-internet-info"
-            }
+                "category": "not-resolved"
+            },
+            "virtual_sys": "vsys1"
         }
     },
     "related": {
-        "hosts": [
-            "PA-220"
-        ],
         "ip": [
-            "192.168.15.207",
+            "192.168.0.2",
             "175.16.199.1",
-            "192.168.1.63"
+            "0.0.0.0"
+        ],
+        "user": [
+            "crusher"
         ]
     },
     "rule": {
-        "name": "new_outbound_from_trust"
+        "name": "rule1"
     },
     "source": {
-        "bytes": 1758,
         "geo": {
             "name": "192.168.0.0-192.168.255.255"
         },
-        "ip": "192.168.15.207",
-        "nat": {
-            "ip": "192.168.1.63",
-            "port": 16418
-        },
-        "packets": 16,
-        "port": 55113
+        "ip": "192.168.0.2",
+        "port": 59309,
+        "user": {
+            "name": "crusher"
+        }
     },
-    "syslog": {},
     "tags": [
         "panw-panos",
         "forwarded"
-    ]
+    ],
+    "url": {
+        "original": "lorexx.cn/loader.exe"
+    }
 }
