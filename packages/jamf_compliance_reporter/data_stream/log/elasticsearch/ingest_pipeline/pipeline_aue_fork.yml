@@ -1,0 +1,14 @@
+---
+description: Pipeline for Jamf Compliance Reporter aue_fork audit logs.
+processors:
+  - rename:
+      field: json.exec_chain_parent.uuid
+      target_field: jamf_compliance_reporter.log.exec_chain_parent.uuid
+      ignore_missing: true
+  - convert:
+      field: json.arguments.child_PID
+      target_field: jamf_compliance_reporter.log.arguments.child.pid
+      type: long
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_identity_object" }}'

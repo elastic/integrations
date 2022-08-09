@@ -110,6 +110,24 @@ contains kerberos data.
 
 {{fields "kerberos"}}
 
+### known_certs
+
+The `known_certs` dataset captures information about SSL/TLS certificates seen on the local network. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-certs-log) for more details.
+
+{{fields "known_certs"}}
+
+### known_hosts
+
+The `known_hosts` dataset simply records a timestamp and an IP address when Zeek observes a new system on the local network.. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-hosts-log) for more details.
+
+{{fields "known_hosts"}}
+
+### known_services
+
+The `known_services` dataset records a timestamp, IP, port number, protocol, and service (if available) when Zeek observes a system offering a new service on the local network. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-services-log) for more details.
+
+{{fields "known_services"}}
+
 ### modbus
 
 The `modbus` dataset collects the Zeek modbus.log file, which contains
@@ -235,6 +253,12 @@ The `socks` dataset collects the Zeek socks.log file, which contains
 SOCKS proxy requests.
 
 {{fields "socks"}}
+
+### software
+
+The `software` dataset collects details on applications operated by the hosts it sees on the local network. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#software-log) for more details.
+
+{{fields "software"}}
 
 ### ssh
 
