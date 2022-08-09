@@ -28,7 +28,7 @@ For more details about these requirements, see the **AWS** integration documenta
 
 ## Setup
 
-Use this integration if you only need to collect data from AWS EBS.
+Use this integration if you only need to collect data from Amazon EBS.
 
 If you want to collect data from two or more AWS services, consider using the **AWS** integration.
 When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
