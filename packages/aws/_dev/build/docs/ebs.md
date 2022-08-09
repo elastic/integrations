@@ -5,14 +5,14 @@ The Amazon EBS integration allows you to monitor [Amazon Elastic Block Store (EB
 Use the Amazon EBS integration to collect metrics related to your Amazon EBS storage.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
 
-For example, you could use this integration to collect five-minute metrics on read ops, read bytes, and total read time. Then you can send an email alert if the volume of operations, bytes, or read time exceeds a predefined threshold.
+For example, you could use this integration to collect five-minute metrics on read operations, read bytes, and total read time. Then you can send an email alert if the volume of operations, bytes, or read time exceeds a predefined threshold.
 
 ## Data streams
 
 The Amazon EBS integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of Amazon EBS.
-The metrics collected by the Amazon EBS integration include read ops, read bytes, total read time, queue length, idle time, and more. See more details in the [Metrics reference](#metrics-reference)
+The metrics collected by the Amazon EBS integration include read operations, read bytes, total read time, queue length, idle time, and more. See more details in the [Metrics reference](#metrics-reference)
 
 ## Requirements
 
@@ -28,7 +28,7 @@ For more details about these requirements, see the **AWS** integration documenta
 
 ## Setup
 
-Use this integration if you only need to collect data from AWS EBS.
+Use this integration if you only need to collect data from Amazon EBS.
 
 If you want to collect data from two or more AWS services, consider using the **AWS** integration.
 When you configure the AWS integration, you can collect data from as many AWS services as you'd like.

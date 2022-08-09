@@ -2,7 +2,7 @@
 
 The AWS VPC Flow integration allows you to monitor [Amazon Virtual Private Cloud (Amazon VPC)](https://aws.amazon.com/vpc/) flow logs. Flow logs capture information about the IP traffic going to and from network interfaces in a VPC.
 
-Use the AWS VPC Flow integration to to collect logs related to your Amazon VPCs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
+Use the AWS VPC Flow integration to collect logs related to your Amazon VPCs. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
 For example, you could use this data to:
 
@@ -10,14 +10,14 @@ For example, you could use this data to:
 * Monitor the traffic that is reaching your instance
 * Determine the direction of the traffic to and from the network interfaces
 
-Then you can alert the relevant Project Manager about those events by email.
+Then you can alert the relevant project manager about those events by email.
 
 ## Data streams
 
 The AWS VPC Flow integration collects one types of data stream: logs.
 
 **Logs** help you keep a record of events happening in your VPCs.
-Logs collected by the vpcflow integration include The packet-level (original) source and destination IP addresses for the traffic, accepted traffic, rejected traffic, and more. See more details in the [Logs reference](#logs-reference).
+Logs collected by the vpcflow integration include the packet-level (original) source and destination IP addresses for the traffic, accepted traffic, rejected traffic, and more. See more details in the [Logs reference](#logs-reference).
 
 ## Requirements
 
@@ -50,7 +50,11 @@ For more information on implementation, see the Amazon documentation on:
 This integration supports various plain text VPC flow log formats:
 
 * The default pattern of 14 version 2 fields
-* A custom pattern including all 29 fields, version 2 though 5: `${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}`
+* A custom pattern including all 29 fields, version 2 though 5:
+
+```
+${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start} ${end} ${action} ${log-status} ${vpc-id} ${subnet-id} ${instance-id} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr} ${region} ${az-id} ${sublocation-type} ${sublocation-id} ${pkt-src-aws-service} ${pkt-dst-aws-service} ${flow-direction} ${traffic-path}
+```
 
 ## Logs reference
 

@@ -2,7 +2,7 @@
 
 The Amazon RDS integration allows you to monitor [Amazon Relational Database Service (Amazon RDS)](https://aws.amazon.com/rds)—a collection of cloud database services.
 
-Use the Amazon RDS integration to to collect metrics related to your Amazon databases. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the metrics when troubleshooting an issue.
+Use the Amazon RDS integration to collect metrics related to your Amazon databases. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the metrics when troubleshooting an issue.
 
 For example, you could use this integration to track the latency and throughput on your databases. Then create an alert that posts a message in Slack if your write latency spikes.
 

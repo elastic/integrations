@@ -44,7 +44,7 @@ The `ec2` data stream is specifically for EC2 logs stored in AWS CloudWatch. Exp
 from log groups to Amazon S3 bucket which has SQS notification setup already.
 
 With this data stream, EC2 logs will be parsed into fields like  `ip_address`
-and `process.name`. For logs from other services, please use `cloudwatch` integration.
+and `process.name`. For logs from other services, please use the **AWS CloudWatch** integration.
 
 {{fields "ec2_logs"}}
 

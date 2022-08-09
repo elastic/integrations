@@ -5,6 +5,7 @@ This integration is used to fetch logs and metrics from [AWS Network Firewall](h
 Use the AWS Network Firewall integration to monitor the traffic entering and passing through your AWS Network Firewall. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs and metrics when troubleshooting an issue.
 
 For example, you could use this integration to view and track when firewall rules are triggered, the top firewall source and destination countries, and the total number of events by firewall.
+
 ## Data streams
 
 The AWS Network Firewall integration collects two types of data streams: logs and metrics.
@@ -29,13 +30,13 @@ For more details about these requirements, see the **AWS** integration documenta
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
-
 Use this integration if you only need to collect data from the AWS Network Firewall service.
 
 If you want to collect data from two or more AWS services, consider using the **AWS** integration.
 When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 ## Logs reference
 

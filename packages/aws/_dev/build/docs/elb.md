@@ -1,9 +1,5 @@
 # Amazon ELB
 
-The `elb` dataset collects logs from AWS ELBs. Elastic Load Balancing provides
-access logs that capture .  Users can use these access logs to analyze traffic patterns and to
-troubleshoot issues.
-
 The Amazon ELB integration allows you to monitor [Amazon Elastic Load Balancing (ELB)](https://aws.amazon.com/elasticloadbalancing/)—a tool that distributes application traffic to multiple targets.
 
 Use the Amazon ELB integration to collect logs and metrics with detailed information about requests sent to the load
@@ -50,6 +46,8 @@ For an application load balancer, see [enable access log for application load ba
 For a network load balancer, see [enable access log for network load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest//network/load-balancer-access-logs.html).
 
 ## Logs reference
+
+The `elb` dataset collects logs from AWS ELBs.
 
 {{fields "elb_logs"}}
 

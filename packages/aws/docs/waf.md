@@ -6,7 +6,7 @@ Use the AWS WAF integration to collect and parse logs related to firewall activi
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
 and reference logs when troubleshooting an issue.
 
-For example, you could use the data from this integration to spot unusual SQL injection and cross site scripting attempts on your AWS-hosted websites and web applications, in a given time period. You could also use the data to review or troubleshoot the rules that have been set up to block these web exploits. You can do this by looking at additional context in the logs, such as the source of the requests, and more.
+For example, you could use the data from this integration to spot unusual SQL injection and cross-site scripting attempts on your AWS-hosted websites and web applications, in a given time period. You could also use the data to review or troubleshoot the rules that have been set up to block these web exploits. You can do this by looking at additional context in the logs, such as the source of the requests, and more.
 
 ## Data streams
 

@@ -1,6 +1,6 @@
 # Amazon Kinesis
 
-The Amazon ECS integration allows you to monitor [Amazon Kinesis](https://aws.amazon.com/kinesis/)—a streaming data processor.
+The Amazon Kinesis integration allows you to monitor [Amazon Kinesis](https://aws.amazon.com/kinesis/)—a streaming data processor.
 
 Use the Amazon Kinesis integration to monitor Amazon Kinesis. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
 
@@ -9,7 +9,7 @@ Use the Amazon Kinesis integration to monitor Amazon Kinesis. Then visualize tha
 The Amazon Kinesis integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of Amazon Kinesis.
-Metrics collected by the AWS Network Firewall integration include the number of packets received, passed, and blocked by the AWS Network Firewall, and more. See more details in the [Metrics reference](#metrics-reference).
+Metrics collected by this integration include information about operations related to Amazon Kinesis records, shards, and more. See more details in the [Metrics reference](#metrics-reference).
 
 ## Requirements
 
@@ -25,13 +25,13 @@ For more details about these requirements, see the **AWS** integration documenta
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
-
 Use this integration if you only need to collect data from the Amazon Kinesis service.
 
 If you want to collect data from two or more AWS services, consider using the **AWS** integration.
 When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
 ## Metrics
 
