@@ -8,57 +8,46 @@
                         "91e1a389-34e8-4332-9dbb-bd883d71dd85": {
                             "columnOrder": [
                                 "894fb0b1-f0bd-4dbe-885b-0b41c339e84f",
-                                "8cca4d83-a822-4b67-97cd-27649e1d7c68",
                                 "c53bee8d-06ca-4728-b6bc-2761d77a9ef5"
                             ],
                             "columns": {
                                 "894fb0b1-f0bd-4dbe-885b-0b41c339e84f": {
-                                    "customLabel": true,
                                     "dataType": "string",
                                     "isBucketed": true,
-                                    "label": "Top repositories contributing to alerts by owner",
-                                    "operationType": "terms",
+                                    "label": "Filters",
+                                    "operationType": "filters",
                                     "params": {
-                                        "missingBucket": false,
-                                        "orderBy": {
-                                            "columnId": "c53bee8d-06ca-4728-b6bc-2761d77a9ef5",
-                                            "type": "column"
-                                        },
-                                        "orderDirection": "desc",
-                                        "otherBucket": true,
-                                        "parentFormat": {
-                                            "id": "terms"
-                                        },
-                                        "size": 20
+                                        "filters": [
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "data_stream.dataset : \"github.code_scanning\" "
+                                                },
+                                                "label": "Code Scanning"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "data_stream.dataset : \"github.secret_scanning\" "
+                                                },
+                                                "label": "Secret Scanning"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "data_stream.dataset : \"github.dependabot\" "
+                                                },
+                                                "label": "Dependabot"
+                                            }
+                                        ]
                                     },
-                                    "scale": "ordinal",
-                                    "sourceField": "github.repository.owner.login"
-                                },
-                                "8cca4d83-a822-4b67-97cd-27649e1d7c68": {
-                                    "dataType": "string",
-                                    "isBucketed": true,
-                                    "label": "Top 10 values of github.repository.name",
-                                    "operationType": "terms",
-                                    "params": {
-                                        "missingBucket": false,
-                                        "orderBy": {
-                                            "columnId": "c53bee8d-06ca-4728-b6bc-2761d77a9ef5",
-                                            "type": "column"
-                                        },
-                                        "orderDirection": "desc",
-                                        "otherBucket": true,
-                                        "parentFormat": {
-                                            "id": "terms"
-                                        },
-                                        "size": 10
-                                    },
-                                    "scale": "ordinal",
-                                    "sourceField": "github.repository.name"
+                                    "scale": "ordinal"
                                 },
                                 "c53bee8d-06ca-4728-b6bc-2761d77a9ef5": {
+                                    "customLabel": true,
                                     "dataType": "number",
                                     "isBucketed": false,
-                                    "label": "Count of records",
+                                    "label": "Alerts Count",
                                     "operationType": "count",
                                     "params": {
                                         "emptyAsNull": true
@@ -80,7 +69,7 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "6cdf338d-9f5e-4f3b-8445-449e841e76a6",
+                        "index": "255d37df-9a69-48dc-9331-7625dbc8f7e6",
                         "key": "data_stream.dataset",
                         "negate": false,
                         "params": [
@@ -106,6 +95,27 @@
                             ]
                         }
                     }
+                },
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "index": "dfffc1ec-26c8-41e8-9606-91472efa2d09",
+                        "key": "github.state",
+                        "negate": false,
+                        "params": {
+                            "query": "open"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "github.state": "open"
+                        }
+                    }
                 }
             ],
             "query": {
@@ -116,26 +126,28 @@
                 "layers": [
                     {
                         "categoryDisplay": "default",
+                        "emptySizeRatio": 0.3,
                         "groups": [
-                            "894fb0b1-f0bd-4dbe-885b-0b41c339e84f",
-                            "8cca4d83-a822-4b67-97cd-27649e1d7c68"
+                            "894fb0b1-f0bd-4dbe-885b-0b41c339e84f"
                         ],
                         "layerId": "91e1a389-34e8-4332-9dbb-bd883d71dd85",
                         "layerType": "data",
-                        "legendDisplay": "default",
+                        "legendDisplay": "show",
+                        "legendMaxLines": 5,
                         "metric": "c53bee8d-06ca-4728-b6bc-2761d77a9ef5",
                         "nestedLegend": false,
-                        "numberDisplay": "percent"
+                        "numberDisplay": "percent",
+                        "percentDecimals": 1
                     }
                 ],
-                "shape": "pie"
+                "shape": "donut"
             }
         },
-        "title": "Aerts % by owner and by repository [GitHub Code Scanning]",
+        "title": "Open Alerts % by Type [GitHub Advanced Security]",
         "visualizationType": "lnsPie"
     },
     "coreMigrationVersion": "8.3.0",
-    "id": "github-1b0f3c80-16d2-11ed-b047-912ecccf2770",
+    "id": "github-cf65b170-1897-11ed-a90e-c1c6039ba2d7",
     "migrationVersion": {
         "lens": "8.3.0"
     },
@@ -147,7 +159,12 @@
         },
         {
             "id": "logs-*",
-            "name": "6cdf338d-9f5e-4f3b-8445-449e841e76a6",
+            "name": "255d37df-9a69-48dc-9331-7625dbc8f7e6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "dfffc1ec-26c8-41e8-9606-91472efa2d09",
             "type": "index-pattern"
         }
     ],

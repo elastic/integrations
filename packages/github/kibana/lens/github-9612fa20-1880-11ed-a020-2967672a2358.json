@@ -8,7 +8,7 @@
                         "91e1a389-34e8-4332-9dbb-bd883d71dd85": {
                             "columnOrder": [
                                 "894fb0b1-f0bd-4dbe-885b-0b41c339e84f",
-                                "8cca4d83-a822-4b67-97cd-27649e1d7c68",
+                                "e0343042-35ac-4a43-9fe5-639da6a8ee6e",
                                 "c53bee8d-06ca-4728-b6bc-2761d77a9ef5"
                             ],
                             "columns": {
@@ -16,7 +16,7 @@
                                     "customLabel": true,
                                     "dataType": "string",
                                     "isBucketed": true,
-                                    "label": "Top repositories contributing to alerts by owner",
+                                    "label": "Owner",
                                     "operationType": "terms",
                                     "params": {
                                         "missingBucket": false,
@@ -25,19 +25,33 @@
                                             "type": "column"
                                         },
                                         "orderDirection": "desc",
-                                        "otherBucket": true,
+                                        "otherBucket": false,
                                         "parentFormat": {
                                             "id": "terms"
                                         },
-                                        "size": 20
+                                        "secondaryFields": [],
+                                        "size": 10
                                     },
                                     "scale": "ordinal",
                                     "sourceField": "github.repository.owner.login"
                                 },
-                                "8cca4d83-a822-4b67-97cd-27649e1d7c68": {
+                                "c53bee8d-06ca-4728-b6bc-2761d77a9ef5": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Alerts Count",
+                                    "operationType": "count",
+                                    "params": {
+                                        "emptyAsNull": true
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "___records___"
+                                },
+                                "e0343042-35ac-4a43-9fe5-639da6a8ee6e": {
+                                    "customLabel": true,
                                     "dataType": "string",
                                     "isBucketed": true,
-                                    "label": "Top 10 values of github.repository.name",
+                                    "label": "Repository",
                                     "operationType": "terms",
                                     "params": {
                                         "missingBucket": false,
@@ -46,7 +60,7 @@
                                             "type": "column"
                                         },
                                         "orderDirection": "desc",
-                                        "otherBucket": true,
+                                        "otherBucket": false,
                                         "parentFormat": {
                                             "id": "terms"
                                         },
@@ -54,17 +68,6 @@
                                     },
                                     "scale": "ordinal",
                                     "sourceField": "github.repository.name"
-                                },
-                                "c53bee8d-06ca-4728-b6bc-2761d77a9ef5": {
-                                    "dataType": "number",
-                                    "isBucketed": false,
-                                    "label": "Count of records",
-                                    "operationType": "count",
-                                    "params": {
-                                        "emptyAsNull": true
-                                    },
-                                    "scale": "ratio",
-                                    "sourceField": "___records___"
                                 }
                             },
                             "incompleteColumns": {}
@@ -80,7 +83,7 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "6cdf338d-9f5e-4f3b-8445-449e841e76a6",
+                        "index": "7593b627-5a3f-46a0-a8f9-33e6b6acc9a5",
                         "key": "data_stream.dataset",
                         "negate": false,
                         "params": [
@@ -106,6 +109,27 @@
                             ]
                         }
                     }
+                },
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "index": "3aea78d1-4e8f-47cb-a54b-11acf0506c06",
+                        "key": "github.state",
+                        "negate": false,
+                        "params": {
+                            "query": "open"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "github.state": "open"
+                        }
+                    }
                 }
             ],
             "query": {
@@ -118,7 +142,7 @@
                         "categoryDisplay": "default",
                         "groups": [
                             "894fb0b1-f0bd-4dbe-885b-0b41c339e84f",
-                            "8cca4d83-a822-4b67-97cd-27649e1d7c68"
+                            "e0343042-35ac-4a43-9fe5-639da6a8ee6e"
                         ],
                         "layerId": "91e1a389-34e8-4332-9dbb-bd883d71dd85",
                         "layerType": "data",
@@ -131,11 +155,11 @@
                 "shape": "pie"
             }
         },
-        "title": "Aerts % by owner and by repository [GitHub Code Scanning]",
+        "title": "Open Alerts % by owner and by repository [GitHub Advanced Security]",
         "visualizationType": "lnsPie"
     },
     "coreMigrationVersion": "8.3.0",
-    "id": "github-1b0f3c80-16d2-11ed-b047-912ecccf2770",
+    "id": "github-9612fa20-1880-11ed-a020-2967672a2358",
     "migrationVersion": {
         "lens": "8.3.0"
     },
@@ -147,7 +171,12 @@
         },
         {
             "id": "logs-*",
-            "name": "6cdf338d-9f5e-4f3b-8445-449e841e76a6",
+            "name": "7593b627-5a3f-46a0-a8f9-33e6b6acc9a5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3aea78d1-4e8f-47cb-a54b-11acf0506c06",
             "type": "index-pattern"
         }
     ],

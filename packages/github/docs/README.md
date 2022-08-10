@@ -188,31 +188,33 @@ Or use a personal access token with the `security_events` scope for private repo
 | github.code_scanning.most_recent_instance.ref | The full Git reference, formatted as `refs/heads/\<branch name\>`,\n`refs/pull/\<number\>/merge`, or `refs/pull/\<number\>/head`. | keyword |
 | github.code_scanning.most_recent_instance.state | State of a code scanning alert. | keyword |
 | github.code_scanning.number | The security alert number | integer |
-| github.code_scanning.repository.description | The repository description. | text |
-| github.code_scanning.repository.fork | Whether the repository is a fork | boolean |
-| github.code_scanning.repository.full_name | The full, globally unique, name of the repository. | keyword |
-| github.code_scanning.repository.html_url | The URL to view the repository on GitHub.com. | keyword |
-| github.code_scanning.repository.id | A unique identifier of the repository. | integer |
-| github.code_scanning.repository.name | The name of the repository. | keyword |
-| github.code_scanning.repository.owner.html_url |  | keyword |
-| github.code_scanning.repository.owner.id |  | integer |
-| github.code_scanning.repository.owner.login |  | keyword |
-| github.code_scanning.repository.owner.site_admin |  | boolean |
-| github.code_scanning.repository.owner.type |  | keyword |
-| github.code_scanning.repository.owner.url |  | keyword |
-| github.code_scanning.repository.private | Whether the repository is private. | boolean |
-| github.code_scanning.repository.url | The URL to get more information about the repository from the GitHub API. | keyword |
 | github.code_scanning.rule.full_description | Description of the rule used to detect the alert. | text |
 | github.code_scanning.rule.help | Detailed documentation for the rule as GitHub Flavored Markdown | text |
 | github.code_scanning.rule.security_severity_level | The security severity of the alert | keyword |
 | github.code_scanning.rule.severity | The severity of the alert | keyword |
 | github.code_scanning.state | State of a code scanning alert | keyword |
-| github.code_scanning.time_to_resolution | The time taken to either dismiss or fix the alert in seconds. | integer |
+| github.code_scanning.time_to_resolution.sec | The time taken to either dismiss or fix the alert in seconds. | long |
 | github.code_scanning.tool.guid | The GUID of the tool used to generate the code scanning analysis, if provided in the uploaded SARIF data. | keyword |
 | github.code_scanning.tool.name | The name of the tool used to generate the code scanning analysis. | keyword |
 | github.code_scanning.tool.version | The version of the tool used to generate the code scanning analysis. | keyword |
 | github.code_scanning.updated_at | The time that the alert was last updated in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |
 | github.code_scanning.url | The REST API URL of the alert resource | keyword |
+| github.repository.description | The repository description. | text |
+| github.repository.fork | Whether the repository is a fork | boolean |
+| github.repository.full_name | The full, globally unique, name of the repository. | keyword |
+| github.repository.html_url | The URL to view the repository on GitHub.com. | keyword |
+| github.repository.id | A unique identifier of the repository. | integer |
+| github.repository.name | The name of the repository. | keyword |
+| github.repository.owner.html_url |  | keyword |
+| github.repository.owner.id |  | integer |
+| github.repository.owner.login |  | keyword |
+| github.repository.owner.site_admin |  | boolean |
+| github.repository.owner.type |  | keyword |
+| github.repository.owner.url |  | keyword |
+| github.repository.private | Whether the repository is private. | boolean |
+| github.repository.url | The URL to get more information about the repository from the GitHub API. | keyword |
+| github.severity | The security severity of the alert | keyword |
+| github.state | State of a code scanning alert | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -345,6 +347,10 @@ Or you must be an administrator for the repository or for the organization that 
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| github.repository.html_url | The URL to view the repository on GitHub.com. | keyword |
+| github.repository.name | The name of the repository. | keyword |
+| github.repository.owner.login |  | keyword |
+| github.repository.url | The URL to get more information about the repository from the GitHub API. | keyword |
 | github.secret_scanning.created_at | The time that the alert was created in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |
 | github.secret_scanning.html_url | The GitHub URL of the alert resource. | keyword |
 | github.secret_scanning.locations_url | The REST API URL of the code locations for this alert | keyword |
@@ -377,6 +383,7 @@ Or you must be an administrator for the repository or for the organization that 
 | github.secret_scanning.state | Sets the state of the secret scanning alert. | keyword |
 | github.secret_scanning.updated_at | The time that the alert was last updated in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |
 | github.secret_scanning.url | The REST API URL of the alert resource | keyword |
+| github.state | State of a code scanning alert | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |

@@ -1,0 +1,157 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "e125b149-a8ea-47b7-914c-508a7972c074": {
+                            "columnOrder": [
+                                "25824925-c28e-4f16-b354-5e6e25ecea6a",
+                                "aaa67d72-aba4-4af4-a4f5-66e37fffed84"
+                            ],
+                            "columns": {
+                                "25824925-c28e-4f16-b354-5e6e25ecea6a": {
+                                    "customLabel": true,
+                                    "dataType": "string",
+                                    "isBucketed": true,
+                                    "label": "Severity",
+                                    "operationType": "filters",
+                                    "params": {
+                                        "filters": [
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "github.severity : \"critical\" "
+                                                },
+                                                "label": "Critical"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "github.severity : \"high\" "
+                                                },
+                                                "label": "High"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "github.severity : \"medium\" "
+                                                },
+                                                "label": "Medium"
+                                            },
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "github.severity : \"low\""
+                                                },
+                                                "label": "Low"
+                                            }
+                                        ]
+                                    },
+                                    "scale": "ordinal"
+                                },
+                                "aaa67d72-aba4-4af4-a4f5-66e37fffed84": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Alerts Count",
+                                    "operationType": "count",
+                                    "params": {
+                                        "emptyAsNull": true
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "___records___"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "index": "3fd20d2e-13b5-4b03-9eb6-dc2253352b5a",
+                        "key": "data_stream.dataset",
+                        "negate": false,
+                        "params": [
+                            "github.code_scanning",
+                            "github.secret_scanning"
+                        ],
+                        "type": "phrases"
+                    },
+                    "query": {
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match_phrase": {
+                                        "data_stream.dataset": "github.code_scanning"
+                                    }
+                                },
+                                {
+                                    "match_phrase": {
+                                        "data_stream.dataset": "github.secret_scanning"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": ""
+            },
+            "visualization": {
+                "layers": [
+                    {
+                        "categoryDisplay": "default",
+                        "emptySizeRatio": 0.3,
+                        "groups": [
+                            "25824925-c28e-4f16-b354-5e6e25ecea6a"
+                        ],
+                        "layerId": "e125b149-a8ea-47b7-914c-508a7972c074",
+                        "layerType": "data",
+                        "legendDisplay": "show",
+                        "metric": "aaa67d72-aba4-4af4-a4f5-66e37fffed84",
+                        "nestedLegend": false,
+                        "numberDisplay": "percent",
+                        "percentDecimals": 1
+                    }
+                ],
+                "palette": {
+                    "name": "default",
+                    "type": "palette"
+                },
+                "shape": "donut"
+            }
+        },
+        "title": "Open Alerts % by Severity [GitHub Advanced Security]",
+        "visualizationType": "lnsPie"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "github-b967ba50-1895-11ed-a90e-c1c6039ba2d7",
+    "migrationVersion": {
+        "lens": "8.3.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-layer-e125b149-a8ea-47b7-914c-508a7972c074",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3fd20d2e-13b5-4b03-9eb6-dc2253352b5a",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}
