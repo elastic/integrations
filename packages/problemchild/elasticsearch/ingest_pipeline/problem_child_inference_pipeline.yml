@@ -78,18 +78,14 @@ processors:
         } else {
           ctx.feature_elevated = false
         }
-        if (ctx.containsKey('process') && ctx['process'].containsKey('Ext') && ctx['process']['Ext'].containsKey('code_signature') && ctx['process']['Ext']['code_signature'].containsKey('exists')) {
-          ctx.feature_process_signed = ctx['process']['Ext']['code_signature']['exists']
-        } else if (ctx.containsKey('process') && ctx['process'].containsKey('code_signature') && ctx['process']['code_signature'].containsKey('exists')) {
+        if (ctx.containsKey('process') && ctx['process'].containsKey('code_signature') && ctx['process']['code_signature'].containsKey('exists')) {
           ctx.feature_process_signed = ctx['process']['code_signature']['exists']
         } else if (ctx.containsKey('winlog') && ctx['winlog'].containsKey('event_data') && ctx['winlog']['event_data'].containsKey('Signed') && !ctx['winlog']['event_data']['Signed'].empty) {
           ctx.feature_process_signed = Boolean.parseBoolean(ctx['winlog']['event_data']['Signed'])
         } else {
           ctx.feature_process_signed = false
         }
-        if (ctx.containsKey('process') && ctx['process'].containsKey('Ext') && ctx['process']['Ext'].containsKey('code_signature') && ctx['process']['Ext']['code_signature'].containsKey('trusted')) {
-          ctx.feature_process_signer_trusted = ctx['process']['Ext']['code_signature']['trusted']
-        } else if (ctx.containsKey('process') && ctx['process'].containsKey('code_signature') && ctx['process']['code_signature'].containsKey('trusted')) {
+        if (ctx.containsKey('process') && ctx['process'].containsKey('code_signature') && ctx['process']['code_signature'].containsKey('trusted')) {
           ctx.feature_process_signer_trusted = ctx['process']['code_signature']['trusted']
         } else if (ctx.containsKey('winlog') && ctx['winlog'].containsKey('event_data') && ctx['winlog']['event_data'].containsKey('SignatureStatus') && ctx['winlog']['event_data']['SignatureStatus'] == "Valid") {
           ctx.feature_process_signer_trusted = true
