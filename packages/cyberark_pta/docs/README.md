@@ -17,79 +17,82 @@ syslog_outbound=[{"siem": "Elastic", "format": "CEF", "host": "SIEM_MACHINE_ADDR
 An example event for pta looks as following:
 
 ```json
-  {
-    "@timestamp": "2022-06-29T00:32:23.000Z",
-    "cef": {
-      "device": {
-        "event_class_id": "26",
-        "product": "PTA",
-        "vendor": "CyberArk",
-        "version": "11.4"
-      },
-      "extensions": {
-        "destinationAddress": "10.0.1.20",
-        "destinationHostName": "components.cyberark.local",
-        "destinationUserName": "svc_account@components.cyberark.local",
-        "deviceCustomDate1": "2022-06-29T00:32:23.000Z",
-        "deviceCustomDate1Label": "DetectionDate",
-        "deviceCustomString1": "None",
-        "deviceCustomString1Label": "ExtraData",
-        "deviceCustomString2": "62bb9d97c2dcd9b6beb4cc15",
-        "deviceCustomString2Label": "EventID",
-        "deviceCustomString3": "https://components.cyberark.local:443/PasswordVault/v10/pta/events/62bb9d97c2dcd9b6beb4cc15",
-        "deviceCustomString3Label": "PTALink",
-        "deviceCustomString4": "None.",
-        "deviceCustomString4Label": "ExternalLink",
-        "sourceAddress": "10.0.0.3",
-        "sourceHostName": "None",
-        "sourceUserName": "Administrator(Vault user)"
-      },
-      "name": "Active dormant Vault user",
-      "severity": "5",
-      "version": "0"
-    },
-    "cyberark_pta": {
-      "log": {
-        "event_type": "26"
-       }
-    },
-    "destination": {
-      "domain": "components.cyberark.local",
-      "ip": "10.0.1.20",
-      "user": {
-        "name": "svc_account@components.cyberark.local"
-      }
-    },
-    "ecs": {
-      "version": "8.3.0"
-    },
-    "event": {
-      "code": "26",
-      "id": "62bb9d97c2dcd9b6beb4cc15",
-      "ingested": "2022-07-29T16:33:40Z",
-      "original": "CEF:0|CyberArk|PTA|11.4|26|Active dormant Vault user|5|suser=Administrator(Vault user) shost=None src=10.0.0.3 duser=svc_account@components.cyberark.local dhost=components.cyberark.local dst=10.0.1.20 cs1Label=ExtraData cs1=None cs2Label=EventID cs2=62bb9d97c2dcd9b6beb4cc15 deviceCustomDate1Label=DetectionDate deviceCustomDate1=1656462743000 cs3Label=PTALink cs3=https://components.cyberark.local:443/PasswordVault/v10/pta/events/62bb9d97c2dcd9b6beb4cc15 cs4Label=ExternalLink cs4=None.",
-      "reason": "Active dormant Vault user",
-      "reference": "https://components.cyberark.local:443/PasswordVault/v10/pta/events/62bb9d97c2dcd9b6beb4cc15",
-      "severity": 5,
-      "url": "None."
-    },
-    "observer": {
+{
+  "cef": {
+    "device": {
+      "event_class_id": "1",
       "product": "PTA",
       "vendor": "CyberArk",
-      "version": "11.4"
+      "version": "12.6"
     },
-    "source": {
-      "domain": "None",
-      "ip": "10.0.0.3",
-      "user": {
-        "name": "Administrator(Vault user)"
-      }
+    "extensions": {
+      "destinationAddress": "175.16.199.0",
+      "destinationHostName": "dev1.domain.com",
+      "destinationUserName": "andy@dev1.domain.com",
+      "deviceCustomDate1": "2014-01-01T12:05:00.000Z",
+      "deviceCustomDate1Label": "detectionDate",
+      "deviceCustomString1": "None",
+      "deviceCustomString1Label": "ExtraData",
+      "deviceCustomString2": "52b06812ec3500ed864c461e",
+      "deviceCustomString2Label": "EventID",
+      "deviceCustomString3": "https://1.128.0.0/incidents/52b06812ec3500ed864c461e",
+      "deviceCustomString3Label": "PTAlink",
+      "deviceCustomString4": "https://myexternallink.com",
+      "deviceCustomString4Label": "ExternalLink",
+      "sourceAddress": "1.128.0.0",
+      "sourceHostName": "prod1.domain.com",
+      "sourceUserName": "mike2@prod1.domain.com"
     },
-    "tags": [
-      "cyberark_pta",
-      "forwarded"
+    "name": "Suspected credentials theft",
+    "severity": "8",
+    "version": "0"
+  },
+  "destination": {
+    "domain": "dev1.domain.com",
+    "ip": "175.16.199.0",
+    "user": {
+      "name": "andy@dev1.domain.com"
+    }
+  },
+  "ecs": {
+    "version": "8.3.0"
+  },
+  "event": {
+    "code": "1",
+    "created": [
+      "2014-01-01T12:05:00.000Z"
+    ],
+    "id": [
+      "52b06812ec3500ed864c461e"
+    ],
+    "ingested": "2022-07-28T14:05:49Z",
+    "original": "CEF:0|CyberArk|PTA|12.6|1|Suspected credentials theft|8|suser=mike2@prod1.domain.com shost=prod1.domain.com src=1.128.0.0 duser=andy@dev1.domain.com dhost=dev1.domain.com dst=175.16.199.0 cs1Label=ExtraData cs1=None cs2Label=EventID cs2=52b06812ec3500ed864c461e deviceCustomDate1Label=detectionDate deviceCustomDate1=1388577900000 cs3Label=PTAlink cs3=https://1.128.0.0/incidents/52b06812ec3500ed864c461e cs4Label=ExternalLink cs4=https://myexternallink.com",
+    "reference": [
+      "https://1.128.0.0/incidents/52b06812ec3500ed864c461e"
+    ],
+    "severity": 8,
+    "url": [
+      "https://myexternallink.com"
     ]
-  }
+  },
+  "message": "Suspected credentials theft",
+  "observer": {
+    "product": "PTA",
+    "vendor": "CyberArk",
+    "version": "12.6"
+  },
+  "source": {
+    "domain": "prod1.domain.com",
+    "ip": "1.128.0.0",
+    "user": {
+      "name": "mike2@prod1.domain.com"
+    }
+  },
+  "tags": [
+    "cyberark_pta",
+    "forwarded"
+  ]
+}
 ```
 
 **Exported fields**
