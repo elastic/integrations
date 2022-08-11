@@ -28,8 +28,8 @@ This integration has not been tested on
 
 This Integration does not currently support the security posture assessment of:
 
-1. Google GKE clusters
-2. Azure AKS
+1. Google GKE
+2. Azure AKS 
 3. Red Hat Openshift 
 4. Amazon EKS with AWS Fargate nodes
 
@@ -38,7 +38,6 @@ This Integration does not currently support the security posture assessment of:
 This integration requires access to node files, node processes, and the Kubernetes api-server therefore it assumes the agent will be installed as a [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) with the proper [Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and [RoleBindings](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) attached.
 
 If deploying this integration on an [Amazon EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html), specific AWS permissions are required for the IAM user to make specific AWS API calls. To enable the integration to collect configuration metadata from all relevant resources/services, make sure these permissions are given:
-```suggestion
 ```yaml
 {
     "Version": "2012-10-17",
@@ -71,7 +70,7 @@ If deploying this integration on an [Amazon EKS cluster](https://docs.aws.amazon
         }
     ]
 }
-
+```
 ## Leader election
 
 To collect cluster level data (compared to node level information) the integration makes use of the [leader election](https://www.elastic.co/guide/en/fleet/master/kubernetes_leaderelection-provider.html) mechanism.
