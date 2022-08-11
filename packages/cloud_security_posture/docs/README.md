@@ -38,26 +38,39 @@ This Integration does not currently support the security posture assessment of:
 This integration requires access to node files, node processes, and the Kubernetes api-server therefore it assumes the agent will be installed as a [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) with the proper [Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and [RoleBindings](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) attached.
 
 If deploying this integration on an [Amazon EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html), specific AWS permissions are required for the IAM user to make specific AWS API calls. To enable the integration to collect configuration metadata from all relevant resources/services, make sure these permissions are given:
-
-- ecr:GetRegistryPolicy
-- eks:ListTagsForResource
-- elasticloadbalancing:DescribeTags
-- ecr-public:DescribeRegistries
-- ecr:DescribeRegistry
-- elasticloadbalancing:DescribeLoadBalancerPolicyTypes
-- ecr:ListImages
-- ecr-public:GetRepositoryPolicy
-- elasticloadbalancing:DescribeLoadBalancerAttributes
-- elasticloadbalancing:DescribeLoadBalancers
-- ecr-public:DescribeRepositories
-- eks:DescribeNodegroup
-- ecr:DescribeImages
-- elasticloadbalancing:DescribeLoadBalancerPolicies
-- ecr:DescribeRepositories
-- eks:DescribeCluster
-- eks:ListClusters
-- elasticloadbalancing:DescribeInstanceHealth
-- ecr:GetRepositoryPolicy
+```suggestion
+```yaml
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetRegistryPolicy",
+                "eks:ListTagsForResource",
+                "elasticloadbalancing:DescribeTags",
+                "ecr-public:DescribeRegistries",
+                "ecr:DescribeRegistry",
+                "elasticloadbalancing:DescribeLoadBalancerPolicyTypes",
+                "ecr:ListImages",
+                "ecr-public:GetRepositoryPolicy",
+                "elasticloadbalancing:DescribeLoadBalancerAttributes",
+                "elasticloadbalancing:DescribeLoadBalancers",
+                "ecr-public:DescribeRepositories",
+                "eks:DescribeNodegroup",
+                "ecr:DescribeImages",
+                "elasticloadbalancing:DescribeLoadBalancerPolicies",
+                "ecr:DescribeRepositories",
+                "eks:DescribeCluster",
+                "eks:ListClusters",
+                "elasticloadbalancing:DescribeInstanceHealth",
+                "ecr:GetRepositoryPolicy"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
 
 ## Leader election
 
