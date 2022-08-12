@@ -275,7 +275,6 @@ An example event for `host` looks as following:
 | nagios_xi.host.output |  | keyword |
 | nagios_xi.host.passive_checks_enabled | This is used to determine whether or not passive checks are enabled for this host. Values=\> 0 = disable passive host checks, 1 = enable passive host checks (default). | keyword |
 | nagios_xi.host.percent_state_change |  | keyword |
-| nagios_xi.host.perfdata | This is used to show exact outcome of check command. | keyword |
 | nagios_xi.host.performance_data.pl | This shows Packet Loss for current host. | double |
 | nagios_xi.host.performance_data.rta | This shows Round Trip Around for current host. | double |
 | nagios_xi.host.performance_data.size | This shows Request Size for current host. | double |
@@ -440,7 +439,6 @@ An example event for `service` looks as following:
 | nagios_xi.service.current_users.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.current_users.users | Current Users in host. | double |
 | nagios_xi.service.custom.performance_data | Exact output of check_command. | keyword |
-| nagios_xi.service.display_name | This is used to define an alternate name that should be displayed in the web interface for this host. If not specified, this defaults to the value you specify for the host_name directive. | keyword |
 | nagios_xi.service.event_handler | This is used to specify the short name of the command that should be run whenever a change in the state of the host is detected (i.e. whenever it goes down or recovers). Read the documentation on event handlers for a more detailed explanation of how to write scripts for handling events. The maximum amount of time that the event handler command can run is controlled by the event_handler_timeout option. | keyword |
 | nagios_xi.service.event_handler_enabled | This is used to determine whether or not the event handler for this host is enabled. Values=\> 0 = disable host event handler, 1 = enable host event handler. | keyword |
 | nagios_xi.service.execution_time |  | double |
@@ -482,7 +480,6 @@ An example event for `service` looks as following:
 | nagios_xi.service.output |  | keyword |
 | nagios_xi.service.passive_checks_enabled | This is used to determine whether or not passive checks are enabled for this host. Values=\> 0 = disable passive host checks, 1 = enable passive host checks (default). | keyword |
 | nagios_xi.service.percent_state_change |  | keyword |
-| nagios_xi.service.perfdata | This is used to determine whether or not the processing of performance data is enabled for this host. Values=\> 0 = disable performance data processing, 1 = enable performance data processing. | keyword |
 | nagios_xi.service.ping.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.ping.pl | Packet Loss while ping to host. | double |
 | nagios_xi.service.ping.rta | Round Trip Around while ping to host. | double |
@@ -503,7 +500,6 @@ An example event for `service` looks as following:
 | nagios_xi.service.ssh.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.ssh.time | SSH time taken for host. | double |
 | nagios_xi.service.state_type |  | keyword |
-| nagios_xi.service.status_text |  | keyword |
 | nagios_xi.service.status_update_time |  | date |
 | nagios_xi.service.swap_usage.free_swap | Free swap usage for host. | double |
 | nagios_xi.service.swap_usage.performance_data | Exact output of check_command. | keyword |
