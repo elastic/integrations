@@ -1,0 +1,22 @@
+metricsets: ["json"]
+namespace: "cluster"
+hosts:
+{{#each hosts}}
+  - "{{this}}/pools/default"
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+period: {{period}}
+json.is_array: false
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
