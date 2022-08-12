@@ -18,7 +18,7 @@ An example event for `loadbalancing` looks as following:
         "availability_zone": "us-central1-a"
     },
     "event": {
-        "dataset": "gcp.loadbalancing",
+        "dataset": "gcp.loadbalancing_metrics",
         "duration": 115000,
         "module": "gcp"
     },
