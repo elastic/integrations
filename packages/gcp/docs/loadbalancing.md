@@ -24,7 +24,7 @@ An example event for `loadbalancing` looks as following:
         "region": "global"
     },
     "data_stream": {
-        "dataset": "gcp.load_balancer",
+        "dataset": "gcp.loadbalancing_logs",
         "namespace": "ep",
         "type": "logs"
     },
