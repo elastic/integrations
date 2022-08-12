@@ -21,11 +21,11 @@ An example event for `limo` looks as following:
 {
     "@timestamp": "2017-01-20T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "29217578-e780-4c3e-912d-0f35ce981fb4",
-        "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
+        "ephemeral_id": "5cec6801-c545-4f74-be69-0fd865dc1788",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.3.2"
     },
     "anomali": {
         "limo": {
@@ -43,19 +43,19 @@ An example event for `limo` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-04-11T08:51:02.140Z",
+        "created": "2022-08-01T15:40:11.538Z",
         "dataset": "ti_anomali.limo",
-        "ingested": "2022-04-11T08:51:03Z",
+        "ingested": "2022-08-01T15:40:12Z",
         "kind": "enrichment",
         "original": "{\"created\":\"2017-01-20T00:00:00.000Z\",\"definition\":{\"tlp\":\"green\"},\"definition_type\":\"tlp\",\"id\":\"marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da\",\"type\":\"marking-definition\"}",
         "type": "indicator"
@@ -67,12 +67,7 @@ An example event for `limo` looks as following:
         "preserve_original_event",
         "forwarded",
         "anomali-limo"
-    ],
-    "threat": {
-        "indicator": {
-            "type": "unknown"
-        }
-    }
+    ]
 }
 ```
 
@@ -150,7 +145,7 @@ An example event for `limo` looks as following:
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
@@ -177,34 +172,31 @@ An example event for `threatstream` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-11T08:52:31.294Z",
+    "@timestamp": "2022-08-01T15:43:02.944Z",
     "agent": {
-        "ephemeral_id": "b49fcac4-6f07-4c25-8505-3306c6f56ca0",
-        "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
+        "ephemeral_id": "633e6483-2625-491c-9640-b4e480191a49",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.3.2"
     },
     "anomali": {
         "threatstream": {
             "classification": "public",
-            "confidence": 56,
-            "detail2": "imported by user 723",
-            "id": "1785659799",
-            "import_session_id": "244",
-            "itype": "mal_md5",
-            "md5": "6466e2",
-            "resource_uri": "/api/v1/intelligence/P44706407813/",
-            "severity": "very-high",
-            "source_feed_id": "3759",
+            "confidence": 20,
+            "detail2": "imported by user 184",
+            "id": "3135167627",
+            "import_session_id": "1400",
+            "itype": "mal_domain",
+            "resource_uri": "/api/v1/intelligence/P46279656657/",
+            "severity": "high",
+            "source_feed_id": "3143",
             "state": "active",
             "trusted_circle_ids": [
-                "439",
-                "942",
-                "801"
+                "122"
             ],
-            "update_id": "3898969521",
-            "value_type": "md5"
+            "update_id": "3786618776",
+            "value_type": "domain"
         }
     },
     "data_stream": {
@@ -213,21 +205,21 @@ An example event for `threatstream` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "6b916c32-9ec1-4b93-a910-81540b3df79b",
+        "id": "83b444a9-8a29-4729-964a-a91e7b770094",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_anomali.threatstream",
-        "ingested": "2022-04-11T08:52:32Z",
+        "ingested": "2022-08-01T15:43:03Z",
         "kind": "enrichment",
-        "original": "{\"classification\":\"public\",\"confidence\":56,\"date_first\":\"2020-10-08T12:22:16\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 723\",\"id\":1785659799,\"import_session_id\":244,\"itype\":\"mal_md5\",\"md5\":\"6466e2\",\"resource_uri\":\"/api/v1/intelligence/P44706407813/\",\"severity\":\"very-high\",\"source\":\"Default Organization\",\"source_feed_id\":3759,\"state\":\"active\",\"trusted_circle_ids\":\"439,942,801\",\"update_id\":3898969521,\"value_type\":\"md5\"}",
-        "severity": 9,
+        "original": "{\"classification\":\"public\",\"confidence\":20,\"country\":\"FR\",\"date_first\":\"2020-10-08T12:21:50\",\"date_last\":\"2020-10-08T12:24:42\",\"detail2\":\"imported by user 184\",\"domain\":\"d4xgfj.example.net\",\"id\":3135167627,\"import_session_id\":1400,\"itype\":\"mal_domain\",\"lat\":-49.1,\"lon\":94.4,\"org\":\"OVH Hosting\",\"resource_uri\":\"/api/v1/intelligence/P46279656657/\",\"severity\":\"high\",\"source\":\"Default Organization\",\"source_feed_id\":3143,\"srcip\":\"89.160.20.156\",\"state\":\"active\",\"trusted_circle_ids\":\"122\",\"update_id\":3786618776,\"value_type\":\"domain\"}",
+        "severity": 7,
         "type": "indicator"
     },
     "input": {
@@ -240,16 +232,32 @@ An example event for `threatstream` looks as following:
     ],
     "threat": {
         "indicator": {
-            "confidence": "Med",
-            "first_seen": "2020-10-08T12:22:16.000Z",
+            "as": {
+                "organization": {
+                    "name": "OVH Hosting"
+                }
+            },
+            "confidence": "Low",
+            "first_seen": "2020-10-08T12:21:50.000Z",
+            "geo": {
+                "country_iso_code": "FR",
+                "location": {
+                    "lat": -49.1,
+                    "lon": 94.4
+                }
+            },
+            "ip": "89.160.20.156",
             "last_seen": "2020-10-08T12:24:42.000Z",
             "marking": {
                 "tlp": [
-                    "White"
+                    "WHITE"
                 ]
             },
             "provider": "Default Organization",
-            "type": "file"
+            "type": "domain-name",
+            "url": {
+                "domain": "d4xgfj.example.net"
+            }
         }
     }
 }
@@ -332,7 +340,7 @@ An example event for `threatstream` looks as following:
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.as.organization.name | Organization name. | keyword |
 | threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
-| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. Expected values are:   \* Not Specified   \* None   \* Low   \* Medium   \* High | keyword |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
@@ -343,9 +351,9 @@ An example event for `threatstream` looks as following:
 | threat.indicator.geo.location | Longitude and latitude. | geo_point |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. Recommended values are:   \* WHITE   \* GREEN   \* AMBER   \* RED | keyword |
+| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
