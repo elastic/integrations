@@ -6,66 +6,105 @@ An example event for `transitgateway` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T20:10:20.953Z",
+    "agent": {
+        "name": "a20ad158868c",
+        "id": "ac8c5411-b1d9-486a-baf7-a719744b13e5",
+        "ephemeral_id": "d43b281f-9a3e-48be-a7b2-e70c0d0b9acd",
+        "type": "metricbeat",
+        "version": "8.1.0"
+    },
+    "elastic_agent": {
+        "id": "ac8c5411-b1d9-486a-baf7-a719744b13e5",
+        "version": "8.1.0",
+        "snapshot": false
+    },
     "cloud": {
         "provider": "aws",
-        "region": "us-west-2",
+        "region": "eu-west-1",
         "account": {
-            "name": "elastic-beats",
-            "id": "428152502467"
+            "name": "elastic-observability",
+            "id": "627286350134"
         }
     },
+    "@timestamp": "2022-07-26T21:58:00.000Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.transitgateway"
+    },
+    "service": {
+        "type": "aws"
+    },
+    "host": {
+        "hostname": "a20ad158868c",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.3 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "172.20.0.7"
+        ],
+        "name": "a20ad158868c",
+        "mac": [
+            "02:42:ac:14:00:07"
+        ],
+        "architecture": "aarch64"
+    },
+    "metricset": {
+        "period": 60000,
+        "name": "cloudwatch"
+    },
     "aws": {
+        "cloudwatch": {
+            "namespace": "AWS/TransitGateway"
+        },
         "transitgateway": {
             "metrics": {
-                "PacketsIn": {
+                "PacketsOut": {
                     "sum": 0
                 },
-                "BytesIn": {
+                "BytesDropCountNoRoute": {
+                    "sum": 0
+                },
+                "PacketDropCountNoRoute": {
                     "sum": 0
                 },
                 "BytesOut": {
                     "sum": 0
                 },
-                "PacketsOut": {
+                "BytesIn": {
+                    "sum": 0
+                },
+                "PacketsIn": {
+                    "sum": 0
+                },
+                "BytesDropCountBlackhole": {
                     "sum": 0
                 },
                 "PacketDropCountBlackhole": {
                     "sum": 0
-                },
-                "PacketDropCountNoRoute": {
-                    "sum": 0
                 }
             }
         },
-        "cloudwatch": {
-            "namespace": "AWS/TransitGateway"
-        },
         "dimensions": {
-            "TransitGateway": "tgw-0630672a32f12808a"
+            "TransitGateway": "tgw-04653af6191a63891"
         }
     },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "agent": {
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-        "name": "MacBook-Elastic.local",
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b"
-    },
     "event": {
-        "dataset": "aws.transitgateway",
+        "duration": 1614567042,
+        "agent_id_status": "verified",
+        "ingested": "2022-07-26T21:59:04Z",
         "module": "aws",
-        "duration": 12762825681
-    },
-    "metricset": {
-        "period": 60000,
-        "name": "transitgateway"
-    },
-    "service": {
-        "type": "aws"
+        "dataset": "aws.transitgateway"
     }
 }
 ```
@@ -75,13 +114,14 @@ An example event for `transitgateway` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.TransitGateway | Filters the metric data by transit gateway. | keyword |
 | aws.dimensions.TransitGatewayAttachment | Filters the metric data by transit gateway attachment. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
 | aws.tags.\* | Tag key value pairs from aws resources. | object |
+| aws.transitgateway.metrics.BytesDropCountBlackhole.sum | The number of bytes dropped because they matched a blackhole route. | long |
+| aws.transitgateway.metrics.BytesDropCountNoRoute.sum | The number of bytes dropped because they did not match a route. | long |
 | aws.transitgateway.metrics.BytesIn.sum | The number of bytes received by the transit gateway. | long |
 | aws.transitgateway.metrics.BytesOut.sum | The number of bytes sent from the transit gateway. | long |
 | aws.transitgateway.metrics.PacketDropCountBlackhole.sum | The number of packets dropped because they matched a blackhole route. | long |
