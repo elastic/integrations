@@ -1,0 +1,150 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "d8a21374-4117-4796-96e2-ecd47f2babd2": {
+                            "columnOrder": [
+                                "c96796ed-ded2-4cb6-9e7d-4ffbc1def264",
+                                "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X0",
+                                "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X1",
+                                "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X2"
+                            ],
+                            "columns": {
+                                "c96796ed-ded2-4cb6-9e7d-4ffbc1def264": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Ratio between the alerts generated and the number of commits",
+                                    "operationType": "formula",
+                                    "params": {
+                                        "formula": "count()/unique_count(github.code_scanning.most_recent_instance.commit_sha)",
+                                        "isFormulaBroken": false
+                                    },
+                                    "references": [
+                                        "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X2"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Ratio between the alerts and the number of commits generated",
+                                    "operationType": "count",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "___records___"
+                                },
+                                "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X1": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Ratio between the alerts and the number of commits generated",
+                                    "operationType": "unique_count",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "github.code_scanning.most_recent_instance.commit_sha"
+                                },
+                                "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X2": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Ratio between the alerts and the number of commits generated",
+                                    "operationType": "math",
+                                    "params": {
+                                        "tinymathAst": {
+                                            "args": [
+                                                "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X0",
+                                                "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X1"
+                                            ],
+                                            "location": {
+                                                "max": 74,
+                                                "min": 0
+                                            },
+                                            "name": "divide",
+                                            "text": "count()/unique_count(github.code_scanning.most_recent_instance.commit_sha)",
+                                            "type": "function"
+                                        }
+                                    },
+                                    "references": [
+                                        "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X0",
+                                        "c96796ed-ded2-4cb6-9e7d-4ffbc1def264X1"
+                                    ],
+                                    "scale": "ratio"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "index": "2ce8a419-debd-4a37-85e6-c7b49e61604f",
+                        "key": "data_stream.dataset",
+                        "negate": false,
+                        "params": [
+                            "github.code_scanning"
+                        ],
+                        "type": "phrases"
+                    },
+                    "query": {
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match_phrase": {
+                                        "data_stream.dataset": "github.code_scanning"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": ""
+            },
+            "visualization": {
+                "accessor": "c96796ed-ded2-4cb6-9e7d-4ffbc1def264",
+                "layerId": "d8a21374-4117-4796-96e2-ecd47f2babd2",
+                "layerType": "data",
+                "textAlign": "center"
+            }
+        },
+        "title": "Alert/Commit Ratio [GitHub Code Scanning]",
+        "visualizationType": "lnsMetric"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "github-7d091460-18f3-11ed-bfaa-c5ff8bfbd9eb",
+    "migrationVersion": {
+        "lens": "8.3.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-layer-d8a21374-4117-4796-96e2-ecd47f2babd2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2ce8a419-debd-4a37-85e6-c7b49e61604f",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}

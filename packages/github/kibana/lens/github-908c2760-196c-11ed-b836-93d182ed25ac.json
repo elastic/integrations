@@ -5,57 +5,36 @@
             "datasourceStates": {
                 "indexpattern": {
                     "layers": {
-                        "91e1a389-34e8-4332-9dbb-bd883d71dd85": {
+                        "631035e6-8678-47ee-9a8c-c6a87f6c1757": {
                             "columnOrder": [
-                                "894fb0b1-f0bd-4dbe-885b-0b41c339e84f",
-                                "8cca4d83-a822-4b67-97cd-27649e1d7c68",
-                                "c53bee8d-06ca-4728-b6bc-2761d77a9ef5"
+                                "257a7d8d-1315-4775-97d9-e679c0f3aa79",
+                                "e1d8072b-7268-444a-864e-ef1117b17b65"
                             ],
                             "columns": {
-                                "894fb0b1-f0bd-4dbe-885b-0b41c339e84f": {
+                                "257a7d8d-1315-4775-97d9-e679c0f3aa79": {
                                     "customLabel": true,
                                     "dataType": "string",
                                     "isBucketed": true,
-                                    "label": "Top repositories contributing to alerts by owner",
+                                    "label": "Secrets by Type",
                                     "operationType": "terms",
                                     "params": {
                                         "missingBucket": false,
                                         "orderBy": {
-                                            "columnId": "c53bee8d-06ca-4728-b6bc-2761d77a9ef5",
+                                            "columnId": "e1d8072b-7268-444a-864e-ef1117b17b65",
                                             "type": "column"
                                         },
                                         "orderDirection": "desc",
-                                        "otherBucket": true,
+                                        "otherBucket": false,
                                         "parentFormat": {
                                             "id": "terms"
                                         },
-                                        "size": 20
-                                    },
-                                    "scale": "ordinal",
-                                    "sourceField": "github.repository.owner.login"
-                                },
-                                "8cca4d83-a822-4b67-97cd-27649e1d7c68": {
-                                    "dataType": "string",
-                                    "isBucketed": true,
-                                    "label": "Top 10 values of github.repository.name",
-                                    "operationType": "terms",
-                                    "params": {
-                                        "missingBucket": false,
-                                        "orderBy": {
-                                            "columnId": "c53bee8d-06ca-4728-b6bc-2761d77a9ef5",
-                                            "type": "column"
-                                        },
-                                        "orderDirection": "desc",
-                                        "otherBucket": true,
-                                        "parentFormat": {
-                                            "id": "terms"
-                                        },
+                                        "secondaryFields": [],
                                         "size": 10
                                     },
                                     "scale": "ordinal",
-                                    "sourceField": "github.repository.name"
+                                    "sourceField": "github.secret_scanning.secret_type_display_name"
                                 },
-                                "c53bee8d-06ca-4728-b6bc-2761d77a9ef5": {
+                                "e1d8072b-7268-444a-864e-ef1117b17b65": {
                                     "dataType": "number",
                                     "isBucketed": false,
                                     "label": "Count of records",
@@ -80,11 +59,11 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "63aad513-3506-45e9-8c13-d2ee49f689ab",
+                        "index": "acfd1c9a-be16-4275-ae7d-0ad42b060de0",
                         "key": "data_stream.dataset",
                         "negate": false,
                         "params": [
-                            "github.code_scanning"
+                            "github.secret_scanning"
                         ],
                         "type": "phrases"
                     },
@@ -94,10 +73,31 @@
                             "should": [
                                 {
                                     "match_phrase": {
-                                        "data_stream.dataset": "github.code_scanning"
+                                        "data_stream.dataset": "github.secret_scanning"
                                     }
                                 }
                             ]
+                        }
+                    }
+                },
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "index": "42fcf4b5-0905-4d97-baa9-c08a61bc3b7a",
+                        "key": "github.state",
+                        "negate": false,
+                        "params": {
+                            "query": "open"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "github.state": "open"
                         }
                     }
                 }
@@ -110,38 +110,46 @@
                 "layers": [
                     {
                         "categoryDisplay": "default",
+                        "emptySizeRatio": 0.3,
                         "groups": [
-                            "894fb0b1-f0bd-4dbe-885b-0b41c339e84f",
-                            "8cca4d83-a822-4b67-97cd-27649e1d7c68"
+                            "257a7d8d-1315-4775-97d9-e679c0f3aa79"
                         ],
-                        "layerId": "91e1a389-34e8-4332-9dbb-bd883d71dd85",
+                        "layerId": "631035e6-8678-47ee-9a8c-c6a87f6c1757",
                         "layerType": "data",
-                        "legendDisplay": "default",
-                        "metric": "c53bee8d-06ca-4728-b6bc-2761d77a9ef5",
+                        "legendDisplay": "show",
+                        "legendMaxLines": 5,
+                        "legendPosition": "right",
+                        "metric": "e1d8072b-7268-444a-864e-ef1117b17b65",
                         "nestedLegend": false,
-                        "numberDisplay": "percent"
+                        "numberDisplay": "percent",
+                        "truncateLegend": true
                     }
                 ],
-                "shape": "pie"
+                "shape": "donut"
             }
         },
-        "title": "Aerts % by owner and by repository [GitHub Code Scanning]",
+        "title": "Open Secrets % by Type [GitHub Secret Scanning]",
         "visualizationType": "lnsPie"
     },
     "coreMigrationVersion": "8.3.0",
-    "id": "github-1b0f3c80-16d2-11ed-b047-912ecccf2770",
+    "id": "github-908c2760-196c-11ed-b836-93d182ed25ac",
     "migrationVersion": {
         "lens": "8.3.0"
     },
     "references": [
         {
             "id": "logs-*",
-            "name": "indexpattern-datasource-layer-91e1a389-34e8-4332-9dbb-bd883d71dd85",
+            "name": "indexpattern-datasource-layer-631035e6-8678-47ee-9a8c-c6a87f6c1757",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "63aad513-3506-45e9-8c13-d2ee49f689ab",
+            "name": "acfd1c9a-be16-4275-ae7d-0ad42b060de0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "42fcf4b5-0905-4d97-baa9-c08a61bc3b7a",
             "type": "index-pattern"
         }
     ],

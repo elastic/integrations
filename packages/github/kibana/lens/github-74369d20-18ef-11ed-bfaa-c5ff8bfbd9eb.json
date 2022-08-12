@@ -7,23 +7,39 @@
                     "layers": {
                         "df5f2c10-bc9b-4a7e-be41-d13240c21d95": {
                             "columnOrder": [
-                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0"
                             ],
                             "columns": {
                                 "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e": {
                                     "customLabel": true,
                                     "dataType": "number",
                                     "isBucketed": false,
-                                    "label": "Open Alerts",
-                                    "operationType": "count",
+                                    "label": "Resolved/Dismissed Alerts",
+                                    "operationType": "formula",
                                     "params": {
-                                        "emptyAsNull": true,
                                         "format": {
                                             "id": "number",
                                             "params": {
                                                 "decimals": 0
                                             }
-                                        }
+                                        },
+                                        "formula": "count()",
+                                        "isFormulaBroken": false
+                                    },
+                                    "references": [
+                                        "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Dismissed Alerts",
+                                    "operationType": "count",
+                                    "params": {
+                                        "emptyAsNull": false
                                     },
                                     "scale": "ratio",
                                     "sourceField": "___records___"
@@ -42,7 +58,7 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "5d417c98-6b80-42b4-9183-15bf539c9c46",
+                        "index": "bff2e3f5-8f9b-49f4-ba88-b0e937089c2f",
                         "key": "data_stream.dataset",
                         "negate": false,
                         "params": [
@@ -70,17 +86,30 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "c10f8d54-f8a4-45cf-8c17-527a0b914e14",
-                        "key": "github.code_scanning.state",
+                        "index": "960abe90-416f-4075-aaef-2cc0a3af1707",
+                        "key": "github.state",
                         "negate": false,
-                        "params": {
-                            "query": "open"
-                        },
-                        "type": "phrase"
+                        "params": [
+                            "dismissed",
+                            "resolved"
+                        ],
+                        "type": "phrases"
                     },
                     "query": {
-                        "match_phrase": {
-                            "github.code_scanning.state": "open"
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match_phrase": {
+                                        "github.state": "dismissed"
+                                    }
+                                },
+                                {
+                                    "match_phrase": {
+                                        "github.state": "resolved"
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -95,25 +124,11 @@
                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                 "layerType": "data",
                 "palette": {
-                    "name": "custom",
+                    "name": "positive",
                     "params": {
-                        "colorStops": [
-                            {
-                                "color": "#209280",
-                                "stop": 0
-                            },
-                            {
-                                "color": "#d6bf57",
-                                "stop": 1
-                            },
-                            {
-                                "color": "#cc5642",
-                                "stop": 1000
-                            }
-                        ],
                         "continuity": "above",
                         "maxSteps": 5,
-                        "name": "custom",
+                        "name": "positive",
                         "progression": "fixed",
                         "rangeMax": null,
                         "rangeMin": 0,
@@ -122,16 +137,16 @@
                         "steps": 3,
                         "stops": [
                             {
+                                "color": "#bbdad3",
+                                "stop": 0
+                            },
+                            {
+                                "color": "#77b6a8",
+                                "stop": 8
+                            },
+                            {
                                 "color": "#209280",
-                                "stop": 1
-                            },
-                            {
-                                "color": "#d6bf57",
-                                "stop": 1000
-                            },
-                            {
-                                "color": "#cc5642",
-                                "stop": 1001
+                                "stop": 16
                             }
                         ]
                     },
@@ -140,11 +155,11 @@
                 "textAlign": "center"
             }
         },
-        "title": "Open Alerts Count [GitHub Code Scanning]",
+        "title": "Resolved/Dismissed Alerts Count [GitHub Code Scanning]",
         "visualizationType": "lnsMetric"
     },
     "coreMigrationVersion": "8.3.0",
-    "id": "github-809bfb50-16d3-11ed-b047-912ecccf2770",
+    "id": "github-74369d20-18ef-11ed-bfaa-c5ff8bfbd9eb",
     "migrationVersion": {
         "lens": "8.3.0"
     },
@@ -156,12 +171,12 @@
         },
         {
             "id": "logs-*",
-            "name": "5d417c98-6b80-42b4-9183-15bf539c9c46",
+            "name": "bff2e3f5-8f9b-49f4-ba88-b0e937089c2f",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "c10f8d54-f8a4-45cf-8c17-527a0b914e14",
+            "name": "960abe90-416f-4075-aaef-2cc0a3af1707",
             "type": "index-pattern"
         }
     ],

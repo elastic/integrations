@@ -146,98 +146,98 @@ Or use a personal access token with the `security_events` scope for private repo
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Event module | constant_keyword |
-| github.code_scanning.created_at | The time that the alert was created in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |
-| github.code_scanning.dismissed_at | The time that the alert was dismissed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. | date |
-| github.code_scanning.dismissed_by.email |  | keyword |
-| github.code_scanning.dismissed_by.html_url |  | keyword |
-| github.code_scanning.dismissed_by.id |  | integer |
-| github.code_scanning.dismissed_by.login |  | keyword |
-| github.code_scanning.dismissed_by.name |  | keyword |
-| github.code_scanning.dismissed_by.site_admin |  | boolean |
-| github.code_scanning.dismissed_by.type |  | keyword |
-| github.code_scanning.dismissed_by.url |  | keyword |
-| github.code_scanning.dismissed_comment | The dismissal comment associated with the dismissal of the alert. | keyword |
-| github.code_scanning.dismissed_reason | The reason for dismissing or closing the alert. | keyword |
-| github.code_scanning.fixed_at | The time that the alert was no longer detected and was considered fixed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |
-| github.code_scanning.html_url | The GitHub URL of the alert resource. | keyword |
-| github.code_scanning.instances_url | The REST API URL for fetching the list of instances for an alert | keyword |
-| github.code_scanning.most_recent_instance.analysis_key | Identifies the configuration under which the analysis was executed. For example, in GitHub Actions this includes the workflow filename and job name. | keyword |
-| github.code_scanning.most_recent_instance.category | Identifies the configuration under which the analysis was executed. Used to distinguish between multiple analyses for the same tool and commit, but performed on different languages or different parts of the code. | keyword |
-| github.code_scanning.most_recent_instance.classifications | Classifications that have been applied to the file that triggered the alert.\nFor example identifying it as documentation, or a generated file. | keyword |
-| github.code_scanning.most_recent_instance.commit_sha | Github commit sha | keyword |
-| github.code_scanning.most_recent_instance.environment | Identifies the variable values associated with the environment in which the analysis that generated this alert instance was performed, such as the language that was analyzed. | keyword |
-| github.code_scanning.most_recent_instance.html_url |  | keyword |
-| github.code_scanning.most_recent_instance.location.end_column |  | integer |
-| github.code_scanning.most_recent_instance.location.end_line |  | integer |
-| github.code_scanning.most_recent_instance.location.path |  | keyword |
-| github.code_scanning.most_recent_instance.location.start_column |  | integer |
-| github.code_scanning.most_recent_instance.location.start_line |  | integer |
-| github.code_scanning.most_recent_instance.ref | The full Git reference, formatted as `refs/heads/\<branch name\>`,\n`refs/pull/\<number\>/merge`, or `refs/pull/\<number\>/head`. | keyword |
-| github.code_scanning.most_recent_instance.state | State of a code scanning alert. | keyword |
-| github.code_scanning.number | The security alert number | integer |
-| github.code_scanning.rule.full_description | Description of the rule used to detect the alert. | text |
-| github.code_scanning.rule.help | Detailed documentation for the rule as GitHub Flavored Markdown | text |
-| github.code_scanning.rule.security_severity_level | The security severity of the alert | keyword |
-| github.code_scanning.rule.severity | The severity of the alert | keyword |
-| github.code_scanning.state | State of a code scanning alert | keyword |
-| github.code_scanning.time_to_resolution.sec | The time taken to either dismiss or fix the alert in seconds. | long |
-| github.code_scanning.tool.guid | The GUID of the tool used to generate the code scanning analysis, if provided in the uploaded SARIF data. | keyword |
-| github.code_scanning.tool.name | The name of the tool used to generate the code scanning analysis. | keyword |
-| github.code_scanning.tool.version | The version of the tool used to generate the code scanning analysis. | keyword |
-| github.code_scanning.updated_at | The time that the alert was last updated in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |
-| github.code_scanning.url | The REST API URL of the alert resource | keyword |
-| github.repository.description | The repository description. | text |
-| github.repository.fork | Whether the repository is a fork | boolean |
-| github.repository.full_name | The full, globally unique, name of the repository. | keyword |
-| github.repository.html_url | The URL to view the repository on GitHub.com. | keyword |
-| github.repository.id | A unique identifier of the repository. | integer |
-| github.repository.name | The name of the repository. | keyword |
-| github.repository.owner.html_url |  | keyword |
-| github.repository.owner.id |  | integer |
-| github.repository.owner.login |  | keyword |
-| github.repository.owner.site_admin |  | boolean |
-| github.repository.owner.type |  | keyword |
-| github.repository.owner.url |  | keyword |
-| github.repository.private | Whether the repository is private. | boolean |
-| github.repository.url | The URL to get more information about the repository from the GitHub API. | keyword |
-| github.severity | The security severity of the alert | keyword |
-| github.state | State of a code scanning alert | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| rule.description | The description of the rule generating the event. | keyword |
-| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
-| rule.name | The name of the rule or signature generating the event. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| github.code_scanning.created_at | The time that the alert was created in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
+| github.code_scanning.dismissed_at | The time that the alert was dismissed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. | date |  |  |
+| github.code_scanning.dismissed_by.email |  | keyword |  |  |
+| github.code_scanning.dismissed_by.html_url |  | keyword |  |  |
+| github.code_scanning.dismissed_by.id |  | integer |  |  |
+| github.code_scanning.dismissed_by.login |  | keyword |  |  |
+| github.code_scanning.dismissed_by.name |  | keyword |  |  |
+| github.code_scanning.dismissed_by.site_admin |  | boolean |  |  |
+| github.code_scanning.dismissed_by.type |  | keyword |  |  |
+| github.code_scanning.dismissed_by.url |  | keyword |  |  |
+| github.code_scanning.dismissed_comment | The dismissal comment associated with the dismissal of the alert. | keyword |  |  |
+| github.code_scanning.dismissed_reason | The reason for dismissing or closing the alert. | keyword |  |  |
+| github.code_scanning.fixed_at | The time that the alert was no longer detected and was considered fixed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
+| github.code_scanning.html_url | The GitHub URL of the alert resource. | keyword |  |  |
+| github.code_scanning.instances_url | The REST API URL for fetching the list of instances for an alert | keyword |  |  |
+| github.code_scanning.most_recent_instance.analysis_key | Identifies the configuration under which the analysis was executed. For example, in GitHub Actions this includes the workflow filename and job name. | keyword |  |  |
+| github.code_scanning.most_recent_instance.category | Identifies the configuration under which the analysis was executed. Used to distinguish between multiple analyses for the same tool and commit, but performed on different languages or different parts of the code. | keyword |  |  |
+| github.code_scanning.most_recent_instance.classifications | Classifications that have been applied to the file that triggered the alert.\nFor example identifying it as documentation, or a generated file. | keyword |  |  |
+| github.code_scanning.most_recent_instance.commit_sha | Github commit sha | keyword |  |  |
+| github.code_scanning.most_recent_instance.environment | Identifies the variable values associated with the environment in which the analysis that generated this alert instance was performed, such as the language that was analyzed. | keyword |  |  |
+| github.code_scanning.most_recent_instance.html_url |  | keyword |  |  |
+| github.code_scanning.most_recent_instance.location.end_column |  | integer |  |  |
+| github.code_scanning.most_recent_instance.location.end_line |  | integer |  |  |
+| github.code_scanning.most_recent_instance.location.path |  | keyword |  |  |
+| github.code_scanning.most_recent_instance.location.start_column |  | integer |  |  |
+| github.code_scanning.most_recent_instance.location.start_line |  | integer |  |  |
+| github.code_scanning.most_recent_instance.ref | The full Git reference, formatted as `refs/heads/\<branch name\>`,\n`refs/pull/\<number\>/merge`, or `refs/pull/\<number\>/head`. | keyword |  |  |
+| github.code_scanning.most_recent_instance.state | State of a code scanning alert. | keyword |  |  |
+| github.code_scanning.number | The security alert number | integer |  |  |
+| github.code_scanning.rule.full_description | Description of the rule used to detect the alert. | text |  |  |
+| github.code_scanning.rule.help | Detailed documentation for the rule as GitHub Flavored Markdown | text |  |  |
+| github.code_scanning.rule.security_severity_level | The security severity of the alert | keyword |  |  |
+| github.code_scanning.rule.severity | The severity of the alert | keyword |  |  |
+| github.code_scanning.state | State of a code scanning alert | keyword |  |  |
+| github.code_scanning.time_to_resolution.sec | The time taken to either dismiss or fix the alert in seconds. | long | s | gauge |
+| github.code_scanning.tool.guid | The GUID of the tool used to generate the code scanning analysis, if provided in the uploaded SARIF data. | keyword |  |  |
+| github.code_scanning.tool.name | The name of the tool used to generate the code scanning analysis. | keyword |  |  |
+| github.code_scanning.tool.version | The version of the tool used to generate the code scanning analysis. | keyword |  |  |
+| github.code_scanning.updated_at | The time that the alert was last updated in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
+| github.code_scanning.url | The REST API URL of the alert resource | keyword |  |  |
+| github.repository.description | The repository description. | text |  |  |
+| github.repository.fork | Whether the repository is a fork | boolean |  |  |
+| github.repository.full_name | The full, globally unique, name of the repository. | keyword |  |  |
+| github.repository.html_url | The URL to view the repository on GitHub.com. | keyword |  |  |
+| github.repository.id | A unique identifier of the repository. | integer |  |  |
+| github.repository.name | The name of the repository. | keyword |  |  |
+| github.repository.owner.html_url |  | keyword |  |  |
+| github.repository.owner.id |  | integer |  |  |
+| github.repository.owner.login |  | keyword |  |  |
+| github.repository.owner.site_admin |  | boolean |  |  |
+| github.repository.owner.type |  | keyword |  |  |
+| github.repository.owner.url |  | keyword |  |  |
+| github.repository.private | Whether the repository is private. | boolean |  |  |
+| github.repository.url | The URL to get more information about the repository from the GitHub API. | keyword |  |  |
+| github.severity | The security severity of the alert | keyword |  |  |
+| github.state | State of a code scanning alert | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |  |  |
+| rule.description | The description of the rule generating the event. | keyword |  |  |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |  |  |
+| rule.name | The name of the rule or signature generating the event. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 
 
 An example event for `code_scanning` looks as following:
@@ -335,74 +335,75 @@ Or you must be an administrator for the repository or for the organization that 
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| github.repository.html_url | The URL to view the repository on GitHub.com. | keyword |
-| github.repository.name | The name of the repository. | keyword |
-| github.repository.owner.login |  | keyword |
-| github.repository.url | The URL to get more information about the repository from the GitHub API. | keyword |
-| github.secret_scanning.created_at | The time that the alert was created in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |
-| github.secret_scanning.html_url | The GitHub URL of the alert resource. | keyword |
-| github.secret_scanning.locations_url | The REST API URL of the code locations for this alert | keyword |
-| github.secret_scanning.number | The security alert number | integer |
-| github.secret_scanning.push_protection_bypassed | Whether push protection was bypassed for the detected secret. | boolean |
-| github.secret_scanning.push_protection_bypassed_at | The time that push protection was bypassed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. | date |
-| github.secret_scanning.push_protection_bypassed_by.email |  | keyword |
-| github.secret_scanning.push_protection_bypassed_by.html_url |  | keyword |
-| github.secret_scanning.push_protection_bypassed_by.id |  | integer |
-| github.secret_scanning.push_protection_bypassed_by.login |  | keyword |
-| github.secret_scanning.push_protection_bypassed_by.name |  | keyword |
-| github.secret_scanning.push_protection_bypassed_by.node_id |  | keyword |
-| github.secret_scanning.push_protection_bypassed_by.site_admin |  | boolean |
-| github.secret_scanning.push_protection_bypassed_by.type |  | keyword |
-| github.secret_scanning.push_protection_bypassed_by.url |  | keyword |
-| github.secret_scanning.resolution | Required when the `state` is `resolved`. The reason for resolving the alert. | keyword |
-| github.secret_scanning.resolved_at | The time that the alert was resolved in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. | date |
-| github.secret_scanning.resolved_by.email |  | keyword |
-| github.secret_scanning.resolved_by.html_url |  | keyword |
-| github.secret_scanning.resolved_by.id |  | integer |
-| github.secret_scanning.resolved_by.login |  | keyword |
-| github.secret_scanning.resolved_by.name |  | keyword |
-| github.secret_scanning.resolved_by.node_id |  | keyword |
-| github.secret_scanning.resolved_by.site_admin |  | boolean |
-| github.secret_scanning.resolved_by.type |  | keyword |
-| github.secret_scanning.resolved_by.url |  | keyword |
-| github.secret_scanning.secret | The secret that was detected | keyword |
-| github.secret_scanning.secret_type | The type of secret that secret scanning detected | keyword |
-| github.secret_scanning.secret_type_display_name | User-friendly name for the detected secret, matching the `secret_type` | keyword |
-| github.secret_scanning.state | Sets the state of the secret scanning alert. | keyword |
-| github.secret_scanning.updated_at | The time that the alert was last updated in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |
-| github.secret_scanning.url | The REST API URL of the alert resource | keyword |
-| github.state | State of a code scanning alert | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| github.repository.html_url | The URL to view the repository on GitHub.com. | keyword |  |  |
+| github.repository.name | The name of the repository. | keyword |  |  |
+| github.repository.owner.login |  | keyword |  |  |
+| github.repository.url | The URL to get more information about the repository from the GitHub API. | keyword |  |  |
+| github.secret_scanning.created_at | The time that the alert was created in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
+| github.secret_scanning.html_url | The GitHub URL of the alert resource. | keyword |  |  |
+| github.secret_scanning.locations_url | The REST API URL of the code locations for this alert | keyword |  |  |
+| github.secret_scanning.number | The security alert number | integer |  |  |
+| github.secret_scanning.push_protection_bypassed | Whether push protection was bypassed for the detected secret. | boolean |  |  |
+| github.secret_scanning.push_protection_bypassed_at | The time that push protection was bypassed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. | date |  |  |
+| github.secret_scanning.push_protection_bypassed_by.email |  | keyword |  |  |
+| github.secret_scanning.push_protection_bypassed_by.html_url |  | keyword |  |  |
+| github.secret_scanning.push_protection_bypassed_by.id |  | integer |  |  |
+| github.secret_scanning.push_protection_bypassed_by.login |  | keyword |  |  |
+| github.secret_scanning.push_protection_bypassed_by.name |  | keyword |  |  |
+| github.secret_scanning.push_protection_bypassed_by.node_id |  | keyword |  |  |
+| github.secret_scanning.push_protection_bypassed_by.site_admin |  | boolean |  |  |
+| github.secret_scanning.push_protection_bypassed_by.type |  | keyword |  |  |
+| github.secret_scanning.push_protection_bypassed_by.url |  | keyword |  |  |
+| github.secret_scanning.resolution | Required when the `state` is `resolved`. The reason for resolving the alert. | keyword |  |  |
+| github.secret_scanning.resolved_at | The time that the alert was resolved in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`. | date |  |  |
+| github.secret_scanning.resolved_by.email |  | keyword |  |  |
+| github.secret_scanning.resolved_by.html_url |  | keyword |  |  |
+| github.secret_scanning.resolved_by.id |  | integer |  |  |
+| github.secret_scanning.resolved_by.login |  | keyword |  |  |
+| github.secret_scanning.resolved_by.name |  | keyword |  |  |
+| github.secret_scanning.resolved_by.node_id |  | keyword |  |  |
+| github.secret_scanning.resolved_by.site_admin |  | boolean |  |  |
+| github.secret_scanning.resolved_by.type |  | keyword |  |  |
+| github.secret_scanning.resolved_by.url |  | keyword |  |  |
+| github.secret_scanning.secret | The secret that was detected | keyword |  |  |
+| github.secret_scanning.secret_type | The type of secret that secret scanning detected | keyword |  |  |
+| github.secret_scanning.secret_type_display_name | User-friendly name for the detected secret, matching the `secret_type` | keyword |  |  |
+| github.secret_scanning.state | Sets the state of the secret scanning alert. | keyword |  |  |
+| github.secret_scanning.time_to_resolution.sec | The time taken to either fix the secret in seconds. | long | s | gauge |
+| github.secret_scanning.updated_at | The time that the alert was last updated in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
+| github.secret_scanning.url | The REST API URL of the alert resource | keyword |  |  |
+| github.state | State of a code scanning alert | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
 
 
 An example event for `secret_scanning` looks as following:

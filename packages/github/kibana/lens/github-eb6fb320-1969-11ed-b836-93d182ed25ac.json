@@ -8,27 +8,29 @@
                         "df5f2c10-bc9b-4a7e-be41-d13240c21d95": {
                             "columnOrder": [
                                 "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0"
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0",
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX1",
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX2"
                             ],
                             "columns": {
                                 "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e": {
                                     "customLabel": true,
                                     "dataType": "number",
                                     "isBucketed": false,
-                                    "label": "Resolved/Dismissed Alerts",
+                                    "label": "Secrets Found/Fixed Ratio",
                                     "operationType": "formula",
                                     "params": {
                                         "format": {
                                             "id": "number",
                                             "params": {
-                                                "decimals": 0
+                                                "decimals": 2
                                             }
                                         },
-                                        "formula": "count()",
+                                        "formula": "count()/count(kql='github.state:dismissed or github.state:resolved')",
                                         "isFormulaBroken": false
                                     },
                                     "references": [
-                                        "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0"
+                                        "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX2"
                                     ],
                                     "scale": "ratio"
                                 },
@@ -36,13 +38,56 @@
                                     "customLabel": true,
                                     "dataType": "number",
                                     "isBucketed": false,
-                                    "label": "Part of Dismissed Alerts",
+                                    "label": "Part of Secrets Found/Fixed Ratio",
                                     "operationType": "count",
                                     "params": {
                                         "emptyAsNull": false
                                     },
                                     "scale": "ratio",
                                     "sourceField": "___records___"
+                                },
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX1": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "filter": {
+                                        "language": "kuery",
+                                        "query": "github.state:dismissed or github.state:resolved"
+                                    },
+                                    "isBucketed": false,
+                                    "label": "Part of Secrets Found/Fixed Ratio",
+                                    "operationType": "count",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "___records___"
+                                },
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX2": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Secrets Found/Fixed Ratio",
+                                    "operationType": "math",
+                                    "params": {
+                                        "tinymathAst": {
+                                            "args": [
+                                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0",
+                                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX1"
+                                            ],
+                                            "location": {
+                                                "max": 68,
+                                                "min": 0
+                                            },
+                                            "name": "divide",
+                                            "text": "count()/count(kql='github.state:dismissed or github.state:resolved')",
+                                            "type": "function"
+                                        }
+                                    },
+                                    "references": [
+                                        "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0",
+                                        "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX1"
+                                    ],
+                                    "scale": "ratio"
                                 }
                             },
                             "incompleteColumns": {}
@@ -58,11 +103,10 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "17e2088a-3bc2-4868-bc76-7cf83644301c",
+                        "index": "ef2a4614-151f-42d0-8707-257d009298ea",
                         "key": "data_stream.dataset",
                         "negate": false,
                         "params": [
-                            "github.code_scanning",
                             "github.secret_scanning"
                         ],
                         "type": "phrases"
@@ -73,46 +117,7 @@
                             "should": [
                                 {
                                     "match_phrase": {
-                                        "data_stream.dataset": "github.code_scanning"
-                                    }
-                                },
-                                {
-                                    "match_phrase": {
                                         "data_stream.dataset": "github.secret_scanning"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                },
-                {
-                    "$state": {
-                        "store": "appState"
-                    },
-                    "meta": {
-                        "alias": null,
-                        "disabled": false,
-                        "index": "ba32e691-eaea-469b-8dd5-3aeb2fbc2cd7",
-                        "key": "github.state",
-                        "negate": false,
-                        "params": [
-                            "dismissed",
-                            "resolved"
-                        ],
-                        "type": "phrases"
-                    },
-                    "query": {
-                        "bool": {
-                            "minimum_should_match": 1,
-                            "should": [
-                                {
-                                    "match_phrase": {
-                                        "github.state": "dismissed"
-                                    }
-                                },
-                                {
-                                    "match_phrase": {
-                                        "github.state": "resolved"
                                     }
                                 }
                             ]
@@ -126,46 +131,17 @@
             },
             "visualization": {
                 "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                "colorMode": "Labels",
+                "colorMode": "None",
                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                 "layerType": "data",
-                "palette": {
-                    "name": "positive",
-                    "params": {
-                        "continuity": "above",
-                        "maxSteps": 5,
-                        "name": "positive",
-                        "progression": "fixed",
-                        "rangeMax": null,
-                        "rangeMin": 0,
-                        "rangeType": "number",
-                        "reverse": false,
-                        "steps": 3,
-                        "stops": [
-                            {
-                                "color": "#bbdad3",
-                                "stop": 0
-                            },
-                            {
-                                "color": "#77b6a8",
-                                "stop": 8
-                            },
-                            {
-                                "color": "#209280",
-                                "stop": 16
-                            }
-                        ]
-                    },
-                    "type": "palette"
-                },
                 "textAlign": "center"
             }
         },
-        "title": "Resolved/Dismissed Alerts Count [GitHub Advanced Security]",
+        "title": "Secrets Found/Fixed Ratio [GitHub Secret Scanning]",
         "visualizationType": "lnsMetric"
     },
     "coreMigrationVersion": "8.3.0",
-    "id": "github-d97c0e90-16d3-11ed-b047-912ecccf2770",
+    "id": "github-eb6fb320-1969-11ed-b836-93d182ed25ac",
     "migrationVersion": {
         "lens": "8.3.0"
     },
@@ -177,12 +153,7 @@
         },
         {
             "id": "logs-*",
-            "name": "17e2088a-3bc2-4868-bc76-7cf83644301c",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "ba32e691-eaea-469b-8dd5-3aeb2fbc2cd7",
+            "name": "ef2a4614-151f-42d0-8707-257d009298ea",
             "type": "index-pattern"
         }
     ],

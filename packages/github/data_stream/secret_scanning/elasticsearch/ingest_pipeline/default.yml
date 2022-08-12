@@ -230,6 +230,22 @@ processors:
         masked_secret = secret.substring(0,num_start) + masked_value + secret.substring(secret.length()-num_end);
         ctx.github.secret_scanning.secret = masked_secret;
 
+- script:
+    lang: painless
+    description: Calculate time taken to resolve the secrets
+    if: ctx.github.secret_scanning?.resolved_at != null
+    source: |
+        def time_to_resolution = new HashMap();
+        def resolvedAtDt = ctx.github.secret_scanning.resolved_at;
+        def createdAtDt = ctx.github.secret_scanning.created_at;
+        ZonedDateTime zdt = ZonedDateTime.parse(createdAtDt);
+        long createdAtEpoch = zdt.toEpochSecond();
+        zdt = ZonedDateTime.parse(resolvedAtDt);
+        long resolvedAtEpoch = zdt.toEpochSecond();
+        time_to_resolution.put("sec", resolvedAtEpoch - createdAtEpoch);
+        ctx.github.secret_scanning.time_to_resolution = time_to_resolution;
+
+
   ###########
   # Cleanup #
   ###########
