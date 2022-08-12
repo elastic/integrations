@@ -436,8 +436,6 @@ An example event for `executor` looks as following:
 | apache_spark.executor.gc.major.time | Elapsed total major GC time. The value is expressed in milliseconds. | long |
 | apache_spark.executor.gc.minor.count | Total minor GC count. For example, the garbage collector is one of Copy, PS Scavenge, ParNew, G1 Young Generation and so on. | long |
 | apache_spark.executor.gc.minor.time | Elapsed total minor GC time. The value is expressed in milliseconds. | long |
-| apache_spark.executor.generated_class_size | Size of the class generated. | long |
-| apache_spark.executor.generated_method_size | Size of the method generated. | long |
 | apache_spark.executor.heap_memory.off.execution | Peak off heap execution memory in use, in bytes. | long |
 | apache_spark.executor.heap_memory.off.storage | Peak off heap storage memory in use, in bytes. | long |
 | apache_spark.executor.heap_memory.off.unified | Peak off heap memory (execution and storage). | long |
@@ -481,7 +479,6 @@ An example event for `executor` looks as following:
 | apache_spark.executor.shuffle.server.used.heap_memory | Amount of heap memory used by the shuffle server. | long |
 | apache_spark.executor.shuffle.total.bytes_read | Number of bytes read in shuffle operations (both local and remote) | long |
 | apache_spark.executor.shuffle.write.time | Time spent blocking on writes to disk or buffer cache. The value is expressed in nanoseconds. | long |
-| apache_spark.executor.source_code_size | The total size of the source code. | long |
 | apache_spark.executor.succeeded_tasks | The number of tasks succeeded. | long |
 | apache_spark.executor.threadpool.active_tasks | Number of tasks currently executing. | long |
 | apache_spark.executor.threadpool.complete_tasks | Number of tasks that have completed in this executor. | long |
