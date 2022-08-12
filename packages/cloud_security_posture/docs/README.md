@@ -35,9 +35,11 @@ This Integration does not currently support the security posture assessment of:
 
 ## Permissions 
 
-This integration requires access to node files, node processes, and the Kubernetes api-server therefore it assumes the agent will be installed as a [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) with the proper [Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and [RoleBindings](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) attached.
+This integration requires access to node files, node processes, and the Kubernetes api-server therefore, it assumes the agent will be installed as a [DaemonSet](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) with the proper [Roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) and [RoleBindings](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#rolebinding-and-clusterrolebinding) attached.
 
-If deploying this integration on an [Amazon EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html), specific AWS permissions are required for the IAM user to make specific AWS API calls. To enable the integration to collect configuration metadata from all relevant resources/services, make sure these permissions are given:
+If deploying this integration on an [Amazon EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html), an IAM user with programmatic access and specific permissions is required to make AWS API calls. When creating the IAM user, please make sure to create and attach an [IAM policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_create.html) to it that has the following set of permissions: 
+
+
 ```yaml
 {
     "Version": "2012-10-17",
@@ -71,6 +73,9 @@ If deploying this integration on an [Amazon EKS cluster](https://docs.aws.amazon
     ]
 }
 ```
+
+If the necessary credentials aren't provided, EKS clusters won't get evaluated. 
+
 ## Leader election
 
 To collect cluster level data (compared to node level information) the integration makes use of the [leader election](https://www.elastic.co/guide/en/fleet/master/kubernetes_leaderelection-provider.html) mechanism.
