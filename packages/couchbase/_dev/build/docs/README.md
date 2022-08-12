@@ -1,8 +1,8 @@
 # Couchbase Integration
 
-This Elastic integration collects and parses the [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
+This Elastic integration collects and parses [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html) and [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
 
-This integration uses `http` metricbeat module to collect `bucket` metrics.
+This integration uses `http` metricbeat module to collect `bucket` and `cluster` metrics.
 
 Note: For Couchbase cluster setup, there is an ideal scenario of single host with administrator access for the entire cluster to collect metrics. Providing multiple host from the same cluster might lead to data duplication. In case of multiple clusters, adding a new integration to collect data from different cluster host is a good option.
 
@@ -27,3 +27,11 @@ This is the `bucket` data stream. A bucket is a logical container for a related 
 {{event "bucket"}}
 
 {{fields "bucket"}}
+
+### Cluster
+
+This is the `cluster` data stream. A cluster is a collection of nodes that are accessed and managed as a single group. Each node is an equal partner in orchestrating the cluster to provide facilities such as operational information (monitoring) or managing cluster membership of nodes and health of nodes.
+
+{{event "cluster"}}
+
+{{fields "cluster"}}
