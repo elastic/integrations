@@ -300,14 +300,15 @@
                                         "89d5720f-f033-4434-8818-dd88bd632fea": {
                                             "columnOrder": [
                                                 "a1d6f2fd-170a-4095-adfe-f668315c685e",
-                                                "86f39bff-26ee-427b-951a-fd83034b0d46"
+                                                "86f39bff-26ee-427b-951a-fd83034b0d46",
+                                                "feda6586-06d3-4908-aa7c-b422a9375dbd"
                                             ],
                                             "columns": {
                                                 "86f39bff-26ee-427b-951a-fd83034b0d46": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "CPU Usage",
+                                                    "label": "Average",
                                                     "operationType": "average",
                                                     "params": {
                                                         "format": {
@@ -341,6 +342,24 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "host.name"
+                                                },
+                                                "feda6586-06d3-4908-aa7c-b422a9375dbd": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Last value",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 3
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.cpu.total.norm.pct"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -351,7 +370,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"system.cpu\""
+                                "query": "data_stream.dataset : \"system.cpu\" and system.cpu.total.norm.pct:*"
                             },
                             "visualization": {
                                 "columns": [
@@ -404,6 +423,53 @@
                                             "type": "palette"
                                         },
                                         "width": 169.5
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "feda6586-06d3-4908-aa7c-b422a9375dbd",
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "custom",
+                                            "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#209280",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#d6bf57",
+                                                        "stop": 0.7
+                                                    },
+                                                    {
+                                                        "color": "#cc5642",
+                                                        "stop": 0.85
+                                                    }
+                                                ],
+                                                "continuity": "above",
+                                                "name": "custom",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "rangeType": "number",
+                                                "reverse": false,
+                                                "steps": 5,
+                                                "stops": [
+                                                    {
+                                                        "color": "#209280",
+                                                        "stop": 0.7
+                                                    },
+                                                    {
+                                                        "color": "#d6bf57",
+                                                        "stop": 0.85
+                                                    },
+                                                    {
+                                                        "color": "#cc5642",
+                                                        "stop": 1.85
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        },
+                                        "width": 154.75
                                     }
                                 ],
                                 "layerId": "89d5720f-f033-4434-8818-dd88bd632fea",
@@ -469,14 +535,15 @@
                                         "89d5720f-f033-4434-8818-dd88bd632fea": {
                                             "columnOrder": [
                                                 "a1d6f2fd-170a-4095-adfe-f668315c685e",
-                                                "59e60819-4130-44d4-8be2-0c1b6b973e2d"
+                                                "59e60819-4130-44d4-8be2-0c1b6b973e2d",
+                                                "a5c79cbb-ea89-4a37-ab26-0989fa4488cb"
                                             ],
                                             "columns": {
                                                 "59e60819-4130-44d4-8be2-0c1b6b973e2d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Memory usage",
+                                                    "label": "Average",
                                                     "operationType": "average",
                                                     "params": {
                                                         "format": {
@@ -510,6 +577,24 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "host.name"
+                                                },
+                                                "a5c79cbb-ea89-4a37-ab26-0989fa4488cb": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Last value",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 3
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.memory.actual.used.pct"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -520,7 +605,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"system.memory\""
+                                "query": "data_stream.dataset : \"system.memory\" and system.memory.actual.used.pct:*"
                             },
                             "visualization": {
                                 "columns": [
@@ -573,6 +658,53 @@
                                             "type": "palette"
                                         },
                                         "width": 200.5
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "a5c79cbb-ea89-4a37-ab26-0989fa4488cb",
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "custom",
+                                            "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#209280",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#d6bf57",
+                                                        "stop": 0.7
+                                                    },
+                                                    {
+                                                        "color": "#cc5642",
+                                                        "stop": 0.85
+                                                    }
+                                                ],
+                                                "continuity": "above",
+                                                "name": "custom",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "rangeType": "number",
+                                                "reverse": false,
+                                                "steps": 5,
+                                                "stops": [
+                                                    {
+                                                        "color": "#209280",
+                                                        "stop": 0.7
+                                                    },
+                                                    {
+                                                        "color": "#d6bf57",
+                                                        "stop": 0.85
+                                                    },
+                                                    {
+                                                        "color": "#cc5642",
+                                                        "stop": 1.85
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        },
+                                        "width": 199.25
                                     }
                                 ],
                                 "layerId": "89d5720f-f033-4434-8818-dd88bd632fea",
