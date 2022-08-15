@@ -1,10 +1,10 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Mimecast audit_events.
 processors:
-  #  # Generic event/ecs fields we always want to populate
+  # Generic event/ecs fields we always want to populate.
   - set:
       field: ecs.version
-      value: "8.2.0"
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -27,6 +27,8 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSZ"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSz"
         - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSz"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSZ"
         - "yyyy-MM-dd'T'HH:mm:ss z"
 
   ###
@@ -64,9 +66,21 @@ processors:
   - dissect:
       field: mimecast.eventInfo
       pattern: "%{mimecast.info}, %{?key}:%{mimecast.email.address}[%{mimecast.email.metadata}] %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action=="logon-authentication-failed"'
+      if: 'ctx.event?.action=="logon-authentication-failed"'
       ignore_missing: true
       ignore_failure: true
+  - dissect:
+       field: mimecast.eventInfo
+       pattern: "%{mimecast.info}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time} %{mimecast.timezone}, %{?key}: : %{client.ip},, %{?key}: %{mimecast.application}, %{?key}: %{event.reason}"
+       if: 'ctx.event?.action=="logon-authentication-failed"'
+       ignore_missing: true
+       ignore_failure: true
+  - dissect:
+       field: mimecast.eventInfo
+       pattern: "%{mimecast.info}, %{?key} : %{mimecast.date}, %{?key} : %{mimecast.time}, %{?key} : %{client.ip}, %{?key} : %{mimecast.application}, %{mimecast.remote}"
+       if: 'ctx.event?.action=="logon-authentication-failed"'
+       ignore_missing: true
+       ignore_failure: true
   - dissect:
       field: mimecast.eventInfo
       pattern: "%{mimecast.info}, %{mimecast.rest_of_event_info}"
@@ -76,7 +90,7 @@ processors:
   - dissect:
        field: mimecast.eventInfo
        pattern: "%{?drop->} - %{mimecast.info}<%{user.email}> %{?key}: %{mimecast.date} %{?key}: %{mimecast.time} %{mimecast.timezone} %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
-       if: 'ctx?.event?.action=="folder-log-entry" || ctx?.event?.action=="custom-report-definition-created" || ctx?.event?.action=="mimecast-support-login"'
+       if: 'ctx.event?.action=="folder-log-entry" || ctx.event?.action=="custom-report-definition-created" || ctx.event?.action=="mimecast-support-login"'
        ignore_missing: true
        ignore_failure: true
   - kv:
@@ -85,6 +99,15 @@ processors:
       value_split: ": "
       target_field: mimecast.event_info_parts
       ignore_failure: true
+      ignore_missing: true
+  - set:
+      field: mimecast.remote
+      value: "{{{mimecast.rest_of_event_info}}}"
+      if: 'ctx.event?.action=="user-logged-on" && ctx?.mimecast?.event_info_parts?.IP == null'
+  - grok:
+      field: mimecast.remote
+      patterns:
+        - "%{IP:mimecast.remote_ip}"
       ignore_missing: true
   - rename:
       field: mimecast.event_info_parts.Date
@@ -114,7 +137,7 @@ processors:
       field: mimecast.info
       target_field: mimecast.filename
       ignore_missing: true
-      if: 'ctx?.event?.action == "threat-intel-feed-download"'
+      if: 'ctx.event?.action == "threat-intel-feed-download"'
   - rename: 
       field: mimecast.event_info_parts.Processed
       target_field: email.origination_timestamp
@@ -130,21 +153,28 @@ processors:
   - dissect:
        field:  mimecast.event_info_parts.From
        pattern: "<%{?drop}> %{email.from.address}"
-       if: 'ctx?.event?.action=="message-action"'
+       if: 'ctx.event?.action=="message-action"'
        ignore_missing: true
        ignore_failure: true
   - dissect:
        field: mimecast.event_info_parts.To
        pattern: "<%{?drop}> %{email.to.address}"
-       if: 'ctx?.event?.action=="message-action"'
+       if: 'ctx.event?.action=="message-action"'
        ignore_missing: true
        ignore_failure: true     
   - dissect:
       field: mimecast.eventInfo
       pattern: "[%{?key} : %{mimecast.export_type},%{?key} :%{mimecast.export_name},%{?key} :%{user.email},%{?key} :%{mimecast.weekday} %{mimecast.month} %{mimecast.monthday} %{mimecast.time} %{mimecast.timezone} %{mimecast.year},%{?key} :%{client.ip},%{?key} :%{mimecast.columns_exported},%{?key} : %{file.name},%{?key}: %{file.size},%{?key} : %{file.extension}], %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time}, %{?key}: %{client.ip}, %{?key}: %{mimecast.application}"
-      if: 'ctx?.event?.action=="page-data-exports"'
+      if: 'ctx.event?.action=="page-data-exports"'
       ignore_missing: true
-      ignore_failure: true    
+      ignore_failure: true
+  - grok:
+      field: mimecast.rest_of_event_info
+      patterns:
+        - "%{IP:client.ip}"
+      ignore_missing: true
+      ignore_failure: true
+      if: 'ctx?.event?.action=="user-logged-on" && ctx?.mimecast?.event_info_parts?.IP == null'
   - set:
       field: email.from.address
       value: ["{{{email.from.address}}}"]
@@ -215,6 +245,8 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ss.SSZ
         - yyyy-MM-dd'T'HH:mm:ss.SSSz
         - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSz
+        - yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSZ
         - yyyy-MM-dd'T'HH:mm:ss z
       if: 'ctx?.event?.created != null'
   - geoip:
@@ -252,6 +284,9 @@ processors:
       value: "{{user.email}}"
       allow_duplicates: false
       if: ctx?.user?.email != null
+  - lowercase:
+      field: email.direction
+      ignore_missing: true
   # Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.

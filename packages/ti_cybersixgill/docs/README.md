@@ -42,6 +42,7 @@ The Cybersixgill Darkfeed integration collects threat intelligence from the Dark
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
@@ -70,7 +71,7 @@ The Cybersixgill Darkfeed integration collects threat intelligence from the Dark
 | tags | List of keywords used to tag each event. | keyword |
 | threat.feed.dashboard_id | Dashboard ID used for Kibana CTI UI | constant_keyword |
 | threat.feed.name | Display friendly feed name | constant_keyword |
-| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. Expected values are:   \* Not Specified   \* None   \* Low   \* Medium   \* High | keyword |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
 | threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
@@ -80,7 +81,7 @@ The Cybersixgill Darkfeed integration collects threat intelligence from the Dark
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | threat.indicator.url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
@@ -101,8 +102,8 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2021-12-07T13:58:01.596Z",
     "agent": {
-        "ephemeral_id": "e87401bd-e81b-4923-993f-0b478f4af398",
-        "id": "6fb8f383-d278-4b88-ae27-8b0e4175833d",
+        "ephemeral_id": "23a1b4ff-d3ba-4cc1-a31d-65adb7b305fb",
+        "id": "3f82d126-26ae-4993-a89b-63c5413149e0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -125,19 +126,19 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "6fb8f383-d278-4b88-ae27-8b0e4175833d",
+        "id": "3f82d126-26ae-4993-a89b-63c5413149e0",
         "snapshot": false,
         "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
-        "created": "2022-03-09T07:54:03.602Z",
+        "created": "2022-04-11T08:36:43.266Z",
         "dataset": "ti_cybersixgill.threat",
-        "ingested": "2022-03-09T07:54:04Z",
+        "ingested": "2022-04-11T08:36:43Z",
         "kind": "enrichment",
         "original": "{\"confidence\":70,\"created\":\"2021-12-07T13:58:01.596Z\",\"description\":\"Hash attributed to malware that was discovered in the dark and deep web\",\"extensions\":{\"extension-definition--3de9ff00-174d-4d41-87c9-05a27a7e117c\":{\"extension_type\":\"toplevel-property-extension\"}},\"external_references\":[{\"positive_rate\":\"medium\",\"source_name\":\"VirusTotal\",\"url\":\"https://virustotal.com/#/file/7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\"},{\"description\":\"Mitre attack tactics and technique reference\",\"mitre_attack_tactic\":\"Build Capabilities\",\"mitre_attack_tactic_id\":\"TA0024\",\"mitre_attack_tactic_url\":\"https://attack.mitre.org/tactics/TA0024/\",\"source_name\":\"mitre-attack\"}],\"id\":\"indicator--302dab0f-64dc-42f5-b99e-702b28c1aaa9\",\"indicator_types\":[\"malicious-activity\"],\"lang\":\"en\",\"modified\":\"2021-12-07T13:58:01.596Z\",\"name\":\"4d0f21919d623bd1631ee15ca7429f28;5ce39ef0700b64bd0c71b55caf64ae45d8400965;7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\",\"pattern\":\"[file:hashes.MD5 = '4d0f21919d623bd1631ee15ca7429f28' OR file:hashes.'SHA-1' = '5ce39ef0700b64bd0c71b55caf64ae45d8400965' OR file:hashes.'SHA-256' = '7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d']\",\"pattern_type\":\"stix\",\"sixgill_actor\":\"vaedzy\",\"sixgill_confidence\":70,\"sixgill_feedid\":\"darkfeed_012\",\"sixgill_feedname\":\"dark_web_hashes\",\"sixgill_post_virustotallink\":\"https://virustotal.com/#/file/7bdf8b8594ec269da864ee662334f4da53d4820a3f0f8aa665a0fa096ca8f22d\",\"sixgill_postid\":\"c0c9a0085fb5281cfb40a0ddb62e1d2c6a53eb7a\",\"sixgill_posttitle\":\"[病毒样本] #Trickbot (2021-12-07)\",\"sixgill_severity\":70,\"sixgill_source\":\"forum_kafan\",\"spec_version\":\"2.1\",\"type\":\"indicator\",\"valid_from\":\"2021-12-07T02:55:17Z\"}",
         "severity": 70,

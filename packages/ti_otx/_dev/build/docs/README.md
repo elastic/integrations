@@ -1,6 +1,6 @@
 # Alienvault OTX Integration
 
-This integration is for Alienvault OTX. It retrieves indicators for all pulses subscribed to a specific user account on OTX
+This integration is for [Alienvault OTX](https://otx.alienvault.com/api). It retrieves indicators for all pulses subscribed to a specific user account on OTX
 
 ## Configuration
 

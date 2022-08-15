@@ -1,31 +1,68 @@
 # System Integration
 
-The System integrations allows you to monitor your servers. Because the System integration
-always applies to the local server, the `hosts` config option is not needed.
+The System integration allows you to monitor servers, personal computers, and more.
 
-The default datasets are `cpu`, `load`, `memory`, `network`, `process`, and
-`process_summary`. If _all_ datasets are disabled
-and the System module is still enabled, fleet uses the default datasets.
+Use the System integration to collect metrics and logs from your machines.
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
+and reference data when troubleshooting an issue.
 
-Note that certain datasets may access `/proc` to gather process information,
+For example, if you wanted to be notified when less than 10% of the disk space is still available, you
+could install the System integration to send file system metrics to Elastic.
+Then, you could view real-time updates to disk space used on your system in Kibana's _[Metrics System] Overview_ dashboard.
+You could also set up a new rule in the Elastic Observability Metrics app to alert you when the percent free is
+less than 10% of the total disk space.
+
+## Data streams
+
+The System integration collects two types of data: logs and metrics.
+
+**Logs** help you keep a record of events that happen on your machine.
+Log data streams collected by the System integration include application, system, and security events on
+machines running Windows and auth and syslog events on machines running macOS or Linux.
+See more details in the [Logs reference](#logs-reference).
+
+**Metrics** give you insight into the state of the machine.
+Metric data streams collected by the System integration include CPU usage, load statistics, memory usage,
+information on network behavior, and more.
+See more details in the [Metrics reference](#metrics-reference).
+
+You can enable and disable individual data streams. If _all_ data streams are disabled and the System integration
+is still enabled, Fleet uses the default data streams.
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Each data stream collects different kinds of metric data, which may require dedicated permissions
+to be fetched and which may vary across operating systems.
+Details on the permissions needed for each data stream are available in the [Metrics reference](#metrics-reference).
+
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Troubleshooting
+
+Note that certain data streams may access `/proc` to gather process information,
 and the resulting `ptrace_may_access()` call by the kernel to check for
 permissions can be blocked by
 [AppArmor and other LSM software](https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace), even though the System module doesn't use `ptrace` directly.
 
 In addition, when running inside a container the proc filesystem directory of the host
-should be set using `system.hostfs` setting to `/hostfs`.  
+should be set using `system.hostfs` setting to `/hostfs`.
 
-## Compatibility
-
-The System datasets collect different kinds of metric data, which may require dedicated permissions
-to be fetched and which may vary across operating systems.
-
-## Logs
+## Logs reference
 
 ### Application
 
-The Windows `application` dataset provides events from the Windows
+The Windows `application` data stream provides events from the Windows
 `Application` event log.
+
+#### Supported operating systems
+
+- Windows
 
 **Exported fields**
 
@@ -209,8 +246,12 @@ The Windows `application` dataset provides events from the Windows
 
 ### System
 
-The Windows `system` dataset provides events from the Windows `System`
+The Windows `system` data stream provides events from the Windows `System`
 event log.
+
+#### Supported operating systems
+
+- Windows
 
 **Exported fields**
 
@@ -402,8 +443,12 @@ event log.
 
 ### Security
 
-The Windows `security` dataset provides events from the Windows
+The Windows `security` data stream provides events from the Windows
 `Security` event log.
+
+#### Supported operating systems
+
+- Windows
 
 An example event for `security` looks as following:
 
@@ -411,11 +456,11 @@ An example event for `security` looks as following:
 {
     "@timestamp": "2019-11-07T10:37:04.226Z",
     "agent": {
-        "ephemeral_id": "0efb22b5-730e-4431-b563-cbe251d53595",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "aa973fb6-b8fe-427e-a9e9-51c411926db8",
+        "id": "dbc761fd-dec4-4bc7-acec-8e5cb02a0cb6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.1"
     },
     "data_stream": {
         "dataset": "system.security",
@@ -426,9 +471,9 @@ An example event for `security` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
-        "snapshot": false,
-        "version": "8.0.0-beta1"
+        "id": "dbc761fd-dec4-4bc7-acec-8e5cb02a0cb6",
+        "snapshot": true,
+        "version": "8.2.1"
     },
     "event": {
         "action": "logging-service-shutdown",
@@ -437,9 +482,9 @@ An example event for `security` looks as following:
             "process"
         ],
         "code": "1100",
-        "created": "2022-01-12T04:32:11.973Z",
+        "created": "2022-05-18T06:07:07.204Z",
         "dataset": "system.security",
-        "ingested": "2022-01-12T04:32:13Z",
+        "ingested": "2022-05-18T06:07:08Z",
         "kind": "event",
         "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Eventlog' Guid='{fc65ddd8-d6ef-4962-83d5-6e5cfe9ce148}'/\u003e\u003cEventID\u003e1100\u003c/EventID\u003e\u003cVersion\u003e0\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e103\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x4020000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-11-07T10:37:04.226092500Z'/\u003e\u003cEventRecordID\u003e14257\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='1144' ThreadID='4532'/\u003e\u003cChannel\u003eSecurity\u003c/Channel\u003e\u003cComputer\u003eWIN-41OB2LO92CR.wlbeat.local\u003c/Computer\u003e\u003cSecurity/\u003e\u003c/System\u003e\u003cUserData\u003e\u003cServiceShutdown xmlns='http://manifests.microsoft.com/win/2004/08/windows/eventlog'\u003e\u003c/ServiceShutdown\u003e\u003c/UserData\u003e\u003c/Event\u003e",
         "outcome": "success",
@@ -519,6 +564,13 @@ An example event for `security` looks as following:
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.directory | Directory where the file is located. It should include the drive letter, when appropriate. | keyword |
+| file.extension | File extension, excluding the leading dot. Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
+| file.target_path | Target path for symlinks. | keyword |
+| file.target_path.text | Multi-field of `file.target_path`. | match_only_text |
 | group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
@@ -556,6 +608,7 @@ An example event for `security` looks as following:
 | process.parent.executable.text | Multi-field of `process.parent.executable`. | match_only_text |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
 | process.parent.name.text | Multi-field of `process.parent.name`. | match_only_text |
+| process.parent.pid | Process id. | long |
 | process.pid | Process id. | long |
 | process.title | Process title. The proctitle, some times the same as process name. Can also be different: for example a browser setting its title to the web page currently opened. | keyword |
 | process.title.text | Multi-field of `process.title`. | match_only_text |
@@ -565,7 +618,18 @@ An example event for `security` looks as following:
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.name | User-defined description of a location, at the level of granularity they care about. Could be the name of their data centers, the floor number, if this describes a local physical entity, city names. Not typically used in automated geolocation. | keyword |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
@@ -599,6 +663,7 @@ An example event for `security` looks as following:
 | winlog.event_data.AccessListDescription |  | keyword |
 | winlog.event_data.AccessMask |  | keyword |
 | winlog.event_data.AccessMaskDescription |  | keyword |
+| winlog.event_data.AccessReason |  | keyword |
 | winlog.event_data.AccessRemoved |  | keyword |
 | winlog.event_data.AccountDomain |  | keyword |
 | winlog.event_data.AccountExpires |  | keyword |
@@ -621,6 +686,7 @@ An example event for `security` looks as following:
 | winlog.event_data.ClientName |  | keyword |
 | winlog.event_data.CommandLine |  | keyword |
 | winlog.event_data.Company |  | keyword |
+| winlog.event_data.ComputerAccountChange |  | keyword |
 | winlog.event_data.CorruptionActionState |  | keyword |
 | winlog.event_data.CrashOnAuditFailValue |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
@@ -632,6 +698,7 @@ An example event for `security` looks as following:
 | winlog.event_data.DeviceVersionMajor |  | keyword |
 | winlog.event_data.DeviceVersionMinor |  | keyword |
 | winlog.event_data.DisplayName |  | keyword |
+| winlog.event_data.DnsHostName |  | keyword |
 | winlog.event_data.DomainBehaviorVersion |  | keyword |
 | winlog.event_data.DomainName |  | keyword |
 | winlog.event_data.DomainPolicyChanged |  | keyword |
@@ -734,6 +801,7 @@ An example event for `security` looks as following:
 | winlog.event_data.PuaPolicyId |  | keyword |
 | winlog.event_data.QfeVersion |  | keyword |
 | winlog.event_data.Reason |  | keyword |
+| winlog.event_data.RelativeTargetName |  | keyword |
 | winlog.event_data.ResourceAttributes |  | keyword |
 | winlog.event_data.SamAccountName |  | keyword |
 | winlog.event_data.SchemaVersion |  | keyword |
@@ -743,11 +811,14 @@ An example event for `security` looks as following:
 | winlog.event_data.ServiceAccount |  | keyword |
 | winlog.event_data.ServiceFileName |  | keyword |
 | winlog.event_data.ServiceName |  | keyword |
+| winlog.event_data.ServicePrincipalNames |  | keyword |
 | winlog.event_data.ServiceSid |  | keyword |
 | winlog.event_data.ServiceStartType |  | keyword |
 | winlog.event_data.ServiceType |  | keyword |
 | winlog.event_data.ServiceVersion |  | keyword |
 | winlog.event_data.SessionName |  | keyword |
+| winlog.event_data.ShareLocalPath |  | keyword |
+| winlog.event_data.ShareName |  | keyword |
 | winlog.event_data.ShutdownActionType |  | keyword |
 | winlog.event_data.ShutdownEventCode |  | keyword |
 | winlog.event_data.ShutdownReason |  | keyword |
@@ -844,7 +915,12 @@ An example event for `security` looks as following:
 
 ### Auth
 
-The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
+The `auth` data stream provides auth logs.
+
+#### Supported operating systems
+
+- macOS prior to 10.8
+- Linux
 
 **Exported fields**
 
@@ -942,7 +1018,12 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 
 ### syslog
 
-The `syslog` dataset provides system logs on linux and MacOS.
+The `syslog` data stream provides system logs.
+
+#### Supported operating systems
+
+- macOS
+- Linux
 
 **Exported fields**
 
@@ -1003,19 +1084,23 @@ The `syslog` dataset provides system logs on linux and MacOS.
 | process.pid | Process id. | long |
 
 
-## Metrics
+## Metrics reference
 
 ### Core
 
-The System `core` dataset provides usage statistics for each CPU core.
+The System `core` data stream provides usage statistics for each CPU core.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1081,15 +1166,19 @@ This dataset is available on:
 
 ### CPU
 
-The System `cpu` dataset provides CPU statistics.
+The System `cpu` data stream provides CPU statistics.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1166,15 +1255,19 @@ This dataset is available on:
 
 ### Disk IO
 
-The System `diskio` dataset provides disk IO metrics collected from the
+The System `diskio` data stream provides disk IO metrics collected from the
 operating system. One event is created for each disk mounted on the system.
 
-This dataset is available on:
+#### Supported operating systems
 
 - Linux
 - macOS (requires 10.10+)
 - Windows
 - FreeBSD (amd64)
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1247,16 +1340,20 @@ This dataset is available on:
 
 ### Filesystem
 
-The System `filesystem` dataset provides file system statistics. For each file
+The System `filesystem` data stream provides file system statistics. For each file
 system, one document is provided.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1312,15 +1409,19 @@ This dataset is available on:
 
 ### Fsstat
 
-The System `fsstat` dataset provides overall file system statistics.
+The System `fsstat` data stream provides overall file system statistics.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1374,14 +1475,18 @@ This dataset is available on:
 
 ### Load
 
-The System `load` dataset provides load statistics.
+The System `load` data stream provides load statistics.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1437,15 +1542,19 @@ This dataset is available on:
 
 ### Memory
 
-The System `memory` dataset provides memory statistics.
+The System `memory` data stream provides memory statistics.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1525,15 +1634,19 @@ This dataset is available on:
 
 ### Network
 
-The System `network` dataset provides network IO metrics collected from the
+The System `network` data stream provides network IO metrics collected from the
 operating system. One event is created for each network interface.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1614,15 +1727,20 @@ This dataset is available on:
 
 ### Process
 
-The System `process` dataset provides process statistics. One document is
+The System `process` data stream provides process statistics. One document is
 provided for each process.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - Windows
+
+#### Permissions
+
+Process execution data should be available for an authorized user.
+If running as less privileged user, it may not be able to read process data belonging to other users.
 
 **Exported fields**
 
@@ -1825,15 +1943,20 @@ This dataset is available on:
 
 ### Process summary
 
-The `process_summary` dataset collects high level statistics about the running
+The `process_summary` data stream collects high level statistics about the running
 processes.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - Windows
+
+#### Permissions
+
+General process summary data should be available without elevated permissions.
+If the process data belongs to the other users, it will be counted as unknown value.
 
 **Exported fields**
 
@@ -1909,18 +2032,22 @@ This dataset is available on:
 
 ### Socket summary
 
-The System `socket_summary` dataset provides the summary of open network
+The System `socket_summary` data stream provides the summary of open network
 sockets in the host system.
 
 It collects a summary of metrics with the count of existing TCP and UDP
 connections and the count of listening ports.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -2005,15 +2132,19 @@ This dataset is available on:
 
 ### Uptime
 
-The System `uptime` dataset provides the uptime of the host operating system.
+The System `uptime` data stream provides the uptime of the host operating system.
 
-This dataset is available on:
+#### Supported operating systems
 
 - Linux
 - macOS
 - OpenBSD
 - FreeBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 

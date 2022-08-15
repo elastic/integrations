@@ -1,10 +1,10 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Mimecast dlp_logs.
 processors:
-  # Generic event/ecs fields we always want to populated
+  # Generic event/ecs fields we always want to populate.
   - set:
       field: ecs.version
-      value: "8.2.0"
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -69,7 +69,9 @@ processors:
       field: event.created
       value: "{{mimecast.eventTime}}"
       if: 'ctx?.mimecast?.eventTime != null'
-
+  - lowercase:
+      field: email.direction
+      ignore_missing: true
   # Cleanup
   - remove:
       description: Cleanup of repeated/unwanted/temporary fields.

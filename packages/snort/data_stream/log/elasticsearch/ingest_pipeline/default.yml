@@ -2,11 +2,8 @@
 description: Pipeline for parsing Snort logs
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -82,6 +79,22 @@ processors:
       field: destination.address
       target_field: destination.ip
       type: ip
+      ignore_missing: true
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+  - gsub:
+      field: destination.mac
+      pattern: '[.:]'
+      replacement: '-'
+      ignore_missing: true
+  - gsub:
+      field: source.mac
+      pattern: '[.:]'
+      replacement: '-'
       ignore_missing: true
   - lowercase:
       field: network.transport

@@ -4,7 +4,7 @@ description: Pipeline for CEF logs. CEF decoding happens in the Agent. This perf
 processors:
   - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.4.0'
 
   - convert:
       field: event.id
@@ -106,6 +106,24 @@ processors:
       if: "ctx.cef?.device?.vendor == 'Check Point'"
   - community_id: {}
 
+  # Ensure source.mac and destination.mac are formatted to ECS specifications.
+  - gsub:
+      field: destination.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - gsub:
+      field: source.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+
   #
   # Timestamp parsing.
   #
@@ -142,6 +160,13 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
+
+  # Cleanup
+  - remove:
+      field:
+        - cef.extensions._cefVer
+      ignore_missing: true
+
 on_failure:
   - remove:
       field:

@@ -1,0 +1,38 @@
+---
+description: Pipeline for parsing Spring Boot Memory metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: "8.1.0"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - rename:
+      field: jolokia.metrics
+      target_field: spring_boot.memory
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: event.type
+      value: info
+  - set:
+      field: event.kind
+      value: metric
+  - set:
+      field: event.category
+      value: database
+  - set:
+      field: event.module
+      value: spring_boot
+  - set:
+      field: event.dataset
+      value: spring_boot.memory
+  - remove:
+      field: jolokia
+      ignore_missing: true
+      ignore_failure: true      
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

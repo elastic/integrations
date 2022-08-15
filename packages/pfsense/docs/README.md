@@ -1,19 +1,40 @@
 # pfSense Integration
 
-This is an integration to parse certain logs from the PFsense firewall. It parses logs
-received over the network via syslog (UDP). Currently the integration supports parsing the
-Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, and HAProxy logs.  All other events will be dropped.
-The firewall, VPN, DHCP, and DNS logs are able to be individually selected via the "Remote Logging Options"
-section within the pfSense settings page.  In order to collect HAProxy or other "package" logs, the "Everything" option
-must be selected. The module is by default configured to run with the `udp` input on port `9001`.
+This is an integration to parse certain logs from [pfSense and OPNsense firewalls](https://docs.netgate.com/pfsense/en/latest/). It parses logs received over the network via syslog (UDP/TCP/TLS). pfSense natively only supports UDP. OPNsense supports all 3 transports.
 
-*The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration.  Install the HAPrxoy integration assets to utilize them.
+Currently the integration supports parsing the Firewall, Unbound, DHCP Daemon, OpenVPN, IPsec, HAProxy, Squid, and PHP-FPM (Authentication) logs.  
+All other events will be dropped.
+The HAProxy logs are setup to be compatible with the dashboards from the HAProxy integration. Install the HAPrxoy integration assets to use them.
+
+## pfSense Setup
+1. Navigate to _Status -> System Logs_, then click on _Settings_
+2. At the bottom check _Enable Remote Logging_
+3. (Optional) Select a specific interface to use for forwarding
+4. Input the agent IP address and port as set via the integration config into the field _Remote log servers_ (e.g. 192.168.100.50:5140)
+5. Under _Remote Syslog Contents_ select what logs to forward to the agent
+   * Select _Everything_ to forward all logs to the agent or select the individual services to forward. Any log entry not in the list above will be dropped. This will cause additional data to be sent to the agent and Elasticsearch. The firewall, VPN, DHCP, DNS, and Authentication (PHP-FPM) logs are able to be individually selected. In order to collect HAProxy and Squid or other "package" logs, the _Everything_ option must be selected.
+
+## OPNsense Setup
+1. Navigate to _System -> Settings -> Logging/Targets_
+2. Add a new _Logging/Target_ (Click the plus icon)
+    - Transport = UDP or TCP or TLS
+    - Applications = Select a list of applications to send to remote syslog. Leave empty for all.
+    - Levels = Nothing Selected
+    - Facilities = Nothing Selected
+    - Hostname = IP of Elastic agent as configured in the integration config
+    - Port = Port of Elastic agent as configured in the integration config
+    - Certificate = Client certificate to use (when selecting a tls transport type)
+    - Description = Syslog to Elasticsearch
+    - Click Save   
+
+ The module is by default configured to run with the `udp` input on port `9001`.
 
 **Important**  
-The pfSense integration supports both the BSD logging format and the Syslog format.
+The pfSense integration supports both the BSD logging format (used by pfSense by default and OPNsense) and the Syslog format (optional for pfSense).
 However the syslog format is recommended. It will provide the firewall hostname and timestamps with timezone information.
 When using the BSD format, the `Timezone Offset` config must be set when deploying the agent or else the timezone will default to the timezone of the agent. See `https://<pfsense url>/status_logs_settings.php` and https://docs.netgate.com/pfsense/en/latest/monitoring/logs/settings.html for more information.
 
+A huge thanks to [a3ilson](https://github.com/a3ilson) for the https://github.com/pfelk/pfelk repo, which is the foundation for the majority of the grok patterns and dashboards in this integration.
 
 ## Logs
 
@@ -27,11 +48,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-07-04T00:10:14.578Z",
     "agent": {
-        "ephemeral_id": "238d98ab-083f-4ff7-990f-1651450ce860",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "6b82ecb8-3739-4d1c-aeca-3a62c5340c7f",
+        "id": "c5c06c39-0b86-45ec-9ae3-c773f4562eaa",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.3.2"
     },
     "data_stream": {
         "dataset": "pfsense.log",
@@ -56,12 +77,12 @@ An example event for `log` looks as following:
         "port": 853
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "c5c06c39-0b86-45ec-9ae3-c773f4562eaa",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.3.2"
     },
     "event": {
         "action": "block",
@@ -70,10 +91,9 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "pfsense.log",
-        "id": "72237",
-        "ingested": "2022-02-03T09:44:29Z",
+        "ingested": "2022-07-30T02:57:35Z",
         "kind": "event",
-        "original": "\u003c134\u003e1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale\n",
+        "original": "\u003c134\u003e1 2021-07-03T19:10:14.578288-05:00 pfSense.example.com filterlog 72237 - - 146,,,1535324496,igb1.12,match,block,in,4,0x0,,63,32989,0,DF,6,tcp,60,10.170.12.50,175.16.199.1,49652,853,0,S,1818117648,,64240,,mss;sackOK;TS;nop;wscale",
         "provider": "filterlog",
         "reason": "match",
         "timezone": "-05:00",
@@ -83,11 +103,11 @@ An example event for `log` looks as following:
         ]
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.19.0.7:54953"
+            "address": "172.19.0.6:50688"
         },
         "syslog": {
             "priority": 134
@@ -97,7 +117,7 @@ An example event for `log` looks as following:
     "network": {
         "bytes": 60,
         "community_id": "1:pOXVyPJTFJI5seusI/UD6SwvBjg=",
-        "direction": "outbound",
+        "direction": "inbound",
         "iana_number": "6",
         "transport": "tcp",
         "type": "ipv4"
@@ -111,7 +131,9 @@ An example event for `log` looks as following:
                 "id": "12"
             }
         },
-        "name": "pfSense.example.com"
+        "name": "pfSense.example.com",
+        "type": "firewall",
+        "vendor": "netgate"
     },
     "pfsense": {
         "ip": {
@@ -133,6 +155,10 @@ An example event for `log` looks as following:
             ],
             "window": 64240
         }
+    },
+    "process": {
+        "name": "filterlog",
+        "pid": 72237
     },
     "related": {
         "ip": [
@@ -207,6 +233,7 @@ An example event for `log` looks as following:
 | destination.geo.region_iso_code | Region ISO code. | keyword |
 | destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.mac | MAC address of the destination. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | destination.port | Port of the destination. | long |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
@@ -220,12 +247,16 @@ An example event for `log` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
+| event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
+| event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | haproxy.backend_name | Name of the backend (or listener) which was selected to manage the connection to the server. | keyword |
 | haproxy.backend_queue | Total number of requests which were processed before this one in the backend's global queue. | long |
@@ -278,6 +309,7 @@ An example event for `log` looks as following:
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.bytes | Total size in bytes of the response (body and headers). | long |
+| http.response.mime_type | Mime type of the body of the response. This value must only be populated based on the content of the response body, not on the `Content-Type` header. Comparing the mime type of a response with the response's Content-Type header can be helpful in detecting misconfigured servers. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
 | input.type | Type of Filebeat input. | keyword |
@@ -287,29 +319,29 @@ An example event for `log` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
-| observer.geo.city_name | City name. | keyword |
-| observer.geo.continent_name | Name of the continent. | keyword |
-| observer.geo.country_iso_code | Country ISO code. | keyword |
-| observer.geo.country_name | Country name. | keyword |
-| observer.geo.location | Longitude and latitude. | geo_point |
-| observer.geo.region_iso_code | Region ISO code. | keyword |
-| observer.geo.region_name | Region name. | keyword |
+| network.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.vlan.id | VLAN ID as reported by the observer. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
-| observer.type | The type of the observer the data is coming from | constant_keyword |
-| observer.vendor | Vendor name of the observer | constant_keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+| pfsense.dhcp.age | Age of DHCP lease in seconds | long |
+| pfsense.dhcp.duid | The DHCP unique identifier (DUID) is used by a client to get an IP address from a DHCPv6 server. | keyword |
 | pfsense.dhcp.hostname | Hostname of DHCP client | keyword |
+| pfsense.dhcp.iaid | Identity Association Identifier used alongside the DUID to uniquely identify a DHCP client | keyword |
+| pfsense.dhcp.lease_time | The DHCP lease time in seconds | long |
+| pfsense.dhcp.subnet | The subnet for which the DHCP server is issuing IPs | keyword |
+| pfsense.dhcp.transaction_id | The DHCP transaction ID | keyword |
 | pfsense.icmp.code | ICMP code. | long |
 | pfsense.icmp.destination.ip | Original destination address of the connection that caused this notification | ip |
-| pfsense.icmp.id | ICMP ID. | long |
+| pfsense.icmp.id | ID of the echo request/reply | long |
 | pfsense.icmp.mtu | MTU to use for subsequent data to this destination | long |
 | pfsense.icmp.otime | Originate Timestamp | date |
 | pfsense.icmp.parameter | ICMP parameter. | long |
@@ -337,6 +369,9 @@ An example event for `log` looks as following:
 | pfsense.tcp.urg | Urgent pointer data. | keyword |
 | pfsense.tcp.window | Advertised TCP window size. | long |
 | pfsense.udp.length | Length of the UDP header and payload. | long |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
+| process.pid | Process id. | long |
 | process.program | Process from syslog header. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
@@ -344,6 +379,7 @@ An example event for `log` looks as following:
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
+| server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | server.port | Port of the server. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
@@ -366,6 +402,8 @@ An example event for `log` looks as following:
 | source.user.full_name | User's full name, if available. | keyword |
 | source.user.full_name.text | Multi-field of `source.user.full_name`. | match_only_text |
 | source.user.id | Unique identifier of the user. | keyword |
+| squid.hierarchy_status | The proxy hierarchy route; the route Content Gateway used to retrieve the object. | keyword |
+| squid.request_status | The cache result code; how the cache responded to the request: HIT, MISS, and so on. Cache result codes are described [here](https://www.websense.com/content/support/library/web/v773/wcg_help/cachrslt.aspx#596301). | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.cipher | String indicating the cipher used during the current connection. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |

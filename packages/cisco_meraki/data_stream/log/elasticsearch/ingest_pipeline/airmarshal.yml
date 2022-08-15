@@ -1,0 +1,63 @@
+---
+description: Pipeline for Cisco Meraki airmarshal_events type
+processors:
+- dissect:
+    description: Determine the airmarshal event type
+    field: event.original
+    pattern: "%{} airmarshal_events %{*type}=%{&type} %{}"
+- rename:
+    field: type
+    target_field: cisco_meraki.event_subtype
+- grok:
+    field: event.original
+    patterns:
+      - '%{GREEDYDATA} ssid=%{QS:_temp.ssid}%{SPACE}%{GREEDYDATA:_temp.kvline}'
+- dissect:
+    field: _temp.ssid
+    pattern: "'%{_temp.kv.ssid}'"
+- kv:
+    field: _temp.kvline
+    field_split: " "
+    value_split: "="
+    target_field: _temp.kv
+    strip_brackets: true
+- rename:
+    field: _temp.kv.ssid
+    target_field: network.name
+    if: ctx?._temp?.kv?.ssid != null
+- rename:
+    field: _temp.kv.bssid
+    target_field: cisco_meraki.bssid
+- rename:
+    field: _temp.kv.vap
+    target_field: cisco_meraki.vap
+    if: ctx?.cisco_meraki?.event_subtype == 'ssid_spoofing_detected'
+- gsub:
+    field: _temp.kv.src
+    target_field: source.mac
+    pattern: '[-:.]'
+    replacement: '-'
+- gsub:
+    field: _temp.kv.dst
+    target_field: destination.mac
+    pattern: '[-:.]'
+    replacement: '-'
+- gsub:
+    field: _temp.kv.wired_mac
+    target_field: observer.mac
+    pattern: '[-:.]'
+    replacement: '-'
+    if: ctx?.cisco_meraki?.event_subtype == 'rogue_ssid_detected'
+- rename:
+    field: _temp.kv.vlan_id
+    target_field: network.vlan.id
+    if: ctx?.cisco_meraki?.event_subtype == 'rogue_ssid_detected'
+- rename:
+    field: _temp.kv.channel
+    target_field: cisco_meraki.channel
+- rename:
+    field: _temp.kv.fc_type
+    target_field: cisco_meraki.fc_type
+- rename:
+    field: _temp.kv.fc_subtype
+    target_field: cisco_meraki.fc_subtype
