@@ -1,0 +1,588 @@
+- name: aws.securityhub_insights
+  type: group
+  fields:
+    - name: filters
+      type: group
+      fields:
+        - name: aws_account_id
+          type: flattened
+          description: The Amazon Web Services account ID that a finding is generated in.
+        - name: company
+          type: group
+          fields:
+            - name: name
+              type: flattened
+              description: The name of the findings provider(company) that owns the solution(product) that generates findings.
+        - name: compliance
+          type: group
+          fields:
+            - name: status
+              type: flattened
+              description: Exclusive to findings that are generated as the result of a check run against a specific rule in a supported standard, such as CIS Amazon Web Services Foundations. Contains security standard-related finding details.
+        - name: confidence
+          type: flattened
+          description: A finding's confidence. Confidence is defined as the likelihood that a finding accurately identifies the behavior or issue that it was intended to identify.
+        - name: created_at
+          type: group
+          fields:
+            - name: date_range
+              type: group
+              fields:
+                - name: unit
+                  type: keyword
+                  description: A date range unit for the date filter.
+                - name: value
+                  type: long
+                  description: A date range value for the date filter.
+            - name: end
+              type: date
+              description: An end date for the date filter.
+            - name: start
+              type: date
+              description: A start date for the date filter.
+        - name: criticality
+          type: flattened
+          description: The level of importance assigned to the resources associated with the finding.
+        - name: description
+          type: flattened
+          description: A finding's description.
+        - name: finding_provider_fields
+          type: group
+          fields:
+            - name: confidence
+              type: flattened
+              description: The finding provider value for the finding confidence. Confidence is defined as the likelihood that a finding accurately identifies the behavior or issue that it was intended to identify.
+            - name: criticality
+              type: flattened
+              description: The finding provider value for the level of importance assigned to the resources associated with the findings.
+            - name: related_findings
+              type: group
+              fields:
+                - name: id
+                  type: flattened
+                  description: The finding identifier of a related finding that is identified by the finding provider.
+                - name: product
+                  type: group
+                  fields:
+                    - name: arn
+                      type: flattened
+                      description: The ARN of the solution that generated a related finding that is identified by the finding provider.
+            - name: severity
+              type: group
+              fields:
+                - name: label
+                  type: flattened
+                  description: The finding provider value for the severity label.
+                - name: original
+                  type: flattened
+                  description: The finding provider's original value for the severity.
+            - name: types
+              type: flattened
+              description: One or more finding types that the finding provider assigned to the finding. Uses the format of namespace/category/classifier that classify a finding.
+        - name: first_observed_at
+          type: group
+          fields:
+            - name: date_range
+              type: group
+              fields:
+                - name: unit
+                  type: keyword
+                  description: A date range unit for the date filter.
+                - name: value
+                  type: long
+                  description: A date range value for the date filter.
+            - name: end
+              type: date
+              description: An end date for the date filter.
+            - name: start
+              type: date
+              description: A start date for the date filter.
+        - name: generator
+          type: group
+          fields:
+            - name: id
+              type: flattened
+              description: The identifier for the solution-specific component(a discrete unit of logic) that generated a finding. In various security-findings providers' solutions, this generator can be called a rule, a check, a detector, a plugin, etc.
+        - name: id
+          type: flattened
+          description: The security findings provider-specific identifier for a finding.
+        - name: keyword
+          type: flattened
+          description: A keyword for a finding.
+        - name: last_observed_at
+          type: group
+          fields:
+            - name: date_range
+              type: group
+              fields:
+                - name: unit
+                  type: keyword
+                  description: A date range unit for the date filter.
+                - name: value
+                  type: long
+                  description: A date range value for the date filter.
+            - name: end
+              type: date
+              description: An end date for the date filter.
+            - name: start
+              type: date
+              description: A start date for the date filter.
+        - name: malware
+          type: group
+          fields:
+            - name: name
+              type: flattened
+              description: The name of the malware that was observed.
+            - name: path
+              type: flattened
+              description: The filesystem path of the malware that was observed.
+            - name: state
+              type: flattened
+              description: The state of the malware that was observed.
+            - name: type
+              type: flattened
+              description: The type of the malware that was observed.
+        - name: network
+          type: group
+          fields:
+            - name: destination
+              type: group
+              fields:
+                - name: domain
+                  type: flattened
+                  description: The destination domain of network-related information about a finding.
+                - name: ip
+                  type: group
+                  fields:
+                    - name: v4
+                      type: flattened
+                      description: The destination IPv4 address of network-related information about a finding.
+                    - name: v6
+                      type: flattened
+                      description: The destination IPv6 address of network-related information about a finding.
+                - name: port
+                  type: flattened
+                  description: The destination port of network-related information about a finding.
+            - name: direction
+              type: flattened
+              description: Indicates the direction of network traffic associated with a finding.
+            - name: protocol
+              type: flattened
+              description: The protocol of network-related information about a finding.
+            - name: source
+              type: group
+              fields:
+                - name: domain
+                  type: flattened
+                  description: The source domain of network-related information about a finding.
+                - name: ip
+                  type: group
+                  fields:
+                    - name: v4
+                      type: flattened
+                      description: The source IPv4 address of network-related information about a finding.
+                    - name: v6
+                      type: flattened
+                      description: The source IPv6 address of network-related information about a finding.
+                - name: mac
+                  type: flattened
+                  description: The source media access control(MAC) address of network-related information about a finding.
+                - name: port
+                  type: flattened
+                  description: The source port of network-related information about a finding.
+        - name: note
+          type: group
+          fields:
+            - name: text
+              type: flattened
+              description: The text of a note.
+            - name: updated_at
+              type: group
+              fields:
+                - name: date_range
+                  type: group
+                  fields:
+                    - name: unit
+                      type: keyword
+                      description: A date range unit for the date filter.
+                    - name: value
+                      type: long
+                      description: A date range value for the date filter.
+                - name: end
+                  type: date
+                  description: An end date for the date filter.
+                - name: start
+                  type: date
+                  description: A start date for the date filter.
+                - name: by
+                  type: flattened
+                  description: The principal that created a note.
+            - name: updated_by
+              type: flattened
+              description: The text of a note.
+        - name: process
+          type: group
+          fields:
+            - name: launched_at
+              type: group
+              fields:
+                - name: date_range
+                  type: group
+                  fields:
+                    - name: unit
+                      type: keyword
+                      description: A date range unit for the date filter.
+                    - name: value
+                      type: long
+                      description: A date range value for the date filter.
+                - name: end
+                  type: date
+                  description: An end date for the date filter.
+                - name: start
+                  type: date
+                  description: A start date for the date filter.
+            - name: name
+              type: flattened
+              description: The name of the process.
+            - name: parent
+              type: group
+              fields:
+                - name: pid
+                  type: flattened
+                  description: The parent process ID.
+            - name: path
+              type: flattened
+              description: The path to the process executable.
+            - name: pid
+              type: flattened
+              description: The process ID.
+            - name: terminated_at
+              type: group
+              fields:
+                - name: date_range
+                  type: group
+                  fields:
+                    - name: unit
+                      type: keyword
+                      description: A date range unit for the date filter.
+                    - name: value
+                      type: long
+                      description: A date range value for the date filter.
+                - name: end
+                  type: date
+                  description: An end date for the date filter.
+                - name: start
+                  type: date
+                  description: A start date for the date filter.
+        - name: product
+          type: group
+          fields:
+            - name: arn
+              type: flattened
+              description: The ARN generated by Security Hub that uniquely identifies a third-party company(security findings provider) after this provider's product(solution that generates findings) is registered with Security Hub.
+            - name: fields
+              type: flattened
+              description: A data type where security-findings providers can include additional solution-specific details that aren't part of the defined AwsSecurityFinding format.
+            - name: name
+              type: flattened
+              description: The name of the solution(product) that generates findings.
+        - name: recommendation_text
+          type: flattened
+          description: The recommendation of what to do about the issue described in a finding.
+        - name: record_state
+          type: flattened
+          description: The updated record state for the finding.
+        - name: region
+          type: flattened
+          description: The Region from which the finding was generated.
+        - name: related_findings
+          type: group
+          fields:
+            - name: id
+              type: flattened
+              description: The solution-generated identifier for a related finding.
+            - name: product
+              type: group
+              fields:
+                - name: arn
+                  type: flattened
+                  description: The ARN of the solution that generated a related finding.
+        - name: resource
+          type: group
+          fields:
+            - name: aws_ec2_instance
+              type: group
+              fields:
+                - name: iam_instance_profile
+                  type: group
+                  fields:
+                    - name: arn
+                      type: flattened
+                      description: The IAM profile ARN of the instance.
+                - name: image
+                  type: group
+                  fields:
+                    - name: id
+                      type: flattened
+                      description: The Amazon Machine Image(AMI) ID of the instance.
+                - name: ip
+                  type: group
+                  fields:
+                    - name: v4_addresses
+                      type: flattened
+                      description: The IPv4 addresses associated with the instance.
+                    - name: v6_addresses
+                      type: flattened
+                      description: The IPv6 addresses associated with the instance.
+                - name: key
+                  type: group
+                  fields:
+                    - name: name
+                      type: flattened
+                      description: The key name associated with the instance.
+                - name: launched_at
+                  type: group
+                  fields:
+                    - name: date_range
+                      type: group
+                      fields:
+                        - name: unit
+                          type: keyword
+                          description: A date range unit for the date filter.
+                        - name: value
+                          type: long
+                          description: A date range value for the date filter.
+                    - name: end
+                      type: date
+                      description: An end date for the date filter.
+                    - name: start
+                      type: date
+                      description: A start date for the date filter.
+                - name: subnet
+                  type: group
+                  fields:
+                    - name: id
+                      type: flattened
+                      description: The identifier of the subnet that the instance was launched in.
+                - name: type
+                  type: flattened
+                  description: The instance type of the instance.
+                - name: vpc
+                  type: group
+                  fields:
+                    - name: id
+                      type: flattened
+                      description: The identifier of the VPC that the instance was launched in.
+            - name: aws_iam_access_key
+              type: group
+              fields:
+                - name: created_at
+                  type: group
+                  fields:
+                    - name: date_range
+                      type: group
+                      fields:
+                        - name: unit
+                          type: keyword
+                          description: A date range unit for the date filter.
+                        - name: value
+                          type: long
+                          description: A date range value for the date filter.
+                    - name: end
+                      type: date
+                      description: An end date for the date filter.
+                    - name: start
+                      type: date
+                      description: A start date for the date filter.
+                - name: principal
+                  type: group
+                  fields:
+                    - name: name
+                      type: flattened
+                      description: The name of the principal that is associated with an IAM access key.
+                - name: status
+                  type: flattened
+                  description: The status of the IAM access key related to a finding.
+                - name: user
+                  type: group
+                  fields:
+                    - name: name
+                      type: flattened
+                      description: The user associated with the IAM access key related to a finding.
+            - name: aws_iam_user
+              type: group
+              fields:
+                - name: user
+                  type: group
+                  fields:
+                    - name: name
+                      type: flattened
+                      description: The name of an IAM user.
+            - name: aws_s3_bucket
+              type: group
+              fields:
+                - name: owner
+                  type: group
+                  fields:
+                    - name: id
+                      type: flattened
+                      description: The canonical user ID of the owner of the S3 bucket.
+                    - name: name
+                      type: flattened
+                      description: The display name of the owner of the S3 bucket.
+            - name: container
+              type: group
+              fields:
+                - name: image
+                  type: group
+                  fields:
+                    - name: id
+                      type: flattened
+                      description: The identifier of the image related to a finding.
+                    - name: name
+                      type: flattened
+                      description: The name of the image related to a finding.
+                - name: launched_at
+                  type: group
+                  fields:
+                    - name: date_range
+                      type: group
+                      fields:
+                        - name: unit
+                          type: keyword
+                          description: A date range unit for the date filter.
+                        - name: value
+                          type: long
+                          description: A date range value for the date filter.
+                    - name: end
+                      type: date
+                      description: An end date for the date filter.
+                    - name: start
+                      type: date
+                      description: A start date for the date filter.
+                - name: name
+                  type: flattened
+                  description: The name of the container related to a finding.
+            - name: details_other
+              type: flattened
+              description: The details of a resource that doesn't have a specific subfield for the resource type defined.
+            - name: id
+              type: flattened
+              description: The canonical identifier for the given resource type.
+            - name: partition
+              type: flattened
+              description: The canonical Amazon Web Services partition name that the Region is assigned to.
+            - name: region
+              type: flattened
+              description: The canonical Amazon Web Services external Region name where this resource is located.
+            - name: tags
+              type: flattened
+              description: A list of Amazon Web Services tags associated with a resource at the time the finding was processed.
+            - name: type
+              type: flattened
+              description: Specifies the type of the resource that details are provided for.
+        - name: sample
+          type: flattened
+          description: Indicates whether or not sample findings are included in the filter results.
+        - name: severity
+          type: group
+          fields:
+            - name: label
+              type: flattened
+              description: The label of a finding's severity.
+            - name: normalized
+              type: flattened
+              description: The normalized severity of a finding.
+            - name: product
+              type: flattened
+              description: The native severity as defined by the security-findings provider's solution that generated the finding.
+        - name: source_url
+          type: flattened
+          description: A URL that links to a page about the current finding in the security-findings provider's solution.
+        - name: threat_intel_indicator
+          type: group
+          fields:
+            - name: category
+              type: flattened
+              description: The category of a threat intelligence indicator.
+            - name: last_observed_at
+              type: group
+              fields:
+                - name: date_range
+                  type: group
+                  fields:
+                    - name: unit
+                      type: keyword
+                      description: A date range unit for the date filter.
+                    - name: value
+                      type: long
+                      description: A date range value for the date filter.
+                - name: end
+                  type: date
+                  description: An end date for the date filter.
+                - name: start
+                  type: date
+                  description: A start date for the date filter.
+            - name: source
+              type: flattened
+              description: The source of the threat intelligence.
+            - name: source_url
+              type: flattened
+              description: The URL for more details from the source of the threat intelligence.
+            - name: type
+              type: flattened
+              description: The type of a threat intelligence indicator.
+            - name: value
+              type: flattened
+              description: The value of a threat intelligence indicator.
+        - name: title
+          type: flattened
+          description: A finding's title.
+        - name: type
+          type: flattened
+          description: A finding type in the format of namespace/category/classifier that classifies a finding.
+        - name: updated_at
+          type: group
+          fields:
+            - name: date_range
+              type: group
+              fields:
+                - name: unit
+                  type: keyword
+                  description: A date range unit for the date filter.
+                - name: value
+                  type: long
+                  description: A date range value for the date filter.
+            - name: end
+              type: date
+              description: An end date for the date filter.
+            - name: start
+              type: date
+              description: A start date for the date filter.
+        - name: user_defined_fields
+          type: flattened
+          description: A list of name/value string pairs associated with the finding. These are custom, user-defined fields added to a finding.
+        - name: verification
+          type: group
+          fields:
+            - name: state
+              type: flattened
+              description: The veracity of a finding.
+        - name: workflow
+          type: group
+          fields:
+            - name: state
+              type: flattened
+              description: The workflow state of a finding.
+            - name: status
+              type: flattened
+              description: The status of the investigation into a finding.
+    - name: group_by_attribute
+      type: keyword
+      description: The grouping attribute for the insight's findings. Indicates how to group the matching findings, and identifies the type of item that the insight applies to. For example, if an insight is grouped by resource identifier, then the insight produces a list of resource identifiers.
+    - name: insight_arn
+      type: keyword
+      description: The ARN of a Security Hub insight.
+    - name: name
+      type: keyword
+      description: The name of a Security Hub insight.
