@@ -9,7 +9,19 @@ This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`.
 ## Requirements
 
 In order to ingest data from IBM MQ:
+
+- User should specify Hostname and Port (example: localhost:9157) of Prometheus endpoint (/metrics).
 - User should specify the path of IBM MQ Queue Manager Error logs. (default paths: `/var/mqm/errors/*.LOG` and `/var/mqm/qmgrs/*/errors/*.LOG`)
+
+## Metrics
+
+### Queue Manager performance metrics
+
+The `qmgr` data stream collects [performance metrics of Queue Manager](https://www.ibm.com/docs/en/ibm-mq/9.2?topic=operator-metrics-published-when-using-mq) like messages, topics, subscriptions and calls.
+
+{{event "qmgr"}}
+
+{{fields "qmgr"}}
 
 ## Logs
 

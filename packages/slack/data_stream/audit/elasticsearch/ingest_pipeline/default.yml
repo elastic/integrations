@@ -1,0 +1,395 @@
+---
+description: Pipeline for parsing Slack Audit logs
+processors:
+- set:
+    field: ecs.version
+    value: '8.4.0'
+- rename:
+    field: message
+    target_field: event.original
+- json:
+    field: event.original
+    target_field: json
+- date:
+    field: json.date_create
+    formats:
+    - UNIX
+    target_field: "@timestamp"
+- rename:
+    field: json.action
+    target_field: event.action
+    ignore_missing: true
+- rename:
+    field: json.id
+    target_field: event.id
+    ignore_missing: true
+- fingerprint:
+    fields:
+      - event.id
+    target_field: _id
+    ignore_missing: true
+- rename:
+    field: json.actor.user.id
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.actor.user.name
+    target_field: user.full_name
+    ignore_missing: true
+- rename:
+    field: json.actor.user.email
+    target_field: user.email
+    ignore_missing: true
+- rename:
+    field: json.entity.workspace
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.enterprise
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.user
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.file
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.channel
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.app
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.workflow
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.user
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.usergroup
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.barrier
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.message
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.role
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.account_type_role
+    target_field: slack.audit.entity
+    ignore_missing: true
+    if: "ctx.slack?.entity == null"
+- rename:
+    field: json.entity.type
+    target_field: slack.audit.entity.entity_type
+    ignore_missing: true
+- rename:
+    field: json.context.ua
+    target_field: user_agent.original
+    ignore_missing: true
+- user_agent:
+    field: user_agent.original
+    ignore_failure: true
+- rename:
+    field: json.context.ip_address
+    target_field: source.address
+    ignore_missing: true
+- convert:
+    field: source.address
+    target_field: source.ip
+    type: ip
+    ignore_missing: true
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: source.ip
+    target_field: source.as
+    properties:
+    - asn
+    - organization_name
+    ignore_missing: true
+- rename:
+    field: source.as.asn
+    target_field: source.as.number
+    ignore_missing: true
+- rename:
+    field: source.as.organization_name
+    target_field: source.as.organization.name
+    ignore_missing: true
+- rename:
+    field: json.context.location
+    target_field: slack.audit.context
+    ignore_missing: true
+- append:
+    field: related.user
+    value: "{{user.id}}"
+    allow_duplicates: false
+    if: ctx.user?.id != null
+- append:
+    field: related.user
+    value: "{{user.email}}"
+    allow_duplicates: false
+    if: ctx.user?.email != null
+- append:
+    field: related.ip
+    value: "{{source.ip}}"
+    if: ctx.source?.ip != null
+
+
+
+- script:
+    lang: painless
+    tag: Add ECS categorization
+    params:
+## User Actions
+      user_login:
+        category:
+          - authentication
+          - session
+        type:
+          - info
+          - start
+        outcome: success
+      user_login_failed:
+        category:
+          - authentication
+        type:
+          - info
+        outcome: failure
+      user_logout:
+        category:
+          - authentication
+          - session
+        type:
+          - info
+          - end
+        outcome: success
+      user_session_invalidated:
+        category:
+          - authentication
+          - session
+        type:
+          - info
+          - end
+        outcome: success
+      user_session_reset_by_admin:
+        category:
+          - authentication
+          - session
+        type:
+          - info
+          - end
+        outcome: success
+      user_created:
+        category:
+          - iam
+        type:
+          - creation
+          - user
+      user_deactivated:
+        category:
+          - iam
+        type:
+          - deletion
+          - user
+      user_reactivated:
+        category:
+          - iam
+        type:
+          - change
+          - user
+      role_change_to_admin:
+        category:
+          - iam
+        type:
+          - change
+          - user
+          - admin
+      role_change_to_guest:
+        category:
+          - iam
+        type:
+          - change
+          - user
+      role_change_to_owner:
+        category:
+          - iam
+        type:
+          - change
+          - user
+          - admin
+      role_change_to_user:
+        category:
+          - iam
+        type:
+          - change
+          - user
+      user_email_updated:
+        category:
+          - iam
+        type:
+          - change
+          - user
+## User Group Actions
+      user_added_to_usergroup:
+        category:
+          - iam
+        type:
+          - change
+          - group
+          - user
+      user_removed_from_usergroup:
+        category:
+          - iam
+        type:
+          - change
+          - group
+          - user
+      default_channel_added_to_usergroup:
+        category:
+          - iam
+          - configuration
+        type:
+          - change
+          - group
+      default_channel_removed_from_usergroup:
+        category:
+          - iam
+          - configuration
+        type:
+          - change
+          - group
+      role_added_to_usergroup:
+        category:
+          - iam
+        type:
+          - change
+          - group
+      role_removed_from_usergroup:
+        category:
+          - iam
+        type:
+          - change
+          - group
+      role_modified_on_usergroup:
+        category:
+          - iam
+        type:
+          - change
+          - group
+## User Group Actions
+      file_downloaded:
+        category:
+          - file
+        type:
+          - allowed
+      file_downloaded_blocked:
+        category:
+          - file
+        type:
+          - denied
+      file_uploaded:
+        category:
+          - file
+        type:
+          - creation
+      file_public_link_created:
+        category:
+          - file
+        type:
+          - info
+      file_public_link_revoked:
+        category:
+          - file
+        type:
+          - info
+      file_shared:
+        category:
+          - file
+        type:
+          - info
+      file_malicious_content_detected:
+        category:
+          - file
+          - malware
+        type:
+          - info
+      
+    source: >-
+      ctx.event.kind = 'event';
+      ctx.event.type = 'info';
+      if (ctx?.event?.action == null) {
+          return;
+      }
+      if (params.get(ctx.event.action) == null) {
+          return;
+      }
+      def hm = new HashMap(params.get(ctx.event.action));
+      hm.forEach((k, v) -> ctx.event[k] = v);
+- remove:
+    field:
+      - json
+    ignore_missing: true  
+- remove:
+    field: event.original
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to remove fields with null values.
+    source: |
+      void handleMap(Map map) {
+        for (def x : map.values()) {
+          if (x instanceof Map) {
+              handleMap(x);
+          } else if (x instanceof List) {
+              handleList(x);
+          }
+        }
+        map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      void handleList(List list) {
+        for (def x : list) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+        }
+        list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+      }
+      handleMap(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
