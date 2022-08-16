@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "UAC Bypass Attempt with IEditionUpgradeManager Elevated COM Interface",
-        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "note": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
         "query": "process where event.type in (\"start\", \"process_started\") and process.name : \"Clipup.exe\" and\n  not process.executable : \"C:\\\\Windows\\\\System32\\\\ClipUp.exe\" and process.parent.name : \"dllhost.exe\" and\n  /* CLSID of the Elevated COM Interface IEditionUpgradeManager */\n  process.parent.args : \"/Processid:{BD54C901-076B-434E-B6C7-17C531F4AB41}\"\n",
         "references": [
             "https://github.com/hfiref0x/UACME"
@@ -54,7 +54,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 5
+        "version": 8
     },
     "id": "b90cdde7-7e0d-4359-8bf0-2c112ce2008a",
     "type": "security-rule"

@@ -14,8 +14,8 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "GCP Virtual Private Cloud Network Deletion",
-        "note": "## Config\n\nThe GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
-        "query": "event.dataset:(googlecloud.audit or gcp.audit) and event.action:v*.compute.networks.delete and event.outcome:success\n",
+        "note": "## Setup\n\nThe GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "query": "event.dataset:gcp.audit and event.action:v*.compute.networks.delete and event.outcome:success\n",
         "references": [
             "https://cloud.google.com/vpc/docs/vpc"
         ],
@@ -28,11 +28,36 @@
             "GCP",
             "Continuous Monitoring",
             "SecOps",
-            "Configuration Audit"
+            "Configuration Audit",
+            "Defense Evasion"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT\u0026CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.007",
+                                "name": "Disable or Modify Cloud Firewall",
+                                "reference": "https://attack.mitre.org/techniques/T1562/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 5
+        "version": 8
     },
     "id": "c58c3081-2e1d-4497-8491-e73a45d1a6d6",
     "type": "security-rule"
