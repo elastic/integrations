@@ -3,7 +3,7 @@
         "author": [
             "Elastic"
         ],
-        "description": "Identifies when the built in macOS Installer program generates a network event after attempting to install a .pkg file. This activity has been observed being leveraged by malware.",
+        "description": "Detects the execution of a MacOS installer package with an abnormal child process (e.g bash) followed immediately by a network connection via a suspicious process (e.g curl). Threat actors will build and distribute malicious MacOS installer packages, which have a .pkg extension, many times imitating valid software in order to persuade and infect their victims often using the package files (e.g pre/post install scripts etc.) to download additional tools or malicious software. If this rule fires it should indicate the installation of a malicious or suspicious package.",
         "false_positives": [
             "Custom organization-specific macOS packages that use .pkg files to run cURL could trigger this rule. If known behavior is causing false positives, it can be excluded from the rule."
         ],
@@ -13,13 +13,14 @@
         ],
         "language": "eql",
         "license": "Elastic License v2",
-        "name": "macOS Installer Spawns Network Event",
-        "query": "sequence by process.entity_id with maxspan=1m\n  [process where event.type == \"start\" and host.os.family == \"macos\" and\n    process.parent.executable in (\"/usr/sbin/installer\", \"/System/Library/CoreServices/Installer.app/Contents/MacOS/Installer\") ]\n  [network where not cidrmatch(destination.ip,\n    \"10.0.0.0/8\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"172.16.0.0/12\", \"192.0.0.0/24\", \"192.0.0.0/29\", \"192.0.0.8/32\",\n    \"192.0.0.9/32\", \"192.0.0.10/32\", \"192.0.0.170/32\", \"192.0.0.171/32\", \"192.0.2.0/24\", \"192.31.196.0/24\",\n    \"192.52.193.0/24\", \"192.168.0.0/16\", \"192.88.99.0/24\", \"224.0.0.0/4\", \"100.64.0.0/10\", \"192.175.48.0/24\",\n    \"198.18.0.0/15\", \"198.51.100.0/24\", \"203.0.113.0/24\", \"240.0.0.0/4\", \"::1\", \"FE80::/10\", \"FF00::/8\")]\n",
+        "name": "MacOS Installer Package Spawns Network Event",
+        "query": "sequence by host.id, user.id with maxspan=30s\n[process where event.type == \"start\" and event.action == \"exec\" and process.parent.name : (\"installer\", \"package_script_service\") and process.name : (\"bash\", \"sh\", \"zsh\", \"python\", \"osascript\", \"tclsh*\")] \n[network where event.type == \"start\" and process.name : (\"curl\", \"osascript\", \"wget\", \"python\")] \n",
         "references": [
             "https://redcanary.com/blog/clipping-silver-sparrows-wings",
-            "https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml"
+            "https://posts.specterops.io/introducing-mystikal-4fbd2f7ae520",
+            "https://github.com/D00MFist/Mystikal"
         ],
-        "risk_score": 47,
+        "risk_score": 74,
         "rule_id": "99239e7d-b0d4-46e3-8609-acafcf99f68c",
         "severity": "medium",
         "tags": [
@@ -27,7 +28,8 @@
             "Host",
             "macOS",
             "Threat Detection",
-            "Execution"
+            "Execution",
+            "Command and Control"
         ],
         "threat": [
             {
@@ -76,7 +78,7 @@
             }
         ],
         "type": "eql",
-        "version": 4
+        "version": 7
     },
     "id": "99239e7d-b0d4-46e3-8609-acafcf99f68c",
     "type": "security-rule"
