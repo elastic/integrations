@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Credential Access via Renamed COM+ Services DLL",
-        "note": "## Config\n\nYou will need to enable logging of ImageLoads in your Sysmon configuration to include COMSVCS.DLL by Imphash or Original\nFile Name.",
+        "note": "## Setup\n\nYou will need to enable logging of ImageLoads in your Sysmon configuration to include COMSVCS.DLL by Imphash or Original\nFile Name.",
         "query": "sequence by process.entity_id with maxspan=1m\n [process where event.category == \"process\" and\n    process.name : \"rundll32.exe\"]\n [process where event.category == \"process\" and event.dataset : \"windows.sysmon_operational\" and event.code == \"7\" and\n   (file.pe.original_file_name : \"COMSVCS.DLL\" or file.pe.imphash : \"EADBCCBB324829ACB5F2BBE87E5549A8\") and\n    /* renamed COMSVCS */\n    not file.name : \"COMSVCS.DLL\"]\n",
         "references": [
             "https://modexp.wordpress.com/2019/08/30/minidumpwritedump-via-com-services-dll/"
@@ -52,7 +52,7 @@
             }
         ],
         "type": "eql",
-        "version": 3
+        "version": 6
     },
     "id": "c5c9f591-d111-4cf8-baec-c26a39bc31ef",
     "type": "security-rule"

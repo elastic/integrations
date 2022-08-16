@@ -3,7 +3,7 @@
         "author": [
             "Elastic"
         ],
-        "description": "Identifies the execution of macOS built-in commands to connect to an existing Virtual Private Network (VPN).",
+        "description": "Identifies the execution of macOS built-in commands to connect to an existing Virtual Private Network (VPN). Adversaries may use VPN connections to laterally move and control remote systems on a network.",
         "from": "now-9m",
         "index": [
             "auditbeat-*",
@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Virtual Private Network Connection Attempt",
-        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "note": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
         "query": "process where event.type in (\"start\", \"process_started\") and\n  (\n    (process.name : \"networksetup\" and process.args : \"-connectpppoeservice\") or\n    (process.name : \"scutil\" and process.args : \"--nc\" and process.args : \"start\") or\n    (process.name : \"osascript\" and process.command_line : \"osascript*set VPN to service*\")\n  )\n",
         "references": [
             "https://github.com/rapid7/metasploit-framework/blob/master/modules/post/osx/manage/vpn.rb",
@@ -48,7 +48,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 2
+        "version": 5
     },
     "id": "15dacaa0-5b90-466b-acab-63435a59701a",
     "type": "security-rule"

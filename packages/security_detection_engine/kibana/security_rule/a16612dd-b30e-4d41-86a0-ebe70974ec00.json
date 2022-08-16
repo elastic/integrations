@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential LSASS Clone Creation via PssCaptureSnapShot",
-        "note": "## Config\n\nThis is meant to run only on datasources using Windows security event 4688 that captures the process clone creation.\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "note": "## Setup\n\nThis is meant to run only on datasources using Windows security event 4688 that captures the process clone creation.\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
         "query": "process where event.code:\"4688\" and\n  process.executable : \"?:\\\\Windows\\\\System32\\\\lsass.exe\" and\n  process.parent.executable : \"?:\\\\Windows\\\\System32\\\\lsass.exe\"\n",
         "references": [
             "https://www.matteomalvica.com/blog/2019/12/02/win-defender-atp-cred-bypass/",
@@ -54,7 +54,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 2
+        "version": 5
     },
     "id": "a16612dd-b30e-4d41-86a0-ebe70974ec00",
     "type": "security-rule"

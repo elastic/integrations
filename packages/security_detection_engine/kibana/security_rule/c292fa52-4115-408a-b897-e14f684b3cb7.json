@@ -12,7 +12,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Persistence via Folder Action Script",
-        "query": "sequence by host.id with maxspan=5s\n [process where event.type in (\"start\", \"process_started\", \"info\") and process.name == \"com.apple.foundation.UserScriptService\"] by process.pid\n [process where event.type in (\"start\", \"process_started\") and process.name in (\"osascript\", \"python\", \"tcl\", \"node\", \"perl\", \"ruby\", \"php\", \"bash\", \"csh\", \"zsh\", \"sh\")] by process.parent.pid\n",
+        "query": "sequence by host.id with maxspan=5s\n [process where event.type in (\"start\", \"process_started\", \"info\") and process.name == \"com.apple.foundation.UserScriptService\"] by process.pid\n [process where event.type in (\"start\", \"process_started\") and process.name in (\"osascript\", \"python\", \"tcl\", \"node\", \"perl\", \"ruby\", \"php\", \"bash\", \"csh\", \"zsh\", \"sh\") and\n  not process.args : \"/Users/*/Library/Application Support/iTerm2/Scripts/AutoLaunch/*.scpt\"\n ] by process.parent.pid\n",
         "references": [
             "https://posts.specterops.io/folder-actions-for-persistence-on-macos-8923f222343d"
         ],
@@ -60,7 +60,7 @@
             }
         ],
         "type": "eql",
-        "version": 5
+        "version": 8
     },
     "id": "c292fa52-4115-408a-b897-e14f684b3cb7",
     "type": "security-rule"

@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious PrintSpooler Service Executable File Creation",
-        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "note": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
         "query": "file where event.type != \"deletion\" and process.name : \"spoolsv.exe\" and\n  file.extension : (\"exe\", \"dll\") and\n  not file.path : (\"?:\\\\Windows\\\\System32\\\\spool\\\\*\", \"?:\\\\Windows\\\\Temp\\\\*\", \"?:\\\\Users\\\\*\")\n",
         "references": [
             "https://voidsec.com/cve-2020-1337-printdemon-is-dead-long-live-printdemon/",
@@ -48,7 +48,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 5
+        "version": 8
     },
     "id": "5bb4a95d-5a08-48eb-80db-4c3a63ec78a8",
     "type": "security-rule"

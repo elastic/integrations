@@ -12,8 +12,8 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Privacy Control Bypass via Localhost Secure Copy",
-        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
-        "query": "process where event.type in (\"start\", \"process_started\") and \n process.name:\"scp\" and\n process.args:\"StrictHostKeyChecking=no\" and \n process.command_line:(\"scp *localhost:/*\", \"scp *127.0.0.1:/*\") and\n not process.args:\"vagrant@*127.0.0.1*\"\n",
+        "note": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "query": "process where event.type in (\"start\", \"process_started\") and\n process.name:\"scp\" and\n process.args:\"StrictHostKeyChecking=no\" and\n process.command_line:(\"scp *localhost:/*\", \"scp *127.0.0.1:/*\") and\n not process.args:\"vagrant@*127.0.0.1*\"\n",
         "references": [
             "https://www.trendmicro.com/en_us/research/20/h/xcsset-mac-malware--infects-xcode-projects--uses-0-days.html"
         ],
@@ -62,7 +62,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 3
+        "version": 6
     },
     "id": "c02c8b9f-5e1d-463c-a1b0-04edcdfe1a3d",
     "type": "security-rule"

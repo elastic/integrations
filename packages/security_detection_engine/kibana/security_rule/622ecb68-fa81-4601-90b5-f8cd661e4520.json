@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Incoming DCOM Lateral Movement via MSHTA",
-        "query": "sequence with maxspan=1m\n  [process where event.type in (\"start\", \"process_started\") and\n     process.name : \"mshta.exe\" and process.args : \"-Embedding\"\n  ] by host.id, process.entity_id\n  [network where event.type == \"start\" and process.name : \"mshta.exe\" and \n     network.direction : (\"incoming\", \"ingress\") and network.transport == \"tcp\" and\n     source.port \u003e 49151 and destination.port \u003e 49151 and source.ip != \"127.0.0.1\" and source.ip != \"::1\"\n  ] by host.id, process.entity_id\n",
+        "query": "sequence with maxspan=1m\n  [process where event.type in (\"start\", \"process_started\") and\n     process.name : \"mshta.exe\" and process.args : \"-Embedding\"\n  ] by host.id, process.entity_id\n  [network where event.type == \"start\" and process.name : \"mshta.exe\" and\n     network.direction : (\"incoming\", \"ingress\") and network.transport == \"tcp\" and\n     source.port \u003e 49151 and destination.port \u003e 49151 and source.ip != \"127.0.0.1\" and source.ip != \"::1\"\n  ] by host.id, process.entity_id\n",
         "references": [
             "https://codewhitesec.blogspot.com/2018/07/lethalhta.html"
         ],
@@ -60,7 +60,7 @@
                 "technique": [
                     {
                         "id": "T1218",
-                        "name": "Signed Binary Proxy Execution",
+                        "name": "System Binary Proxy Execution",
                         "reference": "https://attack.mitre.org/techniques/T1218/",
                         "subtechnique": [
                             {
@@ -74,7 +74,7 @@
             }
         ],
         "type": "eql",
-        "version": 6
+        "version": 9
     },
     "id": "622ecb68-fa81-4601-90b5-f8cd661e4520",
     "type": "security-rule"

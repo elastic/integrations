@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "UAC Bypass Attempt via Elevated COM Internet Explorer Add-On Installer",
-        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "note": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
         "query": "process where event.type in (\"start\", \"process_started\") and\n process.executable : \"C:\\\\*\\\\AppData\\\\*\\\\Temp\\\\IDC*.tmp\\\\*.exe\" and\n process.parent.name : \"ieinstal.exe\" and process.parent.args : \"-Embedding\"\n\n /* uncomment once in winlogbeat */\n /* and not (process.code_signature.subject_name == \"Microsoft Corporation\" and process.code_signature.trusted == true) */\n",
         "references": [
             "https://swapcontext.blogspot.com/2020/11/uac-bypasses-from-comautoapprovallist.html"
@@ -54,7 +54,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 5
+        "version": 8
     },
     "id": "fc7c0fa4-8f03-4b3e-8336-c5feab0be022",
     "type": "security-rule"

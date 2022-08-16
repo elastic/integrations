@@ -12,8 +12,8 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Potential Privacy Control Bypass via TCCDB Modification",
-        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
-        "query": "process where event.type in (\"start\", \"process_started\") and process.name : \"sqlite*\" and \n process.args : \"/*/Application Support/com.apple.TCC/TCC.db\"\n",
+        "note": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "query": "process where event.type in (\"start\", \"process_started\") and process.name : \"sqlite*\" and\n process.args : \"/*/Application Support/com.apple.TCC/TCC.db\" and\n not process.parent.executable : \"/Library/Bitdefender/AVP/product/bin/*\"\n",
         "references": [
             "https://applehelpwriter.com/2016/08/29/discovering-how-dropbox-hacks-your-mac/",
             "https://github.com/bp88/JSS-Scripts/blob/master/TCC.db%20Modifier.sh",
@@ -55,7 +55,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 3
+        "version": 6
     },
     "id": "eea82229-b002-470e-a9e1-00be38b14d32",
     "type": "security-rule"
