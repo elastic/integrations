@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Audit, DNS, Firewall Event, Http Request,NEL Report, Network Analytics, Spectrum Event Logs. Cloudflare is content delivery network and DDoS mitigation company. Cloudflare is a global network designed to make everything you connect to the Internet secure, private, fast, and reliable. Secure your websites, APIs, and Internet applications. Protect corporate networks, employees, and devices. Write and deploy code that runs on the network edge.
+The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event Logs. Cloudflare is content delivery network and DDoS mitigation company. Cloudflare is a global network designed to make everything you connect to the Internet secure, private, fast, and reliable. Secure your websites, APIs, and Internet applications. Protect corporate networks, employees, and devices. Write and deploy code that runs on the network edge.
 
 Use the Cloudflare Logpush integration to collect and parse data from the HTTP Endpoint, AWS S3 Bucket or AWS SQS. Then visualise that data in Kibana.
 
@@ -10,7 +10,7 @@ For example, you could use the data from this integration to know about which we
 
 ## Data streams
 
-The Cloudflare Logpush integration collects logs for seven types of events: Audit, DNS, Firewall Event, Http Request, NEL Report, Network Analytics and Spectrum Event.
+The Cloudflare Logpush integration collects logs for seven types of events: Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event.
 
 **Audit**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
 
@@ -18,7 +18,7 @@ The Cloudflare Logpush integration collects logs for seven types of events: Audi
 
 **Firewall Event**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
 
-**Http Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
+**HTTP Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
 
 **NEL Report**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/nel_reports/).
 
@@ -32,13 +32,13 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 This module has been tested against **Cloudflare version v4**.
 
-**Note**: We recommend using AWS SQS for Cloudflare Logpush.
+**Note**: It is recommended to use AWS SQS for Cloudflare Logpush.
 
 ## Setup
 
 ### To collect data from AWS S3 Bucket, follow the below steps:
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to ingest data into an AWS S3 bucket.
-- The default value of the "Bucket List Prefix" is listed below. But the user can set the parameter "Bucket List Prefix" according to the requirement.
+- The default value of the "Bucket List Prefix" is listed below. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
 
   | Data Stream Name  | Bucket List Prefix     |
   | ----------------- | ---------------------- |
@@ -51,12 +51,12 @@ This module has been tested against **Cloudflare version v4**.
   | Spectrum Event    | spectrum_event         |
 
 ### To collect data from AWS SQS, follow the below steps:
-- Setup AWS S3 Bucket as mentioned in the above documentation.
-- Setup AWS SQS queue as mentioned in this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html). (Step 1)
-  1. Above, enter the Bucket ARN of the bucket that you've created.
-- Setup event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
-  1. The user has to perform the above step for all the data-streams individually, and each time prefix parameter should be set as S3 Bucket List Prefix as we've defined earlier. (for Example, `audit_logs/` for audit data stream.)
-  2. For all the event notifications, select the event type as s3:ObjectCreated:*, select the destination type as SQS Queue, and select the queue that you've created.
+1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
+2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+  - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
+3. Setup event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+  - The user has to perform Step 3 for all the data-streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `audit_logs/` for audit data stream.)
+  - For all the event notifications that have been created, select the event type as s3:ObjectCreated:*, select the destination type SQS Queue, and select the queue that has been created in Step 2.
 
 **Note**:
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
