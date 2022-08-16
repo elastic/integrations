@@ -6,7 +6,7 @@ processors:
       value: '8.4.0'
   - set:
       field: event.kind
-      value: event
+      value: alert
   - set:
       field: event.category
       value: [malware]
@@ -34,6 +34,15 @@ processors:
       formats:
           - ISO8601
       ignore_failure: true
+  - join:
+      field: json.threatInfo.engines
+      target_field: event.action
+      separator: ','
+      ignore_failure: true
+  - set:
+      field: process.name
+      copy_from: json.threatInfo.originatorProcess
+      ignore_empty_value: true
   - rename:
       field: json.agentDetectionInfo.accountId 
       target_field: sentinel_one.threat.detection.account.id
@@ -84,6 +93,11 @@ processors:
       field: json.agentDetectionInfo.agentLastLoggedInUserName   
       target_field: user.name
       ignore_missing: true
+  - set:
+      if: ctx.user?.name == null
+      field: user.name
+      copy_from: json.threatInfo.processUser
+      ignore_empty_value: true
   - append:
       field: related.user
       value: '{{{user.name}}}'
