@@ -15,7 +15,7 @@
         "license": "Elastic License v2",
         "max_signals": 33,
         "name": "NTDS or SAM Database File Copied",
-        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "note": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
         "query": "process where event.type in (\"start\", \"process_started\") and\n  (\n    (process.pe.original_file_name in (\"Cmd.Exe\", \"PowerShell.EXE\", \"XCOPY.EXE\") and\n       process.args : (\"copy\", \"xcopy\", \"Copy-Item\", \"move\", \"cp\", \"mv\")\n    ) or\n    (process.pe.original_file_name : \"esentutl.exe\" and process.args : (\"*/y*\", \"*/vss*\", \"*/d*\"))\n  ) and\n  process.args : (\"*\\\\ntds.dit\", \"*\\\\config\\\\SAM\", \"\\\\*\\\\GLOBALROOT\\\\Device\\\\HarddiskVolumeShadowCopy*\\\\*\", \"*/system32/config/SAM*\")\n",
         "references": [
             "https://thedfirreport.com/2020/11/23/pysa-mespinoza-ransomware/",
@@ -57,7 +57,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 6
+        "version": 9
     },
     "id": "3bc6deaa-fbd4-433a-ae21-3e892f95624f",
     "type": "security-rule"
