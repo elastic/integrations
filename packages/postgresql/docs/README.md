@@ -106,6 +106,7 @@ persistent connections, so enable with care.
 | postgresql.log.internal_query_pos | Character count of the internal query (if any). | long |
 | postgresql.log.location | Location of the error in the PostgreSQL source code (if log_error_verbosity is set to verbose). | keyword |
 | postgresql.log.query | Query statement. In the case of CSV parse, look at command_tag to get more context. | keyword |
+| postgresql.log.query.text | Multi-field of `postgresql.log.query`. | match_only_text |
 | postgresql.log.query_name | Name given to a query when using extended query protocol. If it is `"\<unnamed\>"`, or not present, this field is ignored. | keyword |
 | postgresql.log.query_pos | Character count of the error position (if any). | long |
 | postgresql.log.query_step | Statement step when using extended query protocol (one of statement, parse, bind or execute). | keyword |
