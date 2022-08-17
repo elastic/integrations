@@ -1,0 +1,17 @@
+---
+processors:
+  - set:
+    field: ingest_timestamp
+    value: {{_ingest.timestamp}}
+  - fingerprint:
+    fields:
+    # TODO: we might need Name and type
+      @timestamp
+      _id
+    method: SHA-256
+    target-field: _id
+  - script:
+      description:
+      id: ml_hostriskscore_levels_script
+      params:
+        risk_score: risk_stats.risk_score
