@@ -25,14 +25,14 @@ processors:
       source: >
           def eventCategory = new HashSet();
           def eventType = new HashSet();
-          if (ctx.json?.threatId != null && ctx.json?.threatId != '') {
+          if (ctx.json?.threatId != null && ctx.json.threatId != '') {
               def threat_classification = ctx.json?.data?.threatClassification;
-              if (threat_classification == 'Exploit' || threat_classification == 'PUA') {
+              if (['Exploit','PUA'].contains(threat_classification)) {
                   eventCategory.add('threat');
-                  ctx.event.type = ['indicator'];
-              } else if (threat_classification == 'Malware' || threat_classification == 'Ransomware' || threat_classification == 'Trojan' || threat_classification == 'Downloader') {
+                  eventType.add('indicator');
+              } else if (['Malware','Ransomware','Trojan','Downloader'].contains(threat_classification)) {
                   eventCategory.add('malware');
-                  ctx.event.type = ['info'];
+                  eventType.add('info');
               }
           }
           else if (ctx.json?.primaryDescription != null) {
@@ -67,16 +67,17 @@ processors:
                   eventCategory.add('authentication');
                   ctx.event.outcome = 'failure';
               }
-              if (!eventType.isEmpty()) {
-                  ctx.event.type = eventType;
-              } else {
-                  ctx.event.type = ['info'];
+              if (eventType.isEmpty()) {
+                  eventType.add('info');
               }
           }
           if (!eventCategory.isEmpty()) {
               ctx.event.category = eventCategory;
           }
-          if (ctx.json?.data?.confidenceLevel != null && ['suspicious', 'malicious'].contains(ctx.json?.data?.confidenceLevel)) {
+          if (!eventType.isEmpty()) {
+              ctx.event.type = eventType;
+          }
+          if (['suspicious', 'malicious'].contains(ctx.json?.data?.confidenceLevel)) {
               ctx.event.kind = 'alert';
           } else {
               ctx.event.kind = 'event';

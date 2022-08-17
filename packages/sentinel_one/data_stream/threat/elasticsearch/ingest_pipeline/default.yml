@@ -28,12 +28,12 @@ processors:
       source: >
           def eventCategory = new ArrayList();
           def eventType = new ArrayList();
-          if (ctx.json?.threatInfo?.threatId != null && ctx.json?.threatInfo?.threatId != '') {
+          if (ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '') {
               def threat_classification = ctx.json?.threatInfo?.classification;
-              if (threat_classification == 'Exploit' || threat_classification == 'PUA') {
+              if (['Exploit','PUA'].contains(threat_classification)) {
                   eventCategory.add('threat');
                   eventType.add('indicator');
-              } else if (threat_classification == 'Malware' || threat_classification == 'Ransomware' || threat_classification == 'Trojan' || threat_classification == 'Downloader') {
+              } else if (['Malware','Ransomware','Trojan','Downloader'].contains(threat_classification)) {
                   eventCategory.add('malware');
                   eventType.add('info');
               }
