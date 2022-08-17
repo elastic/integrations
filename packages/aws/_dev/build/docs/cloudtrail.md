@@ -44,9 +44,9 @@ The `cloudtrail` data stream collects AWS CloudTrail logs. CloudTrail monitors e
 user activity and API usage in AWS services. If a user creates a trail, it delivers those events as log
 files to a specific Amazon S3 bucket.
 
-> Note: If log file integrity is turned on, the `cloudtrail` data stream will not read
-the CloudTrail digest files that are delivered to the S3 bucket.
-The data stream will only read the CloudTrail logs.
+> Note: Use the *CloudTrail Digest Logs regex* setting to define regex to match the path
+of the CloudTrail Digest S3 Objects you'd like to read.
+If blank, CloudTrail Digest logs will be skipped.
 
 {{fields "cloudtrail"}}
 

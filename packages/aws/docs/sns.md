@@ -35,7 +35,7 @@ When you configure the AWS integration, you can collect data from as many AWS se
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-## Metrics
+## Metrics reference
 
 An example event for `sns` looks as following:
 
