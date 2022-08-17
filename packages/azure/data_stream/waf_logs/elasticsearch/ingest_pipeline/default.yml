@@ -34,7 +34,7 @@ processors:
       ignore_failure: true
       formats:
         - ISO8601
-      if: ctx.json?.time != null
+      if: ctx.json?.timestamp != null
   - rename:
       field: json.resourceId
       target_field: azure.resource_id
@@ -104,7 +104,7 @@ processors:
       params:
         MS_TO_NS: 1000000
       source: >-
-        ctx.event.duration *= params.S_TO_NS;
+        ctx.event.duration *= params.MS_TO_NS;
   - rename:
       field: json.properties.host
       target_field: url.domain

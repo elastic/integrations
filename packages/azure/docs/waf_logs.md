@@ -64,25 +64,19 @@ An example event for `waf` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-08T16:54:58.849Z",
+    "@timestamp": "2017-04-26T19:27:38.000Z",
     "azure": {
-        "firewall": {
-            "action": "Deny",
-            "category": "AzureFirewallNetworkRule",
-            "icmp": {
-                "request": {
-                    "code": "8"
-                }
-            },
-            "operation_name": "AzureFirewallNetworkRuleLog"
-        },
         "resource": {
-            "group": "TEST-FW-RG",
-            "id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01",
-            "name": "TEST-FW01",
-            "provider": "MICROSOFT.NETWORK/AZUREFIREWALLS"
+            "group": "PEERINGTEST",
+            "id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/PEERINGTEST/PROVIDERS/MICROSOFT.NETWORK/APPLICATIONGATEWAYS/Application-Gateway-Name",
+            "name": "Application-Gateway-Name",
+            "provider": "MICROSOFT.NETWORK/APPLICATIONGATEWAYS"
         },
-        "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129"
+        "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129",
+        "waf": {
+            "instance_id": "ApplicationGatewayRole_IN_0",
+            "operation_name": "ApplicationGatewayAccess"
+        }
     },
     "cloud": {
         "account": {
@@ -91,26 +85,9 @@ An example event for `waf` looks as following:
         "provider": "azure"
     },
     "destination": {
-        "address": "89.160.20.156",
-        "as": {
-            "number": 29518,
-            "organization": {
-                "name": "Bredband2 AB"
-            }
-        },
-        "geo": {
-            "city_name": "Linköping",
-            "continent_name": "Europe",
-            "country_iso_code": "SE",
-            "country_name": "Sweden",
-            "location": {
-                "lat": 58.4167,
-                "lon": 15.6167
-            },
-            "region_iso_code": "SE-E",
-            "region_name": "Östergötland County"
-        },
-        "ip": "89.160.20.156"
+        "address": "www.contoso.com",
+        "bytes": 553,
+        "domain": "www.contoso.com"
     },
     "ecs": {
         "version": "8.3.0"
@@ -120,34 +97,64 @@ An example event for `waf` looks as following:
             "network"
         ],
         "kind": "event",
-        "original": "{\"category\":\"AzureFirewallNetworkRule\",\"operationName\":\"AzureFirewallNetworkRuleLog\",\"properties\":{\"msg\":\"ICMP Type=8 request from 192.168.0.2 to 89.160.20.156. Action: Deny. \"},\"resourceId\":\"/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01\",\"time\":\"2022-06-08T16:54:58.8492560Z\"}",
+        "original": "{\"resourceId\":\"/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/PEERINGTEST/PROVIDERS/MICROSOFT.NETWORK/APPLICATIONGATEWAYS/Application-Gateway-Name\",\"operationName\":\"ApplicationGatewayAccess\",\"timestamp\":\"2017-04-26T19:27:38Z\",\"category\":\"ApplicationGatewayAccessLog\",\"properties\":{\"instanceId\":\"ApplicationGatewayRole_IN_0\",\"clientIP\":\"67.43.156.7\",\"clientPort\":46886,\"httpMethod\":\"GET\",\"requestUri\":\"/phpmyadmin/scripts/setup.php\",\"requestQuery\":\"X-AzureApplicationGateway-CACHE-HIT=0\u0026SERVER-ROUTED=10.4.0.4\u0026X-AzureApplicationGateway-LOG-ID=874f1f0f-6807-41c9-b7bc-f3cfa74aa0b1\u0026SERVER-STATUS=404\",\"userAgent\":\"-\",\"httpStatus\":404,\"httpVersion\":\"HTTP/1.0\",\"receivedBytes\":65,\"sentBytes\":553,\"timeTaken\":205,\"sslEnabled\":\"off\",\"host\":\"www.contoso.com\",\"originalHost\":\"www.contoso.com\"}}",
         "type": [
-            "connection",
-            "denied"
+            "connection"
         ]
     },
+    "http": {
+        "request": {
+            "method": "GET"
+        },
+        "response": {
+            "status_code": 404
+        },
+        "version": "1.0"
+    },
     "network": {
-        "transport": "icmp"
+        "bytes": 618,
+        "protocol": "http"
     },
     "observer": {
-        "name": "TEST-FW01",
-        "product": "Network Firewall",
+        "name": "Application-Gateway-Name",
+        "product": "Web Application Firewall",
         "type": "firewall",
         "vendor": "Azure"
     },
     "related": {
+        "hosts": [
+            "www.contoso.com"
+        ],
         "ip": [
-            "192.168.0.2",
-            "89.160.20.156"
+            "67.43.156.7"
         ]
     },
     "source": {
-        "address": "192.168.0.2",
-        "ip": "192.168.0.2"
+        "address": "67.43.156.7",
+        "as": {
+            "number": 35908
+        },
+        "bytes": 65,
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.7",
+        "port": 46886
     },
     "tags": [
         "preserve_original_event"
-    ]
+    ],
+    "url": {
+        "domain": "www.contoso.com",
+        "path": "/phpmyadmin/scripts/setup.php",
+        "query": "X-AzureApplicationGateway-CACHE-HIT=0\u0026SERVER-ROUTED=10.4.0.4\u0026X-AzureApplicationGateway-LOG-ID=874f1f0f-6807-41c9-b7bc-f3cfa74aa0b1\u0026SERVER-STATUS=404"
+    }
 }
 ```
 
@@ -165,8 +172,14 @@ An example event for `waf` looks as following:
 | azure.resource.provider | Resource type/namespace | keyword |
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
-| azure.waf.action | Firewall action taken | keyword |
+| azure.waf.action | Action taken on the request. Available values are: Blocked and Allowed (for custom rules) Matched (when a rule matches a part of the request) Detected and Blocked (these are both for mandatory rules, depending on if the WAF is in detection or prevention mode). | keyword |
+| azure.waf.hostname | Hostname or IP address of the Application Gateway. | keyword |
+| azure.waf.instance_id | Application Gateway instance for which firewall data is being generated. For a multiple-instance application gateway, there is one row per instance. | keyword |
 | azure.waf.operation_name | Operation name | keyword |
+| azure.waf.policy.id | Unique ID of the Firewall Policy associated with the Application Gateway, Listener, or Path. | keyword |
+| azure.waf.policy.scope | The location of the policy - values can be "Global", "Listener", or "Location". | keyword |
+| azure.waf.policy.scope_name | The name of the object where the policy is applied. | keyword |
+| azure.waf.transaction_id | Unique ID for a given transaction which helps group multiple rule violations that occurred within the same request. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
@@ -176,18 +189,31 @@ An example event for `waf` looks as following:
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
+| observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
+| rule.description | The description of the rule generating the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
+| rule.version | The version / revision of the rule being used for analysis. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
