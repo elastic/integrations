@@ -1,0 +1,52 @@
+title: "Prometheus Metrics"
+type: metrics
+streams:
+  - input: prometheus/metrics
+    enabled: true
+    title: Elastic Package Registry metrics
+    description: Collect Prometheus metrics from Elastic Package Registry
+    vars:
+      - name: period
+        type: text
+        title: Period
+        default: 30s
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - http://localhost:9000
+        description: Base URL of the metrics endpoint `/metrics` is automatically appended.
+      - name: metrics_filters.exclude
+        type: text
+        title: Metrics Filters Exclude
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - "^go_*"
+          - "^promhttp_*"
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        multi: true
+        required: false
+        show_user: true
+        default: []
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/metricbeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default: []

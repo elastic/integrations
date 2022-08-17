@@ -13,8 +13,8 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Executable File Creation with Multiple Extensions",
-        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
-        "query": "file where event.type == \"creation\" and file.extension : \"exe\" and\n  file.name regex~ \"\"\".*\\.(vbs|vbe|bat|js|cmd|wsh|ps1|pdf|docx?|xlsx?|pptx?|txt|rtf|gif|jpg|png|bmp|hta|txt|img|iso)\\.exe\"\"\"\n",
+        "note": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "query": "file where event.type == \"creation\" and file.extension : \"exe\" and\n  file.name regex~ \"\"\".*\\.(vbs|vbe|bat|js|cmd|wsh|ps1|pdf|docx?|xlsx?|pptx?|txt|rtf|gif|jpg|png|bmp|hta|txt|img|iso)\\.exe\"\"\" and\n  not (process.executable : (\"?:\\\\Windows\\\\System32\\\\msiexec.exe\", \"C:\\\\Users\\\\*\\\\QGIS_SCCM\\\\Files\\\\QGIS-OSGeo4W-*-Setup-x86_64.exe\") and\n       file.path : \"?:\\\\Program Files\\\\QGIS *\\\\apps\\\\grass\\\\*.exe\") and\n  not process.executable : (\"/bin/sh\", \"/usr/sbin/MailScanner\", \"/usr/bin/perl\")\n",
         "risk_score": 47,
         "rule_id": "8b2b3a62-a598-4293-bc14-3d5fa22bb98f",
         "severity": "medium",
@@ -40,9 +40,9 @@
                         "reference": "https://attack.mitre.org/techniques/T1036/",
                         "subtechnique": [
                             {
-                                "id": "T1036.004",
-                                "name": "Masquerade Task or Service",
-                                "reference": "https://attack.mitre.org/techniques/T1036/004/"
+                                "id": "T1036.007",
+                                "name": "Double File Extension",
+                                "reference": "https://attack.mitre.org/techniques/T1036/007/"
                             }
                         ]
                     }
@@ -73,7 +73,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 4
+        "version": 7
     },
     "id": "8b2b3a62-a598-4293-bc14-3d5fa22bb98f",
     "type": "security-rule"
