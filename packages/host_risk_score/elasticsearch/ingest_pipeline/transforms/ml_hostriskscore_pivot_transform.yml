@@ -1,0 +1,59 @@
+---
+dest:
+  index: ml_host_risk_score_{{space_name}}
+  pipeline: ml_hostriskscore_ingest_pipeline
+frequency: 1h
+pivot:
+  aggregations:
+    "@timestamp":
+      max:
+        field: "@timestamp"
+    risk_stats:
+      scripted_metric:
+        combine_script: return state
+        init_script:
+          id: ml_hostriskscore_init_script
+        map_script:
+          id: ml_hostriskscore_map_script
+        params:
+          lookback_time: 72
+          max_risk: 100
+          p: 1.5
+          server_multiplier: 1.5
+          tactic_base_multiplier: 0.25
+          tactic_weights:
+            TA0001: 1
+            TA0002: 2
+            TA0003: 3
+            TA0004: 4
+            TA0005: 4
+            TA0006: 4
+            TA0007: 4
+            TA0008: 5
+            TA0009: 6
+            TA0010: 7
+            TA0011: 6
+            TA0040: 8
+            TA0042: 1
+            TA0043: 1
+          time_decay_constant: 6
+          zeta_constant: 2.612
+        reduce_script:
+          id: ml_hostriskscore_reduce_script
+  group_by:
+    host.name:
+      terms:
+        field: host.name
+source:
+  index:
+  - ".alerts-security.alerts-{{space_name}}"
+  query:
+    bool:
+      filter:
+      - range:
+          "@timestamp":
+            gte: now-5d
+sync:
+  time:
+    delay: 120s
+    field: "@timestamp"
