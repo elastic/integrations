@@ -11,10 +11,13 @@ pivot:
     risk_stats:
       scripted_metric:
         combine_script: return state
-        init_script:
-          id: ml_hostriskscore_init_script
-        map_script:
-          id: ml_hostriskscore_map_script
+        init_script: |-
+          state.rule_risk_stats = new HashMap();
+          state.host_variant_set = false;
+          state.host_variant = new String();
+          state.tactic_ids = new HashSet();
+        # map_script:
+        #   id: ml_hostriskscore_map_script
         params:
           lookback_time: 72
           max_risk: 100
