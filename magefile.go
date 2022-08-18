@@ -29,7 +29,7 @@ var (
 func Check() error {
 	mg.Deps(build)
 	mg.Deps(format)
-	mg.Deps(modTidy)
+	mg.Deps(ModTidy)
 	mg.Deps(goTest)
 	mg.Deps(codeowners.Check)
 	return nil
@@ -125,6 +125,10 @@ func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 	return matches, err
 }
 
-func modTidy() error {
-	return sh.RunV("go", "mod", "tidy")
+func ModTidy() error {
+	err := sh.RunV("go", "mod", "tidy", "-go=1.16")
+	if err != nil {
+		return err
+	}
+	return sh.RunV("go", "mod", "tidy", "-go=1.17")
 }
