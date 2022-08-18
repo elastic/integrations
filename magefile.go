@@ -126,9 +126,5 @@ func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 }
 
 func ModTidy() error {
-	err := sh.RunV("go", "mod", "tidy", "-go=1.16")
-	if err != nil {
-		return err
-	}
-	return sh.RunV("go", "mod", "tidy", "-go=1.17")
+	return sh.RunV("go", "mod", "tidy", "-compat=1.17")
 }
