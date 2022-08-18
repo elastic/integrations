@@ -40,8 +40,8 @@ For step-by-step instructions on how to set up an integration, see the
 
 ## Logs reference
 
-The `ec2` data stream is specifically for EC2 logs stored in AWS CloudWatch. Export logs
-from log groups to Amazon S3 bucket which has SQS notification setup already.
+The `ec2` data stream supports both EC2 logs stored in AWS CloudWatch and EC2 logs stored in Amazon S3.
+For logs stored in S3, you must export logs from log groups to an Amazon S3 bucket which has SQS notification setup already.
 
 With this data stream, EC2 logs will be parsed into fields like  `ip_address`
 and `process.name`. For logs from other services, please use the **AWS CloudWatch** integration.

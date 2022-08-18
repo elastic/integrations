@@ -42,8 +42,6 @@ For step-by-step instructions on how to set up an integration, see the
 
 The `cloudwatch` data stream collects CloudWatch logs. Users can use Amazon
 CloudWatch logs to monitor, store, and access log files from different sources.
-Export logs from log groups to an Amazon S3 bucket which has SQS notification
-setup already.
 
 **Exported fields**
 
