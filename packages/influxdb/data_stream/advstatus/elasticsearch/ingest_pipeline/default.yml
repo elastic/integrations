@@ -1,0 +1,36 @@
+---
+description: Pipeline for Influxdb advanced status metrics
+processors:
+    - rename:
+        field: prometheus
+        target_field: influxdb.advstatus
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: influxdb.advstatus.labels.compiler_type
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: influxdb.advstatus.labels.job
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: influxdb.advstatus.labels.id
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: influxdb.advstatus.labels.level
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: influxdb.advstatus.labels.engine
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: influxdb.advstatus.labels.handler
+        ignore_missing: true
+        ignore_failure: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
