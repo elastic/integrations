@@ -8,7 +8,7 @@ Use the Trend Micro Vision One integration to collects and parses data from the 
 
 ## Data streams
 
-The Trend Micro Vision One integration collects three types of data streams: Alert, Audit, and Detection.
+The Trend Micro Vision One integration collects logs for three types of events: Alert, Audit, and Detection.
 
 **Alert** Displays information about workbench alerts. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3#tag/Workbench/paths/~1v3.0~1workbench~1alerts/get).
 
@@ -34,6 +34,14 @@ This module has been tested against `Trend Micro Vision One API version 3.0`.
 3. Click on the account name having appropriate API access permission to generate an API token.
 ![Trend Micro Vision One generate API token ](../img/trend-micro-vision-one-api-token-generate.png)
 4. Copy the Authentication token.
+
+### Enabling the integration in Elastic
+
+1. In Kibana go to **Management > Integrations**.
+2. In the "Search for integrations" search bar, type **Trend Micro Vision One**.
+3. Click on **Trend Micro Vision One** integration from the search results.
+4. Click on **Add Trend Micro Vision One** button to add Trend Micro Vision One integration.
+5. Enable the Integration to collect logs via API.
 
 ## Logs Reference
 

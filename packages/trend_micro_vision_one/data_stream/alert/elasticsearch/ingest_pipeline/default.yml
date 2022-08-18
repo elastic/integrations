@@ -19,34 +19,31 @@ processors:
       description: Set the value of event.category and event.type.
       lang: painless
       source: >
-          def eventCategory = new HashSet();
-          def eventType = new HashSet();
-          if(ctx.json?.description != null && ctx.json?.description != ''){
-            def description = ctx.json.description.toLowerCase();
-            if(description.contains('logon')){
-              eventCategory.add('authentication');
-              eventCategory.add('host');
-              eventType.add('info');
-              }
-            else if(description.contains('email')){
-              eventCategory.add('email');
-              eventType.add('info');
-              }
-            else if(description.contains('network')){
-              eventCategory.add('network');
-              eventType.add('info');
-              }
-            else{
-              eventCategory.add('malware');
-              eventType.add('info');
-              }
-            }
-            if(!eventCategory.isEmpty()){
-                ctx.event.category = eventCategory;
-            }
-            if(!eventType.isEmpty()){
-                ctx.event.type = eventType;
-            }
+        def eventCategory = new HashSet();
+        def eventType = new HashSet();
+        if (ctx.json?.description != null && ctx.json.description != '') {
+          def description = ctx.json.description.toLowerCase();
+          if (description.contains('logon')) {
+            eventCategory.add('authentication');
+            eventCategory.add('host');
+            eventType.add('info');
+          } else if (description.contains('email')) {
+            eventCategory.add('email');
+            eventType.add('info');
+          } else if (description.contains('network')) {
+            eventCategory.add('network');
+            eventType.add('info');
+          } else {
+            eventCategory.add('malware');
+            eventType.add('info');
+          }
+        }
+        if (!eventCategory.isEmpty()) {
+          ctx.event.category = eventCategory;
+        }
+        if (!eventType.isEmpty()) {
+          ctx.event.type = eventType;
+        }
   - fingerprint:
       fields:
         - json.updatedDateTime
@@ -56,7 +53,7 @@ processors:
       ignore_missing: true
   - date:
       field: json.updatedDateTime
-      if: ctx.json?.updatedDateTime != null && ctx.json?.updatedDateTime != ''
+      if: ctx.json?.updatedDateTime != null && ctx.json.updatedDateTime != ''
       formats:
         - ISO8601
       on_failure:
@@ -180,12 +177,11 @@ processors:
   - script:
       description: Mapped value object field of impactScope.
       lang: painless
-      source:
+      if: ctx.json?.impactScope?.entities instanceof List
+      source: >
         def impactscope_entities = ctx.json.impactScope.entities;
-
-        for (entitiy_object in impactscope_entities){
-          if(!(entitiy_object.entityValue instanceof HashMap))
-          {
+        for (entitiy_object in impactscope_entities) {
+          if (!(entitiy_object.entityValue instanceof HashMap)) {
             def entityValue = entitiy_object.entityValue;
             entitiy_object.value = new HashMap();
             entitiy_object.value.account_value = entityValue;
@@ -270,7 +266,7 @@ processors:
   - date:
       field: json.createdDateTime
       target_field: trend_micro_vision_one.alert.created_date
-      if: ctx.json?.createdDateTime != null && ctx.json?.createdDateTime != ''
+      if: ctx.json?.createdDateTime != null && ctx.json.createdDateTime != ''
       formats:
         - ISO8601
       on_failure:

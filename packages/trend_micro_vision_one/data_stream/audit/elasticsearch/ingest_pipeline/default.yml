@@ -19,51 +19,50 @@ processors:
       description: Set the value of event.category and event.type.
       lang: painless
       source: >
-          def eventCategory = new HashSet();
-          def eventType = new HashSet();
-          if(ctx.json?.category != null && ctx.json?.category != ''){
-            def category = ctx.json.category.toLowerCase();
-            def activity = ctx.json.activity.toLowerCase();
-            if(category == 'logon and logoff' || category == 'saml single sign-on') {
-              eventCategory.add('authentication');
-              if(activity == 'log on' || activity == 'enable single sign-on'){
-                  eventType.add('start');
-                }
-              if(activity == 'log off' || activity == 'disable single sign-on'){
-                  eventType.add('end');
-                }
-              else{
-                  eventType.add('info');
-              }
-              }
-            if(category == 'account management' || category == 'product connector' || category == 'Notifications' || category == 'detection model management' || category == 'workbench' || category == 'response management' || category == 'search' || category == 'managed xdr' || category == 'third-party integration' || category == 'service gateway inventory' || category == 'endpoint inventory' || category == 'endpoint security policies' || category == 'zero trust secure access' || category == 'sandbox analysis' || category == 'oat' || category == 'security playbooks'){
-              eventCategory.add('authentication');
+        def eventCategory = new HashSet();
+        def eventType = new HashSet();
+        if (ctx.json?.category != null && ctx.json.category != '' && ctx.json?.activity != null && ctx.json.activity != '') {
+          def category = ctx.json.category.toLowerCase();
+          def activity = ctx.json.activity.toLowerCase();
+          if (['logon and logoff', 'saml single sign-on'].contains(category)) {
+            eventCategory.add('authentication');
+            if (['log on', 'enable single sign-on'].contains(activity)) {
+              eventType.add('start');
+            }
+            if (['log off', 'disable single sign-on'].contains(activity)) {
+              eventType.add('end');
+            } else {
               eventType.add('info');
-              }
-            if(category == 'network inventory'){
-              eventCategory.add('network');
-              eventType.add('info');
-              }
-            if(category == 'threat intelligence'){
-              eventCategory.add('threat');
-              eventType.add('indicator');
-              }
-            if(activity.contains('email')){
-              eventCategory.add('email');
-              }
-            if(activity.contains('file')){
-              eventCategory.add('file');
-              }
-            if(activity.contains('threat')){
-              eventCategory.add('threat');
-              }
+            }
           }
-          if(!eventCategory.isEmpty()){
-                ctx.event.category = eventCategory;
-            }
-            if(!eventType.isEmpty()){
-                ctx.event.type = eventType;
-            }
+          if (['account management', 'product connector', 'Notifications', 'detection model management', 'workbench', 'response management', 'search', 'managed xdr', 'third-party integration', 'service gateway inventory', 'endpoint inventory', 'endpoint security policies', 'zero trust secure access', 'sandbox analysis', 'oat', 'security playbooks'].contains(category)) {
+            eventCategory.add('authentication');
+            eventType.add('info');
+          }
+          if (category == 'network inventory') {
+            eventCategory.add('network');
+            eventType.add('info');
+          }
+          if (category == 'threat intelligence') {
+            eventCategory.add('threat');
+            eventType.add('indicator');
+          }
+          if (activity.contains('email')) {
+            eventCategory.add('email');
+          }
+          if (activity.contains('file')) {
+            eventCategory.add('file');
+          }
+          if (activity.contains('threat')) {
+            eventCategory.add('threat');
+          }
+        }
+        if (!eventCategory.isEmpty()) {
+          ctx.event.category = eventCategory;
+        }
+        if (!eventType.isEmpty()) {
+          ctx.event.type = eventType;
+        }
   - fingerprint:
       fields:
         - json.loggedDateTime
@@ -76,7 +75,7 @@ processors:
       ignore_missing: true
   - date:
       field: json.loggedDateTime
-      if: ctx.json?.loggedDateTime != null && ctx.json?.loggedDateTime != ''
+      if: ctx.json?.loggedDateTime != null && ctx.json.loggedDateTime != ''
       formats:
         - ISO8601
         - yyyy-MM-dd HH:mm:ss
