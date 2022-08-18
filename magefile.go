@@ -70,7 +70,7 @@ func format() {
 }
 
 func addLicenseHeaders() error {
-	return sh.RunV("go-licenser", "-license", "Elastic")
+	return sh.RunV("go", "run", "github.com/elastic/go-licenser", "-license", "Elastic")
 }
 
 func goImports() error {
@@ -85,10 +85,10 @@ func goImports() error {
 	}
 
 	args := append(
-		[]string{"-local", GoImportsLocalPrefix, "-l", "-w"},
+		[]string{"run", "golang.org/x/tools/cmd/goimports", "-local", GoImportsLocalPrefix, "-l", "-w"},
 		goFiles...,
 	)
-	return sh.RunV("goimports", args...)
+	return sh.RunV("go", args...)
 }
 
 func goTest() error {
