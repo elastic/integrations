@@ -19,7 +19,6 @@ processors:
         field: source.ip
         value: "{{source.address}}"
         ignore_empty_value: true
-        
     - rename:
         field: json.destination_ip
         target_field: destination.address
@@ -33,7 +32,6 @@ processors:
         field: destination.ip
         value: "{{destination.address}}"
         ignore_empty_value: true
-
     - rename:
         field: json.method
         target_field: http.request.method
@@ -41,7 +39,7 @@ processors:
     - convert:
         field: json.status_code
         target_field: http.response.status_code
-        type: string
+        type: long
         ignore_missing: true
     - user_agent:
         field: json.user_agent
@@ -57,7 +55,7 @@ processors:
         field: json.domain
         target_field: http.request.referrer
         ignore_missing: true
-        if: ctx.json?.domain != null && ctx.json?.domain != "" && (/^https?:\/\/.*$/.matcher(ctx.json?.domain).matches()
+        if: ctx.json?.domain != null && ctx.json?.domain != "" && (/^https?:\/\/.*$/.matcher(ctx.json?.domain)).matches()
     - set:
         field: url.domain
         value: "{{destination.domain}}"
@@ -80,7 +78,6 @@ processors:
         field: json.app_rule
         target_field: barracuda_cloudgen_firewall.log.app_rule
         ignore_missing: true
-
     - set:
         field: event.kind
         value: event

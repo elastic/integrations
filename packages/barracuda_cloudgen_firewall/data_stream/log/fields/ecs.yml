@@ -1,13 +1,7 @@
 - external: ecs
   name: '@timestamp'
 - external: ecs
-  name: client.domain
-- external: ecs
-  name: client.registered_domain
-- external: ecs
-  name: client.subdomain
-- external: ecs
-  name: client.top_level_domain
+  name: message
 - external: ecs
   name: destination.address
 - external: ecs
@@ -19,41 +13,33 @@
 - external: ecs
   name: destination.domain
 - external: ecs
-  name: destination.geo.city_name
-- external: ecs
-  name: destination.geo.country_name
-- description: Longitude and latitude.
-  level: core
-  name: destination.geo.location
-  type: geo_point
-- external: ecs
-  name: destination.ip
-- external: ecs
   name: destination.mac
 - external: ecs
   name: destination.nat.ip
 - external: ecs
-  name: destination.nat.port
+  name: destination.packets
+- name: destination.geo.city_name
+  external: ecs
+- name: destination.geo.continent_name
+  external: ecs
+- name: destination.geo.country_iso_code
+  external: ecs
+- name: destination.geo.country_name
+  external: ecs
+- name: destination.geo.location
+  description: Longitude and latitude.
+  example: '{ "lon": -73.614830, "lat": 45.505918 }'
+  type: geo_point
+- name: destination.geo.name
+  external: ecs
+- name: destination.geo.region_iso_code
+  external: ecs
+- name: destination.geo.region_name
+  external: ecs
+- external: ecs
+  name: destination.ip
 - external: ecs
   name: destination.port
-- external: ecs
-  name: destination.registered_domain
-- external: ecs
-  name: destination.subdomain
-- external: ecs
-  name: destination.top_level_domain
-- external: ecs
-  name: dns.answers.name
-- external: ecs
-  name: dns.answers.type
-- external: ecs
-  name: dns.question.registered_domain
-- external: ecs
-  name: dns.question.subdomain
-- external: ecs
-  name: dns.question.top_level_domain
-- external: ecs
-  name: dns.question.type
 - external: ecs
   name: ecs.version
 - external: ecs
@@ -70,66 +56,34 @@
   name: event.outcome
 - external: ecs
   name: event.timezone
-- external: ecs
-  name: file.attributes
-- external: ecs
-  name: file.directory
-- external: ecs
-  name: file.extension
-- external: ecs
-  name: file.name
-- external: ecs
-  name: file.path
-- external: ecs
-  name: file.size
-- external: ecs
-  name: file.type
-- external: ecs
-  name: geo.city_name
-- external: ecs
-  name: geo.country_name
-- external: ecs
-  name: geo.name
-- external: ecs
-  name: geo.region_name
-- external: ecs
-  name: group.id
-- external: ecs
-  name: group.name
-- external: ecs
-  name: host.hostname
-- external: ecs
-  name: host.ip
-- external: ecs
-  name: host.mac
-- external: ecs
-  name: host.name
-- external: ecs
-  name: http.request.method
-- external: ecs
-  name: http.request.referrer
+- name: http.response.status_code
+  external: ecs
+- name: http.request.body.bytes
+  external: ecs
+- name: http.response.body.bytes
+  external: ecs
+- name: http.request.method
+  external: ecs
+- name: http.request.referrer
+  external: ecs
+- name: http.version
+  external: ecs
+- name: http.request.bytes
+  external: ecs
+- name: http.response.bytes
+  external: ecs
+- name: http.request.mime_type
+  external: ecs
 - external: ecs
   name: log.level
 - external: ecs
-  name: log.syslog.facility.code
+  name: network.iana_number
 - external: ecs
-  name: log.syslog.priority
+  name: network.transport
 - external: ecs
-  name: log.syslog.severity.code
+  name: network.type
 - external: ecs
-  name: message
-- external: ecs
-  name: network.application
-- external: ecs
-  name: network.bytes
-- external: ecs
-  name: network.direction
-- external: ecs
-  name: network.forwarded_ip
-- external: ecs
-  name: network.packets
-- external: ecs
-  name: network.protocol
+  name: network.community_id
 - external: ecs
   name: observer.egress.interface.name
 - external: ecs
@@ -143,17 +97,7 @@
 - external: ecs
   name: observer.version
 - external: ecs
-  name: process.name
-- external: ecs
-  name: process.parent.name
-- external: ecs
-  name: process.parent.title
-- external: ecs
-  name: process.pid
-- external: ecs
-  name: process.parent.pid
-- external: ecs
-  name: process.title
+  name: observer.serial_number
 - external: ecs
   name: related.hosts
 - external: ecs
@@ -163,15 +107,11 @@
 - external: ecs
   name: rule.name
 - external: ecs
-  name: server.domain
+  name: rule.category
 - external: ecs
-  name: server.registered_domain
+  name: rule.description
 - external: ecs
-  name: server.subdomain
-- external: ecs
-  name: server.top_level_domain
-- external: ecs
-  name: service.name
+  name: rule.ruleset
 - external: ecs
   name: source.address
 - external: ecs
@@ -183,43 +123,55 @@
 - external: ecs
   name: source.domain
 - external: ecs
-  name: source.geo.city_name
-- external: ecs
-  name: source.geo.country_name
-- description: Longitude and latitude.
-  level: core
-  name: source.geo.location
-  type: geo_point
-- external: ecs
-  name: source.ip
-- external: ecs
   name: source.mac
 - external: ecs
   name: source.nat.ip
 - external: ecs
-  name: source.nat.port
+  name: source.packets
+- name: source.geo.city_name
+  external: ecs
+- name: source.geo.continent_name
+  external: ecs
+- name: source.geo.country_iso_code
+  external: ecs
+- name: source.geo.country_name
+  external: ecs
+- name: source.geo.location
+  description: Longitude and latitude.
+  example: '{ "lon": -73.614830, "lat": 45.505918 }'
+  type: geo_point
+- name: source.geo.name
+  external: ecs
+- name: source.geo.region_iso_code
+  external: ecs
+- name: source.geo.region_name
+  external: ecs
+- external: ecs
+  name: source.ip
 - external: ecs
   name: source.port
 - external: ecs
-  name: source.registered_domain
-- external: ecs
-  name: source.subdomain
-- external: ecs
-  name: source.top_level_domain
-- external: ecs
   name: tags
-- external: ecs
-  name: url.domain
-- external: ecs
-  name: url.original
-- external: ecs
-  name: url.path
-- external: ecs
-  name: url.query
-- external: ecs
-  name: url.registered_domain
-- external: ecs
-  name: url.top_level_domain
+- name: url.domain
+  external: ecs
+- name: url.original
+  external: ecs
+- name: url.password
+  external: ecs
+- name: url.port
+  external: ecs
+- name: url.username
+  external: ecs
+- name: url.path
+  external: ecs
+- name: url.query
+  external: ecs
+- name: url.extension
+  external: ecs
+- name: url.scheme
+  external: ecs
+- name: url.full
+  external: ecs
 - external: ecs
   name: user.domain
 - external: ecs
@@ -228,5 +180,17 @@
   name: user.id
 - external: ecs
   name: user.name
-- external: ecs
-  name: user_agent.original
+- name: user_agent.device.name
+  external: ecs
+- name: user_agent.name
+  external: ecs
+- name: user_agent.original
+  external: ecs
+- name: user_agent.os.name
+  external: ecs
+- name: user_agent.os.version
+  external: ecs
+- name: user_agent.os.full
+  external: ecs
+- name: user_agent.version
+  external: ecs

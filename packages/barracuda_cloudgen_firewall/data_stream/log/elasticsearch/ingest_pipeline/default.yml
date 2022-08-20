@@ -6,26 +6,38 @@ processors:
       value: '8.3.0'
   - set:
       field: observer.vendor
-      value: barracuda
+      value: Barracuda
   - set:
       field: observer.type
       value: firewall
   - rename:
+      field: lumberjack.product
+      target_field: observer.product
+      ignore_missing: true
+  - rename:
+      field: lumberjack.sn
+      target_field: observer.serial_number
+      ignore_missing: true
+  - rename:
+      field: lumberjack.message
+      target_field: event.original
+      ignore_missing: true
+  - rename:
       field: message
       target_field: event.original
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
   - pipeline:
       name: '{{ IngestPipeline "firewall" }}'
-      if: ctx.type == 'ngfw-act'
+      if: ctx.lumberjack?.type == 'ngfw-act'
   - pipeline:
       name: '{{ IngestPipeline "web" }}'
-      if: ctx.type == 'ngfw-wf'
+      if: ctx.lumberjack?.type == 'ngfw-wf'
   - pipeline:
       name: '{{ IngestPipeline "threat" }}'
-      if: ctx.type == 'ngfw-threat'
-
+      if: ctx.lumberjack?.type == 'ngfw-threat'
   - set:
       field: network.type
       value: ipv4
@@ -83,10 +95,46 @@ processors:
       target_field: destination.as.organization.name
       ignore_missing: true
   - append:
-      field: related.hosts
-      value: '{{host.name}}'
+      field: related.ip
+      value: '{{source.ip}}'
       allow_duplicates: false
-      if: ctx.host?.name != null && ctx.host?.name != ''
+      if: ctx.source?.ip != null && ctx.source?.ip != ''
+  - append:
+      field: related.ip
+      value: '{{destination.ip}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null && ctx.destination?.ip != ''
+  - remove:
+      field:
+      - json
+      - lumberjack
+      - _tmp
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+            for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+            }
+            map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+            for (def x : list) {
+                if (x instanceof Map) {
+                    handleMap(x);
+                } else if (x instanceof List) {
+                    handleList(x);
+                }
+            }
+            list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"

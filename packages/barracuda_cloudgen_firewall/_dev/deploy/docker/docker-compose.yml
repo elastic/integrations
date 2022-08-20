@@ -1,8 +1,10 @@
 version: '2.3'
 services:
-  barracuda-cloudgen-logfile:
-    image: alpine
+  barracuda-cloudgen-lumberjack:
+    image: docker.elastic.co/beats/filebeat:8.3.3
+    environment:
+      - BEAT_STRICT_PERMS=false
     volumes:
       - ./sample_logs:/sample_logs:ro
-      - ${SERVICE_LOGS_DIR}:/var/log
-    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+      - ./config:/config:ro
+    command: /bin/sh -c "sleep 10s && filebeat -c /config/filebeat.docker.yml -e -d '*'"
