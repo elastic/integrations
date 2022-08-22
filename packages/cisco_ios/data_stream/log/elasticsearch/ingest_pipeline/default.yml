@@ -28,10 +28,23 @@ processors:
   - grok:
       field: _temp_.header
       patterns:
-        - '^<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER:event.sequence}?: (?:%{SYSLOGHOST:log.syslog.hostname}: )?%{CISCO_TIMESTAMP:_temp_.cisco_timestamp}'
-        - '%{SYSLOGHOST:log.syslog.hostname} %{NUMBER:event.sequence}: %{CISCO_TIMESTAMP:_temp_.cisco_timestamp}'
+        - '^<%{NONNEGINT:log.syslog.priority:long}>%{NUMBER:cisco.ios.message_count}?: (?:%{SYSLOGHOST:log.syslog.hostname}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(%{CISCO_TIMESTAMP:_temp_.cisco_timestamp}|%{NOTSPACE:cisco.ios.uptime}:)'
+        - '%{SYSLOGHOST:log.syslog.hostname} (%{NUMBER:cisco.ios.sequence}: )?%{CISCO_TIMESTAMP:_temp_.cisco_timestamp}'
       pattern_definitions:
         CISCO_TIMESTAMP: '%{CISCOTIMESTAMP}(?: %{TZ})?'
+      ignore_failure: true
+  - set:
+      field: event.sequence
+      copy_from: cisco.ios.sequence
+      if: ctx.cisco?.ios?.sequence != null
+  - convert:
+      field: cisco.ios.message_count
+      type: long
+      ignore_failure: true
+  - set:
+      field: event.sequence
+      copy_from: cisco.ios.message_count
+      if: ctx.cisco?.ios?.message_count != null && ctx.event?.sequence == null
       ignore_failure: true
   - gsub:
       description: Remove double spacing from the date.
