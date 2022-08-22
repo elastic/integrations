@@ -819,7 +819,10 @@ processors:
         "0x01000000": TRUSTED_TO_AUTH_FOR_DELEGATION
         "0x04000000": PARTIAL_SECRETS_ACCOUNT
       source: |-
-        if (ctx?.winlog?.event_data?.NewUacValue == null) {
+        if (ctx.winlog?.event_data == null) {
+          return;
+        }
+        if (ctx.winlog.event_data.NewUacValue == null || ctx.winlog.event_data.NewUacValue == "-") {
           return;
         }
         Long newUacValue = Long.decode(ctx.winlog.event_data.NewUacValue);
@@ -834,7 +837,7 @@ processors:
           return;
         }
         ctx.winlog.event_data.put("NewUACList", uacResult);
-        if (ctx?.winlog?.event_data?.UserAccountControl == null) {
+        if (ctx.winlog.event_data.UserAccountControl == null || ctx.winlog.event_data.UserAccountControl == "-") {
           return;
         }
         ArrayList uac_array = new ArrayList();
@@ -2094,6 +2097,21 @@ processors:
           "0x40000000": ADS_RIGHT_GENERIC_WRITE
           "0x80000000": ADS_RIGHT_GENERIC_READ
       source: |-
+        def split(String s) {
+          def f = new ArrayList();
+          int last = 0;
+          for (; last < s.length() && Character.isWhitespace(s.charAt(last)); last++) {}
+          for (def i = last; i < s.length(); i++) {
+            if (!Character.isWhitespace(s.charAt(i))) {
+              continue;
+            }
+            f.add(s.substring(last, i));
+            for (; i < s.length() && Character.isWhitespace(s.charAt(i)); i++) {}
+            last = i;
+          }
+          f.add(s.substring(last));
+          return f;
+        }
         if (ctx?.winlog?.event_data?.FailureReason != null) {
           def code = ctx.winlog.event_data.FailureReason.replace("%%","");
           if (params.descriptions.containsKey(code)) {
@@ -2134,17 +2152,36 @@ processors:
         }
         if (ctx?.winlog?.event_data?.AccessMask != null) {
           ArrayList results = new ArrayList();
-          Long accessMask = Long.decode(ctx.winlog.event_data.AccessMask);
-          for (entry in params.AccessMaskDescriptions.entrySet()) {
-            Long accessFlag = Long.decode(entry.getKey());
-            if ((accessMask.longValue() & accessFlag.longValue()) == accessFlag.longValue()) {
-              results.add(entry.getValue());
+          for (elem in split(ctx.winlog.event_data.AccessMask)) {
+            def mask = elem.replace("%%","").trim();
+            if (mask == "") {
+              continue;
+            }
+            Long accessMask = Long.decode(mask);
+            for (entry in params.AccessMaskDescriptions.entrySet()) {
+              Long accessFlag = Long.decode(entry.getKey());
+              if ((accessMask.longValue() & accessFlag.longValue()) == accessFlag.longValue()) {
+                results.add(entry.getValue());
+              }
             }
           }
           if (results.length > 0) {
-            ctx.winlog.event_data.put("AccessMaskDescription", results);
+            ctx.winlog.event_data.put("_AccessMaskDescription", results);
           }
         }
+  - foreach:
+      field: winlog.event_data._AccessMaskDescription
+      processor:
+        append:
+          field: winlog.event_data.AccessMaskDescription
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.winlog?.event_data?._AccessMaskDescription != null && ctx.winlog.event_data._AccessMaskDescription instanceof List
+  - remove:
+      field: winlog.event_data._AccessMaskDescription
+      ignore_failure: true
   - script:
       lang: painless
       ignore_failure: false

@@ -13,7 +13,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Mounting Hidden or WebDav Remote Shares",
-        "note": "## Config\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "note": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
         "query": "process where event.type in (\"start\", \"process_started\") and\n ((process.name : \"net.exe\" or process.pe.original_file_name == \"net.exe\") or ((process.name : \"net1.exe\" or process.pe.original_file_name == \"net1.exe\") and\n not process.parent.name : \"net.exe\")) and\n process.args : \"use\" and\n /* including hidden and webdav based online shares such as onedrive  */\n process.args : (\"\\\\\\\\*\\\\*$*\", \"\\\\\\\\*@SSL\\\\*\", \"http*\") and\n /* excluding shares deletion operation */\n not process.args : \"/d*\"\n",
         "risk_score": 21,
         "rule_id": "c4210e1c-64f2-4f48-b67e-b5a8ffe3aa14",
@@ -51,7 +51,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 4
+        "version": 7
     },
     "id": "c4210e1c-64f2-4f48-b67e-b5a8ffe3aa14",
     "type": "security-rule"
