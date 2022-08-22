@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Istio access logs
 processors:
   - set:
       field: event.ingested
@@ -7,6 +7,10 @@ processors:
   - set:
       field: ecs.version
       value: "8.3.0"
+  - rename:
+      field: '@timestamp'
+      target_field: event.created
+      ignore_missing: true
   - rename:
       field: message
       target_field: event.original
@@ -18,16 +22,13 @@ processors:
       pattern_definitions:
         CHAR: .
   - pipeline:
-      name: '{{ IngestPipeline "format-common" }}'
       if: ctx.first_char != '{'
+      name: '{{ IngestPipeline "format-common" }}'
   - pipeline:
-      name: '{{ IngestPipeline "format-json" }}'
       if: ctx.first_char == '{'
+      name: '{{ IngestPipeline "format-json" }}'
   - remove:
       field: first_char
-  - set:
-      field: event.created
-      copy_from: "@timestamp"
   - user_agent:
       field: user_agent.original
       ignore_failure: true
