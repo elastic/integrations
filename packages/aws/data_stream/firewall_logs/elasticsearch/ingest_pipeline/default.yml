@@ -28,6 +28,14 @@ processors:
       field: json.availability_zone
       target_field: cloud.availability_zone
       ignore_missing: true
+  - grok:
+      field: cloud.availability_zone
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^%{DATA:cloud.region}%{LETTER}$
+      pattern_definitions:
+        LETTER: '[a-z]+'
   - rename:
       field: json.firewall_name
       target_field: observer.name

@@ -41,6 +41,12 @@ processors:
         S3KEY: "[a-zA-Z0-9\\/_\\.\\-%+]+"
         S3ID: "[a-zA-Z0-9\\/_\\.\\-%+=]+"
         S3VERSION: "[a-zA-Z0-9.]+"
+  - grok:
+      field: aws.s3access.host_header
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - ^%{DATA}s3\.%{DATA:cloud.region}\.%{DATA}$        
   - script:
       description: Drops null/empty values recursively
       lang: painless
