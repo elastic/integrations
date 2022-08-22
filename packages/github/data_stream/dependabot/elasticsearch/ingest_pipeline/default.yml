@@ -22,6 +22,8 @@ processors:
     value: "{{{_ingest.timestamp}}}"
 - fingerprint:
     fields: 
+        - github.dependabot.repository.owner.login
+        - github.dependabot.repository.name
         - github.dependabot.number
         - github.dependabot.created_at
         - github.dependabot.dismissed_at
@@ -201,6 +203,9 @@ processors:
 - set:
     field: vulnerability.scanner.vendor
     value: "Github"
+- convert:
+    field: github.dependabot.security_advisory.cvss.score
+    type: float
 - rename:
     target_field: vulnerability.score.base
     field: github.dependabot.security_advisory.cvss.score
