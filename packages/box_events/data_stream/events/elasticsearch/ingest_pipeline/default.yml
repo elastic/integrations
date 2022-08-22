@@ -158,6 +158,10 @@ processors:
       field: box.additional_details.shield_alert.rule_name
       target_field: rule.name
       ignore_missing: true
+  - convert:
+      field: box.additional_details.shield_alert.alert_id
+      type: string
+      ignore_missing: true
   - rename:
       field: box.additional_details.shield_alert.alert_summary.description
       target_field: threat.indicator.description
@@ -181,6 +185,25 @@ processors:
             }
             ctx.related.ip = setList;
         }
+  - script:
+      description: Capitalize Priority to match Appendix A of the STIX 2.1 framework
+      lang: painless
+      source: |
+        if (ctx.box.keySet().contains("additional_details") &&
+          ctx.box.additional_details.shield_alert.keySet().contains("priority")) {
+            if (ctx?.threat == null) {
+                ctx.threat = new HashMap();
+            }
+            if (ctx?.threat?.enrichments == null) {
+                ctx.threat.enrichments = new HashMap();
+            }
+            if (ctx?.threat?.enrichments?.indicator == null) {
+                ctx.threat.enrichments.indicator = new HashMap();
+            }
+            ctx.threat.enrichments.indicator.confidence = 
+              ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() + 
+              ctx.box.additional_details.shield_alert.priority.substring(1);
+        }
 # already have ip in `client.ip`
   - remove:
       field: box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip
@@ -188,6 +211,14 @@ processors:
       ignore_missing: true
   - remove:
       field: box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.registrant
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: box.additional_details.shield_alert.alert_summary.sessions
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: box.additional_details.shield_alert.priority
       ignore_failure: true
       ignore_missing: true
 # Conditionally, remove event.original
