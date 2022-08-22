@@ -13,6 +13,7 @@ processors:
       field: event.original
       patterns:
         - "%{SYSLOG_HEADER}:\\s%%{GREEDYDATA:_temp_.full_message}"
+        - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
         SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE:_temp_.raw_date}"
         SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.priority:int}>"
@@ -79,10 +80,24 @@ processors:
       target_field: "@timestamp"
       formats:
         - "MMM d HH:mm:ss.SSS"
+
+  #
+  # Parse out IP addresses from Logs
+  #
+  - grok:
+      field: message
+      if: "ctx.event?.reason == 'ENTRY_CREATED'"
+      patterns:
+        - "((Entry created)|(Entry deleted)) A=%{IP:client.ip}"
+
+
   - remove:
       field: _temp_
       ignore_failure: true
       ignore_missing: true
+
+
+
 
 on_failure:
   - set:
