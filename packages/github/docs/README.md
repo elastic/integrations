@@ -472,99 +472,102 @@ To use this integration, you must be an administrator for the repository or for 
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Event dataset | constant_keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Event module | constant_keyword |
-| github.dependabot.created_at | When was the alert created | date |
-| github.dependabot.dependabot_update.error.body | The body of the error. | text |
-| github.dependabot.dependabot_update.error.error_type | The error code. | keyword |
-| github.dependabot.dependabot_update.error.title | The title of the error. | keyword |
-| github.dependabot.dependabot_update.pull_request.closed | `true` if the pull request is closed. | boolean |
-| github.dependabot.dependabot_update.pull_request.closed_at | Identifies the date and time when the pull request was closed. | date |
-| github.dependabot.dependabot_update.pull_request.created_at | Identifies the date and time when the pull request was created. | date |
-| github.dependabot.dependabot_update.pull_request.merged | Whether or not the pull request was merged. | boolean |
-| github.dependabot.dependabot_update.pull_request.merged_at | The date and time that the pull request was merged. | date |
-| github.dependabot.dependabot_update.pull_request.number | Identifies the pull request number. | integer |
-| github.dependabot.dependabot_update.pull_request.title | Identifies the pull request title. | keyword |
-| github.dependabot.dependabot_update.pull_request.url | The HTTP URL for this pull request. | keyword |
-| github.dependabot.dependency_scope | The scope of an alert's dependency. | keyword |
-| github.dependabot.dismiss_reason | The reason the alert was dismissed. | keyword |
-| github.dependabot.dismissed_at | When was the alert dismissed | date |
-| github.dependabot.dismisser.login | The username of the dismisser. | keyword |
-| github.dependabot.dismisser.url | The HTTP URL for this user. | keyword |
-| github.dependabot.fix_reason | The reason the alert was marked as fixed. | keyword |
-| github.dependabot.fixed_at | When was the alert fixed | date |
-| github.dependabot.number | Identifies the alert number. | integer |
-| github.dependabot.repository.description | The description of the repository. | keyword |
-| github.dependabot.repository.is_in_organization | Indicates if a repository is either owned by an organization, or is a private fork of an organization repository. | boolean |
-| github.dependabot.repository.is_private | Identifies if the repository is private or internal. | boolean |
-| github.dependabot.repository.name | Identifies if the repository is private or internal. | keyword |
-| github.dependabot.repository.owner.login | The username of the dismisser. | keyword |
-| github.dependabot.repository.owner.url | The HTTP URL for this user | keyword |
-| github.dependabot.repository.url | The HTTP URL for this repository. | keyword |
-| github.dependabot.security_advisory.classification | The classification of the advisory. | keyword |
-| github.dependabot.security_advisory.cvss.vector_string | The CVSS vector string associated with this advisory. | keyword |
-| github.dependabot.security_advisory.cwes.cwe_id | The id of the CWE. | keyword |
-| github.dependabot.security_advisory.cwes.description | The name of this CWE. | keyword |
-| github.dependabot.security_advisory.cwes.name | A detailed description of this CWE. | keyword |
-| github.dependabot.security_advisory.ghsa_id | The GitHub Security Advisory ID. | keyword |
-| github.dependabot.security_advisory.identifiers.type | The identifier type, e.g. GHSA, CVE. | keyword |
-| github.dependabot.security_advisory.identifiers.value | The identifier. | keyword |
-| github.dependabot.security_advisory.origin | The organization that originated the advisory. | keyword |
-| github.dependabot.security_advisory.permalink | The permalink for the advisory. | keyword |
-| github.dependabot.security_advisory.published_at | When the advisory was published. | date |
-| github.dependabot.security_advisory.severity | The severity of the advisory. | keyword |
-| github.dependabot.security_advisory.summary | A short plaintext summary of the advisory. | keyword |
-| github.dependabot.security_advisory.updated_at | When the advisory was last updated. | date |
-| github.dependabot.security_advisory.withdrawn_at | When the advisory was withdrawn, if it has been withdrawn. | date |
-| github.dependabot.security_vulnerability.first_patched_version.identifier | The first version containing a fix for the vulnerability. | keyword |
-| github.dependabot.security_vulnerability.package.ecosystem | The ecosystem the package belongs to, e.g. RUBYGEMS, NPM. | keyword |
-| github.dependabot.security_vulnerability.package.name | The package name. | keyword |
-| github.dependabot.security_vulnerability.updated_at | When the vulnerability was last updated. | date |
-| github.dependabot.security_vulnerability.vulnerable_version_range | A string that describes the vulnerable package versions. | keyword |
-| github.dependabot.state | Identifies the state of the alert. | keyword |
-| github.dependabot.vulnerable_manifest_filename | The vulnerable manifest filename. | keyword |
-| github.dependabot.vulnerable_manifest_path | The vulnerable manifest path. | keyword |
-| github.dependabot.vulnerable_requirements | The vulnerable requirements. | keyword |
-| host.architecture | Operating system architecture. | keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| tags | List of keywords used to tag each event. | keyword |
-| vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
-| vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created[Common Vulnerabilities and Exposure CVE description]) | keyword |
-| vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
-| vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
-| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
-| vulnerability.reference | A resource that provides additional information, context, and mitigations for the identified vulnerability. | keyword |
-| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | keyword |
-| vulnerability.score.base | Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope. For example (https://www.first.org/cvss/specification-document) | float |
-| vulnerability.score.version | The National Vulnerability Database (NVD) provides qualitative severity rankings of "Low", "Medium", and "High" for CVSS v2.0 base score ranges in addition to the severity ratings for CVSS v3.0 as they are defined in the CVSS v3.0 specification. CVSS is owned and managed by FIRST.Org, Inc. (FIRST), a US-based non-profit organization, whose mission is to help computer security incident response teams across the world. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
-| vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| github.dependabot.created_at | When was the alert created | date |  |  |
+| github.dependabot.dependabot_update.error.body | The body of the error. | text |  |  |
+| github.dependabot.dependabot_update.error.error_type | The error code. | keyword |  |  |
+| github.dependabot.dependabot_update.error.title | The title of the error. | keyword |  |  |
+| github.dependabot.dependabot_update.pull_request.closed | `true` if the pull request is closed. | boolean |  |  |
+| github.dependabot.dependabot_update.pull_request.closed_at | Identifies the date and time when the pull request was closed. | date |  |  |
+| github.dependabot.dependabot_update.pull_request.created_at | Identifies the date and time when the pull request was created. | date |  |  |
+| github.dependabot.dependabot_update.pull_request.merged | Whether or not the pull request was merged. | boolean |  |  |
+| github.dependabot.dependabot_update.pull_request.merged_at | The date and time that the pull request was merged. | date |  |  |
+| github.dependabot.dependabot_update.pull_request.number | Identifies the pull request number. | integer |  |  |
+| github.dependabot.dependabot_update.pull_request.title | Identifies the pull request title. | keyword |  |  |
+| github.dependabot.dependabot_update.pull_request.url | The HTTP URL for this pull request. | keyword |  |  |
+| github.dependabot.dependency_scope | The scope of an alert's dependency. | keyword |  |  |
+| github.dependabot.dismiss_reason | The reason the alert was dismissed. | keyword |  |  |
+| github.dependabot.dismissed_at | When was the alert dismissed | date |  |  |
+| github.dependabot.dismisser.login | The username of the dismisser. | keyword |  |  |
+| github.dependabot.dismisser.url | The HTTP URL for this user. | keyword |  |  |
+| github.dependabot.fix_reason | The reason the alert was marked as fixed. | keyword |  |  |
+| github.dependabot.fixed_at | When was the alert fixed | date |  |  |
+| github.dependabot.number | Identifies the alert number. | integer |  |  |
+| github.dependabot.security_advisory.classification | The classification of the advisory. | keyword |  |  |
+| github.dependabot.security_advisory.cvss.vector_string | The CVSS vector string associated with this advisory. | keyword |  |  |
+| github.dependabot.security_advisory.cwes.cwe_id | The id of the CWE. | keyword |  |  |
+| github.dependabot.security_advisory.cwes.description | The name of this CWE. | keyword |  |  |
+| github.dependabot.security_advisory.cwes.name | A detailed description of this CWE. | keyword |  |  |
+| github.dependabot.security_advisory.ghsa_id | The GitHub Security Advisory ID. | keyword |  |  |
+| github.dependabot.security_advisory.identifiers.type | The identifier type, e.g. GHSA, CVE. | keyword |  |  |
+| github.dependabot.security_advisory.identifiers.value | The identifier. | keyword |  |  |
+| github.dependabot.security_advisory.origin | The organization that originated the advisory. | keyword |  |  |
+| github.dependabot.security_advisory.permalink | The permalink for the advisory. | keyword |  |  |
+| github.dependabot.security_advisory.published_at | When the advisory was published. | date |  |  |
+| github.dependabot.security_advisory.severity | The severity of the advisory. | keyword |  |  |
+| github.dependabot.security_advisory.summary | A short plaintext summary of the advisory. | keyword |  |  |
+| github.dependabot.security_advisory.updated_at | When the advisory was last updated. | date |  |  |
+| github.dependabot.security_advisory.withdrawn_at | When the advisory was withdrawn, if it has been withdrawn. | date |  |  |
+| github.dependabot.security_vulnerability.first_patched_version.identifier | The first version containing a fix for the vulnerability. | keyword |  |  |
+| github.dependabot.security_vulnerability.package.ecosystem | The ecosystem the package belongs to, e.g. RUBYGEMS, NPM. | keyword |  |  |
+| github.dependabot.security_vulnerability.package.name | The package name. | keyword |  |  |
+| github.dependabot.security_vulnerability.updated_at | When the vulnerability was last updated. | date |  |  |
+| github.dependabot.security_vulnerability.vulnerable_version_range | A string that describes the vulnerable package versions. | keyword |  |  |
+| github.dependabot.state | Identifies the state of the alert. | keyword |  |  |
+| github.dependabot.time_to_resolution.sec | The time taken to either dismiss or fix the alert in seconds. | long | s | gauge |
+| github.dependabot.vulnerable_manifest_filename | The vulnerable manifest filename. | keyword |  |  |
+| github.dependabot.vulnerable_manifest_path | The vulnerable manifest path. | keyword |  |  |
+| github.dependabot.vulnerable_requirements | The vulnerable requirements. | keyword |  |  |
+| github.repository.description | The description of the repository. | keyword |  |  |
+| github.repository.is_in_organization | Indicates if a repository is either owned by an organization, or is a private fork of an organization repository. | boolean |  |  |
+| github.repository.is_private | Identifies if the repository is private or internal. | boolean |  |  |
+| github.repository.name | Identifies if the repository is private or internal. | keyword |  |  |
+| github.repository.owner.login | The username of the dismisser. | keyword |  |  |
+| github.repository.owner.url | The HTTP URL for this user | keyword |  |  |
+| github.repository.url | The HTTP URL for this repository. | keyword |  |  |
+| github.severity | The severity of the advisory. | keyword |  |  |
+| github.state | Identifies the state of the alert. | keyword |  |  |
+| host.architecture | Operating system architecture. | keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |  |  |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |  |  |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |  |  |
+| host.ip | Host ip addresses. | ip |  |  |
+| host.mac | Host mac addresses. | keyword |  |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
+| host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+| vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |  |  |
+| vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created[Common Vulnerabilities and Exposure CVE description]) | keyword |  |  |
+| vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |  |  |
+| vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |  |  |
+| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |  |  |
+| vulnerability.reference | A resource that provides additional information, context, and mitigations for the identified vulnerability. | keyword |  |  |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | keyword |  |  |
+| vulnerability.score.base | Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope. For example (https://www.first.org/cvss/specification-document) | float |  |  |
+| vulnerability.score.version | The National Vulnerability Database (NVD) provides qualitative severity rankings of "Low", "Medium", and "High" for CVSS v2.0 base score ranges in addition to the severity ratings for CVSS v3.0 as they are defined in the CVSS v3.0 specification. CVSS is owned and managed by FIRST.Org, Inc. (FIRST), a US-based non-profit organization, whose mission is to help computer security incident response teams across the world. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |  |  |
+| vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |  |  |
 
 
 An example event for `dependabot` looks as following:

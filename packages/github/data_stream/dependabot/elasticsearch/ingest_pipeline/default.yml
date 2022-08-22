@@ -226,6 +226,45 @@ processors:
     target_field: vulnerability.severity
     ignore_missing: true
 
+  #################################
+  # For Github Overview Dashboard #
+  #################################
+- set: 
+    field: github.state
+    copy_from: github.dependabot.state
+    if: ctx.github.dependabot?.state != null
+- set: 
+    field: github.severity
+    copy_from: vulnerability.severity
+    if: ctx.vulnerability?.severity != null
+- rename:
+    field: github.dependabot.repository
+    target_field: github.repository
+    ignore_missing: true
+- script:
+    lang: painless
+    description: Calculate time taken to resolve the alerts
+    if: ctx.github.dependabot?.fixed_at != null || ctx.github.dependabot?.dismissed_at != null
+    source: |
+        def time_to_resolution = new HashMap();
+        def fixedAtDt = ctx.github.dependabot.fixed_at;
+        def dismissedAtDt = ctx.github.dependabot.dismissed_at;
+        def createdAtDt = ctx.github.dependabot.created_at;
+        ZonedDateTime zdt = ZonedDateTime.parse(createdAtDt);
+        long createdAtEpoch = zdt.toEpochSecond();
+        if (fixedAtDt != null) {
+            zdt = ZonedDateTime.parse(fixedAtDt);
+            long fixedAtEpoch = zdt.toEpochSecond();
+            time_to_resolution.put("sec", fixedAtEpoch - createdAtEpoch);
+            ctx.github.dependabot.time_to_resolution = time_to_resolution;
+        }
+        else {
+            zdt = ZonedDateTime.parse(dismissedAtDt);
+            long dismissedAtEpoch = zdt.toEpochSecond();
+            time_to_resolution.put("sec", dismissedAtEpoch - createdAtEpoch);
+            ctx.github.dependabot.time_to_resolution = time_to_resolution;
+        }
+
   ###########
   # Cleanup #
   ###########
