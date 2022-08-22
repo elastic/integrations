@@ -15,7 +15,7 @@ processors:
         - "%{SYSLOG_HEADER}:\\s%%{GREEDYDATA:_temp_.full_message}"
         - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
-        SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE:_temp_.raw_date}"
+        SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.title}:\\s%{AIRONET_DATE:_temp_.raw_date}"
         SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.priority:int}>"
         AIRONET_DATE: "%{MONTH} %{MONTHDAY} %{TIME}"
   - script:
@@ -32,11 +32,17 @@ processors:
   - grok:
       field: _temp_.full_message
       patterns:
-        - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.reason}: %{GREEDYDATA:message}"
+        - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.reason}: %{DATA:process.name}:%{INT:process.pid} %{GREEDYDATA:message}"
+        #- "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.reason}: %{GREEDYDATA:message}"
+  #- grok:
+  #    field: message
+  #    patterns:
+  #      - "^%{DATA:process.executable}:%{INT:process.pid}"
   #- grok:
   #    field: _temp_.full_message
   #    patterns:
   #      - "%{DATA:event.action}:%{GREEDYDATA:_temp_.full_message}"
+
   #
   # Set log.level
   #
@@ -86,9 +92,17 @@ processors:
   #
   - grok:
       field: message
-      if: "ctx.event?.reason == 'ENTRY_CREATED'"
+      if: "ctx.event?.reason == 'ENTRY_CREATED' || ctx.event?.reason == 'ENTRY_DELETED'"
       patterns:
         - "((Entry created)|(Entry deleted)) A=%{IP:client.ip}"
+  #
+  # Parse out User addresses from Logs
+  #
+  - grok:
+      field: message
+      if: "ctx.event?.reason == 'AAA_AUTH_ADMIN_USER'"
+      patterns:
+        - "Authentication succeeded for admin user '%{DATA:user.name}' on %{IP:client.ip}"
 
 
   - remove:
