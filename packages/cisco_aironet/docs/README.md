@@ -1,5 +1,70 @@
 # Cisco Aironet
 
-This is a new integration created using the [elastic-package](https://github.com/elastic/elastic-package) tool.
+This integration is for Cisco Aironet WLC logs. It includes the following
+datasets for receiving logs over syslog or read from a file:
 
-Consider using the README template file `_dev/build/docs/README.md`to generate a list of exported fields or include a sample event.
+- `log` dataset: supports Cisco Aironet WLC logs.
+
+## Logs
+
+### Aironet
+
+The `log` dataset collects the Cisco ASA firewall logs.
+
+An example event for `log` looks as following:
+
+```json
+{
+  "@timestamp": "2022-08-20T11:26:35.845Z",
+  "ecs": {
+    "version": "8.3.1"
+  },
+  "event": {
+    "original": "\u003c134\u003eWLC001: *sisfSwitcherTask: Aug 20 11:26:35.845: %SISF-6-ENTRY_CREATED: sisf_shim_utils.c:485 Entry created A=fe80::1e24:cdff:fe11:2f90 V=0 I=wired:1 P=0000 M=",
+    "provider": "SISF",
+    "reason": "ENTRY_CREATED",
+    "severity": "6"
+  },
+  "host": {
+    "name": "WLC001"
+  },
+  "log": {
+    "level": "informational",
+    "syslog": {
+      "facility": {
+        "code": 16
+      },
+      "priority": 134,
+      "severity": {
+        "code": 6
+      }
+    }
+  },
+  "message": "sisf_shim_utils.c:485 Entry created A=fe80::1e24:cdff:fe11:2f90 V=0 I=wired:1 P=0000 M=",
+  "process": {
+    "name": "sisfSwitcherTask"
+  }
+}
+```
+
+**Exported fields**
+
+| Field                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Type             |
+|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------|
+| @timestamp                                    | Event timestamp.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | date             |
+| ecs.version                                   | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events.                                                                                                                                                                                                                                                                                         | keyword          |
+| error.message                                 | Error message.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | match_only_text  |
+| event.dataset                                 | Event dataset                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | constant_keyword |
+| event.module                                  | Event module                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | constant_keyword |
+| event.provider                                | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing).                                                                                                                                                                                                                                                                    | keyword          |
+| event.severity                                | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long             |
+| event.type                                    | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types.                                                                                                                                        | keyword          |
+| host.name                                     | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use.                                                                                                                                                                                                                                                                                                                                                                                    | keyword          |
+| input.type                                    | Input type.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | keyword          |
+| log.level                                     | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`.                                                                                                                                                                                                                                               | keyword          |
+| log.source.address                            | Source address from which the log event was read / sent from.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | keyword          |
+| log.syslog.facility.code                      | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23.                                                                                                                                                                                                                                                                                                                                                                                                                        | long             |
+| log.syslog.priority                           | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191.                                                                                                                                                                                                                                                                                                                                                                | long             |
+| log.syslog.severity.code                      | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`.                                                                                                                                                                                                      | long             |
+| message                                       | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message.                                                                                                                                                                                                                                                           | match_only_text  |
+| process.name                                  | Process name. Sometimes called program name or similar.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | keyword          |
