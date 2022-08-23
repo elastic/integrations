@@ -12,7 +12,7 @@ processors:
   - grok:
       field: istio.access.message
       patterns:
-        - (-|HTTP/%{NUMBER:http.version})" 
+        - (-|%{DATA:istio.access.protocol})" 
           (-|%{NUMBER:http.response.status_code:long})
           (-|%{DATA:istio.access.response.flags})
           (-|%{DATA:istio.access.response.code.details})
@@ -20,8 +20,8 @@ processors:
           "(-|%{DATA:istio.access.upstream.transport_failure_reason})"
           %{NUMBER:http.response.body.bytes:long}
           %{NUMBER:http.request.body.bytes:long}
-          (-|%{NUMBER:istio.access.request.duration:double})
-          (-|%{NUMBER:istio.access.upstream.service_time:double})
+          (-|%{NUMBER:istio.access.request.duration:long})
+          (-|%{NUMBER:istio.access.upstream.service_time:long})
           "(-|%{DATA:istio.access.x-forwarded-for})"
           "(-|%{DATA:user_agent.original})"
           "%{DATA:http.request.id}"
@@ -40,6 +40,69 @@ processors:
   - remove:
       field: istio.access.message
       ignore_missing: true
+  - uri_parts:
+      field: url.original
+      ignore_failure: true
+      keep_original: true
+      if: ctx?.url?.original != null
+  - set:
+      field: destination.address
+      copy_from: istio.access.downstream.address.local
+      ignore_missing: true
+  - set:
+      field: source.address
+      copy_from: istio.access.downstream.address.remote
+      ignore_missing: true
+  - grok:
+      field: source.address
+      patterns:
+        - (-|%{IP:source.ip}:%{POSINT:source.port})
+      ignore_missing: true
+  - grok:
+      field: destination.address
+      patterns:
+        - (-|%{IP:destination.ip}:%{POSINT:destination.port})
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: "ctx?.source?.ip != null"
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      if: "ctx?.destination?.ip != null"
+  - set:
+      field: network.transport
+      value: "tcp/udp"
+      if: "ctx?.istio?.access?.protocol == null"
+  - set:
+      field: network.protocol
+      value: "http"
+      if: "ctx?.istio?.access?.protocol != null"
+  - grok:
+      field: istio.access.protocol
+      patterns:
+        - (-|HTTP/%{NUMBER:http.version})
+      ignore_missing: true
+  - remove:
+      field: istio.access.protocol
+      ignore_failure: true
   - script:
       lang: painless
       source:
@@ -58,3 +121,8 @@ processors:
   - set:
       field: event.id
       copy_from: http.request.id
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'    
