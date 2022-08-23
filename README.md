@@ -32,7 +32,7 @@ explore the builder tools.
 * [Update Docker images of Package Storage to include latest release of the Package Registry](https://github.com/elastic/package-storage#update-package-registry-for-a-distribution)
 
 ### Elastic Agent
-* [Repository](https://github.com/elastic/beats/tree/main/x-pack/elastic-agent)
+* [Repository](https://github.com/elastic/elastic-agent/tree/main)
 
 ## Test Coverage
 
