@@ -18,6 +18,7 @@ Explain here the changes you made on the PR.
 - [ ] I have verified that all data streams collect metrics or logs.
 - [ ] I have added an entry to my package's `changelog.yml` file.
 - [ ] I have verified that Kibana version constraints are current according to [guidelines](https://github.com/elastic/elastic-package/blob/master/docs/howto/stack_version_support.md#when-to-update-the-condition).
+- [ ] I have signed the [elastic contributor agreement](https://www.elastic.co/contributor-agreement).
 
 ## Author's Checklist
 
