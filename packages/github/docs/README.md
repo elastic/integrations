@@ -73,8 +73,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "9f332be9-0da5-4109-a3ea-b8cabafe2b0c",
-        "id": "753f24a8-2e1a-43fd-8943-3f7fa2957416",
+        "ephemeral_id": "c86ae4f7-d16c-4eb3-8bf7-a4e0b61cab5d",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -85,10 +85,10 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "753f24a8-2e1a-43fd-8943-3f7fa2957416",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -99,10 +99,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2022-08-22T16:00:21.761Z",
+        "created": "2022-07-18T18:28:55.799Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2022-08-22T16:00:22Z",
+        "ingested": "2022-07-18T18:28:56Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
@@ -240,8 +240,8 @@ An example event for `code_scanning` looks as following:
 {
     "@timestamp": "2022-06-29T18:03:27.000Z",
     "agent": {
-        "ephemeral_id": "a88c0381-7da5-4125-bbea-7cefd046d7b0",
-        "id": "753f24a8-2e1a-43fd-8943-3f7fa2957416",
+        "ephemeral_id": "f2d26262-5c65-459a-9c96-7728c56e7fba",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -252,10 +252,10 @@ An example event for `code_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "753f24a8-2e1a-43fd-8943-3f7fa2957416",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -264,7 +264,7 @@ An example event for `code_scanning` looks as following:
         "agent_id_status": "verified",
         "created": "2022-06-29T18:03:27.000Z",
         "dataset": "github.code_scanning",
-        "ingested": "2022-08-22T16:01:09Z",
+        "ingested": "2022-07-18T18:29:40Z",
         "kind": "alert",
         "original": "{\"created_at\":\"2022-06-29T18:03:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/code-scanning/91\",\"most_recent_instance\":{\"analysis_key\":\".github/workflows/codeql-analysis.yml:analyze\",\"category\":\".github/workflows/codeql-analysis.yml:analyze/language:javascript\",\"classifications\":[],\"commit_sha\":\"3244e8b15cc1b8f2732eecd69fc1890b737f0dda\",\"location\":{\"end_column\":50,\"end_line\":67,\"path\":\"routes/chatbot.ts\",\"start_column\":23,\"start_line\":67},\"message\":{\"text\":\"(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.\"},\"ref\":\"refs/heads/master\",\"state\":\"open\"},\"number\":90,\"rule\":{\"description\":\"SQL database query built from user-controlled sources (experimental)\",\"id\":\"js/ml-powered/sql-injection\",\"security_severity_level\":\"high\",\"severity\":\"error\",\"tags\":[\"experimental\",\"external/cwe/cwe-089\",\"security\"]},\"state\":\"open\",\"tool\":{\"name\":\"CodeQL\",\"version\":\"2.9.4\"},\"updated_at\":\"2022-06-29T18:03:27Z\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/code-scanning/alerts/91\"}"
     },
@@ -400,8 +400,8 @@ An example event for `secret_scanning` looks as following:
 {
     "@timestamp": "2022-06-30T18:07:27.000Z",
     "agent": {
-        "ephemeral_id": "56f06f94-04d6-49bc-8086-cbfbbee9cb72",
-        "id": "753f24a8-2e1a-43fd-8943-3f7fa2957416",
+        "ephemeral_id": "078656f6-2ff6-4905-bc50-869945d39a2d",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -412,10 +412,10 @@ An example event for `secret_scanning` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "753f24a8-2e1a-43fd-8943-3f7fa2957416",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -424,7 +424,7 @@ An example event for `secret_scanning` looks as following:
         "agent_id_status": "verified",
         "created": "2022-06-30T18:07:27Z",
         "dataset": "github.secret_scanning",
-        "ingested": "2022-08-22T16:03:01Z",
+        "ingested": "2022-07-18T18:31:14Z",
         "original": "{\"created_at\":\"2022-06-30T18:07:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/secret-scanning/3\",\"number\":3,\"push_protection_bypassed\":true,\"push_protection_bypassed_by\":{\"html_url\":\"https://github.com/sample_owner\",\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"resolution\":\"revoked\",\"resolved_by\":{\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"secret\":\"npm_2vYJ3QzGXoGbEgMYduYS1k2M4D0wDu2opJbl\",\"secret_type\":\"npm_access_token\",\"secret_type_display_name\":\"npm Access Token\",\"state\":\"open\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/secret-scanning/alerts/3\"}"
     },
     "github": {
