@@ -1,6 +1,45 @@
-# ebs
+# Amazon EBS
 
-## Metrics
+The Amazon EBS integration allows you to monitor [Amazon Elastic Block Store (EBS)](https://aws.amazon.com/ebs/)—a block-storage service designed for Amazon EC2.
+
+Use the Amazon EBS integration to collect metrics related to your Amazon EBS storage.
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
+
+For example, you could use this integration to collect five-minute metrics on read operations, read bytes, and total read time. Then you can send an email alert if the volume of operations, bytes, or read time exceeds a predefined threshold.
+
+## Data streams
+
+The Amazon EBS integration collects one type of data: metrics.
+
+**Metrics** give you insight into the state of Amazon EBS.
+The metrics collected by the Amazon EBS integration include read operations, read bytes, total read time, queue length, idle time, and more. See more details in the [Metrics reference](#metrics-reference)
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any AWS integration you will need:
+
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, see the **AWS** integration documentation.
+
+## Setup
+
+Use this integration if you only need to collect data from Amazon EBS.
+
+If you want to collect data from two or more AWS services, consider using the **AWS** integration.
+When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Metrics reference
+
+The `ebs` data stream collects EBS metrics from AWS.
+An example event for `ebs` looks like this:
 
 {{event "ebs"}}
 
