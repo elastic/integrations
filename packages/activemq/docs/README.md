@@ -78,8 +78,6 @@ An example event for `log` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | activemq.log.caller | Name of the caller issuing the logging request (class or resource). | keyword |
-| activemq.log.log_stack_trace | The stack trace of this log in plain text. | text |
-| activemq.log.message | Description of action taken by user. | text |
 | activemq.log.thread | Thread that generated the logging event. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
