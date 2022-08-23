@@ -7,12 +7,6 @@ processors:
   - set:
       field: event.kind
       value: alert
-  - set:
-      field: event.category
-      value: [malware]
-  - set:
-      field: event.type
-      value: [info]
   - rename:
       field: message
       target_field: event.original
@@ -28,6 +22,24 @@ processors:
         - json.id 
       target_field: _id
       ignore_missing: true
+  - script:
+      description: Set the value of event.category and event.type.
+      lang: painless
+      source: >
+          def eventCategory = new ArrayList();
+          def eventType = new ArrayList();
+          if (ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '') {
+              def threat_classification = ctx.json?.threatInfo?.classification;
+              if (['Exploit','PUA'].contains(threat_classification)) {
+                  eventCategory.add('threat');
+                  eventType.add('indicator');
+              } else if (['Malware','Ransomware','Trojan','Downloader'].contains(threat_classification)) {
+                  eventCategory.add('malware');
+                  eventType.add('info');
+              }
+          }
+          ctx.event.type = eventType;
+          ctx.event.category = eventCategory;
   - date: 
       field: json.threatInfo.updatedAt
       target_field: '@timestamp'

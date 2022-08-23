@@ -4,15 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: '8.4.0'
-  - set:
-      field: event.kind
-      value: event
-  - set:
-      field: event.category
-      value: [malware]
-  - set:
-      field: event.type
-      value: [info]
   - rename:
       field: message
       target_field: event.original
@@ -23,12 +14,75 @@ processors:
       ignore_failure: true
   - fingerprint:
       fields:
-        - json.createdAt 
+        - json.createdAt
         - json.updatedAt
-        - json.id 
+        - json.id
       target_field: _id
       ignore_missing: true
-  - date: 
+  - script:
+      description: Set the value of event.category, event.outcome, event.type and event.kind.
+      lang: painless
+      source: >
+          def eventCategory = new HashSet();
+          def eventType = new HashSet();
+          if (ctx.json?.threatId != null && ctx.json.threatId != '') {
+              def threat_classification = ctx.json?.data?.threatClassification;
+              if (['Exploit','PUA'].contains(threat_classification)) {
+                  eventCategory.add('threat');
+                  eventType.add('indicator');
+              } else if (['Malware','Ransomware','Trojan','Downloader'].contains(threat_classification)) {
+                  eventCategory.add('malware');
+                  eventType.add('info');
+              }
+          }
+          else if (ctx.json?.primaryDescription != null) {
+              def description = ctx.json.primaryDescription.toLowerCase();
+              if (description.contains('logged in')) {
+                  eventCategory.add('authentication');
+                  eventType.add('start');
+                  ctx.event.outcome = 'success';
+              } else if (description.contains('logged out')) {
+                  eventCategory.add('authentication');
+                  eventType.add('end');
+              }
+              if (description.contains('created') || description.contains('added')) {
+                  eventCategory.add('configuration');
+                  eventType.add('creation');
+              }
+              if (description.contains('deleted')) {
+                  eventCategory.add('configuration');
+                  eventType.add('deletion');
+              }
+              if (description.contains('edited') || description.contains('updated') || description.contains('modified')) {
+                  eventCategory.add('configuration');
+                  eventType.add('change');
+              }
+              if (description.contains('enabled') || description.contains('recovery email')) {
+                  eventCategory.add('configuration');
+              }
+              if (description.contains('verification email')) {
+                  eventCategory.add('email');
+              }
+              if (description.contains('failed to log in')) {
+                  eventCategory.add('authentication');
+                  ctx.event.outcome = 'failure';
+              }
+              if (eventType.isEmpty()) {
+                  eventType.add('info');
+              }
+          }
+          if (!eventCategory.isEmpty()) {
+              ctx.event.category = eventCategory;
+          }
+          if (!eventType.isEmpty()) {
+              ctx.event.type = eventType;
+          }
+          if (['suspicious', 'malicious'].contains(ctx.json?.data?.confidenceLevel)) {
+              ctx.event.kind = 'alert';
+          } else {
+              ctx.event.kind = 'event';
+          }
+  - date:
       field: json.updatedAt
       target_field: sentinel_one.activity.updated_at
       formats:
