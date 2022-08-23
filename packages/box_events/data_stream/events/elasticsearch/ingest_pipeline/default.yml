@@ -166,13 +166,51 @@ processors:
       field: box.additional_details.shield_alert.alert_summary.description
       target_field: threat.indicator.description
       ignore_missing: true
+#  - date:
+#      field: box.additional_details.shield_alert.created_at
+#      target_field: threat.enrichments.matched.occurred
+#      ignore_failure: true
+#      formats:
+#        - yyyy-MM-dd'T'hh:mm:ssXXX
+  - rename:
+      field: box.additional_details.shield_alert.user.email
+      target_field: user.effective.email
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.user.name
+      target_field: user.effective.name
+      ignore_missing: true
+  - convert:
+      field: box.additional_details.shield_alert.user.id
+      type: string
+      target_field: user.effective.id
+      ignore_missing: true
+  - remove:
+      field: box.additional_details.shield_alert.user.id
+      ignore_failure: true
+      ignore_missing: true
 #
   - script:
-      description: Unpack property within array of object within array of object
+      description: Prepare intervening objects for subsequent scripts
       lang: painless
       source: |
-        if (ctx.box.keySet().contains("additional_details") &&
-          ctx.box.additional_details.shield_alert.alert_summary.keySet().contains("sessions")) {
+        if (ctx.box?.additional_details != null) {
+            if (ctx?.threat == null) {
+                ctx.threat = new HashMap();
+            }
+            if (ctx?.threat?.enrichments == null) {
+                ctx.threat.enrichments = new ArrayList();
+            }
+            if (ctx?.threat?.indicator == null) {
+                ctx.threat.indicator = new HashMap();
+            }
+        }
+#
+  - script:
+      description: Unpack Suspicious sessions property within array of object within array of object
+      lang: painless
+      source: |
+        if (ctx.box?.additional_details?.shield_alert?.alert_summary?.sessions != null) {
             List l = new ArrayList();
             for (session in ctx.box.additional_details.shield_alert.alert_summary.sessions) {
                 for (activity in session?.activities) {
@@ -185,24 +223,45 @@ processors:
             }
             ctx.related.ip = setList;
         }
+#
+  - script:
+      description: Unpack Suspicious locations properties
+      lang: painless
+      source: |
+        if (ctx.box?.additional_details?.shield_alert?.rule_name != null && ctx.box?.additional_details?.shield_alert?.rule_name.equals("Suspicious Location")) {
+            Map indicator = new HashMap();
+            for (alert_activity in ctx.box.additional_details.shield_alert.alert_summary.alert_activities) {
+                Map geo = new HashMap();
+                geo.put("ip",alert_activity.ip_info.ip);
+                geo.put("location",new String[]{alert_activity.ip_info.longitude,alert_activity.ip_info.latitude});
+                indicator.put("geo",geo);
+            }
+            ctx.threat.enrichments.add(indicator)
+        }
+  - remove:
+      field: 
+        - box.additional_details.shield_alert.alert_summary.alert_activities.ip_info.ip
+        - box.additional_details.shield_alert.alert_summary.alert_activities.ip_info.location
+      ignore_failure: true
+      ignore_missing: true
+#  - foreach:
+#      field: ctx.box.additional_details.shield_alert.alert_summary.alert_activities
+#      processor:
+#        append:
+#          field: related.ip
+#          value: '{{{_ingest._value.ip_info.ip}}}'
+#          allow_duplicates: false
+#          ignore_failure: true
+#      ignore_failure: true
+#      if: ctx.box?.additional_details?.shield_alert?.alert_summary?.alert_activities != null && ctx.box.additional_details.shield_alert.alert_summary.alert_activities instanceof List
   - script:
       description: Capitalize Priority to match Appendix A of the STIX 2.1 framework
       lang: painless
       source: |
-        if (ctx.box.keySet().contains("additional_details") &&
-          ctx.box.additional_details.shield_alert.keySet().contains("priority")) {
-            if (ctx?.threat == null) {
-                ctx.threat = new HashMap();
-            }
-            if (ctx?.threat?.enrichments == null) {
-                ctx.threat.enrichments = new HashMap();
-            }
-            if (ctx?.threat?.enrichments?.indicator == null) {
-                ctx.threat.enrichments.indicator = new HashMap();
-            }
-            ctx.threat.enrichments.indicator.confidence = 
-              ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() + 
-              ctx.box.additional_details.shield_alert.priority.substring(1);
+        if (ctx.box?.additional_details?.shield_alert?.priority != null) {
+            ctx.threat.indicator.confidence = 
+                ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() + 
+                ctx.box.additional_details.shield_alert.priority.substring(1);
         }
 # already have ip in `client.ip`
   - remove:
@@ -219,6 +278,10 @@ processors:
       ignore_missing: true
   - remove:
       field: box.additional_details.shield_alert.priority
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: box.additional_details.shield_alert.created_at
       ignore_failure: true
       ignore_missing: true
 # Conditionally, remove event.original
