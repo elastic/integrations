@@ -14,7 +14,7 @@ Then you can alert the relevant project manager about those events by email.
 
 ## Data streams
 
-The AWS VPC Flow integration collects one types of data stream: logs.
+The AWS VPC Flow integration collects one type of data: logs.
 
 **Logs** help you keep a record of events happening in your VPCs.
 Logs collected by the vpcflow integration include the packet-level (original) source and destination IP addresses for the traffic, accepted traffic, rejected traffic, and more. See more details in the [Logs reference](#logs-reference).

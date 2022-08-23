@@ -8,7 +8,7 @@ For example, you could use this integration to view the total number of concurre
 
 ## Data streams
 
-The AWS NAT gateway integration collects one type of data streams: metrics.
+The AWS NAT gateway integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of your NAT gateways.
 Metrics collected by this integration include the number of connection attempts made through the NAT gateway, the total number of concurrent, active TCP connections through the NAT gateway, the number of times the NAT gateway could not allocate a source port, and more. See more details in the [Metrics reference](#metrics-reference).

@@ -8,7 +8,7 @@ You could use this data to view the state of each secure VPN tunnel that you hav
 
 ## Data streams
 
-The AWS VPN integration collects one type of data stream: metrics.
+The AWS VPN integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of your AWS-hosted VPNs.
 Metrics collected by the Amazon VPN integration include the unique host ID, the host IP addresses, the name of the domain of which the host is a member, and more. See more details in the [Metrics reference](#metrics-reference).

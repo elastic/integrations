@@ -8,7 +8,7 @@ For example, you could use this data to track Amazon EC2 CPU utilization. Then y
 
 ## Data streams
 
-The Amazon EC2 integration collects two types of data streams: logs and metrics.
+The Amazon EC2 integration collects two types of data: logs and metrics.
 
 **Logs** help you keep a record of events happening in Amazon EC2.
 Logs collected by the Amazon EC2 integration include the region in which an instance is running, the operating system architecture, container information, and more. See more details in the [Logs reference](#logs-reference).

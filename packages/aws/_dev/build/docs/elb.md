@@ -9,7 +9,7 @@ For example, you could use this data to analyze traffic patterns, view healthy a
 
 ## Data streams
 
-The Amazon ELB integration collects two types of data streams: logs and metrics.
+The Amazon ELB integration collects two types of data: logs and metrics.
 
 **Logs** help you keep a record of events happening in Amazon ELB.
 Logs collected by the Amazon ELB integration include the time a request was received, the client's IP address, latencies, request paths, server responses, and more. See more details in the [Logs reference](#logs-reference).

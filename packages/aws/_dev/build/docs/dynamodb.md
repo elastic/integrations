@@ -12,7 +12,7 @@ For example, you could use this data to visualize consumed read and write capaci
 The Amazon DynamoDB integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of Amazon DynamoDB.
-Metric data streams collected by the Amazon DynamoDB integration include the maximum number of read and write capacity units that can be used by an account, consume capacity units, throttle events, and more. See more details in the [Metrics reference](#metrics-reference).
+Metrics collected by the Amazon DynamoDB integration include the maximum number of read and write capacity units that can be used by an account, consume capacity units, throttle events, and more. See more details in the [Metrics reference](#metrics-reference).
 
 ## Requirements
 

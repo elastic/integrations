@@ -8,7 +8,7 @@ For example, you could use this integration to track throttled lambda functions,
 
 ## Data streams
 
-The AWS Lambda integration collects one type of data stream: metrics.
+The AWS Lambda integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of AWS Lambda.
 Metrics collected by the AWS Lambda integration include the number of times your function code is executed, the amount of time that your function code spends processing an event, the number of invocations that result in a function error, and more. See more details in the [Metrics reference](#metrics-reference).

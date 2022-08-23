@@ -8,7 +8,7 @@ For example, you could use the data from this integration to spot unusual activi
 
 ## Data streams
 
-The Route 53 integration collects one type of data stream: logs.
+The Route 53 integration collects one type of data: logs.
 
 **Logs** help you keep a record of events happening in Amazon Route 53.
 This integration collects Public Hosted Zone logs and Resolver logs. Logs collected by the Route 53 integration include the names being queried, the highest registered domain, the DNS response code, the edge location that served the request, and more. See more details in the [Logs reference](#logs-reference).

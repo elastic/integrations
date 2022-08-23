@@ -10,7 +10,7 @@ For example, you could use the data from this integration to spot unusual SQL in
 
 ## Data streams
 
-The AWS WAF integration collects one type of data stream: logs.
+The AWS WAF integration collects one type of data: logs.
 
 **Logs** help you keep a record of events happening in AWS WAF.
 Logs collected by the AWS WAF integration include information on the rule that terminated a request, the source of the request, and more. See more details in the [Logs reference](#logs-reference).

@@ -9,7 +9,7 @@ For example, you could use the data from this integration to track the health st
 
 ## Data streams
 
-The Amazon Redshift integration collects one type of data stream: metrics.
+The Amazon Redshift integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of Amazon Redshift.
 Metrics collected by the Amazon Redshift integration include disk read throughput, storage read latency, query latency, and more. See more details in the [Metrics reference](#metrics-reference).

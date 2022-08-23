@@ -8,7 +8,7 @@ For example, use this integration to track your SNS SMS monthly spending. Then s
 
 ## Data streams
 
-The AWS SNS integration collects one type of data stream: metrics.
+The AWS SNS integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of AWS SNS.
 Metrics collected by the AWS SNS integration include the number of messages successfully delivered, the number of messages that Amazon SNS failed to deliver, and more. See more details in the [Metrics](#metrics-reference).

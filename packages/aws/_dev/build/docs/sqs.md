@@ -8,7 +8,7 @@ For example, you could track the number of messages in the queue that are delaye
 
 ## Data streams
 
-The SQS integration collects one type of data stream: metrics.
+The SQS integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of AWS SQS.
 Metrics collected by the AWS SQS integration include the number of messages that are in flight, the number of ReceiveMessage API calls that did not return a message, and more. See more details in the [Metrics reference](#metrics-reference).

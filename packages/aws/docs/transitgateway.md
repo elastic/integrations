@@ -8,7 +8,7 @@ For example, you could use this integration to track the number of packets dropp
 
 ## Data streams
 
-The AWS Transit Gateway integration collects one type of data stream: metrics.
+The AWS Transit Gateway integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of AWS Transit Gateway.
 Metrics collected by the AWS Transit Gateway integration include the number of bytes sent from the transit gateway, the number of bytes received from the transit gateway, the number of packets dropped because they did not match a route, and more. See more details in the [Metrics reference](#metrics-reference).

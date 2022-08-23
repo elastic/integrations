@@ -8,7 +8,7 @@ For example, you could use the data from this integration to detect anomalous be
 
 ## Data streams
 
-The AWS CloudWatch integration collects two types of data streams: logs and metrics.
+The AWS CloudWatch integration collects two types of data: logs and metrics.
 
 **Logs** help you keep a record of different services in AWS, like EC2, RDS, and S3.
 The log data stream includes the CloudWatch log message along with contextual information. See more details in the [Logs reference](#logs-reference).

@@ -8,7 +8,7 @@ For example, you could track your total storage and object count by region—all
 
 ## Data streams
 
-The Amazon S3 Storage Lens integration collects one type of data stream: metrics.
+The Amazon S3 Storage Lens integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of Amazon S3 Storage Lens.
 Metrics collected by the S3 Storage Lens integration include usage data for total storage, object counts, average object sizes, and more. See more details in the [Metrics reference](#metrics-reference).

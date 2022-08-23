@@ -8,7 +8,7 @@ For example, you could use this integration to track the latency and throughput 
 
 ## Data streams
 
-The Amazon RDS integration collects one type of data streams: metrics.
+The Amazon RDS integration collects one type of data: metrics.
 
 **Metrics** give you insight into the state of Amazon RDS.
 Metrics collected by the Amazon RDS integration include database dimensions, the lag between database instances, and more. See more details in the [Metrics reference](#metrics-reference).
