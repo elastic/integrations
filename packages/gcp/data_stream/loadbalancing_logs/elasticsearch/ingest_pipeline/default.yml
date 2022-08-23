@@ -1,0 +1,215 @@
+---
+description: Pipeline for Google Cloud DNS logs
+
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: network
+  - set:
+      field: event.type
+      value: info
+  - date:
+      field: json.timestamp
+      timezone: UTC
+      formats:
+        - ISO8601
+  - date:
+      field: json.receiveTimestamp
+      target_field: event.created
+      timezone: UTC
+      formats:
+        - ISO8601
+  - rename:
+      field: json.logName
+      target_field: log.logger
+      ignore_missing: true
+  - set: 
+      field: event.id
+      copy_from: json.insertId
+      ignore_empty_value: true
+      ignore_failure: true
+  - convert: 
+      field: json.resource.labels.project_id
+      target_field: cloud.project.id
+      type: string
+      ignore_failure: true
+  - convert: 
+      field: json.resource.labels.zone
+      target_field: cloud.region
+      type: string
+      ignore_failure: true
+  - grok:
+      field: json.httpRequest.remoteIp
+      ignore_missing: true
+      patterns:
+      - ^%{IP:source.address}(:%{POSINT:source.port:long})?$
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_failure: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: json.httpRequest.requestMethod
+      target_field: http.request.method
+      ignore_missing: true
+  - convert:
+      field: json.httpRequest.requestSize
+      target_field: http.request.bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      field: json.httpRequest.responseSize
+      target_field: http.response.bytes
+      type: long
+      ignore_missing: true
+  - rename:
+      field: json.httpRequest.status
+      target_field: http.response.status_code
+      ignore_missing: true
+  - dissect:
+      field: json.httpRequest.protocol
+      pattern: "%{network.protocol}/%{http.version}"
+      ignore_failure: true
+      if: ctx.json?.httpRequest?.protocol != null
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true
+  - user_agent:
+      field: json.httpRequest.userAgent
+      target_field: user_agent
+      ignore_missing: true
+  - uri_parts:
+      field: json.httpRequest.requestUrl
+      target_field: url
+      if: ctx.json?.httpRequest?.requestUrl != null
+  - rename:
+      field: json.httpRequest.referer
+      target_field: http.request.referrer
+      ignore_missing: true
+  - grok:
+      field: json.httpRequest.serverIp
+      ignore_missing: true
+      patterns:
+      - ^%{IP:destination.nat.ip}(:%{POSINT:destination.nat.port:long})?$
+  - set: 
+      field: destination.address
+      copy_from: url.domain
+      ignore_empty_value: true
+      ignore_failure: true
+  - set: 
+      field: destination.port
+      copy_from: url.port
+      ignore_empty_value: true
+      ignore_failure: true
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - rename: 
+            field: url.domain
+            target_field: destination.domain
+            ignore_missing: true 
+            ignore_failure: true
+  - rename:
+      field: json.severity
+      target_field: log.level
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.cacheId
+      target_field: gcp.load_balancer.cache_id
+      ignore_missing: true
+  - rename:
+      field: json.jsonPayload.statusDetails
+      target_field: gcp.load_balancer.status_details
+      ignore_missing: true
+  - rename:
+      field: json.httpRequest.cacheHit
+      target_field: gcp.load_balancer.cache_hit
+      ignore_missing: true
+  - rename:
+      field: json.httpRequest.cacheLookup
+      target_field: gcp.load_balancer.cache_lookup
+      ignore_missing: true
+  - rename:
+      field: json.resource.labels.url_map_name
+      target_field: gcp.load_balancer.url_map_name
+      ignore_missing: true
+  - rename:
+      field: json.resource.labels.forwarding_rule_name
+      target_field: gcp.load_balancer.forwarding_rule_name
+      ignore_missing: true
+  - rename:
+      field: json.resource.labels.target_proxy_name
+      target_field: gcp.load_balancer.target_proxy_name
+      ignore_missing: true
+  - rename:
+      field: json.resource.labels.backend_service_name
+      target_field: gcp.load_balancer.backend_service_name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx?.source?.ip != null
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx?.destination?.ip != null
+  - append:
+      field: related.ip
+      value: "{{destination.nat.ip}}"
+      allow_duplicates: false
+      if: ctx?.destination?.nat?.ip != null
+  - append:
+      field: related.hosts
+      value: "{{destination.domain}}"
+      allow_duplicates: false
+      if: ctx?.destination?.domain != null
+  - remove:
+      field: 
+        - json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
