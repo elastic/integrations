@@ -1,13 +1,16 @@
 ---
 processors:
   - set:
-    field: ingest_timestamp
-    value: {{_ingest.timestamp}}
-  - fingerprint:
-    fields: "@timestamp, _id"
+    field: event.ingested
+    copy_from: _ingest.timestamp
+    fields:
+      - '@timestamp'
+      - _id
     method: SHA-256
-    target-field: _id
-  - script: |
+    target_field: _id
+- script:
+    lang: painless
+    source: |
       double risk_score = (def)ctx.getByPath(params.risk_score);
       if (risk_score < 20) {
         ctx['risk'] = 'Unknown'
