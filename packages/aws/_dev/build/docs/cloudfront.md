@@ -37,7 +37,7 @@ If you want to collect data from two or more AWS services, consider using the
 you can collect data from as many AWS services as you'd like.
 
 For step-by-step instructions on how to set up an integration, see the
-{{ url "getting-started-observability" "Getting started" }} guide
+{{ url "getting-started-observability" "Getting started" }} guide.
 
 ## Logs reference
 
