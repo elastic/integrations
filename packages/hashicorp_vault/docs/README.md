@@ -210,7 +210,9 @@ An example event for `audit` looks as following:
 | hashicorp_vault.audit.auth.token_policies | These are the policies sourced from the token. | keyword |
 | hashicorp_vault.audit.auth.token_ttl |  | long |
 | hashicorp_vault.audit.auth.token_type |  | keyword |
+| hashicorp_vault.audit.entity_created | entity_created is set to true if an entity is created as part of a login request. | boolean |
 | hashicorp_vault.audit.error | If an error occurred with the request, the error message is included in this field's value. | keyword |
+| hashicorp_vault.audit.request.client_certificate_serial_number | Serial number from the client's certificate. | keyword |
 | hashicorp_vault.audit.request.client_id |  | keyword |
 | hashicorp_vault.audit.request.client_token | This is an HMAC of the client's token ID. | keyword |
 | hashicorp_vault.audit.request.client_token_accessor | This is an HMAC of the client token accessor. | keyword |
@@ -227,6 +229,7 @@ An example event for `audit` looks as following:
 | hashicorp_vault.audit.request.policy_override | Policy override indicates that the requestor wishes to override soft-mandatory Sentinel policies. | boolean |
 | hashicorp_vault.audit.request.remote_address | The IP address of the client making the request. | ip |
 | hashicorp_vault.audit.request.remote_port | The remote port of the client making the request. | long |
+| hashicorp_vault.audit.request.replication_cluster | Name given to the replication secondary where this request originated. | keyword |
 | hashicorp_vault.audit.request.wrap_ttl | If the token is wrapped, this displays configured wrapped TTL in seconds. | long |
 | hashicorp_vault.audit.response.auth.accessor |  | keyword |
 | hashicorp_vault.audit.response.auth.client_token |  | keyword |
@@ -237,7 +240,7 @@ An example event for `audit` looks as following:
 | hashicorp_vault.audit.response.auth.metadata |  | flattened |
 | hashicorp_vault.audit.response.auth.no_default_policy |  | boolean |
 | hashicorp_vault.audit.response.auth.num_uses |  | long |
-| hashicorp_vault.audit.response.auth.policies |  |  |
+| hashicorp_vault.audit.response.auth.policies |  | keyword |
 | hashicorp_vault.audit.response.auth.token_issue_time |  | date |
 | hashicorp_vault.audit.response.auth.token_policies |  | keyword |
 | hashicorp_vault.audit.response.auth.token_ttl | Time to live for the token in seconds. | long |

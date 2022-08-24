@@ -66,12 +66,18 @@
               type: long
             - name: token_type
               type: keyword
+        - name: entity_created
+          type: boolean
+          description: entity_created is set to true if an entity is created as part of a login request.
         - name: error
           type: keyword
           description: If an error occurred with the request, the error message is included in this field's value.
         - name: request
           type: group
           fields:
+            - name: client_certificate_serial_number
+              type: keyword
+              description: Serial number from the client's certificate.
             - name: client_id
               type: keyword
             - name: client_token
@@ -119,6 +125,9 @@
             - name: remote_port
               type: long
               description: The remote port of the client making the request.
+            - name: replication_cluster
+              type: keyword
+              description: Name given to the replication secondary where this request originated.
             - name: wrap_ttl
               type: long
               description: If the token is wrapped, this displays configured wrapped TTL in seconds.
@@ -148,6 +157,7 @@
                 - name: num_uses
                   type: long
                 - name: policies
+                  type: keyword
                 - name: token_issue_time
                   type: date
                 - name: token_policies
