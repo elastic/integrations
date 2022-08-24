@@ -162,7 +162,7 @@ Use this template language as a starting point, including any other setup instru
 <!-- Any prerequisite instructions -->
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+{{ url "getting-started-observability" "Getting started" }} guide.
 
 <!-- Additional set up instructions -->
 ```
@@ -174,7 +174,7 @@ For step-by-step instructions on how to set up an integration, see the
 >
 >After you've configured your device, you can set up the Elastic integration.
 >For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+{{ url "getting-started-observability" "Getting started" }} guide.
 
 ## Troubleshooting
 
