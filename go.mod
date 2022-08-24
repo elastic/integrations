@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.59.0
+	github.com/elastic/elastic-package v0.60.0
 	github.com/elastic/go-licenser v0.4.1
 	github.com/elastic/package-registry v1.11.0
 	github.com/magefile/mage v1.13.0
@@ -28,9 +28,9 @@ require (
 	github.com/Microsoft/go-winio v0.5.1 // indirect
 	github.com/PaesslerAG/gval v1.1.2 // indirect
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
-	github.com/ProtonMail/go-crypto v0.0.0-20220113124808-70ae35bab23f // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20220822140716-1678d6eb0cbe // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20220302105931-303f85f7fe0f // indirect
-	github.com/ProtonMail/gopenpgp/v2 v2.4.8 // indirect
+	github.com/ProtonMail/gopenpgp/v2 v2.4.10 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
@@ -41,6 +41,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chai2010/gettext-go v0.0.0-20160711120539-c6fed771bfd5 // indirect
+	github.com/cloudflare/circl v1.1.0 // indirect
 	github.com/creasty/defaults v1.5.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
@@ -49,10 +50,11 @@ require (
 	github.com/elastic/go-ucfg v0.8.6 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
-	github.com/elastic/package-spec v1.14.0 // indirect
-	github.com/emicklei/go-restful v2.9.5+incompatible // indirect
+	github.com/elastic/package-spec v1.16.0 // indirect
+	github.com/emicklei/go-restful/v3 v3.8.0 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
+	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
@@ -115,7 +117,6 @@ require (
 	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nwaples/rardecode v1.1.2 // indirect
-	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
@@ -159,7 +160,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20220622183110-fd043fe589d2 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
-	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
+	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
@@ -171,16 +172,16 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	helm.sh/helm/v3 v3.9.2 // indirect
+	helm.sh/helm/v3 v3.9.3 // indirect
 	howett.net/plist v0.0.0-20201203080718-1454fab16a06 // indirect
-	k8s.io/api v0.24.3 // indirect
+	k8s.io/api v0.24.4 // indirect
 	k8s.io/apiextensions-apiserver v0.24.2 // indirect
-	k8s.io/apimachinery v0.24.3 // indirect
-	k8s.io/cli-runtime v0.24.3 // indirect
-	k8s.io/client-go v0.24.3 // indirect
+	k8s.io/apimachinery v0.24.4 // indirect
+	k8s.io/cli-runtime v0.24.4 // indirect
+	k8s.io/client-go v0.24.4 // indirect
 	k8s.io/component-base v0.24.2 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
+	k8s.io/kube-openapi v0.0.0-20220627174259-011e075b9cb8 // indirect
 	k8s.io/kubectl v0.24.2 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
