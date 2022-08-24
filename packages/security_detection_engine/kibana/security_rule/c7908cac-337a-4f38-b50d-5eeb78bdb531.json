@@ -13,14 +13,32 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Kubernetes Privileged Pod Created",
-        "note": "## Setup\n\nThe Kubernetes Fleet integration with Audit Logs enabled or similarly structured data is required to be compatible with this rule.",
+        "note": "",
         "query": "kubernetes.audit.objectRef.resource:pods and kubernetes.audit.verb:create and\n  kubernetes.audit.requestObject.spec.containers.securityContext.privileged:true\n",
         "references": [
             "https://media.defense.gov/2021/Aug/03/2002820425/-1/-1/1/CTR_KUBERNETES%20HARDENING%20GUIDANCE.PDF",
             "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/"
         ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.securityContext.privileged",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "unknown"
+            }
+        ],
         "risk_score": 47,
         "rule_id": "c7908cac-337a-4f38-b50d-5eeb78bdb531",
+        "setup": "The Kubernetes Fleet integration with Audit Logs enabled or similarly structured data is required to be compatible with this rule.",
         "severity": "medium",
         "tags": [
             "Elastic",
@@ -48,7 +66,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 3
+        "version": 100
     },
     "id": "c7908cac-337a-4f38-b50d-5eeb78bdb531",
     "type": "security-rule"

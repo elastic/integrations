@@ -16,7 +16,7 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "AWS Deletion of RDS Instance or Cluster",
-        "note": "## Setup\n\nThe AWS Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "note": "",
         "query": "event.dataset:aws.cloudtrail and event.provider:rds.amazonaws.com and event.action:(DeleteDBCluster or DeleteGlobalCluster or DeleteDBInstance)\nand event.outcome:success\n",
         "references": [
             "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rds/delete-db-cluster.html",
@@ -26,8 +26,38 @@
             "https://awscli.amazonaws.com/v2/documentation/api/latest/reference/rds/delete-db-instance.html",
             "https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DeleteDBInstance.html"
         ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "1.10.2"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
         "risk_score": 47,
         "rule_id": "9055ece6-2689-4224-a0e0-b04881e1f8ad",
+        "setup": "The AWS Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
         "severity": "medium",
         "tags": [
             "Elastic",
@@ -56,7 +86,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 10
+        "version": 100
     },
     "id": "9055ece6-2689-4224-a0e0-b04881e1f8ad",
     "type": "security-rule"

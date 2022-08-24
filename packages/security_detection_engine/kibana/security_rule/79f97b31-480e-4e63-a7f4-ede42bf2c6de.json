@@ -15,15 +15,33 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Potential Shadow Credentials added to AD Object",
-        "note": "## Setup\n\nThe 'Audit Directory Service Changes' logging policy must be configured for (Success, Failure).\nSteps to implement the logging policy with Advanced Audit Configuration:\n\n```\nComputer Configuration \u003e\nPolicies \u003e\nWindows Settings \u003e\nSecurity Settings \u003e\nAdvanced Audit Policies Configuration \u003e\nAudit Policies \u003e\nDS Access \u003e\nAudit Directory Service Changes (Success,Failure)\n```\n\nThe above policy does not cover User objects, so we need to set up an AuditRule using https://github.com/OTRF/Set-AuditRule.\nAs this specifies the msDS-KeyCredentialLink Attribute GUID, it is expected to be low noise.\n\n```\nSet-AuditRule -AdObjectPath 'AD:\\CN=Users,DC=Domain,DC=com' -WellKnownSidType WorldSid -Rights WriteProperty -InheritanceFlags Children -AttributeGUID 5b47d60f-6090-40b2-9f37-2a4de88f3063 -AuditFlags Success\n```\n",
+        "note": "",
         "query": "event.action:\"Directory Service Changes\" and event.code:\"5136\" and winlog.event_data.AttributeLDAPDisplayName:\"msDS-KeyCredentialLink\"\n",
         "references": [
             "https://posts.specterops.io/shadow-credentials-abusing-key-trust-account-mapping-for-takeover-8ee1a53566ab",
             "https://www.thehacker.recipes/ad/movement/kerberos/shadow-credentials",
             "https://github.com/OTRF/Set-AuditRule"
         ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.AttributeLDAPDisplayName",
+                "type": "unknown"
+            }
+        ],
         "risk_score": 73,
         "rule_id": "79f97b31-480e-4e63-a7f4-ede42bf2c6de",
+        "setup": "The 'Audit Directory Service Changes' logging policy must be configured for (Success, Failure).\nSteps to implement the logging policy with Advanced Audit Configuration:\n\n```\nComputer Configuration \u003e\nPolicies \u003e\nWindows Settings \u003e\nSecurity Settings \u003e\nAdvanced Audit Policies Configuration \u003e\nAudit Policies \u003e\nDS Access \u003e\nAudit Directory Service Changes (Success,Failure)\n```\n\nThe above policy does not cover User objects, so we need to set up an AuditRule using https://github.com/OTRF/Set-AuditRule.\nAs this specifies the msDS-KeyCredentialLink Attribute GUID, it is expected to be low noise.\n\n```\nSet-AuditRule -AdObjectPath 'AD:\\CN=Users,DC=Domain,DC=com' -WellKnownSidType WorldSid -Rights WriteProperty -InheritanceFlags Children -AttributeGUID 5b47d60f-6090-40b2-9f37-2a4de88f3063 -AuditFlags Success\n```",
         "severity": "high",
         "tags": [
             "Elastic",
@@ -52,7 +70,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 5
+        "version": 100
     },
     "id": "79f97b31-480e-4e63-a7f4-ede42bf2c6de",
     "type": "security-rule"

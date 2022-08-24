@@ -14,14 +14,33 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "GCP Firewall Rule Creation",
-        "note": "## Setup\n\nThe GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "note": "",
         "query": "event.dataset:gcp.audit and event.action:(*.compute.firewalls.insert or google.appengine.*.Firewall.Create*Rule)\n",
         "references": [
             "https://cloud.google.com/vpc/docs/firewalls",
             "https://cloud.google.com/appengine/docs/standard/python/understanding-firewalls"
         ],
+        "related_integrations": [
+            {
+                "package": "gcp",
+                "version": "1.10.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            }
+        ],
         "risk_score": 21,
         "rule_id": "30562697-9859-4ae0-a8c5-dab45d664170",
+        "setup": "The GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
         "severity": "low",
         "tags": [
             "Elastic",
@@ -50,7 +69,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 8
+        "version": 100
     },
     "id": "30562697-9859-4ae0-a8c5-dab45d664170",
     "type": "security-rule"

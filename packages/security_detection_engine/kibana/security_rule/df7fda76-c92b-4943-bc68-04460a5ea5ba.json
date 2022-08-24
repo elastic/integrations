@@ -13,15 +13,33 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Kubernetes Pod Created With HostPID",
-        "note": "## Setup\n\nThe Kubernetes Fleet integration with Audit Logs enabled or similarly structured data is required to be compatible with this rule.",
+        "note": "",
         "query": "kubernetes.audit.objectRef.resource:\"pods\" and kubernetes.audit.verb:(\"create\" or \"update\" or \"patch\") and kubernetes.audit.requestObject.spec.hostPID:true\n",
         "references": [
             "https://research.nccgroup.com/2021/11/10/detection-engineering-for-kubernetes-clusters/#part3-kubernetes-detections",
             "https://kubernetes.io/docs/concepts/security/pod-security-policy/#host-namespaces",
             "https://bishopfox.com/blog/kubernetes-pod-privilege-escalation"
         ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.hostPID",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "unknown"
+            }
+        ],
         "risk_score": 47,
         "rule_id": "df7fda76-c92b-4943-bc68-04460a5ea5ba",
+        "setup": "The Kubernetes Fleet integration with Audit Logs enabled or similarly structured data is required to be compatible with this rule.",
         "severity": "medium",
         "tags": [
             "Elastic",
@@ -49,7 +67,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 3
+        "version": 100
     },
     "id": "df7fda76-c92b-4943-bc68-04460a5ea5ba",
     "type": "security-rule"

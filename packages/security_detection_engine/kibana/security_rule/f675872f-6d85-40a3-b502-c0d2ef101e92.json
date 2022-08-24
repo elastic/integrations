@@ -13,10 +13,33 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Delete Volume USN Journal with Fsutil",
-        "note": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.\n",
+        "note": "",
         "query": "process where event.type in (\"start\", \"process_started\") and\n  (process.name : \"fsutil.exe\" or process.pe.original_file_name == \"fsutil.exe\") and\n  process.args : \"deletejournal\" and process.args : \"usn\"\n",
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
         "risk_score": 21,
         "rule_id": "f675872f-6d85-40a3-b502-c0d2ef101e92",
+        "setup": "If enabling an EQL rule on a non-elastic-agent index (such as beats) for versions \u003c8.2, events will not define `event.ingested` and default fallback for EQL rules was not added until 8.2, so you will need to add a custom pipeline to populate `event.ingested` to @timestamp for this rule to work.",
         "severity": "low",
         "tags": [
             "Elastic",
@@ -51,7 +74,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 13
+        "version": 100
     },
     "id": "f675872f-6d85-40a3-b502-c0d2ef101e92",
     "type": "security-rule"
