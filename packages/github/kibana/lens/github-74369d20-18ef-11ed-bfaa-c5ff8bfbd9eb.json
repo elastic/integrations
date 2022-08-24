@@ -1,0 +1,184 @@
+{
+    "attributes": {
+        "description": "",
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "df5f2c10-bc9b-4a7e-be41-d13240c21d95": {
+                            "columnOrder": [
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0"
+                            ],
+                            "columns": {
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Dismissed/Fixed Alerts",
+                                    "operationType": "formula",
+                                    "params": {
+                                        "format": {
+                                            "id": "number",
+                                            "params": {
+                                                "decimals": 0
+                                            }
+                                        },
+                                        "formula": "count()",
+                                        "isFormulaBroken": false
+                                    },
+                                    "references": [
+                                        "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0"
+                                    ],
+                                    "scale": "ratio"
+                                },
+                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0": {
+                                    "customLabel": true,
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Part of Dismissed Alerts",
+                                    "operationType": "count",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "scale": "ratio",
+                                    "sourceField": "___records___"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "index": "27f30122-7242-469b-a600-e9b3918b4b41",
+                        "key": "data_stream.dataset",
+                        "negate": false,
+                        "params": [
+                            "github.dependabot"
+                        ],
+                        "type": "phrases"
+                    },
+                    "query": {
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match_phrase": {
+                                        "data_stream.dataset": "github.dependabot"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "index": "1dd45d4b-ed24-4c4a-8208-10b10a707c49",
+                        "key": "github.state",
+                        "negate": false,
+                        "params": [
+                            "FIXED",
+                            "DISMISSED"
+                        ],
+                        "type": "phrases"
+                    },
+                    "query": {
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match_phrase": {
+                                        "github.state": "FIXED"
+                                    }
+                                },
+                                {
+                                    "match_phrase": {
+                                        "github.state": "DISMISSED"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": ""
+            },
+            "visualization": {
+                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
+                "colorMode": "Labels",
+                "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
+                "layerType": "data",
+                "palette": {
+                    "name": "positive",
+                    "params": {
+                        "continuity": "above",
+                        "maxSteps": 5,
+                        "name": "positive",
+                        "progression": "fixed",
+                        "rangeMax": null,
+                        "rangeMin": 0,
+                        "rangeType": "number",
+                        "reverse": false,
+                        "steps": 3,
+                        "stops": [
+                            {
+                                "color": "#bbdad3",
+                                "stop": 0
+                            },
+                            {
+                                "color": "#77b6a8",
+                                "stop": 8
+                            },
+                            {
+                                "color": "#209280",
+                                "stop": 16
+                            }
+                        ]
+                    },
+                    "type": "palette"
+                },
+                "textAlign": "center"
+            }
+        },
+        "title": "Dismissed(or Fixed) Alerts Count [GitHub Dependabot]",
+        "visualizationType": "lnsMetric"
+    },
+    "coreMigrationVersion": "8.3.0",
+    "id": "github-74369d20-18ef-11ed-bfaa-c5ff8bfbd9eb",
+    "migrationVersion": {
+        "lens": "8.3.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-layer-df5f2c10-bc9b-4a7e-be41-d13240c21d95",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "27f30122-7242-469b-a600-e9b3918b4b41",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1dd45d4b-ed24-4c4a-8208-10b10a707c49",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}

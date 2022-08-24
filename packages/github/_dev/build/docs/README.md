@@ -39,3 +39,13 @@ Or you must be an administrator for the repository or for the organization that 
 {{fields "secret_scanning"}}
 
 {{event "secret_scanning"}}
+
+### Dependabot
+
+The Github Dependabot lets you retrieve known vulnerabilites in dependencies from a repository setup using Github Advanced Security Dependabot feature. See [About Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-alerts) for more details.
+
+To use this integration, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) and [Token Issue](https://github.com/dependabot/feedback/issues/169)
+
+{{fields "dependabot"}}
+
+{{event "dependabot"}}
