@@ -13,14 +13,32 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Kubernetes Pod created with a Sensitive hostPath Volume",
-        "note": "## Setup\n\nThe Kubernetes Fleet integration with Audit Logs enabled or similarly structured data is required to be compatible with this rule.",
-        "query": "kubernetes.audit.objectRef.resource:\"pods\" \n  and kubernetes.audit.verb:(\"create\" or \"update\" or \"patch\") \n  and kubernetes.audit.requestObject.spec.volumes.hostPath.path:(\"/\" or \"/proc\" or \"/root\" or \"/var\" or \"/var/run/docker.sock\" or \"/var/run/crio/crio.sock\" or \"/var/run/cri-dockerd.sock\" or \"/var/lib/kubelet\" or \"/var/lib/kubelet/pki\" or \"/var/lib/docker/overlay2\" or \"/etc\" or \"/etc/kubernetes\" or \"/etc/kubernetes/manifests\" or \"/home/admin\")\n",
+        "note": "",
+        "query": "kubernetes.audit.objectRef.resource:\"pods\"\n  and kubernetes.audit.verb:(\"create\" or \"update\" or \"patch\")\n  and kubernetes.audit.requestObject.spec.volumes.hostPath.path:(\"/\" or \"/proc\" or \"/root\" or \"/var\" or \"/var/run/docker.sock\" or \"/var/run/crio/crio.sock\" or \"/var/run/cri-dockerd.sock\" or \"/var/lib/kubelet\" or \"/var/lib/kubelet/pki\" or \"/var/lib/docker/overlay2\" or \"/etc\" or \"/etc/kubernetes\" or \"/etc/kubernetes/manifests\" or \"/home/admin\")\n",
         "references": [
             "https://blog.appsecco.com/kubernetes-namespace-breakout-using-insecure-host-path-volume-part-1-b382f2a6e216",
             "https://kubernetes.io/docs/concepts/storage/volumes/#hostpath"
         ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.volumes.hostPath.path",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "unknown"
+            }
+        ],
         "risk_score": 47,
         "rule_id": "2abda169-416b-4bb3-9a6b-f8d239fd78ba",
+        "setup": "The Kubernetes Fleet integration with Audit Logs enabled or similarly structured data is required to be compatible with this rule.",
         "severity": "medium",
         "tags": [
             "Elastic",
@@ -48,7 +66,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 3
+        "version": 100
     },
     "id": "2abda169-416b-4bb3-9a6b-f8d239fd78ba",
     "type": "security-rule"
