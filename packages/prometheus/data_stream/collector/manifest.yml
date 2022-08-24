@@ -40,21 +40,27 @@ streams:
         required: true
         show_user: true
         default: true
+      - name: leaderelection
+        type: bool
+        title: Leader Election
+        description: Enable leaderelection between a set of Elastic Agents running on Kubernetes
+        multi: false
+        required: true
+        show_user: true
+        default: false
       - name: bearer_token_file
         type: text
         title: Bearer Token File
+        description: Bearer token file path to authenticate API requests in Kubernetes
         multi: false
         required: false
         show_user: false
-        default: /var/run/secrets/kubernetes.io/serviceaccount/token
       - name: ssl.certificate_authorities
         type: text
         title: SSL Certificate Authorities
         multi: true
         required: false
         show_user: false
-        default:
-          - /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt
       - name: metrics_filters.exclude
         type: text
         title: Metrics Filters Exclude
@@ -117,3 +123,12 @@ streams:
     title: Prometheus collector metrics
     enabled: true
     description: Collect Prometheus collector metrics
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: true
+      dynamic_templates:
+        - histogram:
+            path_match: "prometheus.*.histogram"
+            mapping:
+              type: histogram

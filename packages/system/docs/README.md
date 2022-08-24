@@ -1,31 +1,68 @@
 # System Integration
 
-The System integrations allows you to monitor your servers. Because the System integration
-always applies to the local server, the `hosts` config option is not needed.
+The System integration allows you to monitor servers, personal computers, and more.
 
-The default datasets are `cpu`, `load`, `memory`, `network`, `process`, and
-`process_summary`. If _all_ datasets are disabled
-and the System module is still enabled, fleet uses the default datasets.
+Use the System integration to collect metrics and logs from your machines.
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
+and reference data when troubleshooting an issue.
 
-Note that certain datasets may access `/proc` to gather process information,
+For example, if you wanted to be notified when less than 10% of the disk space is still available, you
+could install the System integration to send file system metrics to Elastic.
+Then, you could view real-time updates to disk space used on your system in Kibana's _[Metrics System] Overview_ dashboard.
+You could also set up a new rule in the Elastic Observability Metrics app to alert you when the percent free is
+less than 10% of the total disk space.
+
+## Data streams
+
+The System integration collects two types of data: logs and metrics.
+
+**Logs** help you keep a record of events that happen on your machine.
+Log data streams collected by the System integration include application, system, and security events on
+machines running Windows and auth and syslog events on machines running macOS or Linux.
+See more details in the [Logs reference](#logs-reference).
+
+**Metrics** give you insight into the state of the machine.
+Metric data streams collected by the System integration include CPU usage, load statistics, memory usage,
+information on network behavior, and more.
+See more details in the [Metrics reference](#metrics-reference).
+
+You can enable and disable individual data streams. If _all_ data streams are disabled and the System integration
+is still enabled, Fleet uses the default data streams.
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Each data stream collects different kinds of metric data, which may require dedicated permissions
+to be fetched and which may vary across operating systems.
+Details on the permissions needed for each data stream are available in the [Metrics reference](#metrics-reference).
+
+## Setup
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Troubleshooting
+
+Note that certain data streams may access `/proc` to gather process information,
 and the resulting `ptrace_may_access()` call by the kernel to check for
 permissions can be blocked by
 [AppArmor and other LSM software](https://gitlab.com/apparmor/apparmor/wikis/TechnicalDoc_Proc_and_ptrace), even though the System module doesn't use `ptrace` directly.
 
 In addition, when running inside a container the proc filesystem directory of the host
-should be set using `system.hostfs` setting to `/hostfs`.  
+should be set using `system.hostfs` setting to `/hostfs`.
 
-## Compatibility
-
-The System datasets collect different kinds of metric data, which may require dedicated permissions
-to be fetched and which may vary across operating systems.
-
-## Logs
+## Logs reference
 
 ### Application
 
-The Windows `application` dataset provides events from the Windows
+The Windows `application` data stream provides events from the Windows
 `Application` event log.
+
+#### Supported operating systems
+
+- Windows
 
 **Exported fields**
 
@@ -209,8 +246,12 @@ The Windows `application` dataset provides events from the Windows
 
 ### System
 
-The Windows `system` dataset provides events from the Windows `System`
+The Windows `system` data stream provides events from the Windows `System`
 event log.
+
+#### Supported operating systems
+
+- Windows
 
 **Exported fields**
 
@@ -402,8 +443,12 @@ event log.
 
 ### Security
 
-The Windows `security` dataset provides events from the Windows
+The Windows `security` data stream provides events from the Windows
 `Security` event log.
+
+#### Supported operating systems
+
+- Windows
 
 An example event for `security` looks as following:
 
@@ -514,7 +559,8 @@ An example event for `security` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
@@ -641,6 +687,7 @@ An example event for `security` looks as following:
 | winlog.event_data.ClientName |  | keyword |
 | winlog.event_data.CommandLine |  | keyword |
 | winlog.event_data.Company |  | keyword |
+| winlog.event_data.ComputerAccountChange |  | keyword |
 | winlog.event_data.CorruptionActionState |  | keyword |
 | winlog.event_data.CrashOnAuditFailValue |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
@@ -652,6 +699,7 @@ An example event for `security` looks as following:
 | winlog.event_data.DeviceVersionMajor |  | keyword |
 | winlog.event_data.DeviceVersionMinor |  | keyword |
 | winlog.event_data.DisplayName |  | keyword |
+| winlog.event_data.DnsHostName |  | keyword |
 | winlog.event_data.DomainBehaviorVersion |  | keyword |
 | winlog.event_data.DomainName |  | keyword |
 | winlog.event_data.DomainPolicyChanged |  | keyword |
@@ -764,6 +812,7 @@ An example event for `security` looks as following:
 | winlog.event_data.ServiceAccount |  | keyword |
 | winlog.event_data.ServiceFileName |  | keyword |
 | winlog.event_data.ServiceName |  | keyword |
+| winlog.event_data.ServicePrincipalNames |  | keyword |
 | winlog.event_data.ServiceSid |  | keyword |
 | winlog.event_data.ServiceStartType |  | keyword |
 | winlog.event_data.ServiceType |  | keyword |
@@ -867,7 +916,12 @@ An example event for `security` looks as following:
 
 ### Auth
 
-The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
+The `auth` data stream provides auth logs.
+
+#### Supported operating systems
+
+- macOS prior to 10.8
+- Linux
 
 **Exported fields**
 
@@ -900,6 +954,7 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
@@ -912,7 +967,7 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -965,7 +1020,12 @@ The `auth` dataset provides auth logs on linux and MacOS prior to 10.8.
 
 ### syslog
 
-The `syslog` dataset provides system logs on linux and MacOS.
+The `syslog` data stream provides system logs.
+
+#### Supported operating systems
+
+- macOS
+- Linux
 
 **Exported fields**
 
@@ -1026,19 +1086,23 @@ The `syslog` dataset provides system logs on linux and MacOS.
 | process.pid | Process id. | long |
 
 
-## Metrics
+## Metrics reference
 
 ### Core
 
-The System `core` dataset provides usage statistics for each CPU core.
+The System `core` data stream provides usage statistics for each CPU core.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1104,15 +1168,19 @@ This dataset is available on:
 
 ### CPU
 
-The System `cpu` dataset provides CPU statistics.
+The System `cpu` data stream provides CPU statistics.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1189,15 +1257,19 @@ This dataset is available on:
 
 ### Disk IO
 
-The System `diskio` dataset provides disk IO metrics collected from the
+The System `diskio` data stream provides disk IO metrics collected from the
 operating system. One event is created for each disk mounted on the system.
 
-This dataset is available on:
+#### Supported operating systems
 
 - Linux
 - macOS (requires 10.10+)
 - Windows
 - FreeBSD (amd64)
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1270,16 +1342,20 @@ This dataset is available on:
 
 ### Filesystem
 
-The System `filesystem` dataset provides file system statistics. For each file
+The System `filesystem` data stream provides file system statistics. For each file
 system, one document is provided.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1335,15 +1411,19 @@ This dataset is available on:
 
 ### Fsstat
 
-The System `fsstat` dataset provides overall file system statistics.
+The System `fsstat` data stream provides overall file system statistics.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1397,14 +1477,18 @@ This dataset is available on:
 
 ### Load
 
-The System `load` dataset provides load statistics.
+The System `load` data stream provides load statistics.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1460,15 +1544,19 @@ This dataset is available on:
 
 ### Memory
 
-The System `memory` dataset provides memory statistics.
+The System `memory` data stream provides memory statistics.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - OpenBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1548,15 +1636,19 @@ This dataset is available on:
 
 ### Network
 
-The System `network` dataset provides network IO metrics collected from the
+The System `network` data stream provides network IO metrics collected from the
 operating system. One event is created for each network interface.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -1637,15 +1729,20 @@ This dataset is available on:
 
 ### Process
 
-The System `process` dataset provides process statistics. One document is
+The System `process` data stream provides process statistics. One document is
 provided for each process.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - Windows
+
+#### Permissions
+
+Process execution data should be available for an authorized user.
+If running as less privileged user, it may not be able to read process data belonging to other users.
 
 **Exported fields**
 
@@ -1848,15 +1945,20 @@ This dataset is available on:
 
 ### Process summary
 
-The `process_summary` dataset collects high level statistics about the running
+The `process_summary` data stream collects high level statistics about the running
 processes.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - Windows
+
+#### Permissions
+
+General process summary data should be available without elevated permissions.
+If the process data belongs to the other users, it will be counted as unknown value.
 
 **Exported fields**
 
@@ -1932,18 +2034,22 @@ This dataset is available on:
 
 ### Socket summary
 
-The System `socket_summary` dataset provides the summary of open network
+The System `socket_summary` data stream provides the summary of open network
 sockets in the host system.
 
 It collects a summary of metrics with the count of existing TCP and UDP
 connections and the count of listening ports.
 
-This dataset is available on:
+#### Supported operating systems
 
 - FreeBSD
 - Linux
 - macOS
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 
@@ -2028,15 +2134,19 @@ This dataset is available on:
 
 ### Uptime
 
-The System `uptime` dataset provides the uptime of the host operating system.
+The System `uptime` data stream provides the uptime of the host operating system.
 
-This dataset is available on:
+#### Supported operating systems
 
 - Linux
 - macOS
 - OpenBSD
 - FreeBSD
 - Windows
+
+#### Permissions
+
+This data should be available without elevated permissions.
 
 **Exported fields**
 

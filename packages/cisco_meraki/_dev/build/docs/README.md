@@ -2,7 +2,7 @@
 
 Cisco Meraki offers a centralized cloud management platform for all Meraki devices such as MX Security Appliances, MR Access Points and so on. Its out-of-band cloud architecture creates secure, scalable and easy-to-deploy networks that can be managed from anywhere. This can be done from almost any device using web-based Meraki Dashboard and Meraki Mobile App. Each Meraki network generates its own events.
 
-Cisco Meraki offers [several methods for device reporting](https://documentation.meraki.com/General_Administration/Monitoring_and_Reporting/Meraki_Device_Reporting_-_Syslog%2C_SNMP%2C_and_API). This integration supports gathering events via the Cisco Meraki syslog and via API reporting webhooks. The integration package allows you to search, observe, and visualize the events through Elasticsearch. 
+Cisco Meraki offers [several methods for device reporting](https://documentation.meraki.com/General_Administration/Monitoring_and_Reporting/Meraki_Device_Reporting_-_Syslog%2C_SNMP%2C_and_API). This integration supports gathering events via the Cisco Meraki syslog and via API reporting webhooks. The integration package allows you to search, observe, and visualize the events through Elasticsearch.
 
 ## Compatibility
 
@@ -39,7 +39,7 @@ Enter the values for syslog host and port OR file path based on the chosen confi
 
 Check the option "Collect events from Cisco Meraki via Webhooks" option.
 
-1. Enter values for "Listen Address", "Listen Port" and "Webhook path" to form the endpoint URL. Make note of the **Endpoint URL** https://{AGENT_ADDRESS}:8686/meraki/events.
+1. Enter values for "Listen Address", "Listen Port" and "Webhook path" to form the endpoint URL. Make note of the **Endpoint URL** `https://{AGENT_ADDRESS}:8686/meraki/events`.
 2. Enter value for "Secret value". This must match the "Shared Secret" value entered when configuring the webhook from Meraki cloud.
 3. Enter values for "TLS". Cisco Meraki requires that the webhook accept requests over HTTPS. So you must either configure the integration with a valid TLS certificate or use a reverse proxy in front of the integration.
 

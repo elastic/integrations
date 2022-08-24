@@ -119,7 +119,9 @@ using the tool's [documentation](https://github.com/elastic/elastic-package/tree
 
 ### Open a PR
 
-If you think that you've finished works on your integration, you've verified that it collects data, wrote some tests,
+Prior to opening a PR, you must sign the [elastic contributor agreement](https://www.elastic.co/contributor-agreement) if you haven't already.
+
+If you think that you've finished work on your integration, you've verified that it collects data, and you've written some tests,
 you can [open a PR](https://github.com/elastic/integrations/compare) to include your integration in the [Integrations](https://github.com/elastic/integrations) repository.
 The CI will verify if your integration is correct (`elastic-package check`) - a green status is a must.
 

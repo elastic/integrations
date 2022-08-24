@@ -10,17 +10,19 @@ from multiple entities, it's necessary to define one integration for each.
 Alternatively, it's also possible to use the integration to fetch custom Fusion files
 by supplying the URL to the CSV file as the _Custom_ _URL_ configuration option.
 
+**NOTE:** For large risklist downloads, adjust the timeout setting so that the Agent has enough time to download and process the risklist.
+
 An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-11T09:21:48.260Z",
+    "@timestamp": "2022-06-28T00:51:15.439Z",
     "agent": {
-        "ephemeral_id": "b69c55be-abc6-4a16-900f-986a2cc693a0",
-        "id": "967e40bc-86fa-4632-b571-afd40cfbcb8a",
+        "ephemeral_id": "ab36e75a-d84f-4a16-9896-44e791dc923d",
+        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.2.2"
     },
     "data_stream": {
         "dataset": "ti_recordedfuture.threat",
@@ -28,18 +30,18 @@ An example event for `threat` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "967e40bc-86fa-4632-b571-afd40cfbcb8a",
+        "id": "33b93e16-9d01-4487-9b09-99db9e860912",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.2.2"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "threat",
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2022-04-11T09:21:49Z",
+        "ingested": "2022-06-28T00:51:16Z",
         "kind": "enrichment",
         "risk_score": 87,
         "timezone": "+00:00",
@@ -187,7 +189,7 @@ An example event for `threat` looks as following:
 | threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | threat.indicator.as.organization.name | Organization name. | keyword |
 | threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
-| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. Expected values are:   \* Not Specified   \* None   \* Low   \* Medium   \* High | keyword |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
 | threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
 | threat.indicator.file.hash.md5 | MD5 hash. | keyword |
 | threat.indicator.file.hash.sha1 | SHA1 hash. | keyword |
@@ -199,9 +201,9 @@ An example event for `threat` looks as following:
 | threat.indicator.geo.location.lon | Longitude and latitude. | geo_point |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. Recommended values are:   \* WHITE   \* GREEN   \* AMBER   \* RED | keyword |
+| threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
-| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. Recommended values:   \* autonomous-system   \* artifact   \* directory   \* domain-name   \* email-addr   \* file   \* ipv4-addr   \* ipv6-addr   \* mac-addr   \* mutex   \* port   \* process   \* software   \* url   \* user-account   \* windows-registry-key   \* x509-certificate | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |

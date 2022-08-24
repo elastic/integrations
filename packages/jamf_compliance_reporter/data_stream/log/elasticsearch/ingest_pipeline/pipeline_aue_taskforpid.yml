@@ -1,0 +1,15 @@
+---
+description: Pipeline for Jamf Compliance Reporter aue_taskforpid audit logs.
+processors:
+  - convert:
+      field: json.arguments.target_port
+      target_field: jamf_compliance_reporter.log.arguments.target.port
+      type: long
+      ignore_failure: true
+  - convert:
+      field: json.arguments.task_port
+      target_field: jamf_compliance_reporter.log.arguments.task.port
+      type: long
+      ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_process_object" }}'
