@@ -238,14 +238,25 @@ processors:
                 geo.put("ip",alert_activity.ip_info.ip);
                 geo.put("location",location);
                 indicator.put("geo",geo);
+                indicator.put("description",
+                    "IP " + alert_activity.ip_info.ip + " was observed to " +
+                    alert_activity.event_type + " " + alert_activity.item_type + " " +
+                    alert_activity.item_path + "/" + alert_activity.item_name + " by " +
+                    alert_activity.service_name);
+                indicator.put("provider",alert_activity.service_name);
+                if (alert_activity.ip_info.ip.indexOf(":") > -1) {
+                    indicator.put("type","ipv6-addr");    
+                } else { 
+                    indicator.put("type","ipv4-addr");   
+                }  
             }
             ctx.threat.enrichments.add(indicator)
         }
-#  - remove:
-#      field: 
-#        - box.additional_details.shield_alert.alert_summary.alert_activities
-#      ignore_failure: true
-#      ignore_missing: true
+  - remove:
+      field: 
+        - box.additional_details.shield_alert.alert_summary.alert_activities
+      ignore_failure: true
+      ignore_missing: true
   - script:
       description: Capitalize Priority to match Appendix A of the STIX 2.1 framework
       lang: painless
