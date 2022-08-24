@@ -104,7 +104,7 @@ An example event for `storage` looks as following:
 | gcp.labels.user.\* |  | object |
 | gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
 | gcp.storage.api.request.count | Delta count of API calls, grouped by the API method name and response code. | long |
-| gcp.storage.authz.acl_based_object_access_.ount | Delta count of requests that result in an object being granted access solely due to object ACLs. | long |
+| gcp.storage.authz.acl_based_object_access_.count | Delta count of requests that result in an object being granted access solely due to object ACLs. | long |
 | gcp.storage.authz.acl_operations.count | Usage of ACL operations broken down by type. | long |
 | gcp.storage.authz.object_specific_acl_mutation.count | Delta count of changes made to object specific ACLs. | long |
 | gcp.storage.network.received.bytes | Delta count of bytes received over the network, grouped by the API method name and response code. | long |
