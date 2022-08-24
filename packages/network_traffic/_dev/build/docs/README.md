@@ -773,8 +773,8 @@ and `tls.client.certificate_chain` fields. The default is false.
 
 #### `include_detailed_fields`
 
-Controls whether the [TLS fields](https://www.elastic.co/guide/en/beats/packetbeat/current/exported-fields-tls_detailed.html) are added to exported documents. When
-set to false, only [ECS TLS](https://www.elastic.co/guide/en/ecs/8.2/ecs-tls.html) fields are included.
+Controls whether the {{ url "packetbeat-exported-fields-tls" "TLS fields" }} are added to exported documents. When
+set to false, only {{ url "ecs-tls-8.2" "ECS TLS" }} fields are included.
 exported are included. The default is `true`.
 
 #### `fingerprints`
