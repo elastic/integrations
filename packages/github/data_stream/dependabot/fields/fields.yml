@@ -1,0 +1,332 @@
+- name: github
+  type: group
+  fields:
+    - name: dependabot
+      type: group
+      fields:
+        - name: created_at
+          type: date
+          description: >
+            When was the alert created
+
+        - name: dependabot_update
+          type: group
+          description: >
+            A Dependabot Update for a dependency in a repository.
+
+          fields:
+            - name: error
+              type: group
+              description: The error from a dependency update.
+              fields:
+                - name: body
+                  type: text
+                  description: >
+                    The body of the error.
+
+                - name: error_type
+                  type: keyword
+                  description: >
+                    The error code.
+
+                - name: title
+                  type: keyword
+                  description: >
+                    The title of the error.
+
+            - name: pull_request
+              type: group
+              description: The associated pull request.
+              fields:
+                - name: created_at
+                  type: date
+                  description: >
+                    Identifies the date and time when the pull request was created.
+
+                - name: closed
+                  type: boolean
+                  description: >
+                    `true` if the pull request is closed.
+
+                - name: closed_at
+                  type: date
+                  description: >
+                    Identifies the date and time when the pull request was closed.
+
+                - name: merged
+                  type: boolean
+                  description: >
+                    Whether or not the pull request was merged.
+
+                - name: merged_at
+                  type: date
+                  description: >
+                    The date and time that the pull request was merged.
+
+                - name: number
+                  type: integer
+                  description: >
+                    Identifies the pull request number.
+
+                - name: url
+                  type: keyword
+                  description: >
+                    The HTTP URL for this pull request.
+
+                - name: title
+                  type: keyword
+                  description: >
+                    Identifies the pull request title.
+
+        - name: dependency_scope
+          type: keyword
+          description: >
+            The scope of an alert's dependency.
+
+        - name: dismiss_reason
+          type: keyword
+          description: >
+            The reason the alert was dismissed.
+
+        - name: dismissed_at
+          type: date
+          description: >
+            When was the alert dismissed
+
+        - name: dismisser
+          type: group
+          fields:
+            - name: login
+              type: keyword
+              description: >
+                The username of the dismisser.
+
+            - name: url
+              type: keyword
+              description: >
+                The HTTP URL for this user.
+
+        - name: fix_reason
+          type: keyword
+          description: >
+            The reason the alert was marked as fixed.
+
+        - name: fixed_at
+          type: date
+          description: >
+            When was the alert fixed
+
+        - name: number
+          type: integer
+          description: >
+            Identifies the alert number.
+
+        - name: security_advisory
+          type: group
+          description: >
+            The associated security advisory.
+
+          fields:
+            - name: classification
+              type: keyword
+              description: >
+                The classification of the advisory.
+
+            - name: cvss
+              type: group
+              description: >
+                The CVSS associated with this advisory.
+
+              fields:
+                - name: vector_string
+                  type: keyword
+                  description: >
+                    The CVSS vector string associated with this advisory.
+
+            - name: cwes
+              type: nested
+              description: >
+                CWEs associated with this Advisory.
+
+              fields:
+                - name: cwe_id
+                  type: keyword
+                  description: >
+                    The id of the CWE.
+
+                - name: description
+                  type: keyword
+                  description: >
+                    The name of this CWE.
+
+                - name: name
+                  type: keyword
+                  description: >
+                    A detailed description of this CWE.
+
+            - name: ghsa_id
+              type: keyword
+              description: >
+                The GitHub Security Advisory ID.
+
+            - name: identifiers
+              type: nested
+              description: >
+                A list of identifiers for this advisory.
+
+              fields:
+                - name: type
+                  type: keyword
+                  description: >
+                    The identifier type, e.g. GHSA, CVE.
+
+                - name: value
+                  type: keyword
+                  description: >
+                    The identifier.
+
+            - name: origin
+              type: keyword
+              description: >
+                The organization that originated the advisory.
+
+            - name: permalink
+              type: keyword
+              description: >
+                The permalink for the advisory.
+
+            - name: published_at
+              type: date
+              description: >
+                When the advisory was published.
+
+            - name: severity
+              type: keyword
+              description: >
+                The severity of the advisory.
+
+            - name: summary
+              type: keyword
+              description: >
+                A short plaintext summary of the advisory.
+
+            - name: updated_at
+              type: date
+              description: >
+                When the advisory was last updated.
+
+            - name: withdrawn_at
+              type: date
+              description: >
+                When the advisory was withdrawn, if it has been withdrawn.
+
+        - name: security_vulnerability
+          type: group
+          description: >
+            The associated security vulnerability.
+
+          fields:
+            - name: first_patched_version.identifier
+              type: keyword
+              description: >
+                The first version containing a fix for the vulnerability.
+
+            - name: package
+              type: group
+              description: >
+                A description of the vulnerable package.
+
+              fields:
+                - name: ecosystem
+                  type: keyword
+                  description: >
+                    The ecosystem the package belongs to, e.g. RUBYGEMS, NPM.
+
+                - name: name
+                  type: keyword
+                  description: >
+                    The package name.
+
+            - name: updated_at
+              type: date
+              description: >
+                When the vulnerability was last updated.
+
+            - name: vulnerable_version_range
+              type: keyword
+              description: >
+                A string that describes the vulnerable package versions.
+
+        - name: state
+          type: keyword
+          description: >
+            Identifies the state of the alert.
+
+        - name: vulnerable_manifest_path
+          type: keyword
+          description: >
+            The vulnerable manifest path.
+
+        - name: vulnerable_manifest_filename
+          type: keyword
+          description: >
+            The vulnerable manifest filename.
+
+        - name: vulnerable_requirements
+          type: keyword
+          description: >
+            The vulnerable requirements.
+
+    - name: state
+      type: keyword
+      description: >
+        Identifies the state of the alert.
+
+    - name: severity
+      type: keyword
+      description: >
+        The severity of the advisory.
+
+    - name: repository
+      type: group
+      description: >
+        The associated repository.
+
+      fields:
+        - name: description
+          type: keyword
+          description: >
+            The description of the repository.
+
+        - name: is_in_organization
+          type: boolean
+          description: >
+            Indicates if a repository is either owned by an organization, or is a private fork of an organization repository.
+
+        - name: is_private
+          type: boolean
+          description: >
+            Identifies if the repository is private or internal.
+
+        - name: name
+          type: keyword
+          description: >
+            Identifies if the repository is private or internal.
+
+        - name: url
+          type: keyword
+          description: >
+            The HTTP URL for this repository.
+
+        - name: owner
+          type: group
+          fields:
+            - name: login
+              type: keyword
+              description: >
+                The username of the dismisser.
+
+            - name: url
+              type: keyword
+              description: >-
+                The HTTP URL for this user
