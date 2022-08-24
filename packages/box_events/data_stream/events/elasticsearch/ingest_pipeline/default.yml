@@ -299,22 +299,14 @@ processors:
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Malicious Content")) {
             Map indicator = new HashMap();
-            /* List l = new ArrayList();
-            for (ip in ctx.box.additional_details.shield_alert.alert_summary.download_ips) {
-                l.add(ip.ip);
-            }
-            List setList = new ArrayList(new HashSet(l));
-            if (ctx?.related == null) {
-                ctx.related = new HashMap();
-            }
-            ctx.related.ip = setList;
-            // see https://github.com/elastic/ecs/pull/1581#issuecomment-1225521690
-            indicator.put("description",ctx.box.additional_details.shield_alert.alert_summary.description);
-            indicator.put("first_seen",ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date);
-            indicator.put("last_seen",ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date);
-            indicator.put("reference",ctx.box.additional_details.shield_alert.link);
-            indicator.put("sightings",ctx.box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count);
-            */
+            indicator.put("description",
+                    ctx.box.additional_details.shield_alert.malware_info.malware_name +
+                    ", " + ctx.box.additional_details.shield_alert.malware_info.family +
+                    ", " + ctx.box.additional_details.shield_alert.malware_info.file_name +
+                    " Detected by Box Shield from IP " + ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip +
+                    ". " + ctx.box.additional_details.shield_alert.malware_info.description +
+                    " see " + ctx.box.additional_details.shield_alert.malware_info.detail_link);
+            indicator.put("provider",ctx.box.additional_details.shield_alert.alert_summary.upload_activity.service_name);
             indicator.put("type","software");
             ctx.threat.enrichments.add(indicator)
         }
