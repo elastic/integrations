@@ -16,12 +16,14 @@ processors:
   - grok:
       field: event.original
       patterns:
-      - '\[%{LOGLEVEL:log.level}\] \[?%{IP:source.address}\]?:%{POSINT:source.port} - %{POSINT:dns.id} "%{WORD:dns.question.type} %{WORD:dns.question.class} 
-         %{HOSTNAME:dns.question.name}\. %{WORD:network.transport} %{POSINT:source.bytes} %{WORD:dnssec} %{POSINT:edns_buffer}" 
-         %{WORD:dns.response_code} %{NOTSPACE:dns.header_flags} %{POSINT:destination.bytes} %{NOTSPACE:event.duration}( "%{NONNEGINT:dns.op_code}")?'
+      - '\[%{LOGLEVEL:log.level}\] \[?%{IP:source.address}\]?:%{POSINT:source.port:long} - %{POSINT:dns.id} "%{WORD:dns.question.type} %{WORD:dns.question.class} 
+         %{IPORHOST:dns.question.name}\. %{WORD:network.transport} %{POSINT:source.bytes:long} %{WORD:coredns.log.edns0.do:boolean} %{POSINT:coredns.log.edns0.buffer_size:long}" 
+         %{WORD:dns.response_code} %{NOTSPACE:dns.header_flags} %{POSINT:destination.bytes:long} %{NOTSPACE:event.duration}s( "%{NONNEGINT:dns.op_code}")?'
       ignore_missing: true
-      on_failure:
-        - drop: ~
+      ecs_compatibility: v1
+    #   on_failure:
+    #     - drop:
+    #         description: Drop if a log other than query
   - lowercase:
       field: network.transport
       ignore_missing: true
@@ -42,6 +44,13 @@ processors:
   - remove:
       field: dns.question.domain
       ignore_missing: true
+  - uppercase:
+      field: dns.header_flags
+      ignore_missing: true
+  - split:
+      field: dns.header_flags
+      separator: ","
+      ignore_missing: true
   - set: 
       field: event.outcome
       value: success
@@ -50,6 +59,14 @@ processors:
       field: event.outcome
       value: failure
       if: ctx?.dns?.response_code != null && ctx?.dns?.response_code != "NOERROR"
+  - script:
+      lang: painless
+      if: ctx.event?.duration != null
+      params:
+        S_TO_NS: 1000000000
+      source: >-
+        double f = Double.parseDouble(ctx.event.duration);
+        ctx.event.duration = f * params.S_TO_NS;
   - convert:
       field: source.address
       target_field: source.ip
