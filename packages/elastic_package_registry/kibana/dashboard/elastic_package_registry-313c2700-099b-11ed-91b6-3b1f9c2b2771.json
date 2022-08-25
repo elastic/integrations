@@ -106,7 +106,7 @@
                     }
                 },
                 "gridData": {
-                    "h": 6,
+                    "h": 7,
                     "i": "e1615771-2a85-4842-95fe-2ddab2f0fa5f",
                     "w": 48,
                     "x": 0,
@@ -216,7 +216,7 @@
                     "i": "6d18af48-f698-4117-adf6-10fa4a546a59",
                     "w": 15,
                     "x": 0,
-                    "y": 6
+                    "y": 7
                 },
                 "panelIndex": "6d18af48-f698-4117-adf6-10fa4a546a59",
                 "title": "EPR Version",
@@ -334,7 +334,7 @@
                     "i": "6dfb26df-2921-41e2-b612-46ba43cbd830",
                     "w": 17,
                     "x": 15,
-                    "y": 6
+                    "y": 7
                 },
                 "panelIndex": "6dfb26df-2921-41e2-b612-46ba43cbd830",
                 "title": "EPR Uptime",
@@ -471,7 +471,7 @@
                     "i": "e4ae30a4-2a67-4416-9943-74d28f744bf0",
                     "w": 16,
                     "x": 32,
-                    "y": 6
+                    "y": 7
                 },
                 "panelIndex": "e4ae30a4-2a67-4416-9943-74d28f744bf0",
                 "title": "EPR Indexed Packages",
@@ -508,7 +508,7 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Avg In flight Requests",
-                                                    "operationType": "average",
+                                                    "operationType": "sum",
                                                     "scale": "ratio",
                                                     "sourceField": "package_registry.in_flight_requests"
                                                 },
@@ -595,7 +595,7 @@
                     "i": "79cbfaa7-5460-4183-b090-dc6e9771d2cd",
                     "w": 14,
                     "x": 0,
-                    "y": 13
+                    "y": 14
                 },
                 "panelIndex": "79cbfaa7-5460-4183-b090-dc6e9771d2cd",
                 "title": "EPR In Flight Requests",
@@ -626,17 +626,9 @@
                                                 "9a794259-f754-4781-9b42-bf222645cb13",
                                                 "35e457b6-a190-4ca9-bba0-cae9f34e0ee7",
                                                 "f7c5d908-2def-4a1a-b62b-b9c0ac3cc413",
-                                                "04ced94d-6962-4dc3-b512-c2fbd2b62095"
+                                                "d1a695ed-e577-49e1-a5da-c1b856e9dc24"
                                             ],
                                             "columns": {
-                                                "04ced94d-6962-4dc3-b512-c2fbd2b62095": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Average of package_registry.http_requests_total.counter",
-                                                    "operationType": "average",
-                                                    "scale": "ratio",
-                                                    "sourceField": "package_registry.http_requests_total.counter"
-                                                },
                                                 "35e457b6-a190-4ca9-bba0-cae9f34e0ee7": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
@@ -666,14 +658,22 @@
                                                     "scale": "ordinal",
                                                     "sourceField": "package_registry.labels.path"
                                                 },
+                                                "d1a695ed-e577-49e1-a5da-c1b856e9dc24": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of package_registry.http_requests_total.counter",
+                                                    "operationType": "sum",
+                                                    "scale": "ratio",
+                                                    "sourceField": "package_registry.http_requests_total.counter"
+                                                },
                                                 "f7c5d908-2def-4a1a-b62b-b9c0ac3cc413": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Avg HTTP Requests",
+                                                    "label": "HTTP Requests",
                                                     "operationType": "differences",
                                                     "references": [
-                                                        "04ced94d-6962-4dc3-b512-c2fbd2b62095"
+                                                        "d1a695ed-e577-49e1-a5da-c1b856e9dc24"
                                                     ],
                                                     "scale": "ratio"
                                                 }
@@ -750,7 +750,7 @@
                     "i": "154ec940-a838-4fae-aa6a-9435830f637c",
                     "w": 17,
                     "x": 14,
-                    "y": 13
+                    "y": 14
                 },
                 "panelIndex": "154ec940-a838-4fae-aa6a-9435830f637c",
                 "title": "EPR Number HTTP Requests per Path",
@@ -786,8 +786,8 @@
                                                 "5550d2f1-f0c5-4e97-bd37-338c72fecf8d": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Median of package_registry.http_requests_total.counter",
-                                                    "operationType": "median",
+                                                    "label": "Sum of package_registry.http_requests_total.counter",
+                                                    "operationType": "sum",
                                                     "scale": "ratio",
                                                     "sourceField": "package_registry.http_requests_total.counter"
                                                 },
@@ -805,9 +805,21 @@
                                                 "ab476d41-e26f-4154-97f0-a2fb6b1074a9": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "package_registry.http_requests_total.counter : *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Avg HTTP Requests",
+                                                    "label": "HTTP Requests",
                                                     "operationType": "differences",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
                                                     "references": [
                                                         "5550d2f1-f0c5-4e97-bd37-338c72fecf8d"
                                                     ],
@@ -885,7 +897,7 @@
                     "i": "7731413d-5883-4234-b7c7-153bb9b1446c",
                     "w": 17,
                     "x": 31,
-                    "y": 13
+                    "y": 14
                 },
                 "panelIndex": "7731413d-5883-4234-b7c7-153bb9b1446c",
                 "title": "EPR Number of HTTP Requests",
@@ -984,7 +996,7 @@
                     "i": "735f248a-6769-42ae-9411-564fd48e41c8",
                     "w": 10,
                     "x": 0,
-                    "y": 27
+                    "y": 28
                 },
                 "panelIndex": "735f248a-6769-42ae-9411-564fd48e41c8",
                 "title": "EPR Average requests per Status Code",
@@ -1103,7 +1115,7 @@
                     "i": "97373caf-f72d-4ce9-b245-534f5c872e16",
                     "w": 14,
                     "x": 10,
-                    "y": 27
+                    "y": 28
                 },
                 "panelIndex": "97373caf-f72d-4ce9-b245-534f5c872e16",
                 "title": "EPR Average requests per Path and Status Code",
@@ -1219,7 +1231,7 @@
                     "i": "9180f164-4281-4f87-86b4-325efde7ec6d",
                     "w": 24,
                     "x": 24,
-                    "y": 27
+                    "y": 28
                 },
                 "panelIndex": "9180f164-4281-4f87-86b4-325efde7ec6d",
                 "title": "EPR Duration Seconds - Percentile 95",
@@ -1335,7 +1347,7 @@
                     "i": "b6796403-e619-421e-80cd-847b5b3d0d20",
                     "w": 24,
                     "x": 0,
-                    "y": 40
+                    "y": 41
                 },
                 "panelIndex": "b6796403-e619-421e-80cd-847b5b3d0d20",
                 "title": "EPR Request Size (bytes) - Percentile 95",
@@ -1451,7 +1463,7 @@
                     "i": "00cac55e-dc3d-48fc-ad42-306c4022f7df",
                     "w": 24,
                     "x": 24,
-                    "y": 40
+                    "y": 41
                 },
                 "panelIndex": "00cac55e-dc3d-48fc-ad42-306c4022f7df",
                 "title": "EPR Response Size (bytes) - Percentile 95",
@@ -1586,7 +1598,7 @@
                     "i": "de09de82-2e5d-4080-9387-65c56d6ae9e3",
                     "w": 15,
                     "x": 0,
-                    "y": 54
+                    "y": 55
                 },
                 "panelIndex": "de09de82-2e5d-4080-9387-65c56d6ae9e3",
                 "title": "EPR Number of Storage requests",
@@ -1741,7 +1753,7 @@
                     "i": "1d39b0a9-5807-4ffb-aba8-263ebc227026",
                     "w": 17,
                     "x": 15,
-                    "y": 54
+                    "y": 55
                 },
                 "panelIndex": "1d39b0a9-5807-4ffb-aba8-263ebc227026",
                 "title": "EPR Number of Storage requests per Location",
@@ -1896,7 +1908,7 @@
                     "i": "ad02b1e4-52bd-4ab4-a9d2-a0bbb2d0eb60",
                     "w": 16,
                     "x": 32,
-                    "y": 54
+                    "y": 55
                 },
                 "panelIndex": "ad02b1e4-52bd-4ab4-a9d2-a0bbb2d0eb60",
                 "title": "EPR Number of Storage requests per Component",
@@ -2012,7 +2024,7 @@
                     "i": "d237dd46-1074-47ee-8186-3957b956acd9",
                     "w": 17,
                     "x": 0,
-                    "y": 68
+                    "y": 69
                 },
                 "panelIndex": "d237dd46-1074-47ee-8186-3957b956acd9",
                 "title": "EPR Indexer - Get duration seconds per indexer - Percentile 95",
@@ -2180,7 +2192,7 @@
                     "i": "e548a7b4-1c09-4ae2-a9b8-e9eddab932c9",
                     "w": 15,
                     "x": 17,
-                    "y": 68
+                    "y": 69
                 },
                 "panelIndex": "e548a7b4-1c09-4ae2-a9b8-e9eddab932c9",
                 "title": "EPR Storage Indexer - Erros vs Success operations",
@@ -2276,7 +2288,7 @@
                     "i": "2b137c7a-b65d-40c1-8ded-f1f0b3a467f1",
                     "w": 16,
                     "x": 32,
-                    "y": 68
+                    "y": 69
                 },
                 "panelIndex": "2b137c7a-b65d-40c1-8ded-f1f0b3a467f1",
                 "title": "EPR Storage Indexer - Update Index seconds - Percentile 95",
