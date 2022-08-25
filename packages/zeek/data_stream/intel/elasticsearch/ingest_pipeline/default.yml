@@ -211,6 +211,14 @@ processors:
       if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::ADDR"
       ignore_missing: true
       ignore_failure: true
+  - set:
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::ADDR"
+  - set:
+      field: threat.indicator.type
+      value: ipv6-addr
+      if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip.contains(':')
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: threat.indicator.ip
@@ -247,6 +255,10 @@ processors:
       copy_from: zeek.intel.seen.indicator
       if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::URL"
       ignore_failure: true
+  - set:
+      field: threat.indicator.type
+      value: url
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::URL"
   - uri_parts:
       field: threat.indicator._url
       target_field: threat.indicator.url
@@ -260,10 +272,18 @@ processors:
       if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::EMAIL"
       ignore_failure: true
   - set:
+      field: threat.indicator.type
+      value: email-addr
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::EMAIL"
+  - set:
       field: threat.indicator.file.name
       copy_from: zeek.intel.seen.indicator
       if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::FILE_NAME"
       ignore_failure: true
+  - set:
+      field: threat.indicator.type
+      value: file
+      if: ctx.zeek?.intel?.seen?.indicator_type == "Intel::FILE_NAME"
 
   - remove:
       field:
