@@ -45,6 +45,23 @@ To access the `events` endpoint, the user making the API call will need to have 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| box.additional_details.shield_alert.alert_id | Box Shield alert ID. | keyword |
+| box.additional_details.shield_alert.alert_summary.anomaly_period.download_size | Volume of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content. | keyword |
+| box.additional_details.shield_alert.alert_summary.anomaly_period.downloaded_files_count | Number of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content. | long |
+| box.additional_details.shield_alert.alert_summary.download_delta_percent | Anomaly delta percentage relative to historical expectation | long |
+| box.additional_details.shield_alert.alert_summary.download_delta_size | Anomaly delta size relative to historical expectation | keyword |
+| box.additional_details.shield_alert.alert_summary.download_ips |  | array |
+| box.additional_details.shield_alert.alert_summary.historical_period.date_range.end_date | End of historical period for calculation of historical expectation | keyword |
+| box.additional_details.shield_alert.alert_summary.historical_period.date_range.start_date | Start of historical period for calculation of historical expectation | keyword |
+| box.additional_details.shield_alert.alert_summary.historical_period.download_size | Volume of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content. | keyword |
+| box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count | Number of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content. | long |
+| box.additional_details.shield_alert.alert_summary.upload_activity.event_type | Type of event, e.g. "Upload" | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.item_id | ID of item | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.item_name | Name of item | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.item_path | Path to Item | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.item_type | Type of Item | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.occurred_at | Time of Upload | keyword |
+| box.additional_details.shield_alert.malware_info.categories | Malware Category e.g. Adware, Spyware | keyword |
 | box.created_at | When the event object was created | date |
 | box.created_by.id | The unique identifier for the connection user. | keyword |
 | box.created_by.login | The primary email address of the connection user. Maps from \*\*.login. |  |
@@ -162,7 +179,12 @@ To access the `events` endpoint, the user making the API call will need to have 
 | rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
 | rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
 | rule.name | The name of the rule or signature generating the event. | keyword |
+| rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
+| threat.enrichments.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.enrichments.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. Expected values are:   \* Not Specified   \* None   \* Low   \* Medium   \* High | keyword |
 | threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
 | threat.indicator.geo.city_name | City name. | keyword |
 | threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
@@ -170,4 +192,8 @@ To access the `events` endpoint, the user making the API call will need to have 
 | threat.indicator.geo.location.lon | Longitude and latitude. | geo_point |
 | threat.indicator.geo.region_name | Region name. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
+| user.effective.email | User email address. | keyword |
+| user.effective.id | Unique identifier of the user. | keyword |
+| user.effective.name | Short name or login of the user. | keyword |
+| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
 
