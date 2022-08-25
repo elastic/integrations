@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing Istio access logs
 processors:
   - drop:
       if: ctx.first_char != '['
@@ -43,51 +43,31 @@ processors:
   - set:
       field: destination.address
       copy_from: istio.access.downstream.local_address
+  - grok:
+      field: destination.address
+      patterns:
+        - ^-$
+        - ^%{IP:destination.ip}:%{NONNEGINT:destination.port}$
+        - ^%{HOSTNAME:destination.domain})$
+      ignore_missing: true
+  - convert:
+      field: destination.port
+      type: long
+      ignore_missing: true
   - set:
       field: source.address
       copy_from: istio.access.downstream.remote_address
   - grok:
       field: source.address
       patterns:
-        - (-|%{IP:source.ip}:%{NONNEGINT:source.port})
+        - ^-$
+        - ^%{IP:source.ip}:%{NONNEGINT:source.port}$
+        - ^%{HOSTNAME:source.domain})$
       ignore_missing: true
   - convert:
       field: source.port
       type: long
       ignore_missing: true
-  - grok:
-      field: destination.address
-      patterns:
-        - (-|%{IP:destination.ip}:%{POSINT:destination.port})
-      ignore_missing: true
-  - convert:
-      field: destination.port
-      type: long
-      ignore_missing: true
-  - geoip:
-      field: source.ip
-      target_field: source.geo
-      ignore_missing: true
-  - geoip:
-      database_file: GeoLite2-ASN.mmdb
-      field: source.ip
-      target_field: source.as
-      properties:
-      - asn
-      - organization_name
-      ignore_missing: true
-  - rename:
-      field: source.as.asn
-      target_field: source.as.number
-      ignore_missing: true
-  - append:
-      field: related.ip
-      value: "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
-  - append:
-      field: related.ip
-      value: "{{destination.ip}}"
-      if: "ctx?.destination?.ip != null"
   - set:
       field: network.transport
       value: "tcp/udp"
@@ -127,9 +107,6 @@ processors:
       target_field: "@timestamp"
   - remove:
       field: istio.access.start_time
-  - set:
-      field: event.id
-      copy_from: http.request.id
 on_failure:
   - set:
       field: error.message
