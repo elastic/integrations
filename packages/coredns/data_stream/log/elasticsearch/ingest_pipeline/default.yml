@@ -21,9 +21,9 @@ processors:
          %{WORD:dns.response_code} %{NOTSPACE:dns.header_flags} %{POSINT:destination.bytes:long} %{NOTSPACE:event.duration}s( "%{NONNEGINT:dns.op_code}")?'
       ignore_missing: true
       ecs_compatibility: v1
-    #   on_failure:
-    #     - drop:
-    #         description: Drop if a log other than query
+      on_failure:
+        - drop:
+            description: Drop if a log other than query
   - lowercase:
       field: network.transport
       ignore_missing: true
@@ -101,7 +101,12 @@ processors:
       field: related.hosts
       value: "{{dns.question.name}}"
       allow_duplicates: false
-      if: ctx.dns?.question?.name != null
+      if: ctx.dns?.question?.name != null && ctx.dns?.question?.type != 'PTR'
+  - append:
+      field: related.ip
+      value: "{{dns.question.name}}"
+      allow_duplicates: false
+      if: ctx.dns?.question?.name != null && ctx.dns?.question?.type == 'PTR'
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
