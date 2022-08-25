@@ -79,6 +79,21 @@
                                     },
                                     "parent": "",
                                     "type": "list"
+                                },
+                                {
+                                    "fieldName": "service.address",
+                                    "id": "1661440973907",
+                                    "indexPatternRefName": "control_e1615771-2a85-4842-95fe-2ddab2f0fa5f_3_index_pattern",
+                                    "label": "Service Address",
+                                    "options": {
+                                        "dynamicOptions": true,
+                                        "multiselect": true,
+                                        "order": "desc",
+                                        "size": 5,
+                                        "type": "terms"
+                                    },
+                                    "parent": "",
+                                    "type": "list"
                                 }
                             ],
                             "pinFilters": false,
@@ -122,35 +137,44 @@
                                     "layers": {
                                         "a3703744-b94e-4411-a8cf-82ff86d0292e": {
                                             "columnOrder": [
-                                                "be77ae75-7d05-4d74-b145-23078dbdedbd",
-                                                "ae2724db-230b-4663-a25f-5856d0151b68"
+                                                "c8a9e7eb-fb31-4447-87ed-90fa7271df79",
+                                                "a5d40e57-a794-46e2-b1e9-9c71b2af01e0"
                                             ],
                                             "columns": {
-                                                "ae2724db-230b-4663-a25f-5856d0151b68": {
-                                                    "dataType": "number",
+                                                "a5d40e57-a794-46e2-b1e9-9c71b2af01e0": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "package_registry.labels.version : *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "Records"
+                                                    "label": "Version",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "package_registry.labels.version"
                                                 },
-                                                "be77ae75-7d05-4d74-b145-23078dbdedbd": {
+                                                "c8a9e7eb-fb31-4447-87ed-90fa7271df79": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of package_registry.labels.version",
+                                                    "label": "Instances",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "ae2724db-230b-4663-a25f-5856d0151b68",
-                                                            "type": "column"
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
                                                         },
-                                                        "orderDirection": "desc",
+                                                        "orderDirection": "asc",
                                                         "otherBucket": true,
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "package_registry.labels.version"
+                                                    "sourceField": "service.address"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -164,26 +188,25 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layers": [
+                                "columns": [
                                     {
-                                        "categoryDisplay": "default",
-                                        "groups": [
-                                            "be77ae75-7d05-4d74-b145-23078dbdedbd"
-                                        ],
-                                        "layerId": "a3703744-b94e-4411-a8cf-82ff86d0292e",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metric": "ae2724db-230b-4663-a25f-5856d0151b68",
-                                        "nestedLegend": false,
-                                        "numberDisplay": "hidden"
+                                        "columnId": "c8a9e7eb-fb31-4447-87ed-90fa7271df79",
+                                        "hidden": false,
+                                        "isTransposed": false,
+                                        "width": 451.5
+                                    },
+                                    {
+                                        "columnId": "a5d40e57-a794-46e2-b1e9-9c71b2af01e0",
+                                        "isTransposed": false
                                     }
                                 ],
-                                "shape": "pie"
+                                "layerId": "a3703744-b94e-4411-a8cf-82ff86d0292e",
+                                "layerType": "data"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsPie"
+                        "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -245,11 +268,19 @@
                             "interval": "",
                             "isModelInvalid": false,
                             "max_lines_legend": 1,
+                            "pivot_id": "service.address",
+                            "pivot_label": "Instances",
+                            "pivot_type": "string",
                             "series": [
                                 {
                                     "axis_position": "right",
                                     "chart_type": "line",
                                     "color": "#68BC00",
+                                    "color_rules": [
+                                        {
+                                            "id": "3b82c5b0-2490-11ed-b56f-cda473f535ef"
+                                        }
+                                    ],
                                     "fill": 0.5,
                                     "formatter": "'00:00:00'",
                                     "hidden": false,
@@ -283,18 +314,25 @@
                             "time_range_mode": "entire_time_range",
                             "tooltip_mode": "show_all",
                             "truncate_legend": 1,
-                            "type": "metric",
+                            "type": "table",
                             "use_kibana_indexes": true
                         },
                         "title": "",
                         "type": "metrics",
-                        "uiState": {}
+                        "uiState": {
+                            "table": {
+                                "sort": {
+                                    "column": "_default_",
+                                    "order": "desc"
+                                }
+                            }
+                        }
                     }
                 },
                 "gridData": {
                     "h": 7,
                     "i": "6dfb26df-2921-41e2-b612-46ba43cbd830",
-                    "w": 16,
+                    "w": 17,
                     "x": 15,
                     "y": 6
                 },
@@ -329,9 +367,29 @@
                                     "layers": {
                                         "e9bb8b0a-b3fd-4655-8e7c-b9238e62f553": {
                                             "columnOrder": [
+                                                "216d444d-de10-4d5f-ba10-b8978c171ebf",
                                                 "a4deb030-155e-4f8c-b0b1-d1c21bf54d84"
                                             ],
                                             "columns": {
+                                                "216d444d-de10-4d5f-ba10-b8978c171ebf": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Instances",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "fallback": false,
+                                                            "type": "alphabetical"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "service.address"
+                                                },
                                                 "a4deb030-155e-4f8c-b0b1-d1c21bf54d84": {
                                                     "customLabel": true,
                                                     "dataType": "number",
@@ -340,7 +398,7 @@
                                                         "query": "package_registry.number_indexed_packages : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Number of Indexed Packages",
+                                                    "label": "Indexed Packages",
                                                     "operationType": "max",
                                                     "params": {
                                                         "format": {
@@ -387,14 +445,23 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "a4deb030-155e-4f8c-b0b1-d1c21bf54d84",
+                                "columns": [
+                                    {
+                                        "columnId": "a4deb030-155e-4f8c-b0b1-d1c21bf54d84"
+                                    },
+                                    {
+                                        "columnId": "216d444d-de10-4d5f-ba10-b8978c171ebf",
+                                        "isTransposed": false,
+                                        "width": 540.5
+                                    }
+                                ],
                                 "layerId": "e9bb8b0a-b3fd-4655-8e7c-b9238e62f553",
                                 "layerType": "data"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsMetric"
+                        "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
                     "hidePanelTitles": false
@@ -402,8 +469,8 @@
                 "gridData": {
                     "h": 7,
                     "i": "e4ae30a4-2a67-4416-9943-74d28f744bf0",
-                    "w": 17,
-                    "x": 31,
+                    "w": 16,
+                    "x": 32,
                     "y": 6
                 },
                 "panelIndex": "e4ae30a4-2a67-4416-9943-74d28f744bf0",
@@ -1847,6 +1914,122 @@
                             },
                             {
                                 "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-cfdc23c6-0606-45ea-b1d2-782ba8103f82",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "cfdc23c6-0606-45ea-b1d2-782ba8103f82": {
+                                            "columnOrder": [
+                                                "8fd0c071-446c-461b-94eb-3b62463ced55",
+                                                "1038f5c5-b026-4c78-9b74-ade6c384e9ea",
+                                                "ba7c6ffb-1ef3-490d-9563-090033590283"
+                                            ],
+                                            "columns": {
+                                                "1038f5c5-b026-4c78-9b74-ade6c384e9ea": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "8fd0c071-446c-461b-94eb-3b62463ced55": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of package_registry.labels.indexer",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ba7c6ffb-1ef3-490d-9563-090033590283",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "package_registry.labels.indexer"
+                                                },
+                                                "ba7c6ffb-1ef3-490d-9563-090033590283": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "95th percentile of package_registry.indexer.get_duration_seconds.histogram",
+                                                    "operationType": "percentile",
+                                                    "params": {
+                                                        "percentile": 95
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "package_registry.indexer.get_duration_seconds.histogram"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "gridConfig": {
+                                    "isCellLabelVisible": false,
+                                    "isXAxisLabelVisible": true,
+                                    "isYAxisLabelVisible": true,
+                                    "type": "lens_heatmap_grid"
+                                },
+                                "layerId": "cfdc23c6-0606-45ea-b1d2-782ba8103f82",
+                                "layerType": "data",
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "type": "lens_heatmap_legendConfig"
+                                },
+                                "shape": "heatmap",
+                                "valueAccessor": "ba7c6ffb-1ef3-490d-9563-090033590283",
+                                "xAccessor": "1038f5c5-b026-4c78-9b74-ade6c384e9ea",
+                                "yAccessor": "8fd0c071-446c-461b-94eb-3b62463ced55"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsHeatmap"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "d237dd46-1074-47ee-8186-3957b956acd9",
+                    "w": 17,
+                    "x": 0,
+                    "y": 68
+                },
+                "panelIndex": "d237dd46-1074-47ee-8186-3957b956acd9",
+                "title": "EPR Indexer - Get duration seconds per indexer - Percentile 95",
+                "type": "lens",
+                "version": "8.0.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-f6bb5ccc-a32c-410c-9002-90a9c7d1bfa5",
                                 "type": "index-pattern"
                             }
@@ -2099,122 +2282,6 @@
                 "title": "EPR Storage Indexer - Update Index seconds - Percentile 95",
                 "type": "lens",
                 "version": "8.0.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-cfdc23c6-0606-45ea-b1d2-782ba8103f82",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "cfdc23c6-0606-45ea-b1d2-782ba8103f82": {
-                                            "columnOrder": [
-                                                "8fd0c071-446c-461b-94eb-3b62463ced55",
-                                                "1038f5c5-b026-4c78-9b74-ade6c384e9ea",
-                                                "ba7c6ffb-1ef3-490d-9563-090033590283"
-                                            ],
-                                            "columns": {
-                                                "1038f5c5-b026-4c78-9b74-ade6c384e9ea": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "8fd0c071-446c-461b-94eb-3b62463ced55": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top values of package_registry.labels.indexer",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "ba7c6ffb-1ef3-490d-9563-090033590283",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 3
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "package_registry.labels.indexer"
-                                                },
-                                                "ba7c6ffb-1ef3-490d-9563-090033590283": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "95th percentile of package_registry.indexer.get_duration_seconds.histogram",
-                                                    "operationType": "percentile",
-                                                    "params": {
-                                                        "percentile": 95
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "package_registry.indexer.get_duration_seconds.histogram"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "gridConfig": {
-                                    "isCellLabelVisible": false,
-                                    "isXAxisLabelVisible": true,
-                                    "isYAxisLabelVisible": true,
-                                    "type": "lens_heatmap_grid"
-                                },
-                                "layerId": "cfdc23c6-0606-45ea-b1d2-782ba8103f82",
-                                "layerType": "data",
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right",
-                                    "type": "lens_heatmap_legendConfig"
-                                },
-                                "shape": "heatmap",
-                                "valueAccessor": "ba7c6ffb-1ef3-490d-9563-090033590283",
-                                "xAccessor": "1038f5c5-b026-4c78-9b74-ade6c384e9ea",
-                                "yAccessor": "8fd0c071-446c-461b-94eb-3b62463ced55"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsHeatmap"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "d237dd46-1074-47ee-8186-3957b956acd9",
-                    "w": 17,
-                    "x": 0,
-                    "y": 68
-                },
-                "panelIndex": "d237dd46-1074-47ee-8186-3957b956acd9",
-                "title": "EPR Indexer - Get duration seconds per indexer - Percentile 95",
-                "type": "lens",
-                "version": "8.0.0"
             }
         ],
         "refreshInterval": {
@@ -2246,6 +2313,11 @@
         {
             "id": "metrics-*",
             "name": "e1615771-2a85-4842-95fe-2ddab2f0fa5f:control_e1615771-2a85-4842-95fe-2ddab2f0fa5f_2_index_pattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "e1615771-2a85-4842-95fe-2ddab2f0fa5f:control_e1615771-2a85-4842-95fe-2ddab2f0fa5f_3_index_pattern",
             "type": "index-pattern"
         },
         {
@@ -2390,6 +2462,16 @@
         },
         {
             "id": "metrics-*",
+            "name": "d237dd46-1074-47ee-8186-3957b956acd9:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d237dd46-1074-47ee-8186-3957b956acd9:indexpattern-datasource-layer-cfdc23c6-0606-45ea-b1d2-782ba8103f82",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
             "name": "e548a7b4-1c09-4ae2-a9b8-e9eddab932c9:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
@@ -2406,16 +2488,6 @@
         {
             "id": "metrics-*",
             "name": "2b137c7a-b65d-40c1-8ded-f1f0b3a467f1:indexpattern-datasource-layer-f29a1076-32b0-4d8b-8205-f1cbe358a72a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "d237dd46-1074-47ee-8186-3957b956acd9:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "d237dd46-1074-47ee-8186-3957b956acd9:indexpattern-datasource-layer-cfdc23c6-0606-45ea-b1d2-782ba8103f82",
             "type": "index-pattern"
         }
     ],
