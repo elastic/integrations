@@ -55,13 +55,32 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.additional_details.shield_alert.alert_summary.historical_period.date_range.start_date | Start of historical period for calculation of historical expectation | keyword |
 | box.additional_details.shield_alert.alert_summary.historical_period.download_size | Volume of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content. | keyword |
 | box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count | Number of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content. | long |
-| box.additional_details.shield_alert.alert_summary.upload_activity.event_type | Type of event, e.g. "Upload" | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.event_type | Type of event, e.g. `Upload` | keyword |
 | box.additional_details.shield_alert.alert_summary.upload_activity.item_id | ID of item | keyword |
 | box.additional_details.shield_alert.alert_summary.upload_activity.item_name | Name of item | keyword |
 | box.additional_details.shield_alert.alert_summary.upload_activity.item_path | Path to Item | keyword |
 | box.additional_details.shield_alert.alert_summary.upload_activity.item_type | Type of Item | keyword |
 | box.additional_details.shield_alert.alert_summary.upload_activity.occurred_at | Time of Upload | keyword |
-| box.additional_details.shield_alert.malware_info.categories | Malware Category e.g. Adware, Spyware | keyword |
+| box.additional_details.shield_alert.malware_info.categories | Array of Malware Categories e.g. `Adware`, `Spyware` | keyword |
+| box.additional_details.shield_alert.malware_info.description | Describes the Malware | keyword |
+| box.additional_details.shield_alert.malware_info.family | Malware Family | keyword |
+| box.additional_details.shield_alert.malware_info.file_created | Date of file creation | date |
+| box.additional_details.shield_alert.malware_info.file_created_by.email | Email of file creator | keyword |
+| box.additional_details.shield_alert.malware_info.file_created_by.id | ID of file creator | long |
+| box.additional_details.shield_alert.malware_info.file_created_by.name | Display name of file creator | keyword |
+| box.additional_details.shield_alert.malware_info.file_hash | File hash | keyword |
+| box.additional_details.shield_alert.malware_info.file_hash_type | Hash type, e.g. `SHA-1`` | keyword |
+| box.additional_details.shield_alert.malware_info.file_id | File ID | long |
+| box.additional_details.shield_alert.malware_info.file_name | File name | keyword |
+| box.additional_details.shield_alert.malware_info.file_size_bytes | File size in bytes | long |
+| box.additional_details.shield_alert.malware_info.file_version | File version | long |
+| box.additional_details.shield_alert.malware_info.file_version_uploaded | Date this version of file was uploaded | date |
+| box.additional_details.shield_alert.malware_info.file_version_uploaded_by.email | Email of file uploader | keyword |
+| box.additional_details.shield_alert.malware_info.file_version_uploaded_by.id | ID of file uploader | long |
+| box.additional_details.shield_alert.malware_info.file_version_uploaded_by.name | Display name of file uploader | keyword |
+| box.additional_details.shield_alert.malware_info.malware_name | Malware name | keyword |
+| box.additional_details.shield_alert.malware_info.status | Malware status e.g. `Malicious` | keyword |
+| box.additional_details.shield_alert.malware_info.tags | Array of Malware Tags e.g. `FILE_MALICIOUS_EXECUTION`` | keyword |
 | box.created_at | When the event object was created | date |
 | box.created_by.id | The unique identifier for the connection user. | keyword |
 | box.created_by.login | The primary email address of the connection user. Maps from \*\*.login. |  |
