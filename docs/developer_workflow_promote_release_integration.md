@@ -6,6 +6,7 @@
 * There is a PR open to the [Package Storage/snapshot](https://github.com/elastic/package-storage/tree/snapshot/packages) with your built integration. This will be done automatically by the Integrations repository CI when it detects an unreleased version of your package in the Integrations repository.
 * You have a fork of `https://github.com/elastic/package-storage` in your
   account.
+* Setup a Github token and place the hash in `$HOME/.elastic/github.token`. 
 
 ## Steps
 
