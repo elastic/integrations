@@ -69,10 +69,12 @@ processors:
       field: source.port
       type: long
       ignore_missing: true
+  - remove:
+      field: source.port
+      if: "ctx?.source?.port == 0"
   - set:
       field: network.transport
-      value: "tcp/udp"
-      if: "ctx?.istio?.access?.protocol == null"
+      value: "tcp"
   - set:
       field: network.protocol
       value: "http"
