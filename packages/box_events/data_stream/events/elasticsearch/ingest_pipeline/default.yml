@@ -17,6 +17,7 @@ processors:
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
+      if: "ctx?.box?.source != null"
   - rename:
       field: box.session_id
       target_field: box.session.id
@@ -109,6 +110,13 @@ processors:
       target_field: file.hash.sha1
       ignore_missing: true
 # Box Shield can add these fields 
+  - date:
+      field: box.created_at
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd'T'hh:mm:ssXXX
+      if: "ctx?.box?.additional_details != null"
   - rename:
       field: box.ip_address
       target_field: client.ip

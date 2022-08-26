@@ -202,13 +202,14 @@ To access the `events` endpoint, the user making the API call will need to have 
 | tags | List of keywords used to tag each event. | keyword |
 | threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 | threat.enrichments.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.enrichments.indicator.geo.location | Longitude and latitude. | geo_point |
+| threat.enrichments.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.enrichments.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. Expected values are:   \* Not Specified   \* None   \* Low   \* Medium   \* High | keyword |
 | threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
 | threat.indicator.geo.city_name | City name. | keyword |
 | threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
-| threat.indicator.geo.location.lat | Longitude and latitude. | geo_point |
-| threat.indicator.geo.location.lon | Longitude and latitude. | geo_point |
+| threat.indicator.geo.location | Longitude and latitude. | geo_point |
 | threat.indicator.geo.region_name | Region name. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | user.effective.email | User email address. | keyword |
