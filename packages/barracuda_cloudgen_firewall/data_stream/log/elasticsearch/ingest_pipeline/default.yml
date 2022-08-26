@@ -29,6 +29,11 @@ processors:
   - json:
       field: event.original
       target_field: json
+  - remove:
+      field:
+        - source.address
+        - '@timestamp'
+      ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "firewall" }}'
       if: ctx.lumberjack?.type == 'ngfw-act'

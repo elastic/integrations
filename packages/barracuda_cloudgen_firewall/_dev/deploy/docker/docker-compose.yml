@@ -7,4 +7,4 @@ services:
     volumes:
       - ./sample_logs:/sample_logs:ro
       - ./config:/config:ro
-    command: /bin/sh -c "sleep 10s && filebeat -c /config/filebeat.docker.yml -e -d '*'"
+    command: /bin/sh -c "while (filebeat -c /config/filebeat.docker.yml test output); [ $$? -ne 0 ]; do echo ''; done  && filebeat -c /config/filebeat.docker.yml -e -d '*'"
