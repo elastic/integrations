@@ -15,13 +15,38 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Azure Network Watcher Deletion",
-        "note": "## Setup\n\nThe Azure Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "note": "",
         "query": "event.dataset:azure.activitylogs and azure.activitylogs.operation_name:\"MICROSOFT.NETWORK/NETWORKWATCHERS/DELETE\" and event.outcome:(Success or success)\n",
         "references": [
             "https://docs.microsoft.com/en-us/azure/network-watcher/network-watcher-monitoring-overview"
         ],
+        "related_integrations": [
+            {
+                "integration": "activitylogs",
+                "package": "azure",
+                "version": "0.12.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.activitylogs.operation_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
         "risk_score": 47,
         "rule_id": "323cb487-279d-4218-bcbd-a568efe930c6",
+        "setup": "The Azure Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
         "severity": "medium",
         "tags": [
             "Elastic",
@@ -57,7 +82,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 9
+        "version": 100
     },
     "id": "323cb487-279d-4218-bcbd-a568efe930c6",
     "type": "security-rule"
