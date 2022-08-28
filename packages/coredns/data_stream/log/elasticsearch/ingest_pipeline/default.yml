@@ -16,14 +16,14 @@ processors:
   - grok:
       field: event.original
       patterns:
-      - '\[%{LOGLEVEL:log.level}\] \[?%{IP:source.address}\]?:%{POSINT:source.port:long} - %{POSINT:dns.id} "%{WORD:dns.question.type} %{WORD:dns.question.class} 
-         %{IPORHOST:dns.question.name}\. %{WORD:network.transport} %{POSINT:source.bytes:long} %{WORD:coredns.log.edns0.do:boolean} %{POSINT:coredns.log.edns0.buffer_size:long}" 
+      - '\[%{LOGLEVEL:log.level}\] \[?%{IP:source.address}\]?:%{POSINT:source.port:long} - %{POSINT:dns.id} "%{WORD:dns.question.type} %{WORD:dns.question.class}
+         %{IPORHOST:dns.question.name}\. %{WORD:network.transport} %{POSINT:source.bytes:long} %{WORD:coredns.log.edns0.do:boolean} %{POSINT:coredns.log.edns0.buffer_size:long}"
          %{WORD:dns.response_code} %{NOTSPACE:dns.header_flags} %{POSINT:destination.bytes:long} %{NOTSPACE:event.duration}s( "%{NONNEGINT:dns.op_code}")?'
       ignore_missing: true
       ecs_compatibility: v1
-      on_failure:
-        - drop:
-            description: Drop if a log other than query
+    #   on_failure:
+    #     - drop:
+    #         description: Drop if a log other than query
   - lowercase:
       field: network.transport
       ignore_missing: true
