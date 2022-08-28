@@ -13,7 +13,7 @@ eval "$(elastic-package stack shellinit)"
 
 script_dir=$(dirname ${BASH_SOURCE[0]})
 
-package_version=`cat $script_dir/../../manifest.yml | sed -nr 's/^version: (.*)$/\1/p'`
+package_version=`cat $script_dir/../../../../manifest.yml | sed -nr 's/^version: (.*)$/\1/p'`
 es_service_container=`docker ps --filter "publish=9201" --format "{{print .Names}}"`
 elastic_agent_logs_dir=/tmp/service_logs
 policy_name=script-generated-elasticsearch-policy
