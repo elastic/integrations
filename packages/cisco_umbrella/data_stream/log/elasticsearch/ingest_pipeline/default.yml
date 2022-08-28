@@ -71,8 +71,7 @@ processors:
       field: event.original
       target_fields:
         - cisco.umbrella._tmp.time
-        - cisco.umbrella.computer_name
-        - cisco.umbrella.identities
+        - user.name
         - source.address
         - source.nat.ip
         - destination.address
@@ -94,6 +93,7 @@ processors:
         - cisco.umbrella.amp_score
         - cisco.umbrella.identity_types
         - cisco.umbrella.blocked_categories
+        - cisco.umbrella.identities
         - cisco.umbrella.identity_types
         - cisco.umbrella.request_method
         - cisco.umbrella.dlp_status
@@ -164,7 +164,7 @@ processors:
       field: cisco.umbrella.identities
       separator: ","
       preserve_trailing: false
-      if: "ctx?.log?.file?.path.contains('dnslogs') && ctx?.cisco?.umbrella?.identities != null"
+      if: "(ctx?.log?.file?.path.contains('dnslogs') || ctx?.log?.file?.path.contains('proxylogs')) && ctx?.cisco?.umbrella?.identities != null"
 
   - split:
       field: cisco.umbrella.categories
