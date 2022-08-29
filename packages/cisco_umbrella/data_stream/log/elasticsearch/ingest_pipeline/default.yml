@@ -71,7 +71,7 @@ processors:
       field: event.original
       target_fields:
         - cisco.umbrella._tmp.time
-        - user.name
+        - cisco.umbrella.identity
         - source.address
         - source.nat.ip
         - destination.address
@@ -180,6 +180,7 @@ processors:
       separator: ",\\s*"
       preserve_trailing: false
       if: "ctx.cisco?.umbrella?.identity_types != null"
+    
   ######################
   # General ECS Fields #
   ######################
@@ -417,6 +418,10 @@ processors:
             addRelatedUser(ctx, cisco_identity);
           }
         }
+  - pipeline:
+      name: '{{ _config.identity_pipeline }}'
+      ignore_failure: true
+      if: ctx._config?.identity_pipeline != null
 
   ###########
   # Cleanup #
@@ -427,6 +432,7 @@ processors:
         - cisco.umbrella.direction
         - cisco.umbrella.action
         - cisco.umbrella.verdict
+        - _config
       ignore_missing: true
 
   - remove:
