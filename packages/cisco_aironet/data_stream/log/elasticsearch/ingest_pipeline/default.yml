@@ -78,22 +78,26 @@ processors:
       formats:
         - "MMM d HH:mm:ss.SSS"
 
-  #
   # Parse out IP addresses from Logs
-  #
   - grok:
       field: message
       if: "ctx.event?.reason == 'ENTRY_CREATED' || ctx.event?.reason == 'ENTRY_DELETED'"
       patterns:
         - "((Entry created)|(Entry deleted)) A=%{IP:client.ip}"
-  #
   # Parse out User addresses from Logs
-  #
   - grok:
       field: message
       if: "ctx.event?.reason == 'AAA_AUTH_ADMIN_USER'"
       patterns:
         - "Authentication succeeded for admin user '%{DATA:user.name}' on %{IP:client.ip}"
+
+  # Client MAC
+  - grok:
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - "client %{MAC:client.mac}"
 
   # IP Geolocation Lookup
   - geoip:
