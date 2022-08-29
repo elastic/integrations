@@ -11,6 +11,9 @@ datasets for receiving logs over syslog or read from a file:
 
 The `log` dataset collects the Cisco Aironet WLC logs.
 
+[Log Documentation](https://www.cisco.com/c/en/us/support/wireless/wireless-lan-controller-software/products-system-message-guides-list.html)
+
+
 {{event "log"}}
 
 {{fields "log"}}
