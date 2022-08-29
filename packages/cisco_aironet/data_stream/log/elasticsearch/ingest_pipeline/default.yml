@@ -15,7 +15,7 @@ processors:
         - "%{SYSLOG_HEADER}:\\s%%{GREEDYDATA:_temp_.full_message}"
         - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
-        SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.title}:\\s%{AIRONET_DATE:_temp_.raw_date}"
+        SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE:_temp_.raw_date}"
         SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.priority:int}>"
         AIRONET_DATE: "%{MONTH} %{MONTHDAY} %{TIME}"
   - script:
@@ -32,8 +32,7 @@ processors:
   - grok:
       field: _temp_.full_message
       patterns:
-        - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.reason}: %{DATA:process.name}:%{INT:process.pid:long} %{GREEDYDATA:message}"
-        #- "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.reason}: %{GREEDYDATA:message}"
+        - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.reason}: %{DATA}:%{INT} %{GREEDYDATA:message}"
 
   #
   # Set log.level
@@ -95,6 +94,30 @@ processors:
       if: "ctx.event?.reason == 'AAA_AUTH_ADMIN_USER'"
       patterns:
         - "Authentication succeeded for admin user '%{DATA:user.name}' on %{IP:client.ip}"
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
 
 
   - remove:
