@@ -4,7 +4,11 @@
 
 The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event Logs. Cloudflare is content delivery network and DDoS mitigation company. Cloudflare is a global network designed to make everything you connect to the Internet secure, private, fast, and reliable. Secure your websites, APIs, and Internet applications. Protect corporate networks, employees, and devices. Write and deploy code that runs on the network edge.
 
-Use the Cloudflare Logpush integration to collect and parse data from the HTTP Endpoint, AWS S3 Bucket or AWS SQS. Then visualise that data in Kibana.
+The Cloudflare Logpush integration can be used in three different modes to collect data:
+- HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent
+- AWS S3 polling mode - Cloudflare writes data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files
+- AWS S3 SQS mode - Cloudflare writes data to S3, S3 pushes a new object notification to SQS, Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple Agents can be used in this mode.
+
 
 For example, you could use the data from this integration to know about which websites have the highest traffic, which areas have the highest network traffic, or mitigation statistics.
 
@@ -1926,3 +1930,4 @@ An example event for `spectrum_event` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
+
