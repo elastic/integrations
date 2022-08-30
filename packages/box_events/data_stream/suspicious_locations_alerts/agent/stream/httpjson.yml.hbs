@@ -20,6 +20,10 @@ response.split:
   target: body.entries
   type: array
   keep_parent: false
+  split:
+    target: body.additional_details.shield_alert.alert_summary.alert_activities
+    type: array
+    keep_parent: true
 cursor:
   next_stream_position:
     value: '[[.last_response.body.next_stream_position]]'
@@ -37,5 +41,5 @@ processors:
 - drop_event:
     when:
       not:
-        has_fields: ['box.source']
+        has_fields: ['box.additional_details.shield_alert.alert_summary.alert_activities']
 {{/if}}
