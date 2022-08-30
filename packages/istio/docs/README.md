@@ -1,4 +1,4 @@
-# Traefik Integration
+# Istio Integration
 
 This integration ingest access logs created by the [Istio](https://istio.io/) service mesh.
 
