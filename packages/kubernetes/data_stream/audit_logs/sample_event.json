@@ -1,48 +1,273 @@
 {
     "kubernetes": {
         "audit": {
-            "auditID": "caf057eb-c8ae-4127-8eec-33c5732a95f6",
-            "requestReceivedTimestamp": "2021-12-15T10:56:29.983595Z",
-            "stageTimestamp": "2021-12-15T10:56:29.983595Z",
-            "sourceIPs": [
-                "172.20.0.2"
-            ],
-            "apiVersion": "audit.k8s.io/v1",
-            "stage": "RequestReceived",
-            "level": "Metadata",
+            "requestReceivedTimestamp": "2022-07-05T16:08:04.196323Z",
+            "auditID": "8b8398cd-1d93-4659-805e-0c9d616aa960",
+            "objectRef": {
+                "apiVersion": "v1",
+                "resource": "pods",
+                "namespace": "kube-system"
+            },
+            "level": "RequestResponse",
             "kind": "Event",
-            "verb": "get",
-            "userAgent": "kube-probe/1.21",
-            "requestURI": "/readyz",
+            "verb": "create",
+            "annotations": {
+                "authorization_k8s_io/decision": "allow",
+                "authorization_k8s_io/reason": "RBAC: allowed by ClusterRoleBinding \"system:controller:daemon-set-controller\" of ClusterRole \"system:controller:daemon-set-controller\" to ServiceAccount \"daemon-set-controller/kube-system\""
+            },
+            "userAgent": "k3s/v1.23.6+k3s1 (linux/amd64) kubernetes/418c3fa/system:serviceaccount:kube-system:daemon-set-controller",
+            "requestURI": "/api/v1/namespaces/kube-system/pods",
+            "responseStatus": {
+                "reason": "Forbidden",
+                "metadata": {},
+                "code": 403,
+                "status": "Failure"
+            },
+            "stageTimestamp": "2022-07-05T16:08:04.199050Z",
+            "sourceIPs": [
+                "127.0.0.1"
+            ],
+            "responseObject": {
+                "reason": "Forbidden",
+                "apiVersion": "v1",
+                "code": 403,
+                "kind": "Status",
+                "details": {
+                    "kind": "pods",
+                    "name": "elastic-agent-"
+                },
+                "message": "pods \"elastic-agent-\" is forbidden: error looking up service account kube-system/elastic-agent: serviceaccount \"elastic-agent\" not found",
+                "status": "Failure"
+            },
+            "apiVersion": "audit.k8s.io/v1",
+            "stage": "ResponseComplete",
+            "requestObject": {
+                "apiVersion": "v1",
+                "kind": "Pod",
+                "spec": {
+                    "dnsPolicy": "ClusterFirstWithHostNet",
+                    "terminationGracePeriodSeconds": 30,
+                    "enableServiceLinks": true,
+                    "hostNetwork": true,
+                    "serviceAccountName": "elastic-agent",
+                    "volumes": [
+                        {
+                            "name": "proc",
+                            "hostPath": {
+                                "path": "/proc",
+                                "type": ""
+                            }
+                        },
+                        {
+                            "name": "cgroup",
+                            "hostPath": {
+                                "path": "/sys/fs/cgroup",
+                                "type": ""
+                            }
+                        },
+                        {
+                            "name": "varlibdockercontainers",
+                            "hostPath": {
+                                "path": "/var/lib/docker/containers",
+                                "type": ""
+                            }
+                        },
+                        {
+                            "name": "varlog",
+                            "hostPath": {
+                                "path": "/var/log",
+                                "type": ""
+                            }
+                        }
+                    ],
+                    "serviceAccount": "elastic-agent",
+                    "securityContext": {},
+                    "restartPolicy": "Always",
+                    "tolerations": [
+                        {
+                            "effect": "NoSchedule",
+                            "key": "node-role.kubernetes.io/master"
+                        },
+                        {
+                            "effect": "NoExecute",
+                            "operator": "Exists",
+                            "key": "node.kubernetes.io/not-ready"
+                        },
+                        {
+                            "effect": "NoExecute",
+                            "operator": "Exists",
+                            "key": "node.kubernetes.io/unreachable"
+                        },
+                        {
+                            "effect": "NoSchedule",
+                            "key": "node.kubernetes.io/disk-pressure",
+                            "operator": "Exists"
+                        },
+                        {
+                            "effect": "NoSchedule",
+                            "operator": "Exists",
+                            "key": "node.kubernetes.io/memory-pressure"
+                        },
+                        {
+                            "effect": "NoSchedule",
+                            "key": "node.kubernetes.io/pid-pressure",
+                            "operator": "Exists"
+                        },
+                        {
+                            "effect": "NoSchedule",
+                            "key": "node.kubernetes.io/unschedulable",
+                            "operator": "Exists"
+                        },
+                        {
+                            "effect": "NoSchedule",
+                            "key": "node.kubernetes.io/network-unavailable",
+                            "operator": "Exists"
+                        }
+                    ],
+                    "containers": [
+                        {
+                            "image": "docker.elastic.co/beats/elastic-agent:8.2.3",
+                            "imagePullPolicy": "IfNotPresent",
+                            "terminationMessagePolicy": "File",
+                            "terminationMessagePath": "/dev/termination-log",
+                            "name": "elastic-agent",
+                            "resources": {
+                                "requests": {
+                                    "memory": "200Mi",
+                                    "cpu": "100m"
+                                },
+                                "limits": {
+                                    "memory": "500Mi"
+                                }
+                            },
+                            "securityContext": {
+                                "runAsUser": 0
+                            },
+                            "env": [
+                                {
+                                    "name": "FLEET_ENROLL",
+                                    "value": "1"
+                                },
+                                {
+                                    "name": "FLEET_INSECURE",
+                                    "value": "true"
+                                },
+                                {
+                                    "name": "FLEET_URL",
+                                    "value": "https://e78d2f7e27be4550bc6203c622e385d2.fleet.us-central1.gcp.cloud.es.io:443"
+                                },
+                                {
+                                    "name": "FLEET_ENROLLMENT_TOKEN",
+                                    "value": "dHplWVpvQUJoQnA5SHVidTQzbkg6UXE0Rlo0QVlSTm1VdXh4c0pvVVdsUQ=="
+                                },
+                                {
+                                    "name": "KIBANA_HOST",
+                                    "value": "http://kibana:5601"
+                                },
+                                {
+                                    "name": "KIBANA_FLEET_USERNAME",
+                                    "value": "elastic"
+                                },
+                                {
+                                    "name": "KIBANA_FLEET_PASSWORD",
+                                    "value": "changeme"
+                                },
+                                {
+                                    "name": "NODE_NAME",
+                                    "valueFrom": {
+                                        "fieldRef": {
+                                            "apiVersion": "v1",
+                                            "fieldPath": "spec.nodeName"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "POD_NAME",
+                                    "valueFrom": {
+                                        "fieldRef": {
+                                            "apiVersion": "v1",
+                                            "fieldPath": "metadata.name"
+                                        }
+                                    }
+                                }
+                            ],
+                            "volumeMounts": [
+                                {
+                                    "mountPath": "/hostfs/proc",
+                                    "name": "proc",
+                                    "readOnly": true
+                                },
+                                {
+                                    "mountPath": "/hostfs/sys/fs/cgroup",
+                                    "name": "cgroup",
+                                    "readOnly": true
+                                },
+                                {
+                                    "mountPath": "/var/lib/docker/containers",
+                                    "name": "varlibdockercontainers",
+                                    "readOnly": true
+                                },
+                                {
+                                    "mountPath": "/var/log",
+                                    "name": "varlog",
+                                    "readOnly": true
+                                }
+                            ]
+                        }
+                    ],
+                    "schedulerName": "default-scheduler",
+                    "affinity": {
+                        "nodeAffinity": {
+                            "requiredDuringSchedulingIgnoredDuringExecution": {
+                                "nodeSelectorTerms": [
+                                    {
+                                        "matchFields": [
+                                            {
+                                                "values": [
+                                                    "k3d-iammai-cluster2-server-0"
+                                                ],
+                                                "key": "metadata.name",
+                                                "operator": "In"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "status": {}
+            },
             "user": {
+                "uid": "13eb3e11-32ca-4dfe-9425-cb12db38daa0",
                 "groups": [
-                    "system:unauthenticated"
+                    "system:serviceaccounts",
+                    "system:serviceaccounts:kube-system",
+                    "system:authenticated"
                 ],
-                "username": "system:anonymous"
+                "username": "system:serviceaccount:kube-system:daemon-set-controller"
             }
         }
     },
+    "input": {
+        "type": "filestream"
+    },
     "agent": {
         "name": "kind-control-plane",
-        "id": "71161f26-4155-4ce9-bbe5-ae6630f2aaef",
-        "ephemeral_id": "4bd4dadb-ac1e-4e93-b842-412832374e31",
+        "id": "c047e83b-31e8-4cd3-94e9-6cc77567c2f7",
         "type": "filebeat",
-        "version": "8.1.0"
+        "ephemeral_id": "37c54904-6a9d-455a-812f-4c3245fa6093",
+        "version": "8.4.0"
+    },
+    "@timestamp": "2022-08-30T07:22:30.601Z",
+    "ecs": {
+        "version": "8.0.0"
     },
     "log": {
         "file": {
-            "path": "/var/log/kubernetes/kube-apiserver-audit.log"
+            "path": "/var/log/kubernetes/kube-apiserver-audit-1.log"
         },
-        "offset": 27890492
-    },
-    "elastic_agent": {
-        "id": "71161f26-4155-4ce9-bbe5-ae6630f2aaef",
-        "version": "8.1.0",
-        "snapshot": true
-    },
-    "@timestamp": "2021-12-15T10:56:30.139Z",
-    "ecs": {
-        "version": "8.0.0"
+        "offset": 8398
     },
     "data_stream": {
         "namespace": "default",
@@ -52,28 +277,43 @@
     "host": {
         "hostname": "kind-control-plane",
         "os": {
-            "kernel": "5.10.47-linuxkit",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
+            "kernel": "5.10.104-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
             "type": "linux",
-            "version": "7 (Core)",
-            "platform": "centos"
+            "version": "20.04.4 LTS (Focal Fossa)",
+            "platform": "ubuntu"
         },
-        "containerized": true,
+        "containerized": false,
         "ip": [
-            "10.244.0.1"
+            "10.244.0.1",
+            "10.244.0.1",
+            "10.244.0.1",
+            "172.30.0.3",
+            "172.18.0.2",
+            "fc00:f853:ccd:e793::2",
+            "fe80::42:acff:fe12:2"
         ],
         "name": "kind-control-plane",
-        "id": "96ab34309605523f5f970f5653558337",
+        "id": "782b0078ac574f9f80fc102182493841",
         "mac": [
-            "c6:7a:a1:3b:4b:43"
+            "02:42:ac:12:00:02",
+            "02:42:ac:1e:00:03",
+            "3a:ba:49:df:78:35",
+            "86:c7:fe:c8:fa:22",
+            "d6:48:c1:a2:a4:15"
         ],
         "architecture": "x86_64"
     },
+    "elastic_agent": {
+        "id": "c047e83b-31e8-4cd3-94e9-6cc77567c2f7",
+        "version": "8.4.0",
+        "snapshot": false
+    },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2021-12-15T10:56:31Z",
+        "ingested": "2022-08-30T07:22:31Z",
         "dataset": "kubernetes.audit_logs"
     }
 }
