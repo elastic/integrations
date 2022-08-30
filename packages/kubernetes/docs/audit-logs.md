@@ -234,7 +234,7 @@ An example event for `audit` looks as following:
                                         "matchFields": [
                                             {
                                                 "values": [
-                                                    "k3d-iammai-cluster2-server-0"
+                                                    "cluster2-server-0"
                                                 ],
                                                 "key": "metadata.name",
                                                 "operator": "In"
