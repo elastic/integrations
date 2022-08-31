@@ -174,7 +174,7 @@ An example event for `audit` looks as following:
 | kubernetes.audit.requestObject.rules |  | nested |
 | kubernetes.audit.requestObject.spec.containers.image |  | text |
 | kubernetes.audit.requestObject.spec.containers.securityContext.allowPrivilegeEscalation |  | boolean |
-| kubernetes.audit.requestObject.spec.containers.securityContext.capabilities.add |  | nested |
+| kubernetes.audit.requestObject.spec.containers.securityContext.capabilities.add |  | keyword |
 | kubernetes.audit.requestObject.spec.containers.securityContext.privileged |  | boolean |
 | kubernetes.audit.requestObject.spec.containers.securityContext.procMount |  | keyword |
 | kubernetes.audit.requestObject.spec.containers.securityContext.runAsGroup |  | integer |
