@@ -177,7 +177,8 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | abusech.malwarebazaar.anonymous | Identifies if the sample was submitted anonymously. | long |
-| abusech.malwarebazaar.code_sign | Code signing information for the sample. | keyword |
+| abusech.malwarebazaar.code_sign | Code signing information for the sample. | nested |
+| abusech.malwarebazaar.dhash_icon | In case the file is a PE executable: dhash of the samples icon | keyword |
 | abusech.malwarebazaar.intelligence.downloads | Number of downloads from MalwareBazaar. | long |
 | abusech.malwarebazaar.intelligence.mail.Generic | Malware seen in generic spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.mail.IT | Malware seen in IT spam traffic. | keyword |
