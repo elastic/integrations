@@ -23,7 +23,7 @@ processors:
       value: [info]
   - date:
       field: json.Timestamp
-      if: ctx.json?.Timestamp != null && ctx.json?.Timestamp != ''
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX
@@ -42,7 +42,7 @@ processors:
       ignore_failure: true
   - date:
       field: json.ConnectTimestamp
-      if: ctx.json?.ConnectTimestamp != null && ctx.json?.ConnectTimestamp != ''
+      if: ctx.json?.ConnectTimestamp != null && ctx.json.ConnectTimestamp != ''
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX
@@ -56,9 +56,13 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      copy_from: cloudflare_logpush.spectrum_event.connect.time
+      ignore_failure: true
   - date:
       field: json.DisconnectTimestamp
-      if: ctx.json?.DisconnectTimestamp != null && ctx.json?.DisconnectTimestamp != ''
+      if: ctx.json?.DisconnectTimestamp != null && ctx.json.DisconnectTimestamp != ''
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX
@@ -72,6 +76,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      copy_from: cloudflare_logpush.spectrum_event.disconnect.time
+      ignore_failure: true
   - rename:
       field: json.Event
       target_field: cloudflare_logpush.spectrum_event.action

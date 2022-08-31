@@ -23,7 +23,7 @@ processors:
       value: [info]
   - date:
       field: json.EdgeEndTimestamp
-      if: ctx.json?.EdgeEndTimestamp != null && ctx.json?.EdgeEndTimestamp != ''
+      if: ctx.json?.EdgeEndTimestamp != null && ctx.json.EdgeEndTimestamp != ''
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX
@@ -39,7 +39,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.EdgeStartTimestamp
-      if: ctx.json?.EdgeStartTimestamp != null && ctx.json?.EdgeStartTimestamp != ''
+      if: ctx.json?.EdgeStartTimestamp != null && ctx.json.EdgeStartTimestamp != ''
       formats:
         - ISO8601
         - uuuu-MM-dd'T'HH:mm:ssX
@@ -55,7 +55,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.OriginResponseHTTPExpires
-      if: ctx.json?.OriginResponseHTTPExpires != null && ctx.json?.OriginResponseHTTPExpires != ''
+      if: ctx.json?.OriginResponseHTTPExpires != null && ctx.json.OriginResponseHTTPExpires != ''
       formats:
         - ISO8601
         - EEE, dd MMM yyyy HH:mm:ss zzz
@@ -72,7 +72,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.OriginResponseHTTPLastModified
-      if: ctx.json?.OriginResponseHTTPLastModified != null && ctx.json?.OriginResponseHTTPLastModified != ''
+      if: ctx.json?.OriginResponseHTTPLastModified != null && ctx.json.OriginResponseHTTPLastModified != ''
       timezone: UTC
       formats:
         - ISO8601
@@ -486,7 +486,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.OriginResponseHeaderReceiveDurationMs
-      target_field: cloudflare_logpush.http_request.origin.response.header_recive_duration.ms
+      target_field: cloudflare_logpush.http_request.origin.response.header_receive_duration.ms
       if: ctx.json?.OriginResponseHeaderReceiveDurationMs != ''
       type: long
       ignore_missing: true
@@ -624,6 +624,16 @@ processors:
       field: json.WorkerSubrequestCount
       target_field: cloudflare_logpush.http_request.worker.subrequest.count
       if: ctx.json?.WorkerSubrequestCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.WorkerWallTimeUs
+      target_field: cloudflare_logpush.http_request.worker.wall_time_us
+      if: ctx.json?.WorkerWallTimeUs != ''
       type: long
       ignore_missing: true
       on_failure:

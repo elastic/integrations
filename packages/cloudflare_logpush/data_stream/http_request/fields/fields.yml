@@ -259,7 +259,7 @@
                 - name: ms
                   type: long
                   description: Upstream response time, measured from the first datacenter that receives a request.
-            - name: header_recive_duration
+            - name: header_receive_duration
               type: group
               fields:
                 - name: ms
@@ -330,7 +330,7 @@
           fields:
             - name: id
               type: long
-              description: The Cloudflare datacenter used to connect to the origin server if Argo Smart Routing is used, Available in Logpush v2 only.
+              description: The Cloudflare datacenter used to connect to the origin server if Argo Smart Routing is used. Available in Logpush v2 only.
     - name: upper_tier
       type: group
       fields:
@@ -339,49 +339,52 @@
           fields:
             - name: id
               type: long
-              description: The “upper tier” datacenter that was checked for a cached copy if Tiered Cache is used, Available in Logpush v2 only.
+              description: The “upper tier” datacenter that was checked for a cached copy if Tiered Cache is used. Available in Logpush v2 only.
     - name: waf
       type: group
       fields:
         - name: action
           type: text
-          description: The “upper tier” datacenter that was checked for a cached copy if Tiered Cache is used, Available in Logpush v2 only.
+          description: Action taken by the WAF, if triggered.
         - name: flag
           type: text
-          description: Action taken by the WAF, if triggered.
+          description: Additional configuration flags.
         - name: matched_var
           type: text
-          description: Additional configuration flags.
+          description: The full name of the most-recently matched variable.
         - name: profile
           type: keyword
-          description: The full name of the most-recently matched variable.
+          description: The Profile of WAF. possible values are:- 'low', 'med', 'high'.
         - name: rule
           type: group
           fields:
             - name: id
               type: keyword
-              description: low | med | high.
+              description: ID of the applied WAF rule.
             - name: message
               type: text
-              description: ID of the applied WAF rule.
+              description: Rule message associated with the triggered rule.
     - name: worker
       type: group
       fields:
         - name: cpu_time
           type: long
-          description: Rule message associated with the triggered rule.
+          description: Amount of time in microseconds spent executing a worker, if any.
         - name: status
           type: text
-          description: Amount of time in microseconds spent executing a worker, if any.
+          description: Status returned from worker daemon.
         - name: subrequest
           type: group
           fields:
             - name: count
               type: long
-              description: Whether or not this request was a worker subrequest.
+              description: Number of subrequests issued by a worker when handling this request.
             - name: value
               type: boolean
-              description: Status returned from worker daemon.
+              description: Whether or not this request was a worker subrequest.
+        - name: wall_time_us
+          type: long
+          description: Real-time in microseconds elapsed between start and end of worker invocation.
     - name: zone
       type: group
       fields:

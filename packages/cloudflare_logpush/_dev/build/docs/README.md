@@ -2,19 +2,18 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event Logs. Cloudflare is content delivery network and DDoS mitigation company. Cloudflare is a global network designed to make everything you connect to the Internet secure, private, fast, and reliable. Secure your websites, APIs, and Internet applications. Protect corporate networks, employees, and devices. Write and deploy code that runs on the network edge.
+The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event Logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
 The Cloudflare Logpush integration can be used in three different modes to collect data:
-- HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent
-- AWS S3 polling mode - Cloudflare writes data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files
+- HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
+- AWS S3 polling mode - Cloudflare writes data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
 - AWS S3 SQS mode - Cloudflare writes data to S3, S3 pushes a new object notification to SQS, Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple Agents can be used in this mode.
 
-
-For example, you could use the data from this integration to know about which websites have the highest traffic, which areas have the highest network traffic, or mitigation statistics.
+For example, you could use the data from this integration to know which websites have the highest traffic, which areas have the highest network traffic, or observe mitigation statistics.
 
 ## Data streams
 
-The Cloudflare Logpush integration collects logs for seven types of events: Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event.
+The Cloudflare Logpush integration collects logs for seven types of events: Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics, and Spectrum Event.
 
 **Audit**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
 

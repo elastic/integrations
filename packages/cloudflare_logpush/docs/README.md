@@ -2,19 +2,18 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event Logs. Cloudflare is content delivery network and DDoS mitigation company. Cloudflare is a global network designed to make everything you connect to the Internet secure, private, fast, and reliable. Secure your websites, APIs, and Internet applications. Protect corporate networks, employees, and devices. Write and deploy code that runs on the network edge.
+The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event Logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
 The Cloudflare Logpush integration can be used in three different modes to collect data:
-- HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent
-- AWS S3 polling mode - Cloudflare writes data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files
+- HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
+- AWS S3 polling mode - Cloudflare writes data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
 - AWS S3 SQS mode - Cloudflare writes data to S3, S3 pushes a new object notification to SQS, Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple Agents can be used in this mode.
 
-
-For example, you could use the data from this integration to know about which websites have the highest traffic, which areas have the highest network traffic, or mitigation statistics.
+For example, you could use the data from this integration to know which websites have the highest traffic, which areas have the highest network traffic, or observe mitigation statistics.
 
 ## Data streams
 
-The Cloudflare Logpush integration collects logs for seven types of events: Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event.
+The Cloudflare Logpush integration collects logs for seven types of events: Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics, and Spectrum Event.
 
 **Audit**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
 
@@ -108,9 +107,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-30T20:19:48.000Z",
     "agent": {
-        "ephemeral_id": "9f11fd78-9486-41d4-9176-3438878b6bf4",
+        "ephemeral_id": "f57ac8df-84ed-4254-817e-b0a181f3d5ed",
         "hostname": "docker-fleet-agent",
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -160,7 +159,7 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -172,7 +171,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "cloudflare_logpush.audit",
         "id": "73fd39ed-5aab-4a2a-b93c-c9a4abf0c425",
-        "ingested": "2022-08-12T06:14:38Z",
+        "ingested": "2022-08-31T10:52:02Z",
         "kind": "event",
         "original": "{\"ActionResult\":true,\"ActionType\":\"token_create\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ActorIP\":\"81.2.69.142\",\"ActorType\":\"user\",\"ID\":\"73fd39ed-5aab-4a2a-b93c-c9a4abf0c425\",\"Interface\":\"UI\",\"Metadata\":{\"token_name\":\"test\",\"token_tag\":\"b7261c49a793a82678d12285f0bc1401\"},\"NewValue\":{\"key1\":\"value1\",\"key2\":\"value2\"},\"OldValue\":{\"key3\":\"value4\",\"key4\":\"value4\"},\"OwnerID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceType\":\"account\",\"When\":\"2021-11-30T20:19:48Z\"}",
         "outcome": "success",
@@ -297,9 +296,9 @@ An example event for `dns` looks as following:
 {
     "@timestamp": "2022-05-26T09:23:54.000Z",
     "agent": {
-        "ephemeral_id": "45f42612-384d-4609-90cc-b48855e806ad",
+        "ephemeral_id": "50c2ac93-c624-4bef-b80c-77630039e98d",
         "hostname": "docker-fleet-agent",
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -341,7 +340,7 @@ An example event for `dns` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -351,7 +350,7 @@ An example event for `dns` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.dns",
-        "ingested": "2022-08-12T06:15:28Z",
+        "ingested": "2022-08-31T10:52:56Z",
         "kind": "event",
         "original": "{\"ColoCode\":\"MRS\",\"EDNSSubnet\":\"1.128.0.0\",\"EDNSSubnetLength\":0,\"QueryName\":\"example.com\",\"QueryType\":65535,\"ResponseCached\":false,\"ResponseCode\":0,\"SourceIP\":\"175.16.199.0\",\"Timestamp\":\"2022-05-26T09:23:54Z\"}",
         "type": [
@@ -457,9 +456,9 @@ An example event for `firewall_event` looks as following:
 {
     "@timestamp": "2022-05-31T05:23:43.000Z",
     "agent": {
-        "ephemeral_id": "f73eaffc-d3b8-4692-bbe4-deea3d66564c",
+        "ephemeral_id": "92f1c3d9-9d4d-4bfb-8004-2146313cedd3",
         "hostname": "docker-fleet-agent",
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -534,7 +533,7 @@ An example event for `firewall_event` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -545,7 +544,7 @@ An example event for `firewall_event` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.firewall_event",
-        "ingested": "2022-08-12T06:16:21Z",
+        "ingested": "2022-08-31T10:53:47Z",
         "kind": "event",
         "original": "{\"Action\":\"block\",\"ClientASN\":15169,\"ClientASNDescription\":\"CLOUDFLARENET\",\"ClientCountry\":\"us\",\"ClientIP\":\"175.16.199.0\",\"ClientIPClass\":\"searchEngine\",\"ClientRefererHost\":\"abc.example.com\",\"ClientRefererPath\":\"/abc/checkout\",\"ClientRefererQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"ClientRefererScheme\":\"referer URL scheme\",\"ClientRequestHost\":\"xyz.example.com\",\"ClientRequestMethod\":\"GET\",\"ClientRequestPath\":\"/abc/checkout\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestQuery\":\"?sourcerer=(default%3A(id%3A!n%2CselectedPatterns%3A!(eqldemo%2C%27logs-endpoint.*-eqldemo%27%2C%27logs-system.*-eqldemo%27%2C%27logs-windows.*-eqldemo%27%2Cmetricseqldemo)))\\u0026timerange=(global%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.199Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.200Z%27%2CtoStr%3Anow))%2Ctimeline%3A(linkTo%3A!()%2Ctimerange%3A(from%3A%272022-04-05T00%3A00%3A01.201Z%27%2CfromStr%3Anow-24h%2Ckind%3Arelative%2Cto%3A%272022-04-06T00%3A00%3A01.202Z%27%2CtoStr%3Anow)))\",\"ClientRequestScheme\":\"https\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\",\"Datetime\":\"2022-05-31T05:23:43Z\",\"EdgeColoCode\":\"IAD\",\"EdgeResponseStatus\":403,\"Kind\":\"firewall\",\"MatchIndex\":1,\"Metadata\":{\"filter\":\"1ced07e066a34abf8b14f2a99593bc8d\",\"type\":\"customer\"},\"OriginResponseStatus\":0,\"OriginatorRayID\":\"00\",\"RayID\":\"713d477539b55c29\",\"RuleID\":\"7dc666e026974dab84884c73b3e2afe1\",\"Source\":\"firewallrules\"}",
         "type": [
@@ -632,7 +631,7 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.client.asn.value | The ASN number of the visitor. | long |
 | cloudflare_logpush.firewall_event.client.country | Country from which request originated. | keyword |
 | cloudflare_logpush.firewall_event.client.ip | The visitor IP address (IPv4 or IPv6). | ip |
-| cloudflare_logpush.firewall_event.client.ip_class | The classification of the visitor IP address, possible values are. | keyword |
+| cloudflare_logpush.firewall_event.client.ip_class | The classification of the visitor IP address, possible values are:- 'unknown', 'badHost', 'searchEngine', 'allowlist', 'monitoringService', 'noRecord', 'scan' and 'tor'. | keyword |
 | cloudflare_logpush.firewall_event.client.referer.host | The referer host. | keyword |
 | cloudflare_logpush.firewall_event.client.referer.path | The referer path requested by visitor. | text |
 | cloudflare_logpush.firewall_event.client.referer.query | The referer query-string was requested by the visitor. | keyword |
@@ -726,11 +725,11 @@ An example event for `http_request` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-12T06:17:11.166Z",
+    "@timestamp": "2022-08-31T11:07:57.206Z",
     "agent": {
-        "ephemeral_id": "7b0eb31e-9621-45b5-8d27-6e6aaee68742",
+        "ephemeral_id": "0d18b2a3-8dbb-4401-895a-91f0767f4653",
         "hostname": "docker-fleet-agent",
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "1fe8aff9-6f26-4f35-87e6-b9365c20682b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -844,7 +843,7 @@ An example event for `http_request` looks as following:
                     "duration": {
                         "ms": 5319
                     },
-                    "header_recive_duration": {
+                    "header_receive_duration": {
                         "ms": 5155
                     },
                     "http": {
@@ -915,7 +914,7 @@ An example event for `http_request` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "1fe8aff9-6f26-4f35-87e6-b9365c20682b",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -925,7 +924,7 @@ An example event for `http_request` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.http_request",
-        "ingested": "2022-08-12T06:17:12Z",
+        "ingested": "2022-08-31T11:07:58Z",
         "kind": "event",
         "original": "{\"BotScore\":\"20\",\"BotScoreSrc\":\"Verified Bot\",\"BotTags\":\"bing\",\"CacheCacheStatus\":\"dynamic\",\"CacheResponseBytes\":983828,\"CacheResponseStatus\":200,\"CacheTieredFill\":false,\"ClientASN\":43766,\"ClientCountry\":\"sa\",\"ClientDeviceType\":\"desktop\",\"ClientIP\":\"175.16.199.0\",\"ClientIPClass\":\"noRecord\",\"ClientMTLSAuthCertFingerprint\":\"Fingerprint\",\"ClientMTLSAuthStatus\":\"unknown\",\"ClientRequestBytes\":5800,\"ClientRequestHost\":\"xyz.example.com\",\"ClientRequestMethod\":\"POST\",\"ClientRequestPath\":\"/xyz/checkout\",\"ClientRequestProtocol\":\"HTTP/1.1\",\"ClientRequestReferer\":\"https://example.com/s/example/default?sourcerer=(default:(id:!n,selectedPatterns:!(example,%27logs-endpoint.*-example%27,%27logs-system.*-example%27,%27logs-windows.*-example%27)))\\u0026timerange=(global:(linkTo:!(),timerange:(from:%272022-05-16T06:26:36.340Z%27,fromStr:now-24h,kind:relative,to:%272022-05-17T06:26:36.340Z%27,toStr:now)),timeline:(linkTo:!(),timerange:(from:%272022-04-17T22:00:00.000Z%27,kind:absolute,to:%272022-04-18T21:59:59.999Z%27)))\\u0026timeline=(activeTab:notes,graphEventId:%27%27,id:%279844bdd4-4dd6-5b22-ab40-3cd46fce8d6b%27,isOpen:!t)\",\"ClientRequestScheme\":\"https\",\"ClientRequestSource\":\"edgeWorkerFetch\",\"ClientRequestURI\":\"/s/example/api/telemetry/v2/clusters/_stats\",\"ClientRequestUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36\",\"ClientSSLCipher\":\"NONE\",\"ClientSSLProtocol\":\"TLSv1.2\",\"ClientSrcPort\":0,\"ClientTCPRTTMs\":0,\"ClientXRequestedWith\":\"Request With\",\"Cookies\":{\"key\":\"value\"},\"EdgeCFConnectingO2O\":false,\"EdgeColoCode\":\"RUH\",\"EdgeColoID\":339,\"EdgeEndTimestamp\":\"2022-05-25T13:25:32Z\",\"EdgePathingOp\":\"wl\",\"EdgePathingSrc\":\"macro\",\"EdgePathingStatus\":\"nr\",\"EdgeRateLimitAction\":\"unknown\",\"EdgeRateLimitID\":0,\"EdgeRequestHost\":\"abc.example.com\",\"EdgeResponseBodyBytes\":980397,\"EdgeResponseBytes\":981308,\"EdgeResponseCompressionRatio\":0,\"EdgeResponseContentType\":\"application/json\",\"EdgeResponseStatus\":200,\"EdgeServerIP\":\"1.128.0.0\",\"EdgeStartTimestamp\":\"2022-05-25T13:25:26Z\",\"EdgeTimeToFirstByteMs\":5333,\"OriginDNSResponseTimeMs\":3,\"OriginIP\":\"67.43.156.0\",\"OriginRequestHeaderSendDurationMs\":0,\"OriginResponseBytes\":0,\"OriginResponseDurationMs\":5319,\"OriginResponseHTTPExpires\":\"2022-05-27T13:25:26Z\",\"OriginResponseHTTPLastModified\":\"2022-05-26T13:25:26Z\",\"OriginResponseHeaderReceiveDurationMs\":5155,\"OriginResponseStatus\":200,\"OriginResponseTime\":5232000000,\"OriginSSLProtocol\":\"TLSv1.2\",\"OriginTCPHandshakeDurationMs\":24,\"OriginTLSHandshakeDurationMs\":53,\"ParentRayID\":\"710e98d93d50357d\",\"RayID\":\"710e98d9367f357d\",\"SecurityLevel\":\"off\",\"SmartRouteColoID\":20,\"UpperTierColoID\":0,\"WAFAction\":\"unknown\",\"WAFFlags\":\"0\",\"WAFMatchedVar\":\"example\",\"WAFProfile\":\"unknown\",\"WAFRuleID\":\"98d93d5\",\"WAFRuleMessage\":\"matchad variable message\",\"WorkerCPUTime\":0,\"WorkerStatus\":\"unknown\",\"WorkerSubrequest\":true,\"WorkerSubrequestCount\":0,\"ZoneID\":393347122,\"ZoneName\":\"example.com\"}",
         "type": [
@@ -1067,7 +1066,7 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.origin.request_header_send_duration.ms | Time taken to send request headers to origin after establishing a connection. | long |
 | cloudflare_logpush.http_request.origin.response.bytes | Number of bytes returned by the origin server. | long |
 | cloudflare_logpush.http_request.origin.response.duration.ms | Upstream response time, measured from the first datacenter that receives a request. | long |
-| cloudflare_logpush.http_request.origin.response.header_recive_duration.ms | Time taken for origin to return response headers after Cloudflare finishes sending request headers. | long |
+| cloudflare_logpush.http_request.origin.response.header_receive_duration.ms | Time taken for origin to return response headers after Cloudflare finishes sending request headers. | long |
 | cloudflare_logpush.http_request.origin.response.http.expires | Value of the origin expires header in RFC1123 format. | date |
 | cloudflare_logpush.http_request.origin.response.http.last_modified | Value of the origin last-modified header in RFC1123 format. | date |
 | cloudflare_logpush.http_request.origin.response.status | Status returned by the origin server. | long |
@@ -1080,18 +1079,19 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.request.headers | String key-value pairs for RequestHeaders. | flattened |
 | cloudflare_logpush.http_request.response.headers | String key-value pairs for ResponseHeaders. | flattened |
 | cloudflare_logpush.http_request.security_level | The security level configured at the time of this request. This is used to determine the sensitivity of the IP Reputation system. | text |
-| cloudflare_logpush.http_request.smart_route.colo.id | The Cloudflare datacenter used to connect to the origin server if Argo Smart Routing is used, Available in Logpush v2 only. | long |
-| cloudflare_logpush.http_request.upper_tier.colo.id | The “upper tier” datacenter that was checked for a cached copy if Tiered Cache is used, Available in Logpush v2 only. | long |
-| cloudflare_logpush.http_request.waf.action | The “upper tier” datacenter that was checked for a cached copy if Tiered Cache is used, Available in Logpush v2 only. | text |
-| cloudflare_logpush.http_request.waf.flag | Action taken by the WAF, if triggered. | text |
-| cloudflare_logpush.http_request.waf.matched_var | Additional configuration flags. | text |
-| cloudflare_logpush.http_request.waf.profile | The full name of the most-recently matched variable. | keyword |
-| cloudflare_logpush.http_request.waf.rule.id | low | med | high. | keyword |
-| cloudflare_logpush.http_request.waf.rule.message | ID of the applied WAF rule. | text |
-| cloudflare_logpush.http_request.worker.cpu_time | Rule message associated with the triggered rule. | long |
-| cloudflare_logpush.http_request.worker.status | Amount of time in microseconds spent executing a worker, if any. | text |
-| cloudflare_logpush.http_request.worker.subrequest.count | Whether or not this request was a worker subrequest. | long |
-| cloudflare_logpush.http_request.worker.subrequest.value | Status returned from worker daemon. | boolean |
+| cloudflare_logpush.http_request.smart_route.colo.id | The Cloudflare datacenter used to connect to the origin server if Argo Smart Routing is used. Available in Logpush v2 only. | long |
+| cloudflare_logpush.http_request.upper_tier.colo.id | The “upper tier” datacenter that was checked for a cached copy if Tiered Cache is used. Available in Logpush v2 only. | long |
+| cloudflare_logpush.http_request.waf.action | Action taken by the WAF, if triggered. | text |
+| cloudflare_logpush.http_request.waf.flag | Additional configuration flags. | text |
+| cloudflare_logpush.http_request.waf.matched_var | The full name of the most-recently matched variable. | text |
+| cloudflare_logpush.http_request.waf.profile | The Profile of WAF. possible values are:- 'low', 'med', 'high'. | keyword |
+| cloudflare_logpush.http_request.waf.rule.id | ID of the applied WAF rule. | keyword |
+| cloudflare_logpush.http_request.waf.rule.message | Rule message associated with the triggered rule. | text |
+| cloudflare_logpush.http_request.worker.cpu_time | Amount of time in microseconds spent executing a worker, if any. | long |
+| cloudflare_logpush.http_request.worker.status | Status returned from worker daemon. | text |
+| cloudflare_logpush.http_request.worker.subrequest.count | Number of subrequests issued by a worker when handling this request. | long |
+| cloudflare_logpush.http_request.worker.subrequest.value | Whether or not this request was a worker subrequest. | boolean |
+| cloudflare_logpush.http_request.worker.wall_time_us | Real-time in microseconds elapsed between start and end of worker invocation. | long |
 | cloudflare_logpush.http_request.zone.id | Internal zone ID. | long |
 | cloudflare_logpush.http_request.zone.name | The human-readable name of the zone. | keyword |
 | container.id | Unique container ID. | keyword |
@@ -1174,9 +1174,9 @@ An example event for `nel_report` looks as following:
 {
     "@timestamp": "2021-07-27T00:01:07.000Z",
     "agent": {
-        "ephemeral_id": "f7c2ba4f-be25-40de-b451-70676d55f0d3",
+        "ephemeral_id": "bce85730-b1ea-471f-8ffb-789dc0ef4973",
         "hostname": "docker-fleet-agent",
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -1213,7 +1213,7 @@ An example event for `nel_report` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -1226,7 +1226,7 @@ An example event for `nel_report` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.nel_report",
-        "ingested": "2022-08-12T06:18:05Z",
+        "ingested": "2022-08-31T10:55:26Z",
         "kind": "event",
         "original": "{\"ClientIPASN\":\"13335\",\"ClientIPASNDescription\":\"CLOUDFLARENET\",\"ClientIPCountry\":\"US\",\"LastKnownGoodColoCode\":\"SJC\",\"Phase\":\"connection\",\"Timestamp\":\"2021-07-27T00:01:07Z\",\"Type\":\"network-error\"}",
         "type": [
@@ -1318,9 +1318,9 @@ An example event for `network_analytics` looks as following:
 {
     "@timestamp": "2021-07-27T00:01:07.000Z",
     "agent": {
-        "ephemeral_id": "ab4b63fd-071f-4f4a-977d-e679a8e20454",
+        "ephemeral_id": "d4a5bdac-cff3-4524-92bd-b236f41a66ca",
         "hostname": "docker-fleet-agent",
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -1495,7 +1495,7 @@ An example event for `network_analytics` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -1505,7 +1505,7 @@ An example event for `network_analytics` looks as following:
             "network"
         ],
         "dataset": "cloudflare_logpush.network_analytics",
-        "ingested": "2022-08-12T06:19:00Z",
+        "ingested": "2022-08-31T10:56:20Z",
         "kind": "event",
         "original": "{\"AttackCampaignID\":\"xyz987\",\"AttackID\":\"abc777\",\"ColoCountry\":\"AD\",\"ColoGeoHash\":\"gbuun\",\"ColoID\":46,\"ColoName\":\"SJC\",\"Datetime\":\"2021-07-27T00:01:07Z\",\"DestinationASN\":1900,\"DestinationASNDescription\":\"asn description\",\"DestinationCountry\":\"AD\",\"DestinationGeoHash\":\"gbuun\",\"DestinationPort\":0,\"Direction\":\"ingress\",\"GREChecksum\":10,\"GREEthertype\":10,\"GREHeaderLength\":1024,\"GREKey\":10,\"GRESequenceNumber\":10,\"GREVersion\":10,\"ICMPChecksum\":10,\"ICMPCode\":10,\"ICMPType\":10,\"IPDestinationAddress\":\"175.16.199.0\",\"IPDestinationSubnet\":\"/24\",\"IPFragmentOffset\":1480,\"IPHeaderLength\":20,\"IPMoreFragments\":1480,\"IPProtocol\":6,\"IPProtocolName\":\"tcp\",\"IPSourceAddress\":\"67.43.156.0\",\"IPSourceSubnet\":\"/24\",\"IPTotalLength\":1024,\"IPTotalLengthBuckets\":10,\"IPTtl\":240,\"IPTtlBuckets\":2,\"IPv4Checksum\":0,\"IPv4DontFragment\":0,\"IPv4Dscp\":46,\"IPv4Ecn\":1,\"IPv4Identification\":1,\"IPv4Options\":1,\"IPv6Dscp\":46,\"IPv6Ecn\":1,\"IPv6ExtensionHeaders\":\"header\",\"IPv6FlowLabel\":1,\"IPv6Identification\":1,\"MitigationReason\":\"BLOCKED\",\"MitigationScope\":\"local\",\"MitigationSystem\":\"flowtrackd\",\"Outcome\":\"pass\",\"ProtocolState\":\"OPEN\",\"RuleID\":\"rule1\",\"RulesetID\":\"3b64149bfa6e4220bbbc2bd6db589552\",\"RulesetOverrideID\":\"id1\",\"SampleInterval\":1,\"SourceASN\":1500,\"SourceASNDescription\":\"Source ASN Description\",\"SourceCountry\":\"AD\",\"SourceGeoHash\":\"gbuun\",\"SourcePort\":0,\"TCPAcknowledgementNumber\":1000,\"TCPChecksum\":10,\"TCPDataOffset\":0,\"TCPFlags\":1,\"TCPFlagsString\":\"Human-readable flags string\",\"TCPMss\":512,\"TCPOptions\":\"mss\",\"TCPSackBlocks\":1,\"TCPSacksPermitted\":1,\"TCPSequenceNumber\":100,\"TCPTimestampEcr\":100,\"TCPTimestampValue\":100,\"TCPUrgentPointer\":10,\"TCPWindowScale\":10,\"TCPWindowSize\":10,\"UDPChecksum\":10,\"UDPPayloadLength\":10,\"Verdict\":\"pass\"}",
         "outcome": "success",
@@ -1607,7 +1607,7 @@ An example event for `network_analytics` looks as following:
 | cloudflare_logpush.network_analytics.ipv6.flow_label | Value of the Flow Label header field in the IPv6 packet. | long |
 | cloudflare_logpush.network_analytics.ipv6.identification | Value of the Identification extension header field in the IPv6 packet. | long |
 | cloudflare_logpush.network_analytics.mitigation.reason | Reason for applying a mitigation to the packet, if any. | keyword |
-| cloudflare_logpush.network_analytics.mitigation.scope | Ether the packet matched a local or global mitigation, if any. | keyword |
+| cloudflare_logpush.network_analytics.mitigation.scope | Whether the packet matched a local or global mitigation, if any. | keyword |
 | cloudflare_logpush.network_analytics.mitigation.system | Which Cloudflare system dropped the packet, if any. | keyword |
 | cloudflare_logpush.network_analytics.outcome | The action that Cloudflare systems took on the packet. | keyword |
 | cloudflare_logpush.network_analytics.protocol_state | State of the packet in the context of the protocol, if any. | keyword |
@@ -1704,9 +1704,9 @@ An example event for `spectrum_event` looks as following:
 {
     "@timestamp": "2022-05-26T09:24:00.000Z",
     "agent": {
-        "ephemeral_id": "65ea6698-d4ba-4ca2-89aa-2a86e65c375d",
+        "ephemeral_id": "371cd441-a618-43a3-83de-1c9c602fa750",
         "hostname": "docker-fleet-agent",
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -1776,7 +1776,7 @@ An example event for `spectrum_event` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "2ea9f730-704a-4136-9b60-4fe0d3d986c6",
+        "id": "8c980496-5d81-4668-8419-2a0d64ad40c1",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -1788,7 +1788,7 @@ An example event for `spectrum_event` looks as following:
         ],
         "dataset": "cloudflare_logpush.spectrum_event",
         "id": "7ef659a2f8ef4810a9bade96fdad7c75",
-        "ingested": "2022-08-12T06:19:53Z",
+        "ingested": "2022-08-31T10:57:12Z",
         "kind": "event",
         "original": "{\"Application\":\"7ef659a2f8ef4810a9bade96fdad7c75\",\"ClientAsn\":200391,\"ClientBytes\":0,\"ClientCountry\":\"bg\",\"ClientIP\":\"67.43.156.0\",\"ClientMatchedIpFirewall\":\"UNKNOWN\",\"ClientPort\":40456,\"ClientProto\":\"tcp\",\"ClientTcpRtt\":0,\"ClientTlsCipher\":\"UNK\",\"ClientTlsClientHelloServerName\":\"server name\",\"ClientTlsProtocol\":\"unknown\",\"ClientTlsStatus\":\"UNKNOWN\",\"ColoCode\":\"SOF\",\"ConnectTimestamp\":\"2022-05-26T09:24:00Z\",\"DisconnectTimestamp\":\"1970-01-01T00:00:00Z\",\"Event\":\"connect\",\"IpFirewall\":false,\"OriginBytes\":0,\"OriginIP\":\"175.16.199.0\",\"OriginPort\":3389,\"OriginProto\":\"tcp\",\"OriginTcpRtt\":0,\"OriginTlsCipher\":\"UNK\",\"OriginTlsFingerprint\":\"0000000000000000000000000000000000000000000000000000000000000000.\",\"OriginTlsMode\":\"off\",\"OriginTlsProtocol\":\"unknown\",\"OriginTlsStatus\":\"UNKNOWN\",\"ProxyProtocol\":\"off\",\"Status\":0,\"Timestamp\":\"2022-05-26T09:24:00Z\"}",
         "type": [
@@ -1893,10 +1893,12 @@ An example event for `spectrum_event` looks as following:
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
+| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -1930,4 +1932,3 @@ An example event for `spectrum_event` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
-
