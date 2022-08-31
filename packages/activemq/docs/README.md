@@ -25,11 +25,11 @@ An example event for `log` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "638481bc-60c8-45d2-9610-864f2b414cfa",
-        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
+        "ephemeral_id": "e81b7006-6b63-43cf-916c-fd5e99bf1359",
+        "id": "728e85f2-d5f4-42f2-8dde-3efe59b4d89f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "data_stream": {
         "dataset": "activemq.log",
@@ -40,15 +40,16 @@ An example event for `log` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
+        "id": "728e85f2-d5f4-42f2-8dde-3efe59b4d89f",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.log",
-        "ingested": "2022-06-29T16:10:16Z",
+        "ingested": "2022-08-31T07:53:23Z",
         "kind": "event",
+        "module": "activemq",
         "type": "info"
     },
     "host": {
@@ -87,6 +88,7 @@ An example event for `log` looks as following:
 | error.stack_trace | The stack trace of this error in plain text. | wildcard |
 | error.stack_trace.text | Multi-field of `error.stack_trace`. | match_only_text |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | input.type | Input type | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
@@ -105,18 +107,18 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-29T16:07:25.492Z",
+    "@timestamp": "2022-08-31T07:49:38.002Z",
     "activemq": {
         "audit": {
             "thread": "RMI TCP Connection(1)-127.0.0.1"
         }
     },
     "agent": {
-        "ephemeral_id": "34d3eca2-8de6-4429-8ec7-7c470857b23e",
-        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
+        "ephemeral_id": "61c2b31a-a18f-4b21-8541-b96c219f2d49",
+        "id": "728e85f2-d5f4-42f2-8dde-3efe59b4d89f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "data_stream": {
         "dataset": "activemq.audit",
@@ -127,15 +129,16 @@ An example event for `audit` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
+        "id": "728e85f2-d5f4-42f2-8dde-3efe59b4d89f",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "activemq.audit",
-        "ingested": "2022-06-29T16:07:29Z",
+        "ingested": "2022-08-31T07:49:41Z",
         "kind": "event",
+        "module": "activemq",
         "type": "info"
     },
     "host": {
@@ -187,6 +190,7 @@ An example event for `audit` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -225,7 +229,7 @@ An example event for `broker` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-29T16:08:49.982Z",
+    "@timestamp": "2022-08-31T07:51:21.986Z",
     "activemq": {
         "broker": {
             "connections": {
@@ -262,11 +266,11 @@ An example event for `broker` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "2de2c614-b1b2-42a6-adb9-9ecddfc0dc07",
-        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
+        "ephemeral_id": "14728cc6-6b6e-4f7b-89aa-d7be43a5eb46",
+        "id": "728e85f2-d5f4-42f2-8dde-3efe59b4d89f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "data_stream": {
         "dataset": "activemq.broker",
@@ -277,32 +281,37 @@ An example event for `broker` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
+        "id": "728e85f2-d5f4-42f2-8dde-3efe59b4d89f",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
         "dataset": "activemq.broker",
-        "duration": 18482338,
-        "ingested": "2022-06-29T16:08:53Z",
-        "module": "activemq"
+        "duration": 16085740,
+        "ingested": "2022-08-31T07:51:25Z",
+        "kind": "metric",
+        "module": "activemq",
+        "type": "info"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.19.0.7"
+            "172.25.0.7"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:ac:19:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.66.1.el7.x86_64",
+            "kernel": "3.10.0-1160.71.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -344,7 +353,13 @@ An example event for `broker` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
@@ -359,7 +374,7 @@ An example event for `queue` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-29T16:11:38.323Z",
+    "@timestamp": "2022-08-31T07:55:00.002Z",
     "activemq": {
         "queue": {
             "consumers": {
@@ -379,7 +394,7 @@ An example event for `queue` looks as following:
                     "count": 0
                 },
                 "enqueue": {
-                    "count": 18,
+                    "count": 15,
                     "time": {
                         "avg": 0,
                         "max": 0,
@@ -400,15 +415,15 @@ An example event for `queue` looks as following:
             "producers": {
                 "count": 0
             },
-            "size": 18
+            "size": 15
         }
     },
     "agent": {
-        "ephemeral_id": "ae634fb6-c546-4958-b1b4-5338a04bf27f",
-        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
+        "ephemeral_id": "507afe70-d160-4cb1-9a5d-dbfd49d72c7e",
+        "id": "728e85f2-d5f4-42f2-8dde-3efe59b4d89f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "data_stream": {
         "dataset": "activemq.queue",
@@ -419,32 +434,37 @@ An example event for `queue` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
+        "id": "728e85f2-d5f4-42f2-8dde-3efe59b4d89f",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
         "dataset": "activemq.queue",
-        "duration": 16655818,
-        "ingested": "2022-06-29T16:11:41Z",
-        "module": "activemq"
+        "duration": 8504220,
+        "ingested": "2022-08-31T07:55:03Z",
+        "kind": "metric",
+        "module": "activemq",
+        "type": "info"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.19.0.7"
+            "172.25.0.7"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:ac:19:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.66.1.el7.x86_64",
+            "kernel": "3.10.0-1160.71.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -490,7 +510,13 @@ An example event for `queue` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
@@ -505,7 +531,7 @@ An example event for `topic` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-29T16:13:05.413Z",
+    "@timestamp": "2022-08-31T07:56:45.860Z",
     "activemq": {
         "topic": {
             "consumers": {
@@ -549,11 +575,11 @@ An example event for `topic` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "97eb0219-9f47-414b-9e73-6b806294b181",
-        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
+        "ephemeral_id": "11eb25ea-ac70-41d3-83b5-394fade438e0",
+        "id": "728e85f2-d5f4-42f2-8dde-3efe59b4d89f",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "data_stream": {
         "dataset": "activemq.topic",
@@ -564,32 +590,37 @@ An example event for `topic` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "4052b5b6-59e4-4711-8a2c-f6c667f81bbd",
+        "id": "728e85f2-d5f4-42f2-8dde-3efe59b4d89f",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.3.2"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
         "dataset": "activemq.topic",
-        "duration": 16295694,
-        "ingested": "2022-06-29T16:13:08Z",
-        "module": "activemq"
+        "duration": 15184708,
+        "ingested": "2022-08-31T07:56:49Z",
+        "kind": "metric",
+        "module": "activemq",
+        "type": "info"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.19.0.7"
+            "172.25.0.7"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:ac:19:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.66.1.el7.x86_64",
+            "kernel": "3.10.0-1160.71.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -635,7 +666,12 @@ An example event for `topic` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
 | error.message | Error message. | match_only_text |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
