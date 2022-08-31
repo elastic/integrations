@@ -11,8 +11,8 @@ An example event for `audit` looks as following:
 {
     "kubernetes": {
         "audit": {
-            "requestReceivedTimestamp": "2022-07-05T16:08:04.196323Z",
             "auditID": "8b8398cd-1d93-4659-805e-0c9d616aa960",
+            "requestReceivedTimestamp": "2022-07-05T16:08:04.196323Z",
             "objectRef": {
                 "apiVersion": "v1",
                 "resource": "pods",
@@ -58,8 +58,8 @@ An example event for `audit` looks as following:
                     "dnsPolicy": "ClusterFirstWithHostNet",
                     "terminationGracePeriodSeconds": 30,
                     "enableServiceLinks": true,
-                    "hostNetwork": true,
                     "serviceAccountName": "elastic-agent",
+                    "hostNetwork": true,
                     "volumes": [
                         {
                             "name": "proc",
@@ -100,8 +100,8 @@ An example event for `audit` looks as following:
                         },
                         {
                             "effect": "NoExecute",
-                            "operator": "Exists",
-                            "key": "node.kubernetes.io/not-ready"
+                            "key": "node.kubernetes.io/not-ready",
+                            "operator": "Exists"
                         },
                         {
                             "effect": "NoExecute",
@@ -125,8 +125,8 @@ An example event for `audit` looks as following:
                         },
                         {
                             "effect": "NoSchedule",
-                            "key": "node.kubernetes.io/unschedulable",
-                            "operator": "Exists"
+                            "operator": "Exists",
+                            "key": "node.kubernetes.io/unschedulable"
                         },
                         {
                             "effect": "NoSchedule",
@@ -136,8 +136,8 @@ An example event for `audit` looks as following:
                     ],
                     "containers": [
                         {
-                            "image": "docker.elastic.co/beats/elastic-agent:8.2.3",
                             "imagePullPolicy": "IfNotPresent",
+                            "image": "docker.elastic.co/beats/elastic-agent:8.2.3",
                             "terminationMessagePolicy": "File",
                             "terminationMessagePath": "/dev/termination-log",
                             "name": "elastic-agent",
@@ -234,10 +234,10 @@ An example event for `audit` looks as following:
                                         "matchFields": [
                                             {
                                                 "values": [
-                                                    "cluster2-server-0"
+                                                    "k3d-iammai-cluster2-server-0"
                                                 ],
-                                                "key": "metadata.name",
-                                                "operator": "In"
+                                                "operator": "In",
+                                                "key": "metadata.name"
                                             }
                                         ]
                                     }
@@ -259,17 +259,14 @@ An example event for `audit` looks as following:
             }
         }
     },
-    "input": {
-        "type": "filestream"
-    },
     "agent": {
         "name": "kind-control-plane",
-        "id": "c047e83b-31e8-4cd3-94e9-6cc77567c2f7",
+        "id": "6e730a0c-7da5-48ff-b4c9-f6c63844975d",
         "type": "filebeat",
-        "ephemeral_id": "37c54904-6a9d-455a-812f-4c3245fa6093",
+        "ephemeral_id": "d27511c8-9cd1-402c-8b1b-234abbd9dcae",
         "version": "8.4.0"
     },
-    "@timestamp": "2022-08-30T07:22:30.601Z",
+    "@timestamp": "2022-08-31T08:07:33.611Z",
     "ecs": {
         "version": "8.0.0"
     },
@@ -277,7 +274,7 @@ An example event for `audit` looks as following:
         "file": {
             "path": "/var/log/kubernetes/kube-apiserver-audit-1.log"
         },
-        "offset": 8398
+        "offset": 12597
     },
     "data_stream": {
         "namespace": "default",
@@ -290,12 +287,11 @@ An example event for `audit` looks as following:
             "kernel": "5.10.104-linuxkit",
             "codename": "focal",
             "name": "Ubuntu",
-            "family": "debian",
             "type": "linux",
+            "family": "debian",
             "version": "20.04.4 LTS (Focal Fossa)",
             "platform": "ubuntu"
         },
-        "containerized": false,
         "ip": [
             "10.244.0.1",
             "10.244.0.1",
@@ -305,8 +301,9 @@ An example event for `audit` looks as following:
             "fc00:f853:ccd:e793::2",
             "fe80::42:acff:fe12:2"
         ],
+        "containerized": false,
         "name": "kind-control-plane",
-        "id": "782b0078ac574f9f80fc102182493841",
+        "id": "5016511f0829451ea244f458eebf2212",
         "mac": [
             "02:42:ac:12:00:02",
             "02:42:ac:1e:00:03",
@@ -317,13 +314,13 @@ An example event for `audit` looks as following:
         "architecture": "x86_64"
     },
     "elastic_agent": {
-        "id": "c047e83b-31e8-4cd3-94e9-6cc77567c2f7",
+        "id": "6e730a0c-7da5-48ff-b4c9-f6c63844975d",
         "version": "8.4.0",
         "snapshot": false
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2022-08-30T07:22:31Z",
+        "ingested": "2022-08-31T08:07:34Z",
         "dataset": "kubernetes.audit_logs"
     }
 }
@@ -372,6 +369,7 @@ An example event for `audit` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of input. | keyword |
 | kubernetes.audit.annotations.\* | Audit event annotations | object |
 | kubernetes.audit.apiVersion | Audit event api version | keyword |
 | kubernetes.audit.auditID | Unique audit ID, generated for each request | keyword |
