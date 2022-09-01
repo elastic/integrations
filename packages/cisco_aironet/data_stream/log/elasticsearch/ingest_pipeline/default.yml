@@ -71,12 +71,17 @@ processors:
   #
   # Parse the date included in logs
   #
+  - set:
+      field: _conf.tz_offset
+      value: UTC
+      override: false
   - date:
       if: "ctx.event?.timezone == null && ctx._temp_?.raw_date != null"
       field: "_temp_.raw_date"
       target_field: "@timestamp"
       formats:
         - "MMM d HH:mm:ss.SSS"
+      timezone: '{{{_conf.tz_offset}}}'
 
   # Parse out IP addresses from Logs
   - grok:
