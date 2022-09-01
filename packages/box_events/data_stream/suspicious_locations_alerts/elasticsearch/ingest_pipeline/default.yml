@@ -115,14 +115,6 @@ processors:
         } else {
           ctx.threat.indicator.put("type","ipv4-addr"); 
         }
-  - rename:
-      field: box.additional_details.shield_alert.alert_summary.alert_activities.ip_info.longitude
-      target_field: threat.indicator.geo.location.lon
-      ignore_missing: true
-  - rename:
-      field: box.additional_details.shield_alert.alert_summary.alert_activities.ip_info.latitude
-      target_field: threat.indicator.geo.location.lat
-      ignore_missing: true
   - script:
       description: Confect description from multiple fields
       lang: painless
@@ -134,6 +126,14 @@ processors:
           ctx.box.additional_details.shield_alert.alert_summary.alert_activities.item_path + "/" +
           ctx.box.additional_details.shield_alert.alert_summary.alert_activities.item_name + " by " +
           ctx.box.additional_details.shield_alert.alert_summary.alert_activities.service_name
+  - rename:
+      field: box.additional_details.shield_alert.alert_summary.alert_activities.ip_info.longitude
+      target_field: threat.indicator.geo.location.lon
+      ignore_missing: true
+  - rename:
+      field: box.additional_details.shield_alert.alert_summary.alert_activities.ip_info.latitude
+      target_field: threat.indicator.geo.location.lat
+      ignore_missing: true
   - rename:
       field: box.additional_details.shield_alert.alert_summary.sessions.activities.service_name
       target_field: threat.indicator.provider
