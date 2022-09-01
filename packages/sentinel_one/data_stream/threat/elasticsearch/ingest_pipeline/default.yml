@@ -3,16 +3,10 @@ description: Pipeline for processing threat logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.3.0'
+      value: '8.4.0'
   - set:
       field: event.kind
-      value: event
-  - set:
-      field: event.category
-      value: [malware]
-  - set:
-      field: event.type
-      value: [info]
+      value: alert
   - rename:
       field: message
       target_field: event.original
@@ -28,12 +22,39 @@ processors:
         - json.id 
       target_field: _id
       ignore_missing: true
+  - script:
+      description: Set the value of event.category and event.type.
+      lang: painless
+      source: >
+          def eventCategory = new ArrayList();
+          def eventType = new ArrayList();
+          if (ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '') {
+              def threat_classification = ctx.json?.threatInfo?.classification;
+              if (['Exploit','PUA'].contains(threat_classification)) {
+                  eventCategory.add('threat');
+                  eventType.add('indicator');
+              } else if (['Malware','Ransomware','Trojan','Downloader'].contains(threat_classification)) {
+                  eventCategory.add('malware');
+                  eventType.add('info');
+              }
+          }
+          ctx.event.type = eventType;
+          ctx.event.category = eventCategory;
   - date: 
       field: json.threatInfo.updatedAt
       target_field: '@timestamp'
       formats:
           - ISO8601
       ignore_failure: true
+  - join:
+      field: json.threatInfo.engines
+      target_field: event.action
+      separator: ','
+      ignore_failure: true
+  - set:
+      field: process.name
+      copy_from: json.threatInfo.originatorProcess
+      ignore_empty_value: true
   - rename:
       field: json.agentDetectionInfo.accountId 
       target_field: sentinel_one.threat.detection.account.id
@@ -84,6 +105,11 @@ processors:
       field: json.agentDetectionInfo.agentLastLoggedInUserName   
       target_field: user.name
       ignore_missing: true
+  - set:
+      if: ctx.user?.name == null
+      field: user.name
+      copy_from: json.threatInfo.processUser
+      ignore_empty_value: true
   - append:
       field: related.user
       value: '{{{user.name}}}'

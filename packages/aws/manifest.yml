@@ -1,7 +1,7 @@
 format_version: 1.0.0
 name: aws
 title: AWS
-version: 1.17.2
+version: 1.23.4
 license: basic
 description: Collect logs and metrics from Amazon Web Services with Elastic Agent.
 type: integration
@@ -10,7 +10,7 @@ categories:
   - cloud
 release: ga
 conditions:
-  kibana.version: "^7.15.0 || ^8.0.0"
+  kibana.version: "^8.3.0"
 screenshots:
   - src: /img/metricbeat-aws-overview.png
     title: metricbeat aws overview
@@ -65,7 +65,7 @@ vars:
     multi: false
     required: false
     show_user: false
-    default: "amazonaws.com"
+    default: ""
     description: URL of the entry point for an AWS web service
   - name: proxy_url
     type: text
@@ -73,7 +73,7 @@ vars:
     multi: false
     required: false
     show_user: false
-    description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>
+    description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
 policy_templates:
   - name: billing
     title: AWS Billing
@@ -222,6 +222,21 @@ policy_templates:
         title: metricbeat aws ec2 overview
         size: 2640x2240
         type: image/png
+  - name: ecs
+    title: Amazon ECS
+    description: Collect metrics for Amazon Elastic Container Service with Elastic Agent
+    data_streams:
+      - ecs_metrics
+    inputs:
+      - type: aws/metrics
+        title: Collect ECS metrics
+        description: Collecting ECS metrics using AWS CloudWatch
+        input_group: metrics
+    icons:
+      - src: /img/logo_ecs.svg
+        title: AWS ECS logo
+        size: 32x32
+        type: image/svg+xml
   - name: elb
     title: AWS ELB
     description: Collect logs and metrics for Amazon Elastic Load Balancing service with Elastic Agent
@@ -598,5 +613,40 @@ policy_templates:
         title: metricbeat amazon redshift overview
         size: 2640x2240
         type: image/png
+  - name: kinesis
+    title: Amazon Kinesis
+    description: Collect Amazon Kinesis metrics with Elastic Agent
+    data_streams:
+      - kinesis
+    inputs:
+      - type: aws/metrics
+        title: Collect Amazon Kinesis metrics
+        description: Collect Amazon Kinesis metrics using AWS CloudWatch
+        input_group: metrics
+    icons:
+      - src: /img/logo_kinesis.svg
+        title: Amazon Kinesis logo
+        size: 33x39
+        type: image/svg+xml
+  - name: securityhub
+    title: AWS Security Hub
+    description: Collect AWS Security Hub Logs with Elastic Agent.
+    data_streams:
+      - securityhub_findings
+      - securityhub_insights
+    inputs:
+      - type: httpjson
+        title: Collect AWS Security Hub logs via API
+        description: Collecting AWS Security Hub logs via API.
+    screenshots:
+      - src: /img/securityhub-screenshot.png
+        title: Security Hub dashboard screenshot
+        size: 600x600
+        type: image/png
+    icons:
+      - src: /img/logo_securityhub.svg
+        title: AWS Security Hub logo
+        size: 33x39
+        type: image/svg+xml
 owner:
   github: elastic/obs-cloud-monitoring

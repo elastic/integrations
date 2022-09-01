@@ -1,67 +1,125 @@
-# dynamodb
+# Amazon DynamoDB
 
-## Metrics
+The Amazon DynamoDB integration allows you to monitor [Amazon DynamoDB](https://aws.amazon.com/dynamodb/)—a key-value NoSQL database.
+
+Use the Amazon DynamoDB integration to collect metrics related to your Amazon DynamoDB databases.
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
+
+For example, you could use this data to visualize consumed read and write capacity units. You can then create alerts based on used or unused capacity, so that the relevant users can better scale their provisioned throughput capacity. This might mean they increase the capacity to provide more resources, or reduce capacity to save on costs.
+
+## Data streams
+
+The Amazon DynamoDB integration collects one type of data: metrics.
+
+**Metrics** give you insight into the state of Amazon DynamoDB.
+Metrics collected by the Amazon DynamoDB integration include the maximum number of read and write capacity units that can be used by an account, consume capacity units, throttle events, and more. See more details in the [Metrics reference](#metrics-reference).
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any AWS integration you will need:
+
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, see the **AWS** integration documentation.
+
+## Setup
+
+Use this integration if you only need to collect data from AWS DynamoDB.
+
+If you want to collect data from two or more AWS services, consider using the **AWS** integration.
+When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Metrics reference
+
+The `dynamodb` data stream collects DynamoDB metrics from AWS.
+An example event for `dynamodb` looks like this:
 
 An example event for `dynamodb` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:17:08.666Z",
+    "@timestamp": "2022-07-25T21:53:00.000Z",
     "agent": {
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-        "name": "MacBook-Elastic.local",
+        "name": "docker-fleet-agent",
+        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
         "type": "metricbeat",
-        "version": "8.0.0"
+        "ephemeral_id": "64a12b83-a4f1-487c-8d2c-9581fda6ca2a",
+        "version": "8.3.2"
     },
-    "event": {
-        "dataset": "aws.dynamodb",
-        "module": "aws",
-        "duration": 10266182336
+    "elastic_agent": {
+        "id": "2d4b09d0-cdb6-445e-ac3f-6415f87b9864",
+        "version": "8.3.2",
+        "snapshot": false
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "eu-central-1",
+        "account": {
+            "name": "elastic-beats",
+            "id": "428152502467"
+        }
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "service": {
         "type": "aws"
     },
-    "ecs": {
-        "version": "1.5.0"
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.dynamodb"
     },
-    "cloud": {
-        "account": {
-            "name": "elastic-beats",
-            "id": "428152502467"
-        },
-        "provider": "aws",
-        "region": "eu-central-1"
+    "metricset": {
+        "period": 300000,
+        "name": "dynamodb"
+    },
+    "event": {
+        "duration": 10586366300,
+        "agent_id_status": "verified",
+        "ingested": "2022-07-25T21:57:51Z",
+        "module": "aws",
+        "dataset": "aws.dynamodb"
     },
     "aws": {
-        "dimensions": {
-            "TableName": "TryDaxTable3"
+        "cloudwatch": {
+            "namespace": "AWS/DynamoDB"
         },
         "dynamodb": {
             "metrics": {
-                "ProvisionedWriteCapacityUnits": {
-                    "avg": 1
+                "AccountProvisionedWriteCapacityUtilization": {
+                    "avg": 0.01
                 },
-                "ProvisionedReadCapacityUnits": {
-                    "avg": 1
+                "MaxProvisionedTableWriteCapacityUtilization": {
+                    "max": 0.01
                 },
-                "ConsumedWriteCapacityUnits": {
-                    "avg": 0,
-                    "sum": 0
+                "MaxProvisionedTableReadCapacityUtilization": {
+                    "max": 0.01
                 },
-                "ConsumedReadCapacityUnits": {
-                    "avg": 0,
-                    "sum": 0
+                "AccountMaxTableLevelReads": {
+                    "max": 40000
+                },
+                "AccountMaxReads": {
+                    "max": 80000
+                },
+                "AccountProvisionedReadCapacityUtilization": {
+                    "avg": 0.01
+                },
+                "AccountMaxWrites": {
+                    "max": 80000
+                },
+                "AccountMaxTableLevelWrites": {
+                    "max": 40000
                 }
             }
-        },
-        "cloudwatch": {
-            "namespace": "AWS/DynamoDB"
         }
-    },
-    "metricset": {
-        "name": "dynamodb",
-        "period": 300000
     }
 }
 ```
@@ -71,7 +129,6 @@ An example event for `dynamodb` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.DelegatedOperation | This dimension limits the data to operations DynamoDB performs on your behalf. | keyword |
@@ -121,7 +178,7 @@ An example event for `dynamodb` looks as following:
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
