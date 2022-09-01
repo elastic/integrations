@@ -11,13 +11,6 @@ processors:
   - json:
       field: event.original
       target_field: box
-  - date:
-      field: box.recorded_at
-      target_field: "@timestamp"
-      ignore_failure: true
-      formats:
-        - yyyy-MM-dd'T'hh:mm:ssXXX
-      if: "ctx?.box?.source != null"
   - rename:
       field: box.session_id
       target_field: box.session.id
@@ -50,7 +43,7 @@ processors:
       ignore_missing: true
 # Box Shield can add these fields 
   - date:
-      field: box.created_at
+      field: box.additional_details.shield_alert.alert_summary.alert_activities.occurred_at
       target_field: "@timestamp"
       ignore_failure: true
       formats:
@@ -179,13 +172,6 @@ processors:
                 ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() + 
                 ctx.box.additional_details.shield_alert.priority.substring(1);
         }
-# already have ip in `client.ip`
-  - remove:
-      field: 
-        - box.additional_details.shield_alert.priority
-        - box.additional_details.shield_alert.created_at
-      ignore_failure: true
-      ignore_missing: true
 # Conditionally, remove event.original
   - remove:
       field: event.original
