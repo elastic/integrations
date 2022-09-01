@@ -177,8 +177,12 @@ processors:
       ignore_missing: true
   - rename:
       field: json.ColoGeoHash
-      target_field: cloudflare_logpush.network_analytics.colo.geohash
+      target_field: cloudflare_logpush.network_analytics.colo.geo_hash
       ignore_missing: true
+  - set:
+      field: cloudflare_logpush.network_analytics.colo.geo_location
+      copy_from: cloudflare_logpush.network_analytics.colo.geo_hash
+      ignore_failure: true
   - convert:
       field: json.ColoID
       target_field: cloudflare_logpush.network_analytics.colo.id
@@ -203,8 +207,12 @@ processors:
       ignore_missing: true
   - rename:
       field: json.DestinationGeoHash
-      target_field: cloudflare_logpush.network_analytics.destination.geohash
+      target_field: cloudflare_logpush.network_analytics.destination.geo_hash
       ignore_missing: true
+  - set:
+      field: cloudflare_logpush.network_analytics.destination.geo_location
+      copy_from: cloudflare_logpush.network_analytics.destination.geo_hash
+      ignore_failure: true
   - convert:
       field: json.GREChecksum
       target_field: cloudflare_logpush.network_analytics.gre.checksum
@@ -531,8 +539,12 @@ processors:
       ignore_missing: true
   - rename:
       field: json.SourceGeoHash
-      target_field: cloudflare_logpush.network_analytics.source.geohash
+      target_field: cloudflare_logpush.network_analytics.source.geo_hash
       ignore_missing: true
+  - set:
+      field: cloudflare_logpush.network_analytics.source.geo_location
+      copy_from: cloudflare_logpush.network_analytics.source.geo_hash
+      ignore_failure: true
   - convert:
       field: json.TCPAcknowledgementNumber
       target_field: cloudflare_logpush.network_analytics.tcp.acknowledgement_number
@@ -697,20 +709,20 @@ processors:
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{cloudflare_logpush.network_analytics.source.geohash}}}'
-      if: ctx.cloudflare_logpush?.network_analytics?.source?.geohash != null
+      value: '{{{cloudflare_logpush.network_analytics.source.geo_hash}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.source?.geo_hash != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.hash
-      value: '{{{cloudflare_logpush.network_analytics.destination.geohash}}}'
-      if: ctx.cloudflare_logpush?.network_analytics?.destination?.geohash != null
+      value: '{{{cloudflare_logpush.network_analytics.destination.geo_hash}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.destination?.geo_hash != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.hash
-      value: '{{{cloudflare_logpush.network_analytics.colo.geohash}}}'
-      if: ctx.cloudflare_logpush?.network_analytics?.colo?.geohash != null
+      value: '{{{cloudflare_logpush.network_analytics.colo.geo_hash}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.colo?.geo_hash != null
       allow_duplicates: false
       ignore_failure: true
   - append:
