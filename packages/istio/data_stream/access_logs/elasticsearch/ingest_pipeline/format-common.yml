@@ -5,34 +5,11 @@ processors:
       if: ctx.first_char != '['
   - dissect:
       field: event.original
-      pattern: '[%{istio.access.start_time}]
-        "%{http.request.method}
-        %{url.original}
-        %{istio.access.message}'
+      pattern: '[%{istio.access.start_time}] %{istio.access.message}'
   - grok:
       field: istio.access.message
       patterns:
-        - (-|%{DATA:istio.access.protocol})" 
-          (-|%{NUMBER:http.response.status_code:long})
-          (-|%{DATA:istio.access.response.flags})
-          (-|%{DATA:istio.access.response.code_details})
-          (-|%{DATA:istio.access.connection_termination_details})
-          "(-|%{DATA:istio.access.upstream.transport_failure_reason})"
-          %{NUMBER:istio.access.bytes.received:long}
-          %{NUMBER:istio.access.bytes.sent:long}
-          (-|%{NUMBER:istio.access.duration:long})
-          (-|%{NUMBER:istio.access.upstream.service_time:long})
-          "(-|%{DATA:istio.access.x-forwarded-for})"
-          "(-|%{DATA:user_agent.original})"
-          "%{DATA:http.request.id}"
-          "(-|%{DATA:istio.access.authority})"
-          "(-|%{ISTIO_HOST:istio.access.upstream.host})"
-          (-|%{DATA:istio.access.upstream.cluster})
-          (-|%{HOSTPORT:istio.access.upstream.local_address})
-          (-|%{HOSTPORT:istio.access.downstream.local_address})
-          (-|%{ISTIO_HOSTPORT:istio.access.downstream.remote_address})
-          (-|%{DATA:istio.access.requested_server_name})
-          (-|%{GREEDYDATA:istio.access.route_name})
+        - '"(-|%{DATA:http.request.method}) (-|%{DATA:url.original}) (-|%{DATA:istio.access.protocol})" (-|%{NUMBER:http.response.status_code:long}) (-|%{DATA:istio.access.response.flags}) (-|%{DATA:istio.access.response.code_details}) (-|%{DATA:istio.access.connection_termination_details}) "(-|%{DATA:istio.access.upstream.transport_failure_reason})" %{NUMBER:istio.access.bytes.received:long} %{NUMBER:istio.access.bytes.sent:long} (-|%{NUMBER:istio.access.duration:long}) (-|%{NUMBER:istio.access.upstream.service_time:long}) "(-|%{DATA:istio.access.x-forwarded-for})" "(-|%{DATA:user_agent.original})" "(-|%{DATA:http.request.id})" "(-|%{DATA:istio.access.authority})" "(-|%{ISTIO_HOST:istio.access.upstream.host})" (-|%{DATA:istio.access.upstream.cluster}) (-|%{HOSTPORT:istio.access.upstream.local_address}) (-|%{HOSTPORT:istio.access.downstream.local_address}) (-|%{ISTIO_HOSTPORT:istio.access.downstream.remote_address}) (-|%{DATA:istio.access.requested_server_name}) (-|%{GREEDYDATA:istio.access.route_name})'
       pattern_definitions:
         ISTIO_HOST: (%{HOSTPORT}|%{URI})
         ISTIO_HOSTPORT: (%{HOSTPORT}|%{IPORHOST}:%{NONNEGINT})
