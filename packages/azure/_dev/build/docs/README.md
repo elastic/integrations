@@ -1,5 +1,5 @@
 # Azure Logs Integration
-The azure logs integration retrieves activity, platform, sign-in, audit, and Spring Cloud data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
+The azure logs integration retrieves activity, platform, sign-in, audit, and Spring Apps data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
 
 Use the Azure Logs integration to collect logs from Azure.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
@@ -17,7 +17,7 @@ fail to start due to an exceed quota limit.
 The Azure Logs integration collects logs.
 
 **Logs** help you keep a record of events that happen on your machine.
-Log data streams collected by the Azure Logs integration include activity, platform, sign-in, audit, and Spring Cloud logs.
+Log data streams collected by the Azure Logs integration include activity, platform, sign-in, audit, and Spring Apps logs.
 See more details in the [Logs reference](#logs-reference).
 
 ## Requirements
@@ -105,9 +105,9 @@ Retrieves Azure Active Directory audit logs. The audit logs provide traceability
 
 {{fields "auditlogs"}}
 
-### Spring Cloud logs
+### Spring Apps logs
 
-Retrieves Azure Spring Cloud system and application logs.
+Retrieves Azure Spring Apps system and application logs.
 
 {{event "springcloudlogs"}}
 
