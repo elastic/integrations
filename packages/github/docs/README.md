@@ -73,11 +73,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "95d78df4-1364-43b9-ab4f-62fc70d21b04",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "c86ae4f7-d16c-4eb3-8bf7-a4e0b61cab5d",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "github.audit",
@@ -88,34 +88,31 @@ An example event for `audit` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.3.0"
     },
     "event": {
         "action": "repo.destroy",
         "agent_id_status": "verified",
         "category": [
-            "web",
-            "iam"
+            "configuration",
+            "web"
         ],
-        "created": "2022-02-03T12:34:05.664Z",
+        "created": "2022-07-18T18:28:55.799Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2022-02-03T12:34:06Z",
+        "ingested": "2022-07-18T18:28:56Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
-            "access"
+            "change"
         ]
     },
     "github": {
         "category": "repo",
         "org": "mona-org",
         "repo": "mona-org/mona-test-repo"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -243,8 +240,8 @@ An example event for `code_scanning` looks as following:
 {
     "@timestamp": "2022-06-29T18:03:27.000Z",
     "agent": {
-        "ephemeral_id": "eae53315-cdee-41c9-ad1a-4af980c536c6",
-        "id": "84b3a3da-c733-473b-8c02-cd9e4c7d1d8e",
+        "ephemeral_id": "f2d26262-5c65-459a-9c96-7728c56e7fba",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -258,7 +255,7 @@ An example event for `code_scanning` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "84b3a3da-c733-473b-8c02-cd9e4c7d1d8e",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -267,7 +264,7 @@ An example event for `code_scanning` looks as following:
         "agent_id_status": "verified",
         "created": "2022-06-29T18:03:27.000Z",
         "dataset": "github.code_scanning",
-        "ingested": "2022-07-08T11:54:37Z",
+        "ingested": "2022-07-18T18:29:40Z",
         "kind": "alert",
         "original": "{\"created_at\":\"2022-06-29T18:03:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/code-scanning/91\",\"most_recent_instance\":{\"analysis_key\":\".github/workflows/codeql-analysis.yml:analyze\",\"category\":\".github/workflows/codeql-analysis.yml:analyze/language:javascript\",\"classifications\":[],\"commit_sha\":\"3244e8b15cc1b8f2732eecd69fc1890b737f0dda\",\"location\":{\"end_column\":50,\"end_line\":67,\"path\":\"routes/chatbot.ts\",\"start_column\":23,\"start_line\":67},\"message\":{\"text\":\"(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.(Experimental) This may be a database query that depends on a user-provided value. Identified using machine learning.\"},\"ref\":\"refs/heads/master\",\"state\":\"open\"},\"number\":90,\"rule\":{\"description\":\"SQL database query built from user-controlled sources (experimental)\",\"id\":\"js/ml-powered/sql-injection\",\"security_severity_level\":\"high\",\"severity\":\"error\",\"tags\":[\"experimental\",\"external/cwe/cwe-089\",\"security\"]},\"state\":\"open\",\"tool\":{\"name\":\"CodeQL\",\"version\":\"2.9.4\"},\"updated_at\":\"2022-06-29T18:03:27Z\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/code-scanning/alerts/91\"}"
     },
@@ -403,8 +400,8 @@ An example event for `secret_scanning` looks as following:
 {
     "@timestamp": "2022-06-30T18:07:27.000Z",
     "agent": {
-        "ephemeral_id": "49c616b3-b36b-4732-98a7-fc09eadb244f",
-        "id": "49202dc3-9434-459b-9a0c-a6ec637ef4e9",
+        "ephemeral_id": "078656f6-2ff6-4905-bc50-869945d39a2d",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.0"
@@ -418,7 +415,7 @@ An example event for `secret_scanning` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "49202dc3-9434-459b-9a0c-a6ec637ef4e9",
+        "id": "de47b1db-dbd6-4772-824f-cf16e2d96f1c",
         "snapshot": false,
         "version": "8.3.0"
     },
@@ -427,7 +424,7 @@ An example event for `secret_scanning` looks as following:
         "agent_id_status": "verified",
         "created": "2022-06-30T18:07:27Z",
         "dataset": "github.secret_scanning",
-        "ingested": "2022-07-22T17:01:02Z",
+        "ingested": "2022-07-18T18:31:14Z",
         "original": "{\"created_at\":\"2022-06-30T18:07:27Z\",\"html_url\":\"https://github.com/sample_owner/sample_repo/security/secret-scanning/3\",\"number\":3,\"push_protection_bypassed\":true,\"push_protection_bypassed_by\":{\"html_url\":\"https://github.com/sample_owner\",\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"resolution\":\"revoked\",\"resolved_by\":{\"login\":\"sample_owner\",\"type\":\"User\",\"url\":\"https://api.github.com/users/sample_owner\"},\"secret\":\"npm_2vYJ3QzGXoGbEgMYduYS1k2M4D0wDu2opJbl\",\"secret_type\":\"npm_access_token\",\"secret_type_display_name\":\"npm Access Token\",\"state\":\"open\",\"url\":\"https://api.github.com/repos/sample_owner/sample_repo/secret-scanning/alerts/3\"}"
     },
     "github": {
@@ -464,5 +461,250 @@ An example event for `secret_scanning` looks as following:
         "preserve_original_event",
         "hide_secret"
     ]
+}
+```
+
+### Dependabot
+
+The Github Dependabot lets you retrieve known vulnerabilites in dependencies from a repository setup using Github Advanced Security Dependabot feature. See [About Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-alerts) for more details.
+
+To use this integration, you must be an administrator for the repository or for the organization that owns the repository, and you must use a personal access token with the `repo` scope or `security_events` scope. For public repositories, you may instead use the `public_repo` scope. See [Authenticating with GraphQL](https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql) and [Token Issue](https://github.com/dependabot/feedback/issues/169)
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| github.dependabot.created_at | When was the alert created | date |
+| github.dependabot.dependabot_update.error.body | The body of the error. | text |
+| github.dependabot.dependabot_update.error.error_type | The error code. | keyword |
+| github.dependabot.dependabot_update.error.title | The title of the error. | keyword |
+| github.dependabot.dependabot_update.pull_request.closed | `true` if the pull request is closed. | boolean |
+| github.dependabot.dependabot_update.pull_request.closed_at | Identifies the date and time when the pull request was closed. | date |
+| github.dependabot.dependabot_update.pull_request.created_at | Identifies the date and time when the pull request was created. | date |
+| github.dependabot.dependabot_update.pull_request.merged | Whether or not the pull request was merged. | boolean |
+| github.dependabot.dependabot_update.pull_request.merged_at | The date and time that the pull request was merged. | date |
+| github.dependabot.dependabot_update.pull_request.number | Identifies the pull request number. | integer |
+| github.dependabot.dependabot_update.pull_request.title | Identifies the pull request title. | keyword |
+| github.dependabot.dependabot_update.pull_request.url | The HTTP URL for this pull request. | keyword |
+| github.dependabot.dependency_scope | The scope of an alert's dependency. | keyword |
+| github.dependabot.dismiss_reason | The reason the alert was dismissed. | keyword |
+| github.dependabot.dismissed_at | When was the alert dismissed | date |
+| github.dependabot.dismisser.login | The username of the dismisser. | keyword |
+| github.dependabot.dismisser.url | The HTTP URL for this user. | keyword |
+| github.dependabot.fix_reason | The reason the alert was marked as fixed. | keyword |
+| github.dependabot.fixed_at | When was the alert fixed | date |
+| github.dependabot.number | Identifies the alert number. | integer |
+| github.dependabot.security_advisory.classification | The classification of the advisory. | keyword |
+| github.dependabot.security_advisory.cvss.vector_string | The CVSS vector string associated with this advisory. | keyword |
+| github.dependabot.security_advisory.cwes.cwe_id | The id of the CWE. | keyword |
+| github.dependabot.security_advisory.cwes.description | The name of this CWE. | keyword |
+| github.dependabot.security_advisory.cwes.name | A detailed description of this CWE. | keyword |
+| github.dependabot.security_advisory.ghsa_id | The GitHub Security Advisory ID. | keyword |
+| github.dependabot.security_advisory.identifiers.type | The identifier type, e.g. GHSA, CVE. | keyword |
+| github.dependabot.security_advisory.identifiers.value | The identifier. | keyword |
+| github.dependabot.security_advisory.origin | The organization that originated the advisory. | keyword |
+| github.dependabot.security_advisory.permalink | The permalink for the advisory. | keyword |
+| github.dependabot.security_advisory.published_at | When the advisory was published. | date |
+| github.dependabot.security_advisory.severity | The severity of the advisory. | keyword |
+| github.dependabot.security_advisory.summary | A short plaintext summary of the advisory. | keyword |
+| github.dependabot.security_advisory.updated_at | When the advisory was last updated. | date |
+| github.dependabot.security_advisory.withdrawn_at | When the advisory was withdrawn, if it has been withdrawn. | date |
+| github.dependabot.security_vulnerability.first_patched_version.identifier | The first version containing a fix for the vulnerability. | keyword |
+| github.dependabot.security_vulnerability.package.ecosystem | The ecosystem the package belongs to, e.g. RUBYGEMS, NPM. | keyword |
+| github.dependabot.security_vulnerability.package.name | The package name. | keyword |
+| github.dependabot.security_vulnerability.updated_at | When the vulnerability was last updated. | date |
+| github.dependabot.security_vulnerability.vulnerable_version_range | A string that describes the vulnerable package versions. | keyword |
+| github.dependabot.state | Identifies the state of the alert. | keyword |
+| github.dependabot.vulnerable_manifest_filename | The vulnerable manifest filename. | keyword |
+| github.dependabot.vulnerable_manifest_path | The vulnerable manifest path. | keyword |
+| github.dependabot.vulnerable_requirements | The vulnerable requirements. | keyword |
+| github.repository.description | The description of the repository. | keyword |
+| github.repository.is_in_organization | Indicates if a repository is either owned by an organization, or is a private fork of an organization repository. | boolean |
+| github.repository.is_private | Identifies if the repository is private or internal. | boolean |
+| github.repository.name | Identifies if the repository is private or internal. | keyword |
+| github.repository.owner.login | The username of the dismisser. | keyword |
+| github.repository.owner.url | The HTTP URL for this user | keyword |
+| github.repository.url | The HTTP URL for this repository. | keyword |
+| github.severity | The severity of the advisory. | keyword |
+| github.state | Identifies the state of the alert. | keyword |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| vulnerability.classification | The classification of the vulnerability scoring system. For example (https://www.first.org/cvss/) | keyword |
+| vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created[Common Vulnerabilities and Exposure CVE description]) | keyword |
+| vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
+| vulnerability.enumeration | The type of identifier used for this vulnerability. For example (https://cve.mitre.org/about/) | keyword |
+| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
+| vulnerability.reference | A resource that provides additional information, context, and mitigations for the identified vulnerability. | keyword |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | keyword |
+| vulnerability.score.base | Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope. For example (https://www.first.org/cvss/specification-document) | float |
+| vulnerability.score.version | The National Vulnerability Database (NVD) provides qualitative severity rankings of "Low", "Medium", and "High" for CVSS v2.0 base score ranges in addition to the severity ratings for CVSS v3.0 as they are defined in the CVSS v3.0 specification. CVSS is owned and managed by FIRST.Org, Inc. (FIRST), a US-based non-profit organization, whose mission is to help computer security incident response teams across the world. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
+| vulnerability.severity | The severity of the vulnerability can help with metrics and internal prioritization regarding remediation. For example (https://nvd.nist.gov/vuln-metrics/cvss) | keyword |
+
+
+An example event for `dependabot` looks as following:
+
+```json
+{
+    "@timestamp": "2022-07-11T11:39:07.000Z",
+    "agent": {
+        "ephemeral_id": "a7dc527e-44e5-41c1-b881-7b327825917e",
+        "id": "c0e432ef-8ae4-4d0e-85e5-92e04ab50bcf",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.3.0"
+    },
+    "data_stream": {
+        "dataset": "github.dependabot",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.3.0"
+    },
+    "elastic_agent": {
+        "id": "c0e432ef-8ae4-4d0e-85e5-92e04ab50bcf",
+        "snapshot": false,
+        "version": "8.3.0"
+    },
+    "event": {
+        "action": "dependabot",
+        "agent_id_status": "verified",
+        "created": "2022-07-11T11:39:07.000Z",
+        "dataset": "github.dependabot",
+        "ingested": "2022-08-24T10:59:14Z",
+        "kind": "alert",
+        "original": "{\"createdAt\":\"2022-07-11T11:39:07Z\",\"dependabotUpdate\":{\"error\":{\"body\":\"The currently installed version can't be determined.\\n\\nTo resolve the issue add a supported lockfile (package-lock.json or yarn.lock).\",\"errorType\":\"dependency_file_not_supported\",\"title\":\"Dependabot can't update vulnerable dependencies without a lockfile\"},\"pullRequest\":null},\"dependencyScope\":\"RUNTIME\",\"dismissReason\":null,\"dismissedAt\":null,\"dismisser\":null,\"fixReason\":null,\"fixedAt\":null,\"number\":1,\"repository\":{\"description\":\"OWASP Juice Shop: Probably the most modern and sophisticated insecure web application\",\"isInOrganization\":false,\"isPrivate\":false,\"name\":\"sample_repo\",\"owner\":{\"login\":\"sample_owner\",\"url\":\"https://github.com/sample_owner\"},\"url\":\"https://github.com/sample_owner/sample_repo\"},\"securityAdvisory\":{\"classification\":\"GENERAL\",\"cvss\":{\"score\":0,\"vectorString\":null},\"cwes\":{\"nodes\":[{\"cweId\":\"CWE-20\",\"description\":\"The product receives input or data, but it does not validate or incorrectly validates that the input has the properties that are required to process the data safely and correctly.\",\"name\":\"Improper Input Validation\"}]},\"description\":\"Versions 4.2.1 and earlier of `jsonwebtoken` are affected by a verification bypass vulnerability. This is a result of weak validation of the JWT algorithm type, occuring when an attacker is allowed to arbitrarily specify the JWT algorithm.\\n\\n\\n\\n\\n## Recommendation\\n\\nUpdate to version 4.2.2 or later.\",\"ghsaId\":\"GHSA-c7hr-j4mj-j2w6\",\"identifiers\":[{\"type\":\"GHSA\",\"value\":\"GHSA-c7hr-j4mj-j2w6\"},{\"type\":\"CVE\",\"value\":\"CVE-2015-9235\"}],\"origin\":\"UNSPECIFIED\",\"permalink\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\",\"publishedAt\":\"2018-10-09T00:38:30Z\",\"references\":[{\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2015-9235\"},{\"url\":\"https://github.com/auth0/node-jsonwebtoken/commit/1bb584bc382295eeb7ee8c4452a673a77a68b687\"},{\"url\":\"https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/\"},{\"url\":\"https://github.com/advisories/GHSA-c7hr-j4mj-j2w6\"},{\"url\":\"https://www.npmjs.com/advisories/17\"},{\"url\":\"https://www.timmclean.net/2015/02/25/jwt-alg-none.html\"},{\"url\":\"https://nodesecurity.io/advisories/17\"}],\"severity\":\"CRITICAL\",\"summary\":\"Verification Bypass in jsonwebtoken\",\"updatedAt\":\"2021-01-08T19:00:39Z\",\"withdrawnAt\":null},\"securityVulnerability\":{\"firstPatchedVersion\":{\"identifier\":\"4.2.2\"},\"package\":{\"ecosystem\":\"NPM\",\"name\":\"jsonwebtoken\"},\"severity\":\"CRITICAL\",\"updatedAt\":\"2018-11-30T19:54:28Z\",\"vulnerableVersionRange\":\"\\u003c 4.2.2\"},\"state\":\"OPEN\",\"vulnerableManifestFilename\":\"package.json\",\"vulnerableManifestPath\":\"package.json\",\"vulnerableRequirements\":\"= 0.4.0\"}",
+        "start": "2022-07-11T11:39:07Z"
+    },
+    "github": {
+        "dependabot": {
+            "created_at": "2022-07-11T11:39:07Z",
+            "dependabot_update": {
+                "error": {
+                    "body": "The currently installed version can't be determined.\n\nTo resolve the issue add a supported lockfile (package-lock.json or yarn.lock).",
+                    "error_type": "dependency_file_not_supported",
+                    "title": "Dependabot can't update vulnerable dependencies without a lockfile"
+                }
+            },
+            "dependency_scope": "RUNTIME",
+            "number": 1,
+            "security_advisory": {
+                "classification": "GENERAL",
+                "cwes": [
+                    {
+                        "cweId": "CWE-20",
+                        "description": "The product receives input or data, but it does not validate or incorrectly validates that the input has the properties that are required to process the data safely and correctly.",
+                        "name": "Improper Input Validation"
+                    }
+                ],
+                "ghsa_id": "GHSA-c7hr-j4mj-j2w6",
+                "identifiers": [
+                    {
+                        "type": "GHSA",
+                        "value": "GHSA-c7hr-j4mj-j2w6"
+                    },
+                    {
+                        "type": "CVE",
+                        "value": "CVE-2015-9235"
+                    }
+                ],
+                "origin": "UNSPECIFIED",
+                "permalink": "https://github.com/advisories/GHSA-c7hr-j4mj-j2w6",
+                "published_at": "2018-10-09T00:38:30Z",
+                "severity": "CRITICAL",
+                "summary": "Verification Bypass in jsonwebtoken",
+                "updated_at": "2021-01-08T19:00:39Z"
+            },
+            "security_vulnerability": {
+                "first_patched_version": {
+                    "identifier": "4.2.2"
+                },
+                "package": {
+                    "ecosystem": "NPM",
+                    "name": "jsonwebtoken"
+                },
+                "updated_at": "2018-11-30T19:54:28Z",
+                "vulnerable_version_range": "\u003c 4.2.2"
+            },
+            "state": "OPEN",
+            "vulnerable_manifest_filename": "package.json",
+            "vulnerable_manifest_path": "package.json",
+            "vulnerable_requirements": "= 0.4.0"
+        },
+        "repository": {
+            "description": "OWASP Juice Shop: Probably the most modern and sophisticated insecure web application",
+            "is_in_organization": false,
+            "is_private": false,
+            "name": "sample_repo",
+            "owner": {
+                "login": "sample_owner",
+                "url": "https://github.com/sample_owner"
+            },
+            "url": "https://github.com/sample_owner/sample_repo"
+        },
+        "severity": "CRITICAL",
+        "state": "OPEN"
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "tags": [
+        "forwarded",
+        "github-dependabot",
+        "preserve_original_event"
+    ],
+    "vulnerability": {
+        "classification": "CVSS",
+        "description": "Versions 4.2.1 and earlier of `jsonwebtoken` are affected by a verification bypass vulnerability. This is a result of weak validation of the JWT algorithm type, occuring when an attacker is allowed to arbitrarily specify the JWT algorithm.\n\n\n\n\n## Recommendation\n\nUpdate to version 4.2.2 or later.",
+        "enumeration": "CVE",
+        "id": "CVE-2015-9235",
+        "reference": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2015-9235",
+            "https://github.com/auth0/node-jsonwebtoken/commit/1bb584bc382295eeb7ee8c4452a673a77a68b687",
+            "https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/",
+            "https://github.com/advisories/GHSA-c7hr-j4mj-j2w6",
+            "https://www.npmjs.com/advisories/17",
+            "https://www.timmclean.net/2015/02/25/jwt-alg-none.html",
+            "https://nodesecurity.io/advisories/17"
+        ],
+        "scanner": {
+            "vendor": "Github"
+        },
+        "score": {
+            "base": 0
+        },
+        "severity": "CRITICAL"
+    }
 }
 ```

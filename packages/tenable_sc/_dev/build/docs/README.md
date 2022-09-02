@@ -4,7 +4,7 @@ The Tenable.sc integration collects and parses data from the [Tenable.sc](https:
 
 ## Compatibility
 
-This module has been tested against `Tenable.sc version 5.18`
+This module has been tested against `Tenable.sc version 5.22`.
 
 ## Requirements
 

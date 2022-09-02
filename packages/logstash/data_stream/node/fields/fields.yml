@@ -1,45 +1,49 @@
-- name: logstash.node
+- name: logstash
   type: group
-  release: ga
   fields:
-    - name: host
+    - name: elasticsearch.cluster.id
       type: keyword
-    - name: version
-      type: keyword
-    - name: id
-      type: keyword
-    - name: state.pipeline
+    - name: node
       type: group
       fields:
-        - name: id
-          type: keyword
-        - name: hash
-          type: keyword
-        - name: ephemeral_id
-          type: keyword
-        - name: batch_size
-          type: long
-        - name: workers
-          type: long
-        - name: representation
+        - name: jvm
           type: group
           fields:
-            - name: hash
-              type: keyword
-            - name: type
-              type: keyword
             - name: version
               type: keyword
-            - name: graph
-              type: group
-              fields:
-                - name: edges
-                  type: object
-                - name: vertices
-                  type: object
-    - name: jvm
-      type: group
-      fields:
+              ignore_above: 1024
+        - name: host
+          type: keyword
         - name: version
           type: keyword
-          description: JVM version
+        - name: id
+          type: keyword
+        - name: state.pipeline
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: hash
+              type: keyword
+            - name: ephemeral_id
+              type: keyword
+            - name: batch_size
+              type: long
+            - name: workers
+              type: long
+            - name: representation
+              type: group
+              fields:
+                - name: hash
+                  type: keyword
+                - name: type
+                  type: keyword
+                - name: version
+                  type: keyword
+                - name: graph
+                  type: group
+                  fields:
+                    - name: edges
+                      type: object
+                    - name: vertices
+                      type: object

@@ -16,37 +16,37 @@ publisher_pipeline.disable_host: true
 ssl: {{ssl}}
 {{/if}}
 processors:
-  - add_locale: ~
-  {{#if preserve_original_event}}
-  - copy_fields:
-       fields:
-         - from: message
-           to: event.original
-  {{/if}}
-  - syslog:
-      field: message
-      format: auto
-      timezone: {{tz_offset}}
+- add_locale: ~
+{{#if preserve_original_event}}
+- copy_fields:
+    fields:
+    - from: message
+      to: event.original
+{{/if}}
+- syslog:
+    field: message
+    format: auto
+    timezone: {{tz_offset}}
 {{#if processors}}
-  {{processors}}
+{{processors}}
 {{/if}}
 {{#if internal_zones.length}}
-  - add_fields:
-      target: _conf
-      fields:
-        internal_zones:
-        {{#each internal_zones as |zone i|}}
-          - {{zone}}
-        {{/each}}
+- add_fields:
+    target: _conf
+    fields:
+      internal_zones:
+{{#each internal_zones as |zone i|}}
+      - {{zone}}
+{{/each}}
 {{/if}}
 {{#if external_zones.length}}
-  - add_fields:
-      target: _conf
-      fields:
-        external_zones:
-        {{#each external_zones as |zone i|}}
-          - {{zone}}
-        {{/each}}
+- add_fields:
+    target: _conf
+    fields:
+      external_zones:
+{{#each external_zones as |zone i|}}
+      - {{zone}}
+{{/each}}
 {{/if}}
 {{#if tcp_options}}
 {{tcp_options}}
