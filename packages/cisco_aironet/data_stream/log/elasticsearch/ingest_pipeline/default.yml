@@ -103,12 +103,21 @@ processors:
       ignore_failure: true
       patterns:
         - "client %{MAC:client.mac}"
+  # Mac address cleanup
   - uppercase:
       field: client.mac
       ignore_missing: true
   - gsub:
       field: client.mac
-      pattern: ':'
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
+  - gsub:
+      field: host.mac
+      pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
 
