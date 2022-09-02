@@ -26,13 +26,16 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.audit.action | The name of the action that was executed | keyword |
+| elasticsearch.audit.authentication.type |  | keyword |
 | elasticsearch.audit.component |  | keyword |
 | elasticsearch.audit.event_type | The type of event that occurred: anonymous_access_denied, authentication_failed, access_denied, access_granted, connection_granted, connection_denied, tampered_request, run_as_granted, run_as_denied | keyword |
 | elasticsearch.audit.indices | Indices accessed by action | keyword |
 | elasticsearch.audit.invalidate.apikeys.owned_by_authenticated_user |  | boolean |
 | elasticsearch.audit.layer | The layer from which this event originated: rest, transport or ip_filter | keyword |
 | elasticsearch.audit.message |  | text |
+| elasticsearch.audit.opaque_id |  | keyword |
 | elasticsearch.audit.origin.type | Where the request originated: rest (request originated from a REST API request), transport (request was received on the transport channel), local_node (the local node issued the request) | keyword |
 | elasticsearch.audit.realm | The authentication realm the authentication was validated against | keyword |
 | elasticsearch.audit.request.id | Unique ID of request | keyword |
@@ -53,8 +56,20 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | http | Fields related to HTTP activity. Use the `url` field set to store the url of the request. | group |
 | http.request.body.content | The full HTTP request body. | wildcard |
 | http.request.body.content.text | Multi-field of `http.request.body.content`. | match_only_text |
+| http.request.id | A unique identifier for each HTTP request to correlate logs between clients and servers in transactions. The id may be contained in a non-standard HTTP header, such as `X-Request-ID` or `X-Correlation-ID`. | keyword |
+| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| related.user |  | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | source | Source fields capture details about the sender of a network exchange/packet. These fields are populated from a network event, packet, or other event containing details of a network transaction. Source fields are usually populated in conjunction with destination fields. The source and destination fields are considered the baseline and should always be filled if an event contains source and destination details from a network transaction. If the event also contains identification of the client and server roles, then the client and server fields should also be populated. | group |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
+| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 | url | URL fields provide support for complete or partial URLs, and supports the breaking down into scheme, domain, path, and so on. | group |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
@@ -73,14 +88,28 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.name | Name of the cluster | keyword |
 | elasticsearch.cluster.uuid | UUID of the cluster | keyword |
 | elasticsearch.component | Elasticsearch component from where the log event originated | keyword |
+| elasticsearch.elastic_product_origin |  | keyword |
+| elasticsearch.event.category |  | keyword |
+| elasticsearch.http.request.x_opaque_id |  | keyword |
 | elasticsearch.index.id | Index id | keyword |
 | elasticsearch.index.name | Index name | keyword |
 | elasticsearch.node.id | ID of the node | keyword |
 | elasticsearch.node.name | Name of the node | keyword |
 | elasticsearch.shard.id | Id of the shard | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.thread.name | Thread name. | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 
 
 ### Garbage collection
@@ -93,6 +122,7 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.name | Name of the cluster | keyword |
 | elasticsearch.cluster.uuid | UUID of the cluster | keyword |
 | elasticsearch.component | Elasticsearch component from where the log event originated | keyword |
@@ -121,6 +151,12 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | elasticsearch.node.id | ID of the node | keyword |
 | elasticsearch.node.name | Name of the node | keyword |
 | elasticsearch.shard.id | Id of the shard | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.pid | Process id. | long |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### Server
@@ -133,6 +169,7 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.name | Name of the cluster | keyword |
 | elasticsearch.cluster.uuid | UUID of the cluster | keyword |
 | elasticsearch.component | Elasticsearch component from where the log event originated | keyword |
@@ -146,7 +183,20 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | elasticsearch.server.gc.young.one |  | long |
 | elasticsearch.server.gc.young.two |  | long |
 | elasticsearch.server.stacktrace |  | keyword |
+| elasticsearch.server.tags |  | nested |
 | elasticsearch.shard.id | Id of the shard | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.thread.name | Thread name. | keyword |
+| server.name |  | keyword |
+| server.type |  | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 
 
 ### Slowlog
@@ -159,6 +209,7 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.name | Name of the cluster | keyword |
 | elasticsearch.cluster.uuid | UUID of the cluster | keyword |
 | elasticsearch.component | Elasticsearch component from where the log event originated | keyword |
@@ -177,9 +228,19 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | elasticsearch.slowlog.stats | Stats groups | keyword |
 | elasticsearch.slowlog.took | Time it took to execute the query | keyword |
 | elasticsearch.slowlog.total_hits | Total hits | keyword |
-| elasticsearch.slowlog.total_shards | Total queried shards | keyword |
+| elasticsearch.slowlog.total_shards | Total queried shards | long |
 | elasticsearch.slowlog.type | Type | keyword |
 | elasticsearch.slowlog.types | Types | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.thread.name | Thread name. | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 
 
 ## Metrics
