@@ -589,91 +589,146 @@ An example event for `index` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-02T14:06:12.353Z",
     "agent": {
-        "hostname": "docker-fleet-agent",
+        "ephemeral_id": "5c8415cd-4402-4ddf-b627-b13790bc3197",
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
         "name": "docker-fleet-agent",
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
         "type": "metricbeat",
-        "ephemeral_id": "2b6da727-313f-41fc-84af-3cd928f265c1",
-        "version": "7.14.0"
+        "version": "8.3.2"
+    },
+    "data_stream": {
+        "dataset": "elasticsearch.index",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "version": "7.14.0",
-        "snapshot": true
-    },
-    "@timestamp": "2021-07-30T14:46:47.831Z",
-    "ecs": {
-        "version": "1.10.0"
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
+        "snapshot": false,
+        "version": "8.3.2"
     },
     "elasticsearch": {
         "cluster": {
-            "name": "docker-cluster",
-            "id": "bvF4SoDLQU-sdM3YY8JI8Q"
+            "id": "zv3a1lJUQoK10VDNC6J0qA",
+            "name": "elasticsearch"
         },
         "index": {
-            "total": {
+            "hidden": false,
+            "name": "testindex2",
+            "primaries": {
                 "docs": {
-                    "deleted": 0,
-                    "count": 13267
+                    "count": 0
                 },
-                "store": {
-                    "size": {
-                        "bytes": 1490775
-                    }
+                "indexing": {
+                    "index_time_in_millis": 0,
+                    "index_total": 0,
+                    "throttle_time_in_millis": 0
+                },
+                "merges": {
+                    "total_size_in_bytes": 0
+                },
+                "refresh": {
+                    "total_time_in_millis": 0
                 },
                 "segments": {
-                    "memory": {
-                        "bytes": 50388
-                    },
-                    "count": 5
+                    "count": 0
+                },
+                "store": {
+                    "size_in_bytes": 675
                 }
             },
-            "name": ".ds-metrics-elasticsearch.shard-default-2021.07.30-000001"
+            "shards": {
+                "primaries": 3,
+                "total": 6
+            },
+            "status": "yellow",
+            "total": {
+                "bulk": {
+                    "avg_size_in_bytes": 0,
+                    "avg_time_in_millis": 0,
+                    "total_operations": 0,
+                    "total_size_in_bytes": 0,
+                    "total_time_in_millis": 0
+                },
+                "docs": {
+                    "count": 0
+                },
+                "fielddata": {
+                    "memory_size_in_bytes": 0
+                },
+                "indexing": {
+                    "index_time_in_millis": 0,
+                    "index_total": 0,
+                    "throttle_time_in_millis": 0
+                },
+                "merges": {
+                    "total_size_in_bytes": 0
+                },
+                "refresh": {
+                    "total_time_in_millis": 0
+                },
+                "search": {
+                    "query_time_in_millis": 0,
+                    "query_total": 0
+                },
+                "segments": {
+                    "count": 0,
+                    "doc_values_memory_in_bytes": 0,
+                    "fixed_bit_set_memory_in_bytes": 0,
+                    "index_writer_memory_in_bytes": 0,
+                    "memory_in_bytes": 0,
+                    "norms_memory_in_bytes": 0,
+                    "points_memory_in_bytes": 0,
+                    "stored_fields_memory_in_bytes": 0,
+                    "term_vectors_memory_in_bytes": 0,
+                    "terms_memory_in_bytes": 0,
+                    "version_map_memory_in_bytes": 0
+                },
+                "store": {
+                    "size_in_bytes": 675
+                }
+            },
+            "uuid": "lH2NeM70TlKGEB11uUxiuA"
         }
     },
-    "service": {
-        "address": "http://elasticsearch:9200",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "elasticsearch.index"
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "elasticsearch.index",
+        "duration": 34210900,
+        "ingested": "2022-09-02T14:06:13Z",
+        "module": "elasticsearch"
     },
     "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.11.10-arch1-1",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
+        "architecture": "x86_64",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
         "ip": [
             "172.18.0.7"
         ],
-        "name": "docker-fleet-agent",
-        "id": "8979eb4aa312c3dccea3823dd92f92f5",
         "mac": [
             "02:42:ac:12:00:07"
         ],
-        "architecture": "x86_64"
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
-        "period": 10000,
-        "name": "index"
+        "name": "index",
+        "period": 10000
     },
-    "event": {
-        "duration": 14394992,
-        "agent_id_status": "verified",
-        "ingested": "2021-07-30T14:46:48.854674866Z",
-        "module": "elasticsearch",
-        "dataset": "elasticsearch.index"
+    "service": {
+        "address": "http://elastic-package-service_elasticsearch_1:9200",
+        "type": "elasticsearch"
     }
 }
 ```
@@ -931,109 +986,165 @@ An example event for `index_summary` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-02T14:10:23.665Z",
     "agent": {
-        "hostname": "docker-fleet-agent",
+        "ephemeral_id": "55b3cf18-dd78-4f16-b4bf-5e2f17e8fa94",
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
         "name": "docker-fleet-agent",
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "ephemeral_id": "2b6da727-313f-41fc-84af-3cd928f265c1",
         "type": "metricbeat",
-        "version": "7.14.0"
+        "version": "8.3.2"
+    },
+    "data_stream": {
+        "dataset": "elasticsearch.index_summary",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "version": "7.14.0",
-        "snapshot": true
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
+        "snapshot": false,
+        "version": "8.3.2"
     },
-    "@timestamp": "2021-07-30T14:47:15.391Z",
     "elasticsearch": {
         "cluster": {
-            "name": "docker-cluster",
-            "id": "bvF4SoDLQU-sdM3YY8JI8Q"
+            "id": "nPDD0fDIS_KaAAIa1Ym-rw",
+            "name": "elasticsearch"
         },
         "index": {
             "summary": {
                 "primaries": {
-                    "docs": {
-                        "deleted": 7226,
-                        "count": 50723
-                    },
-                    "store": {
+                    "bulk": {
+                        "operations": {
+                            "count": 3
+                        },
                         "size": {
-                            "bytes": 36769186
+                            "bytes": 45
+                        },
+                        "time": {
+                            "avg": {
+                                "bytes": 4
+                            }
+                        }
+                    },
+                    "docs": {
+                        "count": 3,
+                        "deleted": 0
+                    },
+                    "indexing": {
+                        "index": {
+                            "count": 3,
+                            "time": {
+                                "ms": 17
+                            }
+                        }
+                    },
+                    "search": {
+                        "query": {
+                            "count": 9,
+                            "time": {
+                                "ms": 16
+                            }
                         }
                     },
                     "segments": {
+                        "count": 3,
                         "memory": {
-                            "bytes": 1790592
-                        },
-                        "count": 222
+                            "bytes": 0
+                        }
+                    },
+                    "store": {
+                        "size": {
+                            "bytes": 8466
+                        }
                     }
                 },
                 "total": {
-                    "docs": {
-                        "deleted": 7226,
-                        "count": 50723
-                    },
-                    "store": {
+                    "bulk": {
+                        "operations": {
+                            "count": 3
+                        },
                         "size": {
-                            "bytes": 36769186
+                            "bytes": 45
+                        },
+                        "time": {
+                            "avg": {
+                                "bytes": 4
+                            }
+                        }
+                    },
+                    "docs": {
+                        "count": 3,
+                        "deleted": 0
+                    },
+                    "indexing": {
+                        "index": {
+                            "count": 3,
+                            "time": {
+                                "ms": 17
+                            }
+                        }
+                    },
+                    "search": {
+                        "query": {
+                            "count": 9,
+                            "time": {
+                                "ms": 16
+                            }
                         }
                     },
                     "segments": {
+                        "count": 3,
                         "memory": {
-                            "bytes": 1790592
-                        },
-                        "count": 222
+                            "bytes": 0
+                        }
+                    },
+                    "store": {
+                        "size": {
+                            "bytes": 8466
+                        }
                     }
                 }
             }
         }
     },
-    "ecs": {
-        "version": "1.10.0"
-    },
-    "service": {
-        "address": "http://elasticsearch:9200",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "elasticsearch.index_summary"
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "elasticsearch.index_summary",
+        "duration": 32047000,
+        "ingested": "2022-09-02T14:10:24Z",
+        "module": "elasticsearch"
     },
     "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.11.10-arch1-1",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
+        "architecture": "x86_64",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
         "ip": [
             "172.18.0.7"
         ],
-        "name": "docker-fleet-agent",
-        "id": "8979eb4aa312c3dccea3823dd92f92f5",
         "mac": [
             "02:42:ac:12:00:07"
         ],
-        "architecture": "x86_64"
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
-        "period": 10000,
-        "name": "index_summary"
+        "name": "index_summary",
+        "period": 10000
     },
-    "event": {
-        "duration": 12151260,
-        "agent_id_status": "verified",
-        "ingested": "2021-07-30T14:47:16.373343461Z",
-        "module": "elasticsearch",
-        "dataset": "elasticsearch.index_summary"
+    "service": {
+        "address": "http://elastic-package-service_elasticsearch_1:9200",
+        "name": "elasticsearch",
+        "type": "elasticsearch"
     }
 }
 ```
@@ -1165,26 +1276,34 @@ An example event for `node` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-02T14:13:34.927Z",
     "agent": {
-        "hostname": "docker-fleet-agent",
+        "ephemeral_id": "47946444-4c3a-4915-91dd-bf515aba9740",
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
         "name": "docker-fleet-agent",
-        "id": "27d29977-878e-4309-81ed-8788662503ad",
-        "ephemeral_id": "f8f510e7-9503-4e3d-af7f-da2992648d31",
         "type": "metricbeat",
-        "version": "7.15.0"
+        "version": "8.3.2"
+    },
+    "data_stream": {
+        "dataset": "elasticsearch.node",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "27d29977-878e-4309-81ed-8788662503ad",
-        "version": "7.15.0",
-        "snapshot": true
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
+        "snapshot": false,
+        "version": "8.3.2"
     },
-    "@timestamp": "2021-08-03T12:27:26.083Z",
     "elasticsearch": {
         "cluster": {
-            "name": "docker-cluster",
-            "id": "icut8oAwR--oCfUTlFaPMg"
+            "id": "ziL93dUTRmGy5hsfhhq3Ww",
+            "name": "elasticsearch"
         },
         "node": {
+            "id": "3nCEJ8F6SCuBH_c_YJNQSA",
             "jvm": {
                 "memory": {
                     "heap": {
@@ -1204,61 +1323,51 @@ An example event for `node` looks as following:
                         }
                     }
                 },
-                "version": "16.0.1"
+                "version": "18.0.2"
             },
+            "name": "1a6b5d803000",
             "process": {
                 "mlockall": false
             },
-            "name": "2b8824139b92",
-            "id": "saWHxJSZQF6VqGZvEb45Uw",
-            "version": "7.15.0"
+            "version": "8.5.0"
         }
     },
-    "ecs": {
-        "version": "1.10.0"
-    },
-    "service": {
-        "address": "http://elasticsearch:9200",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "elasticsearch.node"
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "elasticsearch.node",
+        "duration": 18259400,
+        "ingested": "2022-09-02T14:13:35Z",
+        "module": "elasticsearch"
     },
     "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.11.10-arch1-1",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
+        "architecture": "x86_64",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
         "ip": [
-            "172.24.0.7"
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
-        "id": "1292624d19b2cee1a317ad634c9a8358",
-        "mac": [
-            "02:42:ac:18:00:07"
-        ],
-        "architecture": "x86_64"
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
-        "period": 10000,
-        "name": "node"
+        "name": "node",
+        "period": 10000
     },
-    "event": {
-        "duration": 9853150,
-        "agent_id_status": "verified",
-        "ingested": "2021-08-03T12:27:27.080460943Z",
-        "module": "elasticsearch",
-        "dataset": "elasticsearch.node"
+    "service": {
+        "address": "http://elastic-package-service_elasticsearch_1:9200",
+        "name": "elasticsearch",
+        "type": "elasticsearch"
     }
 }
 ```
@@ -1585,86 +1694,93 @@ An example event for `shard` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-02T14:19:48.613Z",
     "agent": {
-        "hostname": "docker-fleet-agent",
+        "ephemeral_id": "7533d718-43c3-4106-aa29-37168d6a2769",
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
         "name": "docker-fleet-agent",
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
         "type": "metricbeat",
-        "ephemeral_id": "2b6da727-313f-41fc-84af-3cd928f265c1",
-        "version": "7.14.0"
+        "version": "8.3.2"
+    },
+    "data_stream": {
+        "dataset": "elasticsearch.shard",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "version": "7.14.0",
-        "snapshot": true
-    },
-    "@timestamp": "2021-07-30T14:41:17.832Z",
-    "ecs": {
-        "version": "1.10.0"
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
+        "snapshot": false,
+        "version": "8.3.2"
     },
     "elasticsearch": {
-        "node": {
-            "name": "6XuAxHXaRbeX6LUrxIfAxg"
-        },
         "cluster": {
-            "name": "docker-cluster",
-            "id": "bvF4SoDLQU-sdM3YY8JI8Q",
+            "id": "hBVXsE1NTkqWp6cdjr-yWw",
+            "name": "elasticsearch",
             "state": {
-                "id": "mOYQ8E-ORnGSnnp9sB4BCw"
+                "id": "V7ASeCFmSXWm7W-tuSl_bA"
+            },
+            "stats": {
+                "state": {
+                    "state_uuid": "V7ASeCFmSXWm7W-tuSl_bA"
+                }
             }
         },
         "index": {
-            "name": ".async-search"
+            "name": ".ds-.logs-deprecation.elasticsearch-default-2022.09.02-000001"
+        },
+        "node": {
+            "id": "JGcyPUWaTiOW2Ri0hDUC-A",
+            "name": "32a9c755b09e"
         },
         "shard": {
             "number": 0,
+            "primary": true,
             "relocating_node": {},
-            "state": "STARTED",
-            "primary": true
+            "source_node": {
+                "name": "32a9c755b09e",
+                "uuid": "JGcyPUWaTiOW2Ri0hDUC-A"
+            },
+            "state": "STARTED"
         }
     },
-    "service": {
-        "address": "http://elasticsearch:9200",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "elasticsearch.shard"
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "elasticsearch.shard",
+        "duration": 17200300,
+        "ingested": "2022-09-02T14:19:49Z",
+        "module": "elasticsearch"
     },
     "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.11.10-arch1-1",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
-            "type": "linux",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
+        "architecture": "x86_64",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
         "ip": [
             "172.18.0.7"
         ],
-        "name": "docker-fleet-agent",
-        "id": "8979eb4aa312c3dccea3823dd92f92f5",
         "mac": [
             "02:42:ac:12:00:07"
         ],
-        "architecture": "x86_64"
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
-        "period": 10000,
-        "name": "shard"
+        "name": "shard",
+        "period": 10000
     },
-    "event": {
-        "duration": 4139652,
-        "agent_id_status": "verified",
-        "ingested": "2021-07-30T14:41:18.844042490Z",
-        "module": "elasticsearch",
-        "dataset": "elasticsearch.shard"
+    "service": {
+        "address": "http://elastic-package-service_elasticsearch_1:9200",
+        "type": "elasticsearch"
     }
 }
 ```
