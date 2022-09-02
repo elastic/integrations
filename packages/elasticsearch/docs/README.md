@@ -986,9 +986,9 @@ An example event for `index_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-02T14:10:23.665Z",
+    "@timestamp": "2022-09-02T14:23:38.078Z",
     "agent": {
-        "ephemeral_id": "55b3cf18-dd78-4f16-b4bf-5e2f17e8fa94",
+        "ephemeral_id": "5dcbe5f9-d61d-4931-b4f3-a334e8e999b2",
         "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -1009,7 +1009,7 @@ An example event for `index_summary` looks as following:
     },
     "elasticsearch": {
         "cluster": {
-            "id": "nPDD0fDIS_KaAAIa1Ym-rw",
+            "id": "zZUl__19TuWgxPiewmnJ3Q",
             "name": "elasticsearch"
         },
         "index": {
@@ -1036,7 +1036,7 @@ An example event for `index_summary` looks as following:
                         "index": {
                             "count": 3,
                             "time": {
-                                "ms": 17
+                                "ms": 14
                             }
                         }
                     },
@@ -1044,7 +1044,7 @@ An example event for `index_summary` looks as following:
                         "query": {
                             "count": 9,
                             "time": {
-                                "ms": 16
+                                "ms": 20
                             }
                         }
                     },
@@ -1082,7 +1082,7 @@ An example event for `index_summary` looks as following:
                         "index": {
                             "count": 3,
                             "time": {
-                                "ms": 17
+                                "ms": 14
                             }
                         }
                     },
@@ -1090,7 +1090,7 @@ An example event for `index_summary` looks as following:
                         "query": {
                             "count": 9,
                             "time": {
-                                "ms": 16
+                                "ms": 20
                             }
                         }
                     },
@@ -1112,8 +1112,8 @@ An example event for `index_summary` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "elasticsearch.index_summary",
-        "duration": 32047000,
-        "ingested": "2022-09-02T14:10:24Z",
+        "duration": 32732300,
+        "ingested": "2022-09-02T14:23:39Z",
         "module": "elasticsearch"
     },
     "host": {
