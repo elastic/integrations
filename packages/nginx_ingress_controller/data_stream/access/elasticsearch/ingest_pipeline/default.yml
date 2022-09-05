@@ -82,7 +82,7 @@ processors:
       ignore_empty_value: true
       ignore_failure: true
   - script:
-      if: ctx.nginx?.ingress_controller?.access?.upstream?.response?.length_list != null && ctx.nginx_ingress_controller.access.upstream.response.length_list.length > 0
+      if: ctx.nginx_ingress_controller?.access?.upstream?.response?.length_list != null && ctx.nginx_ingress_controller.access.upstream.response.length_list.length > 0
       lang: painless
       source: >-
         try {
@@ -99,7 +99,7 @@ processors:
           ctx.nginx_ingress_controller.access.upstream.response.length = null;
         }
   - script:
-      if: ctx.nginx?.ingress_controller?.access?.upstream?.response?.time_list != null && ctx.nginx_ingress_controller.access.upstream.response.time_list.length > 0
+      if: ctx.nginx_ingress_controller?.access?.upstream?.response?.time_list != null && ctx.nginx_ingress_controller.access.upstream.response.time_list.length > 0
       lang: painless
       source: >-
         try {
@@ -116,7 +116,7 @@ processors:
           ctx.nginx_ingress_controller.access.upstream.response.time = null;
         }
   - script:
-      if: ctx.nginx?.ingress_controller?.access?.upstream?.response?.status_code_list != null && ctx.nginx_ingress_controller.access.upstream.response.status_code_list.length > 0
+      if: ctx.nginx_ingress_controller?.access?.upstream?.response?.status_code_list != null && ctx.nginx_ingress_controller.access.upstream.response.status_code_list.length > 0
       lang: painless
       source: >-
         try {
@@ -133,15 +133,15 @@ processors:
           ctx.nginx_ingress_controller.access.upstream.response.status_code = null;
         }
   - script:
-      if: ctx.nginx?.ingress_controller?.access?.upstream_address_list != null && ctx.nginx_ingress_controller.upstream_address_list.length > 0
+      if: ctx.nginx_ingress_controller?.access?.upstream_address_list != null && ctx.nginx_ingress_controller.access.upstream_address_list.length > 0
       lang: painless
       source: >-
         try {
-          if (ctx.nginx_ingress_controller.upstream_address_list.length == null) {
+          if (ctx.nginx_ingress_controller.access.upstream_address_list.length == null) {
             return;
           }
           def last_upstream = "";
-          for (def item : ctx.nginx_ingress_controller.upstream_address_list) {
+          for (def item : ctx.nginx_ingress_controller.access.upstream_address_list) {
             last_upstream = item;
           }
           StringTokenizer tok = new StringTokenizer(last_upstream, ":");
@@ -157,7 +157,7 @@ processors:
           ctx.nginx_ingress_controller.access.upstream.port = null;
         }
   - script:
-      if: ctx.nginx?.ingress_controller?.access?.remote_ip_list != null && ctx.nginx_ingress_controller.access.remote_ip_list.length > 0
+      if: ctx.nginx_ingress_controller?.access?.remote_ip_list != null && ctx.nginx_ingress_controller.access.remote_ip_list.length > 0
       lang: painless
       source: >-
         boolean isPrivate(def dot, def ip) {
