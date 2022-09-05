@@ -7,6 +7,7 @@ processors:
   - set:
       copy_from: "@timestamp"
       field: event.created
+      ignore_empty_value: true
   - grok:
       field: message
       patterns:
@@ -17,7 +18,7 @@ processors:
       if: ctx.first_char != '{'
   - pipeline:
       if: ctx.first_char == '{'
-      name: '{< IngestPipeline "pipeline-json" >}'
+      name: '{{ IngestPipeline "pipeline-json" }}'
   - set:
       field: event.kind
       value: event
