@@ -32,7 +32,11 @@ processors:
   - grok:
       field: _temp_.full_message
       patterns:
-        - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.reason}: %{DATA}:%{INT} %{GREEDYDATA:message}"
+        - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.action}: %{DATA}:%{INT} %{GREEDYDATA:message}"
+  - grok:
+      field: _temp_.full_message
+      patterns:
+        - "%{DATA:_temp_.reason}:"
 
   #
   # Set log.level
@@ -86,13 +90,13 @@ processors:
   # Parse out IP addresses from Logs
   - grok:
       field: message
-      if: "ctx.event?.reason == 'ENTRY_CREATED' || ctx.event?.reason == 'ENTRY_DELETED'"
+      if: "ctx.event?.action == 'ENTRY_CREATED' || ctx.event?.action == 'ENTRY_DELETED'"
       patterns:
         - "((Entry created)|(Entry deleted)) A=%{IP:client.ip}"
   # Parse out User addresses from Logs
   - grok:
       field: message
-      if: "ctx.event?.reason == 'AAA_AUTH_ADMIN_USER'"
+      if: "ctx.event?.action == 'AAA_AUTH_ADMIN_USER'"
       patterns:
         - "Authentication succeeded for admin user '%{DATA:user.name}' on %{IP:client.ip}"
 
@@ -149,6 +153,135 @@ processors:
       field: client.as.organization_name
       target_field: client.as.organization.name
       ignore_missing: true
+
+
+  # Adding information to event types
+  - set:
+      description: SISF-6-ENTRY_CREATED
+      field: event.reason
+      if: ctx._temp_?.reason == 'SISF-6-ENTRY_CREATED'
+      ignore_failure: true
+      value: IPv6 Neighbor Discovery,A low rate of vetoed resolutions is not serious.
+        If there is a high rate of vetos this might suggest that the link is under attack.
+        Investigate the source of the packets driving these resolution requests"
+  - set:
+      description: SISF-6-ENTRY_DELETED
+      field: event.reason
+      if: ctx._temp_?.reason == 'SISF-6-ENTRY_DELETED'
+      ignore_failure: true
+      value: Device Smart-Licensing status is out of compliance.
+  - set:
+      description: BCAST-4-MLD_INVALID_IPV6_PKT
+      field: event.reason
+      if: ctx._temp_?.reason == 'BCAST-4-MLD_INVALID_IPV6_PKT'
+      ignore_failure: true
+      value: IPv6 MLD packets are must have nexthdr as zero and hop limit of 1 in the
+        IPv6 header.
+  - set:
+      description: NIM-3-ADMIN_MODE_DISABLE
+      field: event.reason
+      if: ctx._temp_?.reason == 'NIM-3-ADMIN_MODE_DISABLE'
+      ignore_failure: true
+      value: Checksum Error on the config file
+  - set:
+      description: WPS-4-SIG_ALARM_OFF
+      field: event.reason
+      if: ctx._temp_?.reason == 'WPS-4-SIG_ALARM_OFF'
+      ignore_failure: true
+      value: Signature Alarm Off"
+  - set:
+      description: AAA-5-AAA_AUTH_ADMIN_USER
+      field: event.reason
+      if: ctx._temp_?.reason == 'AAA-5-AAA_AUTH_ADMIN_USER'
+      ignore_failure: true
+      value: Authentication for an admin user.
+  - set:
+      description: LWAPP-4-SIG_INFO1
+      field: event.reason
+      if: ctx._temp_?.reason == 'LWAPP-4-SIG_INFO1'
+      ignore_failure: true
+      value: An internal error caused while freeing AID. This AID is used by some other
+        client.
+  - set:
+      description: SISF-6-ENTRY_CHANGED
+      field: event.reason
+      if: ctx._temp_?.reason == 'SISF-6-ENTRY_CHANGED'
+      ignore_failure: true
+      value: An entry was created in the binding table
+  - set:
+      description: APF-4-MOBILESTATION_NOT_FOUND
+      field: event.reason
+      if: ctx._temp_?.reason == 'APF-4-MOBILESTATION_NOT_FOUND'
+      ignore_failure: true
+      value: Could not find a particular mobile station in internal database
+  - set:
+      description: DOT1X-4-MAX_EAPOL_KEY_RETRANS
+      field: event.reason
+      if: ctx._temp_?.reason == 'DOT1X-4-MAX_EAPOL_KEY_RETRANS'
+      ignore_failure: true
+      value: An unknown attribute-value pair was received during EAP processing. The
+        AVP was ignored.
+  - set:
+      description: RRM-3-RRM_LOGMSG
+      field: event.reason
+      if: ctx._temp_?.reason == 'RRM-3-RRM_LOGMSG'
+      ignore_failure: true
+      value: Load profile recovery
+  - set:
+      description: AAA-3-INVALID_REQUEST
+      field: event.reason
+      if: ctx._temp_?.reason == 'AAA-3-INVALID_REQUEST'
+      ignore_failure: true
+      value: The system has received an AAA request with a null or invalid payload.
+  - set:
+      description: DOT1X-3-AAA_AUTH_SEND_FAIL
+      field: event.reason
+      if: ctx._temp_?.reason == 'DOT1X-3-AAA_AUTH_SEND_FAIL'
+      ignore_failure: true
+      value: Client authentication failed because an internal error occurred during
+        authentication state transition.
+  - set:
+      description: DOT1X-3-ABORT_AUTH
+      field: event.reason
+      if: ctx._temp_?.reason == 'DOT1X-3-ABORT_AUTH'
+      ignore_failure: true
+      value: A message on an internal queue could not be processed because the client
+        indicated in the message was not found in the internal database.
+  - set:
+      description: DOT1X-3-INVALID_WPA_KEY_STATE
+      field: event.reason
+      if: ctx._temp_?.reason == 'DOT1X-3-INVALID_WPA_KEY_STATE'
+      ignore_failure: true
+      value: Not able to verify PMKR1Name for the client. Try client association again.
+  - set:
+      description: DOT1X-3-WPA_SEND_STATE_ERR
+      field: event.reason
+      if: ctx._temp_?.reason == 'DOT1X-3-WPA_SEND_STATE_ERR'
+      ignore_failure: true
+      value: A pre-authentication request message from a client was ignored
+  - set:
+      description: DOT1X-3-INVALID_REPLAY_CTR
+      field: event.reason
+      if: ctx._temp_?.reason == 'DOT1X-3-INVALID_REPLAY_CTR'
+      ignore_failure: true
+      value: Error while calcualting PTK using KDF algo. for11r or 11w capable clients
+        as Input Key Len is wrong.
+  - set:
+      description: LWAPP-3-REPLAY_ERR
+      field: event.reason
+      if: ctx._temp_?.reason == 'LWAPP-3-REPLAY_ERR'
+      ignore_failure: true
+      value: The controller has received a replay error on the specified AP and WLAN.
+  - set:
+      description: DOT1X-3-CLIENT_NOT_FOUND
+      field: event.reason
+      if: ctx._temp_?.reason == 'DOT1X-3-CLIENT_NOT_FOUND'
+      ignore_failure: true
+      value: AP's 802.1X interface was not allocated by WLC which is required for client
+        association on dot1x WLAN. Hence Client association on dot1xWLAN with this AP
+        will fail.
+
+
 
   # Cleanup fields
   - remove:

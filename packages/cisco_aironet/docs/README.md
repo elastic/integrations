@@ -20,8 +20,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-08-20T11:25:50.157Z",
     "agent": {
-        "ephemeral_id": "9bb74749-f2f0-4bd3-bce8-4ed2de519dc8",
-        "id": "9282577a-dfab-4415-b10d-f033f0718124",
+        "ephemeral_id": "3e91057c-1ca6-488c-8115-906bc9656c6c",
+        "id": "db4e502b-a6b2-4454-9dd2-4be776874ae9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.3"
@@ -38,14 +38,14 @@ An example event for `log` looks as following:
         "version": "8.3.1"
     },
     "elastic_agent": {
-        "id": "9282577a-dfab-4415-b10d-f033f0718124",
+        "id": "db4e502b-a6b2-4454-9dd2-4be776874ae9",
         "snapshot": false,
         "version": "8.3.3"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_aironet.log",
-        "ingested": "2022-09-05T07:10:00Z",
+        "ingested": "2022-09-05T09:02:43Z",
         "original": "\u003c134\u003eWLC001: *SISF BT Process: Aug 20 11:25:50.157: %SISF-6-ENTRY_DELETED: sisf_shim_utils.c:482 Entry deleted A=fe80::aee2:d3ff:feba:56a4 V=0 I=wired:1 P=0000 M=",
         "provider": "SISF",
         "reason": "ENTRY_DELETED",
@@ -61,7 +61,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.0.4:41996"
+            "address": "172.18.0.4:51735"
         },
         "syslog": {
             "facility": {
