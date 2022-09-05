@@ -190,6 +190,7 @@ An example event for `access` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| http.request.id | A unique identifier for each HTTP request to correlate logs between clients and servers in transactions. The id may be contained in a non-standard HTTP header, such as `X-Request-ID` or `X-Correlation-ID`. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
@@ -203,13 +204,15 @@ An example event for `access` looks as following:
 | nginx_ingress_controller.access.http.request.time | Time elapsed since the first bytes were read from the client | double |
 | nginx_ingress_controller.access.remote_ip_list | An array of remote IP addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. Real source IP is restored to `source.ip`. | array |
 | nginx_ingress_controller.access.upstream.alternative_name | The name of the alternative upstream. | text |
-| nginx_ingress_controller.access.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
+| nginx_ingress_controller.access.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, this will be the first IP in the list | ip |
+| nginx_ingress_controller.access.upstream.ip_port_list | The entire list of upstream IP address and port of the upstream server(s). | keyword |
 | nginx_ingress_controller.access.upstream.name | The name of the upstream. | text |
 | nginx_ingress_controller.access.upstream.port | The port of the upstream server. | keyword |
 | nginx_ingress_controller.access.upstream.response.length | The length of the response obtained from the upstream server | long |
 | nginx_ingress_controller.access.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
 | nginx_ingress_controller.access.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
