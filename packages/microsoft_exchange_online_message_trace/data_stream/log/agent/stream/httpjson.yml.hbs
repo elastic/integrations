@@ -1,6 +1,6 @@
 config_version: 2
 interval: {{interval}}
-request.method: POST
+request.method: GET
 request.url: {{url}}
 request.timeout: 60s
 {{#if proxy_url }}
@@ -9,7 +9,6 @@ request.proxy_url: {{proxy_url}}
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
-
 {{#if username}}
 {{#if password}}
 auth.basic.user: {{username}}
@@ -27,6 +26,8 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+response.split:
+  target: body.value
 {{#if processors}}
 processors:
 {{processors}}

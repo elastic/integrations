@@ -103,3 +103,26 @@ An example event for `log` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.attachments.file.size | Attachment file size in bytes. | long |
+| email.delivery_timestamp | The date and time when the email message was received by the service or client. | date |
+| email.direction | The direction of the message based on the sending and receiving domains. | keyword |
+| email.from.address | The email address of the sender, typically from the RFC 5322 `From:` header field. | keyword |
+| email.local_id | Unique identifier given to the email by the source that created the event. Identifier is not persistent across hops. | keyword |
+| email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
+| input.type |  | keyword |
+| log.offset |  | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location.lat | Longitude and latitude. | geo_point |
+| source.geo.location.lon | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| tags | List of keywords used to tag each event. | keyword |
