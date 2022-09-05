@@ -413,11 +413,11 @@ Or you must be an administrator for the repository or for the organization that 
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
-An example event for `secret_scanning` looks as following:
+An example event for `dependabot` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-30T18:07:27.000Z",
+    "@timestamp": "2022-07-11T11:39:07.000Z",
     "agent": {
         "ephemeral_id": "754eabe5-2aae-4257-9e1d-cb59dbf69b9c",
         "id": "b0d78316-ce10-4f39-8242-f2f82834a13a",
@@ -426,7 +426,7 @@ An example event for `secret_scanning` looks as following:
         "version": "8.3.0"
     },
     "data_stream": {
-        "dataset": "github.secret_scanning",
+        "dataset": "github.dependabot",
         "namespace": "ep",
         "type": "logs"
     },
@@ -439,7 +439,7 @@ An example event for `secret_scanning` looks as following:
         "version": "8.3.0"
     },
     "event": {
-        "action": "secret_scanning",
+        "action": "dependabot",
         "agent_id_status": "verified",
         "created": "2022-06-30T18:07:27Z",
         "dataset": "github.secret_scanning",
@@ -463,15 +463,10 @@ An example event for `secret_scanning` looks as following:
             "push_protection_bypassed_by": {
                 "html_url": "https://github.com/sample_owner",
                 "login": "sample_owner",
-                "type": "User",
-                "url": "https://api.github.com/users/sample_owner"
+                "url": "https://github.com/sample_owner"
             },
-            "resolution": "revoked",
-            "resolved_by": {
-                "login": "sample_owner",
-                "type": "User",
-                "url": "https://api.github.com/users/sample_owner"
-            },
+            "url": "https://github.com/sample_owner/sample_repo"
+        },
             "secret": "npXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXbl",
             "secret_type": "npm_access_token",
             "secret_type_display_name": "npm Access Token",
@@ -485,9 +480,30 @@ An example event for `secret_scanning` looks as following:
     },
     "tags": [
         "forwarded",
-        "github-secret-scanning",
-        "preserve_original_event",
-        "hide_secret"
-    ]
+        "github-dependabot",
+        "preserve_original_event"
+    ],
+    "vulnerability": {
+        "classification": "CVSS",
+        "description": "Versions 4.2.1 and earlier of `jsonwebtoken` are affected by a verification bypass vulnerability. This is a result of weak validation of the JWT algorithm type, occuring when an attacker is allowed to arbitrarily specify the JWT algorithm.\n\n\n\n\n## Recommendation\n\nUpdate to version 4.2.2 or later.",
+        "enumeration": "CVE",
+        "id": "CVE-2015-9235",
+        "reference": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2015-9235",
+            "https://github.com/auth0/node-jsonwebtoken/commit/1bb584bc382295eeb7ee8c4452a673a77a68b687",
+            "https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/",
+            "https://github.com/advisories/GHSA-c7hr-j4mj-j2w6",
+            "https://www.npmjs.com/advisories/17",
+            "https://www.timmclean.net/2015/02/25/jwt-alg-none.html",
+            "https://nodesecurity.io/advisories/17"
+        ],
+        "scanner": {
+            "vendor": "Github"
+        },
+        "score": {
+            "base": 0
+        },
+        "severity": "CRITICAL"
+    }
 }
 ```

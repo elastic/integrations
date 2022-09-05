@@ -54,7 +54,7 @@
                                     "customLabel": true,
                                     "dataType": "number",
                                     "isBucketed": false,
-                                    "label": "Part of Alerts count ",
+                                    "label": "Part of Alerts count by repository",
                                     "operationType": "count",
                                     "params": {
                                         "emptyAsNull": false
@@ -100,11 +100,11 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "1d50dadb-a088-4e8b-842f-8d84e6378658",
+                        "index": "ce3ca9ae-04e9-4cd5-b656-f67c0d189021",
                         "key": "data_stream.dataset",
                         "negate": false,
                         "params": [
-                            "github.code_scanning"
+                            "github.dependabot"
                         ],
                         "type": "phrases"
                     },
@@ -114,10 +114,31 @@
                             "should": [
                                 {
                                     "match_phrase": {
-                                        "data_stream.dataset": "github.code_scanning"
+                                        "data_stream.dataset": "github.dependabot"
                                     }
                                 }
                             ]
+                        }
+                    }
+                },
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "index": "383a635a-72ee-4205-a4ed-e01183618537",
+                        "key": "github.state",
+                        "negate": false,
+                        "params": {
+                            "query": "OPEN"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "github.state": "OPEN"
                         }
                     }
                 }
@@ -175,7 +196,7 @@
                 "valueLabels": "hide"
             }
         },
-        "title": "Alerts count by owner and by repository [GitHub Code Scanning]",
+        "title": "Open Alerts count by owner and by repository [GitHub Dependabot]",
         "visualizationType": "lnsXY"
     },
     "coreMigrationVersion": "8.3.0",
@@ -191,7 +212,12 @@
         },
         {
             "id": "logs-*",
-            "name": "1d50dadb-a088-4e8b-842f-8d84e6378658",
+            "name": "ce3ca9ae-04e9-4cd5-b656-f67c0d189021",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "383a635a-72ee-4205-a4ed-e01183618537",
             "type": "index-pattern"
         }
     ],

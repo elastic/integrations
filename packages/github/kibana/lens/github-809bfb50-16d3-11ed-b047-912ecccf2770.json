@@ -42,11 +42,11 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "5d417c98-6b80-42b4-9183-15bf539c9c46",
+                        "index": "9176eeb7-74dd-4331-994e-a4e132987a87",
                         "key": "data_stream.dataset",
                         "negate": false,
                         "params": [
-                            "github.code_scanning"
+                            "github.dependabot"
                         ],
                         "type": "phrases"
                     },
@@ -56,7 +56,7 @@
                             "should": [
                                 {
                                     "match_phrase": {
-                                        "data_stream.dataset": "github.code_scanning"
+                                        "data_stream.dataset": "github.dependabot"
                                     }
                                 }
                             ]
@@ -70,17 +70,24 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "c10f8d54-f8a4-45cf-8c17-527a0b914e14",
-                        "key": "github.code_scanning.state",
+                        "index": "f95422ac-e4fd-4122-8aa6-d885683b8f54",
+                        "key": "github.state",
                         "negate": false,
-                        "params": {
-                            "query": "open"
-                        },
-                        "type": "phrase"
+                        "params": [
+                            "OPEN"
+                        ],
+                        "type": "phrases"
                     },
                     "query": {
-                        "match_phrase": {
-                            "github.code_scanning.state": "open"
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match_phrase": {
+                                        "github.state": "OPEN"
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -140,7 +147,7 @@
                 "textAlign": "center"
             }
         },
-        "title": "Open Alerts Count [GitHub Code Scanning]",
+        "title": "Open Alerts Count [GitHub Dependabot]",
         "visualizationType": "lnsMetric"
     },
     "coreMigrationVersion": "8.3.0",
@@ -156,12 +163,12 @@
         },
         {
             "id": "logs-*",
-            "name": "5d417c98-6b80-42b4-9183-15bf539c9c46",
+            "name": "9176eeb7-74dd-4331-994e-a4e132987a87",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "c10f8d54-f8a4-45cf-8c17-527a0b914e14",
+            "name": "f95422ac-e4fd-4122-8aa6-d885683b8f54",
             "type": "index-pattern"
         }
     ],

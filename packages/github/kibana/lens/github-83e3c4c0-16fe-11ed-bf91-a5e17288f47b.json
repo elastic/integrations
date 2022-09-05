@@ -20,7 +20,7 @@
                                         "emptyAsNull": true
                                     },
                                     "scale": "ratio",
-                                    "sourceField": "github.code_scanning.time_to_resolution.sec"
+                                    "sourceField": "event.duration"
                                 }
                             },
                             "incompleteColumns": {}
@@ -36,17 +36,24 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "1d49d476-9ca6-44e0-8501-35c7f63ed984",
+                        "index": "6eb78a31-f9fc-4454-941f-0e85907c4708",
                         "key": "data_stream.dataset",
                         "negate": false,
-                        "params": {
-                            "query": "github.code_scanning"
-                        },
-                        "type": "phrase"
+                        "params": [
+                            "github.dependabot"
+                        ],
+                        "type": "phrases"
                     },
                     "query": {
-                        "match_phrase": {
-                            "data_stream.dataset": "github.code_scanning"
+                        "bool": {
+                            "minimum_should_match": 1,
+                            "should": [
+                                {
+                                    "match_phrase": {
+                                        "data_stream.dataset": "github.dependabot"
+                                    }
+                                }
+                            ]
                         }
                     }
                 },
@@ -57,15 +64,15 @@
                     "meta": {
                         "alias": null,
                         "disabled": false,
-                        "index": "a0505379-6e67-41c4-b3c8-b7e6bd3efa7d",
-                        "key": "github.code_scanning.time_to_resolution.sec",
+                        "index": "d055dde1-f505-4554-b6f4-68da15fe5b8f",
+                        "key": "event.duration",
                         "negate": false,
                         "type": "exists",
                         "value": "exists"
                     },
                     "query": {
                         "exists": {
-                            "field": "github.code_scanning.time_to_resolution.sec"
+                            "field": "event.duration"
                         }
                     }
                 }
@@ -82,7 +89,7 @@
                 "textAlign": "center"
             }
         },
-        "title": "Mean Time to Resolution [GitHub Code Scanning]",
+        "title": "Mean Time to Resolution [GitHub Dependabot]",
         "visualizationType": "lnsMetric"
     },
     "coreMigrationVersion": "8.3.0",
@@ -98,12 +105,12 @@
         },
         {
             "id": "logs-*",
-            "name": "1d49d476-9ca6-44e0-8501-35c7f63ed984",
+            "name": "6eb78a31-f9fc-4454-941f-0e85907c4708",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "a0505379-6e67-41c4-b3c8-b7e6bd3efa7d",
+            "name": "d055dde1-f505-4554-b6f4-68da15fe5b8f",
             "type": "index-pattern"
         }
     ],
