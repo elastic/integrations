@@ -14,20 +14,20 @@ services:
       - ./config/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
       - ${SERVICE_LOGS_DIR}/elasticsearch_service:/usr/share/elasticsearch/logs
     ports:
-      - "127.0.0.1:9201:9200"
-  logs_generation:
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    environment:
-      - "ES_SERVICE_HOST=http://elasticsearch:9200"
-      - "ES_SERVICE_USERNAME=elastic"
-      - "ES_SERVICE_PASSWORD=changeme"
-    image: "alpine/curl:3.14"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://elasticsearch:9200/"]
-      retries: 300
-      interval: 1s
-    command: "./generate-logs.sh"
-    volumes:
-      - ./scripts/generate-logs.sh:/generate-logs.sh
+      - 9200
+        #  logs_generation:
+        #    depends_on:
+        #      elasticsearch:
+        #        condition: service_healthy
+        #    environment:
+        #      - "ES_SERVICE_HOST=http://elasticsearch:9200"
+        #      - "ES_SERVICE_USERNAME=elastic"
+        #      - "ES_SERVICE_PASSWORD=changeme"
+        #    image: "alpine/curl:3.14"
+        #    healthcheck:
+        #      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://elasticsearch:9200/"]
+        #      retries: 300
+        #      interval: 1s
+        #    command: "./generate-logs.sh"
+        #    volumes:
+        #      - ./scripts/generate-logs.sh:/generate-logs.sh
