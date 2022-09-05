@@ -9,26 +9,25 @@ services:
       test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://localhost:9200"]
       retries: 40
       interval: 5s
-      timeout:  120s
     volumes:
       - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./config/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
-      - ${SERVICE_LOGS_DIR}:/usr/share/elasticsearch/logs
+      - ${SERVICE_LOGS_DIR}/elasticsearch_service:/usr/share/elasticsearch/logs
     ports:
-      - 9200
-        #  logs_generation:
-        #    depends_on:
-        #      elasticsearch:
-        #        condition: service_healthy
-        #    environment:
-        #      - "ES_SERVICE_HOST=http://elasticsearch:9200"
-        #      - "ES_SERVICE_USERNAME=elastic"
-        #      - "ES_SERVICE_PASSWORD=changeme"
-        #    image: "alpine/curl:3.14"
-        #    healthcheck:
-        #      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://elasticsearch:9200/"]
-        #      retries: 300
-        #      interval: 1s
-        #    command: "./generate-logs.sh"
-        #    volumes:
-        #      - ./scripts/generate-logs.sh:/generate-logs.sh
+      - "127.0.0.1:9201:9200"
+  logs_generation:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - "ES_SERVICE_HOST=http://elasticsearch:9200"
+      - "ES_SERVICE_USERNAME=elastic"
+      - "ES_SERVICE_PASSWORD=changeme"
+    image: "alpine/curl:3.14"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://elasticsearch:9200/"]
+      retries: 300
+      interval: 1s
+    command: "./generate-logs.sh"
+    volumes:
+      - ./scripts/generate-logs.sh:/generate-logs.sh
