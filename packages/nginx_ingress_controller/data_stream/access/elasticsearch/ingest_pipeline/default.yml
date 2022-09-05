@@ -17,14 +17,18 @@ processors:
         %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.bytes:long}
         "(-|%{DATA:http.request.referrer})" "(-|%{DATA:user_agent.original})" %{NUMBER:nginx_ingress_controller.access.http.request.length:long}
         %{NUMBER:nginx_ingress_controller.access.http.request.time:double} \[%{DATA:nginx_ingress_controller.access.upstream.name}\]
-        \[%{DATA:nginx_ingress_controller.access.upstream.alternative_name}\] ((%{UPSTREAM_ADDRESS},?)+|-)
-        (%{NUMBER:nginx_ingress_controller.access.upstream.response.length:long}|-) (%{NUMBER:nginx_ingress_controller.access.upstream.response.time:double}|-)
-        (%{NUMBER:nginx_ingress_controller.access.upstream.response.status_code:long}|-) %{GREEDYDATA:nginx_ingress_controller.access.http.request.id}
+        \[%{DATA:nginx_ingress_controller.access.upstream.alternative_name}\] (%{UPSTREAM_ADDRESS_LIST:nginx_ingress_controller.access.upstream.ip_port_list}|-)
+        (%{UPSTREAM_RESPONSE_LENGTH_LIST:nginx_ingress_controller.access.upstream.response_length_list}|-) (%{UPSTREAM_RESPONSE_TIME_LIST:nginx_ingress_controller.access.upstream.response_time_list}|-)
+        (%{UPSTREAM_RESPONSE_STATUS_CODE_LIST:nginx_ingress_controller.access.upstream.response_status_code_list}|-) %{GREEDYDATA:nginx_ingress_controller.access.http.request.id}
       pattern_definitions:
         NGINX_HOST: (?:%{IP:destination.ip}|%{NGINX_NOTSEPARATOR:destination.domain})(:%{NUMBER:destination.port})?
         NGINX_NOTSEPARATOR: "[^\t ,:]+"
         NGINX_ADDRESS_LIST: (?:%{IP}|%{WORD})("?,?\s*(?:%{IP}|%{WORD}))*
         UPSTREAM_ADDRESS: '\[?%{IP:nginx_ingress_controller.access.upstream.ip}\]?(:%{NUMBER:nginx_ingress_controller.access.upstream.port})?'
+        UPSTREAM_ADDRESS_LIST: '%{UPSTREAM_ADDRESS}(, %{UPSTREAM_ADDRESS})*'
+        UPSTREAM_RESPONSE_LENGTH_LIST: '%{NUMBER:nginx_ingress_controller.access.upstream.response.length:long}(, %{NUMBER})*'
+        UPSTREAM_RESPONSE_TIME_LIST: '%{NUMBER:nginx_ingress_controller.access.upstream.response.time:double}(, %{NUMBER})*'
+        UPSTREAM_RESPONSE_STATUS_CODE_LIST: '%{NUMBER:nginx_ingress_controller.access.upstream.response.status_code:long}(, %{NUMBER})*'
       ignore_missing: true
   - grok:
       field: nginx_ingress_controller.access.info
@@ -32,8 +36,6 @@ processors:
       - '%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}'
       - ""
       ignore_missing: true
-  - remove:
-      field: nginx_ingress_controller.access.info
   - split:
       field: nginx_ingress_controller.access.remote_ip_list
       separator: '"?,?\s+'
@@ -42,6 +44,48 @@ processors:
       field: nginx_ingress_controller.access.origin
       separator: '"?,?\s+'
       ignore_missing: true
+  - script:
+      if: ctx.nginx_ingress_controller?.access?.upstream?.response_length_list != null && ctx.nginx_ingress_controller.access.upstream.response_length_list.contains(', ')
+      lang: painless
+      source: >-
+        def response_length_list = Arrays.asList(ctx.nginx_ingress_controller.access.upstream.response_length_list.splitOnToken(", ")).stream().distinct().map(str -> Long.parseLong(str)).collect(Collectors.toList());
+        if(response_length_list.length == 1) {
+            response_length_list = response_length_list[0]
+        }
+        ctx.nginx_ingress_controller.access.upstream.response.put("length", response_length_list);
+  - script:
+      if: ctx.nginx_ingress_controller?.access?.upstream?.response_time_list != null && ctx.nginx_ingress_controller.access.upstream.response_time_list.contains(', ')
+      lang: painless
+      source: >-
+        def response_time_list = Arrays.asList(ctx.nginx_ingress_controller.access.upstream.response_time_list.splitOnToken(", ")).stream().distinct().map(str -> Double.parseDouble(str)).collect(Collectors.toList());
+        if(response_time_list.length == 1) {
+            response_time_list = response_time_list[0]
+        }
+        ctx.nginx_ingress_controller.access.upstream.response.put("time", response_time_list);
+  - script:
+      if: ctx.nginx_ingress_controller?.access?.upstream?.response_status_code_list != null && ctx.nginx_ingress_controller.access.upstream.response_status_code_list.contains(', ')
+      lang: painless
+      source: >-
+        def response_status_code_list = Arrays.asList(ctx.nginx_ingress_controller.access.upstream.response_status_code_list.splitOnToken(", ")).stream().distinct().map(str -> Long.parseLong(str)).collect(Collectors.toList());
+        if(response_status_code_list.length == 1) {
+            response_status_code_list = response_status_code_list[0]
+        }
+        ctx.nginx_ingress_controller.access.upstream.response.put("status_code", response_status_code_list);
+  - split:
+      field: nginx_ingress_controller.access.upstream.ip_port_list
+      separator: '"?,?\s+'
+      ignore_missing: true
+  - remove:
+      field: 
+        - nginx_ingress_controller.access.info
+        - nginx_ingress_controller.access.upstream.response_length_list
+        - nginx_ingress_controller.access.upstream.response_time_list
+        - nginx_ingress_controller.access.upstream.response_status_code_list
+      ignore_missing: true
+  - set:
+      field: http.request.id
+      copy_from: nginx_ingress_controller.access.http.request.id
+      ignore_empty_value: true
   - set:
       field: source.address
       if: ctx.source?.address == null
