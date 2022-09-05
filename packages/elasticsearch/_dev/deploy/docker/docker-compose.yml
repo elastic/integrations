@@ -6,7 +6,7 @@ services:
       - "ELASTIC_PASSWORD=changeme"
     image: "docker.elastic.co/elasticsearch/elasticsearch:8.5.0-SNAPSHOT"
     healthcheck:
-      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://127.0.0.1:9200/"]
+      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://127.0.0.1:9201/"]
       retries: 300
       interval: 1s
     volumes:
@@ -14,18 +14,18 @@ services:
       - ./config/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
       - ${SERVICE_LOGS_DIR}:/usr/share/elasticsearch/logs
     ports:
-      - "127.0.0.1:9201:9200"
+      - "127.0.0.1:9201:9201"
   logs_generation:
     depends_on:
       elasticsearch:
         condition: service_healthy
     environment:
-      - "ES_SERVICE_HOST=http://elasticsearch:9200"
+      - "ES_SERVICE_HOST=http://elasticsearch:9201"
       - "ES_SERVICE_USERNAME=elastic"
       - "ES_SERVICE_PASSWORD=changeme"
     image: "alpine/curl:3.14"
     healthcheck:
-      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://elasticsearch:9200/"]
+      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://elasticsearch:9201/"]
       retries: 300
       interval: 1s
     command: "./generate-logs.sh"
