@@ -113,7 +113,7 @@ An example event for `access` looks as following:
                 "alternative_name": "",
                 "ip": "172.17.0.5",
                 "name": "default-web-8080",
-                "port": "8080",
+                "port": 8080,
                 "response": {
                     "length": 59,
                     "status_code": 200,
