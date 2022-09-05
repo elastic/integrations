@@ -17,14 +17,14 @@ processors:
         %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.bytes:long}
         "(-|%{DATA:http.request.referrer})" "(-|%{DATA:user_agent.original})" %{NUMBER:nginx_ingress_controller.access.http.request.length:long}
         %{NUMBER:nginx_ingress_controller.access.http.request.time:double} \[%{DATA:nginx_ingress_controller.access.upstream.name}\]
-        \[%{DATA:nginx_ingress_controller.access.upstream.alternative_name}\] (%{UPSTREAM_ADDRESS}|-)
+        \[%{DATA:nginx_ingress_controller.access.upstream.alternative_name}\] ((%{UPSTREAM_ADDRESS},?)+|-)
         (%{NUMBER:nginx_ingress_controller.access.upstream.response.length:long}|-) (%{NUMBER:nginx_ingress_controller.access.upstream.response.time:double}|-)
         (%{NUMBER:nginx_ingress_controller.access.upstream.response.status_code:long}|-) %{GREEDYDATA:nginx_ingress_controller.access.http.request.id}
       pattern_definitions:
         NGINX_HOST: (?:%{IP:destination.ip}|%{NGINX_NOTSEPARATOR:destination.domain})(:%{NUMBER:destination.port})?
         NGINX_NOTSEPARATOR: "[^\t ,:]+"
         NGINX_ADDRESS_LIST: (?:%{IP}|%{WORD})("?,?\s*(?:%{IP}|%{WORD}))*
-        UPSTREAM_ADDRESS: '%{IP:nginx_ingress_controller.access.upstream.ip}(:%{NUMBER:nginx_ingress_controller.access.upstream.port})?'
+        UPSTREAM_ADDRESS: '\[?%{IP:nginx_ingress_controller.access.upstream.ip}\]?(:%{NUMBER:nginx_ingress_controller.access.upstream.port})?'
       ignore_missing: true
   - grok:
       field: nginx_ingress_controller.access.info
