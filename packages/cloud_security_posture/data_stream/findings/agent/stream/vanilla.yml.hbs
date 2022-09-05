@@ -1,0 +1,63 @@
+###################### Cloudbeat Configuration Example #########################
+
+# This file is an example configuration file highlighting only the most common
+# options. The cloudbeat.reference.yml file from the same directory contains all the
+# supported options with more comments. You can use it as a reference.
+#
+# You can find the full configuration reference here:
+# https://www.elastic.co/guide/en/beats/cloudbeat/index.html
+
+# For more available modules and options, please see the cloudbeat.reference.yml sample
+# configuration file.
+
+# Defines how often an event is sent to the output
+cloudbeat:
+  period: 4h
+  fetchers:
+      # Vanilla K8s Fetchers configuration
+   - name: kube-api
+   - name: process
+     directory: "/hostfs"
+     processes:
+          etcd:
+          kube-apiserver:
+          kube-controller:
+          kube-scheduler:
+          kubelet:
+            config-file-arguments:
+              - config
+   - name: file-system
+     patterns: [
+          "/hostfs/etc/kubernetes/scheduler.conf",
+          "/hostfs/etc/kubernetes/controller-manager.conf",
+          "/hostfs/etc/kubernetes/admin.conf",
+          "/hostfs/etc/kubernetes/kubelet.conf",
+          "/hostfs/etc/kubernetes/manifests/etcd.yaml",
+          "/hostfs/etc/kubernetes/manifests/kube-apiserver.yaml",
+          "/hostfs/etc/kubernetes/manifests/kube-controller-manager.yaml",
+          "/hostfs/etc/kubernetes/manifests/kube-scheduler.yaml",
+          "/hostfs/etc/systemd/system/kubelet.service.d/10-kubeadm.conf",
+          "/hostfs/etc/kubernetes/pki/*.crt",
+          "/hostfs/etc/kubernetes/pki/*.key",
+          "/hostfs/var/lib/kubelet/config.yaml",
+          "/hostfs/var/lib/etcd",
+          "/hostfs/etc/kubernetes/pki",
+          ]
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_cluster_id: ~
+
+{{#if runtimeCfg}}
+{{runtimeCfg}}
+{{/if}}
+{{#if access_key_id}}
+access_key_id: {{access_key_id}}
+{{/if}}
+{{#if secret_access_key}}
+secret_access_key: {{secret_access_key}}
+{{/if}}
+{{#if session_token}}
+session_token: {{session_token}}
+{{/if}}
