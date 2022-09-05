@@ -6,7 +6,9 @@
 
 set -e
 
+echo entering script
 auth=$(echo -n $ES_SERVICE_USERNAME:$ES_SERVICE_PASSWORD | base64)
+echo auth: $auth
 
 # create an index that will trace every indexing/searching operations
 curl --request PUT \
