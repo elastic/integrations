@@ -210,6 +210,7 @@ An example event for `access` looks as following:
 | nginx_ingress_controller.access.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
 | nginx_ingress_controller.access.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
