@@ -11,7 +11,7 @@ datasets for receiving logs over syslog or read from a file:
 
 The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
 
-[Log Documentation](https://medium.com/@nonostar/siem-how-to-push-o365-exchange-online-message-details-into-elk-the-messagetrace-api-34f579abd804)
+[Log Documentation](https://docs.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15))
 
 An example event for `log` looks as following:
 
