@@ -6,16 +6,16 @@ services:
       - "ELASTIC_PASSWORD=changeme"
     image: "docker.elastic.co/elasticsearch/elasticsearch:8.5.0-SNAPSHOT"
     healthcheck:
-      test: ["CMD", "sleep", "5"]
-      retries: 300
-      interval: 1s
+      test: ["CMD", "curl", "-f", "-u", "elastic:changeme", "http://localhost:9200"]
+      retries: 40
+      interval: 5s
       timeout:  120s
     volumes:
       - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./config/log4j2.properties:/usr/share/elasticsearch/config/log4j2.properties
       - ${SERVICE_LOGS_DIR}:/usr/share/elasticsearch/logs
     ports:
-      - "127.0.0.1:9201:9200"
+      - 9200
         #  logs_generation:
         #    depends_on:
         #      elasticsearch:
