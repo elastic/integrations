@@ -26,7 +26,7 @@ exposing metrics in Prometheus format.
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | cloud.region | Region in which this host is running. | keyword |
 | cockroachdb.status.\*.counter | Prometheus counter metric | object |
-| cockroachdb.status.\*.histogram.\* | Prometheus histogram metric | object |
+| cockroachdb.status.\*.histogram | Prometheus histogram metric | object |
 | cockroachdb.status.\*.rate | Prometheus rated counter metric | object |
 | cockroachdb.status.\*.value | Prometheus gauge metric | object |
 | cockroachdb.status.labels.\* | Prometheus metric labels | object |
@@ -67,1887 +67,800 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-11T09:54:22.527Z",
+    "@timestamp": "2022-09-06T09:50:54.422Z",
     "agent": {
-        "ephemeral_id": "61694f44-1708-4fe0-9026-bde80b6c7dd0",
-        "id": "cdc6a9bf-9269-4de8-a490-ce48a2f4596d",
+        "ephemeral_id": "4002fdcf-5421-491e-90b0-4b0229592d88",
+        "id": "19de6249-945f-46da-9464-383664c3adaf",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "cockroachdb": {
         "status": {
-            "admission_admitted_kv": {
-                "counter": 836
-            },
-            "admission_admitted_kv_stores": {
-                "counter": 208
-            },
-            "admission_admitted_sql_kv_response": {
-                "counter": 124
-            },
-            "admission_admitted_sql_leaf_start": {
-                "counter": 0
-            },
-            "admission_admitted_sql_root_start": {
-                "counter": 0
-            },
-            "admission_admitted_sql_sql_response": {
-                "counter": 0
-            },
-            "admission_errored_kv": {
-                "counter": 0
-            },
-            "admission_errored_kv_stores": {
-                "counter": 0
-            },
-            "admission_errored_sql_kv_response": {
-                "counter": 0
-            },
-            "admission_errored_sql_leaf_start": {
-                "counter": 0
-            },
-            "admission_errored_sql_root_start": {
-                "counter": 0
-            },
-            "admission_errored_sql_sql_response": {
-                "counter": 0
-            },
-            "admission_granter_io_tokens_exhausted_duration_kv": {
-                "counter": 0
-            },
-            "admission_granter_total_slots_kv": {
-                "value": 4
-            },
-            "admission_granter_used_slots_kv": {
+            "abortspanbytes": {
                 "value": 0
             },
-            "admission_granter_used_slots_sql_leaf_start": {
+            "addsstable_applications": {
+                "counter": 0
+            },
+            "addsstable_aswrites": {
+                "counter": 0
+            },
+            "addsstable_copies": {
+                "counter": 0
+            },
+            "addsstable_delay_enginebackpressure": {
+                "counter": 0
+            },
+            "addsstable_delay_total": {
+                "counter": 0
+            },
+            "addsstable_proposals": {
+                "counter": 0
+            },
+            "capacity": {
                 "value": 0
             },
-            "admission_granter_used_slots_sql_root_start": {
+            "capacity_available": {
                 "value": 0
             },
-            "admission_requested_kv": {
-                "counter": 836
-            },
-            "admission_requested_kv_stores": {
-                "counter": 208
-            },
-            "admission_requested_sql_kv_response": {
-                "counter": 124
-            },
-            "admission_requested_sql_leaf_start": {
-                "counter": 0
-            },
-            "admission_requested_sql_root_start": {
-                "counter": 0
-            },
-            "admission_requested_sql_sql_response": {
-                "counter": 0
-            },
-            "admission_wait_durations_kv": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "admission_wait_durations_kv_stores": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "admission_wait_durations_sql_kv_response": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "admission_wait_durations_sql_leaf_start": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "admission_wait_durations_sql_root_start": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "admission_wait_durations_sql_sql_response": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "admission_wait_queue_length_kv": {
+            "capacity_reserved": {
                 "value": 0
             },
-            "admission_wait_queue_length_kv_stores": {
+            "capacity_used": {
                 "value": 0
             },
-            "admission_wait_queue_length_sql_kv_response": {
+            "exportrequest_delay_total": {
+                "counter": 0
+            },
+            "follower_reads_success_count": {
+                "counter": 0
+            },
+            "gcbytesage": {
                 "value": 0
             },
-            "admission_wait_queue_length_sql_leaf_start": {
+            "intentage": {
                 "value": 0
             },
-            "admission_wait_queue_length_sql_root_start": {
+            "intentbytes": {
                 "value": 0
             },
-            "admission_wait_queue_length_sql_sql_response": {
+            "intentcount": {
                 "value": 0
             },
-            "admission_wait_sum_kv": {
+            "intentresolver_async_throttled": {
                 "counter": 0
             },
-            "admission_wait_sum_kv_stores": {
+            "intentresolver_finalized_txns_failed": {
                 "counter": 0
             },
-            "admission_wait_sum_sql_kv_response": {
+            "intentresolver_intents_failed": {
                 "counter": 0
             },
-            "admission_wait_sum_sql_leaf_start": {
+            "intents_abort_attempts": {
                 "counter": 0
             },
-            "admission_wait_sum_sql_root_start": {
+            "intents_poison_attempts": {
                 "counter": 0
             },
-            "admission_wait_sum_sql_sql_response": {
-                "counter": 0
-            },
-            "changefeed_admit_latency": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "changefeed_backfill_count": {
-                "value": 0
-            },
-            "changefeed_backfill_pending_ranges": {
-                "value": 0
-            },
-            "changefeed_buffer_entries_in": {
-                "counter": 0
-            },
-            "changefeed_buffer_entries_mem_acquired": {
-                "counter": 0
-            },
-            "changefeed_buffer_entries_mem_released": {
-                "counter": 0
-            },
-            "changefeed_buffer_entries_out": {
-                "counter": 0
-            },
-            "changefeed_buffer_entries_released": {
-                "counter": 0
-            },
-            "changefeed_buffer_pushback_nanos": {
-                "counter": 0
-            },
-            "changefeed_bytes_messages_pushback_nanos": {
-                "counter": 0
-            },
-            "changefeed_checkpoint_hist_nanos": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "changefeed_commit_latency": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "changefeed_emitted_bytes": {
-                "counter": 0
-            },
-            "changefeed_emitted_messages": {
-                "counter": 0
-            },
-            "changefeed_error_retries": {
-                "counter": 0
-            },
-            "changefeed_failures": {
-                "counter": 0
-            },
-            "changefeed_flush_hist_nanos": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "changefeed_flush_messages_pushback_nanos": {
-                "counter": 0
-            },
-            "changefeed_flushed_bytes": {
-                "counter": 0
-            },
-            "changefeed_flushes": {
-                "counter": 0
-            },
-            "changefeed_forwarded_resolved_messages": {
-                "counter": 0
-            },
-            "changefeed_frontier_updates": {
-                "counter": 0
-            },
-            "changefeed_max_behind_nanos": {
-                "value": 0
-            },
-            "changefeed_message_size_hist": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "changefeed_messages_messages_pushback_nanos": {
-                "counter": 0
-            },
-            "changefeed_queue_time_nanos": {
-                "counter": 0
-            },
-            "changefeed_running": {
-                "value": 0
-            },
-            "changefeed_sink_batch_hist_nanos": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "changefeed_table_metadata_nanos": {
-                "counter": 0
-            },
-            "clock_offset_meannanos": {
-                "value": 466354
-            },
-            "clock_offset_stddevnanos": {
-                "value": 1201396
-            },
-            "distsender_batches": {
-                "counter": 775
-            },
-            "distsender_batches_async_sent": {
-                "counter": 18
-            },
-            "distsender_batches_async_throttled": {
-                "counter": 0
-            },
-            "distsender_batches_partial": {
-                "counter": 104
-            },
-            "distsender_errors_inleasetransferbackoffs": {
-                "counter": 0
-            },
-            "distsender_errors_notleaseholder": {
-                "counter": 4
-            },
-            "distsender_rangefeed_catchup_ranges": {
-                "value": 0
-            },
-            "distsender_rangefeed_error_catchup_ranges": {
-                "counter": 0
-            },
-            "distsender_rangefeed_total_ranges": {
-                "value": 10
-            },
-            "distsender_rangelookups": {
-                "counter": 14
-            },
-            "distsender_rpc_addsstable_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_adminchangereplicas_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_adminmerge_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_adminrelocaterange_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_adminscatter_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_adminsplit_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_admintransferlease_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_adminunsplit_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_adminverifyprotectedtimestamp_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_barrier_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_checkconsistency_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_clearrange_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_computechecksum_sent": {
-                "counter": 9
-            },
-            "distsender_rpc_conditionalput_sent": {
-                "counter": 107
-            },
-            "distsender_rpc_delete_sent": {
-                "counter": 48
-            },
-            "distsender_rpc_deleterange_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_endtxn_sent": {
-                "counter": 92
-            },
-            "distsender_rpc_err_ambiguousresulterrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_batchtimestampbeforegcerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_communicationerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_conditionfailederrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_errordetailtype_0_": {
-                "counter": 0
-            },
-            "distsender_rpc_err_errordetailtype_15_": {
-                "counter": 0
-            },
-            "distsender_rpc_err_errordetailtype_19_": {
-                "counter": 0
-            },
-            "distsender_rpc_err_errordetailtype_20_": {
-                "counter": 0
-            },
-            "distsender_rpc_err_errordetailtype_21_": {
-                "counter": 0
-            },
-            "distsender_rpc_err_errordetailtype_23_": {
-                "counter": 0
-            },
-            "distsender_rpc_err_errordetailtype_24_": {
-                "counter": 0
-            },
-            "distsender_rpc_err_errordetailtype_29_": {
-                "counter": 0
-            },
-            "distsender_rpc_err_errordetailtype_30_": {
-                "counter": 0
-            },
-            "distsender_rpc_err_errordetailtype_33_": {
-                "counter": 0
-            },
-            "distsender_rpc_err_indeterminatecommiterrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_integeroverflowerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_intentmissingerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_internalerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_invalidleaseerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_leaserejectederrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_mergeinprogresserrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_mintimestampboundunsatisfiableerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_mvcchistorymutationerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_nodeunavailableerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_notleaseholdererrtype": {
-                "counter": 4
-            },
-            "distsender_rpc_err_oprequirestxnerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_optimisticevalconflictserrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_raftgroupdeletederrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_rangefeedretryerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_rangekeymismatcherrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_rangenotfounderrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_readwithinuncertaintyintervalerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_refreshfailederrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_replicacorruptionerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_replicatooolderrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_storenotfounderrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_transactionabortederrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_transactionpusherrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_transactionretryerrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_transactionretrywithprotorefresherrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_transactionstatuserrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_txnalreadyencounterederrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_unsupportedrequesterrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_writeintenterrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_err_writetooolderrtype": {
-                "counter": 0
-            },
-            "distsender_rpc_export_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_gc_sent": {
-                "counter": 10
-            },
-            "distsender_rpc_get_sent": {
-                "counter": 484
-            },
-            "distsender_rpc_heartbeattxn_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_increment_sent": {
-                "counter": 4
-            },
-            "distsender_rpc_initput_sent": {
-                "counter": 8
-            },
-            "distsender_rpc_leaseinfo_sent": {
-                "counter": 1
-            },
-            "distsender_rpc_merge_sent": {
-                "counter": 1352
-            },
-            "distsender_rpc_migrate_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_probe_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_pushtxn_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_put_sent": {
-                "counter": 153
-            },
-            "distsender_rpc_queryintent_sent": {
-                "counter": 273
-            },
-            "distsender_rpc_querylocks_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_queryresolvedtimestamp_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_querytxn_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_rangestats_sent": {
-                "counter": 2
-            },
-            "distsender_rpc_recomputestats_sent": {
-                "counter": 1
-            },
-            "distsender_rpc_recovertxn_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_refresh_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_refreshrange_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_requestlease_sent": {
-                "counter": 0
-            },
-            "distsender_rpc_resolveintent_sent": {
+            "intents_resolve_attempts": {
                 "counter": 54
             },
-            "distsender_rpc_resolveintentrange_sent": {
+            "keybytes": {
+                "value": 82632
+            },
+            "keycount": {
+                "value": 1680
+            },
+            "kv_allocator_load_based_lease_transfers_cannot_find_better_candidate": {
                 "counter": 0
             },
-            "distsender_rpc_reversescan_sent": {
-                "counter": 6
-            },
-            "distsender_rpc_revertrange_sent": {
+            "kv_allocator_load_based_lease_transfers_delta_not_significant": {
                 "counter": 0
             },
-            "distsender_rpc_scan_sent": {
-                "counter": 149
-            },
-            "distsender_rpc_scaninterleavedintents_sent": {
+            "kv_allocator_load_based_lease_transfers_existing_not_overfull": {
                 "counter": 0
             },
-            "distsender_rpc_sent": {
-                "counter": 836
-            },
-            "distsender_rpc_sent_local": {
-                "counter": 836
-            },
-            "distsender_rpc_sent_nextreplicaerror": {
-                "counter": 4
-            },
-            "distsender_rpc_subsume_sent": {
+            "kv_allocator_load_based_lease_transfers_missing_stats_for_existing_stores": {
                 "counter": 0
             },
-            "distsender_rpc_transferlease_sent": {
+            "kv_allocator_load_based_lease_transfers_should_transfer": {
                 "counter": 0
             },
-            "distsender_rpc_truncatelog_sent": {
-                "counter": 3
-            },
-            "distsender_rpc_writebatch_sent": {
+            "kv_allocator_load_based_lease_transfers_significantly_switches_relative_disposition": {
                 "counter": 0
             },
-            "engine_stalls": {
+            "kv_allocator_load_based_replica_rebalancing_cannot_find_better_candidate": {
                 "counter": 0
             },
-            "exec_error": {
-                "counter": 4
-            },
-            "exec_success": {
-                "counter": 832
-            },
-            "gossip_bytes_received": {
+            "kv_allocator_load_based_replica_rebalancing_delta_not_significant": {
                 "counter": 0
             },
-            "gossip_bytes_sent": {
+            "kv_allocator_load_based_replica_rebalancing_existing_not_overfull": {
                 "counter": 0
             },
-            "gossip_connections_incoming": {
+            "kv_allocator_load_based_replica_rebalancing_missing_stats_for_existing_store": {
+                "counter": 0
+            },
+            "kv_allocator_load_based_replica_rebalancing_should_transfer": {
+                "counter": 0
+            },
+            "kv_allocator_load_based_replica_rebalancing_significantly_switches_relative_disposition": {
+                "counter": 0
+            },
+            "kv_closed_timestamp_max_behind_nanos": {
                 "value": 0
             },
-            "gossip_connections_outgoing": {
+            "kv_concurrency_avg_lock_hold_duration_nanos": {
                 "value": 0
             },
-            "gossip_connections_refused": {
-                "counter": 0
-            },
-            "gossip_infos_received": {
-                "counter": 0
-            },
-            "gossip_infos_sent": {
-                "counter": 0
-            },
-            "jobs_adopt_iterations": {
-                "counter": 0
-            },
-            "jobs_auto_create_stats_currently_idle": {
+            "kv_concurrency_avg_lock_wait_duration_nanos": {
                 "value": 0
             },
-            "jobs_auto_create_stats_currently_running": {
+            "kv_concurrency_lock_wait_queue_waiters": {
                 "value": 0
             },
-            "jobs_auto_create_stats_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_auto_create_stats_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_auto_create_stats_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_auto_create_stats_resume_completed": {
-                "counter": 0
-            },
-            "jobs_auto_create_stats_resume_failed": {
-                "counter": 0
-            },
-            "jobs_auto_create_stats_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_auto_span_config_reconciliation_currently_idle": {
-                "value": 1
-            },
-            "jobs_auto_span_config_reconciliation_currently_running": {
-                "value": 1
-            },
-            "jobs_auto_span_config_reconciliation_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_auto_span_config_reconciliation_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_auto_span_config_reconciliation_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_auto_span_config_reconciliation_resume_completed": {
-                "counter": 0
-            },
-            "jobs_auto_span_config_reconciliation_resume_failed": {
-                "counter": 0
-            },
-            "jobs_auto_span_config_reconciliation_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_auto_sql_stats_compaction_currently_idle": {
+            "kv_concurrency_locks": {
                 "value": 0
             },
-            "jobs_auto_sql_stats_compaction_currently_running": {
+            "kv_concurrency_locks_with_wait_queues": {
                 "value": 0
             },
-            "jobs_auto_sql_stats_compaction_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_auto_sql_stats_compaction_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_auto_sql_stats_compaction_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_auto_sql_stats_compaction_resume_completed": {
-                "counter": 0
-            },
-            "jobs_auto_sql_stats_compaction_resume_failed": {
-                "counter": 0
-            },
-            "jobs_auto_sql_stats_compaction_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_backup_currently_idle": {
+            "kv_concurrency_max_lock_hold_duration_nanos": {
                 "value": 0
             },
-            "jobs_backup_currently_running": {
+            "kv_concurrency_max_lock_wait_duration_nanos": {
                 "value": 0
             },
-            "jobs_backup_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_backup_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_backup_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_backup_resume_completed": {
-                "counter": 0
-            },
-            "jobs_backup_resume_failed": {
-                "counter": 0
-            },
-            "jobs_backup_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_changefeed_currently_idle": {
+            "kv_concurrency_max_lock_wait_queue_waiters_for_lock": {
                 "value": 0
             },
-            "jobs_changefeed_currently_running": {
+            "kv_rangefeed_budget_allocation_blocked": {
+                "counter": 0
+            },
+            "kv_rangefeed_budget_allocation_failed": {
+                "counter": 0
+            },
+            "kv_rangefeed_catchup_scan_nanos": {
+                "counter": 4840834
+            },
+            "kv_replica_circuit_breaker_num_tripped_events": {
+                "counter": 0
+            },
+            "kv_replica_circuit_breaker_num_tripped_replicas": {
                 "value": 0
             },
-            "jobs_changefeed_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_changefeed_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_changefeed_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_changefeed_resume_completed": {
-                "counter": 0
-            },
-            "jobs_changefeed_resume_failed": {
-                "counter": 0
-            },
-            "jobs_changefeed_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_claimed_jobs": {
-                "counter": 0
-            },
-            "jobs_create_stats_currently_idle": {
+            "kv_tenant_rate_limit_current_blocked": {
                 "value": 0
             },
-            "jobs_create_stats_currently_running": {
+            "kv_tenant_rate_limit_num_tenants": {
                 "value": 0
             },
-            "jobs_create_stats_fail_or_cancel_completed": {
+            "kv_tenant_rate_limit_read_bytes_admitted": {
                 "counter": 0
             },
-            "jobs_create_stats_fail_or_cancel_failed": {
+            "kv_tenant_rate_limit_read_requests_admitted": {
                 "counter": 0
             },
-            "jobs_create_stats_fail_or_cancel_retry_error": {
+            "kv_tenant_rate_limit_write_bytes_admitted": {
                 "counter": 0
             },
-            "jobs_create_stats_resume_completed": {
+            "kv_tenant_rate_limit_write_requests_admitted": {
                 "counter": 0
-            },
-            "jobs_create_stats_resume_failed": {
-                "counter": 0
-            },
-            "jobs_create_stats_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_import_currently_idle": {
-                "value": 0
-            },
-            "jobs_import_currently_running": {
-                "value": 0
-            },
-            "jobs_import_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_import_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_import_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_import_resume_completed": {
-                "counter": 0
-            },
-            "jobs_import_resume_failed": {
-                "counter": 0
-            },
-            "jobs_import_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_migration_currently_idle": {
-                "value": 0
-            },
-            "jobs_migration_currently_running": {
-                "value": 0
-            },
-            "jobs_migration_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_migration_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_migration_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_migration_resume_completed": {
-                "counter": 0
-            },
-            "jobs_migration_resume_failed": {
-                "counter": 0
-            },
-            "jobs_migration_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_new_schema_change_currently_idle": {
-                "value": 0
-            },
-            "jobs_new_schema_change_currently_running": {
-                "value": 0
-            },
-            "jobs_new_schema_change_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_new_schema_change_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_new_schema_change_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_new_schema_change_resume_completed": {
-                "counter": 0
-            },
-            "jobs_new_schema_change_resume_failed": {
-                "counter": 0
-            },
-            "jobs_new_schema_change_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_restore_currently_idle": {
-                "value": 0
-            },
-            "jobs_restore_currently_running": {
-                "value": 0
-            },
-            "jobs_restore_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_restore_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_restore_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_restore_resume_completed": {
-                "counter": 0
-            },
-            "jobs_restore_resume_failed": {
-                "counter": 0
-            },
-            "jobs_restore_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_resumed_claimed_jobs": {
-                "counter": 1
-            },
-            "jobs_row_level_ttl_currently_idle": {
-                "value": 0
-            },
-            "jobs_row_level_ttl_currently_running": {
-                "value": 0
-            },
-            "jobs_row_level_ttl_delete_duration": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "jobs_row_level_ttl_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_row_level_ttl_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_row_level_ttl_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_row_level_ttl_num_active_ranges": {
-                "value": 0
-            },
-            "jobs_row_level_ttl_range_total_duration": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "jobs_row_level_ttl_resume_completed": {
-                "counter": 0
-            },
-            "jobs_row_level_ttl_resume_failed": {
-                "counter": 0
-            },
-            "jobs_row_level_ttl_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_row_level_ttl_rows_deleted": {
-                "counter": 0
-            },
-            "jobs_row_level_ttl_rows_selected": {
-                "counter": 0
-            },
-            "jobs_row_level_ttl_select_duration": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "jobs_row_level_ttl_total_expired_rows": {
-                "value": 0
-            },
-            "jobs_row_level_ttl_total_rows": {
-                "value": 0
-            },
-            "jobs_running_non_idle": {
-                "value": 0
-            },
-            "jobs_schema_change_currently_idle": {
-                "value": 0
-            },
-            "jobs_schema_change_currently_running": {
-                "value": 0
-            },
-            "jobs_schema_change_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_schema_change_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_schema_change_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_schema_change_gc_currently_idle": {
-                "value": 0
-            },
-            "jobs_schema_change_gc_currently_running": {
-                "value": 0
-            },
-            "jobs_schema_change_gc_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_schema_change_gc_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_schema_change_gc_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_schema_change_gc_resume_completed": {
-                "counter": 0
-            },
-            "jobs_schema_change_gc_resume_failed": {
-                "counter": 0
-            },
-            "jobs_schema_change_gc_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_schema_change_resume_completed": {
-                "counter": 0
-            },
-            "jobs_schema_change_resume_failed": {
-                "counter": 0
-            },
-            "jobs_schema_change_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_stream_ingestion_currently_idle": {
-                "value": 0
-            },
-            "jobs_stream_ingestion_currently_running": {
-                "value": 0
-            },
-            "jobs_stream_ingestion_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_stream_ingestion_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_stream_ingestion_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_stream_ingestion_resume_completed": {
-                "counter": 0
-            },
-            "jobs_stream_ingestion_resume_failed": {
-                "counter": 0
-            },
-            "jobs_stream_ingestion_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_stream_replication_currently_idle": {
-                "value": 0
-            },
-            "jobs_stream_replication_currently_running": {
-                "value": 0
-            },
-            "jobs_stream_replication_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_stream_replication_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_stream_replication_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_stream_replication_resume_completed": {
-                "counter": 0
-            },
-            "jobs_stream_replication_resume_failed": {
-                "counter": 0
-            },
-            "jobs_stream_replication_resume_retry_error": {
-                "counter": 0
-            },
-            "jobs_typedesc_schema_change_currently_idle": {
-                "value": 0
-            },
-            "jobs_typedesc_schema_change_currently_running": {
-                "value": 0
-            },
-            "jobs_typedesc_schema_change_fail_or_cancel_completed": {
-                "counter": 0
-            },
-            "jobs_typedesc_schema_change_fail_or_cancel_failed": {
-                "counter": 0
-            },
-            "jobs_typedesc_schema_change_fail_or_cancel_retry_error": {
-                "counter": 0
-            },
-            "jobs_typedesc_schema_change_resume_completed": {
-                "counter": 0
-            },
-            "jobs_typedesc_schema_change_resume_failed": {
-                "counter": 0
-            },
-            "jobs_typedesc_schema_change_resume_retry_error": {
-                "counter": 0
-            },
-            "kv_prober_planning_attempts": {
-                "counter": 0
-            },
-            "kv_prober_planning_failures": {
-                "counter": 0
-            },
-            "kv_prober_read_attempts": {
-                "counter": 0
-            },
-            "kv_prober_read_failures": {
-                "counter": 0
-            },
-            "kv_prober_read_latency": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "kv_prober_write_attempts": {
-                "counter": 0
-            },
-            "kv_prober_write_failures": {
-                "counter": 0
-            },
-            "kv_prober_write_latency": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "kv_protectedts_reconciliation_errors": {
-                "counter": 0
-            },
-            "kv_protectedts_reconciliation_num_runs": {
-                "counter": 1
-            },
-            "kv_protectedts_reconciliation_records_processed": {
-                "counter": 0
-            },
-            "kv_protectedts_reconciliation_records_removed": {
-                "counter": 0
-            },
-            "kv_rangefeed_mem_shared": {
-                "value": 0
-            },
-            "kv_rangefeed_mem_system": {
-                "value": 20480
             },
             "labels": {
                 "instance": "elastic-package-service_cockroachdb_1:8080",
-                "job": "prometheus"
+                "job": "prometheus",
+                "store": "1"
             },
-            "liveness_epochincrements": {
-                "counter": 0
-            },
-            "liveness_heartbeatfailures": {
-                "counter": 0
-            },
-            "liveness_heartbeatlatency": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        4718591.5,
-                        11534335,
-                        20447231,
-                        40894463
-                    ]
-                }
-            },
-            "liveness_heartbeatsinflight": {
+            "leases_epoch": {
                 "value": 0
             },
-            "liveness_heartbeatsuccesses": {
-                "counter": 3
+            "leases_error": {
+                "counter": 0
             },
-            "liveness_livenodes": {
-                "value": 1
-            },
-            "requests_slow_distsender": {
+            "leases_expiration": {
                 "value": 0
             },
-            "round_trip_latency": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        1245183.5,
-                        3604479,
-                        111411199,
-                        431489023
-                    ]
-                }
+            "leases_success": {
+                "counter": 28
             },
-            "rpc_batches_recv": {
-                "counter": 836
+            "leases_transfers_error": {
+                "counter": 0
             },
-            "rpc_heartbeats_failed": {
+            "leases_transfers_success": {
+                "counter": 0
+            },
+            "livebytes": {
+                "value": 248040
+            },
+            "livecount": {
+                "value": 1679
+            },
+            "queue_consistency_pending": {
                 "value": 0
             },
-            "rpc_heartbeats_initializing": {
-                "value": 0
-            },
-            "rpc_heartbeats_loops_exited": {
+            "queue_consistency_process_failure": {
                 "counter": 0
             },
-            "rpc_heartbeats_loops_started": {
-                "counter": 1
-            },
-            "rpc_heartbeats_nominal": {
-                "value": 1
-            },
-            "rpc_method_addsstable_recv": {
-                "counter": 0
-            },
-            "rpc_method_adminchangereplicas_recv": {
-                "counter": 0
-            },
-            "rpc_method_adminmerge_recv": {
-                "counter": 0
-            },
-            "rpc_method_adminrelocaterange_recv": {
-                "counter": 0
-            },
-            "rpc_method_adminscatter_recv": {
-                "counter": 0
-            },
-            "rpc_method_adminsplit_recv": {
-                "counter": 0
-            },
-            "rpc_method_admintransferlease_recv": {
-                "counter": 0
-            },
-            "rpc_method_adminunsplit_recv": {
-                "counter": 0
-            },
-            "rpc_method_adminverifyprotectedtimestamp_recv": {
-                "counter": 0
-            },
-            "rpc_method_barrier_recv": {
-                "counter": 0
-            },
-            "rpc_method_checkconsistency_recv": {
-                "counter": 0
-            },
-            "rpc_method_clearrange_recv": {
-                "counter": 0
-            },
-            "rpc_method_computechecksum_recv": {
+            "queue_consistency_process_success": {
                 "counter": 9
             },
-            "rpc_method_conditionalput_recv": {
-                "counter": 107
+            "queue_consistency_processingnanos": {
+                "counter": 490621584
             },
-            "rpc_method_delete_recv": {
-                "counter": 48
-            },
-            "rpc_method_deleterange_recv": {
+            "queue_gc_info_abortspanconsidered": {
                 "counter": 0
             },
-            "rpc_method_endtxn_recv": {
-                "counter": 92
-            },
-            "rpc_method_export_recv": {
+            "queue_gc_info_abortspangcnum": {
                 "counter": 0
             },
-            "rpc_method_gc_recv": {
-                "counter": 10
-            },
-            "rpc_method_get_recv": {
-                "counter": 486
-            },
-            "rpc_method_heartbeattxn_recv": {
+            "queue_gc_info_abortspanscanned": {
                 "counter": 0
             },
-            "rpc_method_increment_recv": {
-                "counter": 4
-            },
-            "rpc_method_initput_recv": {
-                "counter": 8
-            },
-            "rpc_method_leaseinfo_recv": {
-                "counter": 1
-            },
-            "rpc_method_merge_recv": {
-                "counter": 1352
-            },
-            "rpc_method_migrate_recv": {
+            "queue_gc_info_intentsconsidered": {
                 "counter": 0
             },
-            "rpc_method_probe_recv": {
+            "queue_gc_info_intenttxns": {
                 "counter": 0
             },
-            "rpc_method_pushtxn_recv": {
+            "queue_gc_info_numkeysaffected": {
                 "counter": 0
             },
-            "rpc_method_put_recv": {
-                "counter": 155
-            },
-            "rpc_method_queryintent_recv": {
-                "counter": 273
-            },
-            "rpc_method_querylocks_recv": {
+            "queue_gc_info_pushtxn": {
                 "counter": 0
             },
-            "rpc_method_queryresolvedtimestamp_recv": {
+            "queue_gc_info_resolvefailed": {
                 "counter": 0
             },
-            "rpc_method_querytxn_recv": {
+            "queue_gc_info_resolvesuccess": {
                 "counter": 0
             },
-            "rpc_method_rangestats_recv": {
-                "counter": 2
-            },
-            "rpc_method_recomputestats_recv": {
-                "counter": 1
-            },
-            "rpc_method_recovertxn_recv": {
+            "queue_gc_info_resolvetotal": {
                 "counter": 0
             },
-            "rpc_method_refresh_recv": {
+            "queue_gc_info_transactionresolvefailed": {
                 "counter": 0
             },
-            "rpc_method_refreshrange_recv": {
+            "queue_gc_info_transactionspangcaborted": {
                 "counter": 0
             },
-            "rpc_method_requestlease_recv": {
+            "queue_gc_info_transactionspangccommitted": {
                 "counter": 0
             },
-            "rpc_method_resolveintent_recv": {
-                "counter": 54
-            },
-            "rpc_method_resolveintentrange_recv": {
+            "queue_gc_info_transactionspangcpending": {
                 "counter": 0
             },
-            "rpc_method_reversescan_recv": {
-                "counter": 6
-            },
-            "rpc_method_revertrange_recv": {
+            "queue_gc_info_transactionspangcstaging": {
                 "counter": 0
             },
-            "rpc_method_scan_recv": {
-                "counter": 149
-            },
-            "rpc_method_scaninterleavedintents_recv": {
+            "queue_gc_info_transactionspanscanned": {
                 "counter": 0
             },
-            "rpc_method_subsume_recv": {
+            "queue_gc_pending": {
+                "value": 0
+            },
+            "queue_gc_process_failure": {
                 "counter": 0
             },
-            "rpc_method_transferlease_recv": {
+            "queue_gc_process_success": {
                 "counter": 0
             },
-            "rpc_method_truncatelog_recv": {
+            "queue_gc_processingnanos": {
+                "counter": 0
+            },
+            "queue_merge_pending": {
+                "value": 41
+            },
+            "queue_merge_process_failure": {
+                "counter": 0
+            },
+            "queue_merge_process_success": {
+                "counter": 0
+            },
+            "queue_merge_processingnanos": {
+                "counter": 21611042
+            },
+            "queue_merge_purgatory": {
+                "value": 0
+            },
+            "queue_raftlog_pending": {
+                "value": 0
+            },
+            "queue_raftlog_process_failure": {
+                "counter": 0
+            },
+            "queue_raftlog_process_success": {
                 "counter": 3
             },
-            "rpc_method_writebatch_recv": {
-                "counter": 0
+            "queue_raftlog_processingnanos": {
+                "counter": 48402543
             },
-            "schedules_BACKUP_failed": {
-                "counter": 0
-            },
-            "schedules_BACKUP_last_completed_time": {
+            "queue_raftsnapshot_pending": {
                 "value": 0
             },
-            "schedules_BACKUP_started": {
+            "queue_raftsnapshot_process_failure": {
                 "counter": 0
             },
-            "schedules_BACKUP_succeeded": {
+            "queue_raftsnapshot_process_success": {
                 "counter": 0
             },
-            "schedules_error": {
+            "queue_raftsnapshot_processingnanos": {
+                "counter": 0
+            },
+            "queue_replicagc_pending": {
                 "value": 0
             },
-            "schedules_malformed": {
+            "queue_replicagc_process_failure": {
+                "counter": 0
+            },
+            "queue_replicagc_process_success": {
+                "counter": 0
+            },
+            "queue_replicagc_processingnanos": {
+                "counter": 0
+            },
+            "queue_replicagc_removereplica": {
+                "counter": 0
+            },
+            "queue_replicate_addnonvoterreplica": {
+                "counter": 0
+            },
+            "queue_replicate_addreplica": {
+                "counter": 0
+            },
+            "queue_replicate_addvoterreplica": {
+                "counter": 0
+            },
+            "queue_replicate_nonvoterpromotions": {
+                "counter": 0
+            },
+            "queue_replicate_pending": {
                 "value": 0
             },
-            "schedules_round_jobs_started": {
-                "value": 0
-            },
-            "schedules_round_reschedule_skip": {
-                "value": 0
-            },
-            "schedules_round_reschedule_wait": {
-                "value": 0
-            },
-            "schedules_scheduled_row_level_ttl_executor_failed": {
-                "counter": 0
-            },
-            "schedules_scheduled_row_level_ttl_executor_started": {
-                "counter": 0
-            },
-            "schedules_scheduled_row_level_ttl_executor_succeeded": {
-                "counter": 0
-            },
-            "schedules_scheduled_sql_stats_compaction_executor_failed": {
-                "counter": 0
-            },
-            "schedules_scheduled_sql_stats_compaction_executor_started": {
-                "counter": 0
-            },
-            "schedules_scheduled_sql_stats_compaction_executor_succeeded": {
-                "counter": 0
-            },
-            "seconds_until_enterprise_license_expiry": {
-                "value": 0
-            },
-            "spanconfig_kvsubscriber_update_behind_nanos": {
-                "value": 3112762833
-            },
-            "sql_bytesin": {
-                "counter": 319
-            },
-            "sql_bytesout": {
-                "counter": 981
-            },
-            "sql_conn_failures": {
-                "counter": 0
-            },
-            "sql_conn_latency": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        1900543.5,
-                        9502719,
-                        26607615
-                    ]
-                }
-            },
-            "sql_conns": {
-                "value": 0
-            },
-            "sql_contention_resolver_failed_resolutions": {
-                "counter": 0
-            },
-            "sql_contention_resolver_queue_size": {
-                "value": 0
-            },
-            "sql_contention_resolver_retries": {
-                "counter": 0
-            },
-            "sql_contention_txn_id_cache_miss": {
-                "counter": 0
-            },
-            "sql_contention_txn_id_cache_read": {
-                "counter": 0
-            },
-            "sql_copy_count": {
-                "counter": 0
-            },
-            "sql_copy_count_internal": {
-                "counter": 0
-            },
-            "sql_copy_started_count": {
-                "counter": 0
-            },
-            "sql_copy_started_count_internal": {
-                "counter": 0
-            },
-            "sql_ddl_count": {
-                "counter": 0
-            },
-            "sql_ddl_count_internal": {
-                "counter": 2
-            },
-            "sql_ddl_started_count": {
-                "counter": 0
-            },
-            "sql_ddl_started_count_internal": {
-                "counter": 2
-            },
-            "sql_delete_count": {
-                "counter": 0
-            },
-            "sql_delete_count_internal": {
-                "counter": 1
-            },
-            "sql_delete_started_count": {
-                "counter": 0
-            },
-            "sql_delete_started_count_internal": {
-                "counter": 1
-            },
-            "sql_disk_distsql_current": {
-                "value": 0
-            },
-            "sql_disk_distsql_max": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "sql_disk_distsql_spilled_bytes_read": {
-                "counter": 0
-            },
-            "sql_disk_distsql_spilled_bytes_written": {
-                "counter": 0
-            },
-            "sql_distsql_contended_queries_count": {
-                "counter": 0
-            },
-            "sql_distsql_flows_active": {
-                "value": 0
-            },
-            "sql_distsql_flows_queue_wait": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "sql_distsql_flows_queued": {
-                "value": 0
-            },
-            "sql_distsql_flows_scheduled": {
-                "counter": 0
-            },
-            "sql_distsql_flows_total": {
-                "counter": 0
-            },
-            "sql_distsql_queries_active": {
-                "value": 0
-            },
-            "sql_distsql_queries_spilled": {
-                "counter": 0
-            },
-            "sql_distsql_queries_total": {
-                "counter": 120
-            },
-            "sql_distsql_select_count": {
-                "counter": 0
-            },
-            "sql_distsql_select_count_internal": {
-                "counter": 0
-            },
-            "sql_distsql_service_latency": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "sql_distsql_service_latency_internal": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "sql_distsql_vec_openfds": {
-                "value": 0
-            },
-            "sql_failure_count": {
-                "counter": 0
-            },
-            "sql_failure_count_internal": {
-                "counter": 0
-            },
-            "sql_feature_flag_denial": {
-                "counter": 0
-            },
-            "sql_full_scan_count": {
-                "counter": 0
-            },
-            "sql_full_scan_count_internal": {
+            "queue_replicate_process_failure": {
                 "counter": 26
             },
-            "sql_guardrails_full_scan_rejected_count": {
+            "queue_replicate_process_success": {
                 "counter": 0
             },
-            "sql_guardrails_full_scan_rejected_count_internal": {
+            "queue_replicate_processingnanos": {
+                "counter": 157329207
+            },
+            "queue_replicate_purgatory": {
+                "value": 24
+            },
+            "queue_replicate_rebalancenonvoterreplica": {
                 "counter": 0
             },
-            "sql_guardrails_max_row_size_err_count": {
+            "queue_replicate_rebalancereplica": {
                 "counter": 0
             },
-            "sql_guardrails_max_row_size_err_count_internal": {
+            "queue_replicate_rebalancevoterreplica": {
                 "counter": 0
             },
-            "sql_guardrails_max_row_size_log_count": {
+            "queue_replicate_removedeadnonvoterreplica": {
                 "counter": 0
             },
-            "sql_guardrails_max_row_size_log_count_internal": {
+            "queue_replicate_removedeadreplica": {
                 "counter": 0
             },
-            "sql_guardrails_transaction_rows_read_err_count": {
+            "queue_replicate_removedeadvoterreplica": {
                 "counter": 0
             },
-            "sql_guardrails_transaction_rows_read_err_count_internal": {
+            "queue_replicate_removedecommissioningnonvoterreplica": {
                 "counter": 0
             },
-            "sql_guardrails_transaction_rows_read_log_count": {
+            "queue_replicate_removedecommissioningreplica": {
                 "counter": 0
             },
-            "sql_guardrails_transaction_rows_read_log_count_internal": {
+            "queue_replicate_removedecommissioningvoterreplica": {
                 "counter": 0
             },
-            "sql_guardrails_transaction_rows_written_err_count": {
+            "queue_replicate_removelearnerreplica": {
                 "counter": 0
             },
-            "sql_guardrails_transaction_rows_written_err_count_internal": {
+            "queue_replicate_removenonvoterreplica": {
                 "counter": 0
             },
-            "sql_guardrails_transaction_rows_written_log_count": {
+            "queue_replicate_removereplica": {
                 "counter": 0
             },
-            "sql_guardrails_transaction_rows_written_log_count_internal": {
+            "queue_replicate_removevoterreplica": {
                 "counter": 0
             },
-            "sql_hydrated_table_cache_hits": {
+            "queue_replicate_transferlease": {
                 "counter": 0
             },
-            "sql_hydrated_table_cache_misses": {
+            "queue_replicate_voterdemotions": {
                 "counter": 0
             },
-            "sql_insert_count": {
-                "counter": 0
-            },
-            "sql_insert_count_internal": {
-                "counter": 56
-            },
-            "sql_insert_started_count": {
-                "counter": 0
-            },
-            "sql_insert_started_count_internal": {
-                "counter": 56
-            },
-            "sql_leases_active": {
-                "value": 16
-            },
-            "sql_mem_bulk_current": {
+            "queue_split_pending": {
                 "value": 0
             },
-            "sql_mem_bulk_max": {
+            "queue_split_process_failure": {
+                "counter": 0
+            },
+            "queue_split_process_success": {
+                "counter": 0
+            },
+            "queue_split_processingnanos": {
+                "counter": 0
+            },
+            "queue_split_purgatory": {
+                "value": 0
+            },
+            "queue_tsmaintenance_pending": {
+                "value": 0
+            },
+            "queue_tsmaintenance_process_failure": {
+                "counter": 0
+            },
+            "queue_tsmaintenance_process_success": {
+                "counter": 1
+            },
+            "queue_tsmaintenance_processingnanos": {
+                "counter": 33299709
+            },
+            "raft_commandsapplied": {
+                "counter": 330
+            },
+            "raft_enqueued_pending": {
+                "value": 0
+            },
+            "raft_entrycache_accesses": {
+                "counter": 55
+            },
+            "raft_entrycache_bytes": {
+                "value": 131713
+            },
+            "raft_entrycache_hits": {
+                "counter": 3
+            },
+            "raft_entrycache_size": {
+                "value": 300
+            },
+            "raft_heartbeats_pending": {
+                "value": 0
+            },
+            "raft_process_applycommitted_latency": {
                 "histogram": {
                     "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
                         0
                     ],
                     "values": [
-                        0
+                        27647.5,
+                        78847,
+                        106495,
+                        112639,
+                        116735,
+                        122879,
+                        133119,
+                        143359,
+                        151551,
+                        159743,
+                        167935,
+                        176127,
+                        184319,
+                        192511,
+                        200703,
+                        208895,
+                        217087,
+                        225279,
+                        233471,
+                        241663,
+                        249855,
+                        258047,
+                        270335,
+                        286719,
+                        303103,
+                        319487,
+                        335871,
+                        352255,
+                        368639,
+                        385023,
+                        401407,
+                        417791,
+                        434175,
+                        450559,
+                        466943,
+                        483327,
+                        499711,
+                        516095,
+                        540671,
+                        573439,
+                        606207,
+                        655359,
+                        704511,
+                        753663,
+                        802815,
+                        835583,
+                        868351,
+                        901119,
+                        933887,
+                        966655,
+                        1015807,
+                        1081343,
+                        1146879,
+                        1212415,
+                        1277951,
+                        1441791,
+                        1638399,
+                        1769471,
+                        1933311,
+                        2129919,
+                        2293759,
+                        2490367,
+                        2818047,
+                        3080191,
+                        3407871,
+                        3932159,
+                        4456447,
+                        4980735,
+                        5373951,
+                        5898239,
+                        7077887,
+                        11010047,
+                        14417919,
+                        16252927,
+                        18350079,
+                        21495807,
+                        25690111,
+                        27787263,
+                        28835839,
+                        30408703
                     ]
                 }
             },
-            "sql_mem_distsql_current": {
-                "value": 0
-            },
-            "sql_mem_internal_session_current": {
-                "value": 0
-            },
-            "sql_mem_internal_txn_current": {
-                "value": 0
-            },
-            "sql_mem_root_current": {
-                "value": 808960
-            },
-            "sql_mem_root_max": {
+            "raft_process_commandcommit_latency": {
                 "histogram": {
                     "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
                         0
                     ],
                     "values": [
-                        0
+                        21503.5,
+                        48127,
+                        63487,
+                        75775,
+                        79871,
+                        83967,
+                        88063,
+                        92159,
+                        96255,
+                        100351,
+                        104447,
+                        108543,
+                        112639,
+                        116735,
+                        120831,
+                        124927,
+                        129023,
+                        135167,
+                        143359,
+                        151551,
+                        159743,
+                        167935,
+                        176127,
+                        184319,
+                        192511,
+                        200703,
+                        208895,
+                        217087,
+                        225279,
+                        233471,
+                        241663,
+                        249855,
+                        258047,
+                        270335,
+                        286719,
+                        303103,
+                        319487,
+                        335871,
+                        352255,
+                        368639,
+                        385023,
+                        401407,
+                        417791,
+                        434175,
+                        450559,
+                        466943,
+                        483327,
+                        507903,
+                        540671,
+                        573439,
+                        622591,
+                        671743,
+                        704511,
+                        737279,
+                        802815,
+                        868351,
+                        901119,
+                        933887,
+                        983039,
+                        1097727,
+                        1245183,
+                        1507327,
+                        2097151,
+                        3014655,
+                        3670015,
+                        4259839,
+                        4980735,
+                        5373951,
+                        5636095,
+                        8912895,
+                        13369343,
+                        15728639,
+                        17825791,
+                        23068671,
+                        28311551,
+                        31457279
                     ]
                 }
             },
-            "sql_mem_sql_session_current": {
-                "value": 0
-            },
-            "sql_mem_sql_session_max": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "sql_mem_sql_txn_current": {
-                "value": 0
-            },
-            "sql_misc_count": {
-                "counter": 0
-            },
-            "sql_misc_count_internal": {
-                "counter": 12
-            },
-            "sql_misc_started_count": {
-                "counter": 0
-            },
-            "sql_misc_started_count_internal": {
-                "counter": 12
-            },
-            "sql_new_conns": {
-                "counter": 2
-            },
-            "sql_optimizer_fallback_count": {
-                "counter": 0
-            },
-            "sql_optimizer_fallback_count_internal": {
-                "counter": 0
-            },
-            "sql_optimizer_plan_cache_hits": {
-                "counter": 0
-            },
-            "sql_optimizer_plan_cache_hits_internal": {
-                "counter": 43
-            },
-            "sql_optimizer_plan_cache_misses": {
-                "counter": 1
-            },
-            "sql_optimizer_plan_cache_misses_internal": {
-                "counter": 62
-            },
-            "sql_pgwire_cancel_ignored": {
-                "counter": 0
-            },
-            "sql_pgwire_cancel_successful": {
-                "counter": 0
-            },
-            "sql_pgwire_cancel_total": {
-                "counter": 0
-            },
-            "sql_query_count": {
-                "counter": 1
-            },
-            "sql_query_count_internal": {
-                "counter": 119
-            },
-            "sql_query_started_count": {
-                "counter": 1
-            },
-            "sql_query_started_count_internal": {
-                "counter": 119
-            },
-            "sql_restart_savepoint_count": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_count_internal": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_release_count": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_release_count_internal": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_release_started_count": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_release_started_count_internal": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_rollback_count": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_rollback_count_internal": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_rollback_started_count": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_rollback_started_count_internal": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_started_count": {
-                "counter": 0
-            },
-            "sql_restart_savepoint_started_count_internal": {
-                "counter": 0
-            },
-            "sql_savepoint_count": {
-                "counter": 0
-            },
-            "sql_savepoint_count_internal": {
-                "counter": 0
-            },
-            "sql_savepoint_release_count": {
-                "counter": 0
-            },
-            "sql_savepoint_release_count_internal": {
-                "counter": 0
-            },
-            "sql_savepoint_release_started_count": {
-                "counter": 0
-            },
-            "sql_savepoint_release_started_count_internal": {
-                "counter": 0
-            },
-            "sql_savepoint_rollback_count": {
-                "counter": 0
-            },
-            "sql_savepoint_rollback_count_internal": {
-                "counter": 0
-            },
-            "sql_savepoint_rollback_started_count": {
-                "counter": 0
-            },
-            "sql_savepoint_rollback_started_count_internal": {
-                "counter": 0
-            },
-            "sql_savepoint_started_count": {
-                "counter": 0
-            },
-            "sql_savepoint_started_count_internal": {
-                "counter": 0
-            },
-            "sql_schema_changer_permanent_errors": {
-                "counter": 0
-            },
-            "sql_schema_changer_retry_errors": {
-                "counter": 0
-            },
-            "sql_schema_changer_running": {
-                "value": 0
-            },
-            "sql_schema_changer_successes": {
-                "counter": 0
-            },
-            "sql_select_count": {
-                "counter": 1
-            },
-            "sql_select_count_internal": {
-                "counter": 43
-            },
-            "sql_select_started_count": {
-                "counter": 1
-            },
-            "sql_select_started_count_internal": {
-                "counter": 43
-            },
-            "sql_service_latency": {
+            "raft_process_handleready_latency": {
                 "histogram": {
                     "counts": [
                         0,
-                        0
-                    ],
-                    "values": [
-                        6291455.5,
-                        25165822
-                    ]
-                }
-            },
-            "sql_service_latency_internal": {
-                "histogram": {
-                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
                         0,
                         0,
                         0,
@@ -2007,9 +920,23 @@ An example event for `status` looks as following:
                         0
                     ],
                     "values": [
-                        950271.5,
-                        1966079,
-                        2195455,
+                        376831.5,
+                        999423,
+                        1277951,
+                        1343487,
+                        1409023,
+                        1474559,
+                        1540095,
+                        1605631,
+                        1671167,
+                        1736703,
+                        1802239,
+                        1867775,
+                        1933311,
+                        1998847,
+                        2064383,
+                        2162687,
+                        2293759,
                         2424831,
                         2555903,
                         2686975,
@@ -2020,7 +947,9 @@ An example event for `status` looks as following:
                         3342335,
                         3473407,
                         3604479,
+                        3735551,
                         3866623,
+                        3997695,
                         4128767,
                         4325375,
                         4587519,
@@ -2028,162 +957,72 @@ An example event for `status` looks as following:
                         5111807,
                         5373951,
                         5636095,
-                        6029311,
-                        6553599,
-                        7077887,
-                        7471103,
-                        7733247,
+                        5898239,
+                        6160383,
+                        6422527,
+                        6815743,
+                        7208959,
+                        7602175,
                         7995391,
                         8257535,
+                        8650751,
                         9175039,
-                        10223615,
+                        9699327,
                         11534335,
-                        12845055,
-                        13631487,
-                        14417919,
-                        14942207,
-                        15990783,
-                        17825791,
-                        19398655,
+                        13369343,
+                        14155775,
+                        15728639,
+                        17301503,
                         20447231,
-                        21495807,
-                        23068671,
-                        25690111,
-                        28311551,
-                        30408703,
-                        34603007,
-                        39845887,
+                        24117247,
+                        28835839,
+                        37224447,
                         42991615,
-                        45088767,
-                        52428799,
-                        65011711,
-                        83886079,
-                        136314879,
-                        230686719,
-                        293601279,
-                        327155711,
-                        478150655,
-                        855638015
+                        48234495,
+                        66060287,
+                        90177535,
+                        117440511,
+                        155189247,
+                        218103807
                     ]
                 }
             },
-            "sql_statements_active": {
-                "value": 0
-            },
-            "sql_statements_active_internal": {
-                "value": 0
-            },
-            "sql_stats_cleanup_rows_removed": {
-                "counter": 0
-            },
-            "sql_stats_discarded_current": {
-                "counter": 0
-            },
-            "sql_stats_flush_count": {
-                "counter": 0
-            },
-            "sql_stats_flush_duration": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "sql_stats_flush_error": {
-                "counter": 0
-            },
-            "sql_stats_mem_current": {
-                "value": 471040
-            },
-            "sql_stats_mem_max": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "sql_stats_reported_mem_current": {
-                "value": 0
-            },
-            "sql_stats_reported_mem_max": {
-                "histogram": {
-                    "counts": [
-                        0
-                    ],
-                    "values": [
-                        0
-                    ]
-                }
-            },
-            "sql_temp_object_cleaner_active_cleaners": {
-                "value": 0
-            },
-            "sql_temp_object_cleaner_schemas_deletion_error": {
-                "counter": 0
-            },
-            "sql_temp_object_cleaner_schemas_deletion_success": {
-                "counter": 0
-            },
-            "sql_temp_object_cleaner_schemas_to_delete": {
-                "counter": 0
-            },
-            "sql_txn_abort_count": {
-                "counter": 0
-            },
-            "sql_txn_abort_count_internal": {
-                "counter": 0
-            },
-            "sql_txn_begin_count": {
-                "counter": 0
-            },
-            "sql_txn_begin_count_internal": {
-                "counter": 0
-            },
-            "sql_txn_begin_started_count": {
-                "counter": 0
-            },
-            "sql_txn_begin_started_count_internal": {
-                "counter": 0
-            },
-            "sql_txn_commit_count": {
-                "counter": 0
-            },
-            "sql_txn_commit_count_internal": {
-                "counter": 0
-            },
-            "sql_txn_commit_started_count": {
-                "counter": 0
-            },
-            "sql_txn_commit_started_count_internal": {
-                "counter": 0
-            },
-            "sql_txn_contended_count": {
-                "counter": 0
-            },
-            "sql_txn_contended_count_internal": {
-                "counter": 0
-            },
-            "sql_txn_latency": {
+            "raft_process_logcommit_latency": {
                 "histogram": {
                     "counts": [
                         0,
-                        0
-                    ],
-                    "values": [
-                        6553599.5,
-                        26214398
-                    ]
-                }
-            },
-            "sql_txn_latency_internal": {
-                "histogram": {
-                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
                         0,
                         0,
                         0,
@@ -2215,267 +1054,587 @@ An example event for `status` looks as following:
                         0
                     ],
                     "values": [
-                        1966079.5,
-                        4718591,
+                        376831.5,
+                        819199,
+                        901119,
+                        933887,
+                        966655,
+                        999423,
+                        1032191,
+                        1081343,
+                        1146879,
+                        1212415,
+                        1277951,
+                        1343487,
+                        1409023,
+                        1474559,
+                        1540095,
+                        1605631,
+                        1671167,
+                        1736703,
+                        1802239,
+                        1867775,
+                        1933311,
+                        1998847,
+                        2064383,
+                        2162687,
+                        2293759,
+                        2424831,
+                        2555903,
+                        2686975,
+                        2818047,
+                        2949119,
+                        3080191,
+                        3211263,
+                        3342335,
+                        3473407,
+                        3604479,
+                        3735551,
+                        3866623,
+                        3997695,
+                        4128767,
+                        4325375,
+                        4587519,
+                        4849663,
+                        5111807,
+                        5373951,
+                        5898239,
+                        6422527,
+                        6684671,
+                        6946815,
+                        7471103,
+                        8650751,
+                        9699327,
+                        11010047,
+                        12320767,
+                        13631487,
+                        14942207,
+                        15466495,
+                        19398655,
+                        36700159,
+                        75497471,
+                        117440511,
+                        138412031,
+                        150994943
+                    ]
+                }
+            },
+            "raft_process_tickingnanos": {
+                "counter": 18037084
+            },
+            "raft_process_workingnanos": {
+                "counter": 1726085499
+            },
+            "raft_rcvd_app": {
+                "counter": 0
+            },
+            "raft_rcvd_appresp": {
+                "counter": 0
+            },
+            "raft_rcvd_dropped": {
+                "counter": 0
+            },
+            "raft_rcvd_heartbeat": {
+                "counter": 0
+            },
+            "raft_rcvd_heartbeatresp": {
+                "counter": 0
+            },
+            "raft_rcvd_prevote": {
+                "counter": 0
+            },
+            "raft_rcvd_prevoteresp": {
+                "counter": 0
+            },
+            "raft_rcvd_prop": {
+                "counter": 0
+            },
+            "raft_rcvd_snap": {
+                "counter": 0
+            },
+            "raft_rcvd_timeoutnow": {
+                "counter": 0
+            },
+            "raft_rcvd_transferleader": {
+                "counter": 0
+            },
+            "raft_rcvd_vote": {
+                "counter": 0
+            },
+            "raft_rcvd_voteresp": {
+                "counter": 0
+            },
+            "raft_scheduler_latency": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        4095.5,
+                        11519,
+                        17151,
+                        19967,
+                        20991,
+                        22015,
+                        23039,
+                        24575,
+                        26111,
+                        27135,
+                        28159,
+                        29183,
+                        30207,
+                        31231,
+                        32255,
+                        33791,
+                        35839,
+                        37887,
+                        39935,
+                        41983,
+                        44031,
+                        46079,
+                        48127,
+                        50175,
+                        52223,
+                        54271,
+                        56319,
+                        58367,
+                        60415,
+                        62463,
+                        64511,
+                        67583,
+                        71679,
+                        75775,
+                        79871,
+                        83967,
+                        88063,
+                        92159,
+                        96255,
+                        104447,
+                        112639,
+                        116735,
+                        120831,
+                        124927,
+                        129023,
+                        135167,
+                        143359,
+                        151551,
+                        159743,
+                        167935,
+                        176127,
+                        184319,
+                        192511,
+                        200703,
+                        208895,
+                        217087,
+                        225279,
+                        233471,
+                        241663,
+                        249855,
+                        266239,
+                        286719,
+                        303103,
+                        319487,
+                        335871,
+                        352255,
+                        368639,
+                        393215,
+                        425983,
+                        450559,
+                        466943,
+                        483327,
+                        540671,
+                        606207,
+                        655359,
+                        704511,
+                        737279,
+                        770047,
+                        819199,
+                        868351,
+                        933887,
+                        1015807,
+                        1081343,
+                        1179647,
+                        1277951,
+                        1343487,
+                        1409023,
+                        1474559,
+                        1540095,
+                        1605631,
+                        1671167,
+                        1736703,
+                        1802239,
+                        1867775,
+                        1933311,
+                        1998847,
+                        2064383,
+                        2162687,
+                        2293759,
+                        2424831,
+                        2555903,
+                        2686975,
+                        2818047,
+                        2949119,
+                        3342335,
+                        3735551,
+                        3932159,
+                        4259839,
+                        4849663,
+                        5373951,
                         5636095,
                         5898239,
-                        6684671,
-                        7733247,
-                        8257535,
+                        6160383,
+                        6553599,
+                        7077887,
                         9437183,
-                        10747903,
-                        14417919,
-                        18350079,
-                        19398655,
-                        20447231,
-                        22020095,
-                        25165823,
-                        27787263,
-                        28835839,
-                        29884415,
-                        30932991,
-                        34603007,
-                        38797311,
-                        46137343,
-                        61865983,
-                        75497471,
-                        85983231,
-                        171966463,
-                        276824063,
-                        335544319,
-                        436207615
+                        14155775,
+                        71303167,
+                        146800639,
+                        209715199
                     ]
                 }
             },
-            "sql_txn_rollback_count": {
+            "raft_ticks": {
+                "counter": 45
+            },
+            "raft_timeoutcampaign": {
                 "counter": 0
             },
-            "sql_txn_rollback_count_internal": {
+            "raftlog_behind": {
+                "value": 0
+            },
+            "raftlog_truncated": {
+                "counter": 30
+            },
+            "range_adds": {
                 "counter": 0
             },
-            "sql_txn_rollback_started_count": {
+            "range_merges": {
                 "counter": 0
             },
-            "sql_txn_rollback_started_count_internal": {
+            "range_raftleadertransfers": {
                 "counter": 0
             },
-            "sql_txns_open": {
-                "value": 0
-            },
-            "sql_txns_open_internal": {
-                "value": 0
-            },
-            "sql_update_count": {
+            "range_recoveries": {
                 "counter": 0
             },
-            "sql_update_count_internal": {
-                "counter": 5
-            },
-            "sql_update_started_count": {
+            "range_removes": {
                 "counter": 0
             },
-            "sql_update_started_count_internal": {
-                "counter": 5
-            },
-            "sqlliveness_is_alive_cache_hits": {
+            "range_snapshots_applied_initial": {
                 "counter": 0
             },
-            "sqlliveness_is_alive_cache_misses": {
-                "counter": 1
-            },
-            "sqlliveness_sessions_deleted": {
+            "range_snapshots_applied_non_voter": {
                 "counter": 0
             },
-            "sqlliveness_sessions_deletion_runs": {
+            "range_snapshots_applied_voter": {
                 "counter": 0
             },
-            "sqlliveness_write_failures": {
+            "range_snapshots_generated": {
                 "counter": 0
             },
-            "sqlliveness_write_successes": {
-                "counter": 2
-            },
-            "streaming_events_ingested": {
+            "range_snapshots_rcvd_bytes": {
                 "counter": 0
             },
-            "streaming_flushes": {
+            "range_snapshots_sent_bytes": {
                 "counter": 0
             },
-            "streaming_ingested_bytes": {
+            "range_splits": {
                 "counter": 0
             },
-            "streaming_resolved_events_ingested": {
+            "ranges": {
+                "value": 0
+            },
+            "ranges_overreplicated": {
+                "value": 0
+            },
+            "ranges_unavailable": {
+                "value": 0
+            },
+            "ranges_underreplicated": {
+                "value": 0
+            },
+            "rebalancing_lease_transfers": {
                 "counter": 0
             },
-            "sys_cgo_allocbytes": {
+            "rebalancing_queriespersecond": {
                 "value": 0
             },
-            "sys_cgo_totalbytes": {
-                "value": 0
-            },
-            "sys_cgocalls": {
-                "value": 0
-            },
-            "sys_cpu_combined_percent_normalized": {
-                "value": 0
-            },
-            "sys_cpu_now_ns": {
-                "value": 0
-            },
-            "sys_cpu_sys_ns": {
-                "value": 0
-            },
-            "sys_cpu_sys_percent": {
-                "value": 0
-            },
-            "sys_cpu_user_ns": {
-                "value": 0
-            },
-            "sys_cpu_user_percent": {
-                "value": 0
-            },
-            "sys_fd_open": {
-                "value": 0
-            },
-            "sys_fd_softlimit": {
-                "value": 0
-            },
-            "sys_gc_count": {
-                "value": 0
-            },
-            "sys_gc_pause_ns": {
-                "value": 0
-            },
-            "sys_gc_pause_percent": {
-                "value": 0
-            },
-            "sys_go_allocbytes": {
-                "value": 0
-            },
-            "sys_go_totalbytes": {
-                "value": 0
-            },
-            "sys_goroutines": {
-                "value": 0
-            },
-            "sys_host_disk_io_time": {
-                "value": 0
-            },
-            "sys_host_disk_iopsinprogress": {
-                "value": 0
-            },
-            "sys_host_disk_read_bytes": {
-                "value": 0
-            },
-            "sys_host_disk_read_count": {
-                "value": 0
-            },
-            "sys_host_disk_read_time": {
-                "value": 0
-            },
-            "sys_host_disk_weightedio_time": {
-                "value": 0
-            },
-            "sys_host_disk_write_bytes": {
-                "value": 0
-            },
-            "sys_host_disk_write_count": {
-                "value": 0
-            },
-            "sys_host_disk_write_time": {
-                "value": 0
-            },
-            "sys_host_net_recv_bytes": {
-                "value": 0
-            },
-            "sys_host_net_recv_packets": {
-                "value": 0
-            },
-            "sys_host_net_send_bytes": {
-                "value": 0
-            },
-            "sys_host_net_send_packets": {
-                "value": 0
-            },
-            "sys_rss": {
-                "value": 0
-            },
-            "sys_runnable_goroutines_per_cpu": {
-                "value": 0
-            },
-            "sys_uptime": {
-                "value": 0
-            },
-            "tenant_consumption_pgwire_egress_bytes": {
-                "value": 0
-            },
-            "tenant_consumption_read_bytes": {
-                "value": 0
-            },
-            "tenant_consumption_read_requests": {
-                "value": 0
-            },
-            "tenant_consumption_request_units": {
-                "value": 0
-            },
-            "tenant_consumption_sql_pods_cpu_seconds": {
-                "value": 0
-            },
-            "tenant_consumption_write_bytes": {
-                "value": 0
-            },
-            "tenant_consumption_write_requests": {
-                "value": 0
-            },
-            "timeseries_write_bytes": {
-                "counter": 139512
-            },
-            "timeseries_write_errors": {
+            "rebalancing_range_rebalances": {
                 "counter": 0
             },
-            "timeseries_write_samples": {
-                "counter": 1352
-            },
-            "txn_aborts": {
-                "counter": 0
-            },
-            "txn_commit_waits": {
-                "counter": 0
-            },
-            "txn_commits": {
-                "counter": 104
-            },
-            "txn_commits1PC": {
-                "counter": 12
-            },
-            "txn_condensed_intent_spans": {
-                "counter": 0
-            },
-            "txn_condensed_intent_spans_gauge": {
+            "rebalancing_writespersecond": {
                 "value": 0
             },
-            "txn_condensed_intent_spans_rejected": {
+            "replicas": {
+                "value": 44
+            },
+            "replicas_leaders": {
+                "value": 0
+            },
+            "replicas_leaders_not_leaseholders": {
+                "value": 0
+            },
+            "replicas_leaseholders": {
+                "value": 0
+            },
+            "replicas_quiescent": {
+                "value": 0
+            },
+            "replicas_reserved": {
+                "value": 0
+            },
+            "replicas_uninitialized": {
+                "value": 0
+            },
+            "requests_backpressure_split": {
+                "value": 0
+            },
+            "requests_slow_latch": {
+                "value": 0
+            },
+            "requests_slow_lease": {
+                "value": 0
+            },
+            "requests_slow_raft": {
+                "value": 0
+            },
+            "rocksdb_block_cache_hits": {
+                "value": 0
+            },
+            "rocksdb_block_cache_misses": {
+                "value": 0
+            },
+            "rocksdb_block_cache_pinned_usage": {
+                "value": 0
+            },
+            "rocksdb_block_cache_usage": {
+                "value": 0
+            },
+            "rocksdb_bloom_filter_prefix_checked": {
+                "value": 0
+            },
+            "rocksdb_bloom_filter_prefix_useful": {
+                "value": 0
+            },
+            "rocksdb_compacted_bytes_read": {
+                "value": 0
+            },
+            "rocksdb_compacted_bytes_written": {
+                "value": 0
+            },
+            "rocksdb_compactions": {
+                "value": 0
+            },
+            "rocksdb_encryption_algorithm": {
+                "value": 0
+            },
+            "rocksdb_estimated_pending_compaction": {
+                "value": 0
+            },
+            "rocksdb_flushed_bytes": {
+                "value": 0
+            },
+            "rocksdb_flushes": {
+                "value": 0
+            },
+            "rocksdb_ingested_bytes": {
+                "value": 0
+            },
+            "rocksdb_memtable_total_size": {
+                "value": 0
+            },
+            "rocksdb_num_sstables": {
+                "value": 0
+            },
+            "rocksdb_read_amplification": {
+                "value": 0
+            },
+            "rocksdb_table_readers_mem_estimate": {
+                "value": 0
+            },
+            "storage_disk_slow": {
+                "value": 0
+            },
+            "storage_disk_stalled": {
+                "value": 0
+            },
+            "storage_l0_num_files": {
+                "value": 0
+            },
+            "storage_l0_sublevels": {
+                "value": 0
+            },
+            "storage_marked_for_compaction_files": {
+                "value": 0
+            },
+            "storage_write_stalls": {
+                "value": 0
+            },
+            "sysbytes": {
+                "value": 8716
+            },
+            "syscount": {
+                "value": 212
+            },
+            "totalbytes": {
+                "value": 250992
+            },
+            "tscache_skl_pages": {
+                "value": 1
+            },
+            "tscache_skl_rotations": {
                 "counter": 0
             },
-            "txn_parallelcommits": {
-                "counter": 39
-            },
-            "txn_refresh_auto_retries": {
+            "txn_commit_waits_before_commit_trigger": {
                 "counter": 0
             },
-            "txn_refresh_fail": {
+            "txnrecovery_attempts_pending": {
+                "value": 0
+            },
+            "txnrecovery_attempts_total": {
                 "counter": 0
             },
-            "txn_refresh_fail_with_condensed_spans": {
+            "txnrecovery_failures": {
                 "counter": 0
             },
-            "txn_refresh_memory_limit_exceeded": {
+            "txnrecovery_successes_aborted": {
                 "counter": 0
             },
-            "txn_refresh_success": {
+            "txnrecovery_successes_committed": {
                 "counter": 0
             },
-            "txn_restarts": {
+            "txnrecovery_successes_pending": {
+                "counter": 0
+            },
+            "txnwaitqueue_deadlocks_total": {
+                "counter": 0
+            },
+            "txnwaitqueue_pushee_waiting": {
+                "value": 0
+            },
+            "txnwaitqueue_pusher_slow": {
+                "value": 0
+            },
+            "txnwaitqueue_pusher_wait_time": {
                 "histogram": {
                     "counts": [
                         0
@@ -2485,38 +1644,27 @@ An example event for `status` looks as following:
                     ]
                 }
             },
-            "txn_restarts_asyncwritefailure": {
-                "counter": 0
+            "txnwaitqueue_pusher_waiting": {
+                "value": 0
             },
-            "txn_restarts_commitdeadlineexceeded": {
-                "counter": 0
+            "txnwaitqueue_query_wait_time": {
+                "histogram": {
+                    "counts": [
+                        0
+                    ],
+                    "values": [
+                        0
+                    ]
+                }
             },
-            "txn_restarts_readwithinuncertainty": {
-                "counter": 0
+            "txnwaitqueue_query_waiting": {
+                "value": 0
             },
-            "txn_restarts_serializable": {
-                "counter": 0
+            "valbytes": {
+                "value": 168360
             },
-            "txn_restarts_txnaborted": {
-                "counter": 0
-            },
-            "txn_restarts_txnpush": {
-                "counter": 0
-            },
-            "txn_restarts_unknown": {
-                "counter": 0
-            },
-            "txn_restarts_writetooold": {
-                "counter": 0
-            },
-            "txn_restarts_writetoooldmulti": {
-                "counter": 0
-            },
-            "txn_rollbacks_async_failed": {
-                "counter": 0
-            },
-            "txn_rollbacks_failed": {
-                "counter": 0
+            "valcount": {
+                "value": 1750
             }
         }
     },
@@ -2529,21 +1677,22 @@ An example event for `status` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "cdc6a9bf-9269-4de8-a490-ce48a2f4596d",
+        "id": "19de6249-945f-46da-9464-383664c3adaf",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "cockroachdb.status",
-        "duration": 115894125,
-        "ingested": "2022-07-11T09:54:23Z",
+        "duration": 248296459,
+        "ingested": "2022-09-06T09:50:55Z",
         "module": "prometheus"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
+        "id": "5016511f0829451ea244f458eebf2212",
         "ip": [
             "172.18.0.7"
         ],
