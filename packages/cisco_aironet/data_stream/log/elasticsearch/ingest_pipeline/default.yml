@@ -186,6 +186,14 @@ processors:
         - "client %{MAC:client.mac}"
       ignore_failure: false
   ###
+  - grok:
+      description: APF-6-USER_NAME_CREATED
+      field: message
+      if: ctx._temp_?.reason == 'APF-6-USER_NAME_CREATED'
+      patterns:
+        - "Username entry \\(%{USER:user.name}\\)%{DATA}mobile %{MAC:client.mac}"
+      ignore_failure: false
+  ###
   # Client MAC
   - grok:
       field: message
