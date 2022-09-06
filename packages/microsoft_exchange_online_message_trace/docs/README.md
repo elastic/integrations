@@ -17,80 +17,154 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
-        "type": "filebeat",
-        "ephemeral_id": "adc79855-a07e-4f88-b14d-79d03400f73d",
-        "version": "8.2.0"
-    },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/test-dhcpV6.log"
+    "_index": ".ds-logs-microsoft_exchange_online_message_trace.log-default-2022.09.06-000001",
+    "_id": "XSF2EoMBTgnYwLJGQys0",
+    "_version": 1,
+    "_score": 0,
+    "_source": {
+        "agent": {
+            "name": "docker-fleet-agent",
+            "id": "80b39cad-d415-43ee-8502-e30af004b9cd",
+            "type": "filebeat",
+            "ephemeral_id": "2ed21e6a-0aed-4fae-a502-140c3144a581",
+            "version": "8.3.3"
         },
-        "offset": 1619
-    },
-    "elastic_agent": {
-        "id": "ca0beb8d-9522-4450-8af7-3cb7f3d8c478",
-        "version": "8.2.0",
-        "snapshot": false
-    },
-    "message": "DHCPV6 Request",
-    "microsoft": {
-        "dhcp": {
-            "duid": {
-                "length": "18",
-                "hex": "0004A34473BFC27FC55B25E86AF0E1761DAA"
+        "elastic_agent": {
+            "id": "80b39cad-d415-43ee-8502-e30af004b9cd",
+            "version": "8.3.3",
+            "snapshot": false
+        },
+        "source": {
+            "ip": "51.140.75.55"
+        },
+        "tags": [
+            "forwarded"
+        ],
+        "input": {
+            "type": "httpjson"
+        },
+        "@timestamp": "2022-09-06T11:01:23.939Z",
+        "ecs": {
+            "version": "8.3.1"
+        },
+        "data_stream": {
+            "namespace": "default",
+            "type": "logs",
+            "dataset": "microsoft_exchange_online_message_trace.log"
+        },
+        "event": {
+            "agent_id_status": "verified",
+            "ingested": "2022-09-06T11:01:23Z",
+            "created": "2022-09-06T11:01:22.889Z",
+            "dataset": "microsoft_exchange_online_message_trace.log",
+            "outcome": "Delivered"
+        },
+        "email": {
+            "attachments": {
+                "file": {
+                    "size": 87891
+                }
+            },
+            "local_id": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
+            "subject": "PIM: A privileged directory role was assigned outside of PIM",
+            "delivery_timestamp": "2022-09-05T18:10:13.4907658",
+            "from": {
+                "address": "azure-noreply@microsoft.com"
+            },
+            "message_id": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
+            "to": {
+                "address": "linus@wildsecurity.onmicrosoft.com"
             }
         }
     },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "microsoft_dhcp"
-    ],
-    "observer": {
-        "hostname": "docker-fleet-agent",
-        "ip": [
-            "172.18.0.7"
+    "fields": {
+        "email.subject": [
+            "PIM: A privileged directory role was assigned outside of PIM"
         ],
-        "mac": [
-            "02-42-AC-12-00-07"
+        "email.attachments.file.size": [
+            87891
+        ],
+        "elastic_agent.version": [
+            "8.3.3"
+        ],
+        "agent.type": [
+            "filebeat"
+        ],
+        "email.subject.text": [
+            "PIM: A privileged directory role was assigned outside of PIM"
+        ],
+        "email.to.address": [
+            "linus@wildsecurity.onmicrosoft.com"
+        ],
+        "source.ip": [
+            "51.140.75.55"
+        ],
+        "agent.name": [
+            "docker-fleet-agent"
+        ],
+        "elastic_agent.snapshot": [
+            false
+        ],
+        "event.agent_id_status": [
+            "verified"
+        ],
+        "event.outcome": [
+            "Delivered"
+        ],
+        "elastic_agent.id": [
+            "80b39cad-d415-43ee-8502-e30af004b9cd"
+        ],
+        "data_stream.namespace": [
+            "default"
+        ],
+        "email.delivery_timestamp": [
+            "2022-09-05T18:10:13.490Z"
+        ],
+        "email.message_id": [
+            "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e"
+        ],
+        "email.from.address": [
+            "azure-noreply@microsoft.com"
+        ],
+        "input.type": [
+            "httpjson"
+        ],
+        "data_stream.type": [
+            "logs"
+        ],
+        "tags": [
+            "forwarded"
+        ],
+        "event.ingested": [
+            "2022-09-06T11:01:23.000Z"
+        ],
+        "@timestamp": [
+            "2022-09-06T11:01:23.939Z"
+        ],
+        "agent.id": [
+            "80b39cad-d415-43ee-8502-e30af004b9cd"
+        ],
+        "ecs.version": [
+            "8.3.1"
+        ],
+        "data_stream.dataset": [
+            "microsoft_exchange_online_message_trace.log"
+        ],
+        "event.created": [
+            "2022-09-06T11:01:22.889Z"
+        ],
+        "agent.ephemeral_id": [
+            "2ed21e6a-0aed-4fae-a502-140c3144a581"
+        ],
+        "agent.version": [
+            "8.3.3"
+        ],
+        "email.local_id": [
+            "cf7a249a-5edd-4350-130a-08da8f69e0f6"
+        ],
+        "event.dataset": [
+            "microsoft_exchange_online_message_trace.log"
         ]
-    },
-    "input": {
-        "type": "log"
-    },
-    "@timestamp": "2021-12-06T12:43:57.000-05:00",
-    "ecs": {
-        "version": "8.3.0"
-    },
-    "data_stream": {
-        "namespace": "ep",
-        "type": "logs",
-        "dataset": "microsoft_dhcp.log"
-    },
-    "host": {
-        "ip": "2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6",
-        "domain": "test-host"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2022-05-09T14:40:22Z",
-        "original": "11002,12/06/21,12:43:57,DHCPV6 Request,2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6,test-host,,18,0004A34473BFC27FC55B25E86AF0E1761DAA,,,,,",
-        "code": "11002",
-        "timezone": "America/New_York",
-        "kind": "event",
-        "action": "dhcpv6-request",
-        "category": [
-            "network"
-        ],
-        "type": [
-            "connection",
-            "protocol"
-        ],
-        "dataset": "microsoft_dhcp.log",
-        "outcome": "success"
     }
 }
 ```
