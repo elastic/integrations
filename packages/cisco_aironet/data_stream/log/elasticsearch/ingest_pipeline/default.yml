@@ -168,6 +168,14 @@ processors:
         - "AP:  %{MAC:host.mac}"
       ignore_failure: false
   ###
+  - grok:
+      description: DOT1X-3-ABORT_AUTH
+      field: message
+      if: ctx._temp_?.reason == 'DOT1X-3-ABORT_AUTH'
+      patterns:
+        - "client %{MAC:client.mac} Abort Reason:%{DATA:event.reason}$"
+      ignore_failure: false
+  ###
 
   # Client MAC
   - grok:
