@@ -208,8 +208,12 @@ An example event for `access` looks as following:
 | nginx_ingress_controller.access.upstream.name | The name of the upstream. | text |
 | nginx_ingress_controller.access.upstream.port | The port of the upstream server. | long |
 | nginx_ingress_controller.access.upstream.response.length | The length of the response obtained from the upstream server | long |
+| nginx_ingress_controller.access.upstream.response.length_list | An array of upstream response lengths. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
 | nginx_ingress_controller.access.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
+| nginx_ingress_controller.access.upstream.response.status_code_list | An array of upstream response status codes. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
 | nginx_ingress_controller.access.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
+| nginx_ingress_controller.access.upstream.response.time_list | An array of upstream response durations. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
+| nginx_ingress_controller.access.upstream_address_list | An array of the upstream addresses. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
