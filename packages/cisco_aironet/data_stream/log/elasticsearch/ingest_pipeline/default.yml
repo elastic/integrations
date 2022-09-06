@@ -195,7 +195,15 @@ processors:
       if: ctx._temp_?.reason == 'APF-6-USER_NAME_CREATED' ||
         ctx._temp_?.reason == 'APF-6-USER_NAME_DELETED'
       patterns:
-        - "Username entry \\(%{USER:user.name}\\)%{DATA}mobile %{MAC:client.mac}"
+        - "Username entry \\(%{DATA:user.name}\\)%{DATA}mobile %{MAC:client.mac}"
+      ignore_failure: false
+  ###
+  - grok:
+      description: DTL-4-ARP_ORPHANPKT_DETECTED
+      field: message
+      if: ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED'
+      patterns:
+        - "STA\\(Target MAC Address\\) \\[%{MAC:client.mac}.*?\\] %{DATA:event.reason}\\(Source IP Address\\) %{IP:client.ip}%{DATA}\\(Destination IP Address\\) %{IP:server.ip}"
       ignore_failure: false
   ###
   # Client MAC
