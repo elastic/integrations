@@ -187,9 +187,10 @@ processors:
       ignore_failure: false
   ###
   - grok:
-      description: APF-6-USER_NAME_CREATED
+      description: APF-6-USER_NAME_CREATED, APF-6-USER_NAME_DELETED
       field: message
-      if: ctx._temp_?.reason == 'APF-6-USER_NAME_CREATED'
+      if: ctx._temp_?.reason == 'APF-6-USER_NAME_CREATED' ||
+        ctx._temp_?.reason == 'APF-6-USER_NAME_DELETED'
       patterns:
         - "Username entry \\(%{USER:user.name}\\)%{DATA}mobile %{MAC:client.mac}"
       ignore_failure: false
