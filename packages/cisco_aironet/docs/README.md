@@ -200,6 +200,9 @@ An example event for `log` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cisco.eapol.descriptor | Cisco eapol descriptor | short |
+| cisco.eapol.type | Cisco eapol type | short |
+| cisco.eapol.version | Cisco eapol version | short |
 | cisco.interface.type | Cisco interface type | keyword |
 | cisco.wps.channel | Cisco WPS channel | short |
 | cisco.wps.hits | Cisco WPS hits | short |
