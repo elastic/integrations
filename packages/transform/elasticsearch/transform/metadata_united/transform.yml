@@ -1,0 +1,26 @@
+source:
+  index:
+    - metrics-endpoint.metadata_current_default*
+    - ".fleet-agents*"
+dest:
+  index: ".metrics-endpoint.metadata_united_default"
+frequency: 1s
+sync:
+  time:
+    delay: 4s
+    field: updated_at
+pivot:
+  aggs:
+    united:
+      scripted_metric:
+        init_script: state.docs = []
+        map_script: state.docs.add(new HashMap(params['_source']))
+        combine_script: return state.docs
+        reduce_script: def ret = new HashMap(); for (s in states) { for (d in s) { if (d.containsKey('Endpoint')) { ret.endpoint = d } else { ret.agent = d } }} return ret
+  group_by:
+    agent.id:
+      terms:
+        field: agent.id
+description: Merges latest Endpoint and Agent metadata documents
+_meta:
+  managed: true

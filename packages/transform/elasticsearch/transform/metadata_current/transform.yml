@@ -1,0 +1,20 @@
+source:
+  index: metrics-endpoint.metadata-*
+  query:
+    range:
+      "@timestamp":
+        gt: now-90d/d
+dest:
+  index: metrics-endpoint.metadata_current_default
+latest:
+  unique_key:
+    - elastic.agent.id
+  sort: "@timestamp"
+description: Latest Endpoint metadata document per host
+_meta:
+  managed: true
+frequency: 1s
+sync:
+  time:
+    field: event.ingested
+    delay: 1s

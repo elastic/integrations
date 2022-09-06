@@ -1,0 +1,359 @@
+- name: agent
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      ignore_above: 1024
+- name: united
+  type: group
+  fields:
+    - name: endpoint
+      type: group
+      fields:
+        - name: '@timestamp'
+          type: date
+        - name: Endpoint
+          type: group
+          fields:
+            - name: configuration
+              type: group
+              fields:
+                - name: isolation
+                  type: boolean
+                  null_value: false
+            - name: policy
+              type: group
+              fields:
+                - name: applied
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                      ignore_above: 1024
+                    - name: name
+                      type: keyword
+                      ignore_above: 1024
+                    - name: status
+                      type: keyword
+                      ignore_above: 1024
+            - name: state
+              type: group
+              fields:
+                - name: isolation
+                  type: boolean
+                  null_value: false
+            - name: status
+              type: keyword
+              ignore_above: 1024
+            - name: capabilities
+              type: keyword
+              ignore_above: 128
+              doc_values: false
+        - name: agent
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              ignore_above: 1024
+            - name: name
+              type: keyword
+              ignore_above: 1024
+            - name: type
+              type: keyword
+              ignore_above: 1024
+            - name: version
+              type: keyword
+              ignore_above: 1024
+        - name: data_stream
+          type: group
+          fields:
+            - name: dataset
+              type: constant_keyword
+              value: endpoint.metadata
+            - name: namespace
+              type: keyword
+            - name: type
+              type: constant_keyword
+              value: metrics
+        - name: ecs
+          type: group
+          fields:
+            - name: version
+              type: keyword
+              ignore_above: 1024
+        - name: elastic
+          type: group
+          fields:
+            - name: agent
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  ignore_above: 1024
+        - name: event
+          type: group
+          fields:
+            - name: action
+              type: keyword
+              ignore_above: 1024
+            - name: category
+              type: keyword
+              ignore_above: 1024
+            - name: code
+              type: keyword
+              ignore_above: 1024
+            - name: created
+              type: date
+            - name: dataset
+              type: keyword
+              ignore_above: 1024
+            - name: hash
+              type: keyword
+              ignore_above: 1024
+            - name: id
+              type: keyword
+              ignore_above: 1024
+            - name: ingested
+              type: date
+            - name: kind
+              type: keyword
+              ignore_above: 1024
+            - name: module
+              type: keyword
+              ignore_above: 1024
+            - name: outcome
+              type: keyword
+              ignore_above: 1024
+            - name: provider
+              type: keyword
+              ignore_above: 1024
+            - name: sequence
+              type: long
+            - name: severity
+              type: long
+            - name: type
+              type: keyword
+              ignore_above: 1024
+        - name: host
+          type: group
+          fields:
+            - name: architecture
+              type: keyword
+              ignore_above: 1024
+            - name: domain
+              type: keyword
+              ignore_above: 1024
+            - name: hostname
+              type: keyword
+              ignore_above: 1024
+            - name: id
+              type: keyword
+              ignore_above: 1024
+            - name: ip
+              type: ip
+            - name: mac
+              type: keyword
+              ignore_above: 1024
+            - name: name
+              type: keyword
+              ignore_above: 1024
+            - name: os
+              type: group
+              fields:
+                - name: Ext
+                  type: group
+                  fields:
+                    - name: variant
+                      type: keyword
+                      ignore_above: 1024
+                - name: family
+                  type: keyword
+                  ignore_above: 1024
+                - name: full
+                  type: keyword
+                  ignore_above: 1024
+                  multi_fields:
+                    - name: caseless
+                      type: keyword
+                      ignore_above: 1024
+                      normalizer: lowercase
+                    - name: text
+                      type: text
+                      norms: false
+                - name: kernel
+                  type: keyword
+                  ignore_above: 1024
+                - name: name
+                  type: keyword
+                  ignore_above: 1024
+                  multi_fields:
+                    - name: caseless
+                      type: keyword
+                      ignore_above: 1024
+                      normalizer: lowercase
+                    - name: text
+                      type: text
+                      norms: false
+                - name: platform
+                  type: keyword
+                  ignore_above: 1024
+                - name: version
+                  type: keyword
+                  ignore_above: 1024
+            - name: type
+              type: keyword
+              ignore_above: 1024
+            - name: uptime
+              type: long
+    - name: agent
+      type: group
+      fields:
+        - name: access_api_key_id
+          type: keyword
+        - name: action_seq_no
+          type: integer
+          index: false
+        - name: active
+          type: boolean
+        - name: agent
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: version
+              type: keyword
+        - name: default_api_key
+          type: keyword
+        - name: default_api_key_id
+          type: keyword
+        - name: enrolled_at
+          type: date
+        - name: last_checkin
+          type: date
+        - name: last_checkin_status
+          type: keyword
+        - name: last_updated
+          type: date
+        - name: local_metadata
+          type: group
+          fields:
+            - name: elastic
+              type: group
+              fields:
+                - name: agent
+                  type: group
+                  fields:
+                    - name: build
+                      type: group
+                      fields:
+                        - name: original
+                          type: text
+                          multi_fields:
+                            - name: keyword
+                              type: keyword
+                              ignore_above: 256
+                    - name: id
+                      type: keyword
+                    - name: log_level
+                      type: keyword
+                    - name: snapshot
+                      type: boolean
+                    - name: upgradeable
+                      type: boolean
+                    - name: version
+                      type: text
+                      multi_fields:
+                        - name: keyword
+                          type: keyword
+                          ignore_above: 16
+            - name: host
+              type: group
+              fields:
+                - name: architecture
+                  type: keyword
+                - name: hostname
+                  type: text
+                  multi_fields:
+                    - name: keyword
+                      type: keyword
+                      ignore_above: 256
+                - name: id
+                  type: keyword
+                - name: ip
+                  type: text
+                  multi_fields:
+                    - name: keyword
+                      type: keyword
+                      ignore_above: 64
+                - name: mac
+                  type: text
+                  multi_fields:
+                    - name: keyword
+                      type: keyword
+                      ignore_above: 17
+                - name: name
+                  type: text
+                  multi_fields:
+                    - name: keyword
+                      type: keyword
+                      ignore_above: 256
+            - name: os
+              type: group
+              fields:
+                - name: family
+                  type: keyword
+                - name: full
+                  type: text
+                  multi_fields:
+                    - name: keyword
+                      type: keyword
+                      ignore_above: 128
+                - name: kernel
+                  type: text
+                  multi_fields:
+                    - name: keyword
+                      type: keyword
+                      ignore_above: 128
+                - name: name
+                  type: text
+                  multi_fields:
+                    - name: keyword
+                      type: keyword
+                      ignore_above: 256
+                - name: platform
+                  type: keyword
+                - name: version
+                  type: text
+                  multi_fields:
+                    - name: keyword
+                      type: keyword
+                      ignore_above: 32
+        - name: packages
+          type: keyword
+        - name: policy_coordinator_idx
+          type: integer
+        - name: policy_id
+          type: keyword
+        - name: policy_output_permissions_hash
+          type: keyword
+        - name: policy_revision_idx
+          type: integer
+        - name: shared_id
+          type: keyword
+        - name: type
+          type: keyword
+        - name: unenrolled_at
+          type: date
+        - name: unenrolled_reason
+          type: keyword
+        - name: unenrollment_started_at
+          type: date
+        - name: updated_at
+          type: date
+        - name: upgrade_started_at
+          type: date
+        - name: upgraded_at
+          type: date
+        - name: user_provided_metadata
+          type: object
+          enabled: false
