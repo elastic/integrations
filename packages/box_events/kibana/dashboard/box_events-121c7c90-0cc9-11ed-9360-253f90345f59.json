@@ -23,17 +23,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-2f8eb404-b9bc-41c3-8cd0-1099cd0a0e3f",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "filter-index-pattern-0",
                                 "type": "index-pattern"
                             }
                         ],
@@ -45,18 +35,18 @@
                                             "columnOrder": [
                                                 "2c2e31f8-a7bb-4b95-9b89-b40e2315428f",
                                                 "ef066177-0411-4576-9fb6-ea2d135ba2cc",
-                                                "e31f2284-f241-4661-ab01-3df140b53a96"
+                                                "d04f7d3a-f756-456a-b709-39c005b3e6b3"
                                             ],
                                             "columns": {
                                                 "2c2e31f8-a7bb-4b95-9b89-b40e2315428f": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of event.action",
+                                                    "label": "Top 10 values of event.action",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "e31f2284-f241-4661-ab01-3df140b53a96",
+                                                            "columnId": "d04f7d3a-f756-456a-b709-39c005b3e6b3",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -66,11 +56,14 @@
                                                     "scale": "ordinal",
                                                     "sourceField": "event.action"
                                                 },
-                                                "e31f2284-f241-4661-ab01-3df140b53a96": {
+                                                "d04f7d3a-f756-456a-b709-39c005b3e6b3": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count of records",
                                                     "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
                                                 },
@@ -100,17 +93,15 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "filter-index-pattern-0",
-                                        "key": "data_stream.dataset",
+                                        "indexRefName": "filter-index-pattern-0",
+                                        "key": "box.source.id",
                                         "negate": false,
-                                        "params": {
-                                            "query": "box_events.events"
-                                        },
-                                        "type": "phrase"
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "box_events.events"
+                                        "exists": {
+                                            "field": "box.source.id"
                                         }
                                     }
                                 }
@@ -123,7 +114,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "e31f2284-f241-4661-ab01-3df140b53a96"
+                                            "d04f7d3a-f756-456a-b709-39c005b3e6b3"
                                         ],
                                         "layerId": "2f8eb404-b9bc-41c3-8cd0-1099cd0a0e3f",
                                         "layerType": "data",
@@ -155,8 +146,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -168,7 +158,7 @@
                 "panelIndex": "7e152f68-a2e8-4b29-9666-efd05a1e93d5",
                 "title": "Box Events over Time by Event Type",
                 "type": "lens",
-                "version": "7.17.0"
+                "version": "8.3.0"
             },
             {
                 "embeddableConfig": {
@@ -283,8 +273,7 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -296,7 +285,7 @@
                 "panelIndex": "7133f385-645b-4b40-86a3-bfac28219098",
                 "title": "All Box Events by Event Type",
                 "type": "lens",
-                "version": "7.17.0"
+                "version": "8.3.0"
             },
             {
                 "embeddableConfig": {
@@ -416,8 +405,7 @@
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 5,
@@ -429,7 +417,7 @@
                 "panelIndex": "e7146c6c-04c5-490c-b8eb-aa886975721c",
                 "title": "Total Upload Bytes",
                 "type": "lens",
-                "version": "7.17.0"
+                "version": "8.3.0"
             },
             {
                 "embeddableConfig": {
@@ -544,8 +532,7 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -557,7 +544,7 @@
                 "panelIndex": "a8d49a69-0b49-45c0-86f5-db5e69afaec5",
                 "title": "Top 10 Users x Number of Events associated with the user",
                 "type": "lens",
-                "version": "7.17.0"
+                "version": "8.3.0"
             },
             {
                 "embeddableConfig": {
@@ -698,8 +685,7 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -711,7 +697,7 @@
                 "panelIndex": "8bbab8a0-1ad7-48b9-a977-014ced26ec0f",
                 "title": "Top 10 Users x number of Failed Logins",
                 "type": "lens",
-                "version": "7.17.0"
+                "version": "8.3.0"
             },
             {
                 "embeddableConfig": {
@@ -831,8 +817,7 @@
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 5,
@@ -844,7 +829,7 @@
                 "panelIndex": "01be1b99-d74a-421f-8170-bf13254b5eca",
                 "title": "Total Download Bytes",
                 "type": "lens",
-                "version": "7.17.0"
+                "version": "8.3.0"
             },
             {
                 "embeddableConfig": {
@@ -964,8 +949,7 @@
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 5,
@@ -977,7 +961,7 @@
                 "panelIndex": "d8f09abc-6ddb-4296-aef0-bbcdd9baa692",
                 "title": "Total Trash Bytes",
                 "type": "lens",
-                "version": "7.17.0"
+                "version": "8.3.0"
             },
             {
                 "embeddableConfig": {
@@ -1093,8 +1077,7 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -1106,32 +1089,22 @@
                 "panelIndex": "e76f7e40-d396-4ec0-a28b-749aaadc5a89",
                 "title": "All Box Events by Event Name",
                 "type": "lens",
-                "version": "7.17.0"
+                "version": "8.3.0"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Box Events Integration] Events",
         "version": 1
     },
-    "coreMigrationVersion": "7.17.0",
+    "coreMigrationVersion": "8.3.0",
     "id": "box_events-121c7c90-0cc9-11ed-9360-253f90345f59",
     "migrationVersion": {
-        "dashboard": "7.17.0"
+        "dashboard": "8.3.0"
     },
     "references": [
         {
             "id": "logs-*",
-            "name": "7e152f68-a2e8-4b29-9666-efd05a1e93d5:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "7e152f68-a2e8-4b29-9666-efd05a1e93d5:indexpattern-datasource-layer-2f8eb404-b9bc-41c3-8cd0-1099cd0a0e3f",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "7e152f68-a2e8-4b29-9666-efd05a1e93d5:filter-index-pattern-0",
             "type": "index-pattern"
         },
         {
