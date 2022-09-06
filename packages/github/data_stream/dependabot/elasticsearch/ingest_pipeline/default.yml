@@ -253,6 +253,12 @@ processors:
   #################################
   # For Github Overview Dashboard #
   #################################
+- lowercase:
+    field: github.dependabot.state
+    ignore_missing: true
+- lowercase:
+    field: vulnerability.severity
+    ignore_missing: true
 - set: 
     field: github.state
     copy_from: github.dependabot.state
@@ -261,6 +267,10 @@ processors:
     field: github.severity
     copy_from: vulnerability.severity
     if: ctx.vulnerability?.severity != null
+- set:
+    field: github.severity
+    value: "undefined"
+    if: ctx.github.severity == null
 - rename:
     field: github.dependabot.repository
     target_field: github.repository
