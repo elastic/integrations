@@ -328,6 +328,7 @@ An example event for `log` looks as following:
 | infoblox_nios.log.type |  | keyword |
 | input.type | Input type | keyword |
 | interface.name | Interface name as reported by the system. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
