@@ -1,6 +1,6 @@
 # Collective Intelligence Framework v3 Integration
 
-This integration connects with the [REST API from the running CIFv3 instance](https://github.com/csirtgadgets/bearded-avenger/blob/master/cif/httpd/views/feed/__init__.py) to retrieve indicators.
+This integration connects with the [REST API from the running CIFv3 instance](https://github.com/csirtgadgets/bearded-avenger-deploymentkit/wiki/REST-API) to retrieve indicators.
 
 ## Data Streams
 
