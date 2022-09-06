@@ -173,10 +173,17 @@ processors:
     target_field: github.secret_scanning.number
     if: ctx.github.secret_scanning?.number == null
     ignore_missing: true
+- lowercase:
+    field: github.secret_scanning.state
+    ignore_missing: true
 - set: 
     field: github.state
     value: "{{github.secret_scanning.state}}"
     if: ctx.github.secret_scanning?.state != null
+- set:
+    field: github.severity
+    value: "undefined"
+    if: ctx.github.severity == null
 - rename: 
     target_field: _temp.push_protection_bypassed_by
     field: github.secret_scanning.push_protection_bypassed_by

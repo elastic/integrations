@@ -131,13 +131,19 @@ processors:
     target_field: github.code_scanning.number
     if: ctx.github.code_scanning?.number == null
     ignore_missing: true
+- lowercase:
+    field: github.code_scanning.state
+    ignore_missing: true
+- lowercase:
+    field: github.code_scanning.rule.security_severity_level
+    ignore_missing: true
 - set:
     field: github.severity
     value: "{{github.code_scanning.rule.security_severity_level}}"
     if: ctx.github.code_scanning?.rule?.security_severity_level != null
 - set:
     field: github.severity
-    value: "Undefined"
+    value: "undefined"
     if: ctx.github.severity == null
 - set: 
     field: github.state

@@ -391,6 +391,7 @@ Or you must be an administrator for the repository or for the organization that 
 | github.secret_scanning.time_to_resolution.sec | The time taken to either fix the secret in seconds. | long | s | gauge |
 | github.secret_scanning.updated_at | The time that the alert was last updated in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ` | date |  |  |
 | github.secret_scanning.url | The REST API URL of the alert resource | keyword |  |  |
+| github.severity | The severity of the secret scanning alert | keyword |  |  |
 | github.state | State of a code scanning alert | keyword |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
 | host.containerized | If the host is a container. | boolean |  |  |
