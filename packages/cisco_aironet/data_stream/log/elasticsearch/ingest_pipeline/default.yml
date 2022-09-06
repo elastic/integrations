@@ -199,9 +199,10 @@ processors:
       ignore_failure: false
   ###
   - grok:
-      description: DTL-4-ARP_ORPHANPKT_DETECTED
+      description: DTL-4-ARP_ORPHANPKT_DETECTED, Dot1x_NW_MsgTask_4
       field: message
-      if: ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED'
+      if: ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED' ||
+        ctx._temp_?.reason == 'LOG-4-Q_IND'
       patterns:
         - "STA\\(Target MAC Address\\) \\[%{MAC:client.mac}.*?\\] %{DATA:event.reason}\\(Source IP Address\\) %{IP:client.ip}%{DATA}\\(Destination IP Address\\) %{IP:server.ip}"
       ignore_failure: false
