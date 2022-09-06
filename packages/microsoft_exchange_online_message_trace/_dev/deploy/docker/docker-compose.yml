@@ -1,8 +1,14 @@
 version: '2.3'
 services:
-  message_trace:
+  exchange-online-logfile:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"
+  exchange_online:
     image: docker.elastic.co/observability/stream:v0.6.1
-    hostname: tenable_sc
+    hostname: exchange_online
     ports:
       - 8080
     volumes:
