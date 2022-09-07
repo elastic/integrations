@@ -17,11 +17,8 @@ An example event for `log` looks as following:
 ```json
 {
     "@timestamp": "2022-08-20T11:25:50.157Z",
-    "_conf": {
-        "tz_offset": "UTC"
-    },
     "agent": {
-        "ephemeral_id": "883ce1e2-e776-47da-a957-2cdea5e4bb87",
+        "ephemeral_id": "5b951958-c1d6-4bca-b8c0-9c95f12e204d",
         "id": "f783b804-5cdd-49eb-9723-a16140d0ab41",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -52,7 +49,7 @@ An example event for `log` looks as following:
         "action": "ENTRY_DELETED",
         "agent_id_status": "verified",
         "dataset": "cisco_aironet.log",
-        "ingested": "2022-09-07T08:54:06Z",
+        "ingested": "2022-09-07T08:57:37Z",
         "original": "\u003c134\u003eWLC001: *SISF BT Process: Aug 20 11:25:50.157: %SISF-6-ENTRY_DELETED: sisf_shim_utils.c:482 Entry deleted A=fe80::aee2:d3ff:feba:56a4 V=0 I=wired:1 P=0000 M=",
         "provider": "SISF",
         "severity": "6",
@@ -67,7 +64,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.96.7:38460"
+            "address": "192.168.96.7:52874"
         },
         "syslog": {
             "facility": {
