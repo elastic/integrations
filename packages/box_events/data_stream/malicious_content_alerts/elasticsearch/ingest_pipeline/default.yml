@@ -153,16 +153,12 @@ processors:
       field: threat.indicator.type
       value: "software"
   - rename:
-      field: ctx.box.additional_details.shield_alert.malware_info.first_seen
+      field: box.additional_details.shield_alert.malware_info.first_seen
       target_field: threat.indicator.first_seen
       ignore_missing: true
   - rename:
-      field: ctx.box.additional_details.shield_alert.malware_info.last_seen
+      field: box.additional_details.shield_alert.malware_info.last_seen
       target_field: threat.indicator.last_seen
-      ignore_missing: true
-  - rename:
-      field: ctx.box.additional_details.shield_alert.malware_info.detail_link
-      target_field: threat.indicator.reference
       ignore_missing: true
   - append:
       field: related.ip
@@ -172,6 +168,69 @@ processors:
   - append:
       field: related.ip
       value: "{{{client.ip}}}"
+      ignore_failure: true
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{box.additional_details.shield_alert.malware_info.file_created_by.email}}}"
+      ignore_failure: true
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{box.additional_details.shield_alert.malware_info.file_created_by.id}}}"
+      ignore_failure: true
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{box.additional_details.shield_alert.malware_info.file_created_by.name}}}"
+      ignore_failure: true
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{box.additional_details.shield_alert.malware_info.file_version_uploaded_by.email}}}"
+      ignore_failure: true
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{box.additional_details.shield_alert.malware_info.file_version_uploaded_by.id}}}"
+      ignore_failure: true
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{box.additional_details.shield_alert.malware_info.file_version_uploaded_by.name}}}"
+      ignore_failure: true
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{box.created_by.email}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box?.created_by?.type == "user"
+  - append:
+      field: related.user
+      value: "{{{box.created_by.id}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box?.created_by?.type == "user"
+  - append:
+      field: related.user
+      value: "{{{box.created_by.name}}}"
+      ignore_failure: true
+      allow_duplicates: false
+      if: ctx.box?.created_by?.type == "user"
+  - append:
+      field: related.user
+      value: "{{{user.effective.email}}}"
+      ignore_failure: true
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{user.effective.id}}}"
+      ignore_failure: true
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{user.effective.name}}}"
       ignore_failure: true
       allow_duplicates: false
   - script:
