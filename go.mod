@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/elastic/elastic-package v0.60.0
+	github.com/elastic/elastic-package v0.61.0
 	github.com/elastic/go-licenser v0.4.1
 	github.com/elastic/package-registry v1.11.0
 	github.com/magefile/mage v1.13.0
@@ -172,7 +172,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	helm.sh/helm/v3 v3.9.3 // indirect
+	helm.sh/helm/v3 v3.9.4 // indirect
 	howett.net/plist v0.0.0-20201203080718-1454fab16a06 // indirect
 	k8s.io/api v0.24.4 // indirect
 	k8s.io/apiextensions-apiserver v0.24.2 // indirect
