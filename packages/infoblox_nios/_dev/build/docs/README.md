@@ -1,6 +1,6 @@
 # Infoblox NIOS
 
-The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP.
+The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP or logfile.
 
 ## Setup steps
 1. Enable the integration with TCP/UDP input.
