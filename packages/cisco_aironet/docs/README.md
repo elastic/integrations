@@ -9,189 +9,85 @@ datasets for receiving logs over syslog or read from a file:
 
 ### Aironet
 
-The `log` dataset collects the Cisco Aironet WLC logs.
-
-[Log Documentation](https://www.cisco.com/c/en/us/support/wireless/wireless-lan-controller-software/products-system-message-guides-list.html)
+The `log` dataset collects the Cisco Aironet WLC logs. The descriptions of system messages can be obtained from the [Cisco documentation](https://www.cisco.com/c/en/us/support/wireless/wireless-lan-controller-software/products-system-message-guides-list.html).
 
 
 An example event for `log` looks as following:
 
 ```json
 {
-    "_index": ".ds-logs-cisco_aironet.log-ep-2022.09.05-000001",
-    "_id": "V52IDoMB6b9fJQT6YFqW",
-    "_version": 1,
-    "_score": 0,
-    "_source": {
-        "agent": {
-            "name": "docker-fleet-agent",
-            "id": "cb015bb4-b2f0-42ec-a404-9e771349a3fb",
-            "type": "filebeat",
-            "ephemeral_id": "66f994cb-7042-4fd0-ae3c-6ee4fab317f5",
-            "version": "8.3.3"
-        },
-        "process": {
-            "name": "radiusTransportThread"
-        },
-        "log": {
-            "level": "error",
-            "source": {
-                "address": "172.24.0.7:53668"
-            },
-            "syslog": {
-                "severity": {
-                    "code": 3
-                },
-                "priority": 131,
-                "facility": {
-                    "code": 16
-                }
-            }
-        },
-        "elastic_agent": {
-            "id": "cb015bb4-b2f0-42ec-a404-9e771349a3fb",
-            "version": "8.3.3",
-            "snapshot": false
-        },
-        "message": "Invalid AAA request. unknown",
-        "tags": [
-            "preserve_original_event",
-            "cisco-aironet",
-            "forwarded"
-        ],
-        "input": {
-            "type": "tcp"
-        },
-        "@timestamp": "2022-08-29T10:58:58.000Z",
-        "ecs": {
-            "version": "8.3.1"
-        },
-        "data_stream": {
-            "namespace": "ep",
-            "type": "logs",
-            "dataset": "cisco_aironet.log"
-        },
-        "host": {
-            "name": "WLC001"
-        },
-        "event": {
-            "severity": "3",
-            "agent_id_status": "verified",
-            "reason": "The system has received an AAA request with a null or invalid payload.",
-            "ingested": "2022-09-05T16:42:42Z",
-            "original": "\u003c131\u003eWLC001: *radiusTransportThread: Aug 29 10:58:58.000: %AAA-3-INVALID_REQUEST: [PA]radius_db.c:3923 Invalid AAA request. unknown",
-            "provider": "AAA",
-            "timezone": "+00:00",
-            "action": "INVALID_REQUEST",
-            "dataset": "cisco_aironet.log"
+    "@timestamp": "2022-08-20T11:25:50.157Z",
+    "_conf": {
+        "tz_offset": "UTC"
+    },
+    "agent": {
+        "ephemeral_id": "883ce1e2-e776-47da-a957-2cdea5e4bb87",
+        "id": "f783b804-5cdd-49eb-9723-a16140d0ab41",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.3.3"
+    },
+    "cisco": {
+        "interface": {
+            "type": "wired"
         }
     },
-    "fields": {
-        "elastic_agent.version": [
-            "8.3.3"
-        ],
-        "process.name.text": [
-            "radiusTransportThread"
-        ],
-        "agent.type": [
-            "filebeat"
-        ],
-        "event.module": [
-            "cisco_aironet"
-        ],
-        "event.reason": [
-            "The system has received an AAA request with a null or invalid payload."
-        ],
-        "log.level": [
-            "error"
-        ],
-        "agent.name": [
-            "docker-fleet-agent"
-        ],
-        "elastic_agent.snapshot": [
-            false
-        ],
-        "host.name": [
-            "WLC001"
-        ],
-        "log.syslog.priority": [
-            131
-        ],
-        "event.agent_id_status": [
-            "verified"
-        ],
-        "event.timezone": [
-            "+00:00"
-        ],
-        "event.severity": [
-            "3"
-        ],
-        "log.syslog.severity.code": [
-            3
-        ],
-        "event.original": [
-            "\u003c131\u003eWLC001: *radiusTransportThread: Aug 29 10:58:58.000: %AAA-3-INVALID_REQUEST: [PA]radius_db.c:3923 Invalid AAA request. unknown"
-        ],
-        "elastic_agent.id": [
-            "cb015bb4-b2f0-42ec-a404-9e771349a3fb"
-        ],
-        "data_stream.namespace": [
-            "ep"
-        ],
-        "input.type": [
-            "tcp"
-        ],
-        "message": [
-            "Invalid AAA request. unknown"
-        ],
-        "data_stream.type": [
-            "logs"
-        ],
-        "tags": [
-            "preserve_original_event",
-            "cisco-aironet",
-            "forwarded"
-        ],
-        "process.name": [
-            "radiusTransportThread"
-        ],
-        "event.provider": [
-            "AAA"
-        ],
-        "event.action": [
-            "INVALID_REQUEST"
-        ],
-        "event.ingested": [
-            "2022-09-05T16:42:42.000Z"
-        ],
-        "@timestamp": [
-            "2022-08-29T10:58:58.000Z"
-        ],
-        "agent.id": [
-            "cb015bb4-b2f0-42ec-a404-9e771349a3fb"
-        ],
-        "ecs.version": [
-            "8.3.1"
-        ],
-        "log.source.address": [
-            "172.24.0.7:53668"
-        ],
-        "data_stream.dataset": [
-            "cisco_aironet.log"
-        ],
-        "agent.ephemeral_id": [
-            "66f994cb-7042-4fd0-ae3c-6ee4fab317f5"
-        ],
-        "agent.version": [
-            "8.3.3"
-        ],
-        "event.dataset": [
-            "cisco_aironet.log"
-        ],
-        "log.syslog.facility.code": [
-            16
-        ]
-    }
+    "client": {
+        "ip": "fe80::aee2:d3ff:feba:56a4"
+    },
+    "data_stream": {
+        "dataset": "cisco_aironet.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.3.1"
+    },
+    "elastic_agent": {
+        "id": "f783b804-5cdd-49eb-9723-a16140d0ab41",
+        "snapshot": false,
+        "version": "8.3.3"
+    },
+    "event": {
+        "action": "ENTRY_DELETED",
+        "agent_id_status": "verified",
+        "dataset": "cisco_aironet.log",
+        "ingested": "2022-09-07T08:54:06Z",
+        "original": "\u003c134\u003eWLC001: *SISF BT Process: Aug 20 11:25:50.157: %SISF-6-ENTRY_DELETED: sisf_shim_utils.c:482 Entry deleted A=fe80::aee2:d3ff:feba:56a4 V=0 I=wired:1 P=0000 M=",
+        "provider": "SISF",
+        "severity": "6",
+        "timezone": "+00:00"
+    },
+    "host": {
+        "name": "WLC001"
+    },
+    "input": {
+        "type": "udp"
+    },
+    "log": {
+        "level": "informational",
+        "source": {
+            "address": "192.168.96.7:38460"
+        },
+        "syslog": {
+            "facility": {
+                "code": 16
+            },
+            "priority": 134,
+            "severity": {
+                "code": 6
+            }
+        }
+    },
+    "message": "Entry deleted A=fe80::aee2:d3ff:feba:56a4 V=0 I=wired:1 P=0000 M=",
+    "process": {
+        "name": "SISF BT Process"
+    },
+    "tags": [
+        "preserve_original_event",
+        "cisco-aironet",
+        "forwarded"
+    ]
 }
 ```
 
