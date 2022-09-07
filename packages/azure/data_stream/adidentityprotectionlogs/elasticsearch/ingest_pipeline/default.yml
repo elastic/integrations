@@ -1,0 +1,331 @@
+---
+description: Pipeline for parsing Azure Active Directory Identity Protection logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.5.0'
+  - rename:
+      field: azure
+      target_field: azure-eventhub
+      ignore_missing: true
+  - script:
+      source: ctx.message = ctx.message.replace(params.empty_field_name, '')
+      params:
+        empty_field_name: '"":"",'
+      ignore_failure: true
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      target_field: azure.adidentityprotectionlogs
+  - drop:
+      description: Drop events that are not AD Identity Protection logs.
+      if: ctx?.azure?.adidentityprotectionlogs?.category == null || ctx.azure.adidentityprotectionlogs.category != 'RiskyUsers' && ctx.azure.adidentityprotectionlogs.category != 'UserRiskEvents'
+  #
+  # Common fields
+  #   
+  - date:
+      field: azure.adidentityprotectionlogs.time
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - "M/d/yyyy h:mm:ss a"
+        - ISO8601
+  - remove:
+      field: azure.adidentityprotectionlogs.time
+      ignore_missing: true
+  - rename:
+      field: azure.adidentityprotectionlogs.resourceId
+      target_field: azure.resource_id
+      ignore_missing: true
+  - convert:
+        field: azure.adidentityprotectionlogs.callerIpAddress
+        target_field: source.ip
+        type: ip
+        ignore_missing: true
+        on_failure:
+        - rename: 
+            field: azure.adidentityprotectionlogs.callerIpAddress
+            target_field: source.address
+            ignore_missing: true 
+            ignore_failure: true
+  - remove:
+      field: azure.adidentityprotectionlogs.callerIpAddress
+      if: 'ctx.source?.ip != null'
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  - rename:
+      field: azure.adidentityprotectionlogs.durationMs
+      target_field: event.duration
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
+        * params.param_nano;}
+      params:
+        param_nano: 1000000
+      ignore_failure: true
+
+#
+# FIXME: not sure this data us available in the logs
+# The docs https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadriskyusers
+# didn't mention it.
+#
+#   - rename:
+#       field: azure.adidentityprotectionlogs.location
+#       target_field: geo.name
+#       ignore_missing: true
+
+#   - rename:
+#       field: azure.adidentityprotectionlogs.identity
+#       if: "ctx.azure?.adidentityprotectionlogs?.identity instanceof String"
+#       target_field: azure.adidentityprotectionlogs.identity_name
+#       ignore_missing: true
+#   - json:
+#       field: azure.adidentityprotectionlogs.identity
+#       if: "ctx.azure?.adidentityprotectionlogs?.identity instanceof String"
+#       ignore_failure: true
+#   - json:
+#       field: azure.adidentityprotectionlogs.properties
+#       if: "ctx.azure?.adidentityprotectionlogs?.properties instanceof String"
+#       ignore_failure: true
+#   - script:
+#       lang: painless
+#       source: >-
+#         if (ctx?.azure?.adidentityprotectionlogs?.properties?.eventCategory != null) {
+#           ctx.azure.adidentityprotectionlogs.event_category = ctx.azure.adidentityprotectionlogs.properties.eventCategory;
+#         }
+#         else if (ctx?.azure?.adidentityprotectionlogs?.properties?.policies != null)  {
+#           ctx.azure.adidentityprotectionlogs.event_category = 'Policy';
+#         }
+#         else {
+#           ctx.azure.adidentityprotectionlogs.event_category = 'Administrative';
+#         }
+#       ignore_failure: true
+#   - remove:
+#       field: azure.adidentityprotectionlogs.properties.eventCategory
+#       if: 'ctx.azure.adidentityprotectionlogs.event_category != null'
+#       ignore_missing: true
+#   - rename:
+#       field: azure.adidentityprotectionlogs.resultType
+#       target_field: azure.adidentityprotectionlogs.result_type
+#       ignore_missing: true
+#   - convert:
+#       field: azure.adidentityprotectionlogs.result_type
+#       target_field: event.outcome
+#       type: string
+#       if: "ctx?.azure?.adidentityprotectionlogs?.result_type != null && ctx.azure.adidentityprotectionlogs.result_type instanceof String && (ctx.azure.adidentityprotectionlogs.result_type.toLowerCase() == 'success' || ctx.azure.adidentityprotectionlogs.result_type.toLowerCase() == 'failure')"
+#   - convert:
+    #   field: azure.adidentityprotectionlogs.properties.result
+    #   target_field: event.outcome
+    #   type: string
+    #   if: "ctx?.event?.outcome == null && ctx?.azure?.adidentityprotectionlogs?.properties?.result != null && ctx?.azure?.adidentityprotectionlogs?.properties?.result instanceof String && ['success', 'failure', 'unknown'].contains(ctx.azure?.adidentityprotectionlogs?.properties?.result)"
+  - rename:
+      field: azure.adidentityprotectionlogs.operationName
+      target_field: azure.adidentityprotectionlogs.operation_name
+      ignore_missing: true
+  - convert:
+      field: azure.adidentityprotectionlogs.operation_name
+      target_field: event.action
+      type: string
+      ignore_missing: true
+  - rename:
+      field: azure.adidentityprotectionlogs.operationVersion
+      target_field: azure.adidentityprotectionlogs.operation_version
+      ignore_missing: true
+  - rename:
+      field: azure.adidentityprotectionlogs.tenantId
+      target_field: azure.tenant_id
+      ignore_missing: true
+  - remove:
+      field: azure.adidentityprotectionlogs.identity
+      description: "identity is undocumented, removing it until we know what it is"
+      ignore_missing: true
+  - remove:
+      field: azure.adidentityprotectionlogs.Level
+      description: "Level is undocumented, removing it until we know what it is"
+      ignore_missing: true
+  - remove:
+      field: azure.adidentityprotectionlogs.location
+      description: "location is undocumented, removing it until we know what it is"
+      ignore_missing: true
+  - rename:
+      field: azure.adidentityprotectionlogs.resultSignature
+      target_field: azure.adidentityprotectionlogs.result_signature
+      ignore_missing: true
+  - rename:
+      field: azure.adidentityprotectionlogs.correlationId
+      target_field: azure.correlation_id
+      ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.isDeleted
+     target_field: azure.adidentityprotectionlogs.properties.is_deleted
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.isGuest
+     target_field: azure.adidentityprotectionlogs.properties.is_guest
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.isProcessing
+     target_field: azure.adidentityprotectionlogs.properties.is_processing
+     ignore_missing: true
+
+  # Risk-related fields   
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.riskType
+     target_field: azure.adidentityprotectionlogs.properties.risk_type
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.riskEventType
+     target_field: azure.adidentityprotectionlogs.properties.risk_event_type
+     description: The type of risk event detected. For more information about each value, see https://docs.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0#riskeventtype-values values.
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.riskState
+     target_field: azure.adidentityprotectionlogs.properties.risk_state
+     description: "The state of a detected risky user or sign-in. Possible values are: none, confirmedSafe, remediated, dismissed, atRisk, confirmedCompromised, unknownFutureValue."
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.riskLevel
+     target_field: azure.adidentityprotectionlogs.properties.risk_level
+     description: "Level of the detected risk. Possible values are: low, medium, high, hidden, none, unknownFutureValue."
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.riskDetail
+     target_field: azure.adidentityprotectionlogs.properties.risk_detail
+     ignore_missing: true
+     description: "Details of the detected risk. Possible values are: none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue."
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.lastUpdatedDateTime
+     target_field: azure.adidentityprotectionlogs.properties.risk_last_updated_datetime
+     description: "The date and time that the risky user was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z."
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.riskLastUpdatedDateTime
+     target_field: azure.adidentityprotectionlogs.properties.risk_last_updated_datetime
+     description: "The date and time that the risky user was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z."
+     ignore_missing: true
+  #
+  # User-related fields
+  #
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.userId
+     target_field: azure.adidentityprotectionlogs.properties.user_id
+     description: "Unique ID of the user."
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.userDisplayName
+     target_field: azure.adidentityprotectionlogs.properties.user_display_name
+     description: "The user principal name (UPN) of the user."
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.userPrincipalName
+     target_field: azure.adidentityprotectionlogs.properties.user_principal_name
+     description: "The user principal name (UPN) of the user."
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.userType
+     target_field: azure.adidentityprotectionlogs.properties.user_type
+     ignore_missing: true
+  #
+  # Event-related fields
+  #
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.activityDateTime
+     target_field: azure.adidentityprotectionlogs.properties.activity_datetime
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.detectedDateTime
+     target_field: azure.adidentityprotectionlogs.properties.detected_datetime
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.detectionTimingType
+     target_field: azure.adidentityprotectionlogs.properties.detection_timing_type
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.requestId
+     target_field: azure.adidentityprotectionlogs.properties.request_id
+     ignore_missing: true
+  - rename:
+      field: azure.adidentityprotectionlogs.properties.correlationId
+      target_field: azure.adidentityprotectionlogs.properties.correlation_id
+      ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.tokenIssuerType
+     target_field: azure.adidentityprotectionlogs.properties.token_issuer_type
+     ignore_missing: true
+  - rename:
+     field: azure.adidentityprotectionlogs.properties.ipAddress
+     target_field: azure.adidentityprotectionlogs.properties.ip_address
+     ignore_missing: true
+  - json:
+      field: azure.adidentityprotectionlogs.properties.additionalInfo
+      target_field: azure.adidentityprotectionlogs.properties.additional_info
+      ignore_failure: true
+  - remove:
+      field: azure.adidentityprotectionlogs.properties.additionalInfo
+      ignore_missing: true
+      if: ctx?.azure.adidentityprotectionlogs.properties.additional_info != null
+  #
+  # Undocumented fields
+  # These fields are not documented in the following sources:
+  # - https://docs.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0
+  # - https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aaduserriskevents
+  #
+  # It's not clear what these fields are, so it's probably easier to just remove them and
+  # add them back later if needed.
+  #
+  - remove:
+     field: azure.adidentityprotectionlogs.properties.resourceTenantId
+     ignore_missing: true
+  - remove:
+     field: azure.adidentityprotectionlogs.properties.homeTenantId
+     ignore_missing: true
+  - remove:
+     field: azure.adidentityprotectionlogs.properties.crossTenantAccessType
+     ignore_missing: true
+
+  - set:
+      field: event.kind
+      value: event
+  - pipeline:
+      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: |-
+        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
