@@ -36,7 +36,7 @@ which is used in some configuration examples. But in general, and lately, this e
 (to port 10250 by default) and token based authentication.
 
 
-##### state_* and event
+#### state_* and event
 
 All datasets with the `state_` prefix require `hosts` field pointing to `kube-state-metrics`
 service within the cluster. As the service provides cluster-wide metrics, there's no need to fetch them per node,
