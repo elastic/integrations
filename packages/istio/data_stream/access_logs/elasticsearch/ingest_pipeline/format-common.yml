@@ -32,6 +32,9 @@ processors:
       field: destination.port
       type: long
       ignore_missing: true
+      on_failure:
+      - remove: 
+          field: destination.port
   - set:
       field: source.address
       copy_from: istio.access.downstream.remote_address
@@ -46,6 +49,9 @@ processors:
       field: source.port
       type: long
       ignore_missing: true
+      on_failure:
+      - remove: 
+          field: destination.port
   - remove:
       field: source.port
       if: "ctx?.source?.port == 0"
