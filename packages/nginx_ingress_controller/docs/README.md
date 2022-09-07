@@ -113,7 +113,7 @@ An example event for `access` looks as following:
                 "alternative_name": "",
                 "ip": "172.17.0.5",
                 "name": "default-web-8080",
-                "port": "8080",
+                "port": 8080,
                 "response": {
                     "length": 59,
                     "status_code": 200,
@@ -190,6 +190,7 @@ An example event for `access` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| http.request.id | A unique identifier for each HTTP request to correlate logs between clients and servers in transactions. The id may be contained in a non-standard HTTP header, such as `X-Request-ID` or `X-Correlation-ID`. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
 | http.response.body.bytes | Size in bytes of the response body. | long |
@@ -205,11 +206,16 @@ An example event for `access` looks as following:
 | nginx_ingress_controller.access.upstream.alternative_name | The name of the alternative upstream. | text |
 | nginx_ingress_controller.access.upstream.ip | The IP address of the upstream server. If several servers were contacted during request processing, their addresses are separated by commas. | ip |
 | nginx_ingress_controller.access.upstream.name | The name of the upstream. | text |
-| nginx_ingress_controller.access.upstream.port | The port of the upstream server. | keyword |
+| nginx_ingress_controller.access.upstream.port | The port of the upstream server. | long |
 | nginx_ingress_controller.access.upstream.response.length | The length of the response obtained from the upstream server | long |
+| nginx_ingress_controller.access.upstream.response.length_list | An array of upstream response lengths. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
 | nginx_ingress_controller.access.upstream.response.status_code | The status code of the response obtained from the upstream server | long |
+| nginx_ingress_controller.access.upstream.response.status_code_list | An array of upstream response status codes. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
 | nginx_ingress_controller.access.upstream.response.time | The time spent on receiving the response from the upstream server as seconds with millisecond resolution | double |
+| nginx_ingress_controller.access.upstream.response.time_list | An array of upstream response durations. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
+| nginx_ingress_controller.access.upstream_address_list | An array of the upstream addresses. It is a list because it is common that several upstream servers were contacted during request processing. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -223,8 +229,11 @@ An example event for `access` looks as following:
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.device.name | Name of the device. | keyword |
