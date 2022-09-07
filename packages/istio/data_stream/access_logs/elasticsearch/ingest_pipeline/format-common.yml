@@ -9,10 +9,7 @@ processors:
   - grok:
       field: istio.access.message
       patterns:
-        - '"(-|%{DATA:http.request.method}) (-|%{DATA:url.original}) (-|%{DATA:istio.access.protocol})" (-|%{NUMBER:http.response.status_code:long}) (-|%{DATA:istio.access.response.flags}) (-|%{DATA:istio.access.response.code_details}) (-|%{DATA:istio.access.connection_termination_details}) "(-|%{DATA:istio.access.upstream.transport_failure_reason})" %{NUMBER:istio.access.bytes.received:long} %{NUMBER:istio.access.bytes.sent:long} (-|%{NUMBER:istio.access.duration:long}) (-|%{NUMBER:istio.access.upstream.service_time:long}) "(-|%{DATA:istio.access.x-forwarded-for})" "(-|%{DATA:user_agent.original})" "(-|%{DATA:http.request.id})" "(-|%{DATA:istio.access.authority})" "(-|%{ISTIO_HOST:istio.access.upstream.host})" (-|%{DATA:istio.access.upstream.cluster}) (-|%{HOSTPORT:istio.access.upstream.local_address}) (-|%{HOSTPORT:istio.access.downstream.local_address}) (-|%{ISTIO_HOSTPORT:istio.access.downstream.remote_address}) (-|%{DATA:istio.access.requested_server_name}) (-|%{GREEDYDATA:istio.access.route_name})'
-      pattern_definitions:
-        ISTIO_HOST: (%{HOSTPORT}|%{URI})
-        ISTIO_HOSTPORT: (%{HOSTPORT}|%{IPORHOST}:%{NONNEGINT})
+        - '"(-|%{DATA:http.request.method}) (-|%{DATA:url.original}) (-|%{DATA:istio.access.protocol})" (-|%{NUMBER:http.response.status_code:long}) (-|%{DATA:istio.access.response.flags}) (-|%{DATA:istio.access.response.code_details}) (-|%{DATA:istio.access.connection_termination_details}) "(-|%{DATA:istio.access.upstream.transport_failure_reason})" %{NUMBER:istio.access.bytes.received:long} %{NUMBER:istio.access.bytes.sent:long} (-|%{NUMBER:istio.access.duration:long}) (-|%{NUMBER:istio.access.upstream.service_time:long}) "(-|%{DATA:istio.access.x-forwarded-for})" "(-|%{DATA:user_agent.original})" "(-|%{DATA:http.request.id})" "(-|%{DATA:istio.access.authority})" "(-|%{DATA:istio.access.upstream.host})" (-|%{DATA:istio.access.upstream.cluster}) (-|%{HOSTPORT:istio.access.upstream.local_address}) (-|%{HOSTPORT:istio.access.downstream.local_address}) (-|%{DATA:istio.access.downstream.remote_address}) (-|%{DATA:istio.access.requested_server_name}) (-|%{GREEDYDATA:istio.access.route_name})'
       ignore_missing: true
   - remove:
       field: istio.access.message
@@ -25,9 +22,23 @@ processors:
       field: destination.address
       patterns:
         - ^-$
-        - ^%{IP:destination.ip}:%{NONNEGINT:destination.port}$
         - ^%{HOSTNAME:destination.domain}$
+        - "^%{IPV4:destination.ip}:%{NUMBER:destination.port}$"
+        - "^\\[%{IPV6:destination.ip}\\]:%{NUMBER:destination.port}$"
+        - "^%{IPV6NOCOMPRESS:destination.ip}:%{NUMBER:destination.port}$"
+        - "^%{IPV6:destination.ip}%{IPV6PORTSEP}%{NUMBER:destination.port}$"
+        - "^%{IPV6:destination.ip}%{IPV6PORTSEP}%{POSINT:destination.port}$"
+      pattern_definitions:
+        IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+        IPV6PORTSEP: '(?: port |[p#.])'
       ignore_missing: true
+  - convert:
+      field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+      - remove:
+          field: destination.ip
   - convert:
       field: destination.port
       type: long
@@ -42,16 +53,31 @@ processors:
       field: source.address
       patterns:
         - ^-$
-        - ^%{IP:source.ip}:%{NONNEGINT:source.port}$
         - ^%{HOSTNAME:source.domain}$
+        - "^%{IPV4:source.ip}:%{NUMBER:source.port}$"
+        - "^\\[%{IPV6:source.ip}\\]:%{NUMBER:source.port}$"
+        - "^%{IPV6NOCOMPRESS:source.ip}:%{NUMBER:source.port}$"
+        - "^%{IPV6:source.ip}%{IPV6PORTSEP}%{NUMBER:source.port}$"
+        - "^%{IPV6:source.ip}%{IPV6PORTSEP}%{POSINT:source.port}$"
+      pattern_definitions:
+        IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+        IPV6PORTSEP: '(?: port |[p#.])'
       ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+      - remove:
+          field: source.ip
   - convert:
       field: source.port
       type: long
       ignore_missing: true
       on_failure:
       - remove: 
-          field: destination.port
+          field: source.port
   - remove:
       field: source.port
       if: "ctx?.source?.port == 0"
