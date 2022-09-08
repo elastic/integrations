@@ -12,11 +12,11 @@ For example, you could use the data from this integration to know when there are
 
 The Couchbase integration collects metrics data.
 
-Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html),  [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), and [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
+Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html),  [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), and [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
 
 This integration uses:
 - `http` metricbeat module to collect `bucket` and `cluster` metrics.
-- `prometheus` metricbeat module to collect `gsi_views`, `import`, and `security` metrics.
+- `prometheus` metricbeat module to collect `delta_sync`, `gsi_views`, `import`, and `security` metrics.
 
 Note: For Couchbase cluster setup, there is an ideal scenario of a single host with administrator access for the entire cluster to collect metrics. Providing multiple hosts from the same cluster might lead to data duplication. In the case of multiple clusters, adding a new integration to collect data from different cluster hosts is a good option.
 
@@ -373,9 +373,11 @@ An example event for `cluster` looks as following:
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
-### Import, Security and GSI views
+### Delta Sync, Import, Security and GSI views
 
 This is the `miscellaneous` data stream.
+
+The Delta Sync provides the ability to replicate only those parts of a Couchbase Mobile document that have changed.
 
 The import is processed with an admin user context in the Sync Function, similar to writes made through the Sync Gateway Admin API.
 
@@ -387,18 +389,31 @@ An example event for `miscellaneous` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-17T08:41:52.342Z",
+    "@timestamp": "2022-09-07T12:09:30.395Z",
     "agent": {
-        "ephemeral_id": "99e22f85-9a46-4d6d-ae28-1fa093aacd0f",
-        "id": "c04dd9f9-2702-45eb-a0e6-30682ace7838",
+        "ephemeral_id": "b53d49b9-ac2c-4c23-956a-61b60d17ed45",
+        "id": "52f5e6b6-f0bd-445c-b9fc-35a9e47ae49b",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.2"
+        "version": "8.3.3"
     },
     "couchbase": {
         "miscellaneous": {
             "database": {
                 "name": "beer-sample"
+            },
+            "delta_sync": {
+                "cache": {
+                    "hits": 0
+                },
+                "pull": {
+                    "replications": 0
+                },
+                "push": {
+                    "documents": 0
+                },
+                "requested": 0,
+                "sent": 0
             },
             "gsi_views": {
                 "access": {
@@ -434,9 +449,9 @@ An example event for `miscellaneous` looks as following:
             "shared_bucket": {
                 "import": {
                     "documents": {
-                        "count": 1423,
+                        "count": 31486,
                         "errors": {
-                            "count": 0
+                            "count": 105
                         }
                     }
                 }
@@ -452,9 +467,9 @@ An example event for `miscellaneous` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "c04dd9f9-2702-45eb-a0e6-30682ace7838",
+        "id": "52f5e6b6-f0bd-445c-b9fc-35a9e47ae49b",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.3.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -462,8 +477,8 @@ An example event for `miscellaneous` looks as following:
             "database"
         ],
         "dataset": "couchbase.miscellaneous",
-        "duration": 31145382,
-        "ingested": "2022-08-17T08:41:55Z",
+        "duration": 298010717,
+        "ingested": "2022-09-07T12:09:31Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -475,10 +490,10 @@ An example event for `miscellaneous` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "192.168.112.7"
+            "172.23.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:07"
+            "02:42:ac:17:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -516,6 +531,11 @@ An example event for `miscellaneous` looks as following:
 |---|---|---|---|
 | @timestamp | Event timestamp. | date |  |
 | couchbase.miscellaneous.database.name | The database for which the data is being extracted. | keyword |  |
+| couchbase.miscellaneous.delta_sync.cache.hits | The total number of requested deltas that were available in the revision cache. | long | counter |
+| couchbase.miscellaneous.delta_sync.pull.replications | The number of delta replications that have been run. | long | counter |
+| couchbase.miscellaneous.delta_sync.push.documents | The total number of documents pushed as a delta from a previous revision. | long | counter |
+| couchbase.miscellaneous.delta_sync.requested | The total number of times a revision is sent as delta from a previous revision. | long | counter |
+| couchbase.miscellaneous.delta_sync.sent | The total number of revisions sent to clients as deltas. | long | counter |
 | couchbase.miscellaneous.gsi_views.access.count | The total number of 'access' queries performed. | long | counter |
 | couchbase.miscellaneous.gsi_views.all_docs.count | The total number of 'allDocs' queries performed. | long | counter |
 | couchbase.miscellaneous.gsi_views.channels.count | The total number of 'channels' queries performed. | long | counter |

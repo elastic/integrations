@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing Couchbase Sync Gateway Import, Security and GSI views metrics.
+description: Pipeline for parsing Couchbase Sync Gateway Delta Sync, Import, Security and GSI views metrics.
 processors:
   - set:
       field: ecs.version
@@ -40,6 +40,31 @@ processors:
   - rename:
       field: prometheus.labels.instance
       target_field: server.address
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: prometheus.metrics.sgw_delta_sync_delta_cache_hit
+      target_field: couchbase.miscellaneous.delta_sync.cache.hits
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: prometheus.metrics.sgw_delta_sync_deltas_sent
+      target_field: couchbase.miscellaneous.delta_sync.sent
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: prometheus.metrics.sgw_delta_sync_deltas_requested
+      target_field: couchbase.miscellaneous.delta_sync.requested
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: prometheus.metrics.sgw_delta_sync_delta_pull_replication_count
+      target_field: couchbase.miscellaneous.delta_sync.pull.replications
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: prometheus.metrics.sgw_delta_sync_delta_push_doc_count
+      target_field: couchbase.miscellaneous.delta_sync.push.documents
       ignore_missing: true
       ignore_failure: true
   - rename:
