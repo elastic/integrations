@@ -2,6 +2,10 @@ config_version: 2
 interval: {{interval}}
 request.method: GET
 request.url: {{url}}
+request.transforms:
+  - set:
+      target: url.params.$filter
+      value: StartDate eq datetime'[[(formatDate (now (parseDuration "-1h")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
 request.timeout: 60s
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
@@ -28,6 +32,16 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 response.split:
   target: body.value
+response.pagination:
+  - set:
+      target: url.value
+      value: {{url}}
+  - set:
+      target: url.params.$skiptoken
+      value: '[[.last_event.Index]]'
+  - set:
+      target: url.params.$filter
+      value: StartDate eq datetime'[[(formatDate (now (parseDuration "-1h")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
 {{#if processors}}
 processors:
 {{processors}}
