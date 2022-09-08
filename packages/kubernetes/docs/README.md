@@ -42,8 +42,9 @@ All datasets with the `state_` prefix require `hosts` field pointing to `kube-st
 service within the cluster. As the service provides cluster-wide metrics, there's no need to fetch them per node,
 hence the recommendation is to run these datasets as part of an `Agent Deployment` with one only replica.
 
-Note: Kube-state-metrics is not deployed by default in Kubernetes. For these cases the instructions for its
-deployment are available [here](https://github.com/kubernetes/kube-state-metrics#kubernetes-deployment). 
+> Note: 
+> Kube-state-metrics is not deployed by default in Kubernetes. For these cases, see Kubernetes's instructions on [Kubernetes Deployment](https://github.com/kubernetes/kube-state-metrics#kubernetes-deployment). 
+
 Generally `kube-state-metrics` runs a `Deployment` and is accessible via a service called `kube-state-metrics` on
 `kube-system` namespace, which will be the service to use in our configuration.
 
@@ -87,7 +88,7 @@ This defaults to `/var/log/kubernetes/kube-apiserver-audit.log`.
 
 ## Compatibility
 
-The Kubernetes package is tested with Kubernetes 1.13.x, 1.14.x, 1.15.x, 1.16.x, 1.17.x, and 1.18.x
+The Kubernetes package is tested with Kubernetes 1.18.x, 1.19.x, 1.20.x, 1.21.x, 1.22.x and 1.23.x
 
 ## Dashboard
 

@@ -1,0 +1,198 @@
+{
+    "attributes": {
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "query": "data_stream.dataset : \"zscaler_zpa.user_activity\"",
+                    "language": "kuery"
+                },
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "key": "zscaler_zpa.user_activity.connector_zen_setup_time",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "zscaler_zpa.user_activity.connector_zen_setup_time"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "key": "zscaler_zpa.user_activity.connection.setup_time",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "zscaler_zpa.user_activity.connection.setup_time"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "key": "zscaler_zpa.user_activity.server_setup_time",
+                            "negate": false,
+                            "type": "exists",
+                            "value": "exists",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "zscaler_zpa.user_activity.server_setup_time"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "title": "[Zscaler][ZPA] Slowest Applications",
+        "uiStateJSON": {},
+        "version": 1,
+        "visState": {
+            "title": "[Zscaler][ZPA] Slowest Applications",
+            "type": "metrics",
+            "aggs": [],
+            "params": {
+                "time_range_mode": "entire_time_range",
+                "axis_formatter": "number",
+                "axis_position": "left",
+                "axis_scale": "normal",
+                "bar_color_rules": [
+                    {
+                        "id": "4ac99360-4dd5-11ec-9c7f-599fe68d9667"
+                    }
+                ],
+                "drop_last_bucket": 0,
+                "id": "81cebc93-9e11-4079-9241-baa103cd5db6",
+                "interval": "",
+                "isModelInvalid": false,
+                "max_lines_legend": 1,
+                "pivot_id": "client.ip",
+                "pivot_label": "Client IP",
+                "pivot_type": "string",
+                "series": [
+                    {
+                        "time_range_mode": "entire_time_range",
+                        "axis_position": "right",
+                        "chart_type": "line",
+                        "color": "#68BC00",
+                        "fill": 0.5,
+                        "formatter": "default",
+                        "hidden": false,
+                        "id": "a5e34d80-4dd6-11ec-9c7f-599fe68d9667",
+                        "label": "Application Setup Time (in microseconds)",
+                        "line_width": 1,
+                        "metrics": [
+                            {
+                                "id": "1c4724b0-4dfa-11ec-9c7f-599fe68d9667",
+                                "type": "avg",
+                                "field": "zscaler_zpa.user_activity.server_setup_time"
+                            },
+                            {
+                                "id": "5adf7740-4dfa-11ec-9c7f-599fe68d9667",
+                                "type": "avg",
+                                "field": "zscaler_zpa.user_activity.connection.setup_time"
+                            },
+                            {
+                                "id": "6f1124c0-4dfa-11ec-9c7f-599fe68d9667",
+                                "type": "avg",
+                                "field": "zscaler_zpa.user_activity.connector_zen_setup_time"
+                            },
+                            {
+                                "id": "7956fef0-4dfa-11ec-9c7f-599fe68d9667",
+                                "type": "math",
+                                "variables": [
+                                    {
+                                        "id": "7ad8bcf0-4dfa-11ec-9c7f-599fe68d9667",
+                                        "name": "a",
+                                        "field": "1c4724b0-4dfa-11ec-9c7f-599fe68d9667"
+                                    },
+                                    {
+                                        "id": "80181f30-4dfa-11ec-9c7f-599fe68d9667",
+                                        "name": "b",
+                                        "field": "5adf7740-4dfa-11ec-9c7f-599fe68d9667"
+                                    },
+                                    {
+                                        "id": "81c5f640-4dfa-11ec-9c7f-599fe68d9667",
+                                        "name": "c",
+                                        "field": "6f1124c0-4dfa-11ec-9c7f-599fe68d9667"
+                                    }
+                                ],
+                                "script": "params.a + params.b + params.c"
+                            }
+                        ],
+                        "palette": {
+                            "name": "default",
+                            "type": "palette"
+                        },
+                        "point_size": 1,
+                        "separate_axis": 0,
+                        "split_mode": "everything",
+                        "stacked": "none"
+                    }
+                ],
+                "show_grid": 1,
+                "show_legend": 1,
+                "time_field": "",
+                "tooltip_mode": "show_all",
+                "truncate_legend": 1,
+                "type": "table",
+                "use_kibana_indexes": true,
+                "index_pattern_ref_name": "metrics_0_index_pattern"
+            }
+        }
+    },
+    "coreMigrationVersion": "7.16.0",
+    "id": "zscaler_zpa-82076ba0-4e74-11ec-ad09-d9f49962d407",
+    "migrationVersion": {
+        "visualization": "7.14.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "metrics_0_index_pattern",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "visualization",
+    "updated_at": "2021-12-03T10:14:36.668Z",
+    "version": "WzMxMzYxLDFd"
+}

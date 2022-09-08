@@ -285,6 +285,37 @@ processors:
   - remove:
       field: _tmp_copy
 
+  - set:
+      field: email.to.address
+      value: ["{{{destination.user.email}}}"]
+      if: "ctx?.destination?.user?.email != null"
+  - set:
+      field: email.from.address
+      value: ["{{{source.user.email}}}"]
+      if: "ctx?.source?.user?.email != null"
+  - set:
+      field: email.subject
+      copy_from: checkpoint.email_subject
+      if: "ctx?.checkpoint?.email_subject != null"
+  - set:
+      field: email.message_id
+      copy_from: checkpoint.email_session_id
+      if: "ctx?.checkpoint?.email_session_id != null"
+  - convert:
+      field: event.risk_score
+      type: float
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: event.risk_score
+  - convert:
+      field: event.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: event.severity
+
   # event.duration is a string and contains seconds. Convert to long nanos.
   - script:
       params:
@@ -342,3 +373,8 @@ processors:
       field: checkpoint.event_count
       type: long
       ignore_missing: true
+  - convert:
+      field: cef.extensions.baseEventCount
+      type: long
+      ignore_missing: true
+

@@ -1,0 +1,24 @@
+config_version: 2
+type: httpjson
+interval: {{period}}
+request.method: GET
+request.url: {{hostname}}/ws/v1/cluster/apps
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+response.split:
+  target: body.apps.app

@@ -1,0 +1,59 @@
+---
+description: Pipeline for PanOS Correlated Event Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/correlated-events-log-fields
+processors:
+  - csv:
+      field: message
+      ignore_failure: true
+      target_fields:
+        - panw.panos.source.ip
+        - _temp_.srcuser
+        - panw.panos.virtual_sys
+        - panw.panos.category
+        - panw.panos.severity
+        - panw.panos.device_group_hierarchy1
+        - panw.panos.device_group_hierarchy2
+        - panw.panos.device_group_hierarchy3
+        - panw.panos.device_group_hierarchy4
+        - panw.panos.vsys_name
+        - panw.panos.device_name
+        - panw.panos.vsys_id
+        - panw.panos.object.name
+        - panw.panos.object.id
+        - panw.panos.evidence
+
+# Set event.kind & event.category field.
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value:
+        - network
+
+# Set custom fields to ECS fields
+  - set:
+      field: log.level
+      copy_from: panw.panos.severity
+      ignore_failure: true
+  - set:
+      field: observer.hostname
+      copy_from: panw.panos.device_name
+      ignore_failure: true
+  - set:
+      field: source.ip
+      copy_from: panw.panos.source.ip
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.user
+      copy_from: _temp_.srcuser
+      ignore_failure: true
+  
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        error in Correlated Event pipeline:
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag}}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{_ingest.on_failure_message}}}

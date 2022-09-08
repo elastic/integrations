@@ -6,9 +6,7 @@
         "description": "Identifies NullSessionPipe registry modifications that specify which pipes can be accessed anonymously. This could be indicative of adversary lateral movement preparation by making the added pipe available to everyone.",
         "from": "now-9m",
         "index": [
-            "logs-endpoint.events.*",
-            "winlogbeat-*",
-            "logs-windows.*"
+            "logs-endpoint.events.*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
@@ -17,6 +15,18 @@
         "references": [
             "https://www.welivesecurity.com/2019/05/29/turla-powershell-usage/",
             "https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-access-restrict-anonymous-access-to-named-pipes-and-shares"
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            }
         ],
         "risk_score": 47,
         "rule_id": "ddab1f5f-7089-44f5-9fda-de5b11322e77",
@@ -54,7 +64,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 1
+        "version": 100
     },
     "id": "ddab1f5f-7089-44f5-9fda-de5b11322e77",
     "type": "security-rule"

@@ -18,7 +18,14 @@ tags:
 {{#if preserve_original_event}}
 include_xml: true
 {{/if}}
-{{#if processors.length}}
 processors:
+  - translate_sid:
+      field: winlog.event_data.MemberSid
+      account_name_target: winlog.event_data._MemberUserName
+      domain_target: winlog.event_data._MemberDomain
+      account_type_target: winlog.event_data._MemberAccountType
+      ignore_missing: true
+      ignore_failure: true
+{{#if processors.length}}
 {{processors}}
 {{/if}}

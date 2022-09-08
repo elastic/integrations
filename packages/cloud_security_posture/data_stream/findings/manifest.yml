@@ -1,0 +1,39 @@
+title: Cloud Security Posture Findings
+type: logs
+dataset: cloud_security_posture.findings
+ilm_policy: logs-cloud_security_posture.findings-default_policy
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: false
+streams:
+  - input: cloudbeat/cis_k8s
+    title: K8s CIS Compliance
+    description: |
+      Check CIS Benchmark compliance
+      ###### Only a single benchmark can be enabled. Default is K8s CIS.
+  - input: cloudbeat/cis_eks
+    enabled: false
+    title: CIS Amazon EKS Compliance
+    description: |
+      Check CIS Amazon Benchmark compliance
+      ###### Only a single benchmark can be enabled. Default is K8s CIS.
+    vars:
+      - name: access_key_id
+        type: text
+        title: Access Key ID
+        multi: false
+        required: false
+        show_user: true
+      - name: secret_access_key
+        type: text
+        title: Secret Access Key
+        multi: false
+        required: false
+        show_user: true
+      - name: session_token
+        type: text
+        title: Session Token
+        multi: false
+        required: false
+        show_user: true

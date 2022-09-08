@@ -2,9 +2,6 @@
 description: Pipeline for parsing Azure sign-in logs.
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
   - rename:
@@ -58,6 +55,14 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - rename:
       field: azure.signinlogs.resource_id
       target_field: azure.resource_id
@@ -149,13 +154,22 @@ processors:
       field: azure.signinlogs.properties.risk_level_during_sign_in
       target_field: azure.signinlogs.properties.risk_level_during_signin
       ignore_missing: true
-  - rename:
+  - script:
+      description: Build message field using a combination of failure reason and additional details
+      source: "String reason = ctx?.azure?.signinlogs?.properties?.status?.failure_reason;
+        String details = ctx?.azure?.signinlogs?.properties?.status?.additional_details;
+        if (reason != null && details != null) {
+            ctx['message'] = reason + ' (' + details + ')';
+        } else if (reason != null) {
+            ctx['message'] = reason;
+        } else if (details != null) {
+            ctx['message'] = details;
+        }"
+  - remove: 
       field: azure.signinlogs.properties.status.failure_reason
-      target_field: message
       ignore_missing: true
-  - rename:
+  - remove: 
       field: azure.signinlogs.properties.status.additional_details
-      target_field: message
       ignore_missing: true
   - rename:
       field: azure.signinlogs.properties.location.city
@@ -176,6 +190,7 @@ processors:
   - remove:
       field:
         - azure.signinlogs.properties.location
+    
       ignore_missing: true
   - foreach:
       field: azure.signinlogs.properties.authentication_processing_details

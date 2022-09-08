@@ -1,17 +1,21 @@
 ---
-description: Pipeline for AWS Route53 Logs
+description: Pipeline for AWS Route53 Resolver Logs
 
 processors:
 - set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- set:
     field: ecs.version
-    value: '1.12.0'
+    value: '8.0.0'
 - rename:
     field: message
     target_field: event.original
     ignore_missing: true
+    if: 'ctx.event?.original == null'
+    description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+- remove:
+    field: message
+    ignore_missing: true
+    if: 'ctx.event?.original != null'
+    description: 'The `message` field is no longer required if the document has an `event.original` field.'
 - json:
     field: event.original
     target_field: json
@@ -28,10 +32,10 @@ processors:
     ignore_failure: true
     formats:
     - ISO8601
-- rename:
-    field: json.region
-    target_field: cloud.region
-    ignore_missing: true
+- set:
+    field: cloud.region
+    copy_from: json.region
+    ignore_empty_value: true
 - rename:
     field: json.vpc_id
     target_field: aws.vpc_id

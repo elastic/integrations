@@ -202,10 +202,13 @@ An example event for `container` looks as following:
 | cloud.project.id | Name of the project in Google Cloud. | keyword |  |  |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
 | cloud.region | Region in which this host is running. | keyword |  |  |
+| container.cpu.usage | Total CPU usage normalized by the number of CPU cores. | scaled_float | percent | gauge |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.labels | Image labels. | object |  |  |
+| container.memory.usage | Memory usage percentage. | scaled_float | percent | gauge |
 | container.name | Container name. | keyword |  |  |
+| container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -223,6 +226,7 @@ An example event for `container` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -253,8 +257,10 @@ An example event for `container` looks as following:
 | kubernetes.container.rootfs.inodes.used | Used inodes | long |  | gauge |
 | kubernetes.container.rootfs.used.bytes | Root filesystem total used in bytes | long | byte | gauge |
 | kubernetes.container.start_time | Start time | date |  |  |
+| kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |  |  |
@@ -470,6 +476,7 @@ An example event for `node` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -687,6 +694,8 @@ An example event for `pod` looks as following:
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.labels | Image labels. | object |  |  |
 | container.name | Container name. | keyword |  |  |
+| container.network.egress.bytes | Total number of outgoing bytes. | long |  | counter |
+| container.network.ingress.bytes | Total number of incoming bytes. | long |  | counter |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -704,14 +713,17 @@ An example event for `pod` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
 | kubernetes.annotations.\* | Kubernetes annotations map | object |  |  |
 | kubernetes.container.image | Kubernetes container image | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.cronjob.name | Name of the CronJob to which the Pod belongs | keyword |  |  |
 | kubernetes.daemonset.name | Kubernetes daemonset name | keyword |  |  |
 | kubernetes.deployment.name | Kubernetes deployment name | keyword |  |  |
+| kubernetes.job.name | Name of the Job to which the Pod belongs | keyword |  |  |
 | kubernetes.labels.\* | Kubernetes labels map | object |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.namespace_annotations.\* | Kubernetes namespace annotations map | object |  |  |
@@ -897,6 +909,7 @@ An example event for `system` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -960,7 +973,8 @@ An example event for `volume` looks as following:
                 "inodes": {
                     "used": 5,
                     "free": 9549949,
-                    "count": 9768928
+                    "count": 9768928,
+                    "pct": 0.1533557671938445
                 },
                 "available": {
                     "bytes": 7719858176
@@ -1073,6 +1087,7 @@ An example event for `volume` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -1094,6 +1109,7 @@ An example event for `volume` looks as following:
 | kubernetes.volume.fs.capacity.bytes | Filesystem total capacity in bytes | long | byte | gauge |
 | kubernetes.volume.fs.inodes.count | Total inodes | long |  | gauge |
 | kubernetes.volume.fs.inodes.free | Free inodes | long |  | gauge |
+| kubernetes.volume.fs.inodes.pct | Percentage of used inodes | scaled_float | percent | gauge |
 | kubernetes.volume.fs.inodes.used | Used inodes | long |  | gauge |
 | kubernetes.volume.fs.used.bytes | Filesystem total used in bytes | long | byte | gauge |
 | kubernetes.volume.fs.used.pct | Percentage of filesystem total used | scaled_float | percent | gauge |

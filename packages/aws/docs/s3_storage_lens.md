@@ -1,6 +1,40 @@
-# s3 storage lens
+# Amazon S3 Storage Lens
 
-## Metrics
+The Amazon S3 Storage Lens integration allows you to monitor [Amazon S3 Storage Lens](https://aws.amazon.com/s3/storage-analytics-insights/)—an analytics service for Amazon S3.
+
+Use the Amazon S3 Storage Lens integration to view metrics on object storage usage and activity trends. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
+
+For example, you could track your total storage and object count by region—allowing you more easily visualize trends and anticipate problems before they happen.
+
+## Data streams
+
+The Amazon S3 Storage Lens integration collects one type of data: metrics.
+
+**Metrics** give you insight into the state of Amazon S3 Storage Lens.
+Metrics collected by the S3 Storage Lens integration include usage data for total storage, object counts, average object sizes, and more. See more details in the [Metrics reference](#metrics-reference).
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any AWS integration you will need:
+
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, see the **AWS** integration documentation.
+
+## Setup
+
+Use this integration if you only need to collect data from the Amazon S3 Storage Lens service.
+
+If you want to collect data from two or more AWS services, consider using the **AWS** integration.
+When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Metrics reference
 
 An example event for `s3_storage_lens` looks as following:
 
@@ -8,7 +42,7 @@ An example event for `s3_storage_lens` looks as following:
 {
     "@timestamp": "2021-11-07T20:38:00.000Z",
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.0.0"
     },
     "data_stream": {
         "namespace": "default",
@@ -187,7 +221,7 @@ An example event for `s3_storage_lens` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
@@ -220,6 +254,7 @@ An example event for `s3_storage_lens` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |

@@ -3,11 +3,8 @@ description: Pipeline for AWS Route53 Logs
 
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.0.0'
   - set:
       field: cloud.provider
       value: aws
@@ -24,12 +21,19 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - grok:
       field: event.original
       patterns:
         - '%{BASE10NUM} %{TIMESTAMP_ISO8601:_tmp.timestamp} %{DATA:aws.route53.hosted_zone_id} %{HOSTNAME:_tmp.question} %{WORD:dns.question.type} %{WORD:dns.response_code} %{WORD:network.transport} %{EDGE_LOCATION:aws.route53.edge_location} %{IP:source.address} (%{SUBNET:aws.route53.edns_client_subnet}|-)'
       pattern_definitions:
-        EDGE_LOCATION: '[A-Z]{3}\d+'
+        EDGE_LOCATION: '[A-Z]{3}\d+(-[A-Z]+\d+)?'
         SUBNET: '%{IP}/[0-9]+'
   - date:
       field: _tmp.timestamp

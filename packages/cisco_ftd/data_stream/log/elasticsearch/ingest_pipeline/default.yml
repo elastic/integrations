@@ -1,16 +1,13 @@
 ---
 description: "Pipeline for Cisco FTD logs"
 processors:
-  - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
   - set:
       field: ecs.version
-      value: "8.0.0"
+      value: '8.4.0'
   #
   # Parse the syslog header
   #
@@ -22,7 +19,7 @@ processors:
         - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
         SYSLOG_HEADER: "(?:%{SYSLOGFACILITY}\\s*)?(?:%{FTD_DATE:_temp_.raw_date}:?\\s+)?(?:%{PROCESS_HOST}|%{HOST_PROCESS})(?:{DATA})?%{SYSLOG_END}?"
-        SYSLOGFACILITY: "<%{NONNEGINT:syslog.facility.code:int}(?:.%{NONNEGINT:syslog.priority:int})?>"
+        SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.priority:int}>"
         # Beginning with version 6.3, Firepower Threat Defense provides the option to enable timestamp as per RFC 5424.
         FTD_DATE: "(?:%{TIMESTAMP_ISO8601}|%{ASA_DATE})"
         ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ})?"
@@ -31,6 +28,17 @@ processors:
         # exactly match the syntax for firepower management logs
         PROCESS_HOST: "(?:%{PROCESS:process.name}:\\s%{SYSLOGHOST:host.name})"
         HOST_PROCESS: "(?:%{SYSLOGHOST:host.hostname}:?\\s+)?(?:%{PROCESS:process.name}?(?:\\[%{POSINT:process.pid:long}\\])?)?"
+  - script:
+      lang: painless
+      source: |
+        if (ctx.log?.syslog?.priority != null) {
+          def severity = new HashMap();
+          severity['code'] = ctx.log.syslog.priority&0x7;
+          ctx.log.syslog['severity'] = severity;
+          def facility = new HashMap();
+          facility['code'] = ctx.log.syslog.priority>>3;
+          ctx.log.syslog['facility'] = facility;
+        }
 
   #
   # Parse FTD/ASA style message
@@ -1766,7 +1774,7 @@ processors:
           type:
             - info
         malware-detected:
-          kind: alert
+          kind: event
           category:
             - malware
           type:
@@ -1819,9 +1827,24 @@ processors:
             ctx.event.type.add('denied');
           }
           if (ctx.event.outcome == 'block') {
-            ctx.event.type.add('failure');
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'monitored') {
+            ctx.event.category.add('intrusion_detection');
+            ctx.event.outcome = 'success';
           }
         }
+
+  # Malware event kind is classified as alert when sha_disposition is "Malware", "Custom Detection" not for other cases.
+  - set:
+      if: 'ctx?.event?.code == "430005" && ["Malware", "Custom Detection"].contains(ctx.cisco.ftd.security.sha_disposition)'
+      field: event.kind
+      value: alert
+  - append:
+      if: 'ctx?.event?.code == "430005" && !["Malware", "Custom Detection"].contains(ctx.cisco.ftd.security.sha_disposition)'
+      field: event.category
+      value: file
 
   - set:
       description: copy destination.user.name to user.name if it is not set
@@ -1841,11 +1864,11 @@ processors:
       ignore_empty_value: true
   - set:
       field: observer.type
-      value: "firewall"
+      value: "idps"
       ignore_empty_value: true
   - set:
       field: observer.product
-      value: "asa"
+      value: "ftd"
       ignore_empty_value: true
   - set:
       field: observer.egress.interface.name

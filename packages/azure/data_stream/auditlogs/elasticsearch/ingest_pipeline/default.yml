@@ -2,9 +2,6 @@
 description: Pipeline for parsing azure activity logs.
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
       value: '8.0.0'
   - rename:
@@ -15,6 +12,13 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: azure.auditlogs
@@ -88,17 +92,35 @@ processors:
       field: azure.auditlogs.properties.additionalDetails
       target_field: azure.auditlogs.properties.additional_details
       ignore_missing: true
-  - grok:
+  - convert:
       field: azure.auditlogs.callerIpAddress
-      patterns:
-        - \[%{IPORHOST:source.ip}\]:%{INT:source.port:int}
-        - "%{IPORHOST:source.ip}:%{INT:source.port:int}"
-        - "%{IPORHOST:source.ip}"
+      target_field: source.ip
+      type: ip
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - rename: 
+            field: azure.auditlogs.callerIpAddress
+            target_field: source.address
+            ignore_missing: true 
+            ignore_failure: true
   - remove:
       field: azure.auditlogs.callerIpAddress
       if: 'ctx.source?.ip != null'
+      ignore_missing: true
+  - remove:
+      description: Drop appId field if value is null.
+      if: ctx?.azure?.auditlogs?.properties?.initiatedBy?.app?.appId == null
+      field: azure.auditlogs.properties.initiatedBy.app.appId
+      ignore_missing: true
+  - remove:
+      description: Drop servicePrincipalName field if value is null.
+      if: ctx?.azure?.auditlogs?.properties?.initiatedBy?.app?.servicePrincipalName == null
+      field: azure.auditlogs.properties.initiatedBy.app.servicePrincipalName
+      ignore_missing: true
+  - remove:
+      description: Drop userAgent field if value is null.
+      if: ctx?.azure?.auditlogs?.properties?.userAgent == null
+      field: azure.auditlogs.properties.userAgent
       ignore_missing: true
   - set:
       field: client.ip
@@ -125,6 +147,14 @@ processors:
       field: azure.auditlogs.properties.operationType
       target_field: azure.auditlogs.properties.operation_type
       ignore_missing: true
+  - rename:
+      field: azure.auditlogs.Level
+      target_field: azure.auditlogs.level
+      ignore_missing: true
+  - rename:
+      field: azure.auditlogs.properties.additional_details.userAgent
+      target_field: azure.auditlogs.properties.additional_details.user_agent
+      ignore_missing: true
   - script:
       lang: painless
       source: >-
@@ -149,8 +179,12 @@ processors:
               String n = String.valueOf(j);
               ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n] = new HashMap();
               ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].display_name = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].displayName;
-              ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].new_value = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].newValue;
-              ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].old_value = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].oldValue;
+              if (ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].newValue != null) {
+                ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].new_value = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].newValue;
+              }
+              if (ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].oldValue != null) {
+                ctx.azure.auditlogs.properties.target_resources[index].modified_properties[n].old_value = ctx.azure.auditlogs.properties.targetResources[i].modifiedProperties[j].oldValue;
+              }
             }
           }
           ctx.azure.auditlogs.properties.remove('targetResources');
