@@ -92,9 +92,9 @@ The `log` dataset collects the MongoDB logs.
 | log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | mongodb.log.attr | Attributes related to the log message. | flattened |
-| mongodb.log.component | Functional categorization of message | keyword |
+| mongodb.log.component | Functional categorization of message. | keyword |
 | mongodb.log.context | Context of message | keyword |
-| mongodb.log.id | Integer representing the unique identifier of the log statement | long |
+| mongodb.log.id | Integer representing the unique identifier of the log statement. | long |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
