@@ -60,98 +60,145 @@ https://management.usgovcloudapi.net/
 
 ## Logs
 
-### activitylogs
+### provisioninglogs
 
-The `activitylogs` data stream of the Azure Logs package will collect any activity events that have been streamed through an azure event hub.
+The `provisioninglogs` data stream of the Azure Logs package will collect any activity events that have been streamed through an azure event hub.
 
-An example event for `activitylogs` looks as following:
+An example event for `provisioninglogs` looks as following:
 
 ```json
 {
-    "log": {
-        "level": "Information"
+    "@timestamp": "2022-08-23T13:36:50.353Z",
+    "azure": {
+        "correlation_id": "54416401-eef2-461c-8de7-385dde2b3cba",
+        "provisioninglogs": {
+            "category": "ProvisioningLogs",
+            "identity": "d6cbb0bd-c3ec-6455-bd3e-4282141ce369",
+            "level": 4,
+            "operation_name": "Provisioning activity",
+            "operation_version": "1.0",
+            "properties": {
+                "action": "Create",
+                "activity_datetime": "2022-08-23T13:36:50.3538931Z",
+                "change_id": "54416401-eef2-461c-8de7-385dde2b3cba",
+                "cycle_id": "cc305635-a28e-4139-a056-42b5102933fe",
+                "duration_ms": 828,
+                "id": "d6cbb0bd-c3ec-6455-bd3e-4282141ce369",
+                "initiated_by": {
+                    "id": "",
+                    "name": "Azure AD Provisioning Service",
+                    "type": "system"
+                },
+                "job_id": "DropboxSCIMOutDelta.5611623b9128461e9d7fa0d9c270ead2.d6163622-bdf8-4b26-976f-7d573c638e2a",
+                "modified_properties": [],
+                "provisioning_action": "create",
+                "provisioning_status_info": {
+                    "status": "skipped"
+                },
+                "provisioning_steps": [
+                    {
+                        "description": "Received User 'ellie@contoso.onmicrosoft.com' change of type (Add) from Azure Active Directory",
+                        "details": {
+                            "IsSoftDeleted": "False",
+                            "accountEnabled": "True",
+                            "appRoleAssignments": "User",
+                            "displayName": "Ellie",
+                            "givenName": "Ellie",
+                            "mailNickname": "ellie",
+                            "objectId": "7383d412-41f2-478f-a317-7396cc32ce9e",
+                            "userPrincipalName": "ellie@contoso.onmicrosoft.com"
+                        },
+                        "name": "EntryImportAdd",
+                        "provisioning_step_type": 0,
+                        "status": 0
+                    },
+                    {
+                        "description": "Determine if User in scope by evaluating against each scoping filter",
+                        "details": {
+                            "Active in the source system": "True",
+                            "Assigned to the application": "True",
+                            "ScopeEvaluationResult": "{}",
+                            "Scoping filter evaluation passed": "True",
+                            "User has the required role": "True"
+                        },
+                        "name": "EntrySynchronizationScoping",
+                        "provisioning_step_type": 1,
+                        "status": 0
+                    },
+                    {
+                        "description": "User 'ellie@contoso.onmicrosoft.com' will be created in Dropbox (User is active and assigned in Azure Active Directory, but no matching User was found in Dropbox)",
+                        "details": {},
+                        "name": "EntrySynchronizationAdd",
+                        "provisioning_step_type": 2,
+                        "status": 0
+                    },
+                    {
+                        "description": "urn:ietf:params:scim:schemas:core:2.0:User 'ellie@contoso.onmicrosoft.com' will be skipped because the value of the property name.familyName is missing or invalid. Please update the value of the property name.familyName on the object in the source system.",
+                        "details": {
+                            "PropertyName": "name.familyName",
+                            "ReportableIdentifier": "ellie@contoso.onmicrosoft.com",
+                            "SkipReason": "AttributeValidationFailed"
+                        },
+                        "name": "EntrySynchronizationSkip",
+                        "provisioning_step_type": 3,
+                        "status": 2
+                    }
+                ],
+                "service_principal": {
+                    "id": "74866461-3754-40ed-a743-9c88ff29643e",
+                    "name": "Dropbox Business"
+                },
+                "source_identity": {
+                    "details": {
+                        "display_name": "Ellie",
+                        "id": "7383d412-41f2-478f-a317-7396cc32ce9e",
+                        "odatatype": "User",
+                        "user_principal_name": "ellie@contoso.onmicrosoft.com"
+                    },
+                    "id": "7383d412-41f2-478f-a317-7396cc32ce9e",
+                    "identity_type": "User",
+                    "name": "Ellie"
+                },
+                "source_system": {
+                    "details": {},
+                    "id": "bab3751f-8f21-4657-8fce-698f7391dbdd",
+                    "name": "Azure Active Directory"
+                },
+                "target_identity": {
+                    "details": {},
+                    "id": "",
+                    "identity_type": "urn:ietf:params:scim:schemas:core:2.0:User",
+                    "name": ""
+                },
+                "target_system": {
+                    "details": {
+                        "application_id": "97e0a159-74ec-4db1-918a-c03a9c3b6b81",
+                        "dervice_principal_display_name": "Dropbox Business",
+                        "service_principal_id": "74866461-3754-40ed-a743-9c88ff29643e"
+                    },
+                    "id": "011a448f-1441-4336-8c20-e2d2cef9c410",
+                    "name": "Dropbox"
+                },
+                "tenant_id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
+            },
+            "result_type": "Skipped"
+        },
+        "resource": {
+            "id": "/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/Microsoft.aadiam",
+            "provider": "Microsoft.aadiam"
+        },
+        "tenant_id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
     },
     "cloud": {
         "provider": "azure"
     },
-    "@timestamp": "2020-11-02T08:51:36.997Z",
     "ecs": {
-        "version": "1.5.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "azure.activitylogs"
+        "version": "8.5.0"
     },
     "event": {
-        "duration": 0,
-        "ingested": "2020-10-30T20:47:48.123859400Z",
-        "kind": "event",
-        "action": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
-        "dataset": "azure.activitylogs",
-        "outcome": "success"
-    },
-    "azure": {
-        "subscription_id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff",
-        "resource": {
-            "provider": "MICROSOFT.RESOURCES/DEPLOYMENTS",
-            "name": "NOMARKETPLACE",
-            "id": "/SUBSCRIPTIONS/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.RESOURCES/DEPLOYMENTS/NOMARKETPLACE",
-            "group": "OBS-TEST"
-        },
-        "correlation_id": "876190b4-5b99-4a39-b725-4f5644911cf0",
-        "activitylogs": {
-            "operation_name": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
-            "result_type": "Success",
-            "identity": {
-                "authorization": {
-                    "evidence": {
-                        "role_definition_id": "8e3af657a8ff443ca75c2fe8c4bcb635",
-                        "role": "Owner",
-                        "role_assignment_scope": "/providers/Microsoft.Management/managementGroups/5341238b-665c-4eb4-b259-b250371ae430",
-                        "role_assignment_id": "7f06f09dd6764b44930adbec3f10e92b",
-                        "principal_type": "User",
-                        "principal_id": "68b1adf93eb744b08eb8ce96522a08d3"
-                    },
-                    "scope": "/subscriptions/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/resourceGroups/obs-test/providers/Microsoft.Resources/deployments/NoMarketplace",
-                    "action": "Microsoft.Resources/deployments/write"
-                },
-                "claims": {
-                    "xms_tcdt": "1469565974",
-                    "aio": "ATQAy/8RAAAAsL67UQMOHZv3izTDRJfvJN5UyON9ktUszzPj08K8aURsbhxhR0niz9s1Pxm9U1lI",
-                    "iss": "https://sts.windows.net/4fa94b7d-a743-486f-abcc-6c276c44cf4b/",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/nameidentifier": "a9L2WR3XZN5ANzAqwLx_4aamU49JG6kqaE5JZkXdeNs",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/surname": "Doe",
-                    "http://schemas_microsoft_com/identity/claims/scope": "user_impersonation",
-                    "http://schemas_microsoft_com/identity/claims/tenantid": "4fa94b7d-a743-486f-abcc-6c276c44cf4b",
-                    "puid": "1003200045B17AD4",
-                    "wids": "5d6b6bb7-de71-4623-b4af-96380a352509",
-                    "http://schemas_microsoft_com/claims/authnclassreference": "1",
-                    "exp": "1604310019",
-                    "ipaddr": "77.170.179.229",
-                    "iat": "1604306119",
-                    "http://schemas_microsoft_com/identity/claims/objectidentifier": "68b1adf9-3eb7-44b0-8eb8-ce96522a08d3",
-                    "http://schemas_microsoft_com/claims/authnmethodsreferences": "pwd",
-                    "ver": "1.0",
-                    "groups": "644c6686-9ef1-4b69-9410-107664a9e1f0,9ed1993c-ce9c-4915-a04d-58c6f5f7ee12",
-                    "uti": "rqr63RW_Kk6ztuomENMQAA",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/upn": "john@gmail.com",
-                    "aud": "https://management.core.windows.net/",
-                    "nbf": "1604306119",
-                    "appidacr": "2",
-                    "rh": "0.AAAAfUupT0Onb0irzGwnbETPS4NAS8SwO8FJtH2XTlPL3zxRAA8.",
-                    "appid": "c44b4083-3bb0-49c1-b47d-974e53cbdf3c",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/givenname": "John",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/name": "john@gmail.com"
-                },
-                "claims_initiated_by_user": {
-                    "schema": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims"
-                }
-            },
-            "category": "Administrative",
-            "event_category": "Administrative",
-            "result_signature": "Succeeded."
-        }
+        "action": "Provisioning activity",
+        "duration": 828000000,
+        "kind": "event"
     }
 }
 ```
@@ -161,32 +208,59 @@ An example event for `activitylogs` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.activitylogs.category | Category | keyword |
-| azure.activitylogs.event_category | Event Category | keyword |
-| azure.activitylogs.identity.authorization.action | Action | keyword |
-| azure.activitylogs.identity.authorization.evidence.principal_id | Principal ID | keyword |
-| azure.activitylogs.identity.authorization.evidence.principal_type | Principal type | keyword |
-| azure.activitylogs.identity.authorization.evidence.role | Role | keyword |
-| azure.activitylogs.identity.authorization.evidence.role_assignment_id | Role assignment ID | keyword |
-| azure.activitylogs.identity.authorization.evidence.role_assignment_scope | Role assignment scope | keyword |
-| azure.activitylogs.identity.authorization.evidence.role_definition_id | Role definition ID | keyword |
-| azure.activitylogs.identity.authorization.scope | Scope | keyword |
-| azure.activitylogs.identity.claims.\* | Claims | object |
-| azure.activitylogs.identity.claims_initiated_by_user.fullname | Fullname | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.givenname | Givenname | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.name | Name | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.schema | Schema | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.surname | Surname | keyword |
-| azure.activitylogs.identity_name | identity name | keyword |
-| azure.activitylogs.level | Level | long |
-| azure.activitylogs.operation_name | Operation name | keyword |
-| azure.activitylogs.operation_version | Operation version | keyword |
-| azure.activitylogs.properties | Event properties | flattened |
-| azure.activitylogs.result_signature | Result signature | keyword |
-| azure.activitylogs.result_type | Result type | keyword |
-| azure.activitylogs.tenant_id | Tenant ID | keyword |
 | azure.correlation_id | Correlation ID | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
+| azure.provisioninglogs.category | Category | keyword |
+| azure.provisioninglogs.identity | Describes the identity of the user or application that performed the operation | keyword |
+| azure.provisioninglogs.level | The severity level of the event | long |
+| azure.provisioninglogs.operation_name | Operation name | keyword |
+| azure.provisioninglogs.operation_version | Operation version | keyword |
+| azure.provisioninglogs.properties.action | Indicates the activity name or the operation name. | keyword |
+| azure.provisioninglogs.properties.activity_datetime | Indicates the date and time the activity was performed. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 would look like this: '2014-01-01T00:00:00Z' | date |
+| azure.provisioninglogs.properties.change_id | Unique ID of this change in this cycle | keyword |
+| azure.provisioninglogs.properties.cycle_id | Unique ID per job iteration | keyword |
+| azure.provisioninglogs.properties.duration_ms | Indicates how long this provisioning action took to finish. Measured in milliseconds. | long |
+| azure.provisioninglogs.properties.id | Indicates the unique ID for the activity | keyword |
+| azure.provisioninglogs.properties.initiated_by.id | Uniquely identifies the person or service that initiated the provisioning event. | keyword |
+| azure.provisioninglogs.properties.initiated_by.name | Name of the person or service that initiated the provisioning event. | keyword |
+| azure.provisioninglogs.properties.initiated_by.type | Type of initiator. Possible values are: user, application, system, unknownFutureValue. | keyword |
+| azure.provisioninglogs.properties.job_id | The unique ID for the whole provisioning job. | keyword |
+| azure.provisioninglogs.properties.modified_properties | Details of each property that was modified in this provisioning action on this object. | flattened |
+| azure.provisioninglogs.properties.provisioning_action | Indicates the activity name or the operation name. Possible values are: create, update, delete, stageddelete, disable, other and unknownFutureValue. For a list of activities logged, refer to Azure AD activity list. | keyword |
+| azure.provisioninglogs.properties.provisioning_status_info.error_information.additional_details | Additional details in case of error. | keyword |
+| azure.provisioninglogs.properties.provisioning_status_info.error_information.error_category | Categorizes the error code. Possible values are failure, nonServiceFailure, success, unknownFutureValue. | keyword |
+| azure.provisioninglogs.properties.provisioning_status_info.error_information.error_code | Unique error code if any occurred. To learn more, visit https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/concept-provisioning-logs#error-codes | keyword |
+| azure.provisioninglogs.properties.provisioning_status_info.error_information.reason | Summarizes the status and describes why the status happened. | keyword |
+| azure.provisioninglogs.properties.provisioning_status_info.error_information.recommended_action | Provides the resolution for the corresponding error. | keyword |
+| azure.provisioninglogs.properties.provisioning_status_info.status | Possible values are: success, warning, failure, skipped, unknownFutureValue. | keyword |
+| azure.provisioninglogs.properties.provisioning_steps.description | Summary of what occurred during the step. | keyword |
+| azure.provisioninglogs.properties.provisioning_steps.details | Details of what occurred during the step. | flattened |
+| azure.provisioninglogs.properties.provisioning_steps.name | Name of the step. | keyword |
+| azure.provisioninglogs.properties.provisioning_steps.provisioning_step_type | Type of step. | long |
+| azure.provisioninglogs.properties.provisioning_steps.status | Status of the step. | long |
+| azure.provisioninglogs.properties.service_principal.id | Uniquely identifies the servicePrincipal used for provisioning. | keyword |
+| azure.provisioninglogs.properties.service_principal.name | Customer-defined name for the servicePrincipal. | keyword |
+| azure.provisioninglogs.properties.source_identity.details | Details of the identity. | flattened |
+| azure.provisioninglogs.properties.source_identity.id | Uniquely identifies the identity. | keyword |
+| azure.provisioninglogs.properties.source_identity.identity_type | Type of identity that has been provisioned, such as 'user' or 'group'. | keyword |
+| azure.provisioninglogs.properties.source_identity.name | Display name of the identity. | keyword |
+| azure.provisioninglogs.properties.source_system.details.application_id |  | keyword |
+| azure.provisioninglogs.properties.source_system.details.dervice_principal_display_name |  | keyword |
+| azure.provisioninglogs.properties.source_system.details.service_principal_id |  | keyword |
+| azure.provisioninglogs.properties.source_system.id | Identifier of the system that a user was provisioned to or from. | keyword |
+| azure.provisioninglogs.properties.source_system.name | Name of the system that a user was provisioned to or from. | keyword |
+| azure.provisioninglogs.properties.target_identity.details | Details of the identity. | flattened |
+| azure.provisioninglogs.properties.target_identity.id | Uniquely identifies the identity. | keyword |
+| azure.provisioninglogs.properties.target_identity.identity_type | Type of identity that has been provisioned, such as 'user' or 'group'. | keyword |
+| azure.provisioninglogs.properties.target_identity.name | Display name of the identity. | keyword |
+| azure.provisioninglogs.properties.target_system.details.application_id |  | keyword |
+| azure.provisioninglogs.properties.target_system.details.dervice_principal_display_name |  | keyword |
+| azure.provisioninglogs.properties.target_system.details.service_principal_id |  | keyword |
+| azure.provisioninglogs.properties.target_system.id | Identifier of the system that a user was provisioned to or from. | keyword |
+| azure.provisioninglogs.properties.target_system.name | Name of the system that a user was provisioned to or from. | keyword |
+| azure.provisioninglogs.properties.tenant_id | Unique Azure AD tenant ID | keyword |
+| azure.provisioninglogs.result_signature | Result signature | keyword |
+| azure.provisioninglogs.result_type | Result type | keyword |
+| azure.provisioninglogs.tenant_id | Unique Azure AD tenant ID | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |

@@ -60,98 +60,92 @@ https://management.usgovcloudapi.net/
 
 ## Logs
 
-### activitylogs
+### identityprotectionlogs
 
-The `activitylogs` data stream of the Azure Logs package will collect any activity events that have been streamed through an azure event hub.
+The `identityprotectionlogs` data stream of the Azure Logs package will collect any activity events that have been streamed through an azure event hub.
 
-An example event for `activitylogs` looks as following:
+An example event for `identityprotectionlogs` looks as following:
 
 ```json
 {
-    "log": {
-        "level": "Information"
+    "@timestamp": "2022-08-22T18:07:16.000Z",
+    "azure": {
+        "correlation_id": "ce0ed07f9ccf5be15e4b97d2979af6569b1f67db87ddc9b88b5bb743ea091e47",
+        "identityprotectionlogs": {
+            "category": "UserRiskEvents",
+            "operation_name": "User Risk Detection",
+            "operation_version": "1.0",
+            "properties": {
+                "activity": "signin",
+                "activity_datetime": "2022-08-22T18:05:06.133Z",
+                "additional_info": [
+                    {
+                        "Key": "userAgent",
+                        "Value": "Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0"
+                    }
+                ],
+                "correlation_id": "266133c2-fabb-492f-9ebf-bdf12317b817",
+                "detected_datetime": "2022-08-22T18:05:06.133Z",
+                "detection_timing_type": "realtime",
+                "id": "ce0ed07f9ccf5be15e4b97d2979af6569b1f67db87ddc9b88b5bb743ea091e47",
+                "ip_address": "67.43.156.42",
+                "location": {
+                    "city": "Dresden",
+                    "countryOrRegion": "DE",
+                    "geoCoordinates": {
+                        "altitude": 0,
+                        "latitude": 51.0714,
+                        "longitude": 13.7399
+                    },
+                    "state": "Sachsen"
+                },
+                "request_id": "e1b6d9d7-5fc0-4638-ae1a-e0abceb92200",
+                "risk_detail": "none",
+                "risk_event_type": "anonymizedIPAddress",
+                "risk_last_updated_datetime": "2022-08-22T18:07:16.894Z",
+                "risk_level": "high",
+                "risk_state": "atRisk",
+                "risk_type": "anonymizedIPAddress",
+                "source": "IdentityProtection",
+                "token_issuer_type": "AzureAD",
+                "user_display_name": "Joe Danger",
+                "user_id": "51e26eae-d07b-44e5-bb0b-249f49569a8c",
+                "user_principal_name": "joe.danger@contoso.onmicrosoft.com",
+                "user_type": "member"
+            },
+            "result_signature": "None"
+        },
+        "resource": {
+            "id": "/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/microsoft.aadiam",
+            "provider": "microsoft.aadiam"
+        },
+        "tenant_id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
     },
     "cloud": {
         "provider": "azure"
     },
-    "@timestamp": "2020-11-02T08:51:36.997Z",
     "ecs": {
-        "version": "1.5.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "logs",
-        "dataset": "azure.activitylogs"
+        "version": "8.5.0"
     },
     "event": {
+        "action": "User Risk Detection",
         "duration": 0,
-        "ingested": "2020-10-30T20:47:48.123859400Z",
-        "kind": "event",
-        "action": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
-        "dataset": "azure.activitylogs",
-        "outcome": "success"
+        "kind": "event"
     },
-    "azure": {
-        "subscription_id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff",
-        "resource": {
-            "provider": "MICROSOFT.RESOURCES/DEPLOYMENTS",
-            "name": "NOMARKETPLACE",
-            "id": "/SUBSCRIPTIONS/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.RESOURCES/DEPLOYMENTS/NOMARKETPLACE",
-            "group": "OBS-TEST"
+    "source": {
+        "as": {
+            "number": 35908
         },
-        "correlation_id": "876190b4-5b99-4a39-b725-4f5644911cf0",
-        "activitylogs": {
-            "operation_name": "MICROSOFT.RESOURCES/DEPLOYMENTS/WRITE",
-            "result_type": "Success",
-            "identity": {
-                "authorization": {
-                    "evidence": {
-                        "role_definition_id": "8e3af657a8ff443ca75c2fe8c4bcb635",
-                        "role": "Owner",
-                        "role_assignment_scope": "/providers/Microsoft.Management/managementGroups/5341238b-665c-4eb4-b259-b250371ae430",
-                        "role_assignment_id": "7f06f09dd6764b44930adbec3f10e92b",
-                        "principal_type": "User",
-                        "principal_id": "68b1adf93eb744b08eb8ce96522a08d3"
-                    },
-                    "scope": "/subscriptions/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/resourceGroups/obs-test/providers/Microsoft.Resources/deployments/NoMarketplace",
-                    "action": "Microsoft.Resources/deployments/write"
-                },
-                "claims": {
-                    "xms_tcdt": "1469565974",
-                    "aio": "ATQAy/8RAAAAsL67UQMOHZv3izTDRJfvJN5UyON9ktUszzPj08K8aURsbhxhR0niz9s1Pxm9U1lI",
-                    "iss": "https://sts.windows.net/4fa94b7d-a743-486f-abcc-6c276c44cf4b/",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/nameidentifier": "a9L2WR3XZN5ANzAqwLx_4aamU49JG6kqaE5JZkXdeNs",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/surname": "Doe",
-                    "http://schemas_microsoft_com/identity/claims/scope": "user_impersonation",
-                    "http://schemas_microsoft_com/identity/claims/tenantid": "4fa94b7d-a743-486f-abcc-6c276c44cf4b",
-                    "puid": "1003200045B17AD4",
-                    "wids": "5d6b6bb7-de71-4623-b4af-96380a352509",
-                    "http://schemas_microsoft_com/claims/authnclassreference": "1",
-                    "exp": "1604310019",
-                    "ipaddr": "77.170.179.229",
-                    "iat": "1604306119",
-                    "http://schemas_microsoft_com/identity/claims/objectidentifier": "68b1adf9-3eb7-44b0-8eb8-ce96522a08d3",
-                    "http://schemas_microsoft_com/claims/authnmethodsreferences": "pwd",
-                    "ver": "1.0",
-                    "groups": "644c6686-9ef1-4b69-9410-107664a9e1f0,9ed1993c-ce9c-4915-a04d-58c6f5f7ee12",
-                    "uti": "rqr63RW_Kk6ztuomENMQAA",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/upn": "john@gmail.com",
-                    "aud": "https://management.core.windows.net/",
-                    "nbf": "1604306119",
-                    "appidacr": "2",
-                    "rh": "0.AAAAfUupT0Onb0irzGwnbETPS4NAS8SwO8FJtH2XTlPL3zxRAA8.",
-                    "appid": "c44b4083-3bb0-49c1-b47d-974e53cbdf3c",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/givenname": "John",
-                    "http://schemas_xmlsoap_org/ws/2005/05/identity/claims/name": "john@gmail.com"
-                },
-                "claims_initiated_by_user": {
-                    "schema": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims"
-                }
-            },
-            "category": "Administrative",
-            "event_category": "Administrative",
-            "result_signature": "Succeeded."
-        }
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.42"
     }
 }
 ```
@@ -161,32 +155,39 @@ An example event for `activitylogs` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.activitylogs.category | Category | keyword |
-| azure.activitylogs.event_category | Event Category | keyword |
-| azure.activitylogs.identity.authorization.action | Action | keyword |
-| azure.activitylogs.identity.authorization.evidence.principal_id | Principal ID | keyword |
-| azure.activitylogs.identity.authorization.evidence.principal_type | Principal type | keyword |
-| azure.activitylogs.identity.authorization.evidence.role | Role | keyword |
-| azure.activitylogs.identity.authorization.evidence.role_assignment_id | Role assignment ID | keyword |
-| azure.activitylogs.identity.authorization.evidence.role_assignment_scope | Role assignment scope | keyword |
-| azure.activitylogs.identity.authorization.evidence.role_definition_id | Role definition ID | keyword |
-| azure.activitylogs.identity.authorization.scope | Scope | keyword |
-| azure.activitylogs.identity.claims.\* | Claims | object |
-| azure.activitylogs.identity.claims_initiated_by_user.fullname | Fullname | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.givenname | Givenname | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.name | Name | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.schema | Schema | keyword |
-| azure.activitylogs.identity.claims_initiated_by_user.surname | Surname | keyword |
-| azure.activitylogs.identity_name | identity name | keyword |
-| azure.activitylogs.level | Level | long |
-| azure.activitylogs.operation_name | Operation name | keyword |
-| azure.activitylogs.operation_version | Operation version | keyword |
-| azure.activitylogs.properties | Event properties | flattened |
-| azure.activitylogs.result_signature | Result signature | keyword |
-| azure.activitylogs.result_type | Result type | keyword |
-| azure.activitylogs.tenant_id | Tenant ID | keyword |
 | azure.correlation_id | Correlation ID | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
+| azure.identityprotectionlogs.category | Category | keyword |
+| azure.identityprotectionlogs.operation_name | Operation name | keyword |
+| azure.identityprotectionlogs.operation_version | Operation version | keyword |
+| azure.identityprotectionlogs.properties.activity | Indicates the activity type the detected risk is linked to. Possible values are: signin, user, unknownFutureValue. | keyword |
+| azure.identityprotectionlogs.properties.activity_datetime | Date and time that the risky activity occurred. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is look like this: 2014-01-01T00:00:00Z. | date |
+| azure.identityprotectionlogs.properties.additional_info | Additional information associated with the risk detection. Possible keys in the additionalInfo JSON string are: userAgent, alertUrl, relatedEventTimeInUtc, relatedUserAgent, deviceInformation, relatedLocation, requestId, correlationId, lastActivityTimeInUtc, malwareName, clientLocation, clientIp, riskReasons. For more information about riskReasons and possible values, see https://docs.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0#riskreasons-values. | flattened |
+| azure.identityprotectionlogs.properties.correlation_id | Correlation ID of the sign-in associated with the risk detection. This property is null if the risk detection is not associated with a sign-in. | keyword |
+| azure.identityprotectionlogs.properties.cross_tenant_access_type |  | keyword |
+| azure.identityprotectionlogs.properties.detected_datetime | Date and time that the risk was detected. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 looks like this: 2014-01-01T00:00:00Z. | date |
+| azure.identityprotectionlogs.properties.detection_timing_type | Timing of the detected risk (real-time/offline). Possible values are: notDefined, realtime, nearRealtime, offline, unknownFutureValue. | keyword |
+| azure.identityprotectionlogs.properties.home_tenant_id |  | keyword |
+| azure.identityprotectionlogs.properties.id | Unique ID of the risk detection. | keyword |
+| azure.identityprotectionlogs.properties.ip_address | Provides the IP address of the client from where the risk occurred. | ip |
+| azure.identityprotectionlogs.properties.is_deleted | Indicates whether the user is deleted. | boolean |
+| azure.identityprotectionlogs.properties.is_guest |  | boolean |
+| azure.identityprotectionlogs.properties.is_processing | Indicates whether a user's risky state is being processed by the backend. | boolean |
+| azure.identityprotectionlogs.properties.location | Location of the sign-in. | flattened |
+| azure.identityprotectionlogs.properties.request_id | Request ID of the sign-in associated with the risk detection. This property is null if the risk detection is not associated with a sign-in. | keyword |
+| azure.identityprotectionlogs.properties.resource_tenant_id |  | keyword |
+| azure.identityprotectionlogs.properties.risk_detail | Details of the detected risk. Possible values are: none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue. | keyword |
+| azure.identityprotectionlogs.properties.risk_event_type | The type of risk event detected. The possible values are unlikelyTravel, anonymizedIPAddress, maliciousIPAddress, unfamiliarFeatures, malwareInfectedIPAddress, suspiciousIPAddress, leakedCredentials, investigationsThreatIntelligence, generic,adminConfirmedUserCompromised, passwordSpray, impossibleTravel, newCountry, anomalousToken, tokenIssuerAnomaly,suspiciousBrowser, riskyIPAddress, mcasSuspiciousInboxManipulationRules, suspiciousInboxForwarding, and unknownFutureValue. If the risk detection is a premium detection, will show generic. For more information about each value, see https://docs.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0#riskeventtype-values values. | keyword |
+| azure.identityprotectionlogs.properties.risk_last_updated_datetime | Date and time that the risk detection was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is look like this: 2014-01-01T00:00:00Z. | date |
+| azure.identityprotectionlogs.properties.risk_level | Level of the detected risk. Possible values are: low, medium, high, hidden, none, unknownFutureValue. | keyword |
+| azure.identityprotectionlogs.properties.risk_state | The state of a detected risky user or sign-in. Possible values are: none, confirmedSafe, remediated, dismissed, atRisk, confirmedCompromised, unknownFutureValue. | keyword |
+| azure.identityprotectionlogs.properties.risk_type |  | keyword |
+| azure.identityprotectionlogs.properties.source | Source of the risk detection. For example, activeDirectory. | keyword |
+| azure.identityprotectionlogs.properties.token_issuer_type | Indicates the type of token issuer for the detected sign-in risk. Possible values are: AzureAD, ADFederationServices, UnknownFutureValue. | keyword |
+| azure.identityprotectionlogs.properties.user_display_name | The user display name of the user. | keyword |
+| azure.identityprotectionlogs.properties.user_id | Unique ID of the user. | keyword |
+| azure.identityprotectionlogs.properties.user_principal_name | The user principal name (UPN) of the user. | keyword |
+| azure.identityprotectionlogs.properties.user_type |  | keyword |
+| azure.identityprotectionlogs.result_signature | Result signature | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |
