@@ -17,155 +17,47 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "_index": ".ds-logs-microsoft_exchange_online_message_trace.log-default-2022.09.06-000001",
-    "_id": "XSF2EoMBTgnYwLJGQys0",
-    "_version": 1,
-    "_score": 0,
-    "_source": {
-        "agent": {
-            "name": "docker-fleet-agent",
-            "id": "80b39cad-d415-43ee-8502-e30af004b9cd",
-            "type": "filebeat",
-            "ephemeral_id": "2ed21e6a-0aed-4fae-a502-140c3144a581",
-            "version": "8.3.3"
-        },
-        "elastic_agent": {
-            "id": "80b39cad-d415-43ee-8502-e30af004b9cd",
-            "version": "8.3.3",
-            "snapshot": false
-        },
-        "source": {
-            "ip": "51.140.75.55"
-        },
-        "tags": [
-            "forwarded"
-        ],
-        "input": {
-            "type": "httpjson"
-        },
-        "@timestamp": "2022-09-06T11:01:23.939Z",
-        "ecs": {
-            "version": "8.3.1"
-        },
-        "data_stream": {
-            "namespace": "default",
-            "type": "logs",
-            "dataset": "microsoft_exchange_online_message_trace.log"
-        },
-        "event": {
-            "agent_id_status": "verified",
-            "ingested": "2022-09-06T11:01:23Z",
-            "created": "2022-09-06T11:01:22.889Z",
-            "dataset": "microsoft_exchange_online_message_trace.log",
-            "outcome": "Delivered"
-        },
-        "email": {
-            "attachments": {
-                "file": {
-                    "size": 87891
-                }
-            },
-            "local_id": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
-            "subject": "PIM: A privileged directory role was assigned outside of PIM",
-            "delivery_timestamp": "2022-09-05T18:10:13.4907658",
-            "from": {
-                "address": "azure-noreply@microsoft.com"
-            },
-            "message_id": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
-            "to": {
-                "address": "linus@wildsecurity.onmicrosoft.com"
-            }
-        }
+    "@timestamp": "2022-09-08T06:39:50.760Z",
+    "agent": {
+        "ephemeral_id": "948a3345-0639-4052-9c69-d456cd34d866",
+        "id": "a48420aa-e4ca-48a5-b38c-384aae2ff03c",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.3.3"
     },
-    "fields": {
-        "email.subject": [
-            "PIM: A privileged directory role was assigned outside of PIM"
-        ],
-        "email.attachments.file.size": [
-            87891
-        ],
-        "elastic_agent.version": [
-            "8.3.3"
-        ],
-        "agent.type": [
-            "filebeat"
-        ],
-        "email.subject.text": [
-            "PIM: A privileged directory role was assigned outside of PIM"
-        ],
-        "email.to.address": [
-            "linus@wildsecurity.onmicrosoft.com"
-        ],
-        "source.ip": [
-            "51.140.75.55"
-        ],
-        "agent.name": [
-            "docker-fleet-agent"
-        ],
-        "elastic_agent.snapshot": [
-            false
-        ],
-        "event.agent_id_status": [
-            "verified"
-        ],
-        "event.outcome": [
-            "Delivered"
-        ],
-        "elastic_agent.id": [
-            "80b39cad-d415-43ee-8502-e30af004b9cd"
-        ],
-        "data_stream.namespace": [
-            "default"
-        ],
-        "email.delivery_timestamp": [
-            "2022-09-05T18:10:13.490Z"
-        ],
-        "email.message_id": [
-            "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e"
-        ],
-        "email.from.address": [
-            "azure-noreply@microsoft.com"
-        ],
-        "input.type": [
-            "httpjson"
-        ],
-        "data_stream.type": [
-            "logs"
-        ],
-        "tags": [
-            "forwarded"
-        ],
-        "event.ingested": [
-            "2022-09-06T11:01:23.000Z"
-        ],
-        "@timestamp": [
-            "2022-09-06T11:01:23.939Z"
-        ],
-        "agent.id": [
-            "80b39cad-d415-43ee-8502-e30af004b9cd"
-        ],
-        "ecs.version": [
-            "8.3.1"
-        ],
-        "data_stream.dataset": [
-            "microsoft_exchange_online_message_trace.log"
-        ],
-        "event.created": [
-            "2022-09-06T11:01:22.889Z"
-        ],
-        "agent.ephemeral_id": [
-            "2ed21e6a-0aed-4fae-a502-140c3144a581"
-        ],
-        "agent.version": [
-            "8.3.3"
-        ],
-        "email.local_id": [
-            "cf7a249a-5edd-4350-130a-08da8f69e0f6"
-        ],
-        "event.dataset": [
-            "microsoft_exchange_online_message_trace.log"
-        ]
-    }
+    "data_stream": {
+        "dataset": "microsoft_exchange_online_message_trace.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.3.1"
+    },
+    "elastic_agent": {
+        "id": "a48420aa-e4ca-48a5-b38c-384aae2ff03c",
+        "snapshot": false,
+        "version": "8.3.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "microsoft_exchange_online_message_trace.log",
+        "ingested": "2022-09-08T06:39:51Z",
+        "original": "{\"odata.metadata\":\"https://reports.office365.com/ecp/ReportingWebService/Reporting.svc/$metadata#MessageTrace\",\"value\":[{\"Organization\":\"wildsecurity.onmicrosoft.com\",\"MessageId\":\"\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e\",\"Received\":\"2022-09-05T18:10:13.4907658\",\"SenderAddress\":\"azure-noreply@microsoft.com\",\"RecipientAddress\":\"linus@wildsecurity.onmicrosoft.com\",\"Subject\":\"PIM: A privileged directory role was assigned outside of PIM\",\"Status\":\"Delivered\",\"ToIP\":\"216.160.83.56\",\"FromIP\":\"81.2.69.144\",\"Size\":87891,\"MessageTraceId\":\"cf7a249a-5edd-4350-130a-08da8f69e0f6\",\"StartDate\":\"2022-09-04T09:01:46.0369423Z\",\"EndDate\":\"2022-09-06T09:01:46.0369423Z\",\"Index\":0}]}"
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/defender_atp-test.json.log"
+        },
+        "offset": 0
+    },
+    "tags": [
+        "preserve_original_event",
+        "microsoft-defender-endpoint",
+        "forwarded"
+    ]
 }
 ```
 
@@ -177,6 +69,16 @@ An example event for `log` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| destination.as.organization.name | Organization name. | keyword |
+| destination.as.organization.name.text | Multi-field of `destination.as.organization.name`. | match_only_text |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | email.attachments.file.size | Attachment file size in bytes. | long |
@@ -189,13 +91,16 @@ An example event for `log` looks as following:
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
 | input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
 | source.geo.country_name | Country name. | keyword |
-| source.geo.location.lat | Longitude and latitude. | geo_point |
-| source.geo.location.lon | Longitude and latitude. | geo_point |
+| source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
