@@ -12,10 +12,10 @@ For example, you could use the data from this integration to know when there are
 
 The Couchbase integration collects metrics data.
 
-Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html), and [Cache](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cache) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
+Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html), [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), and [Cache](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cache) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
 
 This integration uses:
-- `http` metricbeat module to collect `bucket` metrics.
+- `http` metricbeat module to collect `bucket`, and `cluster` metrics.
 - `prometheus` metricbeat module to collect `cache` metrics.
 
 Note: For Couchbase cluster setup, there is an ideal scenario of a single host with administrator access for the entire cluster to collect metrics. Providing multiple hosts from the same cluster might lead to data duplication. In the case of multiple clusters, adding a new integration to collect data from different cluster hosts is a good option.
@@ -58,3 +58,11 @@ This is the `cache` data stream. The cache is hardware or software that is used 
 {{event "cache"}}
 
 {{fields "cache"}}
+
+### Cluster
+
+This is the `cluster` data stream. A cluster is a collection of nodes that are accessed and managed as a single group. Each node is an equal partner in orchestrating the cluster to provide facilities such as operational information (monitoring) or managing cluster membership of nodes and health of nodes.
+
+{{event "cluster"}}
+
+{{fields "cluster"}}

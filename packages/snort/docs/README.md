@@ -4,9 +4,9 @@ This integration is for [Snort](https://www.snort.org/).
 
 ## Compatibility
 
-This module has been developed against Snort v2.9, but is expected to work
-with other versions of Snort. This package is designed to read from the PFsense CSV output
-and the Alert Fast output either via reading a local logfile or receiving messages via syslog
+This module has been developed against Snort v2.9 and v3, but is expected to work
+with other versions of Snort. This package is designed to read from the PFsense CSV output,
+the Alert Fast output either via reading a local logfile or receiving messages via syslog and the Snort 3 JSON log file.
 
 ## Log
 
@@ -186,11 +186,16 @@ An example event for `log` looks as following:
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
+| network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
+| network.vlan.id | VLAN ID as reported by the observer. | keyword |
+| observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |

@@ -3,7 +3,7 @@ description: Pipeline for processing alert logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.3.0'
+      value: '8.4.0'
   - set:
       field: event.kind
       value: event
@@ -23,39 +23,39 @@ processors:
       ignore_failure: true
   - fingerprint:
       fields:
-        - json.alertInfo.createdAt 
+        - json.alertInfo.createdAt
         - json.alertInfo.updatedAt
-        - json.alertInfo.alertId 
+        - json.alertInfo.alertId
       target_field: _id
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.machineType 
+      field: json.agentDetectionInfo.machineType
       target_field: host.type
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.name 
+      field: json.agentDetectionInfo.name
       target_field: host.name
       ignore_missing: true
   - append:
       field: related.hosts
-      value: '{{{host.name}}}' 
+      value: '{{{host.name}}}'
       if: ctx.host?.name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.agentDetectionInfo.osFamily 
+      field: json.agentDetectionInfo.osFamily
       target_field: host.os.family
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.osRevision 
+      field: json.agentDetectionInfo.osRevision
       target_field: host.os.version
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.siteId 
+      field: json.agentDetectionInfo.siteId
       target_field: sentinel_one.alert.agent.site_id
-      ignore_missing: true  
+      ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.uuid 
+      field: json.agentDetectionInfo.uuid
       target_field: observer.serial_number
       ignore_missing: true
   - rename:
@@ -63,11 +63,11 @@ processors:
       target_field: host.os.name
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.version 
+      field: json.agentDetectionInfo.version
       target_field: observer.version
       ignore_missing: true
   - date:
-      field: json.alertInfo.createdAt 
+      field: json.alertInfo.createdAt
       target_field: '@timestamp'
       if: ctx.json?.alertInfo?.createdAt != null
       ignore_failure: true
@@ -80,12 +80,12 @@ processors:
       ignore_failure: true
   - append:
       field: related.ip
-      value: '{{{source.ip}}}' 
+      value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.alertInfo.incidentStatus 
+      field: json.alertInfo.incidentStatus
       target_field: sentinel_one.alert.info.status
       ignore_missing: true
   - rename:
@@ -93,7 +93,7 @@ processors:
       target_field: sentinel_one.alert.info.registry.old_value
       ignore_missing: true
   - rename:
-      field: json.alertInfo.alertId 
+      field: json.alertInfo.alertId
       target_field: event.id
       ignore_missing: true
   - convert:
@@ -120,7 +120,7 @@ processors:
       ignore_failure: true
   - append:
       field: related.ip
-      value: '{{{destination.ip}}}' 
+      value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
@@ -168,6 +168,7 @@ processors:
       field: json.alertInfo.netEventDirection
       target_field: network.direction
       ignore_missing: true
+      if: ctx.json?.alertInfo?.netEventDirection != null && ['ingress', 'egress', 'inbound', 'outbound', 'internal', 'external', 'unknown'].contains(ctx.json.alertInfo.netEventDirection)
   - rename:
       field: json.alertInfo.registryValue
       target_field: registry.value
@@ -179,7 +180,7 @@ processors:
       ignore_failure: true
   - append:
       field: related.ip
-      value: '{{{host.ip}}}' 
+      value: '{{{host.ip}}}'
       if: ctx.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
@@ -188,15 +189,15 @@ processors:
       target_field: sentinel_one.alert.info.registry.old_value_type
       ignore_missing: true
   - rename:
-      field: json.alertInfo.eventType 
+      field: json.alertInfo.eventType
       target_field: sentinel_one.alert.info.event_type
       ignore_missing: true
   - rename:
-      field: json.alertInfo.analystVerdict 
+      field: json.alertInfo.analystVerdict
       target_field: sentinel_one.alert.analyst_verdict
       ignore_missing: true
   - rename:
-      field: json.alertInfo.dvEventId 
+      field: json.alertInfo.dvEventId
       target_field: sentinel_one.alert.dv_event.id
       ignore_missing: true
   - rename:
@@ -221,7 +222,7 @@ processors:
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{dll.hash.sha1}}}' 
+      value: '{{{dll.hash.sha1}}}'
       if: ctx.dll?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
@@ -243,7 +244,7 @@ processors:
       target_field: sentinel_one.alert.info.ti_indicator.source
       ignore_missing: true
   - date:
-      field: json.alertInfo.reportedAt 
+      field: json.alertInfo.reportedAt
       target_field: sentinel_one.alert.info.reported_at
       if: ctx.json?.alertInfo?.reportedAt != null
       ignore_failure: true
@@ -258,47 +259,47 @@ processors:
       target_field: sentinel_one.alert.info.ti_indicator.comparison_method
       ignore_missing: true
   - rename:
-      field: json.alertInfo.hitType 
+      field: json.alertInfo.hitType
       target_field: sentinel_one.alert.info.hit.type
       ignore_missing: true
   - rename:
-      field: json.containerInfo.id 
+      field: json.containerInfo.id
       target_field: container.id
       ignore_missing: true
   - rename:
-      field: json.containerInfo.image 
+      field: json.containerInfo.image
       target_field: container.image.name
       ignore_missing: true
   - rename:
-      field: json.containerInfo.labels 
+      field: json.containerInfo.labels
       target_field: sentinel_one.alert.container.info.labels
       ignore_missing: true
   - rename:
-      field: json.containerInfo.name 
+      field: json.containerInfo.name
       target_field: container.name
       ignore_missing: true
   - rename:
-      field: json.kubernetesInfo.cluster 
+      field: json.kubernetesInfo.cluster
       target_field: orchestrator.cluster.name
       ignore_missing: true
   - rename:
-      field: json.kubernetesInfo.controllerKind 
+      field: json.kubernetesInfo.controllerKind
       target_field: sentinel_one.alert.kubernetes.controller.kind
       ignore_missing: true
   - rename:
-      field: json.kubernetesInfo.controllerLabels 
+      field: json.kubernetesInfo.controllerLabels
       target_field: sentinel_one.alert.kubernetes.controller.labels
       ignore_missing: true
   - rename:
-      field: json.kubernetesInfo.controllerName 
+      field: json.kubernetesInfo.controllerName
       target_field: sentinel_one.alert.kubernetes.controller.name
       ignore_missing: true
   - rename:
-      field: json.kubernetesInfo.namespace 
+      field: json.kubernetesInfo.namespace
       target_field: orchestrator.namespace
       ignore_missing: true
   - rename:
-      field: json.kubernetesInfo.namespaceLabels 
+      field: json.kubernetesInfo.namespaceLabels
       target_field: sentinel_one.alert.kubernetes.namespace.labels
       ignore_missing: true
   - rename:
@@ -306,11 +307,11 @@ processors:
       target_field: sentinel_one.alert.kubernetes.node
       ignore_missing: true
   - rename:
-      field: json.kubernetesInfo.pod 
+      field: json.kubernetesInfo.pod
       target_field: sentinel_one.alert.kubernetes.pod.name
       ignore_missing: true
   - rename:
-      field: json.kubernetesInfo.podLabels 
+      field: json.kubernetesInfo.podLabels
       target_field: sentinel_one.alert.kubernetes.pod.labels
       ignore_missing: true
   - rename:
@@ -322,109 +323,109 @@ processors:
       target_field: rule.category
       ignore_missing: true
   - rename:
-      field: json.ruleInfo.description 
+      field: json.ruleInfo.description
       target_field: rule.description
       ignore_missing: true
   - rename:
-      field: json.ruleInfo.id 
+      field: json.ruleInfo.id
       target_field: rule.id
       ignore_missing: true
   - rename:
-      field: json.ruleInfo.name 
+      field: json.ruleInfo.name
       target_field: rule.name
       ignore_missing: true
   - rename:
-      field: json.ruleInfo.scopeLevel 
+      field: json.ruleInfo.scopeLevel
       target_field: sentinel_one.alert.rule.scope_level
       ignore_missing: true
   - rename:
-      field: json.ruleInfo.severity 
+      field: json.ruleInfo.severity
       target_field: sentinel_one.alert.rule.severity
       ignore_missing: true
   - rename:
-      field: json.ruleInfo.treatAsThreat 
+      field: json.ruleInfo.treatAsThreat
       target_field: sentinel_one.alert.rule.treat_as_threat
       ignore_missing: true
   - rename:
-      field: json.sourceParentProcessInfo.commandline 
+      field: json.sourceParentProcessInfo.commandline
       target_field: process.parent.command_line
       ignore_missing: true
   - rename:
-      field: json.sourceParentProcessInfo.fileHashMd5 
+      field: json.sourceParentProcessInfo.fileHashMd5
       target_field: process.parent.hash.md5
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{process.parent.hash.md5}}}' 
+      value: '{{{process.parent.hash.md5}}}'
       if: ctx.process?.parent?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.sourceParentProcessInfo.fileHashSha1 
+      field: json.sourceParentProcessInfo.fileHashSha1
       target_field: process.parent.hash.sha1
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{process.parent.hash.sha1}}}' 
+      value: '{{{process.parent.hash.sha1}}}'
       if: ctx.process?.parent?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.sourceParentProcessInfo.fileHashSha256 
+      field: json.sourceParentProcessInfo.fileHashSha256
       target_field: process.parent.hash.sha256
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{process.parent.hash.sha256}}}' 
+      value: '{{{process.parent.hash.sha256}}}'
       if: ctx.process?.parent?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.sourceParentProcessInfo.filePath 
+      field: json.sourceParentProcessInfo.filePath
       target_field: process.parent.executable
       ignore_missing: true
   - rename:
-      field: json.sourceParentProcessInfo.fileSignerIdentity 
+      field: json.sourceParentProcessInfo.fileSignerIdentity
       target_field: process.parent.code_signature.signing_id
       ignore_missing: true
   - rename:
-      field: json.sourceParentProcessInfo.integrityLevel 
+      field: json.sourceParentProcessInfo.integrityLevel
       target_field: sentinel_one.alert.process.parent.integrity_level
       ignore_missing: true
   - rename:
-      field: json.sourceParentProcessInfo.name 
+      field: json.sourceParentProcessInfo.name
       target_field: process.parent.name
       ignore_missing: true
   - convert:
-      field: json.sourceParentProcessInfo.pid 
+      field: json.sourceParentProcessInfo.pid
       target_field: process.parent.pid
       type: long
       ignore_failure: true
   - date:
-      field: json.sourceParentProcessInfo.pidStarttime 
+      field: json.sourceParentProcessInfo.pidStarttime
       target_field: process.parent.start
       if: ctx.json?.sourceParentProcessInfo?.pidStarttime != null
       ignore_failure: true
       formats:
         - ISO8601
   - rename:
-      field: json.sourceParentProcessInfo.storyline 
+      field: json.sourceParentProcessInfo.storyline
       target_field: sentinel_one.alert.process.parent.storyline
       ignore_missing: true
   - rename:
-      field: json.sourceParentProcessInfo.subsystem 
+      field: json.sourceParentProcessInfo.subsystem
       target_field: sentinel_one.alert.process.parent.subsystem
       ignore_missing: true
   - rename:
-      field: json.sourceParentProcessInfo.uniqueId 
+      field: json.sourceParentProcessInfo.uniqueId
       target_field: process.parent.entity_id
       ignore_missing: true
   - rename:
-      field: json.sourceParentProcessInfo.user 
+      field: json.sourceParentProcessInfo.user
       target_field: process.parent.user.name
       ignore_missing: true
   - rename:
-      field: json.sourceProcessInfo.commandline 
+      field: json.sourceProcessInfo.commandline
       target_field: process.command_line
       ignore_missing: true
   - rename:
@@ -433,73 +434,73 @@ processors:
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{process.hash.md5}}}' 
+      value: '{{{process.hash.md5}}}'
       if: ctx.process?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.sourceProcessInfo.fileHashSha1 
+      field: json.sourceProcessInfo.fileHashSha1
       target_field: process.hash.sha1
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{process.hash.sha1}}}' 
+      value: '{{{process.hash.sha1}}}'
       if: ctx.process?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.sourceProcessInfo.fileHashSha256 
+      field: json.sourceProcessInfo.fileHashSha256
       target_field: process.hash.sha256
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{process.hash.sha256}}}' 
+      value: '{{{process.hash.sha256}}}'
       if: ctx.process?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.sourceProcessInfo.filePath 
+      field: json.sourceProcessInfo.filePath
       target_field: process.executable
       ignore_missing: true
   - rename:
-      field: json.sourceProcessInfo.fileSignerIdentity 
-      target_field: process.code_signature.signing_id 
+      field: json.sourceProcessInfo.fileSignerIdentity
+      target_field: process.code_signature.signing_id
       ignore_missing: true
   - rename:
-      field: json.sourceProcessInfo.integrityLevel 
+      field: json.sourceProcessInfo.integrityLevel
       target_field: sentinel_one.alert.process.integrity_level
       ignore_missing: true
   - rename:
-      field: json.sourceProcessInfo.name 
+      field: json.sourceProcessInfo.name
       target_field: process.name
       ignore_missing: true
   - convert:
-      field: json.sourceProcessInfo.pid 
+      field: json.sourceProcessInfo.pid
       target_field: process.pid
       type: long
       ignore_failure: true
   - date:
-      field: json.sourceProcessInfo.pidStarttime 
+      field: json.sourceProcessInfo.pidStarttime
       target_field: process.start
       if: ctx.json?.sourceProcessInfo?.pidStarttime != null
       ignore_failure: true
       formats:
         - ISO8601
   - rename:
-      field: json.sourceProcessInfo.storyline 
+      field: json.sourceProcessInfo.storyline
       target_field: sentinel_one.alert.process.storyline
       ignore_missing: true
   - rename:
-      field: json.sourceProcessInfo.subsystem 
+      field: json.sourceProcessInfo.subsystem
       target_field: sentinel_one.alert.process.subsystem
       ignore_missing: true
   - rename:
-      field: json.sourceProcessInfo.uniqueId 
+      field: json.sourceProcessInfo.uniqueId
       target_field: process.entity_id
       ignore_missing: true
   - rename:
-      field: json.sourceProcessInfo.user 
-      target_field: process.user.name 
+      field: json.sourceProcessInfo.user
+      target_field: process.user.name
       ignore_missing: true
   - date:
       field: json.targetProcessInfo.tgtFileCreatedAt
@@ -530,7 +531,7 @@ processors:
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{sentinel_one.alert.target.process.file.hash.sha256}}}' 
+      value: '{{{sentinel_one.alert.target.process.file.hash.sha256}}}'
       if: ctx.sentinel_one?.alert?.target?.process?.file?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
@@ -572,7 +573,7 @@ processors:
       ignore_missing: true
   - append:
       field: related.hash
-      value: '{{{sentinel_one.alert.target.process.file.hash.sha1}}}' 
+      value: '{{{sentinel_one.alert.target.process.file.hash.sha1}}}'
       if: ctx.sentinel_one?.alert?.target?.process?.file?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
@@ -601,7 +602,7 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source: 
+      source:
         boolean dropEmptyFields(Object object) {
           if (object == null || object == "") {
             return true;
