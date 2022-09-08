@@ -94,3 +94,35 @@ This status endpoint is available in 6.0 by default and can be enabled in Kibana
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |
 
 {{event "status"}}
+
+### Cluster actions
+
+Cluster actions metrics documentation
+
+{{fields "cluster_actions"}}
+
+{{event "cluster_actions"}}
+
+### Cluster rules
+
+Cluster rules metrics
+
+{{fields "cluster_rules"}}
+
+{{event "cluster_rules"}}
+
+### Node actions
+
+Node actions metrics
+
+{{fields "node_actions"}}
+
+{{event "node_actions"}}
+
+### Node rules
+
+Node rules metrics
+
+{{fields "node_rules"}}
+
+{{event "node_rules"}}

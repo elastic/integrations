@@ -1,0 +1,66 @@
+config_version: 2
+interval: {{interval}}
+request.timeout: 2m
+request.method: POST
+
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+
+request.url: https://securityhub.{{aws_region}}.amazonaws.com/findings
+request.transforms:
+  - set:
+      target: header.X-Amz-Date
+      value: '[[formatDate (now) "20060102T150405Z"]]'
+  - set:
+      target: body.MaxResults
+      value: 100
+      value_type: int
+  - set:
+      target: body.SortCriteria
+      value: '[{"Field":"UpdatedAt","SortOrder":"asc"}]'
+      value_type: json
+  - set:
+      target: body.Filters.UpdatedAt
+      value: '[{ "Start": "[[formatDate (parseDate .cursor.last_execution_datetime "RFC3339") "2006-01-02T15"]]", "End": "[[formatDate (now) "2006-01-02T15"]]" }]'
+      default: '[{ "Start": "[[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15"]]", "End": "[[formatDate (now) "2006-01-02T15"]]" }]'
+      value_type: json
+  - set:
+      target: header.Authorization
+      value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/securityhub/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "securityhub")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/securityhub/aws4_request") (hash "sha256" "POST\n" "/findings\n" "\n" "host:securityhub.{{aws_region}}.amazonaws.com\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
+{{!-- https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-auth-using-authorization-header.html --}}
+response.pagination:
+  - set:
+      target: body.NextToken
+      value: '[[if (eq (len .last_response.body.Findings) 100)]][[.last_response.body.NextToken]][[else]][[.last_response.terminate_pagination]][[end]]'
+      fail_on_template_error: true
+  - delete:
+      target: header.Authorization
+  - set:
+      target: header.Authorization
+      value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential={{access_key_id}}/%s/{{aws_region}}/securityhub/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4{{secret_access_key}}" (formatDate ($now) "20060102"))) "{{aws_region}}")) "securityhub")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "{{aws_region}}/securityhub/aws4_request") (hash "sha256" "POST\n" "/findings\n" "\n" "host:securityhub.{{aws_region}}.amazonaws.com\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
+cursor:
+  last_execution_datetime:
+    value: '[[if (ne (len .last_response.body.Findings) 100)]][[.last_event.UpdatedAt]][[end]]'
+response.split:
+  target: body.Findings
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
