@@ -6,6 +6,7 @@ request.transforms:
   - set:
       target: url.params.$filter
       value: StartDate eq datetime'[[(formatDate (now (parseDuration "-1h")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
+      default: StartDate eq datetime'[[(formatDate (now (parseDuration "{{initial_interval}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
 request.timeout: 60s
 {{#if proxy_url }}
 request.proxy_url: {{proxy_url}}
@@ -42,6 +43,12 @@ response.pagination:
   - set:
       target: url.params.$filter
       value: StartDate eq datetime'[[(formatDate (now (parseDuration "-1h")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
+      default: StartDate eq datetime'[[(formatDate (now (parseDuration "{{initial_interval}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
+
+cursor:
+  last_execution_datetime:
+    value: '[[(formatDate (now (parseDuration)) "RFC3339")]]'
+
 {{#if processors}}
 processors:
 {{processors}}
