@@ -177,7 +177,7 @@ An example event for `access` looks as following:
 | http.version | HTTP version. | keyword |
 | istio.access.authority | The value of the Host (HTTP/1.1) or Authority (HTTP/2) header. | keyword |
 | istio.access.bytes.received | For HTTP/THRIFT this field is the body bytes received. For TCP this field is the downstream bytes received on connection. For UDP this field is not implemented (0). | long |
-| istio.access.bytes.sent | For HTTP/THRIFT this field is the body bytes sent. For WebSocket connection it will also include repsonse header bytes. For TCP this field is the downstream bytes sent on connection. For UDP this field is not implemented (0). | long |
+| istio.access.bytes.sent | For HTTP/THRIFT this field is the body bytes sent. For WebSocket connection it will also include response header bytes. For TCP this field is the downstream bytes sent on connection. For UDP this field is not implemented (0). | long |
 | istio.access.connection_termination_details | Connection termination details may provide additional information about why the connection was terminated by Envoy for L4 reasons. | text |
 | istio.access.downstream.local_address | Local address of the downstream connection. If the address is an IP address it includes both address and port. | keyword |
 | istio.access.downstream.remote_address | Remote address of the downstream connection. If the address is an IP address it includes both address and port. | keyword |
@@ -192,7 +192,7 @@ An example event for `access` looks as following:
 | istio.access.upstream.local_address | Local address of the upstream connection. If the address is an IP address it includes both address and port. | keyword |
 | istio.access.upstream.service_time | Envoy Upstream service time. | long |
 | istio.access.upstream.transport_failure_reason | For HTTP if upstream connection failed due to transport socket (e.g. TLS handshake), provides the failure reason from the transport socket. The format of this field depends on the configured upstream transport socket. For TCP/UDP this field is not implemented ("-"). | text |
-| istio.access.x-forwarded-for | x-forwarded-for (XFF) is a standard proxy header which indicates the IP addresses that a request has flowed through on its way from the client to the server. | keyword |
+| istio.access.x_forwarded_for | x_forwarded_for (XFF) is a standard proxy header which indicates the IP addresses that a request has flowed through on its way from the client to the server. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
