@@ -71,9 +71,14 @@ processors:
   - date:
       if: "ctx._temp_?.raw_date != null"
       field: "_temp_.raw_date"
-      target_field: "@timestamp"
+      target_field: "event.end"
       formats:
         - "ISO8601"
+  # TODO: Check if it's intelligent to have delivery timestamp ast @timestamp
+  - set:
+      field: "@timestamp"
+      copy_from: "email.delivery_timestamp"
+      ignore_empty_value: true
 
   # IP Geolocation Lookup
   - geoip:
