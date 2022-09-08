@@ -90,6 +90,7 @@ An example event for `log` looks as following:
 | email.subject | A brief summary of the topic of the message. | keyword |
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
+| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | input.type |  | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset |  | long |
