@@ -6,7 +6,7 @@ processors:
   ####################
   - set:
       field: ecs.version
-      value: "8.3.0"
+      value: '8.4.0'
   - set:
       field: event.kind
       value: enrichment
@@ -231,6 +231,7 @@ processors:
       lang: painless
       description: "Extract TLP and providers from source"
       source: |-
+        def ecsTlps = ['WHITE', 'GREEN', 'AMBER', 'RED'];
         def providers = new ArrayList();
         def tlps = new ArrayList();
         for (source in ctx.json.sources) {
@@ -240,7 +241,7 @@ processors:
           if (source.containsKey("provider") && source["provider"] != null) {
             providers.add(source["provider"]);
           }
-          if (source.containsKey("tlp_name") && source["tlp_name"] != null) {
+          if (source.containsKey("tlp_name") && source["tlp_name"] != null && ecsTlps.contains(source["tlp_name"])) {
             tlps.add(source["tlp_name"]);
           }
         }

@@ -1,4 +1,4 @@
-# Modsecuriy Integration
+# Modsecurity Integration
 
 This integration periodically fetches audit logs from [Modsecurity](https://github.com/SpiderLabs/ModSecurity/) servers. It can parse audit logs created by the HTTP server.
 
