@@ -18,8 +18,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-08-20T11:25:50.157Z",
     "agent": {
-        "ephemeral_id": "5b951958-c1d6-4bca-b8c0-9c95f12e204d",
-        "id": "f783b804-5cdd-49eb-9723-a16140d0ab41",
+        "ephemeral_id": "df000191-6494-448e-9b24-396a3762094a",
+        "id": "68e210ce-ee67-482a-8fb4-c45055e6f2b2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.3.3"
@@ -38,10 +38,10 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.1"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "f783b804-5cdd-49eb-9723-a16140d0ab41",
+        "id": "68e210ce-ee67-482a-8fb4-c45055e6f2b2",
         "snapshot": false,
         "version": "8.3.3"
     },
@@ -49,7 +49,7 @@ An example event for `log` looks as following:
         "action": "ENTRY_DELETED",
         "agent_id_status": "verified",
         "dataset": "cisco_aironet.log",
-        "ingested": "2022-09-07T08:57:37Z",
+        "ingested": "2022-09-09T08:30:39Z",
         "original": "\u003c134\u003eWLC001: *SISF BT Process: Aug 20 11:25:50.157: %SISF-6-ENTRY_DELETED: sisf_shim_utils.c:482 Entry deleted A=fe80::aee2:d3ff:feba:56a4 V=0 I=wired:1 P=0000 M=",
         "provider": "SISF",
         "severity": "6",
@@ -64,7 +64,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.96.7:52874"
+            "address": "172.26.0.5:45299"
         },
         "syslog": {
             "facility": {

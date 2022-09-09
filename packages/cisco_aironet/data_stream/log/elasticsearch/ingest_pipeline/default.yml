@@ -8,16 +8,16 @@ processors:
       ignore_failure: true
   - set:
       field: ecs.version
-      value: '8.3.1'
+      value: '8.4.0'
   - grok:
       field: event.original
       patterns:
         - "%{SYSLOG_HEADER}:\\s%%{GREEDYDATA:_temp_.full_message}"
         - "%{SYSLOGFACILITY}%{INT}: AP:%{MAC:host.mac}: \\*%{AIRONET_DATE:_temp_.raw_date}: %%{GREEDYDATA:_temp_.full_message}"
-        - "%{SYSLOGPRIORITY}%{DATA:host.name}: -%{GREEDYDATA:_temp_.full_message}"
+        - "%{SYSLOGFACILITY}%{DATA:host.name}: -%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
-        SYSLOG_HEADER: "%{SYSLOGPRIORITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE:_temp_.raw_date}"
-        SYSLOGPRIORITY: "<%{NONNEGINT:log.syslog.priority:int}>"
+        SYSLOG_HEADER: "%{SYSLOGFACILITY}%{DATA:host.name}:\\s\\*%{DATA:process.name}:\\s%{AIRONET_DATE:_temp_.raw_date}"
+        SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.priority:int}>"
         AIRONET_DATE: "%{MONTH} %{MONTHDAY} %{TIME}"
   - script:
       lang: painless
