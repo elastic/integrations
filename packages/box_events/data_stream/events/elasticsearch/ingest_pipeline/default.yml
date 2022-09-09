@@ -17,7 +17,7 @@ processors:
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
-      if: "ctx?.box?.source != null"
+      if: "ctx.box?.source != null"
   - rename:
       field: box.session_id
       target_field: box.session.id
@@ -29,12 +29,12 @@ processors:
   - set:
       field: event.kind
       value: "event"
-      if: "ctx?.box?.source != null"
+      if: "ctx.box?.source != null"
       ignore_failure: true
   - set:
       field: event.kind
       value: "alert"
-      if: "ctx?.box?.additional_details?.shield_alert != null"
+      if: "ctx.box?.additional_details?.shield_alert != null"
       ignore_failure: true
   - rename:
       field: box.created_by.type
@@ -59,12 +59,12 @@ processors:
       target_field: file.type
       ignore_missing: true
   - rename:
-      if: ctx?.file?.type != "folder"
+      if: ctx.file?.type != "folder"
       field: box.source.name
       target_field: file.name
       ignore_missing: true
   - rename:
-      if: ctx?.file?.type == "folder"
+      if: ctx.file?.type == "folder"
       field: box.source.name
       target_field: file.directory
       ignore_missing: true
@@ -157,7 +157,7 @@ processors:
 # Conditionally, remove event.original
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 # Drop empty/null fields

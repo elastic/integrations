@@ -22,12 +22,12 @@ processors:
   - set:
       field: event.kind
       value: "event"
-      if: "ctx?.box?.source != null"
+      if: "ctx.box?.source != null"
       ignore_failure: true
   - set:
       field: event.kind
       value: "alert"
-      if: "ctx?.box?.additional_details?.shield_alert != null"
+      if: "ctx.box?.additional_details?.shield_alert != null"
       ignore_failure: true
   - rename:
       field: box.created_by.type
@@ -48,7 +48,7 @@ processors:
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
-      if: "ctx?.box?.additional_details != null"
+      if: "ctx.box?.additional_details != null"
   - rename:
       field: box.ip_address
       target_field: client.ip
@@ -104,10 +104,10 @@ processors:
       description: Set STIX indicator type
       lang: painless
       source: |
-        if (ctx?.threat == null) {
+        if (ctx.threat == null) {
           ctx.threat = new HashMap();
         }
-        if (ctx?.threat?.indicator == null) {
+        if (ctx.threat?.indicator == null) {
           ctx.threat.indicator = new HashMap();
         }
         if (ctx.box.additional_details.shield_alert.alert_summary.alert_activities.ip_info.ip.indexOf(":") > -1) {
@@ -234,7 +234,7 @@ processors:
 # Conditionally, remove event.original
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 # Drop empty/null fields

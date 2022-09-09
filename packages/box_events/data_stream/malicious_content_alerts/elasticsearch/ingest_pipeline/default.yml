@@ -17,7 +17,7 @@ processors:
       ignore_failure: true
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
-      if: "ctx?.box?.source != null"
+      if: "ctx.box?.source != null"
   - rename:
       field: box.session_id
       target_field: box.session.id
@@ -29,12 +29,12 @@ processors:
   - set:
       field: event.kind
       value: "event"
-      if: "ctx?.box?.source != null"
+      if: "ctx.box?.source != null"
       ignore_failure: true
   - set:
       field: event.kind
       value: "alert"
-      if: "ctx?.box?.additional_details?.shield_alert != null"
+      if: "ctx.box?.additional_details?.shield_alert != null"
       ignore_failure: true
   - rename:
       field: box.created_by.type
@@ -59,10 +59,10 @@ processors:
       description: Confect malware event Description
       lang: painless
       source: |
-        if (ctx?.threat == null) {
+        if (ctx.threat == null) {
           ctx.threat = new HashMap();
         }
-        if (ctx?.threat?.indicator == null) {
+        if (ctx.threat?.indicator == null) {
           ctx.threat.indicator = new HashMap();
         }
         ctx.threat.indicator.description = ctx.box.additional_details.shield_alert.malware_info.malware_name +
@@ -245,7 +245,7 @@ processors:
 # Conditionally, remove event.original
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 # Drop empty/null fields
