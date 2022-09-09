@@ -1,0 +1,390 @@
+---
+description: Pipeline for parsing Cloudflare Spectrum Event logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.2.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - date:
+      field: json.Timestamp
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX_MS
+      timezone: UTC
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: cloudflare_logpush.spectrum_event.timestamp
+      copy_from: '@timestamp'
+      ignore_failure: true
+  - date:
+      field: json.ConnectTimestamp
+      if: ctx.json?.ConnectTimestamp != null && ctx.json.ConnectTimestamp != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX_MS
+      timezone: UTC
+      target_field: cloudflare_logpush.spectrum_event.connect.time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      copy_from: cloudflare_logpush.spectrum_event.connect.time
+      ignore_failure: true
+  - date:
+      field: json.DisconnectTimestamp
+      if: ctx.json?.DisconnectTimestamp != null && ctx.json.DisconnectTimestamp != ''
+      formats:
+        - ISO8601
+        - uuuu-MM-dd'T'HH:mm:ssX
+        - uuuu-MM-dd'T'HH:mm:ss.SSSX
+        - yyyy-MM-dd'T'HH:mm:ssZ
+        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
+        - UNIX_MS
+      timezone: UTC
+      target_field: cloudflare_logpush.spectrum_event.disconnect.time
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      copy_from: cloudflare_logpush.spectrum_event.disconnect.time
+      ignore_failure: true
+  - rename:
+      field: json.Event
+      target_field: cloudflare_logpush.spectrum_event.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: cloudflare_logpush.spectrum_event.action
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - convert:
+      field: json.OriginBytes
+      target_field: cloudflare_logpush.spectrum_event.origin.bytes
+      if: ctx.json?.OriginBytes != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.bytes
+      copy_from: cloudflare_logpush.spectrum_event.origin.bytes
+      ignore_failure: true
+  - convert:
+      field: json.OriginIP
+      target_field: cloudflare_logpush.spectrum_event.origin.ip
+      if: ctx.json?.OriginIP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      copy_from: cloudflare_logpush.spectrum_event.origin.ip
+      ignore_failure: true
+  - convert:
+      field: json.OriginPort
+      target_field: cloudflare_logpush.spectrum_event.origin.port
+      if: ctx.json?.OriginPort != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: cloudflare_logpush.spectrum_event.origin.port
+      ignore_failure: true
+  - rename:
+      field: json.Application
+      target_field: cloudflare_logpush.spectrum_event.application
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: cloudflare_logpush.spectrum_event.application
+      ignore_failure: true
+  - convert:
+      field: json.Status
+      target_field: cloudflare_logpush.spectrum_event.status
+      if: ctx.json?.Status != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      copy_from: cloudflare_logpush.spectrum_event.status
+      ignore_failure: true
+  - convert:
+      field: json.ClientAsn
+      target_field: cloudflare_logpush.spectrum_event.client.asn
+      if: ctx.json?.ClientAsn != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.as.number
+      copy_from: cloudflare_logpush.spectrum_event.client.asn
+      ignore_failure: true
+  - convert:
+      field: json.ClientBytes
+      target_field: cloudflare_logpush.spectrum_event.client.bytes
+      if: ctx.json?.ClientBytes != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.bytes
+      copy_from: cloudflare_logpush.spectrum_event.client.bytes
+      ignore_failure: true
+  - rename:
+      field: json.ClientCountry
+      target_field: cloudflare_logpush.spectrum_event.client.country
+      ignore_missing: true
+  - set:
+      field: source.geo.country_iso_code
+      copy_from: cloudflare_logpush.spectrum_event.client.country
+      ignore_failure: true
+  - convert:
+      field: json.ClientIP
+      target_field: cloudflare_logpush.spectrum_event.client.ip
+      if: ctx.json?.ClientIP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: cloudflare_logpush.spectrum_event.client.ip
+      ignore_failure: true
+  - convert:
+      field: json.ClientPort
+      target_field: cloudflare_logpush.spectrum_event.client.port
+      if: ctx.json?.ClientPort != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      copy_from: cloudflare_logpush.spectrum_event.client.port
+      ignore_failure: true
+  - rename:
+      field: json.ClientMatchedIpFirewall
+      target_field: cloudflare_logpush.spectrum_event.client.matched_ip_firewall
+      ignore_missing: true
+  - rename:
+      field: json.ClientProto
+      target_field: cloudflare_logpush.spectrum_event.client.protocol
+      ignore_missing: true
+  - set:
+      field: network.transport
+      copy_from: cloudflare_logpush.spectrum_event.client.protocol
+      ignore_failure: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - convert:
+      field: json.ClientTcpRtt
+      target_field: cloudflare_logpush.spectrum_event.client.tcp_rtt
+      if: ctx.json?.ClientTcpRtt != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ClientTlsCipher
+      target_field: cloudflare_logpush.spectrum_event.client.tls.cipher
+      ignore_missing: true
+  - rename:
+      field: json.ClientTlsClientHelloServerName
+      target_field: cloudflare_logpush.spectrum_event.client.tls.client_hello_server_name
+      ignore_missing: true
+  - rename:
+      field: json.ClientTlsProtocol
+      target_field: cloudflare_logpush.spectrum_event.client.tls.protocol
+      ignore_missing: true
+  - grok:
+      if: ctx.json?.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != 'none' || ctx.json?.cloudflare_logpush?.spectrum_event?.client?.tls?.protocol != 'unknown'
+      field: cloudflare_logpush.spectrum_event.client.tls.protocol
+      patterns:
+        - "^%{DATA:tls.version_protocol}v%{DATA:tls.version}$"
+      ignore_failure: true
+  - lowercase:
+      field: tls.version_protocol
+      ignore_missing: true
+  - rename:
+      field: json.ClientTlsStatus
+      target_field: cloudflare_logpush.spectrum_event.client.tls.status
+      ignore_missing: true
+  - rename:
+      field: json.ColoCode
+      target_field: cloudflare_logpush.spectrum_event.colo.code
+      ignore_missing: true
+  - rename:
+      field: json.IpFirewall
+      target_field: cloudflare_logpush.spectrum_event.ip_firewall
+      ignore_missing: true
+  - rename:
+      field: json.OriginProto
+      target_field: cloudflare_logpush.spectrum_event.origin.protocol
+      ignore_missing: true
+  - convert:
+      field: json.OriginTcpRtt
+      target_field: cloudflare_logpush.spectrum_event.origin.tcp_rtt
+      if: ctx.json?.OriginTcpRtt != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.OriginTlsCipher
+      target_field: cloudflare_logpush.spectrum_event.origin.tls.cipher
+      ignore_missing: true
+  - rename:
+      field: json.OriginTlsFingerprint
+      target_field: cloudflare_logpush.spectrum_event.origin.tls.fingerprint
+      ignore_missing: true
+  - rename:
+      field: json.OriginTlsMode
+      target_field: cloudflare_logpush.spectrum_event.origin.tls.mode
+      ignore_missing: true
+  - rename:
+      field: json.OriginTlsProtocol
+      target_field: cloudflare_logpush.spectrum_event.origin.tls.protocol
+      ignore_missing: true
+  - rename:
+      field: json.OriginTlsStatus
+      target_field: cloudflare_logpush.spectrum_event.origin.tls.status
+      ignore_failure: true
+  - rename:
+      field: json.ProxyProtocol
+      target_field: cloudflare_logpush.spectrum_event.proxy.protocol
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{cloudflare_logpush.spectrum_event.client.ip}}}'
+      if: ctx.cloudflare_logpush?.spectrum_event?.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{cloudflare_logpush.spectrum_event.origin.ip}}}'
+      if: ctx.cloudflare_logpush?.spectrum_event?.origin?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - community_id:
+      target_field: network.community_id
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.spectrum_event.timestamp
+        - cloudflare_logpush.spectrum_event.origin.bytes
+        - cloudflare_logpush.spectrum_event.origin.ip
+        - cloudflare_logpush.spectrum_event.origin.port
+        - cloudflare_logpush.spectrum_event.application
+        - cloudflare_logpush.spectrum_event.event_action
+        - cloudflare_logpush.spectrum_event.status
+        - cloudflare_logpush.spectrum_event.client.asn
+        - cloudflare_logpush.spectrum_event.client.bytes
+        - cloudflare_logpush.spectrum_event.client.country
+        - cloudflare_logpush.spectrum_event.client.ip
+        - cloudflare_logpush.spectrum_event.client.port
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == "") {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'
