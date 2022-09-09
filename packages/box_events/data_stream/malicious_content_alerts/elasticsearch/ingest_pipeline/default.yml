@@ -28,18 +28,19 @@ processors:
       ignore_missing: true
   - set:
       field: event.kind
-      value: "event"
-      if: "ctx.box?.source != null"
-      ignore_failure: true
-  - set:
-      field: event.kind
       value: "alert"
       if: "ctx.box?.additional_details?.shield_alert != null"
       ignore_failure: true
-  - rename:
-      field: box.created_by.type
-      target_field: event.type
-      ignore_missing: true
+  - set:
+      field: event.category
+      value: "malware"
+      if: "ctx.box?.additional_details?.shield_alert != null"
+      ignore_failure: true
+  - set:
+      field: event.type
+      value: "info"
+      if: "ctx.box?.additional_details?.shield_alert != null"
+      ignore_failure: true
   - rename:
       field: box.event_type
       target_field: event.action
