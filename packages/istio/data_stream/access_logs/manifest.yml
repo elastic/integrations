@@ -13,7 +13,7 @@ streams:
         title: Istio container log path
         multi: true
         default:
-          - /var/log/pods/*/istio-proxy/*.log
+          - /var/log/containers/*${kubernetes.container.id}.log
       - name: symlinks
         type: bool
         title: Use Symlinks
@@ -29,3 +29,11 @@ streams:
         required: true
         show_user: true
         default: false
+      - name: condition
+        title: Condition
+        description: Condition to filter when to apply this datastream
+        type: text
+        multi: false
+        required: true
+        show_user: true
+        default: ${kubernetes.container.name} == 'istio-proxy'
