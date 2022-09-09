@@ -1,5 +1,7 @@
 # kube-state-metrics
 
+Kube-state Metrics version should be aligned with the Kubernetes version of your cluster. Follow  relevant [kubernetes/kube-state-metrics compatibility-matrix](https://github.com/kubernetes/kube-state-metrics#compatibility-matrix) for more information.
+
 ## Metrics
 
 If Leader Election is activated (default behaviour) only the `elastic agent` which holds the leadership lock
@@ -232,6 +234,9 @@ An example event for `state_container` looks as following:
 
 This is the `state_cronjob` dataset of the Kubernetes package. It collects cronjob related
 metrics from `kube_state_metrics`.
+
+>Important Note: Please make sure that you install latest kube-state metrics version for this datataset to appear. 
+Eg. Kube-state-metrics v2.3.0 was not reporting cron_job metrics for Kubernetes v1.25.0
 
 An example event for `state_cronjob` looks as following:
 
