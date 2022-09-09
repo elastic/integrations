@@ -1,0 +1,78 @@
+server.name: kibana
+server.host: "0.0.0.0"
+server.ssl.enabled: true
+server.ssl.certificate: "/usr/share/kibana/config/certs/cert.pem"
+server.ssl.key: "/usr/share/kibana/config/certs/key.pem"
+server.ssl.certificateAuthorities:
+  ["/usr/share/kibana/config/certs/ca-cert.pem"]
+
+elasticsearch.hosts: ["https://elasticsearch:9200"]
+elasticsearch.ssl.certificateAuthorities: "/usr/share/kibana/config/certs/ca-cert.pem"
+elasticsearch.serviceAccountToken: "AAEAAWVsYXN0aWMva2liYW5hL2VsYXN0aWMtcGFja2FnZS1raWJhbmEtdG9rZW46b2x4b051SWNRa0tYMHdXazdLWmFBdw"
+
+monitoring.ui.container.elasticsearch.enabled: true
+
+xpack.fleet.registryUrl: "https://package-registry:8080"
+xpack.fleet.agents.enabled: true
+xpack.fleet.agents.elasticsearch.hosts: ["https://elasticsearch:9200"]
+xpack.fleet.agents.fleet_server.hosts: ["https://fleet-server:8220"]
+
+xpack.encryptedSavedObjects.encryptionKey: "12345678901234567890123456789012"
+
+xpack.cloudSecurityPosture.enabled: true
+
+xpack.fleet.packages:
+  - name: system
+    version: latest
+  - name: elastic_agent
+    version: latest
+  - name: fleet_server
+    version: latest
+xpack.fleet.agentPolicies:
+  - name: Elastic-Agent (elastic-package)
+    id: elastic-agent-managed-ep
+    is_default: true
+    is_managed: false
+    namespace: default
+    monitoring_enabled:
+      - logs
+      - metrics
+    package_policies:
+      - name: system-1
+        id: default-system
+        package:
+          name: system
+  - name: Fleet Server (elastic-package)
+    id: fleet-server-policy
+    is_default_fleet_server: true
+    is_managed: false
+    namespace: default
+    package_policies:
+      - name: fleet_server-1
+        id: default-fleet-server
+        package:
+          name: fleet_server
+
+xpack.security.audit.enabled: true
+xpack.security.audit.appender:
+  type: rolling-file
+  fileName: ./logs/audit.log
+  policy:
+    type: time-interval
+    interval: 24h
+  strategy:
+    type: numeric
+    max: 10
+  layout:
+    type: json
+
+logging:
+  root:
+    level: all
+    appenders: [default, file]
+  appenders:
+    file:
+      type: file
+      fileName: ./logs/kibana.log
+      layout:
+        type: json

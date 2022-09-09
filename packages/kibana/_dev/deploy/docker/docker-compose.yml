@@ -1,0 +1,28 @@
+version: "2.3"
+services:
+  kibana:
+    image: "docker.elastic.co/kibana/kibana:8.4.0-SNAPSHOT"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-s",
+          "--cacert",
+          "/usr/share/kibana/config/certs/ca-cert.pem",
+          "-f",
+          "https://127.0.0.1:5601/login",
+          "-o",
+          "/dev/null",
+        ]
+      retries: 600
+      interval: 1s
+    environment:
+      # Is there a better way to add certificates to Kibana/Fleet?
+      - "NODE_EXTRA_CA_CERTS=/usr/share/kibana/config/certs/ca-cert.pem"
+    volumes:
+      - ./config/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ./certs:/usr/share/kibana/config/certs
+      - ${SERVICE_LOGS_DIR}:/usr/share/kibana/logs
+    ports:
+      - "127.0.0.1:5602:5601"
