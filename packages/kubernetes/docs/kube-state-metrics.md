@@ -236,7 +236,7 @@ This is the `state_cronjob` dataset of the Kubernetes package. It collects cronj
 metrics from `kube_state_metrics`.
 
 >Important Note: Please make sure that you install latest kube-state metrics version for this datataset to appear. 
-Eg. Kube-state-metrics v0.23.0 was not reporting cron_job metrics for Kubernetes v1.25.0
+Eg. Kube-state-metrics v2.3.0 was not reporting cron_job metrics for Kubernetes v1.25.0
 
 An example event for `state_cronjob` looks as following:
 
