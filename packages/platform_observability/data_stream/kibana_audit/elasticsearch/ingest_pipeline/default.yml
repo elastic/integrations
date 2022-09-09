@@ -1,0 +1,33 @@
+---
+description: Pipeline for parsing Kibana Audit ECS formatted logs
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "ecs-logs-pipeline" }}'
+      if: |-
+        def message = ctx.message;
+        return message != null
+          && message.startsWith('{')
+          && message.endsWith('}')
+          && message.contains('"@timestamp"')
+  - set:
+      field: data_stream.type
+      value: logs
+  - set:
+      field: data_stream.dataset
+      value: kibana-audit-log
+  - set:
+      field: data_stream.namespace
+      value: platform-observability
+  - set:
+      field: event.dataset
+      copy_from: data_stream.dataset
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: event.kind
+      value: event
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

@@ -12,8 +12,8 @@ This integration has been tested against samples obtained from Citrix ADC 13.1 a
 
 1. In Kibana go to **Management > Integrations**.
 2. In "Search for integrations" search bar type **Citrix**.
-3. Click on "Citrix WAF" integration from the search results.
-4. Click on **Add Citrix WAF Integration** button to add the integration.
+3. Click on "Citrix Web App Firewall" integration from the search results.
+4. Click on **Add Citrix Web App Firewall** button to add the integration.
 
 ### Citrix WAF Dashboard Configuration
 

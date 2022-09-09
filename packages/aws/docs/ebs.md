@@ -1,38 +1,126 @@
-# ebs
+# Amazon EBS
 
-## Metrics
+The Amazon EBS integration allows you to monitor [Amazon Elastic Block Store (EBS)](https://aws.amazon.com/ebs/)—a block-storage service designed for Amazon EC2.
+
+Use the Amazon EBS integration to collect metrics related to your Amazon EBS storage.
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
+
+For example, you could use this integration to collect five-minute metrics on read operations, read bytes, and total read time. Then you can send an email alert if the volume of operations, bytes, or read time exceeds a predefined threshold.
+
+## Data streams
+
+The Amazon EBS integration collects one type of data: metrics.
+
+**Metrics** give you insight into the state of Amazon EBS.
+The metrics collected by the Amazon EBS integration include read operations, read bytes, total read time, queue length, idle time, and more. See more details in the [Metrics reference](#metrics-reference)
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any AWS integration you will need:
+
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, see the **AWS** integration documentation.
+
+## Setup
+
+Use this integration if you only need to collect data from Amazon EBS.
+
+If you want to collect data from two or more AWS services, consider using the **AWS** integration.
+When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Metrics reference
+
+The `ebs` data stream collects EBS metrics from AWS.
+An example event for `ebs` looks like this:
 
 An example event for `ebs` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:57:22.450Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "618e6f72-9eef-4992-b60e-12515d538189",
+        "ephemeral_id": "2e8fed31-76b5-4efe-9893-947fd2346abd",
+        "type": "metricbeat",
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "618e6f72-9eef-4992-b60e-12515d538189",
+        "version": "8.2.0",
+        "snapshot": false
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "us-east-2"
+    },
+    "@timestamp": "2022-08-03T12:21:00.000Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.ebs"
+    },
     "service": {
         "type": "aws"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.18.11-200.fc36.x86_64",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.4 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "architecture": "x86_64"
+    },
+    "metricset": {
+        "period": 300000,
+        "name": "cloudwatch"
     },
     "aws": {
         "ebs": {
             "metrics": {
-                "VolumeReadOps": {
-                    "avg": 0
-                },
                 "VolumeQueueLength": {
-                    "avg": 0.0000666666666666667
-                },
-                "VolumeWriteOps": {
-                    "avg": 29
-                },
-                "VolumeTotalWriteTime": {
-                    "sum": 0.02
+                    "avg": 0
                 },
                 "BurstBalance": {
                     "avg": 100
                 },
+                "VolumeTotalWriteTime": {
+                    "sum": 0.062
+                },
                 "VolumeWriteBytes": {
-                    "avg": 14406.620689655172
+                    "avg": 5643.130434782609
+                },
+                "VolumeWriteOps": {
+                    "avg": 23
+                },
+                "VolumeReadOps": {
+                    "avg": 0
                 },
                 "VolumeIdleTime": {
-                    "sum": 299.98
+                    "sum": 239.87
                 }
             }
         },
@@ -40,35 +128,15 @@ An example event for `ebs` looks as following:
             "namespace": "AWS/EBS"
         },
         "dimensions": {
-            "VolumeId": "vol-03370a204cc8b0a2f"
-        }
-    },
-    "agent": {
-        "name": "MacBook-Elastic.local",
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30"
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "cloud": {
-        "provider": "aws",
-        "region": "eu-central-1",
-        "account": {
-            "id": "428152502467",
-            "name": "elastic-beats"
+            "VolumeId": "vol-015d88f45122510a5"
         }
     },
     "event": {
-        "dataset": "aws.ebs",
+        "duration": 1320126957,
+        "agent_id_status": "verified",
+        "ingested": "2022-08-03T12:25:46Z",
         "module": "aws",
-        "duration": 10488314037
-    },
-    "metricset": {
-        "period": 300000,
-        "name": "ebs"
+        "dataset": "aws.ebs"
     }
 }
 ```
@@ -78,7 +146,6 @@ An example event for `ebs` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |
 | aws.dimensions.\* | Metric dimensions. | object |
 | aws.dimensions.VolumeId | Amazon EBS volume ID | keyword |
@@ -98,7 +165,7 @@ An example event for `ebs` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
