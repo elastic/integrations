@@ -37,7 +37,7 @@ If you want to collect data from two or more AWS services, consider using the **
 When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+{{ url "getting-started-observability" "Getting started" }} guide.
 
 ## Logs reference
 
