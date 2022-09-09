@@ -36,10 +36,409 @@ processors:
       value: "alert"
       if: "ctx.box?.additional_details?.shield_alert != null"
       ignore_failure: true
-  - rename:
-      field: box.created_by.type
-      target_field: event.type
-      ignore_missing: true
+#  - rename:
+#      field: box.created_by.type
+#      target_field: event.type
+#      ignore_missing: true
+  - script:
+      description: Set event.category + event.type
+      lang: painless
+      source: |
+        List categories = new ArrayList();
+        List types = new ArrayList();
+        if (ctx.box?.event_type.equals("ACCESS_GRANTED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ACCESS_REVOKED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type"); 
+        } else if (ctx.box?.event_type.equals("ADD_DEVICE_ASSOCIATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ADD_LOGIN_ACTIVITY_DEVICE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ADMIN_LOGIN")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("APPLICATION_CREATED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("APPLICATION_PUBLIC_KEY_ADDED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("APPLICATION_PUBLIC_KEY_DELETED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("CHANGE_ADMIN_ROLE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("CHANGE_FOLDER_PERMISSION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COLLABORATION_ACCEPT")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COLLABORATION_EXPIRATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COLLABORATION_INVITE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COLLABORATION_REMOVE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COLLABORATION_ROLE_CHANGE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COLLAB_ADD_COLLABORATOR")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COLLAB_INVITE_COLLABORATOR")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COLLAB_REMOVE_COLLABORATOR")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COLLAB_ROLE_CHANGE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COMMENT_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COMMENT_DELETE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("CONTENT_ACCESS")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("CONTENT_WORKFLOW_ABNORMAL_DOWNLOAD_ACTIVITY")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("CONTENT_WORKFLOW_AUTOMATION_ADD")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("CONTENT_WORKFLOW_AUTOMATION_DELETE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("CONTENT_WORKFLOW_POLICY_ADD")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("CONTENT_WORKFLOW_SHARING_POLICY_VIOLATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("CONTENT_WORKFLOW_UPLOAD_POLICY_VIOLATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("COPY")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("DATA_RETENTION_CREATE_RETENTION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("DATA_RETENTION_REMOVE_RETENTION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("DELETE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("DELETE_USER")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("DEVICE_TRUST_CHECK_FAILED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("DOWNLOAD")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("EDIT")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("EDIT_USER")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("EMAIL_ALIAS_CONFIRM")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("EMAIL_ALIAS_REMOVE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ENABLE_TWO_FACTOR_AUTH")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ENTERPRISE_APP_AUTHORIZATION_UPDATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("FAILED_LOGIN")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("FILE_MARKED_MALICIOUS")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("FILE_WATERMARKED_DOWNLOAD")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("GROUP_ADD_ITEM")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("GROUP_ADD_USER")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("GROUP_CREATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("GROUP_DELETION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("GROUP_EDITED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("GROUP_REMOVE_ITEM")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("GROUP_REMOVE_USER")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_COPY")) {
+            categories.add("file");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_CREATE")) {
+            categories.add("creation");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_DOWNLOAD")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_MAKE_CURRENT_VERSION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_MODIFY")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_MOVE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_OPEN")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_PREVIEW")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_RENAME")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_SHARED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_SHARED_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_SHARED_UNSHARE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_SHARED_UPDATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_SYNC")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_TRASH")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_UNDELETE_VIA_TRASH")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_UNSYNC")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("ITEM_UPLOAD")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("LEGAL_HOLD_ASSIGNMENT_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("LEGAL_HOLD_ASSIGNMENT_DELETE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("LEGAL_HOLD_POLICY_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("LEGAL_HOLD_POLICY_DELETE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("LEGAL_HOLD_POLICY_UPDATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("LOCK")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("LOCK_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("LOCK_DESTROY")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("LOGIN")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("MASTER_INVITE_ACCEPT")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("MASTER_INVITE_REJECT")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("METADATA_INSTANCE_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("METADATA_INSTANCE_DELETE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("METADATA_INSTANCE_UPDATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("METADATA_TEMPLATE_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("METADATA_TEMPLATE_DELETE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("METADATA_TEMPLATE_UPDATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("MOVE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("NEW_USER")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("PREVIEW")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("REMOVE_DEVICE_ASSOCIATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("REMOVE_LOGIN_ACTIVITY_DEVICE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("RENAME")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("RETENTION_POLICY_ASSIGNMENT_ADD")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SHARE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SHARE_EXPIRATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SHIELD_ALERT")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SHIELD_EXTERNAL_COLLAB_ACCESS_BLOCKED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SHIELD_EXTERNAL_COLLAB_ACCESS_BLOCKED_MISSING_JUSTIFICATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SHIELD_EXTERNAL_COLLAB_INVITE_BLOCKED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SHIELD_EXTERNAL_COLLAB_INVITE_BLOCKED_MISSING_JUSTIFICATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SHIELD_JUSTIFICATION_APPROVAL")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGN_DOCUMENT_ASSIGNED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGN_DOCUMENT_CANCELLED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGN_DOCUMENT_COMPLETED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGN_DOCUMENT_CONVERTED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGN_DOCUMENT_CREATED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGN_DOCUMENT_DECLINED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGN_DOCUMENT_EXPIRED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGN_DOCUMENT_SIGNED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGN_DOCUMENT_VIEWED_BY_SIGNED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGNER_DOWNLOADED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("SIGNER_FORWARDED")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("STORAGE_EXPIRATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("TAG_ITEM_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("TASK_ASSIGNMENT_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("TASK_ASSIGNMENT_DELETE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("TASK_ASSIGNMENT_UPDATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("TASK_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("TASK_UPDATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("TERMS_OF_SERVICE_ACCEPT")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("TERMS_OF_SERVICE_REJECT")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("UNDELETE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("UNLOCK")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("UNSHARE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("UPDATE_COLLABORATION_EXPIRATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("UPDATE_SHARE_EXPIRATION")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("UPLOAD")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("USER_AUTHENTICATE_OAUTH2_ACCESS_TOKEN_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("WATERMARK_LABEL_CREATE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        } else if (ctx.box?.event_type.equals("WATERMARK_LABEL_DELETE")) {
+            categories.add("tmp_cat");
+            types.add("tmp_type");
+        }
+        ctx.event.category = categories;
+        ctx.event.type = types;
   - rename:
       field: box.event_type
       target_field: event.action
