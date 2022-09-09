@@ -1057,7 +1057,7 @@ Retrieves Azure Active Directory Provisioning logs. The [Azure AD Provisioning](
 The Provisioning Logs contain a lot of details about a inbound/outbound sync activity, like:
 
 * User or group details.
-* Source and target systems (e.g., from AD to Dropbox).
+* Source and target systems (e.g., from Azure AD to Dropbox).
 * Provisioning status.
 * Provisioning steps (with details for each step).
 
