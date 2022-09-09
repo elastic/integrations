@@ -402,7 +402,7 @@ An example event for `cluster_stats` looks as following:
 
 ### Enrich
 
-Enrch interrogates the [Enrich Stats API](https://www.elastic.co/guide/en/elasticsearch/reference/current/enrich-apis.html) 
+Enrch interrogates the [Enrich Stats API](https://www.elastic.co/guide/en/elasticsearch/reference/current/enrich-apis.html)
 endpoint to fetch information about Enrich coordinator nodesin the Elasticsearch cluster that are participating in 
 ingest-time enrichment.
 
@@ -1096,7 +1096,7 @@ An example event for `ml_job` looks as following:
 ### Node
 
 `node` interrogates the
-https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-info.html[Cluster API endpoint] of
+[Cluster API endpoint](https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-info.html) of
 Elasticsearch to get cluster nodes information. It only fetches the data from the `_local` node so it must
 run on each Elasticsearch node.
 
@@ -1228,7 +1228,7 @@ An example event for `node` looks as following:
 ### Node stats
 
 `node_stats` interrogates the
-https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-stats.html[Cluster API endpoint] of
+[Cluster API endpoint](https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-stats.html) of
 Elasticsearch to get the cluster nodes statistics. The data received is only for the local node so the Agent has
 to be run on each Elasticsearch node.
 
@@ -1517,7 +1517,7 @@ An example event for `node_stats` looks as following:
 # Shard
 
 `shard` interrogates the
-https://www.elastic.co/guide/en/elasticsearch/reference/6.2/cluster-state.html[Cluster State API endpoint] to fetch 
+[Cluster State API endpoint](https://www.elastic.co/guide/en/elasticsearch/reference/6.2/cluster-state.html) to fetch
 information about all shards.
 
 An example event for `shard` looks as following:

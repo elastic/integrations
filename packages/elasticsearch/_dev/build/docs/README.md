@@ -114,7 +114,7 @@ will not collect metrics. A DEBUG log message about this will be emitted in the 
 ### Cluster Stats
 
 `cluster_stats` interrogates the 
-[Cluster Stats API endpoint](https://www.elastic.co/guide/en/elasticsearch/reference/current/cluster-stats.html)
+{{ url "elasticsearch-cluster-stats" "Cluster Stats API endpoint" }}
 to fetch information about the Elasticsearch cluster.
 
 {{event "cluster_stats"}}
@@ -165,7 +165,7 @@ to fetch information about the Elasticsearch cluster.
 
 ### Enrich
 
-Enrch interrogates the [Enrich Stats API](https://www.elastic.co/guide/en/elasticsearch/reference/current/enrich-apis.html) 
+Enrch interrogates the {{ url "elasticsearch-enrich-stats-api" "Enrich Stats API" }}
 endpoint to fetch information about Enrich coordinator nodesin the Elasticsearch cluster that are participating in 
 ingest-time enrichment.
 
@@ -391,7 +391,7 @@ To gather data about all indices set `active_only: false`.
 ### Machine Learning Jobs
 
 If you have Machine Learning jobs, this data stream will interrogate the 
-[Machine Learning Anomaly Detection API](https://www.elastic.co/guide/en/elasticsearch/reference/current/ml-apis.html)
+{{ url "elasticsearch-ml-apis" "Machine Learning Anomaly Detection API" }}
 and  requires [Machine Learning](https://www.elastic.co/products/x-pack/machine-learning) to be enabled.
 
 {{event "ml_job"}}
@@ -422,7 +422,7 @@ and  requires [Machine Learning](https://www.elastic.co/products/x-pack/machine-
 ### Node
 
 `node` interrogates the
-https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-info.html[Cluster API endpoint] of
+{{ url "elasticsearch-cluster-nodes-info" "Cluster API endpoint" }} of
 Elasticsearch to get cluster nodes information. It only fetches the data from the `_local` node so it must
 run on each Elasticsearch node.
 
@@ -454,7 +454,7 @@ run on each Elasticsearch node.
 ### Node stats
 
 `node_stats` interrogates the
-https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-stats.html[Cluster API endpoint] of
+{{ url "elasticsearch-cluster-nodes-stats" "Cluster API endpoint" }} of
 Elasticsearch to get the cluster nodes statistics. The data received is only for the local node so the Agent has
 to be run on each Elasticsearch node.
 
@@ -572,7 +572,7 @@ NOTE: The indices stats are node-specific. That means for example the total numb
 # Shard
 
 `shard` interrogates the
-https://www.elastic.co/guide/en/elasticsearch/reference/6.2/cluster-state.html[Cluster State API endpoint] to fetch 
+{{ url "elasticsearch-cluster-state-6.2" "Cluster State API endpoint" }} to fetch
 information about all shards.
 
 {{event "shard"}}

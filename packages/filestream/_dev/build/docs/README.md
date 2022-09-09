@@ -26,4 +26,4 @@ The `log` writes the complete file state.
 
 7. Stale entries can be removed from the registry, even if there is no active input.
 
-More information can be found on the [Filestream documentation page](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html)
+More information can be found on the {{ url "filebeat-input-filestream" "Filestream documentation page" }}

@@ -8,8 +8,7 @@ There are several requirements before using the integration since the logs will 
 - To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
 - To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
 
-Users opting for Elastic Cloud native Azure integration can stream the Azure Spring Cloud logs directly to their partner solution clusters, more information and steps can be found [here](https://www.elastic.co/guide/en/observability/current/monitor-azure.html
-).
+Users opting for Elastic Cloud native Azure integration can stream the Azure Spring Cloud logs directly to their partner solution clusters, more information and steps can be found [here](https://www.elastic.co/guide/en/observability/current/monitor-azure.html).
 
 ## Settings
 

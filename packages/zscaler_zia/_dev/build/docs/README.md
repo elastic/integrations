@@ -18,7 +18,7 @@ The log message is expected to be in JSON format. The data is mapped to ECS fiel
             ![NSS server setup image](../img/nss_server.png?raw=true)
     - In the ZIA Admin Portal, add an NSS Feed.
         - Refer to [Add NSS Feeds](https://help.zscaler.com/zia/adding-nss-feeds) and select the type of feed you want to configure. The following fields require specific inputs:
-            - **SIEM IP Address**: Enter the IP address of the [Elastic agent](https://www.elastic.co/guide/en/fleet/current/fleet-overview.html) you’ll be assigning the Zscaler integration to.
+            - **SIEM IP Address**: Enter the IP address of the {{ url "fleet-overview" "Elastic agent" }} you’ll be assigning the Zscaler integration to.
             - **SIEM TCP Port**: Enter the port number, depending on the logs associated with the NSS Feed. You will need to create an NSS Feed for each log type.
                 - **Alerts**: 9010
                 - **DNS**: 9011

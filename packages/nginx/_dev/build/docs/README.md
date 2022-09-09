@@ -35,7 +35,7 @@ Note: On Windows, the module was tested with Nginx installed from the Chocolatey
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the {{ url "getting-started-observability" "Getting started" }} guide.
 
 ## Logs reference
 
