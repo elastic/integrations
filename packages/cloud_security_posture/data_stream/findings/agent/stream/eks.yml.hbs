@@ -1,4 +1,27 @@
 name: Findings
+# Defines how often an event is sent to the output
+period: 4h
+fetchers:
+  - name: kube-api
+  - name: process
+    directory: "/hostfs"
+    processes:
+      kubelet:
+        config-file-arguments:
+        - config
+  - name: aws-ecr
+  - name: aws-elb
+  - name: file-system
+    patterns: [
+    "/hostfs/etc/kubernetes/kubelet/kubelet-config.json",
+    "/hostfs/var/lib/kubelet/kubeconfig",
+    ]
+processors:
+  - add_cluster_id: ~
+
+evaluator:
+  decision_logs: false
+
 {{#if runtimeCfg}}
 {{runtimeCfg}}
 {{/if}}
@@ -20,6 +43,3 @@ credential_profile_name: {{credential_profile_name}}
 {{#if role_arn}}
 role_arn: {{role_arn}}
 {{/if}}
-
-processors:
-  - add_cluster_id: ~
