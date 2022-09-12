@@ -43,6 +43,10 @@ db.grantRolesToUser("user", ["clusterMonitor"])
 
 The `log` dataset collects the MongoDB logs.
 
+{{event "log"}}
+
+The fields reported are:
+
 {{fields "log"}}
 
 ## Metrics

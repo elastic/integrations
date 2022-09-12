@@ -43,6 +43,98 @@ db.grantRolesToUser("user", ["clusterMonitor"])
 
 The `log` dataset collects the MongoDB logs.
 
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2022-09-12T13:16:48.198Z",
+    "agent": {
+        "ephemeral_id": "69ee12ba-296b-4c30-adcf-9b73de816caf",
+        "id": "f0781690-8132-405e-9d0f-4cbe1cb987a6",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "f0781690-8132-405e-9d0f-4cbe1cb987a6",
+        "snapshot": false,
+        "version": "8.4.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "created": "2022-09-12T13:16:48.339Z",
+        "dataset": "mongodb.log",
+        "ingested": "2022-09-12T13:16:49Z",
+        "kind": "event",
+        "original": "{\"t\":{\"$date\":\"2022-09-12T13:16:48.198+00:00\"},\"s\":\"I\",  \"c\":\"CONTROL\",  \"id\":23285,   \"ctx\":\"-\",\"msg\":\"Automatically disabling TLS 1.0, to force-enable TLS 1.0 specify --sslDisabledProtocols 'none'\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "5016511f0829451ea244f458eebf2212",
+        "ip": [
+            "172.19.0.7"
+        ],
+        "mac": [
+            "02:42:ac:13:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.124-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/mongodb/mongod.log"
+        },
+        "level": "I",
+        "offset": 0
+    },
+    "message": "Automatically disabling TLS 1.0, to force-enable TLS 1.0 specify --sslDisabledProtocols 'none'",
+    "mongodb": {
+        "log": {
+            "component": "CONTROL",
+            "context": "-",
+            "id": 23285
+        }
+    },
+    "related": {
+        "hosts": [
+            "docker-fleet-agent"
+        ]
+    },
+    "tags": [
+        "mongodb-logs"
+    ]
+}
+```
+
+The fields reported are:
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -85,8 +177,11 @@ The `log` dataset collects the MongoDB logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.flags | This field contains the flags of the event. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | mongodb.log.attr | Attributes related to the log message. | flattened |
 | mongodb.log.component | Functional categorization of message | keyword |
@@ -312,7 +407,7 @@ The fields reported are:
 | mongodb.collstats.total.time.us | Total waiting time for locks in microseconds. | long |
 | mongodb.collstats.update.count | Number of document update events. | long |
 | mongodb.collstats.update.time.us | Time updating documents in microseconds. | long |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.address | Address of the machine where the service is running. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
