@@ -38,14 +38,18 @@ processors:
           '\[Times: user=%{BASE10NUM:elasticsearch.gc.phase.cpu_time.user_sec}
           sys=%{BASE10NUM:elasticsearch.gc.phase.cpu_time.sys_sec}, real=%{BASE10NUM:elasticsearch.gc.phase.cpu_time.real_sec}
           secs\]'
-  - set:
-      copy_from: "@timestamp"
-      field: event.created
+  - convert:
+      field: process.pid
+      type: long
+      ignore_missing: true
   - date:
       field: timestamp
       target_field: "@timestamp"
       formats:
         - ISO8601
+  - set:
+      copy_from: "@timestamp"
+      field: event.created
   - remove:
       field: timestamp
   - set:
