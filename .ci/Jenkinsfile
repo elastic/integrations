@@ -99,6 +99,10 @@ pipeline {
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
                                 ''')
+                              sh(label: "Benchmark integration: ${it}", script: '''
+                                eval "$(../../build/elastic-package stack shellinit)"
+                                ../../build/elastic-package benchmark -v --report-format xUnit --report-output file
+                                ''')
                             }
                           }
 
@@ -115,6 +119,7 @@ pipeline {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/benchmark-results/*.xml')
                           sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
                           archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/*")
                           archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
