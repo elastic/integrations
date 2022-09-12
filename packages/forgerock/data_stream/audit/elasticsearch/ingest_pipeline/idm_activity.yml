@@ -1,0 +1,28 @@
+---
+description: Pipeline for ForgeRock IDM activity logs.
+# ForgeRock IDM Activity Logs: https://backstage.forgerock.com/docs/idm/7.2/audit-guide/activity-event-prop.html
+processors:
+  - set:
+      field: user.id
+      copy_from: forgerock.userId
+      ignore_failure: true
+  - set: 
+      field: user.effective.id
+      copy_from: forgerock.runAs
+      ignore_failure: true  
+  - set: 
+      if: (ctx?.forgerock?.status != null && ["SUCCESSFUL", "SUCCESS"].contains(ctx.forgerock.status))
+      field: event.outcome
+      value: "success"
+      ignore_failure: true
+  - set:
+      if: (ctx?.forgerock?.status == null || ["FAILED", "FAIL"].contains(ctx.forgerock.status))
+      field: event.outcome
+      value: "failure"
+      ignore_failure: true
+  - set:
+      if: (ctx?.forgerock?.status && !["SUCCESSFUL", "SUCCESS", "FAILED", "FAIL"].contains(ctx.forgerock.status))
+      field: event.outcome
+      value: "unknown"
+      ignore_failure: true
+  

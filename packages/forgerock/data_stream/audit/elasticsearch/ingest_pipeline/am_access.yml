@@ -1,0 +1,79 @@
+---
+description: Pipeline for ForgeRock access logs.
+# ForgeRock AM Access Logs: https://backstage.forgerock.com/docs/am/7.2/security-guide/sec-maint-audit-ref.html#access-log-format
+processors:
+  - set:
+      field: event.action
+      copy_from: forgerock.eventName
+      ignore_failure: true
+  - set:
+    field: user.id
+    copy_from: forgerock.userId
+    ignore_failure: true
+  - set: 
+      field: client.domain
+      copy_from: forgerock.client.host
+      ignore_failure: true
+  - set: 
+      field: client.ip
+      copy_from: forgerock.client.ip
+      ignore_failure: true
+  - set: 
+      field: client.port
+      copy_from: forgerock.client.port
+      ignore_failure: true
+  - set: 
+      field: server.domain
+      copy_from: forgerock.server.host
+      ignore_failure: true
+  - set: 
+      field: server.ip
+      copy_from: forgerock.server.ip
+      ignore_failure: true
+  - set: 
+      field: http.request.method
+      copy_from: forgerock.http.method
+      ignore_failure: true
+  - set: 
+      field: http.request.Path
+      copy_from: forgerock.http.path
+      ignore_failure: true
+  - set: 
+      field: http.response.status_code
+      copy_from: forgerock.response.statusCode 
+      ignore_failure: true
+  - set:
+      field: http.response.body.content
+      copy_from: forgerock.response.detail
+      ignore_failure: true
+  - set:
+      if: (ctx?.forgerock?.respone?.status != null && ["SUCCESSFUL"].contains(ctx.forgerock.respone.status))
+      field: event.outcome
+      value: "success"
+      ignore_failure: true
+  - set:
+      if: (ctx?.forgerock?.respone?.status == null || ["FAILED"].contains(ctx.forgerock.respone.status))
+      field: event.outcome
+      value: "failure"
+      ignore_failure: true
+  - set:
+      if: (ctx?.forgerock?.respone?.status && !["SUCCESSFUL", "FAILED"].contains(ctx.forgerock.respone.status))
+      field: event.outcome
+      value: "unknown"
+      ignore_failure: true
+  - convert:
+      field: forgerock.response.elapsedTime
+      target_field: event.duration
+      type: long
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx.event?.duration != null && ctx.forgerock?.response.elapseTime == 'MILLISECONDS'
+      params:
+        MS_TO_NS: 1000000
+      source: >-
+        ctx.event.duration *= params.MS_TO_NS;
+  - set:
+      field: event.module
+      copy_from: forgerock.component
+      ignore_failure: true

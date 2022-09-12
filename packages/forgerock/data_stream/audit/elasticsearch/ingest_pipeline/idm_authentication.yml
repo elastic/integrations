@@ -1,0 +1,27 @@
+---
+description: Pipeline for ForgeRock IDM authentication logs.
+# ForgeRock IDM Authentication Logs: https://backstage.forgerock.com/docs/idm/7.2/audit-guide/auth-event-prop.html
+processors:
+  - set:
+      field: event.category
+      value: authentication
+  - set:
+      field: user.id
+      copy_from: forgerock.userId
+      ignore_failure: true
+  - set:
+      if: (ctx?.forgerock?.result != null && ["SUCCESSFUL"].contains(ctx.forgerock.result))
+      field: event.outcome
+      value: "success"
+      ignore_failure: true
+  - set:
+      if: (ctx?.forgerock?.result == null || ["FAILED"].contains(ctx.forgerock.result))
+      field: event.outcome
+      value: "failure"
+      ignore_failure: true
+  - set:
+      if: (ctx?.forgerock?.result && !["SUCCESSFUL", "FAILED"].contains(ctx.forgerock.result))
+      field: event.outcome
+      value: "unknown"
+      ignore_failure: true
+  

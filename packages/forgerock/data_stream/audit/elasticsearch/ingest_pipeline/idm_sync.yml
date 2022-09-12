@@ -1,0 +1,24 @@
+---
+description: Pipeline for ForgeRock IDM config logs.
+# ForgeRock IDM Configuration Logs: https://backstage.forgerock.com/docs/idm/7.2/audit-guide/config-event-prop.html
+processors:  
+  - set: 
+      field: user.id
+      copy_from: forgerock.userId
+      ignore_failure: true
+  - set: 
+      if: (ctx?.forgerock?.status != null && ["SUCCESS"].contains(ctx.forgerock.status))
+      field: event.outcome
+      value: "success"
+      ignore_failure: true
+  - set:
+      if: (ctx?.forgerock?.status == null || ["FAIL"].contains(ctx.forgerock.status))
+      field: event.outcome
+      value: "failure"
+      ignore_failure: true
+  - set:
+      if: (ctx?.forgerock?.status && !["SUCCESS", "FAIL"].contains(ctx.forgerock.status))
+      field: event.outcome
+      value: "unknown"
+      ignore_failure: true
+  

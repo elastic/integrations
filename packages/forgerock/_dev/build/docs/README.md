@@ -12,4 +12,4 @@ TBD
 
 **Exported fields**
 
-{{fields "events"}}
+{{fields "audit"}}

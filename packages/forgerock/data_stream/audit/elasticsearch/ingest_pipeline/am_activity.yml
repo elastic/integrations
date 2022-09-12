@@ -1,0 +1,24 @@
+---
+description: Pipeline for ForgeRock activity logs.
+# ForgeRock AM Activity Logs: https://backstage.forgerock.com/docs/am/7.2/security-guide/sec-maint-audit-ref.html#activity-log-format
+processors:
+  - set:
+      field: event.action
+      copy_from: forgerock.eventName
+      ignore_failure: true
+  - set:
+      field: event.module
+      copy_from: forgerock.component
+      ignore_failure: true
+  - set:
+      field: user.id
+      copy_from: forgerock.userId
+      ignore_failure: true  
+  - set: 
+      field: user.effective.id
+      copy_from: forgerock.runAs
+      ignore_failure: true  
+  - set: 
+      field: event.reason
+      copy_from: forgerock.operation
+      ignore_failure: true
