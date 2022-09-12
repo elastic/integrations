@@ -1,10 +1,32 @@
 version: '2.3'
 services:
   couchbase:
-    build:
-      context: ./files/
-      args:
-        COUCHBASE_VERSION: ${COUCHBASE_VERSION:-7.1.0}
-    hostname: couchbase
+    image: couchbase/server-sandbox:${COUCHBASE_VERSION:-7.1.0}
+    hostname: cb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://admin:password@localhost:8091/pools/default"]
+      interval: 2s
+      timeout: 2s
+      retries: 40
     ports:
       - 8091
+  sgw:
+    image: couchbase/sync-gateway:2.8.0-enterprise
+    hostname: sgw
+    depends_on:
+      couchbase:
+        condition: service_healthy
+    volumes:
+      - ./files/sync-gateway-config.txt:/etc/sync_gateway/sync_gateway.json
+    command: -adminInterface :4985 /etc/sync_gateway/sync_gateway.json
+    ports:
+      - 4985
+  exporter:
+    build:
+      context: ./files/
+      dockerfile: Dockerfile
+    ports:
+      - 9421
+    depends_on:
+      sgw:
+        condition: service_started
