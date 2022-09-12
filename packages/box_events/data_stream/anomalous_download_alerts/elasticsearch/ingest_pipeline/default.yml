@@ -172,6 +172,23 @@ processors:
                 ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() + 
                 ctx.box.additional_details.shield_alert.priority.substring(1);
         }
+# Do AS look-ups as well
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: threat.indicator.ip
+      target_field: threat.indicator.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: threat.indicator.as.asn
+      target_field: threat.indicator.as.number
+      ignore_missing: true
+  - rename:
+      field: threat.indicator.as.organization_name
+      target_field: threat.indicator.as.organization.name
+      ignore_missing: true
 # Conditionally, remove event.original
   - remove:
       field: event.original
