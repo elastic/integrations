@@ -106,6 +106,9 @@
         - name: message
           type: text
           description: A human-readable description of the status of this operation
+        - name: reason
+          type: keyword
+          description: A machine-readable description of why this operation is in the "Failure" status. If this value is empty there is no information available. A Reason clarifies an HTTP status code but does not override it
     - name: requestObject
       type: group
       description: API object from the request, in JSON format
@@ -115,6 +118,10 @@
           fields:
             - name: type
               type: keyword
+            - name: serviceAccountName
+              type: keyword
+            - name: restartPolicy
+              type: keyword
             - name: hostNetwork
               type: boolean
             - name: hostIPC
@@ -123,6 +130,15 @@
               type: boolean
             - name: volumes.hostPath
               type: flattened
+            - name: securityContext
+              type: group
+              fields:
+                - name: runAsUser
+                  type: integer
+                - name: runAsGroup
+                  type: integer
+                - name: runAsNonRoot
+                  type: boolean
             - name: containers
               type: group
               fields:
@@ -137,8 +153,16 @@
                       type: boolean
                     - name: allowPrivilegeEscalation
                       type: boolean
-                    - name: runasuser
+                    - name: runAsUser
                       type: integer
+                    - name: runAsGroup
+                      type: integer
+                    - name: runAsNonRoot
+                      type: boolean
+                    - name: procMount
+                      type: keyword
+                    - name: capabilities.add
+                      type: keyword
         - name: rules
           dynamic: true
           type: nested
@@ -171,7 +195,7 @@
                       type: boolean
                     - name: allowPrivilegeEscalation
                       type: boolean
-                    - name: runasuser
+                    - name: runAsUser
                       type: integer
         - name: rules
           dynamic: true

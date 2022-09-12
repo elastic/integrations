@@ -4,7 +4,7 @@
 
 The Couchbase integration allows you to monitor your Couchbase instance. Couchbase Server is an open-source, distributed multi-model NoSQL document-oriented database software package optimized for interactive applications.
 
-Use the Couchbase integration to collect metrics related to the bucket, cluster, node, and sync gateway. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
+Use the Couchbase integration to collect metrics related to the bucket, cluster, and sync gateway. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
 For example, you could use the data from this integration to know when there are more than some number of failed authentication requests for a single piece of content in a given time period. You could also use the data to troubleshoot the underlying issue by looking at the documents ingested in Elasticsearch.
 
@@ -12,11 +12,11 @@ For example, you could use the data from this integration to know when there are
 
 The Couchbase integration collects metrics data.
 
-Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html),  [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), and [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
+Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html),  [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Couchbase Lite Replication](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cbl_replication_pull), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), and [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
 
 This integration uses:
 - `http` metricbeat module to collect `bucket` and `cluster` metrics.
-- `prometheus` metricbeat module to collect `delta_sync`, `gsi_views`, `import`, and `security` metrics.
+- `prometheus` metricbeat module to collect `cbl_replication`, `delta_sync`, `gsi_views`, `import`, and `security` metrics.
 
 Note: For Couchbase cluster setup, there is an ideal scenario of a single host with administrator access for the entire cluster to collect metrics. Providing multiple hosts from the same cluster might lead to data duplication. In the case of multiple clusters, adding a new integration to collect data from different cluster hosts is a good option.
 
@@ -58,6 +58,18 @@ This is the `cluster` data stream. A cluster is a collection of nodes that are a
 {{event "cluster"}}
 
 {{fields "cluster"}}
+
+### Couchbase Lite Replication
+
+This is the `cbl_replication` data stream.
+
+CBL Replication push is a process by which clients upload database changes from the local source database to the remote (server) target database.
+
+CBL Replication pull is a process by which clients download database changes from the remote (server) source database to the local target database.
+
+{{event "cbl_replication"}}
+
+{{fields "cbl_replication"}}
 
 ### Delta Sync, Import, Security and GSI views
 
