@@ -61,6 +61,7 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.created_by.id | The unique identifier for the connection user | keyword |
 | box.created_by.login | The primary email address of the connection user. Maps from \*\*.login |  |
 | box.created_by.name | The display name of the connection user. Maps from \*\*.name | keyword |
+| box.created_by.type | E.g. `user` |  |
 | box.recorded_at | The date and time at which this event occurred | date |
 | box.session.id | The session of the user that performed the action. Not all events will populate this attribute | keyword |
 | box.source.created_at | The date and time at which this folder was originally created | date |
