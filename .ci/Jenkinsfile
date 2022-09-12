@@ -103,7 +103,7 @@ pipeline {
                           }
 
                           // Publish package to the Package Storage
-                          if (env.BRANCH_NAME == 'main') {
+                          if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('backport-')) {
                             withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
                               sh(label: 'Configure Git user.name', script: 'git config --global user.name "Elastic Machine"')
                               sh(label: 'Configure Git user.email', script: 'git config --global user.email "elasticmachine@users.noreply.github.com"')
@@ -308,8 +308,8 @@ def archiveArtifactsSafe(remotePath, artifacts) {
 
 def packageStoragePublish() {
   stage('Publish to Package Storage v2') {
-    if (env.BRANCH_NAME != 'main') {
-      echo "packageStoragePublish: not the main branch, nothing will be published"
+    if (env.BRANCH_NAME != 'main' && !env.BRANCH_NAME.startsWith('backport-')) {
+      echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
       return
     }
 
