@@ -1,0 +1,175 @@
+{
+  "interface":":4984",
+  "log": ["*"],
+  "logging": {
+    "log_file_path": "/var/tmp/sglogs",
+    "console": {
+      "log_level": "debug",
+      "log_keys": ["*"]
+    },
+    "error": {
+      "enabled": true,
+      "rotation": {
+        "max_size": 20,
+        "max_age": 180
+      }
+    },
+    "warn": {
+      "enabled": true,
+      "rotation": {
+        "max_size": 20,
+        "max_age": 90
+      }
+    },
+    "info": {
+      "enabled": false
+    },
+    "debug": {
+      "enabled": false
+    }
+  },
+  "databases": {
+    "travel-sample": {
+      "import_docs": "continuous",
+      "bucket":"travel-sample",
+      "server": "http://cb:8091",
+      "enable_shared_bucket_access":true,
+      "delta_sync": {
+        "enabled":true,
+        "rev_max_age_seconds": 86400
+      },
+      "import_filter": `
+        function(doc) {
+          return true;
+        }
+        `,
+      "username": "admin",
+      "password": "password",
+      "users":{
+          "GUEST": { "disabled": false, "admin_channels": ["*"] },
+          "admin": {"password": "password", "admin_channels": ["*"]},
+          "demo": {"password": "password"},
+          "tester": {"password": "password"}
+      },
+     "num_index_replicas":0,
+     "cache" :{
+      "channel_cache":{
+        "max_number":50000
+      },
+      "rev_cache" :{
+        "size":5000
+      }
+     },
+    "sync": `
+function sync(doc, oldDoc) {
+  /* sanity check */
+  // check if document was removed from server or via SDK
+  // In this case, just return
+  if (isRemoved()) {
+    return;
+  }
+  if (doc.channels ) {
+    /* Routing */
+    // Add doc to the channels specified in the document.
+   channel(doc.channels);
+  }
+  function isCreate() {
+    // Checking false for the Admin UI to work
+    return ((oldDoc == false) || (oldDoc == null || oldDoc._deleted) && !isDelete());
+  }
+  function isUpdate() {
+    return (!isCreate() && !isDelete());
+  }
+  // This is when document is removed via SDK or directly on server
+  function isRemoved() {
+    return( isDelete() && oldDoc == null);
+  }
+  function isDelete() {
+    return (doc._deleted == true);
+  }
+  function validateNotEmpty(key, value) {
+    if (!value) {
+      throw({forbidden: key + " is not provided."});
+    }
+  }
+  function validateReadOnly(name, value, oldValue) {
+    if (value != oldValue) {
+      throw({forbidden: name + " is read-only."});
+    }
+  }
+}
+      `
+    },
+    "beer-sample": {
+      "import_docs": "continuous",
+      "bucket":"travel-sample",
+      "server": "http://cb:8091",
+      "enable_shared_bucket_access":true,
+      "delta_sync": {
+        "enabled":true,
+        "rev_max_age_seconds": 86400
+      },
+      "import_filter": `
+        function(doc) {
+          return true;
+        }
+        `,
+      "username": "admin",
+      "password": "password",
+      "users":{
+          "GUEST": { "disabled": false, "admin_channels": ["*"] },
+          "admin": {"password": "password", "admin_channels": ["*"]},
+          "demo": {"password": "password"},
+          "tester": {"password": "password"}
+      },
+     "num_index_replicas":0,
+     "cache" :{
+      "channel_cache":{
+        "max_number":50000
+      },
+      "rev_cache" :{
+        "size":5000
+      }
+     },
+    "sync": `
+function sync(doc, oldDoc) {
+  /* sanity check */
+  // check if document was removed from server or via SDK
+  // In this case, just return
+  if (isRemoved()) {
+    return;
+  }
+  if (doc.channels ) {
+    /* Routing */
+    // Add doc to the channels specified in the document.
+   channel(doc.channels);
+  }
+  function isCreate() {
+    // Checking false for the Admin UI to work
+    return ((oldDoc == false) || (oldDoc == null || oldDoc._deleted) && !isDelete());
+  }
+  function isUpdate() {
+    return (!isCreate() && !isDelete());
+  }
+  // This is when document is removed via SDK or directly on server
+  function isRemoved() {
+    return( isDelete() && oldDoc == null);
+  }
+  function isDelete() {
+    return (doc._deleted == true);
+  }
+  function validateNotEmpty(key, value) {
+    if (!value) {
+      throw({forbidden: key + " is not provided."});
+    }
+  }
+  function validateReadOnly(name, value, oldValue) {
+    if (value != oldValue) {
+      throw({forbidden: name + " is read-only."});
+    }
+  }
+}
+      `
+    }
+  }
+}
