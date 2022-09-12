@@ -224,16 +224,28 @@ processors:
      target_field: azure.identityprotectionlogs.properties.risk_detail
      ignore_missing: true
      description: "Details of the detected risk. Possible values are: none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue."
-  - rename:
-     field: azure.identityprotectionlogs.properties.lastUpdatedDateTime
-     target_field: azure.identityprotectionlogs.properties.risk_last_updated_datetime
-     description: "The date and time that the risky user was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z."
-     ignore_missing: true
-  - rename:
-     field: azure.identityprotectionlogs.properties.riskLastUpdatedDateTime
-     target_field: azure.identityprotectionlogs.properties.risk_last_updated_datetime
-     description: "The date and time that the risky user was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z."
-     ignore_missing: true
+  - date:
+      field: azure.identityprotectionlogs.properties.lastUpdatedDateTime
+      target_field: azure.identityprotectionlogs.properties.risk_last_updated_datetime
+      ignore_failure: true
+      description: "The date and time that the risky user was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z."
+      formats:
+      - ISO8601
+      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
+  - remove:
+      field: azure.identityprotectionlogs.properties.lastUpdatedDateTime
+      ignore_missing: true
+  - date:
+      field: azure.identityprotectionlogs.properties.riskLastUpdatedDateTime
+      target_field: azure.identityprotectionlogs.properties.risk_last_updated_datetime
+      ignore_failure: true
+      description: "The date and time that the risky user was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z."
+      formats:
+      - ISO8601
+      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
+  - remove:
+      field: azure.identityprotectionlogs.properties.riskLastUpdatedDateTime
+      ignore_missing: true
   #
   # User-related fields
   #
@@ -259,14 +271,27 @@ processors:
   #
   # Event-related fields
   #
-  - rename:
-     field: azure.identityprotectionlogs.properties.activityDateTime
-     target_field: azure.identityprotectionlogs.properties.activity_datetime
-     ignore_missing: true
-  - rename:
-     field: azure.identityprotectionlogs.properties.detectedDateTime
-     target_field: azure.identityprotectionlogs.properties.detected_datetime
-     ignore_missing: true
+  - date:
+      field: azure.identityprotectionlogs.properties.activityDateTime
+      target_field: azure.identityprotectionlogs.properties.activity_datetime
+      ignore_failure: true
+      formats:
+      - ISO8601
+      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
+  - remove:
+      field: azure.identityprotectionlogs.properties.activityDateTime
+      ignore_missing: true
+
+  - date:
+      field: azure.identityprotectionlogs.properties.detectedDateTime
+      target_field: azure.identityprotectionlogs.properties.detected_datetime
+      ignore_failure: true
+      formats:
+      - ISO8601
+      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
+  - remove:
+      field: azure.identityprotectionlogs.properties.detectedDateTime
+      ignore_missing: true
   - rename:
      field: azure.identityprotectionlogs.properties.detectionTimingType
      target_field: azure.identityprotectionlogs.properties.detection_timing_type

@@ -38,6 +38,7 @@ processors:
       target_field: '@timestamp'
       ignore_failure: true
       formats:
+        - "M/d/yyyy h:mm:ss a"
         - ISO8601
   - remove:
       field: azure.provisioninglogs.time
@@ -339,11 +340,6 @@ processors:
      field: azure.provisioninglogs.properties.target_system.details.ServicePrincipalId
      target_field: azure.provisioninglogs.properties.target_system.details.service_principal_id
      ignore_missing: true
-  # statusInfo
-#   - rename:
-#      field: azure.provisioninglogs.properties.statusInfo
-#      target_field: azure.provisioninglogs.properties.status_info
-#      ignore_missing: true
   - remove:
      field: azure.provisioninglogs.properties.statusInfo
      description: |
@@ -363,29 +359,6 @@ processors:
           field: _ingest._value.provisioningStepType
           target_field: _ingest._value.provisioning_step_type
           ignore_missing: true
-        # set:
-        #   field: _ingest._value.provisioning_step_type
-        # value: "{{_ingest._value.provisioningStepType}}"
-        #   ignore_missing: true
-        # script:
-        #   lang: painless
-        #   if: ctx._ingest.provisioningStepType instanceof Long
-        #   source: |
-        #     def status = ctx._ingest.provisioningStepType;
-        #     if (status == 0) {
-        #      ctx._ingest.provisioning_step_type = "success";
-        #     } else if (status == 1) {
-        #      ctx._ingest.provisioning_step_type = "failure";
-        #     } else if (status == 2) {
-        #      ctx._ingest.provisioning_step_type = "warning";
-        #     } else {
-        #      ctx._ingest.provisioning_step_type = "unknown";
-        #       }
-
-#   - remove:
-#       field: azure.provisioninglogs.properties.provisioning_status_info.Status
-#       ignore_missing: true
-
   - rename:
      field: azure.provisioninglogs.properties.activityDateTime
      target_field: azure.provisioninglogs.properties.activity_datetime
