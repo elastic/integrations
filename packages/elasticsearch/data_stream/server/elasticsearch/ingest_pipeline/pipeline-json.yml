@@ -5,88 +5,42 @@ on_failure:
       field: error.message
       value: '{{ _ingest.on_failure_message }}'
 processors:
-  - json:
-      field: message
-      target_field: elasticsearch.server
-  - dot_expander:
-      field: event.dataset
-      path: elasticsearch.server
-  - drop:
-      if: ctx.elasticsearch.server.event.dataset != 'elasticsearch.server'
-  - set:
-      value: '{{ elasticsearch.server.event.dataset }}'
-      field: event.dataset
-      ignore_empty_value: true
-  - remove:
-      field: elasticsearch.server.event.dataset
-  - dot_expander:
-      field: ecs.version
-      path: elasticsearch.server
-  - set:
-      value: '{{ elasticsearch.server.ecs.version }}'
-      field: ecs.version
-      ignore_empty_value: true
-  - remove:
-      field: elasticsearch.server.ecs.version
-  - dot_expander:
-      field: service.name
-      path: elasticsearch.server
   - rename:
-      field: elasticsearch.server.service.name
-      target_field: service.name
+      field: message
+      target_field: _ecs_json_message
       ignore_missing: true
+  - json:
+      field: _ecs_json_message
+      add_to_root: true
+      add_to_root_conflict_strategy: merge
+      allow_duplicate_keys: true
+      if: ctx.containsKey('_ecs_json_message')
+      on_failure:
+        - rename:
+            field: _ecs_json_message
+            target_field: message
+            ignore_missing: true
+        - set:
+            field: error.message
+            value: Error while parsing JSON
+            override: false
+  - remove:
+      field: _ecs_json_message
+      ignore_missing: true
+  - dot_expander:
+      field: "*"
+      override: true
+  - join:
+      field: error.stack_trace
+      separator: "\n"
+      if: ctx.error?.stack_trace instanceof Collection
+  - drop:
+      if: ctx.event.dataset != 'elasticsearch.server'
   - set:
       field: service.type
       value: 'elasticsearch'
-  - dot_expander:
-      field: elasticsearch.cluster.name
-      path: elasticsearch.server
-  - rename:
-      field: elasticsearch.server.elasticsearch.cluster.name
-      target_field: elasticsearch.cluster.name
-  - dot_expander:
-      field: elasticsearch.node.name
-      path: elasticsearch.server
-  - rename:
-      field: elasticsearch.server.elasticsearch.node.name
-      target_field: elasticsearch.node.name
-  - dot_expander:
-      field: elasticsearch.cluster.uuid
-      path: elasticsearch.server
-  - rename:
-      field: elasticsearch.server.elasticsearch.cluster.uuid
-      target_field: elasticsearch.cluster.uuid
-      ignore_missing: true
-  - dot_expander:
-      field: elasticsearch.node.id
-      path: elasticsearch.server
-  - rename:
-      field: elasticsearch.server.elasticsearch.node.id
-      target_field: elasticsearch.node.id
-      ignore_missing: true
-  - dot_expander:
-      field: log.level
-      path: elasticsearch.server
-  - rename:
-      field: elasticsearch.server.log.level
-      target_field: log.level
-      ignore_missing: true
-  - dot_expander:
-      field: log.logger
-      path: elasticsearch.server
-  - rename:
-      field: elasticsearch.server.log.logger
-      target_field: log.logger
-      ignore_missing: true
-  - dot_expander:
-      field: process.thread.name
-      path: elasticsearch.server
-  - rename:
-      field: elasticsearch.server.process.thread.name
-      target_field: process.thread.name
-      ignore_missing: true
   - grok:
-      field: elasticsearch.server.message
+      field: message
       pattern_definitions:
         GREEDYMULTILINE: |-
           (.|
@@ -101,14 +55,6 @@ processors:
         - '%{GC_ALL}'
         - '%{GC_YOUNG}'
         - ((\[%{INDEXNAME:elasticsearch.index.name}\]|\[%{INDEXNAME:elasticsearch.index.name}\/%{DATA:elasticsearch.index.id}\]))?%{SPACE}%{GREEDYMULTILINE:message}
-  - remove:
-      field: elasticsearch.server.message
-  - set:
-      field: '@timestamp'
-      value: '{{ elasticsearch.server.@timestamp }}'
-      ignore_empty_value: true
-  - remove:
-      field: elasticsearch.server.@timestamp
   - date:
       field: '@timestamp'
       target_field: '@timestamp'
