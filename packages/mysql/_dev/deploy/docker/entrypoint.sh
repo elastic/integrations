@@ -6,11 +6,11 @@ touch /var/log/mysql/$HOSTNAME-error.log
 touch /var/log/mysql/$HOSTNAME-slow.log
 
 chown mysql:mysql /var/log/mysql/*.log
-chown mysql:mysql /var/run/mysql/mysql.sock
+chown mysql:mysql /var/run/mysqld/mysqld.sock
 chmod a+wx /var/log/mysql
 chmod a+r -R /var/log/mysql
-chmod a+wx /var/run/mysql/mysql.sock
-chmod a+r -R /var/run/mysql/mysql.sock
+chmod a+wx /var/run/mysqld/mysqld.sock
+chmod a+r -R /var/run/mysqld/mysqld.sock
 
 # Write "test.cnf" config
 cat << EOF > /etc/mysql/conf.d/test.cnf
