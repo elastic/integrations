@@ -1,46 +1,60 @@
 # Jamf Compliance Reporter
 
-The [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documentation/Compliance_Reporter_Overview.html) Integration collects and parses data received from Jamf Compliance Reporter using a TLS or HTTP endpoint.
+The Jamf Compliance Reporter integration collects and parses data received from [Jamf Compliance Reporter](https://docs.jamf.com/compliance-reporter/documentation/Compliance_Reporter_Overview.html) using a TLS or HTTP endpoint.
+
+Use the Jamf Compliance Reporter integration to collect logs from your machines.
+Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
+
+For example, if you wanted to monitor shell script commands performed by the root user, you could [configure Jamf to monitor those events](https://docs.jamf.com/compliance-reporter/documentation/Audit_Log_Levels_in_Compliance_Reporter.html) and then send them to Elastic for further investigation.
+
+## Data streams
+
+The Jamf Compliance Reporter integration collects one type of data stream: logs.
+
+**Logs** help you keep a record of events happening on computers using Jamf.
+The log data stream collected by the Jamf Compliance Reporter integration includes events that are related to security compliance requirements. See more details in the [Logs](#logs-reference).
 
 ## Requirements
-- Enable the Integration with the TLS or HTTP Endpoint input.
-- Configure Jamf Compliance Reporter to send logs to the Elastic Agent.
 
-### Enabling the integration in Elastic
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-1. In Kibana go to **Management > Integrations**.
-2. In "Search for integrations" search bar type **Jamf Compliance Reporter**.
-3. Click on "Jamf Compliance Reporter" integration from the search results.
-4. Click on **Add Jamf Compliance Reporter** button to add Jamf Compliance Reporter integration.
+Note: This package has been tested for Compliance Reporter against Jamf Pro version 10.39.0 and Jamf Compliance Reporter version 1.0.4.
 
-## Setup Steps
+## Setup
 
-- After validating settings, you can use a configuration profile in Jamf Pro to deploy certificates to endpoints in production.
+To use this integration, you will also need to:
+- Enable the integration in Elastic
+- Configure Jamf Compliance Reporter to send logs to the Elastic Agent
 
-- Reference link for [Creating a Configuration Profile](https://docs.jamf.com/compliance-reporter/documentation/Configuring_Compliance_Reporter_Properties_Using_Jamf_Pro.html) using Jamf Pro.
+### Enable the integration in Elastic
 
-## Follow one of the below methods to collect logs from Jamf Compliance Reporter
+For step-by-step instructions on how to set up an new integration in Elastic, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+When setting up the integration, you will choose to collect logs either via TLS or HTTP Endpoint.
 
-### REST Endpoint Remote logging
-1. Reference link for configuring [REST Endpoint Remote logging](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html) for Compliance Reporter.
-2. In Jamf Configuration Profile, form the full URL with port in the form `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
+### Configure Jamf Compliance Reporter
 
-### TLS Remote Logging
-1. Reference link for generating [TLS Remote Logging](https://docs.jamf.com/compliance-reporter/documentation/TLS_Remote_Logging.html) for Compliance Reporter.
-2. In Jamf Configuration Profile, form the full URL with port in the form `tls://{AGENT_ADDRESS}:{AGENT_PORT}`.
+After validating settings, you can use a configuration profile in Jamf Pro to deploy certificates to endpoints in production.
+For more information on using configuration profiles in Jamf Pro, see [Creating a Configuration Profile](https://docs.jamf.com/compliance-reporter/documentation/Configuring_Compliance_Reporter_Properties_Using_Jamf_Pro.html).
 
-### Configure the Jamf Compliance Reporter integration with REST Endpoint Remote logging for Rest Endpoint Input
+Then, follow _one_ of the below methods to collect logs from Jamf Compliance Reporter:
 
-- Enter values for "Listen Address", "Listen Port" and "URL" to form the endpoint URL. Make note of the **Endpoint URL** `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
+**REST Endpoint Remote logging**:
+1. Read [Jamf's REST Endpoint Remote logging documentation](https://docs.jamf.com/compliance-reporter/documentation/REST_Endpoint_Remote_Logging.html).
+2. In your Jamf Configuration Profile, form the full URL with port using this format: `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
 
-### Configure the Jamf Compliance Reporter integration with TLS Remote Logging for TCP Input
+**TLS Remote Logging**:
+1. Read [Jamf's TLS Remote Logging documentation](https://docs.jamf.com/compliance-reporter/documentation/TLS_Remote_Logging.html).
+2. In your Jamf Configuration Profile, form the full URL with port using this format: `tls://{AGENT_ADDRESS}:{AGENT_PORT}`.
 
-- Enter values for "Listen Address" and "Listen Port" to form the TLS.
+**Configure the Jamf Compliance Reporter integration with REST Endpoint Remote logging for Rest Endpoint Input**:
+1. Enter values for "Listen Address", "Listen Port" and "URL" to form the endpoint URL. Make note of the **Endpoint URL** `http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
 
-## Compatibility
-This package has been tested for Compliance Reporter against Jamf pro version 10.39.0 and Jamf Compliance Reporter version 1.0.4.
+**Configure the Jamf Compliance Reporter integration with TLS Remote Logging for TCP Input**:
+1. Enter values for "Listen Address" and "Listen Port" to form the TLS.
 
-## Logs
+## Logs reference
 
 ### log
 
@@ -238,7 +252,7 @@ An example event for `log` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |

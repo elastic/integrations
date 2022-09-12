@@ -21,3 +21,7 @@ The AbuseCH malware data_stream retrieves threat intelligence indicators from th
 The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators from the MalwareBazaar API endpoint `https://mb-api.abuse.ch/api/v1/`.
 
 {{fields "malwarebazaar"}}
+
+The AbuseCH threatfox data_stream retrieves threat intelligence indicators from the Threat Fox API endpoint `https://threatfox-api.abuse.ch/api/v1/`.
+
+{{fields "threatfox"}}

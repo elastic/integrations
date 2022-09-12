@@ -29,7 +29,7 @@ var (
 func Check() error {
 	mg.Deps(build)
 	mg.Deps(format)
-	mg.Deps(modTidy)
+	mg.Deps(ModTidy)
 	mg.Deps(goTest)
 	mg.Deps(codeowners.Check)
 	return nil
@@ -70,7 +70,7 @@ func format() {
 }
 
 func addLicenseHeaders() error {
-	return sh.RunV("go-licenser", "-license", "Elastic")
+	return sh.RunV("go", "run", "github.com/elastic/go-licenser", "-license", "Elastic")
 }
 
 func goImports() error {
@@ -85,10 +85,10 @@ func goImports() error {
 	}
 
 	args := append(
-		[]string{"-local", GoImportsLocalPrefix, "-l", "-w"},
+		[]string{"run", "golang.org/x/tools/cmd/goimports", "-local", GoImportsLocalPrefix, "-l", "-w"},
 		goFiles...,
 	)
-	return sh.RunV("goimports", args...)
+	return sh.RunV("go", args...)
 }
 
 func goTest() error {
@@ -125,6 +125,6 @@ func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 	return matches, err
 }
 
-func modTidy() error {
-	return sh.RunV("go", "mod", "tidy")
+func ModTidy() error {
+	return sh.RunV("go", "mod", "tidy", "-compat=1.17")
 }

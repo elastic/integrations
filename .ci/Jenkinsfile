@@ -17,12 +17,15 @@ pipeline {
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
     KIND_VERSION = "v0.14.0"
-    K8S_VERSION = "v1.24.0"
+    K8S_VERSION = "v1.25.0"
     JOB_GCS_BUCKET = 'beats-ci-temp'
     JOB_GCS_BUCKET_INTERNAL = 'beats-ci-temp-internal'
     JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
     JOB_GCS_EXT_CREDENTIALS = 'beats-ci-gcs-plugin-file-credentials'
     STACK_VERSION = "${params.stackVersion}"
+
+    // Elastic package links definitions
+    ELASTIC_PACKAGE_LINKS_FILE_PATH = "${env.HOME}/${env.BASE_DIR}/links_table.yml"
 
     // Signing
     JOB_SIGNING_CREDENTIALS = 'sign-artifacts-with-gpg-job'
@@ -350,7 +353,9 @@ def packageStoragePublish() {
         triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
           job: 'https://internal-ci.elastic.co/job/elastic+unified-release+master+sign-artifacts-with-gpg',
           token: TOKEN,
-          parameters: "gcs_input_path=${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
+          parameters: [
+            gcs_input_path: env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH,
+          ],
           useCrumbCache: false,
           useJobInfoCache: false)
       }
@@ -373,11 +378,11 @@ def packageStoragePublish() {
             triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
               job: 'https://internal-ci.elastic.co/job/package_storage/job/publishing-job-remote',
               token: TOKEN,
-              parameters: """
-                dry_run=false
-                gs_package_build_zip_path=${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZip}
-                gs_package_signature_path=${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZipSig}
-                """,
+              parameters: [
+                dry_run: false,
+                gs_package_build_zip_path: "${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZip}",
+                gs_package_signature_path: "${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZipSig}"
+              ],
               useCrumbCache: true,
               useJobInfoCache: true)
           }
