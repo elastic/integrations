@@ -6,7 +6,3 @@ COPY init.js .
 COPY adduser.js .
 HEALTHCHECK --interval=1s --retries=90 \
   CMD echo 'db.runCommand({serverStatus:1}).ok' | mongosh
-
-COPY entrypoint.sh ./test-entrypoint.sh
-
-RUN sh ./test-entrypoint.sh
