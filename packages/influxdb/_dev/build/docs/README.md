@@ -10,7 +10,7 @@ This integration depends on prometheus endpoint (default: `http://<influxdbhost>
 
 ## Compatibility
 
-This integration has been tested against Influxdb OSS 2.4
+This integration has been tested against Influxdb OSS 2.4, Influxdb OSS 2.0
 
 
 ## Metrics
