@@ -4,7 +4,8 @@ RUN sed -i "/jessie-updates/d" /etc/apt/sources.list
 RUN apt-get update && apt-get install -y netcat
 COPY init.js .
 COPY adduser.js .
-HEALTHCHECK --interval=1s --retries=90 CMD nc -z localhost 27017
+HEALTHCHECK --interval=1s --retries=90 \
+  CMD echo 'db.runCommand({serverStatus:1}).ok' | mongosh
 
 COPY entrypoint.sh ./test-entrypoint.sh
 
