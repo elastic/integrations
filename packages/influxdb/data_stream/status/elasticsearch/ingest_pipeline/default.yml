@@ -7,29 +7,54 @@ processors:
         ignore_missing: true
         ignore_failure: true
     - remove:
-        field: influxdb.status.labels.compiler_type
+        field: prometheus.labels.compiler_type
         ignore_missing: true
         ignore_failure: true
     - remove:
-        field: influxdb.status.labels.job
+        field: prometheus.labels.job
         ignore_missing: true
         ignore_failure: true
     - remove:
-        field: influxdb.status.labels.id
+        field: prometheus.labels.id
         ignore_missing: true
         ignore_failure: true
     - remove:
-        field: influxdb.status.labels.level
+        field: prometheus.labels.level
         ignore_missing: true
         ignore_failure: true
     - remove:
-        field: influxdb.status.labels.engine
+        field: prometheus.labels.engine
         ignore_missing: true
         ignore_failure: true
     - remove:
-        field: influxdb.status.labels.handler
+        field: prometheus.labels.method
+        ignore_failure: true
+        ignore_missing: true
+    - remove:
+        field: prometheus.labels.path
+        ignore_failure: true
+        ignore_missing: true
+    - remove:
+        field: prometheus.labels.response_code
+        ignore_failure: true
+        ignore_missing: true
+    - remove:
+        field: prometheus.labels.status
+        ignore_failure: true
+        ignore_missing: true
+    - remove:
+        field: prometheus.labels.user_agent
+        ignore_failure: true
+        ignore_missing: true
+    - remove:
+        field: prometheus.labels.handler
         ignore_missing: true
         ignore_failure: true
+    - rename:
+        field: prometheus.labels.instance
+        target_field: influxdb.status.instance
+        ignore_failure: true
+        ignore_missing: true
 on_failure:
 - set:
     field: error.message
