@@ -165,46 +165,4 @@ Advanced status metric include details of query execution statistics, compaction
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
-An example event for `advstatus` looks as following:
-
-```json
-{
-    "influxdb": {
-        "advstatus": {
-            "task_executor_run_queue_delta_sum": {
-                "rate": 0.0038968179999999963,
-                "counter": 0.05394769099999999
-            },
-            "instance": "localhost:8086",
-            "task_executor_run_queue_delta_count": {
-                "rate": 1,
-                "counter": 4
-            },
-            "labels": {
-                "task_type": "system"
-            }
-        }
-    },
-    "@timestamp": "2022-09-13T16:31:54.818Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "service": {
-        "address": "http://localhost:8086/metrics",
-        "type": "prometheus"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "influxdb.advstatus"
-    },
-    "event": {
-        "duration": 21381974,
-        "agent_id_status": "verified",
-        "ingested": "2022-09-13T16:31:55Z",
-        "module": "prometheus",
-        "dataset": "influxdb.status"
-    }
-}
-```
 
