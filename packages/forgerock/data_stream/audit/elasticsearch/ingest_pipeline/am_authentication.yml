@@ -14,19 +14,14 @@ processors:
       copy_from: forgerock.eventName
       ignore_failure: true
   - set:
-      if: (ctx?.forgerock?.result != null && ["SUCCESSFUL"].contains(ctx.forgerock.result))
+      if: ctx?.forgerock?.result == "SUCCESSFUL"
       field: event.outcome
       value: "success"
       ignore_failure: true
   - set:
-      if: (ctx?.forgerock?.result == null || ["FAILED"].contains(ctx.forgerock.result))
+      if: ctx?.forgerock?.result == "FAILED"
       field: event.outcome
       value: "failure"
-      ignore_failure: true
-  - set:
-      if: (ctx?.forgerock?.result && !["SUCCESSFUL", "FAILED"].contains(ctx.forgerock.result))
-      field: event.outcome
-      value: "unknown"
       ignore_failure: true
   - set:
       field: user.id

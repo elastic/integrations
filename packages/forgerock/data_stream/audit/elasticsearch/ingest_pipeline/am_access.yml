@@ -7,17 +7,18 @@ processors:
       copy_from: forgerock.eventName
       ignore_failure: true
   - set:
-    field: user.id
-    copy_from: forgerock.userId
-    ignore_failure: true
+      field: user.id
+      copy_from: forgerock.userId
+      ignore_failure: true
   - set: 
       field: client.domain
       copy_from: forgerock.client.host
       ignore_failure: true
-  - set: 
-      field: client.ip
-      copy_from: forgerock.client.ip
-      ignore_failure: true
+  - convert:
+      field: forgerock.client.ip
+      target_field: client.ip
+      type: ip
+      ignore_missing: true
   - set: 
       field: client.port
       copy_from: forgerock.client.port
@@ -26,10 +27,11 @@ processors:
       field: server.domain
       copy_from: forgerock.server.host
       ignore_failure: true
-  - set: 
-      field: server.ip
-      copy_from: forgerock.server.ip
-      ignore_failure: true
+  - convert:
+      field: forgerock.server.ip
+      target_field: server.ip
+      type: ip
+      ignore_missing: true
   - set: 
       field: http.request.method
       copy_from: forgerock.http.method
@@ -47,19 +49,14 @@ processors:
       copy_from: forgerock.response.detail
       ignore_failure: true
   - set:
-      if: (ctx?.forgerock?.respone?.status != null && ["SUCCESSFUL"].contains(ctx.forgerock.respone.status))
+      if: ctx?.forgerock?.response?.status == "SUCCESSFUL"
       field: event.outcome
       value: "success"
       ignore_failure: true
   - set:
-      if: (ctx?.forgerock?.respone?.status == null || ["FAILED"].contains(ctx.forgerock.respone.status))
+      if: ctx?.forgerock?.response?.status == "FAILED"
       field: event.outcome
       value: "failure"
-      ignore_failure: true
-  - set:
-      if: (ctx?.forgerock?.respone?.status && !["SUCCESSFUL", "FAILED"].contains(ctx.forgerock.respone.status))
-      field: event.outcome
-      value: "unknown"
       ignore_failure: true
   - convert:
       field: forgerock.response.elapsedTime
