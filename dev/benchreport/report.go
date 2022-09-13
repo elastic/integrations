@@ -18,9 +18,9 @@ const (
 {{range $package, $reports := .}}
 #### Package ` + "`" + `{{$package}}` + "`" + `
 
-Data stream | EPS | Diff (%) | Result
------------ | --- | ------ | ------
-{{range $reports}}` + "`" + `{{.DataStream}}` + "`" + ` | {{.New}} | {{.Diff}} ({{.Percentage}}%) | {{getResult .Percentage}}
+Data stream | Previous EPS | New EPS | Diff (%) | Result
+----------- | ------------ | ------- | -------- | ------
+{{range $reports}}` + "`" + `{{.DataStream}}` + "`" + ` | {{.Old}} | {{.New}} | {{.Diff}} ({{.Percentage}}%) | {{getResult .Old .Percentage}}
 {{end}}{{end}}`
 )
 
@@ -137,14 +137,17 @@ func roundFloat64(v float64) float64 {
 
 func getReportTpl(threshold float64) (*template.Template, error) {
 	return template.New("result").Funcs(map[string]interface{}{
-		"getResult": func(p float64) string {
-			if p > threshold {
+		"getResult": func(oldValue, p float64) string {
+			switch {
+			default:
+				fallthrough
+			case oldValue == 0:
+				return ":+1:"
+			case p > threshold:
 				return ":broken_heart:"
-			}
-			if p < 0 && p < (threshold*-1) {
+			case p < 0 && p < (threshold*-1):
 				return ":green_heart:"
 			}
-			return ":+1:"
 		},
 	}).Parse(tpl)
 }
