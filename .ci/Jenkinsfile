@@ -137,6 +137,16 @@ pipeline {
           }
         }
       }
+      post {
+        always {
+          dir("${BASE_DIR}"){
+            // download artifacts from the target branch if any
+            withMageEnv(){
+              sh(label: 'mage BenchReport', script: "mage BenchReport ./build/benchmark-results ./build/${env.TARGET_BRANCH}/benchmark-results 15 report.md")
+            }
+          }
+        }
+      }
     }
   }
   post {
@@ -145,7 +155,7 @@ pipeline {
       packageStoragePublish()
     }
     cleanup {
-      notifyBuildResult(prComment: true)
+      notifyBuildResult(prComment: true, githubCommentFile: "${BASE_DIR}/report.md")
     }
   }
 }
