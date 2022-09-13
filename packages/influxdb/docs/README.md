@@ -172,16 +172,16 @@ An example event for `advstatus` looks as following:
     "influxdb": {
         "advstatus": {
             "task_executor_run_queue_delta_sum": {
-                "rate": 0.004829314000000001,
-                "counter": 0.036326417
+                "rate": 0.0038968179999999963,
+                "counter": 0.05394769099999999
             },
             "instance": "localhost:8086",
             "task_executor_run_queue_delta_count": {
                 "rate": 1,
-                "counter": 7
+                "counter": 4
             },
             "labels": {
-                "taskID": "09ef18921382f000"
+                "task_type": "system"
             }
         }
     },
