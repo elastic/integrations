@@ -22,6 +22,9 @@ processors:
       field: elasticsearch.slowlog.took_millis
       target_field: elasticsearch.slowlog.duration
       ignore_missing: true
+  - remove:
+      field: elasticsearch.slowlog.id
+      if: "ctx.elasticsearch?.slowlog?.id == null"
   - grok:
       field: elasticsearch.slowlog.message
       pattern_definitions:
