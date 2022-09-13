@@ -39,17 +39,17 @@ processors:
       copy_from: forgerock.response.detail
       ignore_failure: true
   - set:
-      if: (ctx?.forgerock?.respone?.status != null && ["SUCCESSFUL"].contains(ctx.forgerock.respone.status))
+      if: (ctx?.forgerock?.response?.status != null && ["SUCCESSFUL"].contains(ctx.forgerock.response.status))
       field: event.outcome
       value: "success"
       ignore_failure: true
   - set:
-      if: (ctx?.forgerock?.respone?.status == null || ["FAILED"].contains(ctx.forgerock.respone.status))
+      if: (ctx?.forgerock?.response?.status == null || ["FAILED"].contains(ctx.forgerock.response.status))
       field: event.outcome
       value: "failure"
       ignore_failure: true
   - set:
-      if: (ctx?.forgerock?.respone?.status && !["SUCCESSFUL", "FAILED"].contains(ctx.forgerock.respone.status))
+      if: (ctx?.forgerock?.response?.status && !["SUCCESSFUL", "FAILED"].contains(ctx.forgerock.response.status))
       field: event.outcome
       value: "unknown"
       ignore_failure: true
@@ -60,7 +60,7 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      if: ctx.event?.duration != null && ctx.forgerock?.response.elapseTime == 'MILLISECONDS'
+      if: ctx.event?.duration != null && ctx.forgerock?.response.elapsedTime == 'MILLISECONDS'
       params:
         MS_TO_NS: 1000000
       source: >-

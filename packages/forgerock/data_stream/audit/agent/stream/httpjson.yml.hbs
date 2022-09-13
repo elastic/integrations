@@ -1,13 +1,17 @@
 config_version: 2
 interval: {{interval}}
+
 {{#if ssl}}
 request.ssl: {{ssl}}
 {{/if}}
+
 request.method: GET
 request.url: https://{{tenant_env_fqdn}}/monitoring/logs?source={{log_sources}}
+
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
+
 request.transforms:
   - set:
       target: header.x-api-key
@@ -15,13 +19,30 @@ request.transforms:
   - set:
       target: header.x-api-secret
       value: "{{api_secret}}"
-pagination:
-    - set:
-        target: url.params._pagedResultsCookie
-        value: '[[.last_response.body.pagedResultsCookie]]'
+  - set:
+      target: url.params.beginTime
+      value: "[[.cursor.last_timestamp]]"
+      default: '[[ (now (parseDuration "-{{initial_interval}}")).Unix ]]'
+  - set:
+      target: url.params.endTime
+      value: '[[now.UnixMilli]]'
+
 response.split: 
     target: body.result
     type: array
+
+pagination:
+    - set:
+      target: url.value
+      value: >
+        [[sprintf "https://%s/monitoring/logs?sources=%s&endTime=%s&beginTime=%s&_pagedResultsCookie=%s"
+        "{{tenant_env_fqdn}}"
+        "{{log_sources}}"
+        (.last_response.url.params.Get "endTime")
+        (.last_response.url.params.Get "beginTime")
+        (.last_response.body.Get "pagedResultsCookie")
+      fail_on_template_error: true
+
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
@@ -29,9 +50,11 @@ tags:
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
+
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
+
 {{#if processors}}
 processors:
 {{processors}}
