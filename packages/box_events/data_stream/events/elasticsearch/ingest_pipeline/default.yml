@@ -561,24 +561,10 @@ processors:
             category: ['file','process']
             type: ['deletion']
       source: |
-        def setField(Map dest, String[] path, def value) {
-          for (int i=0; i<path.length-1; i++) {
-            dest = dest.computeIfAbsent(path[i], _ -> new HashMap());
-          }
-          dest[path[path.length-1]] = value;
-        }
-        def boxEventType = 'ctx.box.event_type';
-        def ecsEventRoot = 'event';
         def eventType = params.getOrDefault(ctx.box.event_type.toLowerCase(), null);
         if (eventType != null) {
-          def keys = ["category", "type"];
-          for (key in keys) {
-            if (eventType.map.containsKey(key)) {
-              setField(ctx, 
-                (ecsEventRoot + "." + key).splitOnToken('.'), 
-                 eventType.map.get(key));
-            }
-          }
+          ctx.event.category = eventType.map.get('category');
+          ctx.event.type = eventType.map.get('type');
         }   
   - rename:
       field: box.event_type
