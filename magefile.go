@@ -10,11 +10,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 
+	"github.com/elastic/integrations/dev/benchreport"
 	"github.com/elastic/integrations/dev/codeowners"
 )
 
@@ -49,6 +51,18 @@ func ImportBeats() error {
 	}
 	args = append(args, "*.go")
 	return sh.Run("go", args...)
+}
+
+func BenchReport(source, target, threshold, outputFile string) error {
+	t, err := strconv.ParseFloat(threshold, 64)
+	if err != nil {
+		return err
+	}
+	report, err := benchreport.GetBenchReport(source, target, t)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(outputFile, report, 0644)
 }
 
 func build() error {
