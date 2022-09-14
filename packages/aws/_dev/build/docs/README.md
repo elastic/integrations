@@ -141,7 +141,7 @@ If you only need to collect data from one AWS service, consider using the indivi
 **AWS CloudFront** integration).
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+{{ url "getting-started-observability" "Getting started" }} guide.
 
 ## Reference
 
@@ -157,8 +157,10 @@ Visit the page for each individual AWS integration to see details about exported
 | DynamoDB         |    x    |         |
 | EBS              |    x    |         |
 | EC2              |    x    |    x    |
+| ECS              |    x    |         |
 | ELB              |    x    |    x    |
 | Fargate          |    x    |         |
+| Kinesis          |    x    |         |
 | Network Firewall |    x    |    x    |
 | Lambda           |    x    |         |
 | NAT Gateway      |    x    |         |

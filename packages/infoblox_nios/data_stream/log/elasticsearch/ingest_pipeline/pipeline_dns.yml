@@ -10,12 +10,12 @@ processors:
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? updating zone '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:client.domain}\\): query failed %{GREEDYDATA:infoblox_nios.log.dns.message}$"       
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:infoblox_nios.log.dns.before_query}\\): rewriting query name %{DATA} to '%{DATA:infoblox_nios.log.dns.after_query}', type %{DATA:dns.question.type}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:client.domain}\\): query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:dns.header_flags} \\(%{IP:server.ip}\\)$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:dns.header_flags}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:client.domain}\\): query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:infoblox_nios.log.dns.header_flags} \\(%{IP:server.ip}\\)$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? \\(%{DATA:client.domain}\\): transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*CEF:0\\|Infoblox\\|NIOS\\|%{GREEDYDATA:infoblox_nios.log.dns.version}\\|RPZ-%{DATA:dns.answers.type}\\|%{DATA:infoblox_nios.log.dns.answers_policy}\\|\\d+\\|app=DNS dst=%{IP:server.ip} src=%{IP:client.ip} spt=%{NUMBER:client.port:long} view=%{DATA:infoblox_nios.log.dns.view_name} qtype=%{WORD:dns.question.type} msg=%{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:timestamp} client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:dns.header_flags} %{GREEDYDATA:repeat_message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:timestamp} client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:dns.header_flags}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:timestamp} client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags} %{GREEDYDATA:repeat_message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:timestamp} client %{IP:client.ip}#%{NUMBER:client.port:long}:? %{DATA:network.transport}: query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*client %{DATA} %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dns.message}$"
   - date:
@@ -107,6 +107,39 @@ processors:
       if: ctx.dns?.question?.name != null
       allow_duplicates: false
       ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx.infoblox_nios?.log?.dns?.header_flags != null && ctx.infoblox_nios.log.dns.header_flags != ""
+      params:
+        'A': 'AA'
+        't': 'TC'
+        'C': 'CD'
+        'D': 'DO'
+      source: |
+        ArrayList hf = new ArrayList();
+        for (entry in params.entrySet()) {
+          if (ctx.infoblox_nios.log.dns.header_flags.contains(entry.getKey())) {
+            hf.add(entry.getValue());
+          }
+        }
+        if (ctx.dns?.response_code != null && ctx.dns.response_code != "") {
+          if (ctx.infoblox_nios.log.dns.header_flags.contains("+")) {
+            hf.add("RA")
+          }
+        } else {
+          if (ctx.infoblox_nios.log.dns.header_flags.contains("+")) {
+            hf.add("RD")
+          }
+        }
+        if (hf.length == 0) {
+          return;
+        }
+        if (ctx.dns == null) {
+          HashMap hm = new HashMap();
+          ctx.put("dns", hm);
+        }
+        ctx.dns.put("header_flags", hf);
+
   - remove:
       field:
         - timestamp
