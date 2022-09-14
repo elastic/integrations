@@ -6,7 +6,7 @@ The input itself supports sending both GET and POST requests, transform requests
 
 ## Configuration
 
-The extensive documentation for the input are currently available [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html).
+The extensive documentation for the input are currently available {{ url "filebeat-input-httpjson" "here" }}.
 
 The most commonly used configuration options are available on the main integration page, while more advanced and customizable options currently resides under the "Advanced options" part of the integration settings page.
 
