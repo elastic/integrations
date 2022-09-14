@@ -1,23 +1,23 @@
 # Infoblox NIOS
 
-The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP.
+The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP or logfile.
 
 ## Setup steps
 1. Enable the integration with TCP/UDP input.
-2. Log in to the NIOS appliance. 
+2. Log in to the NIOS appliance.
 3. Configure the NIOS appliance to send messages to a Syslog server using the following steps. For further information, refer to [Using a Syslog Server](https://docs.infoblox.com/display/NAG8/Using+a+Syslog+Server#UsingaSyslogServer-SpecifyingSyslogServers).
-    1. From the Grid tab, select the Grid Manager tab -> Members tab, and then navigate to Grid Properties -> Edit -> Monitoring from the Toolbar.
-    2. Select **Log to External Syslog Servers** to send messages to a specified Syslog server.
-    3. Click the **Add** icon to define a new Syslog server.
-    4. Enter the IP **Address** of the Elastic Agent that is running the integration.
-    5. Select **Transport** to connect to the external Syslog server.
+    1. From the Grid tab, select the Grid Manager tab -> Members tab, and then navigate to Grid Properties -> Edit -> Monitoring from the Toolbar.
+    2. Select **Log to External Syslog Servers** to send messages to a specified Syslog server.
+    3. Click the **Add** icon to define a new Syslog server.
+    4. Enter the IP **Address** of the Elastic Agent that is running the integration.
+    5. Select **Transport** to connect to the external Syslog server.
     6. If you are using Secure TCP transport, upload a self-signed or a CA-signed **Server Certificate**.
-    7. From the drop-down list select the **Interface** through which the appliance sends Syslog messages to the Syslog server.
-    8. Select **Source** as **Any** so that the appliance sends both internal and external Syslog messages.
-    9. From the drop-down list, select **Node ID** i.e. the host or node identification string that identifies the appliance from which Syslog messages are originated.
-    10. Enter the **Port** of the Elastic Agent that is running the integration.
+    7. From the drop-down list select the **Interface** through which the appliance sends Syslog messages to the Syslog server.
+    8. Select **Source** as **Any** so that the appliance sends both internal and external Syslog messages.
+    9. From the drop-down list, select **Node ID** i.e. the host or node identification string that identifies the appliance from which Syslog messages are originated.
+    10. Enter the **Port** of the Elastic Agent that is running the integration.
     11. Select **Debug** **Severity** so that the appliance sends all Syslog messages to the server.
-    12. Select the following **Logging categories** : 
+    12. Select the following **Logging categories**:
         - Common Authentication
         - DHCP Process
         - DNS Client
@@ -34,13 +34,13 @@ The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data coll
         - Zone Transfer In
         - Zone Transfer Out
     13. Enable **Copy Audit Log Message to Syslog** to include audit log messages it sends to the Syslog server.
-    14. Select **Syslog Facility** that determines the processes from which the log messages are generated. 
+    14. Select **Syslog Facility** that determines the processes from which the log messages are generated.
 
 ## Compatibility
 
 This module has been tested against `Infoblox NIOS version 8.6.1` with the below-given logs pattern.
 
-## Log samples 
+## Log samples
 Below are the samples logs of the respective category:
 
 ## Audit Logs:
@@ -71,8 +71,8 @@ Below are the samples logs of the respective category:
 <30>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: a2.foo.com IN A response: NOERROR +AED a2.foo.com 28800 IN A 192.168.0.3;
 <30>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: non-exist.foo.com IN A response: NXDOMAIN +ED
 <45>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: a1.foo.com IN A response: NOERROR +ED a1.foo.com 28800 IN A 192.168.0.2; a1.foo.com 28800 IN A 192.168.0.3;
-<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query failed (REFUSED) for config.nos-avg.cz/IN/TXT at query.c:10288
-<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query: config.nos-avg.cz IN TXT + (192.168.0.1)
+<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query failed (REFUSED) for config.nos-avg.cz/IN/TXT at query.c:10288
+<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query: config.nos-avg.cz IN TXT + (192.168.0.1)
 <30>Mar 11 23:51:31 infoblox.localdomain named[27014]: rpz: rpz1.com: reload start
 <30>Mar 11 23:51:31 infoblox.localdomain named[29914]: client @0x7ff42c168b50 192.168.0.1#50460 (test.com): rewriting query name 'test.com' to 'query123-10-120-20-93.test.com', type A
 <30>Mar 11 23:51:31 infoblox.localdomain named[19204]: client @0x7fec7c11dab0 192.168.0.1#36483: updating zone 'test1.com/IN': adding an RR at 'a6.test1.com' A 192.168.0.2
@@ -130,6 +130,13 @@ Below are the samples logs of the respective category:
 <30>Mar 7 08:32:59 infoblox.localdomain dhcpd[20397]: DHCPDECLINE of 192.168.0.4 from 00:c0:dd:07:18:e2 via 192.168.0.2: abandoned\n
 <30>Mar 27 08:32:59 infoblox.localdomain dhcpd[20397]: DHCPNAK on 192.168.0.4 to f4:30:b9:17:ab:0e via 192.168.0.2
 <30>Mar 27 08:32:59 infoblox.localdomain dhcpd[6939]: DHCPLEASEQUERY from 192.168.0.4: LEASEQUERY not allowed, query ignored
+<30>Jul 12 15:07:57 67.43.156.0 dhcpd[8061]: DHCPOFFER on 67.43.156.0 to 9a:df:6e:f6:1f:23 via eth2 relay 67.43.156.0 lease-duration 40977 offered-duration 43200 uid 01:9a:df:6e:f6:1f:23
+<30>Jul 12 15:10:48 67.43.156.0 dhcpd[13468]: DHCPACK on 67.43.156.0 to 9a:df:6e:f6:1f:23 via eth2 relay 67.43.156.0 lease-duration 7257600 (RENEW)
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Encapsulated Solicit message from 2a02:cf40:: port 547 from client DUID 01:9a:df:6e:f6:1f:23:01:9a:df:6e:f6:1f:23, transaction ID 0x698AD400
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Advertise NA: address 2a02:cf40:: to client with duid 01:9a:df:6e:f6:1f:23:01:9a:df:6e:f6:1f:23 iaid = -1620146908 valid for 43200 seconds
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Relay-forward message from 2a02:cf40:: port 547, link address 2a02:cf40::1, peer address 2a02:cf40::2
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Encapsulating Advertise message to send to 2a02:cf40:: port 547
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Sending Relay-reply message to 2a02:cf40:: port 547
 ```
 
 ## Logs

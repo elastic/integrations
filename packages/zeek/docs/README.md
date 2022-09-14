@@ -160,7 +160,7 @@ contains TCP/UDP/ICMP connection data.
 | log.offset | Offset of the entry in the log file. | long |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
@@ -534,7 +534,7 @@ activity.
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
 | dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
-| dns.header_flags | Array of 2 letter DNS header flags. Expected values are: AA, TC, RD, RA, AD, CD, DO. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
@@ -1161,6 +1161,38 @@ intelligence data matches.
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
+| threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| threat.indicator.as.organization.name | Organization name. | keyword |
+| threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
+| threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
+| threat.indicator.file.name | Name of the file including the extension, without the directory. | keyword |
+| threat.indicator.geo.city_name | City name. | keyword |
+| threat.indicator.geo.continent_name | Name of the continent. | keyword |
+| threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
+| threat.indicator.geo.country_name | Country name. | keyword |
+| threat.indicator.geo.location | Longitude and latitude. | geo_point |
+| threat.indicator.geo.region_iso_code | Region ISO code. | keyword |
+| threat.indicator.geo.region_name | Region name. | keyword |
+| threat.indicator.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
+| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| threat.indicator.url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| threat.indicator.url.full.text | Multi-field of `threat.indicator.url.full`. | match_only_text |
+| threat.indicator.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| threat.indicator.url.original.text | Multi-field of `threat.indicator.url.original`. | match_only_text |
+| threat.indicator.url.password | Password of the request. | keyword |
+| threat.indicator.url.path | Path of the request, such as "/search". | wildcard |
+| threat.indicator.url.port | Port of the request, such as 443. | long |
+| threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| threat.indicator.url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| threat.indicator.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| threat.indicator.url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| threat.indicator.url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| threat.indicator.url.username | Username of the request. | keyword |
 | zeek.intel.file_desc | Frequently files can be described to give a bit more context. If the $f field is provided this field will be automatically filled out. | keyword |
 | zeek.intel.file_mime_type | A mime type if the intelligence hit is related to a file. If the $f field is provided this will be automatically filled out. | keyword |
 | zeek.intel.fuid | If a file was associated with this intelligence hit, this is the uid for the file. | keyword |
@@ -1383,13 +1415,13 @@ contains kerberos data.
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 | tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| tls.client.x509.subject.country | List of country (C) code | keyword |
+| tls.client.x509.subject.country | List of country \(C) code | keyword |
 | tls.client.x509.subject.locality | List of locality names (L) | keyword |
 | tls.client.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | tls.client.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
 | tls.client.x509.subject.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| tls.server.x509.subject.country | List of country (C) code | keyword |
+| tls.server.x509.subject.country | List of country \(C) code | keyword |
 | tls.server.x509.subject.locality | List of locality names (L) | keyword |
 | tls.server.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | tls.server.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
@@ -2045,7 +2077,7 @@ NTP data.
 | log.offset | Offset of the entry in the log file. | long |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
@@ -2738,7 +2770,7 @@ Zeek signature matches.
 | log.offset | Offset of the entry in the log file. | long |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
@@ -3819,7 +3851,7 @@ SSL/TLS handshake info.
 | tls.client.issuer | Distinguished name of subject of the issuer of the x.509 certificate presented by the client. | keyword |
 | tls.client.ja3 | A hash that identifies clients based on how they perform an SSL/TLS handshake. | keyword |
 | tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| tls.client.x509.subject.country | List of country (C) code | keyword |
+| tls.client.x509.subject.country | List of country \(C) code | keyword |
 | tls.client.x509.subject.locality | List of locality names (L) | keyword |
 | tls.client.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | tls.client.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
@@ -3834,14 +3866,14 @@ SSL/TLS handshake info.
 | tls.server.not_before | Timestamp indicating when server certificate is first considered valid. | date |
 | tls.server.subject | Subject of the x.509 certificate presented by the server. | keyword |
 | tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| tls.server.x509.issuer.country | List of country (C) codes | keyword |
+| tls.server.x509.issuer.country | List of country \(C) codes | keyword |
 | tls.server.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
 | tls.server.x509.issuer.locality | List of locality names (L) | keyword |
 | tls.server.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
 | tls.server.x509.issuer.organizational_unit | List of organizational units (OU) of issuing certificate authority. | keyword |
 | tls.server.x509.issuer.state_or_province | List of state or province names (ST, S, or P) | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| tls.server.x509.subject.country | List of country (C) code | keyword |
+| tls.server.x509.subject.country | List of country \(C) code | keyword |
 | tls.server.x509.subject.locality | List of locality names (L) | keyword |
 | tls.server.x509.subject.organization | List of organizations (O) of subject. | keyword |
 | tls.server.x509.subject.organizational_unit | List of organizational units (OU) of subject. | keyword |
@@ -4382,7 +4414,7 @@ X.509 certificate info.
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.x509.alternative_names | List of subject alternative names (SAN). Name types vary by certificate authority and certificate type but commonly contain IP addresses, DNS names (and wildcards), and email addresses. | keyword |
 | file.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
-| file.x509.issuer.country | List of country (C) codes | keyword |
+| file.x509.issuer.country | List of country \(C) codes | keyword |
 | file.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
 | file.x509.issuer.locality | List of locality names (L) | keyword |
 | file.x509.issuer.organization | List of organizations (O) of issuing certificate authority. | keyword |
@@ -4397,7 +4429,7 @@ X.509 certificate info.
 | file.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
 | file.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
 | file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
-| file.x509.subject.country | List of country (C) code | keyword |
+| file.x509.subject.country | List of country \(C) code | keyword |
 | file.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
 | file.x509.subject.locality | List of locality names (L) | keyword |
 | file.x509.subject.organization | List of organizations (O) of subject. | keyword |

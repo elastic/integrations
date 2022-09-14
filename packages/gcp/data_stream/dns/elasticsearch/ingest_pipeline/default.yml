@@ -1,10 +1,9 @@
 ---
 description: Pipeline for Google Cloud DNS logs
-
 processors:
   - set:
       field: ecs.version
-      value: '8.3.0'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -15,6 +14,12 @@ processors:
   - set:
       field: event.kind
       value: event
+  - set:
+      field: event.category
+      value: network
+  - set:
+      field: event.action
+      value: dns-query
   - set:
       field: cloud.provider
       value: gcp
@@ -27,6 +32,10 @@ processors:
       field: json.logName
       target_field: log.logger
       ignore_missing: true
+  - rename:
+      field: json.severity
+      target_field: log.level
+      ignore_missing: true
   - set: 
       field: event.id
       copy_from: json.insertId
@@ -36,6 +45,7 @@ processors:
       field: json.resource.labels.project_id
       target_field: cloud.project.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert: 
       field: json.resource.labels.location
@@ -74,6 +84,17 @@ processors:
   - lowercase:
       field: network.transport
       ignore_missing: true
+  - set:
+      field: network.iana_number
+      value: '6'
+      if: ctx.network?.transport == "tcp"
+  - set:
+      field: network.iana_number
+      value: '17'
+      if: ctx.network?.transport == "udp"
+  - set:
+      field: network.protocol
+      value: dns
   - rename:
       field: json.jsonPayload.queryName
       target_field: gcp.dns.query_name
@@ -105,16 +126,15 @@ processors:
       field: json.jsonPayload.rdata
       target_field: gcp.dns.rdata
       ignore_missing: true
+### Internal DNS query parsing
   - script:
       if: ctx?.gcp?.dns?.rdata != null
       lang: painless
       tag: Process DNS RData
-      description: This script processes the DNS RData into `dns.answers` and `dns.resolved_ip`.
+      description: This script processes the DNS RData into `dns.answers`.
       source: |
         def rdata = ctx.gcp.dns.rdata;
-
         def dns_answers = [];
-        def dns_resolved_ip = [];
 
         // Check for truncated answers.
         def truncated = rdata.endsWith("...") ? 1 : 0;
@@ -151,14 +171,78 @@ processors:
                 "type": type,
                 "data": data
             ]);
-
-            if (type == "A" || type == "AAAA") {
-                dns_resolved_ip.add(data);
-            }
         }
-
         ctx.dns.answers = dns_answers;
-        ctx.dns.resolved_ip = dns_resolved_ip;
+### External DNS query parsing
+  - script:
+      lang: painless
+      ignore_failure: true
+      description: This script processes the Public DNS RData into `dns.answers`.
+      if: ctx.json?.jsonPayload?.structuredRdata != null && ctx.json?.jsonPayload?.structuredRdata instanceof List
+      source: >-
+        List answers = new ArrayList();
+        for (answer in ctx.json.jsonPayload.structuredRdata) {
+          Map new_answer = new HashMap();
+          if(answer.class != null) {
+            new_answer.put("class", answer.class);
+          }
+          if(answer.type != null) {
+            new_answer.put("type", answer.type);
+          }
+          if(answer.ttl != null) {
+            new_answer.put("ttl", answer.ttl);
+          }
+          if(answer.rvalue != null) {
+            new_answer.put("data", answer.rvalue);
+            if (new_answer.data != null && new_answer.data.length() > 0 && new_answer.data.substring(new_answer.data.length() - 1) == '.') {
+                new_answer.data = new_answer.data.substring(0, new_answer.data.length() - 1);
+            }
+            if (answer.domainName != null) {
+              new_answer.put("name", answer.domainName);
+            }
+          }
+          answers.add(new_answer);
+        }
+        if(ctx.dns.answers == null) {
+            ctx.dns.put('answers',new ArrayList());
+        }
+        ctx.dns.answers = answers;
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx.dns?.answers != null && ctx.dns?.answers instanceof List
+      source: >-
+        List answers = new ArrayList();
+        if(ctx.related == null) {
+            ctx.put('related', new HashMap());
+        }
+        if(ctx.related.ip == null) {
+            ctx.related.put('ip',new ArrayList());
+        }
+        if(ctx.dns.resolved_ip == null) {
+            ctx.dns.put('resolved_ip',new ArrayList());
+        }
+        if(ctx.related.hosts == null) {
+            ctx.related.put('hosts',new ArrayList());
+        }
+        for (answer in ctx.dns.answers) {
+          if(['A','AAAA'].contains(answer.type)) {
+            if(!ctx.related.ip.contains(answer.data)) {
+                ctx.related.ip.add(answer.data);
+            }
+            if(!ctx.dns.resolved_ip.contains(answer.data)) {
+                ctx.dns.resolved_ip.add(answer.data);
+            }
+          }
+          if(['CNAME'].contains(answer.type) && !ctx.related.hosts.contains(answer.data)) {
+            ctx.related.hosts.add(answer.data);
+          }
+          if(['MX'].contains(answer.type)) {
+            def mx_server = / /.split(answer.data);
+            if(mx_server[1] != null && !ctx.related.hosts.contains(mx_server[1]))
+            ctx.related.hosts.add(mx_server[1]);
+          }
+        }
   - rename:
       field: json.jsonPayload.responseCode
       target_field: gcp.dns.response_code
@@ -229,9 +313,57 @@ processors:
       field: cloud.availability_zone
       copy_from: gcp.dns.vm_zone_name
       ignore_failure: true
+  - rename: 
+      field: json.resource.labels.target_type
+      target_field: gcp.dns.target_type
+      ignore_missing: true
+  - rename: 
+      field: json.resource.labels.source_type
+      target_field: gcp.dns.source_type
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.hosts
+      value: "{{dns.question.name}}"
+      allow_duplicates: false
+      if: ctx.dns?.question?.name != null
   - remove:
       field: json
       ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
