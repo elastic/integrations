@@ -12,7 +12,7 @@ For example, you could use the data from this integration to know when there are
 
 The Couchbase integration collects metrics data.
 
-Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html),  [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Cache](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cache), [Couchbase Lite Replication](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cbl_replication_pull), [Database](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#database), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), [Resource Utilization](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#resource_utilization), [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security), and [XDCR](https://docs.couchbase.com/server/current/rest-api/rest-bucket-stats.html) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
+Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html), [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Cache](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cache), [Couchbase Lite Replication](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cbl_replication_pull), [Database](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#database), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), [Resource Utilization](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#resource_utilization), [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security), and [XDCR](https://docs.couchbase.com/server/current/rest-api/rest-bucket-stats.html) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
 
 This integration uses:
 - `http` metricbeat module to collect `bucket`, `cluster`, and `xdcr` metrics.
@@ -58,6 +58,34 @@ This is the `cluster` data stream. A cluster is a collection of nodes that are a
 {{event "cluster"}}
 
 {{fields "cluster"}}
+
+### Couchbase Lite Replication
+
+This is the `cbl_replication` data stream.
+
+CBL Replication push is a process by which clients upload database changes from the local source database to the remote (server) target database.
+
+CBL Replication pull is a process by which clients download database changes from the remote (server) source database to the local target database.
+
+{{event "cbl_replication"}}
+
+{{fields "cbl_replication"}}
+
+### Delta Sync, Import, Security and GSI views
+
+This is the `miscellaneous` data stream.
+
+The Delta Sync provides the ability to replicate only those parts of a Couchbase Mobile document that have changed.
+
+The import is processed with an admin user context in the Sync Function, similar to writes made through the Sync Gateway Admin API.
+
+The Security metrics give the metrics related to authentication requests such as number of authentication failures and number of access errors.
+
+Global Secondary Indexes (GSI) support queries made by the Query Service.
+
+{{event "miscellaneous"}}
+
+{{fields "miscellaneous"}}
 
 ### XDCR
 

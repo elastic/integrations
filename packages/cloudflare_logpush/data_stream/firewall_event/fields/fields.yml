@@ -1,0 +1,129 @@
+- name: cloudflare_logpush.firewall_event
+  type: group
+  fields:
+    - name: action
+      type: keyword
+      description: The code of the first-class action the Cloudflare Firewall took on this request.
+    - name: client
+      type: group
+      fields:
+        - name: asn
+          type: group
+          fields:
+            - name: description
+              type: keyword
+              description: The ASN of the visitor as string.
+            - name: value
+              type: long
+              description: The ASN number of the visitor.
+        - name: country
+          type: keyword
+          description: Country from which request originated.
+        - name: ip
+          type: ip
+          description: The visitor IP address (IPv4 or IPv6).
+        - name: ip_class
+          type: keyword
+          description: The classification of the visitor IP address, possible values are:- 'unknown', 'badHost', 'searchEngine', 'allowlist', 'monitoringService', 'noRecord', 'scan' and 'tor'.
+        - name: referer
+          type: group
+          fields:
+            - name: host
+              type: keyword
+              description: The referer host.
+            - name: path
+              type: text
+              description: The referer path requested by visitor.
+            - name: query
+              type: keyword
+              description: The referer query-string was requested by the visitor.
+            - name: scheme
+              type: text
+              description: The referer URL scheme requested by the visitor.
+        - name: request
+          type: group
+          fields:
+            - name: host
+              type: keyword
+              description: The HTTP hostname requested by the visitor.
+            - name: method
+              type: keyword
+              description: The HTTP method used by the visitor.
+            - name: path
+              type: text
+              description: The path requested by visitor.
+            - name: protocol
+              type: keyword
+              description: The version of HTTP protocol requested by the visitor.
+            - name: query
+              type: keyword
+              description: The query-string was requested by the visitor.
+            - name: scheme
+              type: text
+              description: The URL scheme requested by the visitor.
+            - name: user
+              type: group
+              fields:
+                - name: agent
+                  type: text
+                  description: Visitor's user-agent string.
+    - name: edge
+      type: group
+      fields:
+        - name: colo
+          type: group
+          fields:
+            - name: code
+              type: keyword
+              description: The airport code of the Cloudflare datacenter that served this request.
+        - name: response
+          type: group
+          fields:
+            - name: status
+              type: long
+              description: HTTP response status code returned to browser.
+    - name: kind
+      type: keyword
+      description: The kind of event, currently only possible values are.
+    - name: match_index
+      type: long
+      description: Rules match index in the chain.
+    - name: meta_data
+      type: flattened
+      description: Additional product-specific information.
+    - name: origin
+      type: group
+      fields:
+        - name: ray
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: HTTP origin response status code returned to browser.
+        - name: response
+          type: group
+          fields:
+            - name: status
+              type: long
+              description: The RayID of the request that issued the challenge/jschallenge.
+    - name: ray
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The RayID of the request.
+    - name: rule
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The Cloudflare security product-specific RuleID triggered by this request.
+    - name: source
+      type: keyword
+      description: The Cloudflare security product triggered by this request.
+    - name: timestamp
+      type: date
+      description: The date and time the event occurred at the edge.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

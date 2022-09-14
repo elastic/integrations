@@ -1,23 +1,23 @@
 # Infoblox NIOS
 
-The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP.
+The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP or logfile.
 
 ## Setup steps
 1. Enable the integration with TCP/UDP input.
-2. Log in to the NIOS appliance. 
+2. Log in to the NIOS appliance.
 3. Configure the NIOS appliance to send messages to a Syslog server using the following steps. For further information, refer to [Using a Syslog Server](https://docs.infoblox.com/display/NAG8/Using+a+Syslog+Server#UsingaSyslogServer-SpecifyingSyslogServers).
-    1. From the Grid tab, select the Grid Manager tab -> Members tab, and then navigate to Grid Properties -> Edit -> Monitoring from the Toolbar.
-    2. Select **Log to External Syslog Servers** to send messages to a specified Syslog server.
-    3. Click the **Add** icon to define a new Syslog server.
-    4. Enter the IP **Address** of the Elastic Agent that is running the integration.
-    5. Select **Transport** to connect to the external Syslog server.
+    1. From the Grid tab, select the Grid Manager tab -> Members tab, and then navigate to Grid Properties -> Edit -> Monitoring from the Toolbar.
+    2. Select **Log to External Syslog Servers** to send messages to a specified Syslog server.
+    3. Click the **Add** icon to define a new Syslog server.
+    4. Enter the IP **Address** of the Elastic Agent that is running the integration.
+    5. Select **Transport** to connect to the external Syslog server.
     6. If you are using Secure TCP transport, upload a self-signed or a CA-signed **Server Certificate**.
-    7. From the drop-down list select the **Interface** through which the appliance sends Syslog messages to the Syslog server.
-    8. Select **Source** as **Any** so that the appliance sends both internal and external Syslog messages.
-    9. From the drop-down list, select **Node ID** i.e. the host or node identification string that identifies the appliance from which Syslog messages are originated.
-    10. Enter the **Port** of the Elastic Agent that is running the integration.
+    7. From the drop-down list select the **Interface** through which the appliance sends Syslog messages to the Syslog server.
+    8. Select **Source** as **Any** so that the appliance sends both internal and external Syslog messages.
+    9. From the drop-down list, select **Node ID** i.e. the host or node identification string that identifies the appliance from which Syslog messages are originated.
+    10. Enter the **Port** of the Elastic Agent that is running the integration.
     11. Select **Debug** **Severity** so that the appliance sends all Syslog messages to the server.
-    12. Select the following **Logging categories** : 
+    12. Select the following **Logging categories**:
         - Common Authentication
         - DHCP Process
         - DNS Client
@@ -34,13 +34,13 @@ The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data coll
         - Zone Transfer In
         - Zone Transfer Out
     13. Enable **Copy Audit Log Message to Syslog** to include audit log messages it sends to the Syslog server.
-    14. Select **Syslog Facility** that determines the processes from which the log messages are generated. 
+    14. Select **Syslog Facility** that determines the processes from which the log messages are generated.
 
 ## Compatibility
 
 This module has been tested against `Infoblox NIOS version 8.6.1` with the below-given logs pattern.
 
-## Log samples 
+## Log samples
 Below are the samples logs of the respective category:
 
 ## Audit Logs:
@@ -71,8 +71,8 @@ Below are the samples logs of the respective category:
 <30>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: a2.foo.com IN A response: NOERROR +AED a2.foo.com 28800 IN A 192.168.0.3;
 <30>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: non-exist.foo.com IN A response: NXDOMAIN +ED
 <45>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: a1.foo.com IN A response: NOERROR +ED a1.foo.com 28800 IN A 192.168.0.2; a1.foo.com 28800 IN A 192.168.0.3;
-<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query failed (REFUSED) for config.nos-avg.cz/IN/TXT at query.c:10288
-<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query: config.nos-avg.cz IN TXT + (192.168.0.1)
+<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query failed (REFUSED) for config.nos-avg.cz/IN/TXT at query.c:10288
+<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query: config.nos-avg.cz IN TXT + (192.168.0.1)
 <30>Mar 11 23:51:31 infoblox.localdomain named[27014]: rpz: rpz1.com: reload start
 <30>Mar 11 23:51:31 infoblox.localdomain named[29914]: client @0x7ff42c168b50 192.168.0.1#50460 (test.com): rewriting query name 'test.com' to 'query123-10-120-20-93.test.com', type A
 <30>Mar 11 23:51:31 infoblox.localdomain named[19204]: client @0x7fec7c11dab0 192.168.0.1#36483: updating zone 'test1.com/IN': adding an RR at 'a6.test1.com' A 192.168.0.2
@@ -130,6 +130,13 @@ Below are the samples logs of the respective category:
 <30>Mar 7 08:32:59 infoblox.localdomain dhcpd[20397]: DHCPDECLINE of 192.168.0.4 from 00:c0:dd:07:18:e2 via 192.168.0.2: abandoned\n
 <30>Mar 27 08:32:59 infoblox.localdomain dhcpd[20397]: DHCPNAK on 192.168.0.4 to f4:30:b9:17:ab:0e via 192.168.0.2
 <30>Mar 27 08:32:59 infoblox.localdomain dhcpd[6939]: DHCPLEASEQUERY from 192.168.0.4: LEASEQUERY not allowed, query ignored
+<30>Jul 12 15:07:57 67.43.156.0 dhcpd[8061]: DHCPOFFER on 67.43.156.0 to 9a:df:6e:f6:1f:23 via eth2 relay 67.43.156.0 lease-duration 40977 offered-duration 43200 uid 01:9a:df:6e:f6:1f:23
+<30>Jul 12 15:10:48 67.43.156.0 dhcpd[13468]: DHCPACK on 67.43.156.0 to 9a:df:6e:f6:1f:23 via eth2 relay 67.43.156.0 lease-duration 7257600 (RENEW)
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Encapsulated Solicit message from 2a02:cf40:: port 547 from client DUID 01:9a:df:6e:f6:1f:23:01:9a:df:6e:f6:1f:23, transaction ID 0x698AD400
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Advertise NA: address 2a02:cf40:: to client with duid 01:9a:df:6e:f6:1f:23:01:9a:df:6e:f6:1f:23 iaid = -1620146908 valid for 43200 seconds
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Relay-forward message from 2a02:cf40:: port 547, link address 2a02:cf40::1, peer address 2a02:cf40::2
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Encapsulating Advertise message to send to 2a02:cf40:: port 547
+<30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Sending Relay-reply message to 2a02:cf40:: port 547
 ```
 
 ## Logs
@@ -142,9 +149,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2011-10-19T12:43:47.375Z",
     "agent": {
-        "ephemeral_id": "e93a1351-1215-4615-87ff-a33eaa5c111f",
+        "ephemeral_id": "5181186c-7367-49da-8ad7-8120c441b527",
         "hostname": "docker-fleet-agent",
-        "id": "0c7b29c0-78ea-4dd2-bbad-4092eeb1ee30",
+        "id": "9f26844a-9c52-4403-b9e6-9312b9761765",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -155,10 +162,10 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "0c7b29c0-78ea-4dd2-bbad-4092eeb1ee30",
+        "id": "9f26844a-9c52-4403-b9e6-9312b9761765",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -167,7 +174,7 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "created": "2022-03-22T14:26:54.000Z",
         "dataset": "infoblox_nios.log",
-        "ingested": "2022-04-18T07:40:58Z"
+        "ingested": "2022-08-08T11:02:32Z"
     },
     "host": {
         "ip": "10.0.0.1"
@@ -186,16 +193,17 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.80.6:43913"
+            "address": "192.168.192.7:57184"
         },
         "syslog": {
             "priority": 29
         }
     },
+    "message": "2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login",
     "related": {
         "ip": [
             "10.0.0.2",
@@ -287,14 +295,18 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dhcp.client_hostname |  | keyword |
 | infoblox_nios.log.dhcp.decline.message |  | keyword |
 | infoblox_nios.log.dhcp.discover.message |  | keyword |
+| infoblox_nios.log.dhcp.duid |  | keyword |
+| infoblox_nios.log.dhcp.iaid |  | keyword |
 | infoblox_nios.log.dhcp.inform.message |  | keyword |
 | infoblox_nios.log.dhcp.interface.ip |  | ip |
 | infoblox_nios.log.dhcp.lease.duration |  | long |
 | infoblox_nios.log.dhcp.lease.message |  | keyword |
 | infoblox_nios.log.dhcp.lease_query.message |  | keyword |
+| infoblox_nios.log.dhcp.link_address |  | keyword |
 | infoblox_nios.log.dhcp.message |  | text |
 | infoblox_nios.log.dhcp.network |  | keyword |
 | infoblox_nios.log.dhcp.offered_duration |  | long |
+| infoblox_nios.log.dhcp.peer_address |  | keyword |
 | infoblox_nios.log.dhcp.relay.interface.ip |  | ip |
 | infoblox_nios.log.dhcp.relay.interface.name |  | keyword |
 | infoblox_nios.log.dhcp.release.info |  | keyword |
@@ -302,6 +314,7 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dhcp.router.ip |  | ip |
 | infoblox_nios.log.dhcp.trans_id |  | keyword |
 | infoblox_nios.log.dhcp.uid |  | keyword |
+| infoblox_nios.log.dhcp.validation_second |  | long |
 | infoblox_nios.log.dns.after_query |  | text |
 | infoblox_nios.log.dns.answers_policy |  | text |
 | infoblox_nios.log.dns.before_query |  | text |
@@ -315,6 +328,7 @@ An example event for `log` looks as following:
 | infoblox_nios.log.type |  | keyword |
 | input.type | Input type | keyword |
 | interface.name | Interface name as reported by the system. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |

@@ -12,7 +12,7 @@ For example, you could use the data from this integration to know when there are
 
 The Couchbase integration collects metrics data.
 
-Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html),  [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Cache](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cache), [Couchbase Lite Replication](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cbl_replication_pull), [Database](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#database), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), [Resource Utilization](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#resource_utilization), [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security), and [XDCR](https://docs.couchbase.com/server/current/rest-api/rest-bucket-stats.html) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
+Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html), [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Cache](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cache), [Couchbase Lite Replication](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cbl_replication_pull), [Database](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#database), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), [Resource Utilization](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#resource_utilization), [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security), and [XDCR](https://docs.couchbase.com/server/current/rest-api/rest-bucket-stats.html) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
 
 This integration uses:
 - `http` metricbeat module to collect `bucket`, `cluster`, and `xdcr` metrics.
@@ -371,6 +371,390 @@ An example event for `cluster` looks as following:
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
+
+
+### Couchbase Lite Replication
+
+This is the `cbl_replication` data stream.
+
+CBL Replication push is a process by which clients upload database changes from the local source database to the remote (server) target database.
+
+CBL Replication pull is a process by which clients download database changes from the remote (server) source database to the local target database.
+
+An example event for `cbl_replication` looks as following:
+
+```json
+{
+    "@timestamp": "2022-08-01T12:29:02.626Z",
+    "agent": {
+        "ephemeral_id": "e90e29db-34fd-4bba-a4bf-da0c2e5f1d15",
+        "id": "980dcead-2dc9-4d20-a59b-a81f43d3a52c",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.3.2"
+    },
+    "couchbase": {
+        "cbl_replication": {
+            "database": {
+                "name": "beer-sample"
+            },
+            "pull": {
+                "attachment": {
+                    "bytes": 0,
+                    "count": 0
+                },
+                "num": {
+                    "caught_up": 0,
+                    "continuous": {
+                        "active": 0,
+                        "total": 0
+                    },
+                    "one_shot": {
+                        "active": 0,
+                        "total": 0
+                    },
+                    "since_zero": 0
+                },
+                "request": {
+                    "changes": {
+                        "time": 0
+                    }
+                },
+                "rev": {
+                    "latency": {
+                        "send": 0
+                    }
+                }
+            },
+            "push": {
+                "attachment": {
+                    "bytes": 0,
+                    "count": 0
+                },
+                "conflict": {
+                    "write": {
+                        "count": 0
+                    }
+                },
+                "doc": {
+                    "count": 0
+                },
+                "propose": {
+                    "change": {
+                        "count": 0,
+                        "time": 0
+                    }
+                },
+                "sync": {
+                    "function": {
+                        "time": 1732351964
+                    }
+                },
+                "write": {
+                    "processing": {
+                        "time": 0
+                    }
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "couchbase.cbl_replication",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.3.0"
+    },
+    "elastic_agent": {
+        "id": "980dcead-2dc9-4d20-a59b-a81f43d3a52c",
+        "snapshot": false,
+        "version": "8.3.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "couchbase.cbl_replication",
+        "duration": 50168237,
+        "ingested": "2022-08-01T12:29:03Z",
+        "kind": "metric",
+        "module": "couchbase",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "192.168.192.6"
+        ],
+        "mac": [
+            "02:42:c0:a8:c0:06"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-110-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "server": {
+        "address": "elastic-package-service_exporter_1:9421"
+    },
+    "service": {
+        "address": "http://elastic-package-service_exporter_1:9421/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "forwarded",
+        "couchbase-cbl_replication",
+        "prometheus"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| couchbase.cbl_replication.database.name | The database for which the data is being extracted. | keyword |  |  |
+| couchbase.cbl_replication.pull.attachment.bytes | The total size of attachments pulled. This is the pre-compressed size. | long | byte | counter |
+| couchbase.cbl_replication.pull.attachment.count | The total number of attachments pulled. | long |  | counter |
+| couchbase.cbl_replication.pull.num.caught_up | The total number of replications which have caught up to the latest changes. | long |  | gauge |
+| couchbase.cbl_replication.pull.num.continuous.active | The total number of continuous pull replications in the active state. | long |  | gauge |
+| couchbase.cbl_replication.pull.num.continuous.total | The total number of continuous pull replications. | long |  | gauge |
+| couchbase.cbl_replication.pull.num.one_shot.active | The total number of one-shot pull replications in the active state. | long |  | gauge |
+| couchbase.cbl_replication.pull.num.one_shot.total | The total number of one-shot pull replications. | long |  | gauge |
+| couchbase.cbl_replication.pull.num.since_zero | The total number of new replications started (/_changes?since=0). | long |  | counter |
+| couchbase.cbl_replication.pull.request.changes.time | The total time taken to perform the requested changes. | scaled_float | s | counter |
+| couchbase.cbl_replication.pull.rev.latency.send | The total amount of time between Sync Gateway receiving a request for a revision and that revision being sent. | scaled_float |  | counter |
+| couchbase.cbl_replication.push.attachment.bytes | The total number of attachment bytes pushed. | long | byte | counter |
+| couchbase.cbl_replication.push.attachment.count | The total number of attachments pushed. | long |  | counter |
+| couchbase.cbl_replication.push.conflict.write.count | The total number of writes that left the document in a conflicted state. Includes new conflicts, and mutations that don’t resolve existing conflicts. | long |  | counter |
+| couchbase.cbl_replication.push.doc.count | The total number of documents pushed. | long |  | gauge |
+| couchbase.cbl_replication.push.propose.change.count | The total number of changes and-or proposeChanges messages processed since node start-up. | long |  | counter |
+| couchbase.cbl_replication.push.propose.change.time | The total time spent processing changes and/or proposeChanges messages. | scaled_float | s | counter |
+| couchbase.cbl_replication.push.sync.function.time | The total time spent evaluating the sync_function. | scaled_float | s | counter |
+| couchbase.cbl_replication.push.write.processing.time | Total time spent processing writes. Measures complete request-to-response time for a write. | scaled_float | s | gauge |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
+
+### Delta Sync, Import, Security and GSI views
+
+This is the `miscellaneous` data stream.
+
+The Delta Sync provides the ability to replicate only those parts of a Couchbase Mobile document that have changed.
+
+The import is processed with an admin user context in the Sync Function, similar to writes made through the Sync Gateway Admin API.
+
+The Security metrics give the metrics related to authentication requests such as number of authentication failures and number of access errors.
+
+Global Secondary Indexes (GSI) support queries made by the Query Service.
+
+An example event for `miscellaneous` looks as following:
+
+```json
+{
+    "@timestamp": "2022-09-07T12:09:30.395Z",
+    "agent": {
+        "ephemeral_id": "b53d49b9-ac2c-4c23-956a-61b60d17ed45",
+        "id": "52f5e6b6-f0bd-445c-b9fc-35a9e47ae49b",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.3.3"
+    },
+    "couchbase": {
+        "miscellaneous": {
+            "database": {
+                "name": "beer-sample"
+            },
+            "delta_sync": {
+                "cache": {
+                    "hits": 0
+                },
+                "pull": {
+                    "replications": 0
+                },
+                "push": {
+                    "documents": 0
+                },
+                "requested": 0,
+                "sent": 0
+            },
+            "gsi_views": {
+                "access": {
+                    "count": 0
+                },
+                "all_docs": {
+                    "count": 0
+                },
+                "channels": {
+                    "count": 0
+                },
+                "role_access": {
+                    "count": 0
+                }
+            },
+            "security": {
+                "access": {
+                    "errors": {
+                        "count": 0
+                    }
+                },
+                "authentications": {
+                    "failed": {
+                        "count": 0
+                    }
+                },
+                "documents": {
+                    "rejected": {
+                        "count": 0
+                    }
+                }
+            },
+            "shared_bucket": {
+                "import": {
+                    "documents": {
+                        "count": 31486,
+                        "errors": {
+                            "count": 105
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "couchbase.miscellaneous",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.3.0"
+    },
+    "elastic_agent": {
+        "id": "52f5e6b6-f0bd-445c-b9fc-35a9e47ae49b",
+        "snapshot": false,
+        "version": "8.3.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "couchbase.miscellaneous",
+        "duration": 298010717,
+        "ingested": "2022-09-07T12:09:31Z",
+        "kind": "metric",
+        "module": "couchbase",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.23.0.7"
+        ],
+        "mac": [
+            "02:42:ac:17:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-110-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "server": {
+        "address": "elastic-package-service_exporter_1:9421"
+    },
+    "service": {
+        "address": "http://elastic-package-service_exporter_1:9421/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "forwarded",
+        "couchbase-miscellaneous",
+        "prometheus"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| couchbase.miscellaneous.database.name | The database for which the data is being extracted. | keyword |  |
+| couchbase.miscellaneous.delta_sync.cache.hits | The total number of requested deltas that were available in the revision cache. | long | counter |
+| couchbase.miscellaneous.delta_sync.pull.replications | The number of delta replications that have been run. | long | counter |
+| couchbase.miscellaneous.delta_sync.push.documents | The total number of documents pushed as a delta from a previous revision. | long | counter |
+| couchbase.miscellaneous.delta_sync.requested | The total number of times a revision is sent as delta from a previous revision. | long | counter |
+| couchbase.miscellaneous.delta_sync.sent | The total number of revisions sent to clients as deltas. | long | counter |
+| couchbase.miscellaneous.gsi_views.access.count | The total number of 'access' queries performed. | long | counter |
+| couchbase.miscellaneous.gsi_views.all_docs.count | The total number of 'allDocs' queries performed. | long | counter |
+| couchbase.miscellaneous.gsi_views.channels.count | The total number of 'channels' queries performed. | long | counter |
+| couchbase.miscellaneous.gsi_views.role_access.count | The total number of 'roleAccess' queries performed. | long | counter |
+| couchbase.miscellaneous.security.access.errors.count | The total number of documents rejected by write access functions (requireAccess, requireRole, requireUser). | long | counter |
+| couchbase.miscellaneous.security.authentications.failed.count | The total number of unsuccessful authentications. | long | counter |
+| couchbase.miscellaneous.security.documents.rejected.count | The total number of documents rejected by the sync_function. | long | counter |
+| couchbase.miscellaneous.shared_bucket.import.documents.count | The total number of documents imported. | long | counter |
+| couchbase.miscellaneous.shared_bucket.import.documents.errors.count | The total number of errors arising as a result of a document import. | long | counter |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| error.message | Error message. | match_only_text |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| tags | List of keywords used to tag each event. | keyword |  |
 
 
 ### XDCR
