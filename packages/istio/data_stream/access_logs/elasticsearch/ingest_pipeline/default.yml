@@ -1,0 +1,244 @@
+---
+description: Pipeline for processing Istio access logs
+processors:
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: ecs.version
+      value: "8.3.0"
+  - set:
+      field: event.created
+      copy_from: "@timestamp"
+      ignore_failure: true
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - drop:
+      if: "ctx?.event?.original == null"
+  - grok:
+      field: event.original
+      patterns:
+        - ^%{CHAR:first_char}
+      pattern_definitions:
+        CHAR: .
+  - pipeline:
+      if: ctx.first_char != '{'
+      name: '{{ IngestPipeline "format-common" }}'
+  - pipeline:
+      if: ctx.first_char == '{'
+      name: '{{ IngestPipeline "format-json" }}'
+  - remove:
+      field: first_char
+  - date:
+      field: istio.access.start_time
+      formats:
+        - ISO8601
+      target_field: "@timestamp"
+  - remove:
+      field: istio.access.start_time
+  - grok:
+      field: istio.access.protocol
+      patterns:
+        - (-|HTTP/%{NUMBER:http.version})
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      value: "http"
+      if: "ctx?.istio?.access?.protocol != null"
+  - remove:
+      field: istio.access.protocol
+      ignore_failure: true
+  - set:
+      field: network.transport
+      value: "tcp"
+  - convert:
+      field: http.response.status_code
+      type: long
+      ignore_missing: true
+      on_failure:
+      - remove: 
+          field: http.response.status_code
+  - convert:
+      field: istio.access.bytes.received
+      type: long
+      ignore_missing: true
+      on_failure:
+      - remove: 
+          field: istio.access.bytes.received
+  - set:
+      field: http.response.body.bytes
+      copy_from: istio.access.bytes.received
+      if: "ctx?.network?.protocol == 'http'"
+  - convert:
+      field: istio.access.bytes.sent
+      type: long
+      ignore_missing: true
+      on_failure:
+      - remove: 
+          field: istio.access.bytes.sent
+  - set:
+      field: http.request.body.bytes
+      copy_from: istio.access.bytes.sent
+      if: "ctx?.network?.protocol == 'http'"
+  - convert:
+      field: istio.access.duration
+      type: long
+      ignore_missing: true
+      on_failure:
+      - remove: 
+          field: istio.access.duration
+  - convert:
+      field: istio.access.upstream.service_time
+      type: long
+      ignore_missing: true
+      on_failure:
+      - remove: 
+          field: istio.access.upstream.service_time
+  - script:
+      lang: painless
+      source:
+        ctx.event.duration = Math.round(ctx.istio.access.upstream.service_time *
+        params.scale)
+      params:
+        scale: 1000000
+      if: ctx.istio?.access?.upstream?.service_time != null
+  - user_agent:
+      field: user_agent.original
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      field: destination.address
+      copy_from: istio.access.upstream.host
+      ignore_failure: true
+  - grok:
+      field: destination.address
+      patterns:
+        - ^-$
+        - ^%{HOSTNAME:destination.domain}$
+        - "^%{IPV4:destination.ip}:%{NUMBER:destination.port}$"
+        - "^\\[%{IPV6:destination.ip}\\]:%{NUMBER:destination.port}$"
+        - "^%{IPV6NOCOMPRESS:destination.ip}:%{NUMBER:destination.port}$"
+        - "^%{IPV6:destination.ip}%{IPV6PORTSEP}%{NUMBER:destination.port}$"
+        - "^%{IPV6:destination.ip}%{IPV6PORTSEP}%{POSINT:destination.port}$"
+      pattern_definitions:
+        IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+        IPV6PORTSEP: '(?: port |[p#.])'
+      ignore_missing: true
+  - convert:
+      field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+      - remove:
+          field: destination.ip
+  - convert:
+      field: destination.port
+      type: long
+      ignore_missing: true
+      on_failure:
+      - remove: 
+          field: destination.port
+  - set:
+      field: source.address
+      copy_from: istio.access.downstream.remote_address
+  - grok:
+      field: source.address
+      patterns:
+        - ^-$
+        - ^%{HOSTNAME:source.domain}$
+        - "^%{IPV4:source.ip}:%{NUMBER:source.port}$"
+        - "^\\[%{IPV6:source.ip}\\]:%{NUMBER:source.port}$"
+        - "^%{IPV6NOCOMPRESS:source.ip}:%{NUMBER:source.port}$"
+        - "^%{IPV6:source.ip}%{IPV6PORTSEP}%{NUMBER:source.port}$"
+        - "^%{IPV6:source.ip}%{IPV6PORTSEP}%{POSINT:source.port}$"
+      pattern_definitions:
+        IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+        IPV6PORTSEP: '(?: port |[p#.])'
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+      - remove:
+          field: source.ip
+  - convert:
+      field: source.port
+      type: long
+      ignore_missing: true
+      on_failure:
+      - remove: 
+          field: source.port
+  - remove:
+      field: source.port
+      if: "ctx?.source?.port == 0"
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      if: "ctx?.source?.ip != null"
+  - append:
+      field: related.ip
+      value: "{{destination.ip}}"
+      if: "ctx?.destination?.ip != null"
+  - set:
+      field: event.id
+      copy_from: http.request.id
+      ignore_failure: true
+  - set:
+      field: event.module
+      value: istio
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: web
+      allow_duplicates: false
+      if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
+  - append:
+      field: event.type
+      value: access
+      allow_duplicates: false
+      if: "ctx?.http?.request?.method != null && ctx.http.request.method != '-'"
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400
+  - community_id:
+      if: "ctx?.source?.ip != null && ctx?.source?.port != null && ctx?.destination?.ip != null && ctx?.destination?.port != null"
+  - remove:
+      field: event.original
+      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
