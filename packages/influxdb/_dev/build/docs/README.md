@@ -30,4 +30,6 @@ Advanced status metric include details of query execution statistics, compaction
 
 {{fields "advstatus"}}
 
+{{event "advstatus"}}
+
 

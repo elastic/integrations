@@ -88,49 +88,91 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "influxdb": {
-        "status": {
-            "go_memstats_alloc_bytes_total": 1294112696,
-            "instance": "localhost:8086",
-            "task_scheduler_total_release_calls": 0,
-            "go_memstats_alloc_bytes": 192188632,
-            "influxdb_organizations_total": 1,
-            "go_memstats_heap_idle_bytes": 34217984,
-            "task_executor_workers_busy": 0,
-            "task_executor_total_runs_active": 0,
-            "influxdb_scrapers_total": 1,
-            "influxdb_dashboards_total": 2,
-            "task_scheduler_current_execution": 128,
-            "go_threads": 17,
-            "go_memstats_heap_inuse_bytes": 194961408,
-            "task_scheduler_total_execution_calls": 7,
-            "task_scheduler_total_schedule_fails": 0,
-            "go_memstats_heap_alloc_bytes": 192188632,
-            "influxdb_buckets_total": 3,
-            "task_scheduler_total_execute_failure": 0,
-            "influxdb_tokens_total": 6,
-            "influxdb_users_total": 1
+    "@timestamp": "2022-09-14T06:28:12.039Z",
+    "agent": {
+        "ephemeral_id": "fcb44fde-0dbd-47ef-80ce-d5b2c216b24b",
+        "id": "f995507b-788c-45db-8f98-5d0ca02b81fc",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.4.0"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
         }
     },
-    "@timestamp": "2022-09-13T16:31:54.818Z",
+    "data_stream": {
+        "dataset": "influxdb.status",
+        "namespace": "ep",
+        "type": "metrics"
+    },
     "ecs": {
         "version": "8.0.0"
     },
-    "service": {
-        "address": "http://localhost:8086/metrics",
-        "type": "prometheus"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "influxdb.status"
+    "elastic_agent": {
+        "id": "f995507b-788c-45db-8f98-5d0ca02b81fc",
+        "snapshot": true,
+        "version": "8.4.0"
     },
     "event": {
-        "duration": 21381974,
         "agent_id_status": "verified",
-        "ingested": "2022-09-13T16:31:55Z",
-        "module": "prometheus",
-        "dataset": "influxdb.status"
+        "dataset": "influxdb.status",
+        "duration": 8872965,
+        "ingested": "2022-09-14T06:28:13Z",
+        "module": "prometheus"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.25.0.7"
+        ],
+        "mac": [
+            "02:42:ac:19:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-1078-gcp",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "influxdb": {
+        "status": {
+            "influxdb_uptime_seconds": 31.499834078,
+            "instance": "elastic-package-service_influxdb_1:8086"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 60000
+    },
+    "prometheus": {
+        "labels": {}
+    },
+    "service": {
+        "address": "http://elastic-package-service_influxdb_1:8086/metrics",
+        "type": "prometheus"
     }
 }
 ```
@@ -164,5 +206,127 @@ Advanced status metric include details of query execution statistics, compaction
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
+
+An example event for `advstatus` looks as following:
+
+```json
+{
+    "@timestamp": "2022-09-14T06:27:04.338Z",
+    "agent": {
+        "ephemeral_id": "ddec09d3-8ec5-4114-9887-23c481c7ced3",
+        "id": "f995507b-788c-45db-8f98-5d0ca02b81fc",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.4.0"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
+        }
+    },
+    "data_stream": {
+        "dataset": "influxdb.advstatus",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "f995507b-788c-45db-8f98-5d0ca02b81fc",
+        "snapshot": true,
+        "version": "8.4.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "influxdb.advstatus",
+        "duration": 6433830,
+        "ingested": "2022-09-14T06:27:05Z",
+        "module": "prometheus"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.25.0.7"
+        ],
+        "mac": [
+            "02:42:ac:19:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-1078-gcp",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "influxdb": {
+        "advstatus": {
+            "instance": "elastic-package-service_influxdb_1:8086",
+            "labels": {},
+            "storage_retention_check_duration": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        0.0025,
+                        0.0075,
+                        0.0175,
+                        0.037500000000000006,
+                        0.07500000000000001,
+                        0.175,
+                        0.375,
+                        0.75,
+                        1.75,
+                        3.75,
+                        7.5,
+                        15
+                    ]
+                }
+            }
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 60000
+    },
+    "service": {
+        "address": "http://elastic-package-service_influxdb_1:8086/metrics",
+        "type": "prometheus"
+    }
+}
+```
 
 
