@@ -144,9 +144,9 @@ func getReportTpl(threshold float64) (*template.Template, error) {
 			case oldValue == 0:
 				return ":+1:"
 			case p > threshold:
-				return ":broken_heart:"
-			case p < 0 && p < (threshold*-1):
 				return ":green_heart:"
+			case p < 0 && p < (threshold*-1):
+				return ":broken_heart:"
 			}
 		},
 	}).Parse(tpl)
