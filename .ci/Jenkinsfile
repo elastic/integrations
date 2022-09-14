@@ -18,11 +18,14 @@ pipeline {
     HOME = "${env.WORKSPACE}"
     KIND_VERSION = "v0.14.0"
     K8S_VERSION = "v1.25.0"
-    JOB_GCS_BUCKET = 'beats-ci-temp'
-    JOB_GCS_BUCKET_INTERNAL = 'beats-ci-temp-internal'
-    JOB_GCS_CREDENTIALS = 'beats-ci-gcs-plugin'
-    JOB_GCS_EXT_CREDENTIALS = 'beats-ci-gcs-plugin-file-credentials'
+    JOB_GCS_BUCKET = 'fleet-ci-temp'
+    JOB_GCS_BUCKET_INTERNAL = 'fleet-ci-temp-internal'
+    JOB_GCS_CREDENTIALS = 'fleet-ci-gcs-plugin'
+    JOB_GCS_EXT_CREDENTIALS = 'fleet-ci-gcs-plugin-file-credentials'
     STACK_VERSION = "${params.stackVersion}"
+
+    // Elastic package links definitions
+    ELASTIC_PACKAGE_LINKS_FILE_PATH = "${env.HOME}/${env.BASE_DIR}/links_table.yml"
 
     // Signing
     JOB_SIGNING_CREDENTIALS = 'sign-artifacts-with-gpg-job'
@@ -96,11 +99,15 @@ pipeline {
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package test -v --report-format xUnit --report-output file --test-coverage
                                 ''')
+                              sh(label: "Benchmark integration: ${it}", script: '''
+                                eval "$(../../build/elastic-package stack shellinit)"
+                                ../../build/elastic-package benchmark -v --report-format xUnit --report-output file
+                                ''')
                             }
                           }
 
                           // Publish package to the Package Storage
-                          if (env.BRANCH_NAME == 'main') {
+                          if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('backport-')) {
                             withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
                               sh(label: 'Configure Git user.name', script: 'git config --global user.name "Elastic Machine"')
                               sh(label: 'Configure Git user.email', script: 'git config --global user.email "elasticmachine@users.noreply.github.com"')
@@ -112,6 +119,7 @@ pipeline {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
+                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/benchmark-results/*.xml')
                           sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
                           archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/*")
                           archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
@@ -235,7 +243,7 @@ def withKubernetes(Closure body) {
         throw error // rethrow error up if there is any, but delete k8s cluster first
       } finally {
         if (r == 0) {
-          sh(label: "Delete kind cluster", script: 'kind delete cluster')
+          sh(label: "Delete kind cluster", script: 'kind delete cluster || true')
         }
       }
     }
@@ -305,8 +313,8 @@ def archiveArtifactsSafe(remotePath, artifacts) {
 
 def packageStoragePublish() {
   stage('Publish to Package Storage v2') {
-    if (env.BRANCH_NAME != 'main') {
-      echo "packageStoragePublish: not the main branch, nothing will be published"
+    if (env.BRANCH_NAME != 'main' && !env.BRANCH_NAME.startsWith('backport-')) {
+      echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
       return
     }
 
