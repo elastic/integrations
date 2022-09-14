@@ -170,8 +170,7 @@ def gitHubCommentWithBenchmarkReport() {
       // download artifacts from the target branch if any
       if (env.CHANGE_TARGET) {
         try {
-          projectName = env.JOB_NAME.replace(env.JOB_BASE_NAME, env.CHANGE_TARGET)
-          copyArtifacts(filter: "${currentBenchmarkResults}/*.xml", flatten: true, optional: true, projectName: projectName, selector: lastWithArtifacts(), target: baseline)
+          copyArtifacts(filter: "${currentBenchmarkResults}/*.xml", flatten: true, optional: true, projectName: getBaselineJobName(), selector: lastWithArtifacts(), target: baseline)
         } catch(e) {
           log(level: 'INFO', text: 'gitHubCommentWithBenchmarkReport: it was not possible to copy the previous build.')
           return
@@ -182,7 +181,7 @@ def gitHubCommentWithBenchmarkReport() {
       if (fileExists(currentBenchmarkResults)) {
         sh(label: 'debug current benchmark', script: "ls -l ${currentBenchmarkResults}", returnStatus: true)
       }
-      if (fileExists(currentBenchmarkResults)) {
+      if (fileExists(baseline)) {
         sh(label: 'debug baseline benchmark', script: "ls -l ${baseline}", returnStatus: true)
       }
 
@@ -203,6 +202,14 @@ def gitHubCommentWithBenchmarkReport() {
       }
     }
   }
+}
+
+def getBaselineJobName() {
+  // For a Jenkins Multibranch Pipeline, it's possible to know the current
+  // full job name with the env variable JOB_NAME.
+  // Let's get the full job name for the target branch, in other words
+  // the job name for the branch where the PR will be merged to.
+  return env.JOB_NAME.replace(env.JOB_BASE_NAME, env.CHANGE_TARGET)
 }
 
 def cleanup(){
