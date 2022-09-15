@@ -15,7 +15,10 @@ processors:
     target_field: event.original
     ignore_missing: true
 - json:
-    field: event.original.payload
+    field: event.original
+    target_field: json
+- rename:
+    field: json.payload
     target_field: forgerock
 
 - set:
@@ -27,46 +30,65 @@ processors:
     copy_from: forgerock.transactionId
     ignore_failure: true
 
-## TODO
-# timestamp to @timestamp
+# - set: 
+#     field: '@timestamp'
+#     copy_from: forgerock.timestamp
+#     ignore_failure: true
 
+# - date:
+#     field: forgerock.timestamp
+#     formats:
+#       - ISO8601
+#     target_field: forgerock.testing
+#     timezone: UTC
+#     # on_failure:
+#     #   - append:
+#     #       field: error.message
+#     #       value: '{{ _ingest.on_failure_message }}'
+
+# # parse AM event name into action
+# - grok:
+#     #if: 'ctx.forgerock?.eventName.contains('-')'
+#     field: forgerock.eventName
+#     patterns:
+#       - '%{WORD:forgerock.system}-%{GREEDYDATA:forgerock.eventAction}'
 
 # AM - access
 - pipeline:
-    if: ctx.forgerock?.topic == "access" # TODO add grok for AM-*
-    name: '{{ IngestPipeline "am_access" }}'
-# AM - activity
-- pipeline:
-    if: ctx.forgerock?.topic == "activity" # TODO add grok for AM-*
-    name: '{{ IngestPipeline "am_activity" }}'
-# AM - authentication
-- pipeline:
-    if: ctx.forgerock?.topic == "authentication" # TODO add grok for AM-*
-    name: '{{ IngestPipeline "am_authentication" }}'
-# AM - config
-- pipeline:
-    if: ctx.forgerock?.topic == "config" # TODO add grok for AM-*
-    name: '{{ IngestPipeline "am_config" }}'
-# IDM - access
-- pipeline:
-    if: ctx.forgerock?.topic == "access" && ctx.forgerock?.eventName == "access"
-    name: '{{ IngestPipeline "idm_access" }}'
-# IDM - activity
-- pipeline:
-    if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.eventName == "activity"
-    name: '{{ IngestPipeline "idm_activity" }}'
-# IDM - authentication
-- pipeline:
-    if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.eventName == "activity"
-    name: '{{ IngestPipeline "idm_activity" }}'
-# IDM - config
-- pipeline:
-    if: ctx.forgerock?.topic == "config" && ctx.forgerock?.eventName == "CONFIG"
-    name: '{{ IngestPipeline "idm_config" }}'
-# IDM - sync
-- pipeline:
-    if: ctx.forgerock?.topic == "sync"
-    name: '{{ IngestPipeline "idm_sync" }}'
+    if: ctx.forgerock?.topic == "access" #&& ctx.forgerock?.system == "AM"
+    name: '{{ IngestPipeline "am-access" }}'
+# # AM - activity
+# - pipeline:
+#     if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.system == "AM"
+#     name: '{{ IngestPipeline "am-activity" }}'
+# # AM - authentication
+# - pipeline:
+#     if: ctx.forgerock?.topic == "authentication" && ctx.forgerock?.system == "AM"
+#     name: '{{ IngestPipeline "am-authentication" }}'
+# # AM - config
+# - pipeline:
+#     if: ctx.forgerock?.topic == "config" && ctx.forgerock?.system == "AM"
+#     name: '{{ IngestPipeline "am-config" }}'
+# # IDM - access
+# - pipeline:
+#     if: ctx.forgerock?.topic == "access" && ctx.forgerock?.eventName == "access"
+#     name: '{{ IngestPipeline "idm-access" }}'
+# # IDM - activity
+# - pipeline:
+#     if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.eventName == "activity"
+#     name: '{{ IngestPipeline "idm-activity" }}'
+# # IDM - authentication
+# - pipeline:
+#     if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.eventName == "activity"
+#     name: '{{ IngestPipeline "idm-activity" }}'
+# # IDM - config
+# - pipeline:
+#     if: ctx.forgerock?.topic == "config" && ctx.forgerock?.eventName == "CONFIG"
+#     name: '{{ IngestPipeline "idm-config" }}'
+# # IDM - sync
+# - pipeline:
+#     if: ctx.forgerock?.topic == "sync"
+#     name: '{{ IngestPipeline "idm-sync" }}'
 
 - remove:
     field: message

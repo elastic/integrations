@@ -34,19 +34,16 @@ processors:
       ignore_missing: true
   - set: 
       field: http.request.method
-      copy_from: forgerock.http.method
+      copy_from: forgerock.http.request.method
       ignore_failure: true
   - set: 
       field: http.request.Path
-      copy_from: forgerock.http.path
+      copy_from: forgerock.http.request.path
       ignore_failure: true
-  - set: 
-      field: http.response.status_code
-      copy_from: forgerock.response.statusCode 
-      ignore_failure: true
-  - set:
-      field: http.response.body.content
-      copy_from: forgerock.response.detail
+  - convert:
+      target_field: http.response.status_code
+      field: forgerock.response.statusCode 
+      type: integer
       ignore_failure: true
   - set:
       if: ctx?.forgerock?.response?.status == "SUCCESSFUL"
@@ -65,12 +62,12 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      if: ctx.event?.duration != null && ctx.forgerock?.response?.elapsedTime == 'MILLISECONDS'
+      if: ctx.event?.duration != null && ctx.forgerock?.response.elapsedTimeUnits == 'MILLISECONDS'
       params:
         MS_TO_NS: 1000000
       source: >-
         ctx.event.duration *= params.MS_TO_NS;
   - set:
-      field: event.module
+      field: service.name
       copy_from: forgerock.component
       ignore_failure: true
