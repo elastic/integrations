@@ -809,7 +809,7 @@ An example event for `sysmetric` looks as following:
 | host.ip | Host ip addresses. | ip |  |  |
 | oracle.pga_sga.aggregate_pga_auto_target | Amount of PGA memory the Oracle Database can use for work areas running in automatic mode. | double | byte | gauge |
 | oracle.pga_sga.aggregate_pga_target_parameter | Current value of the PGA_AGGREGATE_TARGET initialization parameter. If this parameter is not set, then its value is 0 and automatic management of PGA memory is disabled. | double | byte | gauge |
-| oracle.pga_sga.cache_hit_percentage | A metric computed by the Oracle Database to reflect the performance of the PGA memory component, cumulative since instance startup. | double | percent | gauge |
+| oracle.pga_sga.cache_hit_pct | A metric computed by the Oracle Database to reflect the performance of the PGA memory component, cumulative since instance startup. | double | percent | gauge |
 | oracle.pga_sga.global_memory_bound | Maximum size of a work area executed in automatic mode. | double | byte | gauge |
 | oracle.pga_sga.max_processes_count | Maximum number of processes active at any one time since instance startup. | double |  | gauge |
 | oracle.pga_sga.maximum_pga_allocated | Maximum number of bytes of PGA memory allocated at one time since instance startup. | double | byte | gauge |
