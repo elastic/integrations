@@ -23,7 +23,7 @@ pipeline {
     JOB_GCS_CREDENTIALS = 'fleet-ci-gcs-plugin'
     JOB_GCS_EXT_CREDENTIALS = 'fleet-ci-gcs-plugin-file-credentials'
     STACK_VERSION = "${params.stackVersion}"
-
+    BENCHMARK_THRESHOLD = '15'
     // Elastic package links definitions
     ELASTIC_PACKAGE_LINKS_FILE_PATH = "${env.HOME}/${env.BASE_DIR}/links_table.yml"
 
@@ -51,7 +51,7 @@ pipeline {
     quietPeriod(10)
   }
   triggers {
-    issueCommentTrigger("${obltGitHubComments()}")
+    issueCommentTrigger("(${obltGitHubComments()}|^/test benchmark fullreport)")
   }
   parameters {
     string(name: 'stackVersion', defaultValue: '', description: 'Version of the stack to use for testing.')
@@ -119,7 +119,7 @@ pipeline {
                         dir("${BASE_DIR}") {
                           archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/test-results/*.xml')
                           junit(allowEmptyResults: true, keepLongStdio: true, testResults: "build/test-results/*.xml")
-                          archiveArtifacts(allowEmptyArchive: true, artifacts: 'build/benchmark-results/*.xml')
+                          stashBenchmarkResults()
                           sh(label: "Collect Elastic stack logs", script: "build/elastic-package stack dump -v --output build/elastic-stack-dump/${it}")
                           archiveArtifacts(allowEmptyArchive: true, artifacts: "build/elastic-stack-dump/${it}/logs/*.log, build/elastic-stack-dump/${it}/logs/fleet-server-internal/*")
                           archiveArtifactsSafe("insecure-logs/${it}", "build/elastic-stack-dump/${it}/logs/elastic-agent-internal/*")
@@ -137,6 +137,11 @@ pipeline {
           }
         }
       }
+      post {
+        always {
+          gitHubCommentWithBenchmarkReport()
+        }
+      }
     }
   }
   post {
@@ -148,6 +153,67 @@ pipeline {
       notifyBuildResult(prComment: true)
     }
   }
+}
+
+def gitHubCommentWithBenchmarkReport() {
+  // report only on a PR basis for obvious reasons (github comments)
+  if (isPR()) {
+    def benchmarkGitHubFile = 'report.md'
+    def benchmarkResults = 'benchmark-results'
+    def currentBenchmarkResults = "build/${benchmarkResults}"
+    def baseline = "build/${env.CHANGE_TARGET}/${benchmarkResults}"
+    def detailLevel = "short"
+    if (env.GITHUB_COMMENT?.contains('benchmark fullreport')) {
+      detailLevel = "full"
+    }
+    dir("${BASE_DIR}") {
+      // download artifacts for this PR
+      def bucketUri = getBenchmarkBucketURI() + "*.xml"
+      googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: currentBenchmarkResults, pathPrefix: getBenchmarkPathPrefix())
+
+      // download artifacts from the target branch if any
+      if (env.CHANGE_TARGET) {
+        try {
+          copyArtifacts(filter: "${currentBenchmarkResults}/*.xml", flatten: true, optional: true, projectName: getBaselineJobName(), selector: lastWithArtifacts(), target: baseline)
+        } catch(e) {
+          log(level: 'INFO', text: 'gitHubCommentWithBenchmarkReport: it was not possible to copy the previous build.')
+          return
+        }
+      }
+
+      // for debugging purposes
+      if (fileExists(currentBenchmarkResults)) {
+        sh(label: 'debug current benchmark', script: "ls -l ${currentBenchmarkResults}", returnStatus: true)
+      }
+      if (fileExists(baseline)) {
+        sh(label: 'debug baseline benchmark', script: "ls -l ${baseline}", returnStatus: true)
+      }
+
+      // run the benchmark diff generator
+      withMageEnv(){
+        sh(label: 'mage GetGithubMarkdownBenchReport', script: "mage GetGithubMarkdownBenchReport ${currentBenchmarkResults} ${baseline} ${env.BENCHMARK_THRESHOLD} ${benchmarkGitHubFile} ${detailLevel}")
+      }
+
+      // report back with a github comment the benchmark diff
+      try {
+        if (fileExists("${benchmarkGitHubFile}")) {
+          // TODO: existing githubPrComment signature was not done to comment based on a file, but of a string.
+          //       hence commentFile needs to point to an unexisting file.
+          githubPrComment(message: readFile(benchmarkGitHubFile), commentFile: 'benchmark-report.md')
+        }
+      } catch(e) {
+        log(level: 'INFO', text: "gitHubCommentWithBenchmarkReport: it was not possible to send the message. ${e.toString()}")
+      }
+    }
+  }
+}
+
+def getBaselineJobName() {
+  // For a Jenkins Multibranch Pipeline, it's possible to know the current
+  // full job name with the env variable JOB_NAME.
+  // Let's get the full job name for the target branch, in other words
+  // the job name for the branch where the PR will be merged to.
+  return env.JOB_NAME.replace(env.JOB_BASE_NAME, env.CHANGE_TARGET)
 }
 
 def cleanup(){
@@ -270,14 +336,26 @@ def prepareStack() {
   sh(label: "Boot up the Elastic stack", script: "../../build/elastic-package stack up -d ${stackArgs}")
 }
 
+def stashBenchmarkResults() {
+  def wildcard = 'build/benchmark-results/*.xml'
+  r = sh(label: "isBenchmarkResultsPresent", script: "ls ${wildcard}", returnStatus: true)
+  if (r != 0) {
+    echo "isBenchmarkResultsPresent: benchmark files not found, report won't be stashed"
+    return
+  }
+  archiveArtifacts(allowEmptyArchive: true, artifacts: wildcard)
+  googleStorageUploadExt(bucket: getBenchmarkBucketURI(), credentialsId: "${JOB_GCS_EXT_CREDENTIALS}", pattern: "${wildcard}")
+}
+
 def stashCoverageReport() {
-  r = sh(label: "isCoverageReportPresent", script: "ls build/test-coverage/*.xml", returnStatus: true)
+  def wildcard = 'build/test-coverage/*.xml'
+  r = sh(label: "isCoverageReportPresent", script: "ls ${wildcard}", returnStatus: true)
   if (r != 0) {
     echo "isCoverageReportPresent: coverage files not found, report won't be stashed"
     return
   }
 
-  googleStorageUploadExt(bucket: getCoverageBucketURI(), credentialsId: "${JOB_GCS_EXT_CREDENTIALS}", pattern: "build/test-coverage/*.xml")
+  googleStorageUploadExt(bucket: getCoverageBucketURI(), credentialsId: "${JOB_GCS_EXT_CREDENTIALS}", pattern: "${wildcard}")
 }
 
 def publishCoverageReports() {
@@ -288,6 +366,14 @@ def publishCoverageReports() {
       coverageReport('build/test-coverage')
     }
   }
+}
+
+def getBenchmarkBucketURI() {
+  return "gs://${JOB_GCS_BUCKET}/" + getBenchmarkPathPrefix()
+}
+
+def getBenchmarkPathPrefix() {
+  return "${env.JOB_NAME}-${env.BUILD_ID}/benchmark-results/"
 }
 
 def getCoverageBucketURI() {
