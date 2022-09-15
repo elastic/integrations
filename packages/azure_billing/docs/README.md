@@ -137,7 +137,7 @@ The data stream has some additional options about scope and period. Please read 
 
 `Billing Scope Department`:: (_string_) Retrieve data based on the department scope.
 
-`Billing Scope Account Id`:: (_string_) Retrieve data based on the billing account ID scope.
+`Billing Scope Account ID`:: (_string_) Retrieve data based on the billing account ID scope. The billing account ID is available on the [Azure Portal](https://portal.azure.com/) at Cost Management + Billing, select a billing scope of the type "billing account", then Setting > Properties > ID.
 
 `Period`:: (_string_) The time interval to use when retrieving metric values.
 
