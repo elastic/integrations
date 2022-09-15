@@ -881,10 +881,10 @@ An example event for `pga_sga` looks as following:
 | event.dataset | Event module | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
-| oracle.system_statistics.bytes_received_via_sqlnet_from_client | Total number of bytes received from the client over Oracle Net Services. | double |  | counter |
-| oracle.system_statistics.bytes_received_via_sqlnet_from_dblink | Total number of bytes received from a database link over Oracle Net Services | double |  | counter |
-| oracle.system_statistics.bytes_sent_via_sqlnet_to_client | Total number of bytes sent to the client from the foreground processes. | double |  | counter |
-| oracle.system_statistics.bytes_sent_via_sqlnet_to_dblink | Total number of bytes sent over a database link. | double |  | counter |
+| oracle.system_statistics.bytes_received_via_sqlnet_from_client | Total number of bytes received from the client over Oracle Net Services. | double | byte | counter |
+| oracle.system_statistics.bytes_received_via_sqlnet_from_dblink | Total number of bytes received from a database link over Oracle Net Services | double | byte | counter |
+| oracle.system_statistics.bytes_sent_via_sqlnet_to_client | Total number of bytes sent to the client from the foreground processes. | double | byte | counter |
+| oracle.system_statistics.bytes_sent_via_sqlnet_to_dblink | Total number of bytes sent over a database link. | double | byte | counter |
 | oracle.system_statistics.cpu_used_by_this_session | Amount of CPU time (in 10s of milliseconds) used by a session from the time a user call starts until it ends. | double | ms | counter |
 | oracle.system_statistics.db_block_changes | This statistic counts the total number of changes that were part of an update or delete operation that were made to all blocks in the SGA. | double |  | counter |
 | oracle.system_statistics.db_block_gets_from_cache | The number of times a CURRENT block was requested from the buffer cache. | double |  | counter |
@@ -905,7 +905,7 @@ An example event for `pga_sga` looks as following:
 | oracle.system_statistics.index_fast_full_scans_full | The number of fast full scans initiated using direct read. | double |  | counter |
 | oracle.system_statistics.index_fast_full_scans_rowid_ranges | The number of fast full scans initiated with rowid endpoints specified. | double |  | counter |
 | oracle.system_statistics.java_call_heap_live_size | The Java call heap live size. | double |  | counter |
-| oracle.system_statistics.java_call_heap_total_size | The total Java call heap size. | double |  | counter |
+| oracle.system_statistics.java_call_heap_total_size | The total Java call heap size. | double | byte | counter |
 | oracle.system_statistics.java_call_heap_used_size | The Java call heap used size. | double |  | counter |
 | oracle.system_statistics.lob_reads | The number of LOB API read operations performed in the session/system. | double |  | counter |
 | oracle.system_statistics.lob_writes | The number of LOB API write operations performed in the session/system. | double |  | counter |
@@ -918,14 +918,14 @@ An example event for `pga_sga` looks as following:
 | oracle.system_statistics.parse_count_total | Total number of parse calls (hard, soft, and describe). | double |  | counter |
 | oracle.system_statistics.parse_time_cpu | Total CPU time used for parsing (hard and soft) in 10s of milliseconds | double | ms | counter |
 | oracle.system_statistics.parse_time_elapsed | Total elapsed time for parsing, in 10s of milliseconds. | double | ms | counter |
-| oracle.system_statistics.physical_read_bytes | Total size in bytes of all disk reads by application activity (and not other instance activity) only. | double |  | counter |
+| oracle.system_statistics.physical_read_bytes | Total size in bytes of all disk reads by application activity (and not other instance activity) only. | double | byte | counter |
 | oracle.system_statistics.physical_read_io_requests | Number of read requests for application activity (mainly buffer cache and direct load operation) which read one or more database blocks per request. | double |  | counter |
-| oracle.system_statistics.physical_read_total_bytes | Total size in bytes of disk reads by all database instance activity including application reads, backup and recovery, and other utilities. | double |  | counter |
+| oracle.system_statistics.physical_read_total_bytes | Total size in bytes of disk reads by all database instance activity including application reads, backup and recovery, and other utilities. | double | byte | counter |
 | oracle.system_statistics.physical_read_total_io_requests | The number of read requests which read one or more database blocks for all instance activity including application, backup and recovery, and other utilities. | double |  | counter |
 | oracle.system_statistics.physical_reads | Total number of data blocks read from disk. | double |  | counter |
-| oracle.system_statistics.physical_write_bytes | Total size in bytes of all disk writes from the database application activity (and not other kinds of instance activity). | double |  | counter |
+| oracle.system_statistics.physical_write_bytes | Total size in bytes of all disk writes from the database application activity (and not other kinds of instance activity). | double | byte | counter |
 | oracle.system_statistics.physical_write_io_requests | Number of write requests for application activity (mainly buffer cache and direct load operation) which wrote one or more database blocks per request. | double |  | counter |
-| oracle.system_statistics.physical_write_total_bytes | Total size in bytes of all disk writes for the database instance including application activity, backup and recovery, and other utilities. | double |  | counter |
+| oracle.system_statistics.physical_write_total_bytes | Total size in bytes of all disk writes for the database instance including application activity, backup and recovery, and other utilities. | double | byte | counter |
 | oracle.system_statistics.physical_write_total_io_requests | The number of write requests which wrote one or more database blocks from all instance activity including application activity, backup and recovery, and other utilities. | double |  | counter |
 | oracle.system_statistics.physical_writes | Total number of data blocks written to disk. This statistics value equals the sum of physical writes direct and physical writes from cache values. | double |  | counter |
 | oracle.system_statistics.physical_writes_direct | Number of writes directly to disk, bypassing the buffer cache (as in a direct load operation). | double |  | counter |
@@ -939,7 +939,7 @@ An example event for `pga_sga` looks as following:
 | oracle.system_statistics.redo_buffer_allocation_retries | Total number of retries necessary to allocate space in the redo buffer. | double |  | counter |
 | oracle.system_statistics.redo_log_space_requests | The number of times the active log file is full and Oracle must wait for disk space to be allocated for the redo log entries. | double |  | counter |
 | oracle.system_statistics.redo_log_space_wait_time | Total time waited in centiseconds for available space in the redo log buffer. | double |  | counter |
-| oracle.system_statistics.redo_size | Total amount of redo generated in bytes. | double |  | counter |
+| oracle.system_statistics.redo_size | Total amount of redo generated in bytes. | double | byte | counter |
 | oracle.system_statistics.redo_synch_time | Elapsed time of all redo synch writes calls in 10s of milliseconds. | double | ms | counter |
 | oracle.system_statistics.redo_write_time | Total elapsed time of the write from the redo log buffer to the current redo log file in microseconds. | double | micros | counter |
 | oracle.system_statistics.redo_writes | Total number of writes by LGWR to the redo log files. | double |  | counter |
