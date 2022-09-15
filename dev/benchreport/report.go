@@ -13,21 +13,33 @@ import (
 )
 
 const (
-	reportExt = ".xml"
-	tpl       = `### :rocket: Benchmarks report
+	reportExt         = ".xml"
+	resultNoChange    = ":+1:"
+	resultImprovement = ":green_heart:"
+	resultWorse       = ":broken_heart:"
+	tpl               = `### :rocket: Benchmarks report
 {{range $package, $reports := .}}
-#### Package ` + "`" + `{{$package}}` + "`" + `
+#### Package ` + "`" + `{{$package}}` + "`" + ` {{getReportsSummary $reports}}
+{{if hasPrintableReports $reports}}
+<details>
+<summary>Expand to view</summary>
 
 Data stream | Previous EPS | New EPS | Diff (%) | Result
 ----------- | ------------ | ------- | -------- | ------
-{{range $reports}}` + "`" + `{{.DataStream}}` + "`" + ` | {{.Old}} | {{.New}} | {{.Diff}} ({{.Percentage}}%) | {{getResult .Old .Percentage}}
-{{end}}{{end}}`
+{{range $reports}}{{$result := getResult .Old .Percentage}}{{if isPrintable $result}}` +
+		"`" + `{{.DataStream}}` + "`" +
+		` | {{.Old}} | {{.New}} | {{.Diff}} ({{.Percentage}}%) | {{$result}}
+{{end}}{{end}}</details>{{end}}
+{{end}}
+
+To see the full report comment with ` + "`/test benchmark fullReport`\n"
 )
 
 type options struct {
-	sourceDir string
-	targetDir string
-	threshold float64
+	sourceDir  string
+	targetDir  string
+	fullReport bool
+	threshold  float64
 }
 
 func (o *options) validate() error {
@@ -51,18 +63,19 @@ type report struct {
 	Percentage float64
 }
 
-func GetBenchReport(sourceDir, targetDir string, threshold float64) ([]byte, error) {
+func GetBenchReport(sourceDir, targetDir string, threshold float64, fullReport bool) ([]byte, error) {
 	opts := options{
-		sourceDir: sourceDir,
-		targetDir: targetDir,
-		threshold: threshold,
+		sourceDir:  sourceDir,
+		targetDir:  targetDir,
+		threshold:  threshold,
+		fullReport: fullReport,
 	}
 
 	if err := opts.validate(); err != nil {
 		return nil, err
 	}
 
-	tpl, err := getReportTpl(opts.threshold)
+	tpl, err := getReportTpl(opts)
 	if err != nil {
 		return nil, err
 	}
@@ -101,11 +114,10 @@ func run(opts options) (map[string][]report, error) {
 			return nil, fmt.Errorf("reading source result: %w", err)
 		}
 
-		pkg, _ := srcRes.getPackageAndDatastream()
-
+		pkg, ds := srcRes.getPackageAndDatastream()
 		var tgtRes BenchmarkResult
 		if tgtEntry, found := tgtResults[pkg]; found {
-			tgtRes, err = readResult(opts.targetDir, tgtEntry)
+			tgtRes, err = readResult(opts.targetDir, tgtEntry[ds])
 			if err != nil {
 				return nil, fmt.Errorf("reading source result: %w", err)
 			}
@@ -135,19 +147,53 @@ func roundFloat64(v float64) float64 {
 	return math.Round(v*100) / 100
 }
 
-func getReportTpl(threshold float64) (*template.Template, error) {
+func getReportTpl(opts options) (*template.Template, error) {
 	return template.New("result").Funcs(map[string]interface{}{
 		"getResult": func(oldValue, p float64) string {
-			switch {
-			default:
-				fallthrough
-			case oldValue == 0:
-				return ":+1:"
-			case p > threshold:
-				return ":green_heart:"
-			case p < 0 && p < (threshold*-1):
-				return ":broken_heart:"
+			return getResult(opts.threshold, oldValue, p)
+		},
+		"isPrintable": func(result string) bool {
+			return isPrintable(opts.fullReport, result)
+		},
+		"getReportsSummary": func(reports []report) string {
+			sum := map[string]int{}
+			for _, r := range reports {
+				sum[getResult(opts.threshold, r.Old, r.Percentage)] += 1
 			}
+			return fmt.Sprintf(
+				"%s(%d) %s(%d) %s(%d)",
+				resultNoChange, sum[resultNoChange],
+				resultImprovement, sum[resultImprovement],
+				resultWorse, sum[resultWorse],
+			)
+		},
+		"hasPrintableReports": func(reports []report) bool {
+			for _, r := range reports {
+				if isPrintable(opts.fullReport, getResult(opts.threshold, r.Old, r.Percentage)) {
+					return true
+				}
+			}
+			return false
 		},
 	}).Parse(tpl)
+}
+
+func getResult(threshold, oldValue, p float64) string {
+	switch {
+	default:
+		fallthrough
+	case oldValue == 0:
+		return resultNoChange
+	case p > threshold:
+		return resultImprovement
+	case p < 0 && p < (threshold*-1):
+		return resultWorse
+	}
+}
+
+func isPrintable(fullReport bool, result string) bool {
+	if fullReport {
+		return true
+	}
+	return result == resultWorse
 }

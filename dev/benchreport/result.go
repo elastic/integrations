@@ -30,20 +30,23 @@ func listAllDirResults(path string) ([]os.DirEntry, error) {
 	return filtered, nil
 }
 
-func listAllDirResultsAsMap(path string) (map[string]fs.DirEntry, error) {
+func listAllDirResultsAsMap(path string) (map[string]map[string]fs.DirEntry, error) {
 	entries, err := listAllDirResults(path)
 	if err != nil {
 		return nil, err
 	}
 
-	m := map[string]fs.DirEntry{}
+	m := map[string]map[string]fs.DirEntry{}
 	for _, entry := range entries {
 		res, err := readResult(path, entry)
 		if err != nil {
 			return nil, fmt.Errorf("reading result: %w", err)
 		}
-		pkg, _ := res.getPackageAndDatastream()
-		m[pkg] = entry
+		pkg, ds := res.getPackageAndDatastream()
+		if m[pkg] == nil {
+			m[pkg] = map[string]fs.DirEntry{}
+		}
+		m[pkg][ds] = entry
 	}
 
 	return m, nil

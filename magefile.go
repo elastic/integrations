@@ -53,12 +53,13 @@ func ImportBeats() error {
 	return sh.Run("go", args...)
 }
 
-func BenchReport(source, target, threshold, outputFile string) error {
+func GetGithubMarkdownBenchReport(source, target, threshold, outputFile, detailLevel string) error {
 	t, err := strconv.ParseFloat(threshold, 64)
 	if err != nil {
 		return err
 	}
-	report, err := benchreport.GetBenchReport(source, target, t)
+	isFull := detailLevel == "full"
+	report, err := benchreport.GetBenchReport(source, target, t, isFull)
 	if err != nil {
 		return err
 	}
