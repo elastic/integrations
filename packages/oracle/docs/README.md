@@ -956,8 +956,6 @@ An example event for `pga_sga` looks as following:
 | oracle.system_statistics.table_scans_direct_read | The number of table scans performed with direct read (bypassing the buffer cache). | double |  | counter |
 | oracle.system_statistics.table_scans_long_tables | Long (or conversely short) tables can be defined as tables that do not meet the short table criteria. | double |  | counter |
 | oracle.system_statistics.table_scans_rowid_ranges | During parallel query, the number of table scans conducted with specified ROWID ranges. | double |  | counter |
-| oracle.system_statistics.transaction_lock_background_get_time | Useful only for internal debugging purposes. | double |  | counter |
-| oracle.system_statistics.transaction_lock_foreground_wait_time | Useful only for internal debugging purposes. | double |  | counter |
 | oracle.system_statistics.transaction_rollbacks | Number of transactions being successfully rolled back. | double |  | counter |
 | oracle.system_statistics.user_calls | Number of user calls such as login, parse, fetch, or execute. | double |  | counter |
 | oracle.system_statistics.user_commits | Number of user commits. When a user commits a transaction, the redo generated that reflects the changes made to database blocks must be written to disk. | double |  | counter |
@@ -973,14 +971,12 @@ An example event for `system_statistics` looks as following:
     "oracle": {
         "system_statistics": {
             "parallel_operations_not_downgraded": 74269,
-            "transaction_lock_background_get_time": 0,
             "physical_writes_direct": 49593,
             "os_user_time_used": 0,
             "physical_writes_from_cache": 1640956,
             "user_calls": 1728270,
             "table_scan_rows_gotten": 6496308028,
             "smon_posted_for_txn_recovery_for_other_instances": 0,
-            "transaction_lock_foreground_wait_time": 0,
             "enqueue_deadlocks": 0,
             "gc_current_block_receive_time": 0,
             "queries_parallelized": 0,
