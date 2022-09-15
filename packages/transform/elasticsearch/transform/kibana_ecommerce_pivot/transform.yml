@@ -1,0 +1,33 @@
+source:
+  index: kibana_sample_data_ecommerce
+  query:
+    term:
+      geoip.continent_name:
+        value: Asia
+pivot:
+  group_by:
+    customer_id:
+      terms:
+        field: customer_id
+  aggregations:
+    max_price:
+      max:
+        field: taxful_total_price
+    count_category:
+      cardinality:
+        field: category.keyword
+    min_total_quantity:
+      max:
+        field: total_quantity
+description: Aggregated ecommerce data grouped by customer_id
+dest:
+  index: kibana_sample_data_ecommerce_transform2
+frequency: 5m
+sync:
+  time:
+    field: order_date
+    delay: 60s
+retention_policy:
+  time:
+    field: order_date
+    max_age: 30d
