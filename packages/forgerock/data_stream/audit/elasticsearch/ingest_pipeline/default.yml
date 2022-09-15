@@ -30,21 +30,16 @@ processors:
     copy_from: forgerock.transactionId
     ignore_failure: true
 
-# - set: 
-#     field: '@timestamp'
-#     copy_from: forgerock.timestamp
-#     ignore_failure: true
-
-# - date:
-#     field: forgerock.timestamp
-#     formats:
-#       - ISO8601
-#     target_field: forgerock.testing
-#     timezone: UTC
-#     # on_failure:
-#     #   - append:
-#     #       field: error.message
-#     #       value: '{{ _ingest.on_failure_message }}'
+- date:
+    field: forgerock.timestamp
+    formats:
+      - ISO8601
+    target_field: '@timestamp'
+    timezone: UTC
+    on_failure:
+      - append:
+          field: error.message
+          value: '{{ _ingest.on_failure_message }}'
 
 # # parse AM event name into action
 # - grok:
