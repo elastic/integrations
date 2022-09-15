@@ -1,6 +1,6 @@
 # Istio Integration
 
-This integration ingest access logs created by the [Istio](https://istio.io/) service mesh.
+This integration ingest access logs and metrics created by the [Istio](https://istio.io/) service mesh.
 
 ## Compatibility
 
