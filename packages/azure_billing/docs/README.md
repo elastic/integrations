@@ -6,7 +6,7 @@ The integration supports metrics collection at subscription, department, or bill
 
 ## How it works
 
-The Elastic Agent connect to Azure APIs, fetches usage details and forecast data, and sent it to a dedicated data stream named `metrics-azure.billing-default` in Elasticsearch.
+The Elastic Agent connects to Azure APIs, fetches usage details and forecast data, and sends it to a dedicated data stream named `metrics-azure.billing-default` in Elasticsearch.
 
 ```text
          ┌────────────────────┐       ┌─────────┐       ┌─-─────────────────────┐
@@ -16,15 +16,15 @@ The Elastic Agent connect to Azure APIs, fetches usage details and forecast data
          └────────────────────┘       └─────────┘       └───-───────────────────┘                                              
 ```
 
-Elastic Agent needs an App Registration to access to Azure on you behalf the collect data using the Azure REST APIs. App Registrations are clients used to programmatically access Azure APIs.
+Elastic Agent needs an App Registration to access Azure on your behalf to collect data using the Azure REST APIs. App Registrations are required to access Azure APIs programmatically.
 
-To set up a new App Registration you need to:
+To set up a new App Registration, you need to:
 
 * Register a new App
 * Add credentials
 * Assign Role
 
-In the next section we will create a new App Registration for the Agent.
+In the next section, we will create a new App Registration for the Agent.
 
 ## App Registration
 
@@ -42,66 +42,66 @@ Follow these steps to create the app registration:
 1. Sign in to the [Azure Portal](https://portal.azure.com/).
 2. Search for and select Azure Active Directory.
 3. Under Manage, select App registrations > New registration.
-4. Enter a display Name for your application. Possible names are "elastic-agent".
+4. Enter a display Name for your application. Possible names are "elastic-agent."
 5. Specify who can use the application.
-6. Don't enter anything for Redirect URI. It's optional, the the Agent doesn't use it.
+6. Don't enter anything for Redirect URI. It's optional; the Agent doesn't use it.
 7. Select Register to complete the initial app registration.
 
-Take note of the following values, we will use it in the integration settings later:
+Take note of the following values. We will use it in the Settings section later:
 
-* `Client ID`: use the content of the "Application (client) ID".
+`Client ID`: use the content of the "Application (client) ID."
 
 You now have a new App Registration ready for the next steps.
 
 ### Add Credentials
 
-Credentials allow your application access Azure APIs and authenticate as itself, requiring no interaction from a user at runtime.
+Credentials allow your application to access Azure APIs and authenticate itself, requiring no interaction from a user at runtime.
 
 This integration uses Client Secrets to prove its identity.
 
-1. In the [Azure Portal](https://portal.azure.com/), in App registrations, select the application we created in the previous section.
+1. In the [Azure Portal](https://portal.azure.com/), select the application we created in the previous "Register a new App" section.
 1. Select Certificates & secrets > Client secrets > New client secret.
 1. Add a description (for example, "Elastic Agent client secrets").
 1. Select an expiration for the secret or specify a custom lifetime.
 1. Select Add.
 
-Take note of the following values, we will use it in the integration settings later:
+Take note of the following value. We will use it in the Settings section later:
 
-* `Client Secret`: use the content of the "Value".
+`Client Secret`: use the content of the "Value" field.
 
-This secret value is never displayed again after you leave this page. Record the secret's value in a safe place, you will need it in the integration settings page.
+This secret value is never displayed again after you leave this page. Record the secret's value in a safe place. You will need it on the integration's settings page.
 
 ### Assign Role
 
 1. In the [Azure Portal](https://portal.azure.com/), search for and select Subscriptions.
-1. Select the particular subscription to assign the application to.
+1. Select the subscription to assign the application.
 1. Select Access control (IAM).
 1. Select Add > Add role assignment to open the Add role assignment page.
 1. In the Role tab, search and select the role "Billing Reader".
 1. Select the Next button to move to the Members tab.
-1. Select Assign access to-> User, group, or service principal and then select Select members. By default, Azure AD applications aren't displayed in the available options.
-1. To find your application, search by name (for example, "elastic-agent") and select it from the returned list.
+1. Select Assign access to-> User, group, or service principal, and select Select members. This page does not display Azure AD applications in the available options by default.
+1. To find your application, search by name (for example, "elastic-agent") and select it from the list.
 1. Click the Select button.
 1. Then click the Review + assign button.
 
-Your App Registration is set up.
-
-Take note of the following values from this section, we will use it in the integration settings later:
+Take note of the following values. We will use it in the Settings section later:
 
 * `Subscription ID`: use the content of the "Subscription ID" you selected.
-* `Tenant ID`: use the "Tenant ID" from the Azure Active Directory you are using.
+* `Tenant ID`: use the "Tenant ID" from the Azure Active Directory you use.
+
+Your App Registration is now ready for the Elastic Agent.
 
 ## Settings
 
 ### Main Options
 
-The main section of the settings contain all the option to access the Azure APIs and collect the billing data. You will now use all the notes you collected in the previous sections.
+The settings' main section contains all the options to access the Azure APIs and collect the billing data. You will now use all the notes you collected in the previous sections.
 
-`Client ID` :: The unique identifier of the App Registration (sometimes is referred as Application ID).
+`Client ID` :: The unique identifier of the App Registration (sometimes referred to as Application ID).
 
-`Client Secret` :: The client secret used for authentication.
+`Client Secret` :: The client secret for authentication.
 
-`Subscription ID` :: The unique identifier for the azure subscription. It is used to access Azure APIs, and it is also used as default scope for billing information. See the Scope section for more information.
+`Subscription ID` :: The unique identifier for the Azure subscription. The Agent uses it to access Azure APIs. The Agent also uses this ID as the default scope for billing information: see the Scope section for more details.
 
 `Tenant ID` :: The unique identifier of the Azure Active Directory's Tenant ID.
 
@@ -111,7 +111,8 @@ In addition, there are two additional advanced options:
 
 `Resource Manager Endpoint` ::
 _string_
-Optional, by default the azure public environment will be used, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
+Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
+
 Examples:
 
 * https://management.chinacloudapi.cn for azure ChinaCloud
@@ -121,7 +122,8 @@ Examples:
 
 `Active Directory Endpoint` ::
 _string_
-Optional, by default the associated active directory endpoint to the resource manager endpoint will be used, to override, users can provide a specific active directory endpoint in order to use a different azure environment.
+Optional. By default, the integration uses the associated Active Directory Endpoint. To override, users can provide a specific active directory endpoint to use a different Azure environment.
+
 Examples:
 
 * https://login.microsoftonline.com for azure ChinaCloud
@@ -131,7 +133,7 @@ Examples:
 
 ### Data Stream Options
 
-The data streams has some additional options about scope and period. To learn more about the scope, please read the "Scope" ssection.
+The data stream has some additional options about scope and period. Please read the "Scope" section to learn more about the scope.
 
 `Billing Scope Department`:: (_string_) Retrieve data based on the department scope.
 
@@ -141,28 +143,25 @@ The data streams has some additional options about scope and period. To learn mo
 
 ## Scope
 
-There are three supported scope for this integration:
+There are three supported scopes for this integration:
 
 * Subscription
 * Department
 * Billing Account
 
-The integration uses the Subscription ID as default scope for the billing data.
+The integration uses the Subscription ID as the default scope for the billing data.
 
-To change the scope, expand the section "Collect Azure Billing metrics" in the integration settings and set one of the two available options (if you set both, the billing account scope take precedence over deparment):
+To change the scope, expand the data stream section named "Collect Azure Billing metrics" in the integration settings and set one of the two available options (if you set both, the billing account scope take precedence over the department):
 
 * `Billing Scope Department`
 * `Billing Scope Account ID`
-
 
 ## Data Sources
 
 The integration retrieves two kinds of data:
 
 * [Usage details](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/consumption-api-overview#usage-details-api), from the Consumption API.
-* [Forecast](https://docs.microsoft.com/en-us/rest/api/cost-management/forecast) information, from the Cost Management API.
-
-
+* [Forecast](https://docs.microsoft.com/en-us/rest/api/cost-management/forecast) information from the Cost Management API.
 
 ## Costs
 
