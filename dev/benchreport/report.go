@@ -32,7 +32,7 @@ Data stream | Previous EPS | New EPS | Diff (%) | Result
 {{end}}{{end}}</details>{{end}}
 {{end}}
 
-To see the full report comment with ` + "`/test benchmark fullReport`\n"
+To see the full report comment with ` + "`/test benchmark fullreport`\n"
 )
 
 type options struct {

@@ -51,7 +51,7 @@ pipeline {
     quietPeriod(10)
   }
   triggers {
-    issueCommentTrigger("${obltGitHubComments()}")
+    issueCommentTrigger("${obltGitHubComments()}|^/test benchmark fullreport")
   }
   parameters {
     string(name: 'stackVersion', defaultValue: '', description: 'Version of the stack to use for testing.')
@@ -163,6 +163,9 @@ def gitHubCommentWithBenchmarkReport() {
     def currentBenchmarkResults = "build/${benchmarkResults}"
     def baseline = "build/${env.CHANGE_TARGET}/${benchmarkResults}"
     def detailLevel = "short"
+    if (env.GITHUB_COMMENT?.contains('benchmark fullreport')) {
+      detailLevel = "full"
+    }
     dir("${BASE_DIR}") {
       // download artifacts for this PR
       def bucketUri = getBenchmarkBucketURI() + "*.xml"
