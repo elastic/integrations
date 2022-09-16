@@ -3,7 +3,10 @@ description: Pipeline for parsing Cloudflare Audit logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.2.0'
+      value: '8.4.0'
+  - set:
+      field: event.kind
+      value: event
   - rename:
       field: message
       target_field: event.original
@@ -12,38 +15,24 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - pipeline:
+      name: '{{ IngestPipeline "logpull" }}'
+      if: ctx.json?.actor != null && ctx.json.actor instanceof Map
+  - pipeline:
+      name: '{{ IngestPipeline "logpush" }}'
+      if: ctx.json?.actor == null
   - set:
-      field: event.type
-      value: [info]
-  - set:
-      field: event.kind
-      value: event
-  - set:
-      field: event.category
-      value: [authentication]
-  - date:
-      field: json.When
-      if: ctx.json?.When != null && ctx.json.When != ''
-      formats:
-        - ISO8601
-        - uuuu-MM-dd'T'HH:mm:ssX
-        - uuuu-MM-dd'T'HH:mm:ss.SSSX
-        - yyyy-MM-dd'T'HH:mm:ssZ
-        - yyyy-MM-dd'T'HH:mm:ss.SSSZ
-        - UNIX_MS
-      timezone: UTC
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+      field: cloud.provider
+      value: cloudflare
+  - fingerprint:
+      fields:
+        - event.id
+      target_field: _id
+      ignore_missing: true
   - set:
       field: cloudflare.audit.timestamp
       copy_from: '@timestamp'
       ignore_failure: true
-  - rename:
-      field: json.ActionType
-      target_field: cloudflare.audit.action.type
-      ignore_missing: true
   - set:
       field: event.action
       copy_from: cloudflare.audit.action.type
@@ -52,37 +41,31 @@ processors:
       field: event.action
       ignore_missing: true
   - set:
-      field: cloudflare.audit.action.result
-      value: success
-      if: ctx.json?.ActionResult
-  - set:
-      field: cloudflare.audit.action.result
-      value: failure
-      if: '!ctx.json?.ActionResult'
-  - set:
       field: event.outcome
       copy_from: cloudflare.audit.action.result
       ignore_failure: true
-  - rename:
-      field: json.ActorEmail
-      target_field: cloudflare.audit.actor.email
-      ignore_missing: true
+  - set:
+      field: event.provider
+      copy_from: cloudflare.audit.interface
+      ignore_failure: true
+  - set:
+      field: event.id
+      copy_from: cloudflare.audit.id
+      ignore_failure: true
   - set:
       field: user.email
       copy_from: cloudflare.audit.actor.email
       ignore_failure: true
-  - rename:
-      field: json.ActorID
-      target_field: cloudflare.audit.actor.id
-      ignore_missing: true
   - set:
       field: user.id
       copy_from: cloudflare.audit.actor.id
       ignore_failure: true
+  - set:
+      field: source.address
+      copy_from: cloudflare.audit.actor.ip
+      ignore_failure: true
   - convert:
-      field: json.ActorIP
-      target_field: cloudflare.audit.actor.ip
-      if: ctx.json?.ActorIP != ''
+      field: cloudflare.audit.actor.ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -93,53 +76,125 @@ processors:
       field: source.ip
       copy_from: cloudflare.audit.actor.ip
       ignore_failure: true
-  - rename:
-      field: json.ActorType
-      target_field: cloudflare.audit.actor.type
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+      - asn
+      - organization_name
       ignore_missing: true
   - rename:
-      field: json.ID
-      target_field: cloudflare.audit.id
-      ignore_missing: true
-  - set:
-      field: event.id
-      copy_from: cloudflare.audit.id
-      ignore_failure: true
-  - rename:
-      field: json.Interface
-      target_field: cloudflare.audit.interface
-      ignore_missing: true
-      if: ctx.json?.interface != ''
-  - set:
-      field: event.provider
-      copy_from: cloudflare.audit.interface
-      ignore_failure: true
-  - rename:
-      field: json.Metadata
-      target_field: cloudflare.audit.metadata
+      field: source.as.asn
+      target_field: source.as.number
       ignore_missing: true
   - rename:
-      field: json.NewValue
-      target_field: cloudflare.audit.new_value
-      if: ctx.json?.NewValue != null
+      field: source.as.organization_name
+      target_field: source.as.organization.name
       ignore_missing: true
-  - rename:
-      field: json.OldValue
-      target_field: cloudflare.audit.old_value
-      if: ctx.json?.OldValue != null
-      ignore_missing: true
-  - rename:
-      field: json.OwnerID
-      target_field: cloudflare.audit.owner.id
-      ignore_missing: true
-  - rename:
-      field: json.ResourceID
-      target_field: cloudflare.audit.resource.id
-      ignore_missing: true
-  - rename:
-      field: json.ResourceType
-      target_field: cloudflare.audit.resource.type
-      ignore_missing: true
+
+  - script:
+      lang: painless
+      tag: Add ECS categorization
+      params:
+        login:
+          category:
+            - authentication
+          type:
+            - info
+          outcome: success
+        token_create:
+          category: 
+            - iam
+          type:
+            - creation
+        token_revoke:
+          category: 
+            - iam
+          type:
+            - deletion
+        token_roll:
+          category: 
+            - iam
+          type:
+            - change
+        api_key_view:
+          category: 
+            - iam
+          type:
+            - info
+        rotate_api_key:
+          category: 
+            - iam
+          type:
+            - change
+        api_key_created:
+          category: 
+            - iam
+          type:
+            - creation
+        purge:
+          category: 
+            - configuration
+          type:
+            - deletion
+        tls_settings_deployed:
+          category: 
+            - configuration
+          type:
+            - info
+        add:
+          category: 
+            - configuration
+          type:
+            - creation
+        delete:
+          category: 
+            - configuration
+          type:
+            - deletion
+        rec_add:
+          category: 
+            - configuration
+          type:
+            - creation
+        rec_del:
+          category: 
+            - configuration
+          type:
+            - deletion
+        pending:
+          category: 
+            - configuration
+          type:
+            - info
+        change_setting:
+          category: 
+            - configuration
+          type:
+            - change
+        add_enforce_twofactor:
+          category: 
+            - iam
+            - configuration
+          type:
+            - admin
+            - info
+      source: >-
+        ctx.event.kind = 'event';
+        ctx.event.type = 'info';
+        if (ctx?.event?.action == null) {
+            return;
+        }
+        if (params.get(ctx.event.action) == null) {
+            return;
+        }
+        def hm = new HashMap(params.get(ctx.event.action));
+        hm.forEach((k, v) -> ctx.event[k] = v);
   - append:
       field: related.user
       value: '{{{user.id}}}'
@@ -147,13 +202,20 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - append:
+      field: related.user
+      value: "{{cloudflare.audit.resource.id}}"
+      allow_duplicates: false
+      if: ctx.cloudflare?.audit?.resource?.id != null && ctx.cloudflare?.audit?.resource?.type == "user"
+  - append:
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
-      field: json
+      field:
+        - json
+        - _config
       ignore_missing: true
   - remove:
       field:

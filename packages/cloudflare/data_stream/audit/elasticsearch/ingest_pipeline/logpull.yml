@@ -1,0 +1,92 @@
+---
+description: Pipeline for parsing Cloudflare LogPull Audit logs.
+processors:
+  - set:
+      field: cloud.account.id
+      copy_from: _config.account_id
+      ignore_empty_value: true
+  - date:
+      field: json.when
+      if: ctx.json?.when != null && ctx.json.when != ''
+      formats:
+        - ISO8601
+      timezone: UTC
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.action.type
+      target_field: cloudflare.audit.action.type
+      ignore_missing: true
+  - set:
+      field: cloudflare.audit.action.result
+      value: success
+      if: ctx.json?.action?.result
+  - set:
+      field: cloudflare.audit.action.result
+      value: failure
+      if: "!ctx.json?.action?.result"
+  - rename:
+      field: json.actor.email
+      target_field: cloudflare.audit.actor.email
+      ignore_missing: true
+  - rename:
+      field: json.actor.id
+      target_field: cloudflare.audit.actor.id
+      ignore_missing: true
+  - rename:
+      field: json.actor.ip
+      target_field: cloudflare.audit.actor.ip
+      ignore_missing: true
+  - rename:
+      field: json.actor.type
+      target_field: cloudflare.audit.actor.type
+      ignore_missing: true
+  - rename:
+      field: json.id
+      target_field: cloudflare.audit.id
+      ignore_missing: true
+  - rename:
+      field: json.interface
+      target_field: cloudflare.audit.interface
+      ignore_missing: true
+      if: ctx.json?.interface != ""
+  - rename:
+      field: json.metadata
+      target_field: cloudflare.audit.metadata
+      ignore_missing: true
+  - rename:
+      field: json.newValueJson
+      target_field: cloudflare.audit.new_value
+      ignore_missing: true
+  - rename:
+      field: json.oldValueJson
+      target_field: cloudflare.audit.old_value
+      ignore_missing: true
+  - rename:
+      field: json.newValue
+      target_field: cloudflare.audit.new_value.value
+      ignore_missing: true
+      if: ctx.json?.newValue != "null"
+  - rename:
+      field: json.oldValue
+      target_field: cloudflare.audit.old_value.value
+      ignore_missing: true
+      if: ctx.json?.oldValue != "null"
+  - rename:
+      field: json.owner.id
+      target_field: cloudflare.audit.owner.id
+      ignore_missing: true
+  - rename:
+      field: json.resource.id
+      target_field: cloudflare.audit.resource.id
+      ignore_missing: true
+  - rename:
+      field: json.resource.type
+      target_field: cloudflare.audit.resource.type
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"

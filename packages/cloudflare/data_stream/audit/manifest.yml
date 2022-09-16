@@ -149,3 +149,105 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+  - input: httpjson
+    title: Audit logs via HTTP REST API
+    description: Collect Audit logs from Cloudflare. Enterprise customers should use LogPush methods; AWS S3 or HTTP Endpoint.
+    template_path: httpjson.yml.hbs
+    enabled: false
+    vars:
+      - name: auth_email
+        type: text
+        title: Auth Email
+        description: The Auth Email. Needs to be used with an Auth Key.
+        multi: false
+        required: true
+        show_user: true
+      - name: auth_key
+        type: password
+        title: Auth Key
+        description: The Auth Key. Needs to be used with an Auth Email.
+        multi: false
+        required: true
+        show_user: true
+      - name: account
+        type: text
+        title: Account ID
+        multi: false
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        description: Interval at which the logs will be pulled. The value must be between 2m and 1h.
+        default: 1h
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: false
+        description: Initial interval at which the logs will be pulled. Defaults to 30 days (720 hours). Max is 12960 hours (18 months).
+        default: 720h
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - cloudflare_audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: true
+        title: Preserve duplicate custom fields
+        description: Preserve custom fields for all ECS mappings.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
+      - name: api_url
+        type: text
+        title: API URL.
+        description: The API URL without the path.
+        multi: false
+        required: true
+        show_user: false
+        default: https://api.cloudflare.com
+      - name: ssl
+        type: yaml
+        title: SSL
+        multi: false
+        required: false
+        show_user: false
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        multi: false
+        required: false
+        show_user: false
+        description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        multi: false
+        required: false
+        show_user: true
+        default: 60s
