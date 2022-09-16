@@ -1,74 +1,172 @@
-# Cloudflare Integration
+# Cloudflare Logpush
 
-Cloudflare integration uses [Cloudflare's API](https://api.cloudflare.com/) to retrieve [audit logs](https://support.cloudflare.com/hc/en-us/articles/115002833612-Understanding-Cloudflare-Audit-Logs) and [traffic logs](https://developers.cloudflare.com/logs/logpull/understanding-the-basics/) from Cloudflare, for a particular zone, and ingest them into Elasticsearch. This allows you to search, observe and visualize the Cloudflare log events through Elasticsearch.
+## Overview
 
-Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudflare/) use Cloudflare services to increase the security and performance of their web sites and services. 
+The [Cloudflare Logpush](https://www.cloudflare.com/) integration allows you to monitor Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics and Spectrum Event Logs. Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
-## Configuration
+The Cloudflare Logpush integration can be used in three different modes to collect data:
+- HTTP Endpoint mode - Cloudflare pushes logs directly to an HTTP endpoint hosted by your Elastic Agent.
+- AWS S3 polling mode - Cloudflare writes data to S3 and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
+- AWS S3 SQS mode - Cloudflare writes data to S3, S3 pushes a new object notification to SQS, Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple Agents can be used in this mode.
+
+For example, you could use the data from this integration to know which websites have the highest traffic, which areas have the highest network traffic, or observe mitigation statistics.
+
+## Data streams
+
+The Cloudflare Logpush integration collects logs for seven types of events: Audit, DNS, Firewall Event, HTTP Request, NEL Report, Network Analytics, and Spectrum Event.
+
+**Audit**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
+
+**DNS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/dns_logs/).
+
+**Firewall Event**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/firewall_events/).
+
+**HTTP Request**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/http_requests/).
+
+**NEL Report**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/nel_reports/).
+
+**Network Analytics**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
+
+**Spectrum Event**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/spectrum_events/).
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+This module has been tested against **Cloudflare version v4**.
+
+**Note**: It is recommended to use AWS SQS for Cloudflare Logpush.
+
+## Setup
+
+### To collect data from AWS S3 Bucket, follow the below steps:
+- Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to ingest data into an AWS S3 bucket.
+- The default value of the "Bucket List Prefix" is listed below. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
+
+  | Data Stream Name  | Bucket List Prefix     |
+  | ----------------- | ---------------------- |
+  | Audit Logs        | audit_logs             |
+  | DNS               | dns                    |
+  | Firewall Event    | firewall_event         |
+  | HTTP Request      | http_request           |
+  | NEL Report        | nel_report             |
+  | Network Analytics | network_analytics_logs |
+  | Spectrum Event    | spectrum_event         |
+
+### To collect data from AWS SQS, follow the below steps:
+1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
+2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+  - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
+3. Setup event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+  - The user has to perform Step 3 for all the data-streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `audit_logs/` for audit data stream.)
+  - For all the event notifications that have been created, select the event type as s3:ObjectCreated:*, select the destination type SQS Queue, and select the queue that has been created in Step 2.
+
+**Note**:
+  - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
+  - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
+
+### To collect data from the Cloudflare HTTP Endpoint, follow the below steps:
+- Reference link to [Enable HTTP destination](https://developers.cloudflare.com/logs/get-started/enable-destinations/http/) for Cloudflare Logpush.
+- Add same custom header along with its value on both the side for additional security.
+- For example, while creating a job along with a header and value for a particular dataset:
+```
+curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE ID>/logpush/jobs' \
+--header 'X-Auth-Key: <X-AUTH-KEY>' \
+--header 'X-Auth-Email: <X-AUTH-EMAIL>' \
+--header 'Authorization: <BASIC AUTHORIZATION>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name":"<public domain>",
+    "destination_conf": "https://<public domain>:<public port>?header_<secret_header>=<secret_value>",
+    "dataset": "http_requests",
+    "logpull_options": "fields=RayID,EdgeStartTimestamp&timestamps=rfc3339"
+}'
+```
 
 ### Enabling the integration in Elastic
+1. In Kibana, go to Management > Integrations
+2. In the integrations search bar type **Cloudflare Logpush**.
+3. Click the **Cloudflare Logpush** integration from the search results.
+4. Click the **Add Cloudflare Logpush** button to add Cloudflare Logpush integration.
+5. Enable the Integration with the HTTP Endpoint or AWS S3 input.
+6. Under the AWS S3 input, there are two types of inputs: using AWS S3 Bucket or using SQS.
+7. Configure Cloudflare to send logs to the Elastic Agent.
 
-1. In Kibana go to **Management > Integrations**
-2. In the "Search for integrations" search bar type **Cloudflare**.
-3. Click on "Cloudflare" integration from the search results.
-4. Click on **Add Cloudflare** button to add Cloudflare integration.
+## Logs reference
 
-### Configure Cloudflare audit logs data stream
+### audit
 
-Enter values "Auth Email", "Auth Key" and "Account ID".
+This is the `audit` dataset.
+Default port for HTTP Endpoint: _9560_
 
-1. **Auth Email** is the email address associated with your account. 
-2. [**Auth Key**](https://developers.cloudflare.com/api/keys/) is the API key generated on the "My Account" page.
-3. **Account ID** can be found on the Cloudflare dashboard. Follow the navigation documentation from [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
-
-NOTE: See for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
-
-### Configure Cloudflare logs
-
-These logs contain data related to the connecting client, the request path through the Cloudflare network, and the response from the origin web server. For more information see [here](https://developers.cloudflare.com/logs/logpull/).
-
-The integration can retrieve Cloudflare logs using -
-
-1. Auth Email and Auth Key
-2. API Token
-
-More information is available [here](https://developers.cloudflare.com/logs/logpull/requesting-logs/#required-authentication-headers)
-
-#### Configure using Auth Email and Auth Key
-
-Enter values "Auth Email", "Auth Key" and "Zone ID".
-
-1. **Auth Email** is the email address associated with your account. 
-2. [**Auth Key**](https://developers.cloudflare.com/api/keys/) is the API key generated on the "My Account" page.
-3. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
-
->  Note: See for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
-
-#### Configure using API Token
-
-Enter values "API Token" and "Zone ID".
-
-For the Cloudflare integration to be able to successfully get logs the following permissions must be granted to the API token -
-
-- Account.Access: Audit Logs: Read
-
-1. [**API Tokens**](https://developers.cloudflare.com/api/tokens/) allow for more granular permission settings. 
-2. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
-
-## Logs
-
-### Audit
-
-Audit logs summarize the history of changes made within your Cloudflare account.  Audit logs include account-level actions like login and logout, as well as setting changes to DNS, Crypto, Firewall, Speed, Caching, Page Rules, Network, and Traffic features, etc.
-
-{{fields "audit"}}
+#### Example
 
 {{event "audit"}}
 
-### Logpull
+{{fields "audit"}}
 
-These logs contain data related to the connecting client, the request path through the Cloudflare network, and the response from the origin web server. For more information see [here](https://developers.cloudflare.com/logs/logpull/).
+### dns
 
-{{fields "logpull"}}
+This is the `dns` dataset.
+Default port for HTTP Endpoint: _9561_
 
-{{event "logpull"}}
+#### Example
+
+{{event "dns"}}
+
+{{fields "dns"}}
+
+### firewall_event
+
+This is the `firewall_event` dataset.
+Default port for HTTP Endpoint: _9562_
+
+#### Example
+
+{{event "firewall_event"}}
+
+{{fields "firewall_event"}}
+
+### http_request
+
+This is the `http_request` dataset.
+Default port for HTTP Endpoint: _9563_
+
+#### Example
+
+{{event "http_request"}}
+
+{{fields "http_request"}}
+
+### nel_report
+
+This is the `nel_report` dataset.
+Default port for HTTP Endpoint: _9564_
+
+#### Example
+
+{{event "nel_report"}}
+
+{{fields "nel_report"}}
+
+### network_analytics
+
+This is the `network_analytics` dataset.
+Default port for HTTP Endpoint: _9565_
+
+#### Example
+
+{{event "network_analytics"}}
+
+{{fields "network_analytics"}}
+
+### spectrum_event
+
+This is the `spectrum_event` dataset.
+Default port for HTTP Endpoint: _9566_
+
+#### Example
+
+{{event "spectrum_event"}}
+
+{{fields "spectrum_event"}}
