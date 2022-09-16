@@ -1,10 +1,13 @@
 version: '2.3'
 services:
   barracuda-cloudgen-lumberjack:
-    image: docker.elastic.co/beats/filebeat:8.3.3
-    environment:
-      - BEAT_STRICT_PERMS=false
+    image: docker.elastic.co/observability/stream:v0.8.0
     volumes:
       - ./sample_logs:/sample_logs:ro
-      - ./config:/config:ro
-    command: /bin/sh -c "while (filebeat -c /config/filebeat.docker.yml test output); [ $$? -ne 0 ]; do echo ''; done  && filebeat -c /config/filebeat.docker.yml -e -d '*'"
+    environment:
+      - STREAM_PROTOCOL=lumberjack
+      # - STREAM_LUMBERJACK_PARSE_JSON=true
+      - STREAM_ADDR=tcp://elastic-agent:5044
+      - STREAM_DELAY=5s
+      - STREAM_START_SIGNAL=SIGHUP
+    command: log /sample_logs/*.log
