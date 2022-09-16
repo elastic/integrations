@@ -16,11 +16,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2020-10-21T11:31:28.980Z",
     "agent": {
-        "ephemeral_id": "a7da9a06-658a-4f11-a037-4f3c5009996a",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "05b14c68-7737-46a8-bff8-e97945fe2504",
+        "id": "9b07c8ea-8c8f-49b4-8b57-ac69cd4071f0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.3.0"
     },
     "data_stream": {
         "dataset": "panw_cortex_xdr.alerts",
@@ -28,12 +28,12 @@ An example event for `alerts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "9b07c8ea-8c8f-49b4-8b57-ac69cd4071f0",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.3.0"
     },
     "event": {
         "action": "BLOCKED",
@@ -44,7 +44,7 @@ An example event for `alerts` looks as following:
         "created": "2020-10-21T11:31:28.980Z",
         "dataset": "panw_cortex_xdr.alerts",
         "id": "800800",
-        "ingested": "2022-01-02T08:57:33Z",
+        "ingested": "2022-09-01T11:07:26Z",
         "kind": "alert",
         "original": "{\"action\":\"BLOCKED\",\"action_pretty\":\"Prevented (Blocked)\",\"agent_data_collection_status\":true,\"agent_device_domain\":null,\"agent_fqdn\":\"test\",\"agent_is_vdi\":null,\"agent_os_sub_type\":\"XP\",\"agent_os_type\":\"Windows\",\"agent_version\":\"1.2.3.4\",\"alert_id\":\"1001\",\"attempt_counter\":55,\"bioc_category_enum_key\":null,\"bioc_indicator\":null,\"category\":\"Exploit\",\"deduplicate_tokens\":null,\"description\":\"Local privilege escalation prevented\",\"detection_timestamp\":1603279888980,\"end_match_attempt_ts\":1603552062824,\"endpoint_id\":\"12345678\",\"events\":{\"action_country\":\"UNKNOWN\",\"action_external_hostname\":null,\"action_file_macro_sha256\":null,\"action_file_md5\":null,\"action_file_name\":null,\"action_file_path\":null,\"action_file_sha256\":null,\"action_local_ip\":null,\"action_local_port\":null,\"action_process_causality_id\":null,\"action_process_image_command_line\":null,\"action_process_image_name\":null,\"action_process_image_sha256\":null,\"action_process_instance_id\":null,\"action_process_signature_status\":\"N/A\",\"action_process_signature_vendor\":null,\"action_registry_data\":null,\"action_registry_full_key\":null,\"action_registry_key_name\":null,\"action_registry_value_name\":null,\"action_remote_ip\":null,\"action_remote_port\":null,\"actor_causality_id\":null,\"actor_process_causality_id\":null,\"actor_process_command_line\":\"c:\\\\tmp\\\\virus.exe\",\"actor_process_image_md5\":null,\"actor_process_image_name\":\"virus.exe\",\"actor_process_image_path\":\"c:\\\\tmp\\\\virus.exe\",\"actor_process_image_sha256\":\"133ee989293f92736301280c6f14c89d521200c17dcdcecca30cd20705332d44\",\"actor_process_instance_id\":\"1234\",\"actor_process_os_pid\":1234,\"actor_process_signature_status\":\"N/A\",\"actor_process_signature_vendor\":null,\"actor_thread_thread_id\":null,\"agent_host_boot_time\":null,\"agent_install_type\":\"NA\",\"association_strength\":null,\"causality_actor_causality_id\":null,\"causality_actor_process_command_line\":null,\"causality_actor_process_execution_time\":null,\"causality_actor_process_image_md5\":null,\"causality_actor_process_image_name\":null,\"causality_actor_process_image_path\":null,\"causality_actor_process_image_sha256\":null,\"causality_actor_process_signature_status\":\"N/A\",\"causality_actor_process_signature_vendor\":null,\"dns_query_name\":null,\"dst_action_country\":null,\"dst_action_external_hostname\":null,\"dst_action_external_port\":null,\"dst_agent_id\":null,\"dst_association_strength\":null,\"dst_causality_actor_process_execution_time\":null,\"event_id\":null,\"event_sub_type\":null,\"event_timestamp\":1603279888980,\"event_type\":\"Process Execution\",\"fw_app_category\":null,\"fw_app_id\":null,\"fw_app_subcategory\":null,\"fw_app_technology\":null,\"fw_device_name\":null,\"fw_email_recipient\":null,\"fw_email_sender\":null,\"fw_email_subject\":null,\"fw_interface_from\":null,\"fw_interface_to\":null,\"fw_is_phishing\":\"N/A\",\"fw_misc\":null,\"fw_rule\":null,\"fw_rule_id\":null,\"fw_serial_number\":null,\"fw_url_domain\":null,\"fw_vsys\":null,\"fw_xff\":null,\"module_id\":\"Privilege Escalation Protection\",\"os_actor_causality_id\":null,\"os_actor_effective_username\":null,\"os_actor_process_causality_id\":null,\"os_actor_process_command_line\":null,\"os_actor_process_image_name\":null,\"os_actor_process_image_path\":null,\"os_actor_process_image_sha256\":null,\"os_actor_process_instance_id\":null,\"os_actor_process_os_pid\":null,\"os_actor_process_signature_status\":\"N/A\",\"os_actor_process_signature_vendor\":null,\"os_actor_thread_thread_id\":null,\"story_id\":null,\"user_name\":null},\"external_id\":\"800800\",\"filter_rule_id\":null,\"host_ip\":[\"10.0.255.20\"],\"host_name\":\"Test\",\"is_whitelisted\":false,\"local_insert_ts\":1603279967500,\"mac\":null,\"mac_address\":[\"00:11:22:33:44:55\"],\"matching_service_rule_id\":null,\"matching_status\":\"FAILED\",\"mitre_tactic_id_and_name\":[\"\"],\"mitre_technique_id_and_name\":[\"\"],\"name\":\"Kernel Privilege Escalation\",\"severity\":\"high\",\"source\":\"XDR Agent\",\"starred\":false}",
         "reason": "Local privilege escalation prevented",
@@ -212,6 +212,7 @@ An example event for `alerts` looks as following:
 | panw_cortex.xdr.agent_is_vdi | If agent is running inside a Virtual Desktop. | keyword |
 | panw_cortex.xdr.agent_version | Version of the XDR Endpoint agent. | keyword |
 | panw_cortex.xdr.alert_id | The ID of the alert. | keyword |
+| panw_cortex.xdr.alert_type | The type of the alert. | keyword |
 | panw_cortex.xdr.attempt_counter | Attempts to block or stop the malicious process. | long |
 | panw_cortex.xdr.bioc_category_enum_key | Behavior Indicator type key. | keyword |
 | panw_cortex.xdr.bioc_description | A description of the related bioc event. | object |
@@ -227,9 +228,13 @@ An example event for `alerts` looks as following:
 | panw_cortex.xdr.events.action_process_causality_id | The parent processor ID related to the action. | keyword |
 | panw_cortex.xdr.events.actor_causality_id | The parent process ID of the actor process. | keyword |
 | panw_cortex.xdr.events.actor_process_causality_id | The parent processor ID related to the actor. | keyword |
+| panw_cortex.xdr.events.actor_process_command_line | Actor full command line. | keyword |
+| panw_cortex.xdr.events.actor_process_image_name | Actor binary name. | keyword |
+| panw_cortex.xdr.events.actor_process_image_sha256 | SHA256 hash indentifier of the actor. | keyword |
+| panw_cortex.xdr.events.actor_process_instance_id | The process ID related to the actor. | keyword |
 | panw_cortex.xdr.events.actor_process_signature_status | The signature of the actor process. | keyword |
 | panw_cortex.xdr.events.actor_process_signature_vendor | The signature vendor of the actor process. | keyword |
-| panw_cortex.xdr.events.agent_host_boot_time | Uptime of the host. | keyword |
+| panw_cortex.xdr.events.agent_host_boot_time | Uptime of the host. | date |
 | panw_cortex.xdr.events.agent_install_type | Display name of the actor. | keyword |
 | panw_cortex.xdr.events.association_strength |  | long |
 | panw_cortex.xdr.events.contains_featured_host |  | keyword |
@@ -243,7 +248,7 @@ An example event for `alerts` looks as following:
 | panw_cortex.xdr.events.dst_association_strength |  | long |
 | panw_cortex.xdr.events.dst_causality_actor_process_execution_time | The process execution time of the destination process. | keyword |
 | panw_cortex.xdr.events.event_id | The ID unique to the underlying event related to the alert. | keyword |
-| panw_cortex.xdr.events.event_sub_type | Sub type of the event related to the alert. | keyword |
+| panw_cortex.xdr.events.event_sub_type | Sub type of the event related to the alert. | integer |
 | panw_cortex.xdr.events.event_type | Event type | keyword |
 | panw_cortex.xdr.events.fw_app_category | Layer 7 application category related to the firewall event. | keyword |
 | panw_cortex.xdr.events.fw_app_id | The layer 7 application ID from the firewall event. | keyword |
@@ -267,13 +272,14 @@ An example event for `alerts` looks as following:
 | panw_cortex.xdr.events.os_actor_process_image_path | OS actor binary path. | keyword |
 | panw_cortex.xdr.events.os_actor_process_image_sha256 | SHA256 hash indentifier of the OS actor process. | keyword |
 | panw_cortex.xdr.events.os_actor_process_instance_id | The process ID related to the OS actor. | keyword |
-| panw_cortex.xdr.events.os_actor_process_os_pid | The OS PID related to the related process. | keyword |
+| panw_cortex.xdr.events.os_actor_process_os_pid | The OS PID related to the related process. | integer |
 | panw_cortex.xdr.events.os_actor_process_signature_status | Signature of the OS actor process. | keyword |
 | panw_cortex.xdr.events.os_actor_process_signature_vendor | Signature vendor of the OS actor process. | keyword |
-| panw_cortex.xdr.events.os_actor_thread_thread_id | The thread ID related to the related OS actor process. | keyword |
+| panw_cortex.xdr.events.os_actor_thread_thread_id | The thread ID related to the related OS actor process. | integer |
 | panw_cortex.xdr.events.story_id |  | keyword |
 | panw_cortex.xdr.external_id | External ID related to the Alert itself. | keyword |
 | panw_cortex.xdr.filter_rule_id | ID of the filter rule. | keyword |
+| panw_cortex.xdr.is_pcap | If alert contains pcap. | boolean |
 | panw_cortex.xdr.is_whitelisted | If process is whitelisted. | boolean |
 | panw_cortex.xdr.local_insert_ts |  | date |
 | panw_cortex.xdr.mac | Main MAC address of the agent. | keyword |
@@ -282,6 +288,8 @@ An example event for `alerts` looks as following:
 | panw_cortex.xdr.matching_status | Matching status of the endpoint group. | keyword |
 | panw_cortex.xdr.mitre_tactic_id_and_name |  | keyword |
 | panw_cortex.xdr.mitre_technique_id_and_name |  | keyword |
+| panw_cortex.xdr.resolution_comment |  | keyword |
+| panw_cortex.xdr.resolution_status |  | keyword |
 | panw_cortex.xdr.source |  | keyword |
 | panw_cortex.xdr.starred | If alert type is prioritized (starred). | boolean |
 | process.code_signature.status | Additional information about the certificate status. This is useful for logging cryptographic errors with the certificate validity or trust status. Leave unpopulated if the validity or trust of the certificate was unchecked. | keyword |

@@ -25,7 +25,7 @@ docker run -d \
 ## Module-specific configuration notes
 
 It is strongly recommended that you run Docker metricsets with a
-[`period`](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-metricbeat.html#metricset-period)
+{{ url "metricbeat-configuration-metricset-period" "`period`" }}
 that is 3 seconds or longer. The request to the
 Docker API already takes up to 2 seconds. Specifying less than 3 seconds will
 result in requests that timeout, and no data will be reported for those

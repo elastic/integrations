@@ -18,8 +18,8 @@ processors:
       patterns:
         - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
-        SYSLOG_HEADER: "(?:%{SYSLOGFACILITY}\\s*)?(?:%{FTD_DATE:_temp_.raw_date}:?\\s+)?(?:%{PROCESS_HOST}|%{HOST_PROCESS})(?:{DATA})?%{SYSLOG_END}?"
-        SYSLOGFACILITY: "<%{NONNEGINT:log.syslog.priority:int}>"
+        SYSLOG_HEADER: "(?:%{SYSPRIORITY}\\s*)?(?:%{FTD_DATE:_temp_.raw_date}:?\\s+)?(?:%{PROCESS_HOST}|%{HOST_PROCESS})(?:{DATA})?%{SYSLOG_END}?"
+        SYSPRIORITY: "<%{NONNEGINT:log.syslog.priority:int}>"
         # Beginning with version 6.3, Firepower Threat Defense provides the option to enable timestamp as per RFC 5424.
         FTD_DATE: "(?:%{TIMESTAMP_ISO8601}|%{ASA_DATE})"
         ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ})?"
@@ -336,11 +336,15 @@ processors:
       field: "message"
       description: "113004"
       pattern: "AAA user %{_temp_.cisco.aaa_type} Successful: server = %{destination.address} , User = %{source.user.name}"
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '113005'"
-      field: "message"
       description: "113005"
-      pattern: "AAA user authentication Rejected: reason = AAA failure: server = %{destination.address} : user = %{source.user.name}: user IP = %{source.address}"
+      field: "message"
+      patterns: 
+      - "AAA user authentication Rejected: reason = %{REASON}: server = %{IP:destination.address} : user = ?%{CISCO_USER:source.user.name}: user IP = %{IP:source.address}"
+      pattern_definitions:
+        REASON: (AAA failure|Account has been disabled)
+        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113012'"
       field: "message"
