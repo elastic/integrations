@@ -108,6 +108,13 @@ Take note of the following values. We will use them in the Settings section late
 
 Your App Registration is now ready for the Elastic Agent.
 
+#### Additional Resources
+
+If you want to learn more about this process, you can read these two general guides from Microsoft:
+
+* [Quickstart: Register an application with the Microsoft identity platform](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) 
+* [Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)
+
 ### Settings
 
 #### Main Options
