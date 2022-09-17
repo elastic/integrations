@@ -1,10 +1,34 @@
 # Azure Billing Metrics Integration
 
-The Azure Billing Metrics integration allows users to monitor their Azure spending to optimize resource use.
+## Overview
 
-The integration supports metrics collection at subscription, department, or billing account levels.
+The Azure Billing Metrics integration allows you to monitor your actual and future Azure spending to optimize resource use.
 
-## How it works
+The integration uses [Azure Consumption API](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/consumption-api-overview#usage-details-api) to collect usage details and leverages [Azure Cost Management API](https://docs.microsoft.com/en-us/rest/api/cost-management/forecast) to bring forecast data.
+
+Use the Azure Billing Metrics integration to collect detailed resource usage and forecast expense for the coming weeks. For example, if you want to know which resources cost you more, you could check the top resources pie chart. Then you can visualize the prediction for the coming weeks by looking at the forecast chart.
+
+## Data streams
+
+### Azure Billing Metrics
+
+The Azure Billing Metrics data stream collects two types metrics: usage details and forecast.
+
+Usage details metrics track actual expenses including details like subscription ID, resource group, type and name. Forecast metrics track projected expenses over the coming weeks.
+
+## Requirements
+
+You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
+
+You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. See more details in the Setup section.
+
+The App Registration requires the Billing Reader role to access the billing information for the subscription, department or billing account. See more details in the Setup section.
+
+Azure Billing Metrics integration queries are charged based on the number of standard API calls. One integration makes two calls every 24 hours in the standard configuration.
+
+## Setup
+
+### How it works
 
 The Elastic Agent connects to Azure APIs, fetches usage details and forecast data, and sends it to a dedicated data stream named `metrics-azure.billing-default` in Elasticsearch.
 
@@ -26,16 +50,9 @@ To set up a new App Registration, you need to:
 
 In the next section, we will create a new App Registration for the Agent.
 
-## App Registration
+### App Registration
 
-If you want to learn more about this process, you can read the guides:
-
-* [Quickstart: Register an application with the Microsoft identity platform](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) 
-* [Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)
-
-This section of the integration docs is an adaptation for the Elastic Agent of these two guides.
-
-### Register a new App
+#### Register a new App
 
 Follow these steps to create the app registration:
 
@@ -47,13 +64,13 @@ Follow these steps to create the app registration:
 6. Don't enter anything for Redirect URI. It's optional; the Agent doesn't use it.
 7. Select Register to complete the initial app registration.
 
-Take note of the following values. We will use it in the Settings section later:
+Take note of the following value. We will use it in the Settings section later:
 
 `Client ID`: use the content of the "Application (client) ID."
 
 You now have a new App Registration ready for the next steps.
 
-### Add Credentials
+#### Add Credentials
 
 Credentials allow your application to access Azure APIs and authenticate itself, requiring no interaction from a user at runtime.
 
@@ -71,7 +88,7 @@ Take note of the following value. We will use it in the Settings section later:
 
 This secret value is never displayed again after you leave this page. Record the secret's value in a safe place. You will need it on the integration's settings page.
 
-### Assign Role
+#### Assign Role
 
 1. In the [Azure Portal](https://portal.azure.com/), search for and select Subscriptions.
 1. Select the subscription to assign the application.
@@ -84,28 +101,34 @@ This secret value is never displayed again after you leave this page. Record the
 1. Click the Select button.
 1. Then click the Review + assign button.
 
-Take note of the following values. We will use it in the Settings section later:
+Take note of the following values. We will use them in the Settings section later:
 
 * `Subscription ID`: use the content of the "Subscription ID" you selected.
 * `Tenant ID`: use the "Tenant ID" from the Azure Active Directory you use.
 
 Your App Registration is now ready for the Elastic Agent.
 
-## Settings
+### Settings
 
-### Main Options
+#### Main Options
 
 The settings' main section contains all the options to access the Azure APIs and collect the billing data. You will now use all the notes you collected in the previous sections.
 
-`Client ID` :: The unique identifier of the App Registration (sometimes referred to as Application ID).
+`Client ID` ::
+_string_
+The unique identifier of the App Registration (sometimes referred to as Application ID).
 
-`Client Secret` :: The client secret for authentication.
+`Client Secret` ::
+_string_
+The client secret for authentication.
 
-`Subscription ID` :: The unique identifier for the Azure subscription. The Agent uses it to access Azure APIs. The Agent also uses this ID as the default scope for billing information: see the Scope section for more details.
+`Subscription ID` ::
+_string_
+The unique identifier for the Azure subscription. You can provide just one subscription ID. The Agent uses this ID to access Azure APIs. The Agent also uses this ID as the default scope for billing information: see the "Scope" section for more details about how to collect data for more than one subscription.
 
 `Tenant ID` :: The unique identifier of the Azure Active Directory's Tenant ID.
 
-### Advanced Options
+#### Advanced Options
 
 In addition, there are two additional advanced options:
 
@@ -131,17 +154,17 @@ Examples:
 * https://login.chinacloudapi.cn for azure PublicCloud
 * https://login.microsoftonline.de for azure USGovernmentCloud
 
-### Data Stream Options
+#### Data Stream Options
 
 The data stream has some additional options about scope and period. Please read the "Scope" section to learn more about the scope.
 
-`Billing Scope Department`:: (_string_) Retrieve data based on the department scope.
+`Billing Scope Department ID`:: (_string_) Retrieve data based on the department ID.
 
-`Billing Scope Account ID`:: (_string_) Retrieve data based on the billing account ID scope. The billing account ID is available on the [Azure Portal](https://portal.azure.com/) at Cost Management + Billing, select a billing scope of the type "billing account", then Setting > Properties > ID.
+`Billing Scope Account ID`:: (_string_) Retrieve data based on the billing account ID. The billing account ID is available on the [Azure Portal](https://portal.azure.com/) at Cost Management + Billing, select a billing scope of the type "billing account", then Setting > Properties > ID.
 
 `Period`:: (_string_) The time interval to use when retrieving metric values.
 
-## Scope
+### Scope
 
 There are three supported scopes for this integration:
 
@@ -153,21 +176,16 @@ The integration uses the Subscription ID as the default scope for the billing da
 
 To change the scope, expand the data stream section named "Collect Azure Billing metrics" in the integration settings and set one of the two available options (if you set both, the billing account scope take precedence over the department):
 
-* `Billing Scope Department`
-* `Billing Scope Account ID`
+* `Billing Scope Department ID` :: Collect user details and forecast data for the given deparment ID.
+* `Billing Scope Account ID` :: Collect user details and forecast data for the given billing account ID.
 
-## Data Sources
+## Metrics Reference
 
-The integration retrieves two kinds of data:
+### Azure Billing Metrics
 
-* [Usage details](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/consumption-api-overview#usage-details-api), from the Consumption API.
-* [Forecast](https://docs.microsoft.com/en-us/rest/api/cost-management/forecast) information from the Cost Management API.
+The Azure Billing Metrics data stream provides events from Consumption and Cost Management APIs of the following types: usage details and forecast.
 
-## Costs
-
-Metric queries are charged based on the number of standard API calls.
-
-## Reference
+#### Example
 
 An example event for `billing` looks as following:
 
@@ -259,3 +277,73 @@ An example event for `billing` looks as following:
     }
 }
 ```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| azure.application_id | The application ID | keyword |
+| azure.billing.account_name | The billing account name | keyword |
+| azure.billing.actual_cost | The actual cost | float |
+| azure.billing.billing_period_id | The billing period id | keyword |
+| azure.billing.currency | The currency | keyword |
+| azure.billing.department_name | The department name | keyword |
+| azure.billing.forecast_cost | The forecast cost | float |
+| azure.billing.pretax_cost | Cost | float |
+| azure.billing.product | The product type | keyword |
+| azure.billing.usage_date | The usage date | date |
+| azure.billing.usage_end | The usage end date | date |
+| azure.billing.usage_start | The usage start date | date |
+| azure.dimensions.\* | Azure metric dimensions. | flattened |
+| azure.metrics.\*.\* | Metrics returned. | object |
+| azure.namespace | The namespace selected | keyword |
+| azure.resource.group | The resource group | keyword |
+| azure.resource.id | The id of the resource | keyword |
+| azure.resource.name | The name of the resource | keyword |
+| azure.resource.tags.\* | Azure resource tags. | flattened |
+| azure.resource.type | The type of the resource | keyword |
+| azure.subscription_id | The subscription ID | keyword |
+| azure.timegrain | The Azure metric timegrain | keyword |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| container.runtime | Runtime managing this container. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| dataset.name | Dataset name. | constant_keyword |
+| dataset.namespace | Dataset namespace. | constant_keyword |
+| dataset.type | Dataset type. | constant_keyword |
+| ecs.version | ECS version | keyword |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| service.address | Service address | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+
