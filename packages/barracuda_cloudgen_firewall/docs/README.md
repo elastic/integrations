@@ -14,6 +14,9 @@ This is the Barracuda Cloudgen Firewall `log` dataset.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | barracuda_cloudgen_firewall.log.app_rule | application rule name (e.g. "\<App\>:ALL-APPS") | keyword |
+| barracuda_cloudgen_firewall.log.fw_info | Detailed information about the action performed by the firewall. More information can be found [here](https://campus.barracuda.com/product/cloudgenfirewall/doc/96025108/how-to-enable-filebeat-stream-to-a-logstash-pipeline/) | long |
+| barracuda_cloudgen_firewall.log.traffic_type | Always "0" | long |
+| barracuda_cloudgen_firewall.log.user_type | User type of web log. 1 if "user" is a username or 0 if "user" is an IP address. | keyword |
 | container.id | Unique container id. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -64,6 +67,7 @@ This is the Barracuda Cloudgen Firewall `log` dataset.
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
+| observer.hostname | Hostname of the observer. | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.serial_number | Observer serial number. | keyword |

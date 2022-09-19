@@ -10,15 +10,17 @@ processors:
         field: json.src_ip
         target_field: source.address
         ignore_missing: true
+        if: ctx.json?.src_ip != '-'
+    - convert:
+        field: source.address
+        target_field: source.ip
+        type: ip
+        ignore_missing: true
     - convert:
         field: json.src_port
         target_field: source.port
         type: long
         ignore_missing: true
-    - set:
-        field: source.ip
-        value: "{{source.address}}"
-        ignore_empty_value: true
     - rename:
         field: json.src_iface
         target_field: observer.ingress.interface.name
@@ -30,9 +32,10 @@ processors:
         replacement: '-'
         ignore_missing: true
         if: ctx.json?.src_mac != '00:00:00:00:00:00'
-    - rename:
+    - convert:
         field: json.src_ip_nat
         target_field: source.nat.ip
+        type: ip
         ignore_missing: true
         if: ctx.json?.src_ip_nat != '0.0.0.0'
     - convert:
@@ -45,20 +48,21 @@ processors:
         target_field: source.packets
         type: long
         ignore_missing: true
-        
     - rename:
         field: json.dst_ip
         target_field: destination.address
+        ignore_missing: true
+        if: ctx.json?.dst_ip != '-'
+    - convert:
+        field: destination.address
+        target_field: destination.ip
+        type: ip
         ignore_missing: true
     - convert:
         field: json.dst_port
         target_field: destination.port
         type: long
         ignore_missing: true
-    - set:
-        field: destination.ip
-        value: "{{destination.address}}"
-        ignore_empty_value: true
     - rename:
         field: json.dst_iface
         target_field: observer.egress.interface.name
@@ -70,9 +74,10 @@ processors:
         replacement: '-'
         ignore_missing: true
         if: ctx.json?.dst_mac != '00:00:00:00:00:00'
-    - rename:
+    - convert:
         field: json.dst_ip_nat
         target_field: destination.nat.ip
+        type: ip
         ignore_missing: true
         if: ctx.json?.dst_ip_nat != '0.0.0.0'
     - uppercase:
@@ -109,6 +114,11 @@ processors:
         field: json.app_rule
         target_field: barracuda_cloudgen_firewall.log.app_rule
         ignore_missing: true
+    - rename:
+        field: json.fw_info
+        target_field: barracuda_cloudgen_firewall.log.fw_info
+        ignore_missing: true
+        if: ctx.json?.fw_info != '-'
     - rename:
         field: json.action
         target_field: event.action

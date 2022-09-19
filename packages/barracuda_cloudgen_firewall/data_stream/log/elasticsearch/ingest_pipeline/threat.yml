@@ -6,7 +6,7 @@ processors:
         target_field: '@timestamp'
         formats:
             - ISO8601
-        if: ctx.json?.timestamp != null && ctx.json?.timestamp != ''
+        if: ctx.json?.timestamp != null && ctx.json?.timestamp != '' && ctx.json?.timestamp != '-'
     - set:
         field: _tmp.timestamp
         value: "{{json.date}} {{json.time}}"
@@ -22,27 +22,33 @@ processors:
         field: json.src_ip
         target_field: source.address
         ignore_missing: true
-    - set:
-        field: source.ip
-        value: "{{source.address}}"
-        ignore_empty_value: true
+        if: ctx.json?.src_ip != '-'
+    - convert:
+        field: source.address
+        target_field: source.ip
+        type: ip
+        ignore_missing: true
     - rename:
         field: json.dst_ip
         target_field: destination.address
+        ignore_missing: true
+        if: ctx.json?.dst_ip != '-'
+    - convert:
+        field: destination.address
+        target_field: destination.ip
+        type: ip
         ignore_missing: true
     - convert:
         field: json.port
         target_field: destination.port
         type: long
         ignore_missing: true
-    - set:
-        field: destination.ip
-        value: "{{destination.address}}"
-        ignore_empty_value: true
+        if: ctx.json?.port != '-'
     - rename:
         field: json.severity
         target_field: log.level
         ignore_missing: true
+        if: ctx.json?.severity != '-'
     - rename:
         field: json.fw_rule
         target_field: rule.name
@@ -51,6 +57,7 @@ processors:
         field: json.trans_proto
         target_field: network.transport
         ignore_missing: true
+        if: ctx.json?.trans_proto != '-'
     - lowercase:
         field: network.transport
         ignore_missing: true
@@ -71,6 +78,7 @@ processors:
         target_field: event.severity
         type: long
         ignore_missing: true
+        if: ctx.json?.threat_severity != '-'
     - rename:
         field: json.ips_category
         target_field: rule.category
@@ -79,6 +87,7 @@ processors:
         field: json.type
         target_field: rule.ruleset
         ignore_missing: true
+        if: ctx.json?.type != '-'
     - rename:
         field: json.app_proto
         target_field: barracuda_cloudgen_firewall.log.app_proto
@@ -91,6 +100,7 @@ processors:
         field: json.operation
         target_field: event.action
         ignore_missing: true
+        if: ctx.json?.operation != '-'
     - set:
         field: event.kind
         value: event
