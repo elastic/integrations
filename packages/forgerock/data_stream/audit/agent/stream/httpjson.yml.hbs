@@ -21,8 +21,7 @@ request.transforms:
       value: "{{api_secret}}"
   - set:
       target: url.params.beginTime
-      value: "[[.cursor.last_timestamp]]"
-      default: '[[ formatDate (now (parseDuration "-{{ initial_interval }}")) "2006-01-02T15:04:05-07:00" ]]'
+      value: '[[ formatDate (now (parseDuration "-{{ initial_interval }}")) "2006-01-02T15:04:05-07:00" ]]'
   - set:
       target: url.params.endTime
       value: '[[formatDate (now) "2006-01-02T15:04:05-07:00"]]'
@@ -31,7 +30,7 @@ response.split:
     target: body.result
     type: array
 
-pagination:
+response.pagination:
     - set:
       target: url.value
       value: >
@@ -42,6 +41,10 @@ pagination:
         (.last_response.url.params.Get "beginTime")
         (.last_response.body.Get "pagedResultsCookie")
       fail_on_template_error: true
+{{!-- 
+cursor:
+  last_timestamp:
+    value: '[[.first_event.creationDate]]' --}}
 
 tags:
 {{#if preserve_original_event}}
