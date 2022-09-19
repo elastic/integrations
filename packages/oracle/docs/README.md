@@ -795,6 +795,8 @@ An example event for `sysmetric` looks as following:
 
 ### PGA SGA Metrics 
 
+A Program Global Area (PGA) is a memory region that contains data and control information for a server process. It is nonshared memory created by Oracle Database when a server process is started. Access to the PGA is exclusive to the server process. Metrics concerning Program Global Area (PGA) memory are mentioned below.
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -840,7 +842,7 @@ An example event for `pga_sga` looks as following:
             "global_memory_bound": 104857600,
             "total_pga_inuse": 167798784,
             "total_freeable_pga_memory": 14221312,
-            "cache_hit_percentage": 100,
+            "cache_hit_pct": 100,
             "maximum_pga_allocated": 599693312
         }
     },
@@ -868,6 +870,8 @@ An example event for `pga_sga` looks as following:
 ```
 
 ### System Statistics Metrics 
+
+The System Global Area (SGA) is a group of shared memory structures that contain data and control information for one Oracle Database instance. Metrics concerning System Global Area (SGA) memory. Metrics concerning System Global Area (SGA) memory are mentioned below.
 
 **Exported fields**
 
@@ -930,7 +934,7 @@ An example event for `pga_sga` looks as following:
 | oracle.system_statistics.physical_writes | Total number of data blocks written to disk. This statistics value equals the sum of physical writes direct and physical writes from cache values. | double |  | counter |
 | oracle.system_statistics.physical_writes_direct | Number of writes directly to disk, bypassing the buffer cache (as in a direct load operation). | double |  | counter |
 | oracle.system_statistics.physical_writes_from_cache | Total number of data blocks written to disk from the buffer cache. This is a subset of "physical writes" statistic. | double |  | counter |
-| oracle.system_statistics.process_last_non-idle_time | The last time this process executed. | double |  | counter |
+| oracle.system_statistics.process_last_non_idle_time | The last time this process executed. | double |  | counter |
 | oracle.system_statistics.queries_parallelized | Number of SELECT statements executed in parallel. | double |  | counter |
 | oracle.system_statistics.recovery_blocks_read | The number of blocks read during recovery. | double |  | counter |
 | oracle.system_statistics.recursive_calls | The number of recursive calls generated at both the user and system level. | double |  | counter |
@@ -1007,7 +1011,7 @@ An example event for `system_statistics` looks as following:
             "user_commits": 178585,
             "cpu_used_by_this_session": 2532130,
             "execute_count": 29214384,
-            "process_last_non-idle_time": 1659881160,
+            "process_last_non_idle_time": 1659881160,
             "os_system_time_used": 0,
             "recursive_cpu_usage": 1957103,
             "redo_write_time": 123863,
