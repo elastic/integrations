@@ -347,6 +347,11 @@ processors:
       field: "message"
       description: "302012"
       pattern: "Teardown %{} %{network.transport} translation from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} duration %{_temp_.duration_hms}"
+  - set:
+      if: '["302020"].contains(ctx._temp_.cisco.message_id)'
+      field: "event.action"
+      value: "flow-creation"
+      description: "302020"
   - grok:
       if: "ctx._temp_.cisco.message_id == '302020'"
       field: "message"
@@ -767,10 +772,10 @@ processors:
   # Handle 302xxx messages (Flow expiration a.k.a "Teardown")
   #
   - set:
-      if: '["302012", "302014", "302016", "302018", "302020", "302021", "302036", "302304", "302306", "609001", "609002"].contains(ctx._temp_.cisco.message_id)'
+      if: '["302012", "302014", "302016", "302018", "302021", "302036", "302304", "302306", "609001", "609002"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "flow-expiration"
-      description: "302012, 302014, 302016, 302018, 302020, 302021, 302036, 302304, 302306, 609001, 609002"
+      description: "302012, 302014, 302016, 302018, 302021, 302036, 302304, 302306, 609001, 609002"
   - grok:
       field: "message"
       if: '["302014", "302016", "302018", "302021", "302036", "302304", "302306"].contains(ctx._temp_.cisco.message_id)'
@@ -1760,6 +1765,13 @@ processors:
             - network
           type:
             - info
+        flow-creation:
+          kind: event
+          category:
+            - network
+          type:
+            - connection
+            - start
         flow-expiration:
           kind: event
           category:
