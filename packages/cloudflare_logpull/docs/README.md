@@ -1,4 +1,4 @@
-# Cloudflare Integration
+# Cloudflare Integration (Deprecated)
 
 Cloudflare integration uses [Cloudflare's API](https://api.cloudflare.com/) to retrieve [audit logs](https://support.cloudflare.com/hc/en-us/articles/115002833612-Understanding-Cloudflare-Audit-Logs) and [traffic logs](https://developers.cloudflare.com/logs/logpull/understanding-the-basics/) from Cloudflare, for a particular zone, and ingest them into Elasticsearch. This allows you to search, observe and visualize the Cloudflare log events through Elasticsearch.
 

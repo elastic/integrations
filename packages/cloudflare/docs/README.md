@@ -107,12 +107,14 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-30T20:19:48.000Z",
     "agent": {
-        "ephemeral_id": "3605deda-1943-40cf-9ba2-a5d591fead25",
-        "hostname": "docker-fleet-agent",
-        "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
+        "ephemeral_id": "f97b7ab2-15a6-4d34-a02d-c86c763edbdc",
+        "id": "9c295fcb-b725-4e24-9486-d0861024a731",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.3.0"
+    },
+    "cloud": {
+        "provider": "cloudflare"
     },
     "cloudflare": {
         "audit": {
@@ -156,28 +158,28 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
+        "id": "9c295fcb-b725-4e24-9486-d0861024a731",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.3.0"
     },
     "event": {
         "action": "token_create",
         "agent_id_status": "verified",
         "category": [
-            "authentication"
+            "iam"
         ],
         "dataset": "cloudflare.audit",
         "id": "73fd39ed-5aab-4a2a-b93c-c9a4abf0c425",
-        "ingested": "2022-09-01T10:05:51Z",
+        "ingested": "2022-09-16T23:05:36Z",
         "kind": "event",
         "original": "{\"ActionResult\":true,\"ActionType\":\"token_create\",\"ActorEmail\":\"user@example.com\",\"ActorID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ActorIP\":\"81.2.69.142\",\"ActorType\":\"user\",\"ID\":\"73fd39ed-5aab-4a2a-b93c-c9a4abf0c425\",\"Interface\":\"UI\",\"Metadata\":{\"token_name\":\"test\",\"token_tag\":\"b7261c49a793a82678d12285f0bc1401\"},\"NewValue\":{\"key1\":\"value1\",\"key2\":\"value2\"},\"OldValue\":{\"key3\":\"value4\",\"key4\":\"value4\"},\"OwnerID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceID\":\"enl3j9du8rnx2swwd9l32qots7l54t9s\",\"ResourceType\":\"account\",\"When\":\"2021-11-30T20:19:48Z\"}",
         "outcome": "success",
         "provider": "UI",
         "type": [
-            "info"
+            "creation"
         ]
     },
     "input": {
@@ -192,6 +194,19 @@ An example event for `audit` looks as following:
         ]
     },
     "source": {
+        "address": "81.2.69.142",
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
         "ip": "81.2.69.142"
     },
     "tags": [
