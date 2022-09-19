@@ -65,12 +65,6 @@ The `database_audit` dataset collects Oracle Audit logs.
 
 {{event "database_audit"}}
 
-### Performance Metrics
-
-{{fields "performance"}}
-
-{{event "performance"}}
-
 ### Tablespace Metrics
 
 {{fields "tablespace"}}
@@ -98,3 +92,9 @@ The System Global Area (SGA) is a group of shared memory structures that contain
 {{fields "system_statistics"}}
 
 {{event "system_statistics"}}
+
+### Performance Metrics
+
+{{fields "performance"}}
+
+{{event "performance"}}
