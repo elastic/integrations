@@ -7,6 +7,11 @@ processors:
       ignore_empty_value: true
       ignore_failure: true
   - set:
+      field: event.module
+      value: activemq
+      ignore_empty_value: true
+      ignore_failure: true
+  - set:
       field: event.original
       value: "{{{message}}}"
       ignore_empty_value: true
@@ -50,9 +55,9 @@ processors:
       source: >-
         def err_levels = ["FATAL", "ERROR", "WARN"];
         if (err_levels.contains(ctx.log.level)) {
-          ctx.event.type = "error";
+          ctx.event.type = ["error"];
         } else {
-          ctx.event.type = "info";
+          ctx.event.type = ["info"];
         }
   - script:
       description: Drops null/empty values recursively
