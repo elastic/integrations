@@ -77,13 +77,13 @@ The `database_audit` dataset collects Oracle Audit logs.
 
 {{event "sysmetric"}}
 
-### PGA SGA Metrics 
+### Memory Metrics 
 
 A Program Global Area (PGA) is a memory region that contains data and control information for a server process. It is nonshared memory created by Oracle Database when a server process is started. Access to the PGA is exclusive to the server process. Metrics concerning Program Global Area (PGA) memory are mentioned below.
 
-{{fields "pga_sga"}}
+{{fields "memory"}}
 
-{{event "pga_sga"}}
+{{event "memory"}}
 
 ### System Statistics Metrics 
 
