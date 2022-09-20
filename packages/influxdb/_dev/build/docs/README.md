@@ -19,7 +19,6 @@ This integration has been tested against Influxdb OSS 2.4, Influxdb OSS 2.0
 
 Status metrics include details of memory usage, OS thread usage, query statistics, organization & users statistics, tasks & task workers, WAL size etc.
 
-
 {{fields "status"}}
 
 {{event "status"}}
@@ -31,5 +30,3 @@ Advanced status metric include details of query execution statistics, compaction
 {{fields "advstatus"}}
 
 {{event "advstatus"}}
-
-
