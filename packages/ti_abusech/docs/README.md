@@ -177,7 +177,17 @@ The AbuseCH malwarebazaar data_stream retrieves threat intelligence indicators f
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | abusech.malwarebazaar.anonymous | Identifies if the sample was submitted anonymously. | long |
-| abusech.malwarebazaar.code_sign | Code signing information for the sample. | keyword |
+| abusech.malwarebazaar.code_sign.algorithm | Algorithm used to generate the public key. | keyword |
+| abusech.malwarebazaar.code_sign.cscb_listed | Whether the certificate is present on the Code Signing Certificate Blocklist (CSCB) | boolean |
+| abusech.malwarebazaar.code_sign.cscb_reason | Why the certificate is present on the Code Signing Certificate Blocklist (CSCB) | keyword |
+| abusech.malwarebazaar.code_sign.issuer_cn | Common name (CN) of issuing certificate authority. | keyword |
+| abusech.malwarebazaar.code_sign.serial_number | Unique serial number issued by the certificate authority. | keyword |
+| abusech.malwarebazaar.code_sign.subject_cn | Common name (CN) of subject. | keyword |
+| abusech.malwarebazaar.code_sign.thumbprint | Hash of certificate | keyword |
+| abusech.malwarebazaar.code_sign.thumbprint_algorithm | Algorithm used to create thumbprint | keyword |
+| abusech.malwarebazaar.code_sign.valid_from | Time at which the certificate is first considered valid. | date |
+| abusech.malwarebazaar.code_sign.valid_to | Time at which the certificate is no longer considered valid. | keyword |
+| abusech.malwarebazaar.dhash_icon | In case the file is a PE executable: dhash of the samples icon | keyword |
 | abusech.malwarebazaar.intelligence.downloads | Number of downloads from MalwareBazaar. | long |
 | abusech.malwarebazaar.intelligence.mail.Generic | Malware seen in generic spam traffic. | keyword |
 | abusech.malwarebazaar.intelligence.mail.IT | Malware seen in IT spam traffic. | keyword |
