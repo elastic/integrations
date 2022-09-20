@@ -146,10 +146,10 @@ Optional. By default, the integration uses the Azure public environment. To over
 
 Examples:
 
-* `https://management.chinacloudapi.cn` for azure ChinaCloud
-* `https://management.microsoftazure.de` for azure GermanCloud
-* `https://management.azure.com` for azure PublicCloud
-* `https://management.usgovcloudapi.net` for azure USGovernmentCloud
+* `https://management.chinacloudapi.cn` for AzAre ChinaCloud
+* `https://management.microsoftazure.de` for Azure GermanCloud
+* `https://management.azure.com` for Azure AublicCloud
+* `https://management.usgovcloudapi.net` for Azure USGovernmentCloud
 
 `Active Directory Endpoint` ::
 _string_
@@ -157,10 +157,10 @@ Optional. By default, the integration uses the associated Active Directory Endpo
 
 Examples:
 
-* `https://login.microsoftonline.com` for azure ChinaCloud
-* `https://login.microsoftonline.us` for azure GermanCloud
-* `https://login.chinacloudapi.cn` for azure PublicCloud
-* `https://login.microsoftonline.de` for azure USGovernmentCloud
+* `https://login.microsoftonline.com` for Azure ChinaCloud
+* `https://login.microsoftonline.us` for Azure GermanCloud
+* `https://login.chinacloudapi.cn` for Azure PublicCloud
+* `https://login.microsoftonline.de` for Azure USGovernmentCloud
 
 #### Data stream options
 
