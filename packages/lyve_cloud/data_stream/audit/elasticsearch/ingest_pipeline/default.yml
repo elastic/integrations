@@ -29,10 +29,49 @@ processors:
       field: lyve_cloud.audit.auditEntry.userAgent
   - remove:
       field: lyve_cloud.audit.auditEntry.userAgent
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.User-Agent
   - rename:
       field: lyve_cloud.audit.auditEntry.api.statusCode
       target_field: http.response.status_code
-
+  - gsub:
+      field: lyve_cloud.audit.auditEntry.api.timeToFirstByte
+      pattern: "ns"
+      replacement: ""
+  - gsub:
+      field: lyve_cloud.audit.auditEntry.api.timeToResponse
+      pattern: "ns"
+      replacement: ""
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.api.timeToFirstByte      
+      type: long
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.api.timeToResponse    
+      type: long
+  - remove:
+      field: lyve_cloud.audit.auditEntry.deploymentid
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.Authorization
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Amz-Content-Sha256
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Amz-Date
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-For
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-Proto
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestID
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestQuery
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.Content-Security-Policy
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.ETag
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.X-Amz-Request-Id            
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.X-Xss-Protection
 on_failure:
     - set:
         field: error.message
