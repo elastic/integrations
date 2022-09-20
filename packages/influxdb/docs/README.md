@@ -86,9 +86,9 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-20T11:16:30.244Z",
+    "@timestamp": "2022-09-20T12:51:30.139Z",
     "agent": {
-        "ephemeral_id": "d19d2296-3707-48fd-831c-b659a8d962f5",
+        "ephemeral_id": "eabde1cd-9d75-49a8-886a-d33675caa985",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -130,8 +130,8 @@ An example event for `status` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.status",
-        "duration": 6671374,
-        "ingested": "2022-09-20T11:16:31Z",
+        "duration": 6294148,
+        "ingested": "2022-09-20T12:51:31Z",
         "module": "prometheus"
     },
     "host": {
@@ -157,26 +157,12 @@ An example event for `status` looks as following:
     },
     "influxdb": {
         "status": {
-            "buckets_total": 0,
-            "dashboards_total": 0,
-            "go_memstats_alloc_bytes": 33610856,
-            "go_memstats_alloc_bytes_total": 36244376,
-            "go_memstats_heap_alloc_bytes": 33610856,
-            "go_memstats_heap_idle_bytes": 2752512,
-            "go_memstats_heap_inuse_bytes": 35389440,
-            "go_threads": 14,
+            "http_api_requests_total": 1,
+            "http_status": "2XX",
             "instance": "elastic-package-service_influxdb_1:8086",
-            "organizations_total": 0,
-            "scrapers_total": 0,
-            "task_executor_total_runs_active": 0,
-            "task_executor_workers_busy": 0,
-            "task_scheduler_current_execution": 128,
-            "task_scheduler_total_execute_failure": 0,
-            "task_scheduler_total_execution_calls": 0,
-            "task_scheduler_total_release_calls": 0,
-            "task_scheduler_total_schedule_fails": 0,
-            "tokens_total": 0,
-            "users_total": 0
+            "method": "GET",
+            "path": "/metrics",
+            "response_code": "200"
         }
     },
     "metricset": {
@@ -227,9 +213,9 @@ An example event for `advstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-20T11:15:21.342Z",
+    "@timestamp": "2022-09-20T12:50:32.117Z",
     "agent": {
-        "ephemeral_id": "7cc95170-6dc8-4f76-8db3-1c0c8db8f6a6",
+        "ephemeral_id": "b60531d9-ddc5-49b0-a4d7-92b71218c2f8",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -271,8 +257,8 @@ An example event for `advstatus` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.advstatus",
-        "duration": 6853095,
-        "ingested": "2022-09-20T11:15:22Z",
+        "duration": 5085651,
+        "ingested": "2022-09-20T12:50:33Z",
         "module": "prometheus"
     },
     "host": {
