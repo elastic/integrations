@@ -1,6 +1,8 @@
 # Atlassian Bitbucket Integration
 
-The Bitbucket integration collects audit logs from the audit log files or the audit API.
+The Bitbucket integration collects audit logs from the audit log files or the [audit API](https://developer.atlassian.com/server/bitbucket/reference/rest-api/). 
+
+For more information on auditing in Bitbucket and how it can be configured, see [View and configure the audit log](https://confluence.atlassian.com/bitbucketserver/view-and-configure-the-audit-log-776640417.html) on Atlassian's website.
 
 ## Logs
 
@@ -41,6 +43,7 @@ The Bitbucket integration collects audit logs from the audit log files or the au
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
@@ -58,6 +61,7 @@ The Bitbucket integration collects audit logs from the audit log files or the au
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -71,8 +75,9 @@ The Bitbucket integration collects audit logs from the audit log files or the au
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -84,29 +89,34 @@ The Bitbucket integration collects audit logs from the audit log files or the au
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | user.changes.full_name | User's full name, if available. | keyword |
+| user.changes.full_name.text | Multi-field of `user.changes.full_name`. | match_only_text |
 | user.changes.name | Short name or login of the user. | keyword |
+| user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
 | user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.target.full_name | User's full name, if available. | keyword |
+| user.target.full_name.text | Multi-field of `user.target.full_name`. | match_only_text |
 | user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.target.group.name | Name of the group. | keyword |
 | user.target.id | Unique identifier of the user. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 
 
 An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-27T18:13:19.888Z",
+    "@timestamp": "2021-11-27T18:10:57.316Z",
     "agent": {
-        "ephemeral_id": "e1941192-7059-4772-9f71-653aed65d6dd",
-        "hostname": "docker-fleet-agent",
-        "id": "20fcdc33-b3b1-4e34-9205-89a344ebbdb0",
+        "ephemeral_id": "c1c6859f-88f5-4ae8-ad40-5c0c9fe933d1",
+        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0-beta1"
     },
     "bitbucket": {
         "audit": {
@@ -126,12 +136,10 @@ An example event for `audit` looks as following:
             ],
             "method": "Browser",
             "type": {
-                "action": "Project deletion requested",
-                "actionI18nKey": "bitbucket.service.project.audit.action.projectdeletionrequested",
-                "area": "LOCAL_CONFIG_AND_ADMINISTRATION",
+                "action": "Project created",
+                "actionI18nKey": "bitbucket.service.project.audit.action.projectcreated",
                 "category": "Projects",
-                "categoryI18nKey": "bitbucket.service.audit.category.projects",
-                "level": "BASE"
+                "categoryI18nKey": "bitbucket.service.audit.category.projects"
             }
         }
     },
@@ -141,57 +149,30 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "20fcdc33-b3b1-4e34-9205-89a344ebbdb0",
-        "snapshot": true,
-        "version": "7.16.0"
+        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
-        "action": "bitbucket.service.project.audit.action.projectdeletionrequested",
+        "action": "bitbucket.service.project.audit.action.projectcreated",
         "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
+        "created": "2021-12-24T00:39:23.076Z",
         "dataset": "atlassian_bitbucket.audit",
-        "ingested": "2021-12-08T15:18:06Z",
+        "ingested": "2021-12-24T00:39:24Z",
         "kind": "event",
-        "original": "{\"affectedObjects\":[{\"id\":\"3\",\"name\":\"AT\",\"type\":\"PROJECT\"}],\"auditType\":{\"action\":\"Project deletion requested\",\"actionI18nKey\":\"bitbucket.service.project.audit.action.projectdeletionrequested\",\"area\":\"LOCAL_CONFIG_AND_ADMINISTRATION\",\"category\":\"Projects\",\"categoryI18nKey\":\"bitbucket.service.audit.category.projects\",\"level\":\"BASE\"},\"author\":{\"id\":\"2\",\"name\":\"admin\",\"type\":\"NORMAL\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"target\",\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.target\",\"value\":\"AT\"}],\"method\":\"Browser\",\"node\":\"8767044c-1b98-4d64-82db-ef29af8c3792\",\"source\":\"10.100.100.2\",\"system\":\"http://bitbucket.internal:7990\",\"timestamp\":{\"epochSecond\":1638036799,\"nano\":888000000},\"version\":\"1.0\"}",
+        "original": "{\"affectedObjects\":[{\"id\":\"3\",\"name\":\"AT\",\"type\":\"PROJECT\"}],\"author\":{\"avatarUri\":\"\",\"id\":\"2\",\"name\":\"admin\",\"type\":\"NORMAL\",\"uri\":\"http://bitbucket.internal:7990/users/admin\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"target\",\"nameI18nKey\":\"bitbucket.audit.attribute.legacy.target\",\"value\":\"AT\"}],\"method\":\"Browser\",\"node\":\"8767044c-1b98-4d64-82db-ef29af8c3792\",\"source\":\"10.100.100.2\",\"system\":\"http://bitbucket.internal:7990\",\"timestamp\":\"2021-11-27T18:10:57.316Z\",\"type\":{\"action\":\"Project created\",\"actionI18nKey\":\"bitbucket.service.project.audit.action.projectcreated\",\"category\":\"Projects\",\"categoryI18nKey\":\"bitbucket.service.audit.category.projects\"}}",
         "type": [
-            "deletion"
+            "creation"
         ]
     },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "83a5cd10d1960dd73f42bd2801d238c3",
-        "ip": [
-            "172.27.0.7"
-        ],
-        "mac": [
-            "02:42:ac:1b:00:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.4.0-90-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
-            "type": "linux",
-            "version": "7 (Core)"
-        }
-    },
     "input": {
-        "type": "log"
-    },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/test-audit.log"
-        },
-        "offset": 0
+        "type": "httpjson"
     },
     "related": {
         "hosts": [
@@ -213,6 +194,7 @@ An example event for `audit` looks as following:
     },
     "tags": [
         "preserve_original_event",
+        "forwarded",
         "bitbucket-audit"
     ],
     "user": {

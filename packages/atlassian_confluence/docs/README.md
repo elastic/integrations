@@ -1,12 +1,18 @@
 # Atlassian Confluence Integration
 
-The Confluence integration collects audit logs from the audit log files or the audit API.
+The Confluence integration collects [audit logs](https://confluence.atlassian.com/doc/auditing-in-confluence-829076528.html) from the audit log files or the [audit API](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/).
+
+## Authentication Set-Up
+
+When setting up the Atlassian Confluence Integration for Atlassian Cloud you will need to use the "Confluence User Identifier" and "Confluence API Token" fields in the integration configuration. These will allow connection to the [Atlassian Cloud REST API](https://developer.atlassian.com/cloud/confluence/basic-auth-for-rest-apis/).
+
+If you are using a self-hosted instance, you will be able to use either the "Confluence User Identifier" and "Confluence API Token" fields above, *or* use the "Personal Access Token" field to [authenticate with a PAT](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html). If the "Personal Access Token" field is set in the configuration, it will take precedence over the User ID/API Token fields. 
 
 ## Logs
 
 ### Audit
 
-The Confluence integration collects audit logs from the audit log files or the audit API from self hosted Confluence Data Center. It has been tested with Confluence 7.14.2 but is expected to work with newer versions. This has not been tested with Confluence Cloud and is not expected to work.
+The Confluence integration collects audit logs from the audit log files or the audit API from self hosted Confluence Data Center. It has been tested with Confluence 7.14.2 but is expected to work with newer versions. As of version 1.2.0, this integration added experimental support for Atlassian Confluence Cloud.  JIRA Cloud only supports Basic Auth using username and a Personal Access Token.
 
 **Exported fields**
 
@@ -24,6 +30,7 @@ The Confluence integration collects audit logs from the audit log files or the a
 | cloud.region | Region in which this host is running. | keyword |
 | confluence.audit.affected_objects | Affected Objects | flattened |
 | confluence.audit.changed_values | Changed Values | flattened |
+| confluence.audit.external_collaborator | Whether the user is an external collaborator user | boolean |
 | confluence.audit.extra_attributes | Extra Attributes | flattened |
 | confluence.audit.method | Method | keyword |
 | confluence.audit.type.action | Action | keyword |
@@ -41,8 +48,14 @@ The Confluence integration collects audit logs from the audit log files or the a
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
 | host.architecture | Operating system architecture. | keyword |
@@ -58,6 +71,7 @@ The Confluence integration collects audit logs from the audit log files or the a
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -71,8 +85,9 @@ The Confluence integration collects audit logs from the audit log files or the a
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.bytes | Bytes sent from the source to the destination. | long |
-| source.domain | Source domain. | keyword |
+| source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -85,33 +100,44 @@ The Confluence integration collects audit logs from the audit log files or the a
 | tags | List of keywords used to tag each event. | keyword |
 | user.changes.email | User email address. | keyword |
 | user.changes.full_name | User's full name, if available. | keyword |
+| user.changes.full_name.text | Multi-field of `user.changes.full_name`. | match_only_text |
 | user.changes.name | Short name or login of the user. | keyword |
+| user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
 | user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.target.email | User email address. | keyword |
 | user.target.full_name | User's full name, if available. | keyword |
+| user.target.full_name.text | Multi-field of `user.target.full_name`. | match_only_text |
 | user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.target.group.name | Name of the group. | keyword |
 | user.target.id | Unique identifier of the user. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 
 
 An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-22T23:44:13.873Z",
+    "@timestamp": "2021-11-23T00:41:45.280Z",
     "agent": {
-        "ephemeral_id": "b6449e10-b093-49e2-8869-5a94c0a56cbb",
-        "hostname": "docker-fleet-agent",
-        "id": "5c1c5f28-d795-4596-bffc-ff22905a02f7",
+        "ephemeral_id": "a362a4c6-e4c0-441d-9bca-edd06245f232",
+        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0-beta1"
     },
     "confluence": {
         "audit": {
             "extra_attributes": [
+                {
+                    "name": "ID Range",
+                    "nameI18nKey": "atlassian.audit.event.attribute.id",
+                    "value": "77 - 176"
+                },
                 {
                     "name": "Query",
                     "nameI18nKey": "atlassian.audit.event.attribute.query"
@@ -119,27 +145,20 @@ An example event for `audit` looks as following:
                 {
                     "name": "Results returned",
                     "nameI18nKey": "atlassian.audit.event.attribute.results",
-                    "value": "57"
-                },
-                {
-                    "name": "ID Range",
-                    "nameI18nKey": "atlassian.audit.event.attribute.id",
-                    "value": "1 - 57"
+                    "value": "100"
                 },
                 {
                     "name": "Timestamp Range",
                     "nameI18nKey": "atlassian.audit.event.attribute.timestamp",
-                    "value": "2021-11-22T23:42:45.791Z - 2021-11-22T23:43:22.615Z"
+                    "value": "2021-11-23T00:39:37.155Z - 2021-11-23T00:41:17.165Z"
                 }
             ],
             "method": "Browser",
             "type": {
                 "action": "Audit Log search performed",
                 "actionI18nKey": "atlassian.audit.event.action.audit.search",
-                "area": "AUDIT_LOG",
                 "category": "Auditing",
-                "categoryI18nKey": "atlassian.audit.event.category.audit",
-                "level": "BASE"
+                "categoryI18nKey": "atlassian.audit.event.category.audit"
             }
         }
     },
@@ -149,52 +168,25 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "5c1c5f28-d795-4596-bffc-ff22905a02f7",
-        "snapshot": true,
-        "version": "7.16.0"
+        "id": "82d0dfd8-3946-4ac0-a092-a9146a71e3f7",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "atlassian.audit.event.action.audit.search",
         "agent_id_status": "verified",
+        "created": "2021-12-24T00:49:08.197Z",
         "dataset": "atlassian_confluence.audit",
-        "ingested": "2021-12-08T15:10:44Z",
+        "ingested": "2021-12-24T00:49:09Z",
         "kind": "event",
-        "original": "{\"affectedObjects\":[],\"auditType\":{\"action\":\"Audit Log search performed\",\"actionI18nKey\":\"atlassian.audit.event.action.audit.search\",\"area\":\"AUDIT_LOG\",\"category\":\"Auditing\",\"categoryI18nKey\":\"atlassian.audit.event.category.audit\",\"level\":\"BASE\"},\"author\":{\"id\":\"2c9580827d4a06e8017d4a07c3e10000\",\"name\":\"test.user\",\"type\":\"user\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"Query\",\"nameI18nKey\":\"atlassian.audit.event.attribute.query\",\"value\":\"\"},{\"name\":\"Results returned\",\"nameI18nKey\":\"atlassian.audit.event.attribute.results\",\"value\":\"57\"},{\"name\":\"ID Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.id\",\"value\":\"1 - 57\"},{\"name\":\"Timestamp Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.timestamp\",\"value\":\"2021-11-22T23:42:45.791Z - 2021-11-22T23:43:22.615Z\"}],\"method\":\"Browser\",\"source\":\"81.2.69.143\",\"system\":\"http://confluence.internal:8090\",\"timestamp\":{\"epochSecond\":1637624653,\"nano\":873000000},\"version\":\"1.0\"}",
+        "original": "{\"affectedObjects\":[],\"author\":{\"avatarUri\":\"\",\"id\":\"2c9680837d4a3682017d4a375a280000\",\"name\":\"test user\",\"type\":\"user\",\"uri\":\"http://confluence.internal:8090/admin/users/viewuser.action?username=admin\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"ID Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.id\",\"value\":\"77 - 176\"},{\"name\":\"Query\",\"nameI18nKey\":\"atlassian.audit.event.attribute.query\",\"value\":\"\"},{\"name\":\"Results returned\",\"nameI18nKey\":\"atlassian.audit.event.attribute.results\",\"value\":\"100\"},{\"name\":\"Timestamp Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.timestamp\",\"value\":\"2021-11-23T00:39:37.155Z - 2021-11-23T00:41:17.165Z\"}],\"method\":\"Browser\",\"source\":\"81.2.69.143\",\"system\":\"http://confluence.internal:8090\",\"timestamp\":\"2021-11-23T00:41:45.280Z\",\"type\":{\"action\":\"Audit Log search performed\",\"actionI18nKey\":\"atlassian.audit.event.action.audit.search\",\"category\":\"Auditing\",\"categoryI18nKey\":\"atlassian.audit.event.category.audit\"}}",
         "type": "info"
     },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "83a5cd10d1960dd73f42bd2801d238c3",
-        "ip": [
-            "192.168.176.5"
-        ],
-        "mac": [
-            "02:42:c0:a8:b0:05"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.4.0-90-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
-            "type": "linux",
-            "version": "7 (Core)"
-        }
-    },
     "input": {
-        "type": "log"
-    },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/test-audit.log"
-        },
-        "offset": 0
+        "type": "httpjson"
     },
     "related": {
         "hosts": [
@@ -202,6 +194,9 @@ An example event for `audit` looks as following:
         ],
         "ip": [
             "81.2.69.143"
+        ],
+        "user": [
+            "admin"
         ]
     },
     "service": {
@@ -209,33 +204,29 @@ An example event for `audit` looks as following:
     },
     "source": {
         "address": "81.2.69.143",
-        "as": {
-            "number": 20712,
-            "organization": {
-                "name": "Andrews \u0026 Arnold Ltd"
-            }
-        },
         "geo": {
-            "city_name": "Abingdon",
+            "city_name": "London",
             "continent_name": "Europe",
             "country_iso_code": "GB",
             "country_name": "United Kingdom",
             "location": {
-                "lat": 51.7095,
-                "lon": -1.3614
+                "lat": 51.5142,
+                "lon": -0.0931
             },
-            "region_iso_code": "GB-OXF",
-            "region_name": "Oxfordshire"
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
         },
         "ip": "81.2.69.143"
     },
     "tags": [
         "preserve_original_event",
+        "forwarded",
         "confluence-audit"
     ],
     "user": {
-        "full_name": "test.user",
-        "id": "2c9580827d4a06e8017d4a07c3e10000"
+        "full_name": "test user",
+        "id": "2c9680837d4a3682017d4a375a280000",
+        "name": "admin"
     }
 }
 ```

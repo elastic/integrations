@@ -1,10 +1,12 @@
 # Microsoft Defender for Endpoint integration
 
-This integration is for Microsoft Defender for Endpoint logs.
+This integration is for [Microsoft Defender for Endpoint](https://docs.microsoft.com/en-us/microsoft-365/security/defender-endpoint/microsoft-defender-endpoint?view=o365-worldwide) logs.
+
+## Setting up
 
 To allow the integration to ingest data from the Microsoft Defender API, you need to create a new application on your Azure domain. The procedure to create an application is found on the [Create a new Azure Application](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/exposed-apis-create-app-webapp) documentation page.
 
-When giving the application the API permissions described in the documentation (`Windows Defender ATP Alert.Read.All`) it will only grant access to read alerts from ATP and nothing else in the Azure Domain.
+> Note: When giving the application the API permissions described in the documentation (`Windows Defender ATP Alert.Read.All`), it will only grant access to read alerts from ATP and nothing else in the Azure Domain
 
 After the application has been created, it should contain 3 values that you need to apply to the module configuration.
 
@@ -16,107 +18,142 @@ These values are:
 
 ## ECS mappings
 
-| Defender for Endpoint fields        | ECS Fields                     |
-|-------------------------------------|--------------------------------|
-| alertCreationTime                   | @timestamp                     |
-| aadTenantId                         | cloud.account.id               |
-| category                            | threat.technique.name          |
-| computerDnsName                     | host.hostname                  |
-| description                         | rule.description               |
-| detectionSource                     | observer.name                  |
-| evidence.fileName                   | file.name                      |
-| evidence.filePath                   | file.path                      |
-| evidence.processId                  | process.pid                    |
-| evidence.processCommandLine         | process.command_line           |
-| evidence.processCreationTime        | process.start                  |
-| evidence.parentProcessId            | process.parent.pid             |
-| evidence.parentProcessCreationTime  | process.parent.start           |
-| evidence.sha1                       | file.hash.sha1                 |
-| evidence.sha256                     | file.hash.sha256               |
-| evidence.url                        | url.full                       |
-| firstEventTime                      | event.start                    |
-| id                                  | event.id                       |
-| lastEventTime                       | event.end                      |
-| machineId                           | cloud.instance.id              |
-| relatedUser.userName                | host.user.name                 |
-| relatedUser.domainName              | host.user.domain               |
-| title                               | message                        |
-| severity                            | event.severity                 |
+| Defender for Endpoint fields       | ECS Fields            |
+| ---------------------------------- | --------------------- |
+| alertCreationTime                  | @timestamp            |
+| aadTenantId                        | cloud.account.id      |
+| category                           | threat.technique.name |
+| computerDnsName                    | host.hostname         |
+| description                        | rule.description      |
+| detectionSource                    | observer.name         |
+| evidence.fileName                  | file.name             |
+| evidence.filePath                  | file.path             |
+| evidence.processId                 | process.pid           |
+| evidence.processCommandLine        | process.command_line  |
+| evidence.processCreationTime       | process.start         |
+| evidence.parentProcessId           | process.parent.pid    |
+| evidence.parentProcessCreationTime | process.parent.start  |
+| evidence.sha1                      | file.hash.sha1        |
+| evidence.sha256                    | file.hash.sha256      |
+| evidence.url                       | url.full              |
+| firstEventTime                     | event.start           |
+| id                                 | event.id              |
+| lastEventTime                      | event.end             |
+| machineId                          | cloud.instance.id     |
+| title                              | message               |
+| severity                           | event.severity        |
 
 An example event for `log` looks as following:
 
 ```json
 {
-    "rule": {
-        "description": "Malware and unwanted software are undesirable applications that perform annoying, disruptive, or harmful actions on affected machines. Some of these undesirable applications can replicate and spread from one machine to another. Others are able to receive commands from remote attackers and perform activities associated with cyber attacks.\n\nA malware is considered active if it is found running on the machine or it already has persistence mechanisms in place. Active malware detections are assigned higher severity ratings.\n\nBecause this malware was active, take precautionary measures and check for residual signs of infection."
-    },
-    "message": "An active 'Exeselrun' malware was detected",
-    "microsoft": {
-        "defender_endpoint": {
-            "investigationId": "9",
-            "evidence": {
-                "entityType": "File"
-            },
-            "resolvedTime": "2020-06-30T11:13:12.2680434Z",
-            "investigationState": "Benign",
-            "incidentId": "12",
-            "assignedTo": "elastic@elasticuser.com",
-            "lastUpdateTime": "2020-07-03T15:15:39.13Z",
-            "status": "Resolved"
-        }
+    "@timestamp": "2022-01-02T01:30:05.670Z",
+    "agent": {
+        "ephemeral_id": "9cc31363-7ffb-4763-9bec-cef372647d15",
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.0.0-beta1"
     },
     "cloud": {
-        "provider": "azure",
         "account": {
-            "id": "123543-d66c-4c7e-9e30-40034eb7c6f3"
+            "id": "a839b112-1253-6432-9bf6-94542403f21c"
         },
         "instance": {
-            "id": "c5a964f417c11f6277d5bf9489f0d"
-        }
+            "id": "111e6dd8c833c8a052ea231ec1b19adaf497b625"
+        },
+        "provider": "azure"
     },
-    "observer": {
-        "name": "WindowsDefenderAv",
-        "product": "Defender ATP",
-        "vendor": "Microsoft"
+    "data_stream": {
+        "dataset": "microsoft_defender_endpoint.log",
+        "namespace": "ep",
+        "type": "logs"
     },
-    "file": {
-        "name": "SB.xsl",
-        "path": "C:\\Windows\\Temp\\sb-sim-temp-ikyxqi\\sb_10554_bs_h4qpk5"
+    "ecs": {
+        "version": "8.3.0"
     },
-    "related": {
-        "hosts": [
-            "testserver4"
+    "elastic_agent": {
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "action": "Execution",
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "created": "2021-01-26T20:33:57.7220239Z",
+        "dataset": "microsoft_defender_endpoint.log",
+        "duration": 101466100,
+        "end": "2021-01-26T20:31:33.0577322Z",
+        "id": "da637472900382838869_1364969609",
+        "ingested": "2022-01-02T01:30:06Z",
+        "kind": "alert",
+        "provider": "defender_endpoint",
+        "severity": 2,
+        "start": "2021-01-26T20:31:32.9562661Z",
+        "timezone": "UTC",
+        "type": [
+            "user",
+            "creation",
+            "start"
         ]
     },
     "host": {
-        "name": "testserver4",
-        "hostname": "testserver4"
+        "hostname": "temp123.middleeast.corp.microsoft.com",
+        "name": "temp123.middleeast.corp.microsoft.com"
     },
-    "threat": {
-        "technique": {
-            "name": "Malware"
-        },
-        "framework": "MITRE ATT\u0026CK"
+    "input": {
+        "type": "httpjson"
     },
-    "event": {
-        "severity": 2,
-        "kind": "alert",
-        "timezone": "UTC",
-        "created": "2020-06-30T10:09:01.1569718Z",
-        "start": "2020-06-30T10:07:44.333733Z",
-        "type": [
-            "end"
+    "message": "Low-reputation arbitrary code executed by signed executable",
+    "microsoft": {
+        "defender_endpoint": {
+            "evidence": {
+                "aadUserId": "11118379-2a59-1111-ac3c-a51eb4a3c627",
+                "accountName": "name",
+                "domainName": "DOMAIN",
+                "entityType": "User",
+                "userPrincipalName": "temp123@microsoft.com"
+            },
+            "incidentId": "1126093",
+            "investigationState": "Queued",
+            "lastUpdateTime": "2021-01-26T20:33:59.2Z",
+            "rbacGroupName": "A",
+            "status": "New"
+        }
+    },
+    "observer": {
+        "name": "WindowsDefenderAtp",
+        "product": "Defender for Endpoint",
+        "vendor": "Microsoft"
+    },
+    "related": {
+        "hosts": [
+            "temp123.middleeast.corp.microsoft.com"
         ],
-        "duration": 0,
-        "ingested": "2021-02-18T13:34:35.126958300Z",
-        "provider": "defender_endpoint",
-        "action": "Malware",
-        "end": "2020-06-30T10:07:44.333733Z",
-        "id": "da637291085411733957_-1043898914",
-        "category": [
-            "host",
-            "malware"
+        "user": [
+            "temp123"
         ]
+    },
+    "rule": {
+        "description": "Binaries signed by Microsoft can be used to run low-reputation arbitrary code. This technique hides the execution of malicious code within a trusted process. As a result, the trusted process might exhibit suspicious behaviors, such as opening a listening port or connecting to a command-and-control (C\u0026C) server."
+    },
+    "tags": [
+        "microsoft-defender-endpoint",
+        "forwarded"
+    ],
+    "threat": {
+        "framework": "MITRE ATT\u0026CK",
+        "technique": {
+            "name": "Execution"
+        }
+    },
+    "user": {
+        "domain": "DOMAIN",
+        "id": "S-1-5-21-11111607-1111760036-109187956-75141",
+        "name": "temp123"
     }
 }
 ```
@@ -167,6 +204,7 @@ An example event for `log` looks as following:
 | file.hash.sha512 | SHA512 hash. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -180,6 +218,7 @@ An example event for `log` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -210,6 +249,7 @@ An example event for `log` looks as following:
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
+| process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
 | process.parent.pid | Process id. | long |
 | process.parent.start | The time the process started. | date |
 | process.pid | Process id. | long |
@@ -222,7 +262,9 @@ An example event for `log` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | threat.framework | Name of the threat framework used to further categorize and classify the tactic and technique of the reported threat. Framework classification can be provided by detecting systems, evaluated at ingest time, or retrospectively tagged to events. | keyword |
 | threat.technique.name | The name of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
+| threat.technique.name.text | Multi-field of `threat.technique.name`. | match_only_text |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 

@@ -2,11 +2,8 @@
 description: Pipeline for parsing cisco_duo summary logs
 processors:
   - set:
-      field: event.ingested
-      value: "{{{_ingest.timestamp}}}"
-  - set:
       field: ecs.version
-      value: '1.11.0'
+      value: '8.4.0'
   - set: 
       field: "@timestamp"
       value: "{{{_ingest.timestamp}}}"
@@ -38,6 +35,6 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{{_ingest.on_failure_message}}}"

@@ -1,11 +1,50 @@
-# ec2
+# Amazon EC2
 
-## Logs
+The Amazon EC2 integration allows you to monitor [Amazon Elastic Compute Cloud (Amazon EC2)](https://aws.amazon.com/ec2/)—a cloud compute platform.
 
-The `ec2` dataset is specifically for EC2 logs stored in AWS CloudWatch. Export logs
-from log groups to Amazon S3 bucket which has SQS notification setup already.
-With this dataset, EC2 logs will be parsed into fields like  `ip_address`
-and `process.name`. For logs from other services, please use `cloudwatch` dataset.
+Use the Amazon EC2 integration to collect logs and metrics related to your EC2 instances. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the logs and metrics when troubleshooting an issue.
+
+For example, you could use this data to track Amazon EC2 CPU utilization. Then you can alert when utilization for an instance crosses a predefined threshold.
+
+## Data streams
+
+The Amazon EC2 integration collects two types of data: logs and metrics.
+
+**Logs** help you keep a record of events happening in Amazon EC2.
+Logs collected by the Amazon EC2 integration include the region in which an instance is running, the operating system architecture, container information, and more. See more details in the [Logs reference](#logs-reference).
+
+**Metrics** give you insight into the state of your Amazon EC2 instances.
+Metrics collected by the Amazon EC2 integration include the Amazon EC2 instance ID, the number of earned CPU credits that an instance has accrued since it was launched or started, and more. See more details in the [Metrics reference](#metrics-reference).
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any AWS integration you will need:
+
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, see the **AWS** integration documentation.
+
+## Setup
+
+Use this integration if you only need to collect data from the Amazon EC2 service.
+
+If you want to collect data from two or more AWS services, consider using the **AWS** integration.
+When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Logs reference
+
+The `ec2` data stream supports both EC2 logs stored in AWS CloudWatch and EC2 logs stored in Amazon S3.
+For logs stored in S3, you must export logs from log groups to an Amazon S3 bucket which has SQS notification setup already.
+
+With this data stream, EC2 logs will be parsed into fields like  `ip_address`
+and `process.name`. For logs from other services, please use the **AWS CloudWatch** integration.
 
 **Exported fields**
 
@@ -46,6 +85,7 @@ and `process.name`. For logs from other services, please use `cloudwatch` datase
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -68,7 +108,7 @@ An example event for `ec2` looks as following:
     },
     "@timestamp": "2020-02-20T07:01:01.000Z",
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "event": {
         "ingested": "2021-07-19T21:47:04.871450600Z",
@@ -86,119 +126,167 @@ An example event for `ec2` looks as following:
 }
 ```
 
-## Metrics
+## Metrics reference
 
 An example event for `ec2` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:56:37.255Z",
+    "@timestamp": "2022-05-26T12:40:00.000Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "24d50340-a9d0-4d5d-9f42-fe9cb4b8c95d",
+        "type": "metricbeat",
+        "ephemeral_id": "f8282deb-ebc7-4d1f-9386-207f56657244",
+        "version": "8.2.0"
+    },
+    "elastic_agent": {
+        "id": "24d50340-a9d0-4d5d-9f42-fe9cb4b8c95d",
+        "version": "8.2.0",
+        "snapshot": false
+    },
+    "cloud": {
+        "availability_zone": "us-east-1c",
+        "instance": {
+            "name": "elastic-package-test-33138",
+            "id": "i-0de58890d94dda2e3"
+        },
+        "provider": "aws",
+        "machine": {
+            "type": "t1.micro"
+        },
+        "region": "us-east-1",
+        "account": {
+            "name": "elastic-beats",
+            "id": "428152502467"
+        }
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "service": {
+        "type": "aws"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.ec2_metrics"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "disk": {
+            "read": {
+                "bytes": 0
+            },
+            "write": {
+                "bytes": 0
+            }
+        },
+        "os": {
+            "kernel": "5.10.47-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.4 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": true,
+        "ip": [
+            "192.168.80.7"
+        ],
+        "name": "elastic-package-test-33138",
+        "cpu": {
+            "usage": 0.08265027322397175
+        },
+        "id": "i-0de58890d94dda2e3",
+        "mac": [
+            "02:42:c0:a8:50:07"
+        ],
+        "architecture": "x86_64",
+        "network": {
+            "ingress": {
+                "bytes": 1992
+            },
+            "egress": {
+                "bytes": 1800
+            }
+        }
+    },
+    "metricset": {
+        "period": 300000,
+        "name": "cloudwatch"
+    },
+    "event": {
+        "duration": 15936070000,
+        "agent_id_status": "verified",
+        "ingested": "2022-05-26T12:44:52Z",
+        "module": "aws",
+        "dataset": "aws.ec2_metrics"
+    },
     "aws": {
         "ec2": {
-            "network": {
-                "in": {
-                    "packets": 448.4,
-                    "bytes_per_sec": 103.10266666666666,
-                    "packets_per_sec": 1.4946666666666666,
-                    "bytes": 30930.8
+            "diskio": {
+                "read": {
+                    "count_per_sec": 0,
+                    "bytes_per_sec": 0
                 },
-                "out": {
-                    "packets": 233.6,
-                    "bytes_per_sec": 51.754666666666665,
-                    "packets_per_sec": 0.7786666666666666,
-                    "bytes": 15526.4
+                "write": {
+                    "count_per_sec": 0,
+                    "bytes_per_sec": 0
                 }
+            },
+            "instance": {
+                "image": {
+                    "id": "ami-0ff900168d0231cd3"
+                },
+                "core": {
+                    "count": 1
+                },
+                "private": {
+                    "ip": "172.31.16.45",
+                    "dns_name": "ip-172-31-16-45.ec2.internal"
+                },
+                "threads_per_core": 1,
+                "public": {
+                    "ip": "54.90.153.147",
+                    "dns_name": "ec2-54-90-153-147.compute-1.amazonaws.com"
+                },
+                "state": {
+                    "code": 16,
+                    "name": "running"
+                },
+                "monitoring": {
+                    "state": "enabled"
+                }
+            },
+            "cpu": {
+                "credit_balance": 144,
+                "credit_usage": 0.004121
             },
             "status": {
                 "check_failed": 0,
                 "check_failed_instance": 0,
                 "check_failed_system": 0
             },
-            "cpu": {
-                "credit_usage": 0.004566,
-                "credit_balance": 144,
-                "surplus_credit_balance": 0,
-                "surplus_credits_charged": 0,
-                "total": {
-                    "pct": 0.0999999999997574
-                }
-            },
-            "diskio": {
-                "read": {
-                    "bytes_per_sec": 0,
-                    "count_per_sec": 0,
-                    "bytes": 0,
-                    "count": 0
+            "network": {
+                "in": {
+                    "bytes_per_sec": 33.2
                 },
-                "write": {
-                    "count": 0,
-                    "bytes_per_sec": 0,
-                    "count_per_sec": 0,
-                    "bytes": 0
-                }
-            },
-            "instance": {
-                "core": {
-                    "count": 1
-                },
-                "threads_per_core": 1,
-                "public": {
-                    "ip": "3.122.204.80",
-                    "dns_name": ""
-                },
-                "private": {
-                    "ip": "10.0.0.122",
-                    "dns_name": "ip-10-0-0-122.eu-central-1.compute.internal"
-                },
-                "image": {
-                    "id": "ami-0b418580298265d5c"
-                },
-                "state": {
-                    "name": "running",
-                    "code": 16
-                },
-                "monitoring": {
-                    "state": "disabled"
+                "out": {
+                    "bytes_per_sec": 30
                 }
             }
+        },
+        "cloudwatch": {
+            "namespace": "AWS/EC2"
+        },
+        "dimensions": {
+            "InstanceId": "i-0de58890d94dda2e3"
+        },
+        "tags": {
+            "Name": "elastic-package-test-33138"
         }
-    },
-    "agent": {
-        "name": "MacBook-Elastic.local",
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b",
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30"
-    },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "event": {
-        "module": "aws",
-        "duration": 23217499283,
-        "dataset": "aws.ec2_metrics"
-    },
-    "metricset": {
-        "period": 300000,
-        "name": "ec2"
-    },
-    "service": {
-        "type": "aws"
-    },
-    "cloud": {
-        "provider": "aws",
-        "region": "eu-central-1",
-        "account": {
-            "name": "elastic-beats",
-            "id": "428152502467"
-        },
-        "instance": {
-            "id": "i-04c1a32c2aace6b40"
-        },
-        "machine": {
-            "type": "t2.micro"
-        },
-        "availability_zone": "eu-central-1a"
     }
 }
 ```
@@ -277,6 +365,7 @@ An example event for `ec2` looks as following:
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |
 | host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | long |
 | host.disk.write.bytes | The total number of bytes write successfully in a given period of time. | long |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -285,8 +374,12 @@ An example event for `ec2` looks as following:
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |
 | host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | long |
 | host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |
 | host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | long |
 | host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |
 | host.os.build | OS build information. | keyword |
@@ -294,6 +387,7 @@ An example event for `ec2` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |

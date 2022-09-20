@@ -1,0 +1,74 @@
+title: "Auth0 logs via Webhooks"
+type: logs
+streams:
+  - input: http_endpoint
+    title: Auth0 log events
+    description: Receives log events from Auth0
+    template_path: http_endpoint.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: Bind address for the listener. Use 0.0.0.0 to listen on all interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        multi: false
+        required: true
+        show_user: true
+        default: 8383
+      - name: url
+        type: text
+        title: Webhook path
+        description: URL path where the webhook will accept requests.
+        multi: false
+        required: true
+        show_user: false
+        default: /auth0/logs
+      - name: secret_value
+        type: text
+        description: Authorization token
+        multi: false
+        required: false
+        show_user: true
+      - name: ssl
+        type: yaml
+        title: TLS
+        description: Options for enabling TLS for the listening webhook endpoint. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          enabled: false
+          certificate: "/etc/pki/client/cert.pem"
+          key: "/etc/pki/client/cert.key"
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - auth0-logstream
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+

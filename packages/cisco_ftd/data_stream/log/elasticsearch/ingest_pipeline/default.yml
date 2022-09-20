@@ -1,16 +1,13 @@
 ---
 description: "Pipeline for Cisco FTD logs"
 processors:
-  - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
   - set:
       field: ecs.version
-      value: "1.12.0"
+      value: '8.4.0'
   #
   # Parse the syslog header
   #
@@ -21,8 +18,8 @@ processors:
       patterns:
         - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:_temp_.full_message}"
       pattern_definitions:
-        SYSLOG_HEADER: "(?:%{SYSLOGFACILITY}\\s*)?(?:%{FTD_DATE:_temp_.raw_date}:?\\s+)?(?:%{PROCESS_HOST}|%{HOST_PROCESS})(?:{DATA})?%{SYSLOG_END}?"
-        SYSLOGFACILITY: "<%{NONNEGINT:syslog.facility.code:int}(?:.%{NONNEGINT:syslog.priority:int})?>"
+        SYSLOG_HEADER: "(?:%{SYSPRIORITY}\\s*)?(?:%{FTD_DATE:_temp_.raw_date}:?\\s+)?(?:%{PROCESS_HOST}|%{HOST_PROCESS})(?:{DATA})?%{SYSLOG_END}?"
+        SYSPRIORITY: "<%{NONNEGINT:log.syslog.priority:int}>"
         # Beginning with version 6.3, Firepower Threat Defense provides the option to enable timestamp as per RFC 5424.
         FTD_DATE: "(?:%{TIMESTAMP_ISO8601}|%{ASA_DATE})"
         ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ})?"
@@ -31,6 +28,17 @@ processors:
         # exactly match the syntax for firepower management logs
         PROCESS_HOST: "(?:%{PROCESS:process.name}:\\s%{SYSLOGHOST:host.name})"
         HOST_PROCESS: "(?:%{SYSLOGHOST:host.hostname}:?\\s+)?(?:%{PROCESS:process.name}?(?:\\[%{POSINT:process.pid:long}\\])?)?"
+  - script:
+      lang: painless
+      source: |
+        if (ctx.log?.syslog?.priority != null) {
+          def severity = new HashMap();
+          severity['code'] = ctx.log.syslog.priority&0x7;
+          ctx.log.syslog['severity'] = severity;
+          def facility = new HashMap();
+          facility['code'] = ctx.log.syslog.priority>>3;
+          ctx.log.syslog['facility'] = facility;
+        }
 
   #
   # Parse FTD/ASA style message
@@ -311,13 +319,13 @@ processors:
       description: "111009"
       field: "message"
       patterns:
-        - "^%{NOTSPACE} '%{NOTSPACE:host.user.name}' executed %{NOTSPACE} %{GREEDYDATA:_temp_.cisco.command_line_arguments}"
+        - "^%{NOTSPACE} '%{NOTSPACE:server.user.name}' executed %{NOTSPACE} %{GREEDYDATA:_temp_.cisco.command_line_arguments}"
   - grok:
       if: "ctx._temp_.cisco.message_id == '111010'"
       field: "message"
       description: "111010"
       patterns:
-        - "User '%{NOTSPACE:host.user.name}', running %{QUOTEDSTRING} from IP %{IP:source.address}, executed %{QUOTEDSTRING:_temp_.cisco.command_line_arguments}"
+        - "User '%{NOTSPACE:server.user.name}', running %{QUOTEDSTRING} from IP %{IP:source.address}, executed %{QUOTEDSTRING:_temp_.cisco.command_line_arguments}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
       field: "message"
@@ -339,6 +347,11 @@ processors:
       field: "message"
       description: "302012"
       pattern: "Teardown %{} %{network.transport} translation from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} duration %{_temp_.duration_hms}"
+  - set:
+      if: '["302020"].contains(ctx._temp_.cisco.message_id)'
+      field: "event.action"
+      value: "flow-creation"
+      description: "302020"
   - grok:
       if: "ctx._temp_.cisco.message_id == '302020'"
       field: "message"
@@ -585,7 +598,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '502103'"
       field: "message"
       description: "502103"
-      pattern: "User priv level changed: Uname: %{host.user.name} From: %{_temp_.cisco.privilege.old} To: %{_temp_.cisco.privilege.new}"
+      pattern: "User priv level changed: Uname: %{server.user.name} From: %{_temp_.cisco.privilege.old} To: %{_temp_.cisco.privilege.new}"
   - append:
       if: "ctx._temp_.cisco.message_id == '502103'"
       field: "event.type"
@@ -622,7 +635,7 @@ processors:
       if: '["611102", "611101"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
       description: "611102, 611101"
-      pattern: "User authentication %{event.outcome}: IP address: %{source.address}, Uname: %{host.user.name}"
+      pattern: "User authentication %{event.outcome}: IP address: %{source.address}, Uname: %{server.user.name}"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '710003'"
       field: "message"
@@ -759,10 +772,10 @@ processors:
   # Handle 302xxx messages (Flow expiration a.k.a "Teardown")
   #
   - set:
-      if: '["302012", "302014", "302016", "302018", "302020", "302021", "302036", "302304", "302306", "609001", "609002"].contains(ctx._temp_.cisco.message_id)'
+      if: '["302012", "302014", "302016", "302018", "302021", "302036", "302304", "302306", "609001", "609002"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "flow-expiration"
-      description: "302012, 302014, 302016, 302018, 302020, 302021, 302036, 302304, 302306, 609001, 609002"
+      description: "302012, 302014, 302016, 302018, 302021, 302036, 302304, 302306, 609001, 609002"
   - grok:
       field: "message"
       if: '["302014", "302016", "302018", "302021", "302036", "302304", "302306"].contains(ctx._temp_.cisco.message_id)'
@@ -1752,6 +1765,13 @@ processors:
             - network
           type:
             - info
+        flow-creation:
+          kind: event
+          category:
+            - network
+          type:
+            - connection
+            - start
         flow-expiration:
           kind: event
           category:
@@ -1766,7 +1786,7 @@ processors:
           type:
             - info
         malware-detected:
-          kind: alert
+          kind: event
           category:
             - malware
           type:
@@ -1819,9 +1839,24 @@ processors:
             ctx.event.type.add('denied');
           }
           if (ctx.event.outcome == 'block') {
-            ctx.event.type.add('failure');
+            ctx.event.outcome = 'success';
+            ctx.event.type.add('denied');
+          }
+          if (ctx.event.outcome == 'monitored') {
+            ctx.event.category.add('intrusion_detection');
+            ctx.event.outcome = 'success';
           }
         }
+
+  # Malware event kind is classified as alert when sha_disposition is "Malware", "Custom Detection" not for other cases.
+  - set:
+      if: 'ctx?.event?.code == "430005" && ["Malware", "Custom Detection"].contains(ctx.cisco.ftd.security.sha_disposition)'
+      field: event.kind
+      value: alert
+  - append:
+      if: 'ctx?.event?.code == "430005" && !["Malware", "Custom Detection"].contains(ctx.cisco.ftd.security.sha_disposition)'
+      field: event.category
+      value: file
 
   - set:
       description: copy destination.user.name to user.name if it is not set
@@ -1841,11 +1876,11 @@ processors:
       ignore_empty_value: true
   - set:
       field: observer.type
-      value: "firewall"
+      value: "idps"
       ignore_empty_value: true
   - set:
       field: observer.product
-      value: "asa"
+      value: "ftd"
       ignore_empty_value: true
   - set:
       field: observer.egress.interface.name
@@ -1882,8 +1917,8 @@ processors:
       allow_duplicates: false
   - append:
       field: related.user
-      value: "{{host.user.name}}"
-      if: ctx?.host?.user?.name != null && ctx?.host?.user?.name != ''
+      value: "{{server.user.name}}"
+      if: ctx?.server?.user?.name != null && ctx?.server?.user?.name != ''
       allow_duplicates: false
   - append:
       field: related.user

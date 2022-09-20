@@ -1,6 +1,6 @@
 # Cisco Duo
 
-The Cisco Duo integration collects and parses data from the Cisco Duo Admin APIs.
+The Cisco Duo integration collects and parses data from the [Cisco Duo Admin APIs](https://duo.com/docs/adminapi).
 
 ## Compatibility
 
@@ -34,12 +34,11 @@ An example event for `admin` looks as following:
 {
     "@timestamp": "2021-07-20T11:41:31.000Z",
     "agent": {
-        "ephemeral_id": "5a98b1fa-c7e3-497c-a3e7-90bc9916e04c",
-        "hostname": "docker-fleet-agent",
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
+        "ephemeral_id": "7c7523b2-666f-4792-812c-a5697a8929b9",
+        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.2.0"
     },
     "cisco_duo": {
         "admin": {
@@ -55,28 +54,23 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "snapshot": false,
+        "version": "8.2.0"
     },
     "event": {
         "action": "activation_begin",
         "agent_id_status": "verified",
-        "category": "iam",
-        "created": "2021-09-13T09:25:06.909Z",
+        "created": "2022-07-14T12:20:01.540Z",
         "dataset": "cisco_duo.admin",
-        "ingested": "2021-09-13T09:25:07Z",
+        "ingested": "2022-07-14T12:20:02Z",
         "kind": "event",
         "original": "{\"action\":\"activation_begin\",\"description\":\"Starting activation process\",\"isotimestamp\":\"2021-07-20T11: 41: 31+00: 00\",\"object\":null,\"timestamp\":1626781291,\"username\":\"narroway\"}",
         "outcome": "success",
-        "reason": "Starting activation process",
-        "type": "admin"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
+        "reason": "Starting activation process"
     },
     "input": {
         "type": "httpjson"
@@ -122,6 +116,7 @@ An example event for `admin` looks as following:
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
@@ -142,20 +137,25 @@ An example event for `admin` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | text |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 | user.changes.email | User email address. | keyword |
 | user.changes.name | Short name or login of the user. | keyword |
+| user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
 | user.email | User email address. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 
 
 ### Authentication
@@ -168,12 +168,11 @@ An example event for `auth` looks as following:
 {
     "@timestamp": "2020-02-13T18:56:20.000Z",
     "agent": {
-        "ephemeral_id": "d02e9104-099c-4604-bc2b-6b55f250636f",
-        "hostname": "docker-fleet-agent",
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
+        "ephemeral_id": "ba2543c1-a84f-4f56-ae2f-cfecef7ef0e4",
+        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.2.0"
     },
     "cisco_duo": {
         "auth": {
@@ -218,27 +217,24 @@ An example event for `auth` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "snapshot": false,
+        "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "authentication",
-        "created": "2021-09-13T09:25:47.982Z",
+        "created": "2022-07-14T12:20:57.028Z",
         "dataset": "cisco_duo.auth",
-        "ingested": "2021-09-13T09:25:51Z",
+        "ingested": "2022-07-14T12:20:58Z",
         "kind": "event",
-        "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"67.0.3396.99\",\"flash_version\":\"uninstalled\",\"hostname\":null,\"ip\":\"89.160.20.156\",\"is_encryption_enabled\":true,\"is_firewall_enabled\":true,\"is_password_set\":true,\"java_version\":\"uninstalled\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.14.1\",\"security_agents\":[]},\"alias\":\"\",\"application\":{\"key\":\"DIY231J8BR23QK4UKBY8\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":\"192.168.225.254\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"name\":\"My iPhone X (734-555-2342)\"},\"email\":\"narroway@example.com\",\"event_type\":\"authentication\",\"factor\":\"duo_push\",\"isotimestamp\":\"2020-02-13T18:56:20.351346+00:00\",\"ood_software\":null,\"reason\":\"user_approved\",\"result\":\"success\",\"timestamp\":1581620180,\"trusted_endpoint_status\":\"not trusted\",\"txid\":\"340a23e3-23f3-23c1-87dc-1491a23dfdbb\",\"user\":{\"groups\":[\"Duo Users\",\"CorpHQ Users\"],\"key\":\"DU3KC77WJ06Y5HIV7XKQ\",\"name\":\"narroway@example.com\"}}",
+        "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"67.0.3396.99\",\"flash_version\":\"uninstalled\",\"hostname\":null,\"ip\":\"89.160.20.156\",\"is_encryption_enabled\":true,\"is_firewall_enabled\":true,\"is_password_set\":true,\"java_version\":\"uninstalled\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.14.1\",\"security_agents\":null},\"alias\":\"\",\"application\":{\"key\":\"DIY231J8BR23QK4UKBY8\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":\"192.168.225.254\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"name\":\"My iPhone X (734-555-2342)\"},\"email\":\"narroway@example.com\",\"event_type\":\"authentication\",\"factor\":\"duo_push\",\"isotimestamp\":\"2020-02-13T18:56:20.351346+00:00\",\"ood_software\":null,\"reason\":\"user_approved\",\"result\":\"success\",\"timestamp\":1581620180,\"trusted_endpoint_status\":\"not trusted\",\"txid\":\"340a23e3-23f3-23c1-87dc-1491a23dfdbb\",\"user\":{\"groups\":[\"Duo Users\",\"CorpHQ Users\"],\"key\":\"DU3KC77WJ06Y5HIV7XKQ\",\"name\":\"narroway@example.com\"}}",
         "outcome": "success",
         "reason": "user_approved",
         "type": "info"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -252,22 +248,22 @@ An example event for `auth` looks as following:
     "source": {
         "address": "89.160.20.156",
         "as": {
-            "number": 52,
+            "number": 29518,
             "organization": {
-                "name": "University of California, Los Angeles"
+                "name": "Bredband2 AB"
             }
         },
         "geo": {
-            "city_name": "Los Angeles",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
             "location": {
-                "lat": 34.0648,
-                "lon": -118.4414
+                "lat": 58.4167,
+                "lon": 15.6167
             },
-            "region_iso_code": "US-CA",
-            "region_name": "California"
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
         },
         "ip": "89.160.20.156",
         "user": {
@@ -318,7 +314,8 @@ An example event for `auth` looks as following:
 | cisco_duo.auth.access_device.location.city | The city name of the access device using geoip location. | keyword |
 | cisco_duo.auth.access_device.location.country | The country of the access device using geoip location. | keyword |
 | cisco_duo.auth.access_device.location.state | The state name of the access device using geoip location. | keyword |
-| cisco_duo.auth.access_device.security_agents | Reports the security agents present on the endpoint as detected by the Duo Device Health app. | keyword |
+| cisco_duo.auth.access_device.port | The access device's port number. | long |
+| cisco_duo.auth.access_device.security_agents | Reports the security agents present on the endpoint as detected by the Duo Device Health app. | flattened |
 | cisco_duo.auth.alias | The username alias used to log in. | keyword |
 | cisco_duo.auth.application.key | The application's integration_key. | keyword |
 | cisco_duo.auth.application.name | The application's name. | keyword |
@@ -336,6 +333,7 @@ An example event for `auth` looks as following:
 | cisco_duo.auth.auth_device.location.country | The country of the authentication device using geoip location. | keyword |
 | cisco_duo.auth.auth_device.location.state | The state name of the authentication device using geoip location. | keyword |
 | cisco_duo.auth.auth_device.name | The name of the authentication device. | keyword |
+| cisco_duo.auth.auth_device.port | The network port of the authentication device. | long |
 | cisco_duo.auth.email | The email address of the user, if known to Duo, otherwise none. | keyword |
 | cisco_duo.auth.event_type | The type of activity logged. | keyword |
 | cisco_duo.auth.factor | The authentication factor. | keyword |
@@ -363,6 +361,7 @@ An example event for `auth` looks as following:
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.agent_id_status | Agents are normally responsible for populating the `agent.id` field value. If the system receiving events is capable of validating the value based on authentication information for the client then this field can be used to reflect the outcome of that validation. For example if the agent's connection is authenticated with mTLS and the client cert contains the ID of the agent to which the cert was issued then the `agent.id` value in events can be checked against the certificate. If the values match then `event.agent_id_status: verified` is added to the event, otherwise one of the other allowed values should be used. If no validation is performed then the field should be omitted. The allowed values are: `verified` - The `agent.id` field value matches expected value obtained from auth metadata. `mismatch` - The `agent.id` field value does not match the expected value obtained from auth metadata. `missing` - There was no `agent.id` field in the event to validate. `auth_metadata_missing` - There was no auth metadata or it was missing information about the agent ID. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
@@ -383,6 +382,7 @@ An example event for `auth` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -392,6 +392,7 @@ An example event for `auth` looks as following:
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
@@ -400,16 +401,20 @@ An example event for `auth` looks as following:
 | source.geo.region_iso_code | Region ISO code. | keyword |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
 | source.user.email | User email address. | keyword |
 | source.user.group.name | Name of the group. | keyword |
 | source.user.id | Unique identifier of the user. | keyword |
 | source.user.name | Short name or login of the user. | keyword |
+| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
 | tags | List of keywords used to tag each event. | keyword |
 | user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
@@ -424,12 +429,11 @@ An example event for `offline_enrollment` looks as following:
 {
     "@timestamp": "2019-08-30T16:10:05.000Z",
     "agent": {
-        "ephemeral_id": "65efdcdc-75f1-428d-ab19-69424cedfbc8",
-        "hostname": "docker-fleet-agent",
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
+        "ephemeral_id": "0d45b27c-6405-44fa-beda-22c49ad27853",
+        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.2.0"
     },
     "cisco_duo": {
         "offline_enrollment": {
@@ -451,22 +455,19 @@ An example event for `offline_enrollment` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "snapshot": false,
+        "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2021-09-13T09:26:29.445Z",
+        "created": "2022-07-14T12:21:49.801Z",
         "dataset": "cisco_duo.offline_enrollment",
-        "ingested": "2021-09-13T09:26:32Z",
+        "ingested": "2022-07-14T12:21:53Z",
         "original": "{\"action\":\"o2fa_user_provisioned\",\"description\":\"{\\\"user_agent\\\": \\\"DuoCredProv/4.0.6.413 (Windows NT 6.3.9600; x64; Server)\\\", \\\"hostname\\\": \\\"WKSW10x64\\\", \\\"factor\\\": \\\"duo_otp\\\"}\",\"isotimestamp\":\"2019-08-30T16:10:05+00:00\",\"object\":\"Acme Laptop Windows Logon\",\"timestamp\":1567181405,\"username\":\"narroway\"}"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -475,7 +476,10 @@ An example event for `offline_enrollment` looks as following:
         "preserve_original_event",
         "forwarded",
         "cisco_duo-offline_enrollment"
-    ]
+    ],
+    "user": {
+        "name": "narroway"
+    }
 }
 ```
 
@@ -507,6 +511,7 @@ An example event for `offline_enrollment` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
@@ -523,6 +528,7 @@ An example event for `offline_enrollment` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -530,6 +536,7 @@ An example event for `offline_enrollment` looks as following:
 | log.offset | Log offset | long |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ### Summary
@@ -540,14 +547,13 @@ An example event for `summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-09-13T09:27:11.594606745Z",
+    "@timestamp": "2022-07-14T12:22:46.223536172Z",
     "agent": {
-        "ephemeral_id": "c9bc1888-a4eb-4721-82db-8aeef95ea9a8",
-        "hostname": "docker-fleet-agent",
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
+        "ephemeral_id": "3cdfc076-fea6-4cfc-af6d-57f48e0517be",
+        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.2.0"
     },
     "cisco_duo": {
         "summary": {
@@ -563,22 +569,19 @@ An example event for `summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "snapshot": false,
+        "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2021-09-13T09:27:08.071Z",
+        "created": "2022-07-14T12:22:42.739Z",
         "dataset": "cisco_duo.summary",
-        "ingested": "2021-09-13T09:27:11Z",
+        "ingested": "2022-07-14T12:22:46Z",
         "original": "{\"response\":{\"admin_count\":3,\"integration_count\":9,\"telephony_credits_remaining\":960,\"user_count\":8},\"stat\":\"OK\"}"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -617,6 +620,7 @@ An example event for `summary` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
@@ -633,6 +637,7 @@ An example event for `summary` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -651,12 +656,11 @@ An example event for `telephony` looks as following:
 {
     "@timestamp": "2020-03-20T15:38:12.000Z",
     "agent": {
-        "ephemeral_id": "90bc271b-a4ea-4729-98b0-b45bdc57323e",
-        "hostname": "docker-fleet-agent",
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
+        "ephemeral_id": "ff6dad5e-0d55-49ac-ad4f-a438160da9af",
+        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.15.0"
+        "version": "8.2.0"
     },
     "cisco_duo": {
         "telephony": {
@@ -672,23 +676,20 @@ An example event for `telephony` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.11.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "9d42ead4-ab21-4070-b903-74df43269f41",
-        "snapshot": true,
-        "version": "7.15.0"
+        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "snapshot": false,
+        "version": "8.2.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2021-09-13T09:27:54.916Z",
+        "created": "2022-07-14T12:23:38.029Z",
         "dataset": "cisco_duo.telephony",
-        "ingested": "2021-09-13T09:27:55Z",
+        "ingested": "2022-07-14T12:23:39Z",
         "kind": "event",
         "original": "{\"context\":\"authentication\",\"credits\":1,\"isotimestamp\":\"2020-03-20T15:38:12+00:00\",\"phone\":\"+121234512345\",\"timestamp\":1584718692,\"type\":\"sms\"}"
-    },
-    "host": {
-        "name": "docker-fleet-agent"
     },
     "input": {
         "type": "httpjson"
@@ -727,6 +728,7 @@ An example event for `telephony` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
@@ -744,6 +746,7 @@ An example event for `telephony` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |

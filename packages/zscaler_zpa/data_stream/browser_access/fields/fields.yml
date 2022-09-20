@@ -1,0 +1,127 @@
+- name: zscaler_zpa.browser_access
+  type: group
+  fields:
+    - name: client_private_ip
+      type: ip
+      description: |
+        The private IP address of the user's device.
+    - name: connection
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: |
+            The application connection ID.
+        - name: status
+          type: keyword
+          description: |
+            The status of the connection.
+    - name: cors_token
+      type: keyword
+      description: |
+        The token from the CORS request.
+    - name: exporter
+      type: keyword
+      description: |
+        The Browser Access Service instance to ZPA Public Service Edge or ZPA Private Service Edge instance.
+    - name: origin
+      type: keyword
+      description: |
+        The Browser Access domain that led to the origination of the CORS request.
+    - name: timestamp
+      type: group
+      fields:
+        - name: request
+          type: group
+          fields:
+            - name: receive
+              type: group
+              fields:
+                - name: finish
+                  type: date
+                  description: |
+                    Timestamp in microseconds when Browser Access Service received the last byte of the HTTP request from web browser.
+                - name: header_finish
+                  type: date
+                  description: |
+                    Timestamp in microseconds when Browser Access Service received the last byte of the HTTP header corresponding to the request from web browser.
+                - name: start
+                  type: date
+                  description: |
+                    Timestamp in microseconds when Browser Access Service received the first byte of the HTTP request from web browser.
+            - name: transmit
+              type: group
+              fields:
+                - name: finish
+                  type: date
+                  description: |
+                    Timestamp in microseconds when Browser Access Service sent the last byte of the HTTP request to the web server.
+                - name: start
+                  type: date
+                  description: |
+                    Timestamp in microseconds when Browser Access Service sent the first byte of the HTTP request to the web server.
+        - name: response
+          type: group
+          fields:
+            - name: receive
+              type: group
+              fields:
+                - name: finish
+                  type: date
+                  description: |
+                    Timestamp in microseconds when Browser Access Service received the last byte of the HTTP response from the web server.
+                - name: start
+                  type: date
+                  description: |
+                    Timestamp in microseconds when Browser Access Service received the first byte of the HTTP response from the web server.
+            - name: transmit
+              type: group
+              fields:
+                - name: finish
+                  type: date
+                  description: |
+                    Timestamp in microseconds when Browser Access Service sent the last byte of the HTTP response to the web browser.
+                - name: start
+                  type: date
+                  description: |
+                    Timestamp in microseconds when Browser Access Service sent the first byte of the HTTP response to the web browser.
+    - name: total_time
+      type: group
+      fields:
+        - name: connection.setup
+          type: long
+          description: |
+            Time difference between reception of the first byte of the HTTP request from web browser and transmission of the first byte towards the web server, as seen by the Browser Access Service.
+        - name: request
+          type: group
+          fields:
+            - name: receive
+              type: long
+              description: |
+                Time difference between reception of the first and last byte of the HTTP request from the web browser as seen by the Browser Access Service.
+            - name: transmit
+              type: long
+              description: |
+                Time difference between transmission of the first and last byte of the HTTP request towards the web server as seen by the Browser Access Service.
+        - name: response
+          type: group
+          fields:
+            - name: receive
+              type: long
+              description: |
+                Time difference between reception of the first and last byte of the HTTP response from the web server as seen by the Browser Access Service.
+            - name: transmit
+              type: long
+              description: |
+                Time difference between transmission of the first and last byte of the HTTP request towards the web server as seen by the Browser Access Service.
+        - name: server.response
+          type: long
+          description: |
+            Time difference between transmission of the last byte of the HTTP request towards the web server and reception of the first byte of the HTTP response from web server, as seen by the Browser Access Service.
+    - name: xff
+      type: keyword
+      description: |-
+        The X-Forwarded-For (XFF) HTTP header.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

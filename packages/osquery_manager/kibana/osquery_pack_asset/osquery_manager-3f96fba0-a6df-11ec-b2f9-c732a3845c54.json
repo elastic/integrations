@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "name": "hardware-monitoring",
+        "version": 1,
+        "queries": [
+            {
+                "id": "acpi_tables",
+                "interval": 86400,
+                "platform": "darwin,linux",
+                "query": "select * from acpi_tables;",
+                "version": "1.3.0"
+            },
+            {
+                "id": "cpuid",
+                "interval": 86400,
+                "query": "select feature, value, output_register, output_bit, input_eax from cpuid;",
+                "version": "1.0.4"
+            },
+            {
+                "id": "smbios_tables",
+                "interval": 86400,
+                "platform": "darwin,linux",
+                "query": "select * from smbios_tables;",
+                "version": "1.3.0"
+            },
+            {
+                "id": "nvram",
+                "interval": 7200,
+                "platform": "darwin",
+                "query": "select * from nvram where name not in ('backlight-level', 'SystemAudioVolumeDB', 'SystemAudioVolume');",
+                "version": "1.0.2"
+            },
+            {
+                "id": "kernel_info",
+                "interval": 7200,
+                "query": "select * from kernel_info join hash using (path);",
+                "version": "1.4.0"
+            },
+            {
+                "id": "pci_devices",
+                "interval": 7200,
+                "platform": "darwin,linux",
+                "query": "select * from pci_devices;",
+                "version": "1.0.4"
+            },
+            {
+                "id": "fan_speeds",
+                "interval": 7200,
+                "platform": "darwin",
+                "query": "select * from fan_speed_sensors;",
+                "version": "1.7.1"
+            },
+            {
+                "id": "temperatures",
+                "interval": 7200,
+                "platform": "darwin",
+                "query": "select * from temperature_sensors;",
+                "version": "1.7.1"
+            },
+            {
+                "id": "usb_devices",
+                "interval": 7200,
+                "platform": "darwin,linux",
+                "query": "select * from usb_devices;",
+                "version": "1.2.0"
+            },
+            {
+                "id": "hardware_events",
+                "interval": 7200,
+                "platform": "darwin,linux",
+                "query": "select * from hardware_events where path \u003c\u003e '' or model \u003c\u003e '';",
+                "version": "1.4.5"
+            },
+            {
+                "id": "darwin_kernel_system_controls",
+                "interval": 7200,
+                "platform": "darwin",
+                "query": "select * from system_controls where subsystem = 'kern' and (name like '%boot%' or name like '%secure%' or name like '%single%');",
+                "version": "1.4.3"
+            },
+            {
+                "id": "iokit_devicetree",
+                "interval": 86400,
+                "platform": "darwin",
+                "query": "select * from iokit_devicetree;",
+                "version": "1.3.0"
+            },
+            {
+                "id": "efi_file_hashes",
+                "interval": 7200,
+                "platform": "darwin",
+                "query": "select file.path, uid, gid, mode, 0 as atime, mtime, ctime, md5, sha1, sha256 from (select * from file where path like '/System/Library/CoreServices/%.efi' union select * from file where path like '/System/Library/LaunchDaemons/com.apple%efi%') file join hash using (path);",
+                "version": "1.6.1"
+            },
+            {
+                "id": "kernel_extensions",
+                "interval": 7200,
+                "platform": "darwin",
+                "query": "select * from kernel_extensions;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "kernel_modules",
+                "interval": 7200,
+                "platform": "linux",
+                "query": "select * from kernel_modules;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "windows_drivers",
+                "interval": 7200,
+                "platform": "windows",
+                "query": "select * from drivers;",
+                "version": "2.2.0"
+            },
+            {
+                "id": "device_nodes",
+                "interval": 7200,
+                "platform": "darwin,linux",
+                "query": "select file.path, uid, gid, mode, 0 as atime, mtime, ctime, block_size, type from file where directory = '/dev/';",
+                "version": "1.6.0"
+            }
+        ]
+    },
+    "coreMigrationVersion": "8.2.0",
+    "id": "osquery_manager-3f96fba0-a6df-11ec-b2f9-c732a3845c54",
+    "references": [],
+    "type": "osquery-pack-asset"
+}

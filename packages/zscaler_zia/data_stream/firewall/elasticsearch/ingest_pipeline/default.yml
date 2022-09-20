@@ -1,0 +1,344 @@
+---
+description: Pipeline for Zscaler firewall logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: resp
+      ignore_failure: true
+  - remove:
+      field: json
+      if: ctx?.input?.type == 'http_endpoint'
+      ignore_missing: true
+  - rename:
+      field: resp.event
+      target_field: json
+      ignore_missing: true
+  - remove:
+      field: resp
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: network
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.type
+      value: info
+  - date:
+      field: json.datetime
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-mm-dd HH:mm:ss
+  - date:
+      field: json.time
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - E MMM dd HH:mm:ss yyyy
+        - E MMM  d HH:mm:ss yyyy
+        - E MMM d HH:mm:ss yyyy
+        - yyyy-MM-dd HH:mm:ss
+  - remove:
+      field:
+        - json.time
+        - json.datetime
+      ignore_missing: true
+  - convert:
+      field: json.outbytes
+      target_field: source.bytes
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.outbytes
+      ignore_missing: true
+  - rename:
+      field: json.devicehostname
+      target_field: host.hostname
+      ignore_missing: true
+  - rename:
+      field: json.nwapp
+      target_field: network.application
+      ignore_missing: true
+  - rename:
+      field: json.nwsvc
+      target_field: network.protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true
+  - rename:
+      field: json.proto
+      target_field: network.transport
+      ignore_missing: true
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - append:
+      field: rule.name
+      value: "{{{json.rulelabel}}}"
+      if: ctx?.json?.rulelabel != null
+      allow_duplicates: false
+  - append:
+      field: rule.name
+      value: "{{{json.ipsrulelabel}}}"
+      if: ctx?.json?.ipsrulelabel != null
+      allow_duplicates: false
+  - urldecode:
+      field: rule.name
+      ignore_failure: true
+  - remove:
+      field: json.rulelabel
+      ignore_missing: true
+  - remove:
+      field: json.ipsrulelabel
+      ignore_missing: true
+  - convert:
+      field: json.inbytes
+      target_field: destination.bytes
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.inbytes
+      ignore_missing: true
+  - rename:
+      field: json.destcountry
+      target_field: destination.geo.country_name
+      ignore_missing: true
+  - urldecode:
+      field: json.user
+      target_field: user.email
+      ignore_missing: true
+  - remove:
+      field: json.user
+      ignore_missing: true
+  - rename:
+      field: json.deviceowner
+      target_field: user.name
+      ignore_missing: true
+  - urldecode:
+      field: json.department
+      target_field: zscaler_zia.firewall.department
+      ignore_missing: true
+  - remove:
+      field: json.department
+      ignore_missing: true
+  - urldecode:
+      field: json.locationname
+      target_field: zscaler_zia.firewall.location.name
+      ignore_missing: true
+  - remove:
+      field: json.locationname
+      ignore_missing: true
+  - convert:
+      field: json.cdport
+      target_field: zscaler_zia.firewall.client.destination.port
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.cdport
+      ignore_missing: true
+  - convert:
+      field: json.csport
+      target_field: source.port
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.csport
+      ignore_missing: true
+  - convert:
+      field: json.sdport
+      target_field: destination.port
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.sdport
+      ignore_missing: true
+  - convert:
+      field: json.ssport
+      target_field: zscaler_zia.firewall.server.source.port
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.ssport
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{json.csip}}}"
+      if: ctx?.json?.csip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.csip
+      target_field: source.ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{json.cdip}}}"
+      if: ctx?.json?.cdip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.cdip
+      target_field: zscaler_zia.firewall.client.destination.ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{json.ssip}}}"
+      if: ctx?.json?.ssip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.ssip
+      target_field: zscaler_zia.firewall.server.source.ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{json.sdip}}}"
+      if: ctx?.json?.sdip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.sdip
+      target_field: destination.ip
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: "{{{json.tsip}}}"
+      if: ctx?.json?.tsip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.tsip
+      target_field: zscaler_zia.firewall.tunnel.ip
+      ignore_missing: true
+  - convert:
+      field: json.tunsport
+      target_field: zscaler_zia.firewall.tunnel.port
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.tunsport
+      ignore_missing: true
+  - rename:
+      field: json.tuntype
+      target_field: zscaler_zia.firewall.tunnel.type
+      ignore_missing: true
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.dnat
+      target_field: zscaler_zia.firewall.nat
+      ignore_missing: true
+  - rename:
+      field: json.stateful
+      target_field: zscaler_zia.firewall.stateful
+      ignore_missing: true
+  - rename:
+      field: json.aggregate
+      target_field: zscaler_zia.firewall.aggregate
+      ignore_missing: true
+  - rename:
+      field: json.ipcat
+      target_field: zscaler_zia.firewall.ip_category
+      ignore_missing: true
+  - convert:
+      field: json.avgduration
+      type: long
+      target_field: zscaler_zia.firewall.duration.avg
+      ignore_failure: true
+  - remove:
+      field:
+        - json.avgduration
+        - json.duration
+      ignore_missing: true
+  - convert:
+      field: json.durationms
+      target_field: zscaler_zia.firewall.duration.milliseconds
+      type: long
+      ignore_failure: true
+  - remove:
+      field: json.durationms
+      ignore_missing: true
+  - convert:
+      field: json.numsessions
+      target_field: zscaler_zia.firewall.session.count
+      type: double
+      ignore_failure: true
+  - remove:
+      field: json.numsessions
+      ignore_missing: true
+  - rename:
+      field: json.threatcat
+      target_field: zscaler_zia.firewall.threat.category
+      ignore_missing: true
+  - rename:
+      field: json.threatname
+      target_field: zscaler_zia.firewall.threat.name
+      ignore_missing: true
+  - community_id:
+      source_ip: source.ip
+      source_port: source.port
+      destination_ip: destination.ip
+      destination_port: destination.port
+      transport: network.transport
+      target_field: network.community_id
+      ignore_failure: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - script:
+      description: Adds all the remaining fields in fields under zscaler_zia.firewall
+      lang: painless
+      if: ctx?.json != null
+      source: |
+        for (Map.Entry m : ctx.json.entrySet()) {
+          ctx.zscaler_zia.firewall[m.getKey()] = m.getValue();
+        }
+  - script:
+      lang: painless
+      if: ctx?.zscaler_zia?.firewall?.duration?.milliseconds != null
+      source: |
+        ctx.event.duration = ctx?.zscaler_zia?.firewall?.duration?.milliseconds * 1000000;
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{{_ingest.on_failure_message}}}"

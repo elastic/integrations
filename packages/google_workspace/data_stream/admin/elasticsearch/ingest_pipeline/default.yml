@@ -2,11 +2,8 @@
 description: Pipeline for parsing google_workspace logs
 processors:
   - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
-  - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.4.0'
   - append:
       field: event.category
       value: iam
@@ -54,10 +51,11 @@ processors:
       field: json.actor.profileId
       target_field: source.user.id
       ignore_missing: true
-  - rename: 
+  - convert:
       field: json.ipAddress
       target_field: source.ip
-      ignore_missing: true
+      type: ip
+      ignore_failure: true
   - rename: 
       field: json.kind
       target_field: google_workspace.kind
@@ -124,15 +122,12 @@ processors:
         for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
           if (ctx["json"]["events"]["parameters"][i]["value"] != null) {
             ctx.google_workspace.admin[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["value"];
-            return;
           }
           if (ctx["json"]["events"]["parameters"][i]["intValue"] != null) {
             ctx.google_workspace.admin[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["intValue"];
-            return;
           }
           if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
             ctx.google_workspace.admin[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiValue"];
-            return;
           }
         }
   - remove:
@@ -358,10 +353,24 @@ processors:
       field: google_workspace.admin.EMAIL_LOG_SEARCH_SENDER
       target_field: google_workspace.admin.email.log_search_filter.sender.value
       ignore_missing: true
+  - convert:
+      field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_RECIPIENT_IP
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_RECIPIENT_IP
   - rename:
       field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_RECIPIENT_IP
       target_field: google_workspace.admin.email.log_search_filter.recipient.ip
       ignore_missing: true
+  - convert:
+      field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_SENDER_IP
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_SENDER_IP
   - rename:
       field: google_workspace.admin.EMAIL_LOG_SEARCH_SMTP_SENDER_IP
       target_field: google_workspace.admin.email.log_search_filter.sender.ip
@@ -690,6 +699,10 @@ processors:
         ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
         ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
         ctx.event.duration = ChronoUnit.NANOS.between(start, end);
+  - convert:
+      field: google_workspace.admin.bulk_upload.total
+      type: long
+      ignore_missing: true
   - convert:
       field: google_workspace.admin.bulk_upload.failed
       type: long

@@ -1,0 +1,256 @@
+{
+    "attributes": {
+        "name": "incident-response",
+        "version": 1,
+        "queries": [
+            {
+                "id": "launchd",
+                "interval": 3600,
+                "platform": "darwin",
+                "query": "select * from launchd;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "startup_items",
+                "interval": 86400,
+                "platform": "darwin",
+                "query": "select * from startup_items;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "crontab",
+                "interval": 3600,
+                "platform": "darwin,linux",
+                "query": "select * from crontab;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "loginwindow1",
+                "interval": 86400,
+                "platform": "darwin",
+                "query": "select key, subkey, value from plist where path = '/Library/Preferences/com.apple.loginwindow.plist';",
+                "version": "1.4.5"
+            },
+            {
+                "id": "loginwindow2",
+                "interval": 86400,
+                "platform": "darwin",
+                "query": "select key, subkey, value from plist where path = '/Library/Preferences/loginwindow.plist';",
+                "version": "1.4.5"
+            },
+            {
+                "id": "loginwindow3",
+                "interval": 86400,
+                "platform": "darwin",
+                "query": "select username, key, subkey, value from plist p, (select * from users where directory like '/Users/%') u where p.path = u.directory || '/Library/Preferences/com.apple.loginwindow.plist';",
+                "version": "1.4.5"
+            },
+            {
+                "id": "loginwindow4",
+                "interval": 86400,
+                "platform": "darwin",
+                "query": "select username, key, subkey, value from plist p, (select * from users where directory like '/Users/%') u where p.path = u.directory || '/Library/Preferences/loginwindow.plist';",
+                "version": "1.4.5"
+            },
+            {
+                "id": "alf",
+                "interval": 3600,
+                "platform": "darwin",
+                "query": "select * from alf;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "alf_exceptions",
+                "interval": 3600,
+                "platform": "darwin",
+                "query": "select * from alf_exceptions;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "alf_services",
+                "interval": 3600,
+                "platform": "darwin",
+                "query": "select * from alf_services;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "alf_explicit_auths",
+                "interval": 3600,
+                "platform": "darwin",
+                "query": "select * from alf_explicit_auths;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "etc_hosts",
+                "interval": 86400,
+                "platform": "darwin,linux",
+                "query": "select * from etc_hosts;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "kextstat",
+                "interval": 3600,
+                "platform": "darwin",
+                "query": "select * from kernel_extensions;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "kernel_modules",
+                "interval": 3600,
+                "platform": "linux",
+                "query": "select * from kernel_modules;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "last",
+                "interval": 3600,
+                "platform": "darwin,linux",
+                "query": "select * from last;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "installed_applications",
+                "interval": 3600,
+                "platform": "darwin",
+                "query": "select * from apps;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "open_sockets",
+                "interval": 86400,
+                "platform": "darwin,linux",
+                "query": "select distinct pid, family, protocol, local_address, local_port, remote_address, remote_port, path from process_open_sockets where path \u003c\u003e '' or remote_address \u003c\u003e '';",
+                "version": "1.4.5"
+            },
+            {
+                "id": "open_files",
+                "interval": 86400,
+                "platform": "darwin,linux",
+                "query": "select distinct pid, path from process_open_files where path not like '/private/var/folders%' and path not like '/System/Library/%' and path not in ('/dev/null', '/dev/urandom', '/dev/random');",
+                "version": "1.4.5"
+            },
+            {
+                "id": "logged_in_users",
+                "interval": 3600,
+                "platform": "darwin,linux",
+                "query": "select liu.*, p.name, p.cmdline, p.cwd, p.root from logged_in_users liu, processes p where liu.pid = p.pid;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "ip_forwarding",
+                "interval": 3600,
+                "platform": "darwin,linux",
+                "query": "select * from system_controls where oid = '4.30.41.1' union select * from system_controls where oid = '4.2.0.1';",
+                "version": "1.4.5"
+            },
+            {
+                "id": "process_env",
+                "interval": 86400,
+                "platform": "darwin,linux",
+                "query": "select * from process_envs;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "mounts",
+                "interval": 3600,
+                "platform": "darwin,linux",
+                "query": "select * from mounts;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "nfs_shares",
+                "interval": 3600,
+                "platform": "darwin",
+                "query": "select * from nfs_shares;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "shell_history",
+                "interval": 86400,
+                "platform": "darwin,linux",
+                "query": "select * from users join shell_history using (uid);",
+                "version": "1.4.5"
+            },
+            {
+                "id": "recent_items",
+                "interval": 86400,
+                "platform": "darwin",
+                "query": "select username, key, value from plist p, (select * from users where directory like '/Users/%') u where p.path = u.directory || '/Library/Preferences/com.apple.recentitems.plist';",
+                "version": "1.4.5"
+            },
+            {
+                "id": "ramdisk",
+                "interval": 3600,
+                "platform": "darwin,linux",
+                "query": "select * from block_devices where type = 'Virtual Interface';",
+                "version": "1.4.5"
+            },
+            {
+                "id": "listening_ports",
+                "interval": 3600,
+                "platform": "darwin,linux",
+                "query": "select * from listening_ports;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "suid_bin",
+                "interval": 3600,
+                "platform": "darwin,linux",
+                "query": "select * from suid_bin;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "process_memory",
+                "interval": 86400,
+                "platform": "linux",
+                "query": "select * from process_memory_map;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "arp_cache",
+                "interval": 3600,
+                "query": "select * from arp_cache;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "wireless_networks",
+                "interval": 3600,
+                "platform": "darwin",
+                "query": "select ssid, network_name, security_type, last_connected, captive_portal, possibly_hidden, roaming, roaming_profile from wifi_networks;",
+                "version": "1.6.0"
+            },
+            {
+                "id": "disk_encryption",
+                "interval": 86400,
+                "platform": "darwin,linux",
+                "query": "select * from disk_encryption;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "iptables",
+                "interval": 3600,
+                "platform": "linux",
+                "query": "select * from iptables;",
+                "version": "1.4.5"
+            },
+            {
+                "id": "app_schemes",
+                "interval": 86400,
+                "platform": "darwin",
+                "query": "select * from app_schemes;",
+                "version": "1.4.7"
+            },
+            {
+                "id": "sandboxes",
+                "interval": 86400,
+                "platform": "darwin",
+                "query": "select * from sandboxes;",
+                "version": "1.4.7"
+            }
+        ]
+    },
+    "coreMigrationVersion": "8.2.0",
+    "id": "osquery_manager-3b28cc10-a6df-11ec-b2f9-c732a3845c54",
+    "references": [],
+    "type": "osquery-pack-asset"
+}

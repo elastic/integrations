@@ -4,15 +4,16 @@ This integration periodically fetches logs and metrics from [PostgreSQL](https:/
 
 ## Compatibility
 
-The `log` dataset was tested with logs from versions 9.5 on Ubuntu, 9.6 on Debian, and finally 10.11, 11.4 and 12.2 on Arch Linux 9.3. CSV format was tested using versions 11 and 13 (distro is not relevant here).
+The `log` integration was tested with logs from versions 9.5 on Ubuntu, 9.6 on Debian, and finally 10.11, 11.4 and 12.2 on Arch Linux 9.3. CSV format was tested using versions 11 and 13 (distro is not relevant here).
 
-The `activity`, `bgwriter`, `database` and `statement` datasets were tested with PostgreSQL 9.5.3 and is expected to work with all versions `>= 9`.
+The `activity`, `bgwriter`, `database` and `statement` integrations were tested with PostgreSQL 9.5.3 and is expected to work with all versions `>= 9`.
 
 ## Logs
 
 ### log
 
-The `log` dataset collects the PostgreSQL logs in plain text format or CSV.
+The `log` integration collects the PostgreSQL logs in plain text format or CSV.
+AWS RDS PostgresSQL standard logs can also be collected by this integration.
 
 #### Using CSV logs
 
@@ -64,12 +65,12 @@ persistent connections, so enable with care.
 | error.code | Error code describing the error. | keyword |
 | error.id | Unique identifier for the error. | keyword |
 | error.message | Error message. | match_only_text |
-| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.category | Event category (e.g. database) | keyword |
 | event.code | Identification code for this event | keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
-| event.kind | Event kind (e.g. event) | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | Event severity (e.g. info, error) | keyword |
@@ -86,6 +87,7 @@ persistent connections, so enable with care.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -118,7 +120,25 @@ persistent connections, so enable with care.
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
+
+## Metrics access permission
+
+Assigning `pg_monitor` or `pg_read_all_stats` rights to the database user might not be enough for fetching the metric data from PostgreSQL servers. 
+Apart from `CONNECT` permission, the database user must be granted `SELECT` accesss on underlying tables / views `pg_stat_bgwriter`, `pg_stat_activity`, `pg_stat_database`, `pg_stat_statements`. 
+
+
+```
+   grant select on table pg_stat_bgwriter to user;
+   grant select on table pg_stat_activity to user;
+   grant select on table pg_stat_database to user;
+   grant select on table pg_stat_statements to user; 
+```
+Run the below command if the `pg_stat_statements` view is unavailable 
+```
+CREATE EXTENSION pg_stat_statements;
+``` 
 
 ## Metrics
 
@@ -130,38 +150,79 @@ An example event for `activity` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "@timestamp": "2022-01-12T03:37:42.425Z",
     "agent": {
-        "hostname": "host.example.com",
-        "name": "host.example.com"
+        "ephemeral_id": "095c21dc-35b1-42c4-88f3-56972ef6626a",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "postgresql.activity",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "postgresql.activity",
-        "duration": 115000,
+        "duration": 4068224,
+        "ingested": "2022-01-12T03:37:43Z",
         "module": "postgresql"
     },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
     "metricset": {
-        "name": "activity"
+        "name": "activity",
+        "period": 10000
     },
     "postgresql": {
         "activity": {
             "application_name": "",
-            "backend_start": "2019-03-05T08:38:21.348Z",
+            "backend_start": "2022-01-12T03:37:42.427Z",
             "client": {
-                "address": "172.26.0.1",
+                "address": "172.18.0.4",
                 "hostname": "",
-                "port": 41582
+                "port": 32884
             },
             "database": {
                 "name": "postgres",
                 "oid": 12379
             },
-            "pid": 347,
+            "pid": 111,
             "query": "SELECT * FROM pg_stat_activity",
-            "query_start": "2019-03-05T08:38:21.352Z",
+            "query_start": "2022-01-12T03:37:42.428Z",
             "state": "active",
-            "state_change": "2019-03-05T08:38:21.352Z",
-            "transaction_start": "2019-03-05T08:38:21.352Z",
+            "state_change": "2022-01-12T03:37:42.428Z",
+            "transaction_start": "2022-01-12T03:37:42.428Z",
             "user": {
                 "id": 10,
                 "name": "postgres"
@@ -170,7 +231,7 @@ An example event for `activity` looks as following:
         }
     },
     "service": {
-        "address": "172.26.0.2:5432",
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -215,6 +276,7 @@ An example event for `activity` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -246,23 +308,64 @@ An example event for `bgwriter` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "@timestamp": "2022-01-12T03:38:29.389Z",
     "agent": {
-        "hostname": "host.example.com",
-        "name": "host.example.com"
+        "ephemeral_id": "24686799-f7eb-4c30-b72d-8936c5c0546a",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "postgresql.bgwriter",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "postgresql.bgwriter",
-        "duration": 115000,
+        "duration": 16119001,
+        "ingested": "2022-01-12T03:38:30Z",
         "module": "postgresql"
     },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
     "metricset": {
-        "name": "bgwriter"
+        "name": "bgwriter",
+        "period": 10000
     },
     "postgresql": {
         "bgwriter": {
             "buffers": {
-                "allocated": 143,
+                "allocated": 187,
                 "backend": 0,
                 "backend_fsync": 0,
                 "checkpoints": 0,
@@ -271,7 +374,7 @@ An example event for `bgwriter` looks as following:
             },
             "checkpoints": {
                 "requested": 0,
-                "scheduled": 1,
+                "scheduled": 0,
                 "times": {
                     "sync": {
                         "ms": 0
@@ -281,11 +384,11 @@ An example event for `bgwriter` looks as following:
                     }
                 }
             },
-            "stats_reset": "2019-03-05T08:32:30.028Z"
+            "stats_reset": "2022-01-12T03:38:06.524Z"
         }
     },
     "service": {
-        "address": "172.26.0.2:5432",
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -330,6 +433,7 @@ An example event for `bgwriter` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -356,12 +460,59 @@ An example event for `database` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "@timestamp": "2022-01-12T03:39:15.742Z",
+    "agent": {
+        "ephemeral_id": "ee7be3cd-b6c4-4228-84e5-1c5b44ddfee2",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "postgresql.database",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "postgresql.database",
+        "duration": 31647610,
+        "ingested": "2022-01-12T03:39:16Z",
+        "module": "postgresql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
     "metricset": {
-        "host": "postgresql:5432",
-        "module": "postgresql",
         "name": "database",
-        "rtt": 115
+        "period": 10000
     },
     "postgresql": {
         "database": {
@@ -398,6 +549,10 @@ An example event for `database` looks as following:
                 "rollback": 0
             }
         }
+    },
+    "service": {
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
+        "type": "postgresql"
     }
 }
 ```
@@ -440,6 +595,7 @@ An example event for `database` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -474,18 +630,59 @@ An example event for `statement` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "@timestamp": "2022-01-12T03:40:04.168Z",
     "agent": {
-        "hostname": "host.example.com",
-        "name": "host.example.com"
+        "ephemeral_id": "9ffa86f7-ad81-4b53-84c2-9d263b6b9522",
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.0.0-beta1"
+    },
+    "data_stream": {
+        "dataset": "postgresql.statement",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.12.0"
+    },
+    "elastic_agent": {
+        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
+        "agent_id_status": "verified",
         "dataset": "postgresql.statement",
-        "duration": 115000,
+        "duration": 3146548,
+        "ingested": "2022-01-12T03:40:05Z",
         "module": "postgresql"
     },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
+        "ip": [
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02:42:ac:12:00:04"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "Core",
+            "family": "redhat",
+            "kernel": "5.11.0-44-generic",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (Core)"
+        }
+    },
     "metricset": {
-        "name": "statement"
+        "name": "statement",
+        "period": 10000
     },
     "postgresql": {
         "statement": {
@@ -493,8 +690,8 @@ An example event for `statement` looks as following:
                 "oid": 12379
             },
             "query": {
-                "calls": 2,
-                "id": 159291067,
+                "calls": 1,
+                "id": 1592910677,
                 "memory": {
                     "local": {
                         "dirtied": 0,
@@ -513,23 +710,23 @@ An example event for `statement` looks as following:
                         "written": 0
                     }
                 },
-                "rows": 3,
+                "rows": 1,
                 "text": "SELECT * FROM pg_stat_statements",
                 "time": {
                     "max": {
-                        "ms": 0.388
+                        "ms": 0.10900000000000001
                     },
                     "mean": {
-                        "ms": 0.235
+                        "ms": 0.10900000000000001
                     },
                     "min": {
-                        "ms": 0.082
+                        "ms": 0.10900000000000001
                     },
                     "stddev": {
-                        "ms": 0.153
+                        "ms": 0
                     },
                     "total": {
-                        "ms": 0.47000000000000003
+                        "ms": 0.10900000000000001
                     }
                 }
             },
@@ -539,7 +736,7 @@ An example event for `statement` looks as following:
         }
     },
     "service": {
-        "address": "172.26.0.2:5432",
+        "address": "postgres://elastic-package-service-postgresql-1:5432?connect_timeout=10\u0026sslmode=disable",
         "type": "postgresql"
     }
 }
@@ -584,6 +781,7 @@ An example event for `statement` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |

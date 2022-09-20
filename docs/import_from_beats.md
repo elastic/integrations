@@ -1,7 +1,7 @@
 # Import from Beats modules
 
 The import procedure heavily uses on the _import-beats_ script. If you are interested how does it work internally,
-feel free to review the script's [README](https://github.com/elastic/integrations/tree/master/dev/import-beats/README.md).
+feel free to review the script's [README](https://github.com/elastic/integrations/tree/main/dev/import-beats/README.md).
 
 1. Create an issue in the [integrations](https://github.com/elastic/integrations) to track ongoing progress with
     the integration (especially manual changes).
@@ -30,9 +30,9 @@ feel free to review the script's [README](https://github.com/elastic/integration
     2. Kibana instance:
         * used to migrate dashboards, if not available, you can skip the generation (`SKIP_KIBANA=true`)
 
-    _Hint_. There is the `elastic-package` cheat sheet available [here](https://github.com/elastic/integrations/blob/master/testing/environments/README.md).
+    _Hint_. There is the `elastic-package` cheat sheet available [here](https://github.com/elastic/integrations/blob/main/testing/environments/README.md).
 
-4. Create a new branch for the integration in `integrations` repository (diverge from master).
+4. Create a new branch for the integration in `integrations` repository (diverge from main).
 5. Run the command: `mage ImportBeats` to start the import process (note that the import script assumes the projects checked out in step 2 are at `../{project-name}`).
 
     The outcome of running the `import-beats` script is directory with refreshed and updated integrations.

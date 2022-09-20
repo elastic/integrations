@@ -68,8 +68,10 @@ running Docker containers.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -150,6 +152,7 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| container.cpu.usage | Total CPU usage normalized by the number of CPU cores. | scaled_float | percent | gauge |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.name | Container name. | keyword |  |  |
@@ -182,8 +185,10 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -327,6 +332,8 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| container.disk.read.bytes | Bytes read during the life of the container | long |  | counter |
+| container.disk.write.bytes | Bytes written during the life of the container | long | byte | counter |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
 | container.name | Container name. | keyword |  |  |
@@ -341,21 +348,18 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | docker.diskio.read.rate | Number of current reads per second | long |  | gauge |
 | docker.diskio.read.service_time | Total time to service IO requests, in nanoseconds | long |  | counter |
 | docker.diskio.read.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |  | counter |
-| docker.diskio.reads | Number of current reads per second | scaled_float |  | gauge |
 | docker.diskio.summary.bytes | Bytes read and written during the life of the container | long | byte | counter |
 | docker.diskio.summary.ops | Number of I/O operations during the life of the container | long |  | counter |
 | docker.diskio.summary.queued | Total number of queued requests | long |  | counter |
 | docker.diskio.summary.rate | Number of current operations per second | long |  | gauge |
 | docker.diskio.summary.service_time | Total time to service IO requests, in nanoseconds | long |  | counter |
 | docker.diskio.summary.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |  | counter |
-| docker.diskio.total | Number of reads and writes per second | scaled_float |  | gauge |
 | docker.diskio.write.bytes | Bytes written during the life of the container | long | byte | counter |
 | docker.diskio.write.ops | Number of writes during the life of the container | long |  | counter |
 | docker.diskio.write.queued | Total number of queued requests | long |  | counter |
 | docker.diskio.write.rate | Number of current writes per second | long |  | gauge |
 | docker.diskio.write.service_time | Total time to service IO requests, in nanoseconds | long |  | counter |
 | docker.diskio.write.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |  | counter |
-| docker.diskio.writes | Number of current writes per second | scaled_float |  | gauge |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event dataset | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
@@ -366,8 +370,10 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -398,7 +404,6 @@ An example event for `diskio` looks as following:
                 "service_time": 0,
                 "wait_time": 0
             },
-            "reads": 0,
             "summary": {
                 "bytes": 42414080,
                 "ops": 1824,
@@ -407,7 +412,6 @@ An example event for `diskio` looks as following:
                 "service_time": 0,
                 "wait_time": 0
             },
-            "total": 0,
             "write": {
                 "bytes": 4096,
                 "ops": 1,
@@ -415,8 +419,7 @@ An example event for `diskio` looks as following:
                 "rate": 0,
                 "service_time": 0,
                 "wait_time": 0
-            },
-            "writes": 0
+            }
         }
     },
     "event": {
@@ -469,8 +472,10 @@ The Docker `event` data stream collects docker events
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -549,8 +554,10 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -655,8 +662,10 @@ The Docker `image` data stream collects metrics on docker images
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -744,8 +753,10 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -797,6 +808,7 @@ The Docker `memory` data stream collects memory metrics from docker.
 | @timestamp | Event timestamp. | date |  |  |
 | container.id | Unique container id. | keyword |  |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |  |
+| container.memory.usage | Memory usage percentage. | scaled_float | percent | gauge |
 | container.name | Container name. | keyword |  |  |
 | container.runtime | Runtime managing this container. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
@@ -824,8 +836,10 @@ The Docker `memory` data stream collects memory metrics from docker.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |  |
 | host.os.name | Operating system name, without the version. | keyword |  |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |  |
@@ -925,24 +939,18 @@ The Docker `network` data stream collects network metrics.
 | container.id | Unique container id. | keyword |  |
 | container.image.name | Name of the image the container was built on. | keyword |  |
 | container.name | Container name. | keyword |  |
+| container.network.egress.bytes | Total number of outgoing bytes. | long | counter |
+| container.network.ingress.bytes | Total number of incoming bytes. | long | counter |
 | container.runtime | Runtime managing this container. | keyword |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
 | docker.container.labels.\* | Container labels | object |  |
-| docker.network.in.bytes | Total number of incoming bytes. | long | counter |
-| docker.network.in.dropped | Total number of dropped incoming packets. | scaled_float | counter |
-| docker.network.in.errors | Total errors on incoming packets. | long | counter |
-| docker.network.in.packets | Total number of incoming packets. | long | counter |
 | docker.network.inbound.bytes | Total number of incoming bytes. | long | counter |
 | docker.network.inbound.dropped | Total number of dropped incoming packets. | long | counter |
 | docker.network.inbound.errors | Total errors on incoming packets. | long | counter |
 | docker.network.inbound.packets | Total number of incoming packets. | long | counter |
 | docker.network.interface | Network interface name. | keyword |  |
-| docker.network.out.bytes | Total number of outgoing bytes. | long | counter |
-| docker.network.out.dropped | Total number of dropped outgoing packets. | scaled_float | counter |
-| docker.network.out.errors | Total errors on outgoing packets. | long | counter |
-| docker.network.out.packets | Total number of outgoing packets. | long | counter |
 | docker.network.outbound.bytes | Total number of outgoing bytes. | long | counter |
 | docker.network.outbound.dropped | Total number of dropped outgoing packets. | long | counter |
 | docker.network.outbound.errors | Total errors on outgoing packets. | long | counter |
@@ -957,8 +965,10 @@ The Docker `network` data stream collects network metrics.
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |  |
 | host.os.full | Operating system name, including the version or code name. | keyword |  |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |  |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |  |
 | host.os.name | Operating system name, without the version. | keyword |  |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |  |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |  |
 | host.os.version | Operating system version as a raw string. | keyword |  |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |  |
@@ -1005,12 +1015,6 @@ An example event for `network` looks as following:
             }
         },
         "network": {
-            "in": {
-                "bytes": 0,
-                "dropped": 0,
-                "errors": 0,
-                "packets": 0
-            },
             "inbound": {
                 "bytes": 23047,
                 "dropped": 0,
@@ -1018,12 +1022,6 @@ An example event for `network` looks as following:
                 "packets": 241
             },
             "interface": "eth0",
-            "out": {
-                "bytes": 0,
-                "dropped": 0,
-                "errors": 0,
-                "packets": 0
-            },
             "outbound": {
                 "bytes": 0,
                 "dropped": 0,

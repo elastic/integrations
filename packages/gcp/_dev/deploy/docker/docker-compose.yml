@@ -6,7 +6,7 @@ services:
     ports:
       - "8681/tcp"
   gcppubsub-audit:
-    image: akroh/stream:v0.3.0
+    image: docker.elastic.co/observability/stream:v0.7.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     command:
@@ -19,8 +19,22 @@ services:
       - /sample_logs/audit.log
     depends_on:
       - gcppubsub-emulator
+  gcppubsub-dns:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=gcppubsub-emulator:8681
+      - -p=gcppubsub
+      - --gcppubsub-clear=true
+      - --gcppubsub-project=dns
+      - /sample_logs/dns.log
+    depends_on:
+      - gcppubsub-emulator
   gcppubsub-firewall:
-    image: akroh/stream:v0.3.0
+    image: docker.elastic.co/observability/stream:v0.7.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     command:
@@ -34,7 +48,7 @@ services:
     depends_on:
       - gcppubsub-emulator
   gcppubsub-vpcflow:
-    image: akroh/stream:v0.3.0
+    image: docker.elastic.co/observability/stream:v0.7.0
     volumes:
       - ./sample_logs:/sample_logs:ro
     command:
@@ -45,5 +59,19 @@ services:
       - --gcppubsub-clear=true
       - --gcppubsub-project=vpcflow
       - /sample_logs/vpcflow.log
+    depends_on:
+      - gcppubsub-emulator
+  gcppubsub-load-balancer:
+    image: docker.elastic.co/observability/stream:v0.7.0
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    command:
+      - log
+      - --retry=30
+      - --addr=gcppubsub-emulator:8681
+      - -p=gcppubsub
+      - --gcppubsub-clear=true
+      - --gcppubsub-project=load_balancer
+      - /sample_logs/load_balancer.log
     depends_on:
       - gcppubsub-emulator

@@ -4,11 +4,8 @@
 description: Pipeline for parsing junipersrx firewall logs
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -16,11 +13,11 @@ processors:
   - grok:
       field: event.original
       patterns:
-      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{TIMESTAMP_ISO8601:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:log_type}\s\[.+?\s%{GREEDYDATA:log.original}\]$'
+      - '^<%{POSINT:syslog_pri}>(\d{1,3}\s)?(?:%{TIMESTAMP_ISO8601:_temp_.raw_date})\s%{SYSLOGHOST:syslog_hostname}\s%{PROG:syslog_program}\s(?:%{POSINT:syslog_pid}|-)?\s%{WORD:log_type}\s\[.+?\s%{GREEDYDATA:_temp_.original}\]$'
 
 # split Juniper-SRX fields
   - kv:
-      field: log.original
+      field: _temp_.original
       field_split: " (?=[a-z0-9\\_\\-]+=)"
       value_split: "="
       prefix: "juniper.srx."
@@ -56,9 +53,6 @@ processors:
       - yyyy-MM-dd HH:mm:ss z
       - yyyy-MM-dd HH:mm:ss Z
       - ISO8601
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
 
 # Can possibly be omitted if there is a solution for the equal signs and the calculation of the start time.
 # -> juniper.srx.elapsed_time
@@ -97,9 +91,6 @@ processors:
       type: long
       target_field: event.severity
       ignore_failure: true
-  - remove:
-      field: log.original
-      ignore_missing: true
 
 #####################
 ## ECS Log Mapping ##
@@ -232,6 +223,35 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "secintel" }}'
       if: "ctx.juniper?.srx?.process == 'RT_SECINTEL'"
+  - script:
+      lang: painless
+      ignore_failure: true
+      if: ctx?.network?.iana_number != null
+      source: |
+        def iana_number = ctx.network.iana_number;
+        if (iana_number == '0') {
+            ctx.network.transport = 'hopopt';
+        } else if (iana_number == '1') {
+            ctx.network.transport = 'icmp';
+        } else if (iana_number == '2') {
+            ctx.network.transport = 'igmp';
+        } else if (iana_number == '6') {
+            ctx.network.transport = 'tcp';
+        } else if (iana_number == '8') {
+            ctx.network.transport = 'egp';
+        } else if (iana_number == '17') {
+            ctx.network.transport = 'udp';
+        } else if (iana_number == '47') {
+            ctx.network.transport = 'gre';
+        } else if (iana_number == '50') {
+            ctx.network.transport = 'esp';
+        } else if (iana_number == '58') {
+            ctx.network.transport = 'ipv6-icmp';
+        } else if (iana_number == '112') {
+            ctx.network.transport = 'vrrp';
+        } else if (iana_number == '132') {
+            ctx.network.transport = 'sctp';
+        }
 
 #########################
 ## ECS Related Mapping ##

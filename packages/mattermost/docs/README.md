@@ -48,6 +48,7 @@ All access to the Mattermost REST API or CLI is audited.
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -81,6 +82,7 @@ All access to the Mattermost REST API or CLI is audited.
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
@@ -93,19 +95,25 @@ All access to the Mattermost REST API or CLI is audited.
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | user.changes.name | Short name or login of the user. | keyword |
+| user.changes.name.text | Multi-field of `user.changes.name`. | match_only_text |
 | user.id | Unique identifier of the user. | keyword |
 | user.target.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.target.group.name | Name of the group. | keyword |
 | user.target.id | Unique identifier of the user. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
+| user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 | user.target.roles | Array of user roles at the time of the event. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
+| user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
 | user_agent.os.full | Operating system name, including the version or code name. | keyword |
+| user_agent.os.full.text | Multi-field of `user_agent.os.full`. | match_only_text |
 | user_agent.os.name | Operating system name, without the version. | keyword |
+| user_agent.os.name.text | Multi-field of `user_agent.os.name`. | match_only_text |
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
@@ -116,12 +124,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-12-04T23:19:32.051Z",
     "agent": {
-        "ephemeral_id": "8d391088-8441-4b12-a162-5f62e284b76c",
-        "hostname": "docker-fleet-agent",
-        "id": "4683a8e0-c081-4d5f-88dc-30811cc8be6a",
+        "ephemeral_id": "9f5e87b3-da6a-4888-96ba-c905ba197b12",
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.0.0-beta1"
     },
     "data_stream": {
         "dataset": "mattermost.audit",
@@ -129,12 +136,12 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "4683a8e0-c081-4d5f-88dc-30811cc8be6a",
-        "snapshot": true,
-        "version": "7.16.0"
+        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "snapshot": false,
+        "version": "8.0.0-beta1"
     },
     "event": {
         "action": "updateConfig",
@@ -143,7 +150,7 @@ An example event for `audit` looks as following:
             "configuration"
         ],
         "dataset": "mattermost.audit",
-        "ingested": "2021-12-08T15:27:53Z",
+        "ingested": "2022-01-02T00:19:22Z",
         "kind": "event",
         "original": "{\"timestamp\":\"2021-12-04 23:19:32.051 Z\",\"event\":\"updateConfig\",\"status\":\"success\",\"user_id\":\"ag99yu4i1if63jrui63tsmq57y\",\"session_id\":\"pjh4n69j3p883k7hhzippskcba\",\"ip_address\":\"172.19.0.1\",\"api_path\":\"/api/v4/config\",\"cluster_id\":\"jq3utry71f8a7q9qgebmjccf4r\",\"client\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36\"}",
         "outcome": "success",
@@ -155,18 +162,18 @@ An example event for `audit` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "83a5cd10d1960dd73f42bd2801d238c3",
+        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.30.0.4"
+            "172.18.0.5"
         ],
         "mac": [
-            "02:42:ac:1e:00:04"
+            "02:42:ac:12:00:05"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "Core",
             "family": "redhat",
-            "kernel": "5.4.0-90-generic",
+            "kernel": "5.11.0-43-generic",
             "name": "CentOS Linux",
             "platform": "centos",
             "type": "linux",

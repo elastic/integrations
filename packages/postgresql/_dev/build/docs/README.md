@@ -4,15 +4,16 @@ This integration periodically fetches logs and metrics from [PostgreSQL](https:/
 
 ## Compatibility
 
-The `log` dataset was tested with logs from versions 9.5 on Ubuntu, 9.6 on Debian, and finally 10.11, 11.4 and 12.2 on Arch Linux 9.3. CSV format was tested using versions 11 and 13 (distro is not relevant here).
+The `log` integration was tested with logs from versions 9.5 on Ubuntu, 9.6 on Debian, and finally 10.11, 11.4 and 12.2 on Arch Linux 9.3. CSV format was tested using versions 11 and 13 (distro is not relevant here).
 
-The `activity`, `bgwriter`, `database` and `statement` datasets were tested with PostgreSQL 9.5.3 and is expected to work with all versions `>= 9`.
+The `activity`, `bgwriter`, `database` and `statement` integrations were tested with PostgreSQL 9.5.3 and is expected to work with all versions `>= 9`.
 
 ## Logs
 
 ### log
 
-The `log` dataset collects the PostgreSQL logs in plain text format or CSV.
+The `log` integration collects the PostgreSQL logs in plain text format or CSV.
+AWS RDS PostgresSQL standard logs can also be collected by this integration.
 
 #### Using CSV logs
 
@@ -40,6 +41,23 @@ Both `log_connections` and `log_disconnections` can cause a lot of events if you
 persistent connections, so enable with care.
 
 {{fields "log"}}
+
+## Metrics access permission
+
+Assigning `pg_monitor` or `pg_read_all_stats` rights to the database user might not be enough for fetching the metric data from PostgreSQL servers. 
+Apart from `CONNECT` permission, the database user must be granted `SELECT` accesss on underlying tables / views `pg_stat_bgwriter`, `pg_stat_activity`, `pg_stat_database`, `pg_stat_statements`. 
+
+
+```
+   grant select on table pg_stat_bgwriter to user;
+   grant select on table pg_stat_activity to user;
+   grant select on table pg_stat_database to user;
+   grant select on table pg_stat_statements to user; 
+```
+Run the below command if the `pg_stat_statements` view is unavailable 
+```
+CREATE EXTENSION pg_stat_statements;
+``` 
 
 ## Metrics
 

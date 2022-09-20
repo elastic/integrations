@@ -14,6 +14,15 @@ streams:
     title: Powershell Operational
     description: 'Microsoft-Windows-Powershell/Operational channel'
     vars:
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: >-
+          Preserves a raw copy of the original XML event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
       - name: event_id
         type: text
         title: Event ID
@@ -22,6 +31,14 @@ streams:
         required: true
         show_user: false
         default: 4103, 4104, 4105, 4106
+      - name: ignore_older
+        type: text
+        title: Ignore events older than
+        default: 72h
+        required: false
+        show_user: false
+        description: >-
+          If this option is specified, events that are older than the specified amount of time are ignored. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
       - name: language
         type: text
         title: Language ID
@@ -35,14 +52,6 @@ streams:
         title: Tags
         multi: true
         show_user: false
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
       - name: processors
         type: yaml
         title: Processors

@@ -14,6 +14,8 @@ The `info` and `stat` datasets were tested with tested with HAProxy versions fro
 
 The `log` dataset collects the HAProxy application logs.
 
+{{event "log"}}
+
 {{fields "log"}}
 
 ## Metrics

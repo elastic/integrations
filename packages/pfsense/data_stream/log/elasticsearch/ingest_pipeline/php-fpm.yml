@@ -1,0 +1,43 @@
+---
+description: Pipeline for PFsense PHP-FPM logs
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '^%{DATA}: %{PF_APP_DATA}'
+        - '^%{GREEDYDATA}'
+      pattern_definitions:
+        PF_APP_DATA: '(%{PF_APP_LOGIN}|%{PF_APP_LOGOUT}|%{PF_APP_ERROR})'
+        PF_APP_LOGIN: "(%{DATA:_tmp.action}) for user '%{USER:user.name}' from: %{IP:source.address} \\(%{DATA}\\)"
+        PF_APP_LOGOUT: "User (%{DATA:_tmp.action}) for user '%{USER:user.name}' from: %{IP:source.address}"
+        PF_APP_ERROR: "webConfigurator %{DATA:_tmp.action} for user '%{DATA:user.name}' from: %{IP:source.address}"
+  - append:
+      field: event.category
+      value: authentication
+      allow_duplicates: false
+  - set:
+      field: event.outcome
+      value: success
+      if: 'ctx._tmp?.action.toLowerCase().contains("success")'
+  - set:
+      field: event.outcome
+      value: failure
+      if: 'ctx._tmp?.action.toLowerCase().contains("authentication error")'
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: observer.ip
+      target_field: host.ip
+      ignore_missing: true
+  - rename:
+      field: observer.name
+      target_field: host.name
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

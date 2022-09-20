@@ -1,0 +1,243 @@
+- name: sentinel_one.alert
+  type: group
+  fields:
+    - name: agent
+      type: group
+      fields:
+        - name: site_id
+          type: keyword
+          description: Site id.
+    - name: analyst_verdict
+      type: keyword
+      description: Analyst verdict.
+    - name: container
+      type: group
+      fields:
+        - name: info
+          type: group
+          fields:
+            - name: labels
+              type: keyword
+              description: Container info labels.
+    - name: dv_event
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: DV event id.
+    - name: info
+      type: group
+      fields:
+        - name: dns
+          type: group
+          fields:
+            - name: response
+              type: keyword
+              description: IP address, DNS, type, etc. in response.
+        - name: event_type
+          type: keyword
+          description: Event type.
+        - name: hit
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: Type of hit reported from agent.
+        - name: indicator
+          type: group
+          fields:
+            - name: category
+              type: keyword
+              description: Indicator categories for this process.
+            - name: description
+              type: keyword
+              description: Indicator_description.
+            - name: name
+              type: keyword
+              description: Indicator names for this process.
+        - name: login
+          type: group
+          fields:
+            - name: account
+              type: group
+              fields:
+                - name: sid
+                  type: keyword
+                  description: SID of the account that attempted to login.
+            - name: is_administrator
+              type: keyword
+              description: Is the login attempt administrator equivalent.
+            - name: is_successful
+              type: keyword
+              description: Was the login attempt successful.
+            - name: type
+              type: keyword
+              description: Type of login which was performed.
+        - name: registry
+          type: group
+          fields:
+            - name: old_value
+              type: keyword
+              description: Registry previous value (in case of modification).
+            - name: old_value_type
+              type: keyword
+              description: Registry previous value type (in case of modification).
+        - name: reported_at
+          type: date
+          description: Timestamp of alert creation in STAR.
+        - name: source
+          type: keyword
+          description: Source reported from agent.
+        - name: status
+          type: keyword
+          description: Incident status.
+        - name: ti_indicator
+          type: group
+          fields:
+            - name: comparison_method
+              type: keyword
+              description: The comparison method used by SentinelOne to trigger the event.
+            - name: source
+              type: keyword
+              description: The value of the identified Threat Intelligence indicator.
+            - name: type
+              type: keyword
+              description: The type of the identified Threat Intelligence indicator.
+            - name: value
+              type: keyword
+              description: The value of the identified Threat Intelligence indicator.
+        - name: updated_at
+          type: date
+          description: Date of alert updated in Star MMS.
+    - name: kubernetes
+      type: group
+      fields:
+        - name: controller
+          type: group
+          fields:
+            - name: kind
+              type: keyword
+              description: Controller kind.
+            - name: labels
+              type: keyword
+              description: Controller labels.
+            - name: name
+              type: keyword
+              description: Controller name.
+        - name: namespace
+          type: group
+          fields:
+            - name: labels
+              type: keyword
+              description: Namespace labels.
+        - name: node
+          type: keyword
+          description: Node.
+        - name: pod
+          type: group
+          fields:
+            - name: labels
+              type: keyword
+              description: Pod Labels.
+            - name: name
+              type: keyword
+              description: Pod name.
+    - name: process
+      type: group
+      fields:
+        - name: integrity_level
+          type: keyword
+          description: Integrity level.
+        - name: parent
+          type: group
+          fields:
+            - name: integrity_level
+              type: keyword
+              description: Integrity level.
+            - name: storyline
+              type: keyword
+              description: StoryLine.
+            - name: subsystem
+              type: keyword
+              description: Subsystem.
+        - name: storyline
+          type: keyword
+          description: StoryLine.
+        - name: subsystem
+          type: keyword
+          description: Subsystem.
+    - name: rule
+      type: group
+      fields:
+        - name: scope_level
+          type: keyword
+          description: Scope level.
+        - name: severity
+          type: keyword
+          description: Rule severity.
+        - name: treat_as_threat
+          type: keyword
+          description: Rule treat as threat type.
+    - name: target
+      type: group
+      fields:
+        - name: process
+          type: group
+          fields:
+            - name: file
+              type: group
+              fields:
+                - name: hash
+                  type: group
+                  fields:
+                    - name: sha1
+                      type: keyword
+                      description: SHA1 Signature of File.
+                    - name: sha256
+                      type: keyword
+                      description: SHA256 Signature of File.
+                - name: id
+                  type: keyword
+                  description: Unique ID of file.
+                - name: is_signed
+                  type: keyword
+                  description: Is fle signed.
+                - name: old_path
+                  type: keyword
+                  description: Old path before 'Rename'.
+                - name: path
+                  type: keyword
+                  description: Path and filename.
+            - name: proc
+              type: group
+              fields:
+                - name: cmdline
+                  type: keyword
+                  description: Target Process Command Line.
+                - name: image_path
+                  type: keyword
+                  description: Target Process Image path
+                - name: integrity_level
+                  type: keyword
+                  description: Integrity level of target process.
+                - name: name
+                  type: keyword
+                  description: Target Process Name.
+                - name: pid
+                  type: long
+                  description: Target Process ID (PID).
+                - name: signed_status
+                  type: keyword
+                  description: Target Process Signed Status.
+                - name: storyline_id
+                  type: keyword
+                  description: Target Process StoryLine ID.
+                - name: uid
+                  type: keyword
+                  description: Target Process Unique ID.
+            - name: start_time
+              type: date
+              description: Target Process Start Time.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

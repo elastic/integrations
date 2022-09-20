@@ -78,7 +78,7 @@ elastic-package build
 ... and recycle the package-registry Docker container (run from inside of the integration directory):
 
 ```bash
-elastic-package stack up --services package-registry
+elastic-package stack up -v -d --services package-registry
 ```
 
 Once the container is recycled, you can refresh the Fleet UI and Kibana will pick up updated packages.
@@ -119,7 +119,9 @@ using the tool's [documentation](https://github.com/elastic/elastic-package/tree
 
 ### Open a PR
 
-If you think that you've finished works on your integration, you've verified that it collects data, wrote some tests,
+Prior to opening a PR, you must sign the [elastic contributor agreement](https://www.elastic.co/contributor-agreement) if you haven't already.
+
+If you think that you've finished work on your integration, you've verified that it collects data, and you've written some tests,
 you can [open a PR](https://github.com/elastic/integrations/compare) to include your integration in the [Integrations](https://github.com/elastic/integrations) repository.
 The CI will verify if your integration is correct (`elastic-package check`) - a green status is a must.
 
@@ -127,7 +129,7 @@ Feel free to merge the PR once you receive an approval from the Integrations tea
 
 ### Remember to bump up the version
 
-When the PR is merged, the CI will kick off a build job for the master branch, which can release your integration to
+When the PR is merged, the CI will kick off a build job for the main branch, which can release your integration to
 the package-storage. It means that it will open a PR to the [Package Storage/snapshot](https://github.com/elastic/package-storage/tree/snapshot/packages) with
 the built integration if only the package version doesn't already exist in the storage (hasn't been released yet).
 

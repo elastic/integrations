@@ -14,7 +14,7 @@ Explain here the changes you made on the PR.
 
 ## Checklist
 
-- [ ] I have reviewed [tips for building integrations](https://github.com/elastic/integrations/blob/master/docs/tips_for_building_integrations.md) and this pull request is aligned with them.
+- [ ] I have reviewed [tips for building integrations](https://github.com/elastic/integrations/blob/main/docs/tips_for_building_integrations.md) and this pull request is aligned with them.
 - [ ] I have verified that all data streams collect metrics or logs.
 - [ ] I have added an entry to my package's `changelog.yml` file.
 - [ ] I have verified that Kibana version constraints are current according to [guidelines](https://github.com/elastic/elastic-package/blob/master/docs/howto/stack_version_support.md#when-to-update-the-condition).

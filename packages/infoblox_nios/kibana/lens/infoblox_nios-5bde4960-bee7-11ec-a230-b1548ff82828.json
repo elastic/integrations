@@ -1,0 +1,163 @@
+{
+    "attributes": {
+        "state": {
+            "datasourceStates": {
+                "indexpattern": {
+                    "layers": {
+                        "3b197aef-e049-44df-a30f-fc807fdb1718": {
+                            "columnOrder": [
+                                "e9c4594f-2e2d-4750-9b04-eb1632f13753",
+                                "6786ed8f-346e-419e-b8a7-1eea3d76b317",
+                                "fe7f037e-6294-43af-94f9-3d73fe39d2a0",
+                                "4eb788c2-ebce-473d-bfb0-ee0409862740"
+                            ],
+                            "columns": {
+                                "4eb788c2-ebce-473d-bfb0-ee0409862740": {
+                                    "dataType": "number",
+                                    "isBucketed": false,
+                                    "label": "Count",
+                                    "operationType": "count",
+                                    "scale": "ratio",
+                                    "sourceField": "Records"
+                                },
+                                "6786ed8f-346e-419e-b8a7-1eea3d76b317": {
+                                    "customLabel": true,
+                                    "dataType": "string",
+                                    "isBucketed": true,
+                                    "label": "Login Failure",
+                                    "operationType": "terms",
+                                    "params": {
+                                        "missingBucket": false,
+                                        "orderBy": {
+                                            "columnId": "4eb788c2-ebce-473d-bfb0-ee0409862740",
+                                            "type": "column"
+                                        },
+                                        "orderDirection": "desc",
+                                        "otherBucket": false,
+                                        "size": 10
+                                    },
+                                    "scale": "ordinal",
+                                    "sourceField": "event.action"
+                                },
+                                "e9c4594f-2e2d-4750-9b04-eb1632f13753": {
+                                    "customLabel": true,
+                                    "dataType": "string",
+                                    "isBucketed": true,
+                                    "label": "User Name",
+                                    "operationType": "terms",
+                                    "params": {
+                                        "missingBucket": false,
+                                        "orderBy": {
+                                            "columnId": "4eb788c2-ebce-473d-bfb0-ee0409862740",
+                                            "type": "column"
+                                        },
+                                        "orderDirection": "desc",
+                                        "otherBucket": false,
+                                        "size": 10
+                                    },
+                                    "scale": "ordinal",
+                                    "sourceField": "user.name"
+                                },
+                                "fe7f037e-6294-43af-94f9-3d73fe39d2a0": {
+                                    "customLabel": true,
+                                    "dataType": "string",
+                                    "isBucketed": true,
+                                    "label": "Login Via",
+                                    "operationType": "terms",
+                                    "params": {
+                                        "missingBucket": false,
+                                        "orderBy": {
+                                            "columnId": "4eb788c2-ebce-473d-bfb0-ee0409862740",
+                                            "type": "column"
+                                        },
+                                        "orderDirection": "desc",
+                                        "otherBucket": false,
+                                        "size": 10
+                                    },
+                                    "scale": "ordinal",
+                                    "sourceField": "infoblox_nios.log.audit.apparently_via"
+                                }
+                            },
+                            "incompleteColumns": {}
+                        }
+                    }
+                }
+            },
+            "filters": [
+                {
+                    "$state": {
+                        "store": "appState"
+                    },
+                    "meta": {
+                        "alias": null,
+                        "disabled": false,
+                        "indexRefName": "filter-index-pattern-0",
+                        "key": "event.action",
+                        "negate": false,
+                        "params": {
+                            "query": "login_denied"
+                        },
+                        "type": "phrase"
+                    },
+                    "query": {
+                        "match_phrase": {
+                            "event.action": "login_denied"
+                        }
+                    }
+                }
+            ],
+            "query": {
+                "language": "kuery",
+                "query": "data_stream.dataset : \"infoblox_nios.log\" and infoblox_nios.log.type : \"AUDIT\""
+            },
+            "visualization": {
+                "columns": [
+                    {
+                        "columnId": "e9c4594f-2e2d-4750-9b04-eb1632f13753",
+                        "isTransposed": false
+                    },
+                    {
+                        "columnId": "6786ed8f-346e-419e-b8a7-1eea3d76b317",
+                        "isTransposed": false
+                    },
+                    {
+                        "columnId": "fe7f037e-6294-43af-94f9-3d73fe39d2a0",
+                        "isTransposed": false
+                    },
+                    {
+                        "alignment": "left",
+                        "columnId": "4eb788c2-ebce-473d-bfb0-ee0409862740",
+                        "isTransposed": false
+                    }
+                ],
+                "layerId": "3b197aef-e049-44df-a30f-fc807fdb1718",
+                "layerType": "data"
+            }
+        },
+        "title": "Top 10 User Login Failures [Logs Infoblox NIOS]",
+        "visualizationType": "lnsDatatable"
+    },
+    "coreMigrationVersion": "7.17.0",
+    "id": "infoblox_nios-5bde4960-bee7-11ec-a230-b1548ff82828",
+    "migrationVersion": {
+        "lens": "7.16.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "indexpattern-datasource-layer-3b197aef-e049-44df-a30f-fc807fdb1718",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "filter-index-pattern-0",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "lens"
+}
