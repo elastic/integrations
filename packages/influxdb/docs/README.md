@@ -30,6 +30,9 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | host.ip | Host ip addresses. | ip |  |  |
+| influxdb.status.bucket | Bucket id of the bucket where time series data is stored. | keyword |  |  |
+| influxdb.status.buckets_total | Number of total buckets on the server. | double |  | counter |
+| influxdb.status.dashboards_total | Number of total dashboards on the server. | double |  | counter |
 | influxdb.status.go_memstats_alloc_bytes | Number of bytes allocated and still in use. | double | byte | gauge |
 | influxdb.status.go_memstats_alloc_bytes_total | Total number of bytes allocated, even if freed. | double | byte | counter |
 | influxdb.status.go_memstats_heap_alloc_bytes | Number of heap bytes allocated and still in use. | double | byte | gauge |
@@ -37,26 +40,17 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | influxdb.status.go_memstats_heap_inuse_bytes | Number of heap bytes that are in use. | double | byte | gauge |
 | influxdb.status.go_threads | Number of OS threads created. | double |  | gauge |
 | influxdb.status.http_api_requests_total | Number of http requests received | double |  | counter |
-| influxdb.status.influxdb_buckets_total | Number of total buckets on the server. | double |  | counter |
-| influxdb.status.influxdb_dashboards_total | Number of total dashboards on the server. | double |  | counter |
-| influxdb.status.influxdb_organizations_total | Number of total organizations on the server. | double |  | counter |
-| influxdb.status.influxdb_scrapers_total | Number of total scrapers on the server. | double |  | counter |
-| influxdb.status.influxdb_tokens_total | Number of total tokens on the server. | double |  | counter |
-| influxdb.status.influxdb_uptime_seconds | influxdb process uptime in seconds. | double | s | gauge |
-| influxdb.status.influxdb_users_total | Number of total users on the server. | double |  | counter |
+| influxdb.status.http_status | HTTP API request call status. | keyword |  |  |
 | influxdb.status.instance | Influxdb instance. | keyword |  |  |
-| influxdb.status.labels.bucket | Bucket id of the bucket where time series data is stored. | keyword |  |  |
-| influxdb.status.labels.instance | Influxdb database instance. | keyword |  |  |
-| influxdb.status.labels.method | HTTP request method. | keyword |  |  |
-| influxdb.status.labels.org | Organization id of the Organization created in Influxdb. | keyword |  |  |
-| influxdb.status.labels.path | HTTP request endpoint. | keyword |  |  |
-| influxdb.status.labels.response_code | Response code of HTTP API request. | keyword |  |  |
-| influxdb.status.labels.status | HTTP API request call status. | keyword |  |  |
-| influxdb.status.labels.user_agent | HTTP API request call user agent. | keyword |  |  |
-| influxdb.status.labels.walPath | Directory path where InfluxDB stores Write Ahead Log. | keyword |  |  |
+| influxdb.status.method | HTTP request method. | keyword |  |  |
+| influxdb.status.org | Organization id of the Organization created in Influxdb. | keyword |  |  |
+| influxdb.status.organizations_total | Number of total organizations on the server. | double |  | counter |
+| influxdb.status.path | HTTP request endpoint. | keyword |  |  |
 | influxdb.status.qc_all_active | Number of queries in all states. | double |  | gauge |
 | influxdb.status.qc_compiling_active | Number of queries actively compiling. | double |  | gauge |
 | influxdb.status.qc_executing_active | Number of queries actively executing. | double |  | gauge |
+| influxdb.status.response_code | Response code of HTTP API request. | keyword |  |  |
+| influxdb.status.scrapers_total | Number of total scrapers on the server. | double |  | counter |
 | influxdb.status.storage_bucket_measurement_num | Gauge of measurement cardinality per bucket. | double |  | gauge |
 | influxdb.status.storage_bucket_series_num | Gauge of series cardinality per bucket. | double |  | gauge |
 | influxdb.status.storage_compactions_failed | Counter of TSM compactions by level that have failed due to error. | double |  | counter |
@@ -80,6 +74,10 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | influxdb.status.task_scheduler_total_release_calls | Total number of release requests. | double |  | counter |
 | influxdb.status.task_scheduler_total_schedule_calls | Total number of schedule requests. | double |  | counter |
 | influxdb.status.task_scheduler_total_schedule_fails | Total number of schedule requests that fail to schedule. | double |  | counter |
+| influxdb.status.tokens_total | Number of total tokens on the server. | double |  | counter |
+| influxdb.status.uptime_seconds | influxdb process uptime in seconds. | double | s | gauge |
+| influxdb.status.users_total | Number of total users on the server. | double |  | counter |
+| influxdb.status.walPath | Directory path where InfluxDB stores Write Ahead Log. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
@@ -88,13 +86,13 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-14T06:28:12.039Z",
+    "@timestamp": "2022-09-20T08:26:32.765Z",
     "agent": {
-        "ephemeral_id": "fcb44fde-0dbd-47ef-80ce-d5b2c216b24b",
-        "id": "f995507b-788c-45db-8f98-5d0ca02b81fc",
+        "ephemeral_id": "26cf81c4-095b-4e02-b8c8-8031ac9bdb28",
+        "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.4.0"
+        "version": "8.3.0"
     },
     "cloud": {
         "account": {
@@ -125,15 +123,15 @@ An example event for `status` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f995507b-788c-45db-8f98-5d0ca02b81fc",
-        "snapshot": true,
-        "version": "8.4.0"
+        "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
+        "snapshot": false,
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.status",
-        "duration": 8872965,
-        "ingested": "2022-09-14T06:28:13Z",
+        "duration": 5989620,
+        "ingested": "2022-09-20T08:26:33Z",
         "module": "prometheus"
     },
     "host": {
@@ -141,10 +139,10 @@ An example event for `status` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.25.0.7"
+            "192.168.80.7"
         ],
         "mac": [
-            "02:42:ac:19:00:07"
+            "02:42:c0:a8:50:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -159,7 +157,7 @@ An example event for `status` looks as following:
     },
     "influxdb": {
         "status": {
-            "influxdb_uptime_seconds": 31.499834078,
+            "http_api_requests_total": 1,
             "instance": "elastic-package-service_influxdb_1:8086"
         }
     },
@@ -211,13 +209,13 @@ An example event for `advstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-14T06:27:04.338Z",
+    "@timestamp": "2022-09-20T10:44:23.936Z",
     "agent": {
-        "ephemeral_id": "ddec09d3-8ec5-4114-9887-23c481c7ced3",
-        "id": "f995507b-788c-45db-8f98-5d0ca02b81fc",
+        "ephemeral_id": "4406f3e1-c268-47c5-b8e1-f38f62d551d9",
+        "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.4.0"
+        "version": "8.3.0"
     },
     "cloud": {
         "account": {
@@ -248,15 +246,15 @@ An example event for `advstatus` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "f995507b-788c-45db-8f98-5d0ca02b81fc",
-        "snapshot": true,
-        "version": "8.4.0"
+        "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
+        "snapshot": false,
+        "version": "8.3.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.advstatus",
-        "duration": 6433830,
-        "ingested": "2022-09-14T06:27:05Z",
+        "duration": 5352206,
+        "ingested": "2022-09-20T10:44:24Z",
         "module": "prometheus"
     },
     "host": {
@@ -264,10 +262,10 @@ An example event for `advstatus` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.25.0.7"
+            "192.168.80.7"
         ],
         "mac": [
-            "02:42:ac:19:00:07"
+            "02:42:c0:a8:50:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
