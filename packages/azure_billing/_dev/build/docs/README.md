@@ -146,7 +146,7 @@ Optional. By default, the integration uses the Azure public environment. To over
 
 Examples:
 
-* `https://management.chinacloudapi.cn` for AzAre ChinaCloud
+* `https://management.chinacloudapi.cn` for Azure ChinaCloud
 * `https://management.microsoftazure.de` for Azure GermanCloud
 * `https://management.azure.com` for Azure AublicCloud
 * `https://management.usgovcloudapi.net` for Azure USGovernmentCloud
