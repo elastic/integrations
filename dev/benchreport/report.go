@@ -19,8 +19,8 @@ const (
 	resultWorse       = ":broken_heart:"
 	tpl               = `### :rocket: Benchmarks report
 {{range $package, $reports := .}}
-#### Package ` + "`" + `{{$package}}` + "`" + ` {{getReportsSummary $reports}}
 {{if hasPrintableReports $reports}}
+#### Package ` + "`" + `{{$package}}` + "`" + ` {{getReportsSummary $reports}}
 <details>
 <summary>Expand to view</summary>
 
@@ -28,7 +28,7 @@ Data stream | Previous EPS | New EPS | Diff (%) | Result
 ----------- | ------------ | ------- | -------- | ------
 {{range $reports}}{{$result := getResult .Old .Percentage}}{{if isPrintable $result}}` +
 		"`" + `{{.DataStream}}` + "`" +
-		` | {{.Old}} | {{.New}} | {{.Diff}} ({{.Percentage}}%) | {{$result}}
+		` | {{.Old}} | {{.New}} | {{.Diff}} ({{if gt .Old 0.0}}{{.Percentage}}{{else}} - {{end}}%) | {{$result}}
 {{end}}{{end}}</details>{{end}}
 {{end}}
 
@@ -113,16 +113,16 @@ func run(opts options) (map[string][]report, error) {
 		if err != nil {
 			return nil, fmt.Errorf("reading source result: %w", err)
 		}
-
 		pkg, ds := srcRes.getPackageAndDatastream()
 		var tgtRes BenchmarkResult
 		if tgtEntry, found := tgtResults[pkg]; found {
-			tgtRes, err = readResult(opts.targetDir, tgtEntry[ds])
-			if err != nil {
-				return nil, fmt.Errorf("reading source result: %w", err)
+			if ds, found := tgtEntry[ds]; found {
+				tgtRes, err = readResult(opts.targetDir, ds)
+				if err != nil {
+					return nil, fmt.Errorf("reading source result: %w", err)
+				}
 			}
 		}
-
 		report := createReport(srcRes, tgtRes)
 		reports[report.Package] = append(reports[report.Package], report)
 	}
@@ -138,7 +138,9 @@ func createReport(src, tgt BenchmarkResult) report {
 	r.New = roundFloat64(src.getEPS())
 	r.Old = roundFloat64(tgt.getEPS())
 	r.Diff = roundFloat64(r.New - r.Old)
-	r.Percentage = roundFloat64((r.Diff / r.New) * 100)
+	if r.Old > 0 {
+		r.Percentage = roundFloat64((r.Diff / r.Old) * 100)
+	}
 
 	return r
 }
