@@ -148,7 +148,7 @@ Examples:
 
 * `https://management.chinacloudapi.cn` for Azure ChinaCloud
 * `https://management.microsoftazure.de` for Azure GermanCloud
-* `https://management.azure.com` for Azure AublicCloud
+* `https://management.azure.com` for Azure PublicCloud
 * `https://management.usgovcloudapi.net` for Azure USGovernmentCloud
 
 `Active Directory Endpoint` ::
@@ -157,10 +157,10 @@ Optional. By default, the integration uses the associated Active Directory Endpo
 
 Examples:
 
-* `https://login.microsoftonline.com` for Azure ChinaCloud
-* `https://login.microsoftonline.us` for Azure GermanCloud
-* `https://login.chinacloudapi.cn` for Azure PublicCloud
-* `https://login.microsoftonline.de` for Azure USGovernmentCloud
+* `https://login.chinacloudapi.cn` for Azure ChinaCloud
+* `https://login.microsoftonline.de` for Azure GermanCloud
+* `https://login.microsoftonline.com` for Azure PublicCloud
+* `https://login.microsoftonline.us` for Azure USGovernmentCloud
 
 #### Data stream options
 
