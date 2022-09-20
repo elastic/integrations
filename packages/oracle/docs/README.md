@@ -267,6 +267,8 @@ An example event for `database_audit` looks as following:
 
 ### Tablespace Metrics
 
+Tablespace metrics describes the tablespace usage metrics of all types of tablespaces in the oracle database.
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -347,6 +349,8 @@ An example event for `tablespace` looks as following:
 ```
 
 ### Sysmetrics 
+
+The system metrics value captured for the most current time interval for the long duration (60-seconds) are mentioned below
 
 **Exported fields**
 
@@ -996,6 +1000,8 @@ An example event for `system_statistics` looks as following:
 ```
 
 ### Performance Metrics
+
+Performance metrics give an overview of where time is spent in the system and enable comparisons of wait times across the system.
 
 **Exported fields**
 
