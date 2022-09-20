@@ -86,9 +86,9 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-20T08:26:32.765Z",
+    "@timestamp": "2022-09-20T11:16:30.244Z",
     "agent": {
-        "ephemeral_id": "26cf81c4-095b-4e02-b8c8-8031ac9bdb28",
+        "ephemeral_id": "d19d2296-3707-48fd-831c-b659a8d962f5",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -130,8 +130,8 @@ An example event for `status` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.status",
-        "duration": 5989620,
-        "ingested": "2022-09-20T08:26:33Z",
+        "duration": 6671374,
+        "ingested": "2022-09-20T11:16:31Z",
         "module": "prometheus"
     },
     "host": {
@@ -157,8 +157,26 @@ An example event for `status` looks as following:
     },
     "influxdb": {
         "status": {
-            "http_api_requests_total": 1,
-            "instance": "elastic-package-service_influxdb_1:8086"
+            "buckets_total": 0,
+            "dashboards_total": 0,
+            "go_memstats_alloc_bytes": 33610856,
+            "go_memstats_alloc_bytes_total": 36244376,
+            "go_memstats_heap_alloc_bytes": 33610856,
+            "go_memstats_heap_idle_bytes": 2752512,
+            "go_memstats_heap_inuse_bytes": 35389440,
+            "go_threads": 14,
+            "instance": "elastic-package-service_influxdb_1:8086",
+            "organizations_total": 0,
+            "scrapers_total": 0,
+            "task_executor_total_runs_active": 0,
+            "task_executor_workers_busy": 0,
+            "task_scheduler_current_execution": 128,
+            "task_scheduler_total_execute_failure": 0,
+            "task_scheduler_total_execution_calls": 0,
+            "task_scheduler_total_release_calls": 0,
+            "task_scheduler_total_schedule_fails": 0,
+            "tokens_total": 0,
+            "users_total": 0
         }
     },
     "metricset": {
@@ -209,9 +227,9 @@ An example event for `advstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-20T10:44:23.936Z",
+    "@timestamp": "2022-09-20T11:15:21.342Z",
     "agent": {
-        "ephemeral_id": "4406f3e1-c268-47c5-b8e1-f38f62d551d9",
+        "ephemeral_id": "7cc95170-6dc8-4f76-8db3-1c0c8db8f6a6",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -253,8 +271,8 @@ An example event for `advstatus` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.advstatus",
-        "duration": 5352206,
-        "ingested": "2022-09-20T10:44:24Z",
+        "duration": 6853095,
+        "ingested": "2022-09-20T11:15:22Z",
         "module": "prometheus"
     },
     "host": {
@@ -282,15 +300,9 @@ An example event for `advstatus` looks as following:
         "advstatus": {
             "instance": "elastic-package-service_influxdb_1:8086",
             "labels": {},
-            "storage_retention_check_duration": {
+            "storage_writer_dropped_points": {
                 "histogram": {
                     "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
                         0,
                         0,
                         0,
@@ -299,18 +311,72 @@ An example event for `advstatus` looks as following:
                         0
                     ],
                     "values": [
-                        0.0025,
-                        0.0075,
-                        0.0175,
-                        0.037500000000000006,
-                        0.07500000000000001,
-                        0.175,
-                        0.375,
-                        0.75,
-                        1.75,
-                        3.75,
-                        7.5,
-                        15
+                        5,
+                        55,
+                        550,
+                        5500,
+                        55000,
+                        190000
+                    ]
+                }
+            },
+            "storage_writer_err_points": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        5,
+                        55,
+                        550,
+                        5500,
+                        55000,
+                        190000
+                    ]
+                }
+            },
+            "storage_writer_ok_points": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        5,
+                        55,
+                        550,
+                        5500,
+                        55000,
+                        190000
+                    ]
+                }
+            },
+            "storage_writer_req_points": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        5,
+                        55,
+                        550,
+                        5500,
+                        55000,
+                        190000
                     ]
                 }
             }
