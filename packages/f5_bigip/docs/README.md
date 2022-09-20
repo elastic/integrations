@@ -161,9 +161,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-11-19T22:34:40.000Z",
     "agent": {
-        "ephemeral_id": "3f64296b-88f7-4017-8645-08bd713b3981",
+        "ephemeral_id": "d07236a1-b4b4-4ded-ab30-dd913f34d104",
         "hostname": "docker-fleet-agent",
-        "id": "8291f515-686c-47b0-b137-9a4f5a7ef336",
+        "id": "c071ce06-9eec-480a-bfdf-9b7facbc9a64",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -184,7 +184,7 @@ An example event for `log` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "8291f515-686c-47b0-b137-9a4f5a7ef336",
+        "id": "c071ce06-9eec-480a-bfdf-9b7facbc9a64",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -194,7 +194,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "f5_bigip.log",
-        "ingested": "2022-09-20T05:42:31Z",
+        "ingested": "2022-09-20T10:17:01Z",
         "kind": "event",
         "original": "{\"application\":\"app.app\",\"attack_type\":\"Detection Evasion\",\"blocking_exception_reason\":\"test\",\"captcha_result\":\"not_received\",\"date_time\":\"2018-11-19 22:34:40\",\"dest_ip\":\"81.2.69.142\",\"dest_port\":\"80\",\"device_id\":\"12bdca32\",\"fragment\":\"test_Fragment\",\"geo_location\":\"US\",\"hostname\":\"hostname\",\"http_class_name\":\"/Common/abc/test\",\"ip_address_intelligence\":\"host1\",\"ip_client\":\"81.2.69.142\",\"management_ip_address\":\"81.2.69.142\",\"management_ip_address_2\":\"81.2.69.144\",\"method\":\"GET\",\"policy_apply_date\":\"2018-11-19 22:17:57\",\"policy_name\":\"/Common/abc\",\"protocol\":\"HTTP\",\"query_string\":\"name=abc\",\"request\":\"GET /admin/.\",\"request_status\":\"blocked\",\"response_code\":\"0\",\"route_domain\":\"example.com\",\"session_id\":\"abc123abcd\",\"severity\":\"Critical\",\"sig_ids\":\"abc12bcd\",\"sig_names\":\"Sig_Name\",\"src_port\":\"49804\",\"staged_sig_ids\":\"abc23121bc\",\"staged_sig_names\":\"test_name\",\"staged_threat_campaign_names\":\"test\",\"sub_violations\":\"Evasion technique detected:Directory traversals\",\"support_id\":\"123456789\",\"telemetryEventCategory\":\"ASM\",\"tenant\":\"Common\",\"threat_campaign_names\":\"threat\",\"uri\":\"/directory/file\",\"username\":\"test User\",\"violation_rating\":\"3\",\"violations\":\"Evasion technique detected\",\"virus_name\":\"test Virus\",\"web_application_name\":\"/Common/abc\",\"websocket_direction\":\"test\",\"websocket_message_type\":\"test\",\"x_forwarded_for_header_value\":\"81.2.69.144\"}",
         "type": [
