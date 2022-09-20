@@ -1,20 +1,20 @@
-title: Cisco Umbrella logs
+title: Lyve Cloud logs
 release: experimental
 type: logs
 streams:
   - input: aws-s3
     enabled: false
-    title: Cisco Umbrella logs
-    description: Collect Cisco Umbrella logs
+    title: Lyve Cloud logs
+    description: Collects Lyve Cloud logs
     template_path: aws-s3.yml.hbs
     vars:
-      - name: queue_url
-        type: text
-        title: Queue URL
-        multi: false
-        required: false
-        show_user: true
-        description: URL of the AWS SQS queue that messages will be received from. For Cisco Managed S3 buckets or S3 without SQS, use Bucket ARN.
+      # - name: queue_url
+      #   type: text
+      #   title: Queue URL
+      #   multi: false
+      #   required: false
+      #   show_user: true
+      #   description: URL of the AWS SQS queue that messages will be received from. For Cisco Managed S3 buckets or S3 without SQS, use Bucket ARN.
       - name: bucket_arn
         type: text
         title: Bucket ARN
@@ -31,14 +31,14 @@ streams:
         show_user: true
         description: >-
           Required for Cisco Managed S3. The region the bucket is located in.
-      - name: bucket_list_prefix
-        type: text
-        title: Bucket List Prefix
-        multi: false
-        required: false
-        show_user: true
-        description: >-
-          Required for Cisco Managed S3. This sets the root folder of the S3 bucket that should be monitored, found in the S3 Web UI. Example value: `1235_654vcasd23431e5dd6f7fsad457sdf1fd5`. Forward slash at the end required for Cisco Managed S3.
+      # - name: bucket_list_prefix
+      #   type: text
+      #   title: Bucket List Prefix
+      #   multi: false
+      #   required: false
+      #   show_user: true
+      #   description: >-
+      #     Required for Cisco Managed S3. This sets the root folder of the S3 bucket that should be monitored, found in the S3 Web UI. Example value: `1235_654vcasd23431e5dd6f7fsad457sdf1fd5`. Forward slash at the end required for Cisco Managed S3.
       - name: number_of_workers
         type: text
         title: Number of Workers
@@ -85,27 +85,14 @@ streams:
         multi: false
         required: false
         show_user: true
-      - name: role_arn
-        type: text
-        title: Role ARN
-        multi: false
-        required: false
-        show_user: false
       - name: endpoint
         type: text
         title: Endpoint
         multi: false
         required: false
         show_user: false
-        default: ""
-        description: URL of the entry point for an AWS web service.
-      - name: visibility_timeout
-        type: text
-        title: Visibility Timeout
-        multi: false
-        required: false
-        show_user: false
-        description: The duration that the received messages are hidden from subsequent retrieve requests after being retrieved by a ReceiveMessage request.  The maximum is 12 hours.
+        default: https://s3.us-east-1.lyvecloud.seagate.com
+        description: URL of the entry point for an LyveCloud's web service.
       - name: api_timeout
         type: text
         title: API Timeout
@@ -113,21 +100,6 @@ streams:
         required: false
         show_user: false
         description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value.
-      - name: fips_enabled
-        type: bool
-        title: Enable S3 FIPS
-        default: false
-        multi: false
-        required: false
-        show_user: false
-        description: Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
-      - name: proxy_url
-        type: text
-        title: Proxy URL
-        multi: false
-        required: false
-        show_user: false
-        description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
       - name: tags
         type: text
         title: Tags
@@ -135,7 +107,7 @@ streams:
         required: true
         show_user: false
         default:
-          - cisco-umbrella
+          - lyve-cloud-audit
           - forwarded
       - name: preserve_original_event
         required: true
