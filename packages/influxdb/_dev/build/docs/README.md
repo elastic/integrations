@@ -1,16 +1,16 @@
-# Influxdb Integration
+# InfluxDB Integration
 
-This integration is for ingesting task, storage, golang, performance related metrics from Influxdb OSS 2.x databases. This integration provides  out-of-the-box dashboards named Status Metrics, Advanced Status Metrics.
+This integration is for ingesting task, storage, golang, performance related metrics from InfluxDB OSS 2.x databases. This integration provides  out-of-the-box dashboards named Status Metrics, Advanced Status Metrics.
 
 
 ## Requirements
 
-This integration depends on prometheus endpoint (default: `http://<influxdbhost>:<port>/metrics`) of Influxdb for collecting status and advanced status metrics. 
+This integration depends on prometheus endpoint (default: `http://<InfluxDBhost>:<port>/metrics`) of InfluxDB for collecting status and advanced status metrics. 
 
 
 ## Compatibility
 
-This integration has been tested against Influxdb OSS 2.4, Influxdb OSS 2.0
+This integration has been tested against InfluxDB OSS 2.4, InfluxDB OSS 2.0
 
 
 ## Metrics
