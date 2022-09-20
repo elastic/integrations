@@ -87,7 +87,7 @@ A Program Global Area (PGA) is a memory region that contains data and control in
 
 ### System Statistics Metrics 
 
-The System Global Area (SGA) is a group of shared memory structures that contain data and control information for one Oracle Database instance. Metrics concerning System Global Area (SGA) memory. Metrics concerning System Global Area (SGA) memory are mentioned below.
+The System Global Area (SGA) is a group of shared memory structures that contain data and control information for one Oracle Database instance. Metrics concerning System Global Area (SGA) memory are mentioned below.
 
 {{fields "system_statistics"}}
 
