@@ -16,9 +16,9 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-20T11:25:50.157Z",
+    "@timestamp": "2022-08-20T11:26:35.845Z",
     "agent": {
-        "ephemeral_id": "fecddc47-6793-4908-89d9-3a095191ce5b",
+        "ephemeral_id": "0f03fbe8-472d-4275-8011-dd8adca1c384",
         "id": "5e998d6f-74dd-4f0f-a016-13cc4145f146",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -30,7 +30,7 @@ An example event for `log` looks as following:
         }
     },
     "client": {
-        "ip": "fe80::aee2:d3ff:feba:56a4"
+        "ip": "fe80::1e24:cdff:fe11:2f90"
     },
     "data_stream": {
         "dataset": "cisco_aironet.log",
@@ -46,13 +46,13 @@ An example event for `log` looks as following:
         "version": "8.4.1"
     },
     "event": {
-        "action": "ENTRY_DELETED",
+        "action": "ENTRY_CREATED",
         "agent_id_status": "verified",
         "dataset": "cisco_aironet.log",
-        "description": "Device Smart-Licensing status is out of compliance.",
-        "ingested": "2022-09-20T07:07:42Z",
-        "original": "\u003c134\u003eWLC001: *SISF BT Process: Aug 20 11:25:50.157: %SISF-6-ENTRY_DELETED: sisf_shim_utils.c:482 Entry deleted A=fe80::aee2:d3ff:feba:56a4 V=0 I=wired:1 P=0000 M=",
+        "ingested": "2022-09-20T08:08:09Z",
+        "original": "\u003c134\u003eWLC001: *sisfSwitcherTask: Aug 20 11:26:35.845: %SISF-6-ENTRY_CREATED: sisf_shim_utils.c:485 Entry created A=fe80::1e24:cdff:fe11:2f90 V=0 I=wired:1 P=0000 M=",
         "provider": "SISF",
+        "reason": "IPv6 Neighbor Discovery,A low rate of vetoed resolutions is not serious. If there is a high rate of vetos this might suggest that the link is under attack. Investigate the source of the packets driving these resolution requests",
         "severity": "6",
         "timezone": "+00:00"
     },
@@ -65,7 +65,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "172.18.0.6:55134"
+            "address": "172.18.0.6:41709"
         },
         "syslog": {
             "facility": {
@@ -77,9 +77,9 @@ An example event for `log` looks as following:
             }
         }
     },
-    "message": "Entry deleted A=fe80::aee2:d3ff:feba:56a4 V=0 I=wired:1 P=0000 M=",
+    "message": "Entry created A=fe80::1e24:cdff:fe11:2f90 V=0 I=wired:1 P=0000 M=",
     "process": {
-        "name": "SISF BT Process"
+        "name": "sisfSwitcherTask"
     },
     "tags": [
         "preserve_original_event",
