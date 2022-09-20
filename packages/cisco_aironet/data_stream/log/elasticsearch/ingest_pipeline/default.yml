@@ -86,6 +86,35 @@ processors:
       formats:
         - "MMM d HH:mm:ss.SSS"
       timezone: '{{{_conf.tz_offset}}}'
+  # Hashlookup for event reasons
+  # taken from official documentation:
+  # https://www.cisco.com/c/en/us/support/wireless/wireless-lan-controller-software/products-system-message-guides-list.html
+  - script:
+      lang: painless
+      params:
+        "SISF-6-ENTRY_CREATED": "IPv6 Neighbor Discovery,A low rate of vetoed resolutions is not serious. If there is a high rate of vetos this might suggest that the link is under attack. Investigate the source of the packets driving these resolution requests"
+        "SISF-6-ENTRY_DELETED": "Device Smart-Licensing status is out of compliance."
+        "BCAST-4-MLD_INVALID_IPV6_PKT": "IPv6 MLD packets are must have nexthdr as zero and hop limit of 1 in the IPv6 header."
+        "NIM-3-ADMIN_MODE_DISABLE": "Checksum Error on the config file"
+        "WPS-4-SIG_ALARM_OFF": "Signature Alarm Off"
+        "AAA-5-AAA_AUTH_ADMIN_USER": "Authentication for an admin user."
+        "LWAPP-4-SIG_INFO1": "An internal error caused while freeing AID. This AID is used by some other client."
+        "SISF-6-ENTRY_CHANGED": "An entry was created in the binding table"
+        "APF-4-MOBILESTATION_NOT_FOUND": "Could not find a particular mobile station in internal database"
+        "DOT1X-4-MAX_EAPOL_KEY_RETRANS": "An unknown attribute-value pair was received during EAP processing. The AVP was ignored."
+        "RRM-3-RRM_LOGMSG": "Load profile recovery"
+        "AAA-3-INVALID_REQUEST": "The system has received an AAA request with a null or invalid payload."
+        "DOT1X-3-AAA_AUTH_SEND_FAIL": "Client authentication failed because an internal error occurred during authentication state transition."
+        "DOT1X-3-ABORT_AUTH": "A message on an internal queue could not be processed because the client indicated in the message was not found in the internal database."
+        "DOT1X-3-INVALID_WPA_KEY_STATE": "Not able to verify PMKR1Name for the client. Try client association again."
+        "DOT1X-3-WPA_SEND_STATE_ERR": "A pre-authentication request message from a client was ignored"
+        "DOT1X-3-INVALID_REPLAY_CTR": "Error while calcualting PTK using KDF algo. for11r or 11w capable clients as Input Key Len is wrong."
+        "LWAPP-3-REPLAY_ERR": "The controller has received a replay error on the specified AP and WLAN."
+        "DOT1X-3-CLIENT_NOT_FOUND": "AP's 802.1X interface was not allocated by WLC which is required for client association on dot1x WLAN. Hence Client association on dot1xWLAN with this AP will fail."
+      source: |
+        if (ctx._temp_?.reason != null && params.get(ctx._temp_?.reason) != null) {
+          ctx.event.reason = params.get(ctx._temp_?.reason);
+        }
 
   # Adding information to event types
   - grok:
