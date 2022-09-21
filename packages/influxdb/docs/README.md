@@ -85,9 +85,9 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-20T12:51:30.139Z",
+    "@timestamp": "2022-09-21T10:30:47.814Z",
     "agent": {
-        "ephemeral_id": "eabde1cd-9d75-49a8-886a-d33675caa985",
+        "ephemeral_id": "caec0dbc-efe5-42fc-89ed-adc509c8507d",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -129,8 +129,8 @@ An example event for `status` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.status",
-        "duration": 6294148,
-        "ingested": "2022-09-20T12:51:31Z",
+        "duration": 6566998,
+        "ingested": "2022-09-21T10:30:48Z",
         "module": "prometheus"
     },
     "host": {
@@ -212,9 +212,9 @@ An example event for `advstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-20T12:50:32.117Z",
+    "@timestamp": "2022-09-21T10:29:39.482Z",
     "agent": {
-        "ephemeral_id": "b60531d9-ddc5-49b0-a4d7-92b71218c2f8",
+        "ephemeral_id": "50b42c65-10f9-49b9-9cbb-338b891c0e4f",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -256,8 +256,8 @@ An example event for `advstatus` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.advstatus",
-        "duration": 5085651,
-        "ingested": "2022-09-20T12:50:33Z",
+        "duration": 5403544,
+        "ingested": "2022-09-21T10:29:40Z",
         "module": "prometheus"
     },
     "host": {
@@ -285,9 +285,15 @@ An example event for `advstatus` looks as following:
         "advstatus": {
             "instance": "elastic-package-service_influxdb_1:8086",
             "labels": {},
-            "storage_writer_dropped_points": {
+            "storage_retention_check_duration": {
                 "histogram": {
                     "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
                         0,
                         0,
                         0,
@@ -296,72 +302,18 @@ An example event for `advstatus` looks as following:
                         0
                     ],
                     "values": [
-                        5,
-                        55,
-                        550,
-                        5500,
-                        55000,
-                        190000
-                    ]
-                }
-            },
-            "storage_writer_err_points": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        5,
-                        55,
-                        550,
-                        5500,
-                        55000,
-                        190000
-                    ]
-                }
-            },
-            "storage_writer_ok_points": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        5,
-                        55,
-                        550,
-                        5500,
-                        55000,
-                        190000
-                    ]
-                }
-            },
-            "storage_writer_req_points": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        5,
-                        55,
-                        550,
-                        5500,
-                        55000,
-                        190000
+                        0.0025,
+                        0.0075,
+                        0.0175,
+                        0.037500000000000006,
+                        0.07500000000000001,
+                        0.175,
+                        0.375,
+                        0.75,
+                        1.75,
+                        3.75,
+                        7.5,
+                        15
                     ]
                 }
             }
