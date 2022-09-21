@@ -4,6 +4,22 @@ processors:
   - set:
       field: ecs.version
       value: '8.4.0'
+
+  # Metadata about the origin of the event captured from the Lumberjack connection.
+  - rename:
+      field: source.address
+      target_field: labels.origin_address
+      ignore_missing: true
+  - rename:
+      field: tls.client.subject
+      target_field: labels.origin_client_subject
+      ignore_missing: true
+  - remove:
+      field:
+        - source
+        - tls
+      ignore_missing: true
+
   - set:
       field: observer.vendor
       value: Barracuda
@@ -11,7 +27,14 @@ processors:
       field: observer.type
       value: firewall
   - rename:
+      description: Set observer.hostname from beat.hostname (Beats 6.x).
       field: lumberjack.beat.hostname
+      target_field: observer.hostname
+      ignore_missing: true
+  - rename:
+      description: Set observer.hostname from agent.name (Beats 7.x+).
+      if: ctx.observer?.hostname == null
+      field: lumberjack.agent.hostname
       target_field: observer.hostname
       ignore_missing: true
   - rename:
@@ -30,15 +53,12 @@ processors:
       field: message
       target_field: event.original
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
   - json:
       field: event.original
       target_field: json
-  - remove:
-      field:
-        - message
-        - source.address
-        - '@timestamp'
-      ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "firewall" }}'
       if: ctx.lumberjack?.type == 'ngfw-act'
@@ -48,6 +68,15 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "threat" }}'
       if: ctx.lumberjack?.type == 'ngfw-threat'
+
+  # Overwrite the @timestamp. Never enter a state where the event does not
+  # have a '@timestamp' because it is required for indexing.
+  - set:
+      description: Overwrite @timestamp with the value parsed from the JSON.
+      field: '@timestamp'
+      copy_from: '_tmp.timestamp'
+      ignore_empty_value: true
+
   - set:
       field: network.type
       value: ipv4
