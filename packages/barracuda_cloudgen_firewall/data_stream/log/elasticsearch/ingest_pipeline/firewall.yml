@@ -125,12 +125,11 @@ processors:
         target_field: event.action
         ignore_missing: true
     - script:
+        description: Convert duration of the session in milliseconds to nanoseconds.
         lang: painless
         if: ctx.json?.duration != null
-        params:
-            S_TO_NS: 1000000
         source: >-
-            ctx.event.duration = ctx.json.duration * params.S_TO_NS;
+            ctx.event.duration = (long)ctx.json.duration * 1000000;
     - script:
         lang: painless
         source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
