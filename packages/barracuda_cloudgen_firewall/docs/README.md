@@ -33,7 +33,6 @@ This is the Barracuda CloudGen Firewall `log` dataset.
 | barracuda_cloudgen_firewall.log.fw_info | Detailed information about the action performed by the firewall. More information can be found [here](https://campus.barracuda.com/product/cloudgenfirewall/doc/96025108/how-to-enable-filebeat-stream-to-a-logstash-pipeline/) | long |
 | barracuda_cloudgen_firewall.log.traffic_type | Always "0" | long |
 | barracuda_cloudgen_firewall.log.user_type | User type of web log. 1 if "user" is a username or 0 if "user" is an IP address. | keyword |
-| container.id | Unique container id. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
