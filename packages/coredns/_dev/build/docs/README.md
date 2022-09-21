@@ -1,10 +1,10 @@
 # CoreDNS Integration
 
-This integration parses logs from [CoreDNS](https://coredns.io/) instances
+This integration parses logs from [CoreDNS](https://coredns.io/) instances running in kubernetes clusters
 
 ## Compatibility
 
-The Apache datasets were tested with Apache 1.8.0 and 1.9.3 and are expected to work with all versions >= 1.8.0.
+The CoreDNS datasets were tested with version 1.9.3.
 
 ## Logs
 
