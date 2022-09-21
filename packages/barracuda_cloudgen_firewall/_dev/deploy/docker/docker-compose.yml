@@ -10,4 +10,8 @@ services:
       - STREAM_ADDR=tcp://elastic-agent:5044
       - STREAM_DELAY=5s
       - STREAM_START_SIGNAL=SIGHUP
-    command: log /sample_logs/*.log
+    # The ndjson files contain data that simulates the format of the Logstash
+    # output from the embedded Filebeat instance in Barracuda CloudGen.
+    # It contains a JSON string in the 'message' field and some additional
+    # firewall metadata (like serial number) stored in root level fields.
+    command: log /sample_logs/*.ndjson
