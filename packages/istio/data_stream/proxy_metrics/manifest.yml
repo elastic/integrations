@@ -6,6 +6,13 @@ streams:
     title: Istio Proxy metrics
     description: Collect Istio Proxy metrics
     vars:
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
       - name: hosts
         type: text
         title: Hosts
@@ -30,3 +37,19 @@ streams:
         required: true
         show_user: true
         default: ${kubernetes.container.name} == 'istio-proxy'
+      - name: metrics_filters.exclude
+        type: text
+        title: Metrics Filters Exclude
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - "^up$"
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        multi: true
+        required: false
+        show_user: true
+        default: 
+          - "istio_*"
