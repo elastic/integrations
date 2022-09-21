@@ -1,6 +1,6 @@
 # Kibana
 
-The Kibana integration collects events from your [Kibana](https://www.elastic.co/guide/en/kibana/current/introduction.html) instance.
+The Kibana integration collects events from your {{ url "kibana-introduction" "Kibana" }} instance.
 
 ## Configuration parameters
 
