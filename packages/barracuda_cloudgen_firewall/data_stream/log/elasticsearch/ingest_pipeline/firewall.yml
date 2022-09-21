@@ -136,14 +136,14 @@ processors:
         tag: sum-network-bytes
         lang: painless
         source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
-        if: ctx?.source?.bytes != null && ctx?.destination?.bytes != null && ctx?.network?.bytes == null
+        if: ctx.source?.bytes != null && ctx.destination?.bytes != null && ctx.network?.bytes == null
         ignore_failure: true
     - script:
         description: Compute network.packets sum.
         tag: sum-network-packets
         lang: painless
         source: "ctx.network.packets = ctx.source.packets + ctx.destination.packets"
-        if: ctx?.source?.packets != null && ctx?.destination?.packets != null && ctx?.network?.packets == null
+        if: ctx.source?.packets != null && ctx.destination?.packets != null && ctx.network?.packets == null
         ignore_failure: true
     - convert:
         field: json.ip_proto
@@ -159,7 +159,7 @@ processors:
         tag: enrich-network-transport-name
         lang: painless
         ignore_failure: true
-        if: ctx?.network?.iana_number != null
+        if: ctx.network?.iana_number != null
         source: |
             def iana_number = ctx.network.iana_number;
             if (iana_number == '0') {
@@ -196,12 +196,12 @@ processors:
         field: event.type
         value: denied
         allow_duplicates: false
-        if: ctx?.event.action == 'AppBlock'
+        if: ctx.event.action == 'AppBlock'
     - append:
         field: event.type
         value: end
         allow_duplicates: false
-        if: ctx?.event.action == 'End'
+        if: ctx.event.action == 'End'
 on_failure:
   - append:
       field: error.message
