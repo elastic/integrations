@@ -65,13 +65,9 @@ The `database_audit` dataset collects Oracle Audit logs.
 
 {{event "database_audit"}}
 
-### Performance Metrics
-
-{{fields "performance"}}
-
-{{event "performance"}}
-
 ### Tablespace Metrics
+
+Tablespace metrics describes the tablespace usage metrics of all types of tablespaces in the oracle database.
 
 {{fields "tablespace"}}
 
@@ -79,6 +75,32 @@ The `database_audit` dataset collects Oracle Audit logs.
 
 ### Sysmetrics 
 
+The system metrics value captured for the most current time interval for the long duration (60-seconds) are mentioned below
+
 {{fields "sysmetric"}}
 
 {{event "sysmetric"}}
+
+### Memory Metrics 
+
+A Program Global Area (PGA) is a memory region that contains data and control information for a server process. It is nonshared memory created by Oracle Database when a server process is started. Access to the PGA is exclusive to the server process. Metrics concerning Program Global Area (PGA) memory are mentioned below.
+
+{{fields "memory"}}
+
+{{event "memory"}}
+
+### System Statistics Metrics 
+
+The System Global Area (SGA) is a group of shared memory structures that contain data and control information for one Oracle Database instance. Metrics concerning System Global Area (SGA) memory are mentioned below.
+
+{{fields "system_statistics"}}
+
+{{event "system_statistics"}}
+
+### Performance Metrics
+
+Performance metrics give an overview of where time is spent in the system and enable comparisons of wait times across the system.
+
+{{fields "performance"}}
+
+{{event "performance"}}
