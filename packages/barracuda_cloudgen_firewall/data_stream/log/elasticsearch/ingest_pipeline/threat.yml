@@ -9,14 +9,14 @@ processors:
         if: ctx.json?.timestamp != null && ctx.json?.timestamp != '' && ctx.json?.timestamp != '-'
     - set:
         field: _tmp.timestamp
-        value: "{{json.date}} {{json.time}}"
+        value: "{{{json.date}}} {{{json.time}}}"
         if: ctx['@timestamp'] == null
     - date:
         field: _tmp.timestamp
         target_field: '@timestamp'
         formats:
             - yyyy MM dd HH:mm:ss
-        timezone: '{{ json.timezone }}'
+        timezone: '{{{ json.timezone }}}'
         if: ctx['@timestamp'] == null
     - rename:
         field: json.src_ip
@@ -121,4 +121,4 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'

@@ -59,8 +59,7 @@ processors:
   - community_id:
       target_field: network.community_id
       ignore_failure: true
-#   - network_direction:
-#       internal_networks_field: _tmp.internal_networks
+
   # IP Geolocation Lookup
   - geoip:
       field: source.ip
@@ -106,12 +105,12 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{source.ip}}'
+      value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null && ctx.source?.ip != ''
   - append:
       field: related.ip
-      value: '{{destination.ip}}'
+      value: '{{{destination.ip}}}'
       allow_duplicates: false
       if: ctx.destination?.ip != null && ctx.destination?.ip != ''
   - remove:
@@ -153,4 +152,4 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"
