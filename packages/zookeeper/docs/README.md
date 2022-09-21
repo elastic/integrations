@@ -31,7 +31,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
         "id": "d2d8697c-368a-44a0-b52e-47be9b44c955",
@@ -176,7 +176,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
         "id": "d2d8697c-368a-44a0-b52e-47be9b44c955",
@@ -358,7 +358,7 @@ An example event for `connection` looks as following:
         "id": "2ff8a09c-c7f0-42f2-9fe1-65f7fd460651"
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.4.0"
     }
 }
 ```
@@ -446,7 +446,7 @@ An example event for `mntr` looks as following:
         }
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.4.0"
     },
     "host": {
         "name": "zookeeper-01"
@@ -558,7 +558,7 @@ An example event for `server` looks as following:
         "period": 10000
     },
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.4.0"
     },
     "host": {
         "name": "zookeeper-01"
