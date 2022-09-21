@@ -1,0 +1,249 @@
+---
+description: Pipeline for parsing Salesforce Login (REST) logs
+processors:
+- json:
+    field: message
+    target_field: json
+- set:
+    field: event.ingested
+    value: '{{_ingest.timestamp}}'
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.original
+    value: '{{message}}'
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: salesforce.login.access_mode
+    value: rest
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: ecs.version
+    value: 8.4.0
+    ignore_failure: true
+    ignore_empty_value: true
+- date:
+    field: json.TIMESTAMP_DERIVED
+    target_field: "@timestamp"
+    formats:
+    - ISO8601
+    ignore_failure: true
+- rename:
+    field: json.API_TYPE
+    target_field: salesforce.login.api.type
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.AUTHENTICATION_METHOD_REFERENCE
+    target_field: salesforce.login.auth.service_id
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.REQUEST_STATUS
+    target_field: salesforce.login.request_status
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.API_VERSION
+    target_field: salesforce.login.api.version
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.USER_ID
+    target_field: salesforce.login.user_id
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.LOGIN_KEY
+    target_field: salesforce.login.key
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.EVENT_TYPE
+    target_field: salesforce.login.event_type
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.REQUEST_ID
+    target_field: salesforce.login.request_id
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.ORGANIZATION_ID
+    target_field: salesforce.login.organization_id
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.RUN_TIME
+    target_field: salesforce.login.run_time
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.CPU_TIME
+    target_field: salesforce.login.cpu_time
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.DB_TOTAL_TIME
+    target_field: salesforce.login.db_time.total
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.CLIENT_IP
+    target_field: salesforce.login.client_ip
+    ignore_failure: true
+    ignore_missing: true
+- rename:
+    field: json.URI_ID_DERIVED
+    target_field: salesforce.login.uri_derived_id
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    description: Set API TYPE value from API TYPE character.
+    lang: painless
+    ignore_failure: true
+    source: |
+        Map m = new HashMap();
+        m.put("D", "Apex Class");
+        m.put("E", "SOAP Enterprise");
+        m.put("M", "SOAP Metadata");
+        m.put("P", "SOAP Partner");
+        m.put("S", "SOAP Apex");
+        m.put("T", "SOAP Tooling");
+        m.put("f", "Feed");
+        m.put("l", "Live Agent");
+        m.put("p", "SOAP ClientSync");
+        ctx.salesforce.login.api.type = m.get(ctx.salesforce.login.api.type);
+- rename:
+    field: json.URI
+    target_field: event.url
+    ignore_failure: true
+    ignore_missing: true
+- set:
+    field: event.outcome
+    value: success
+    if: 'ctx.json?.LOGIN_STATUS == "LOGIN_NO_ERROR" && ctx.json?.LOGIN_STATUS != null'
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.outcome
+    value: failure
+    if: 'ctx.json?.LOGIN_STATUS != "LOGIN_NO_ERROR" && ctx.json?.LOGIN_STATUS != null'
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.type
+    value: [info]
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.kind
+    value: "event"
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.action
+    value: "login-attempt"
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.category
+    value: [authentication]
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.dataset
+    value: "salesforce.login_rest"
+    ignore_failure: true
+    ignore_empty_value: true
+- set:
+    field: event.module
+    value: "salesforce"
+    ignore_failure: true
+    ignore_empty_value: true
+- rename:
+    field: json.USER_NAME
+    target_field: user.email
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: json.USER_ID_DERIVED
+    target_field: user.id
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: json.USER_TYPE
+    target_field: user.roles
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: json.SOURCE_IP
+    target_field: source.ip
+    ignore_missing: true
+    ignore_failure: true
+    if: 'ctx.json?.SOURCE_IP != "Salesforce.com IP"'
+- geoip:
+    field: source.ip
+    target_field: source.geo
+    ignore_missing: true
+    ignore_failure: true
+- append:
+    field: related.ip
+    value: "{{{source.ip}}}"
+    if: ctx.source?.ip != null
+    allow_duplicates: false
+    ignore_failure: true
+- append:
+    field: related.ip
+    value: "{{{salesforce.login.client_ip}}}"
+    if: 'ctx.salesforce?.login?.client_ip != "Salesforce.com IP" && ctx.salesforce?.login?.client_ip != null'
+    allow_duplicates: false
+    ignore_failure: true
+- rename:
+    field: json.BROWSER_TYPE
+    target_field: user_agent.name
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: json.CIPHER_SUITE
+    target_field: tls.cipher
+    ignore_missing: true
+    ignore_failure: true
+- dissect:
+    pattern: "%{tls.version_protocol}v%{tls.version}"
+    field: json.TLS_PROTOCOL
+    ignore_failure: true
+    ignore_missing: true
+- remove:
+    field: event.original
+    if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+    ignore_failure: true
+    ignore_missing: true
+- script:
+    description: Drops null/empty values recursively
+    lang: painless
+    source: |
+        boolean dropEmptyFields(Object object) {
+            if (object == null || object == "") {
+                return true;
+            } else if (object instanceof Map) {
+                ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+                return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+                ((List) object).removeIf(value -> dropEmptyFields(value));
+                return (((List) object).length == 0);
+            }
+            return false;
+        }
+        dropEmptyFields(ctx);
+- remove:
+    field:
+      - json
+      - message
+    ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: '{{_ingest.on_failure_message}}'
