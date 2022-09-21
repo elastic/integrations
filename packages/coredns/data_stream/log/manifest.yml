@@ -9,6 +9,8 @@ streams:
         multi: true
         required: true
         show_user: true
+        default:
+          - /var/log/containers/*${kubernetes.container.id}.log
       - name: tags
         type: text
         title: Tags
@@ -25,6 +27,21 @@ streams:
         type: bool
         multi: false
         default: false
+      - name: symlinks
+        type: bool
+        title: Use Symlinks
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: condition
+        title: Condition
+        description: Condition to filter when to apply this datastream
+        type: text
+        multi: false
+        required: true
+        show_user: true
+        default: ${kubernetes.container.name} == 'coredns'
       - name: processors
         type: yaml
         title: Processors
