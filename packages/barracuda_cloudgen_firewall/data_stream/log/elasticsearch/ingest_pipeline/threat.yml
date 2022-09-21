@@ -3,21 +3,23 @@ description: Pipeline for Barracuda CloudGen Firewall Threat logs
 processors:
     - date:
         field: json.timestamp
-        target_field: '@timestamp'
+        target_field: _tmp.timestamp
         formats:
             - ISO8601
         if: ctx.json?.timestamp != null && ctx.json?.timestamp != '' && ctx.json?.timestamp != '-'
     - set:
-        field: _tmp.timestamp
+        description: Use the syslog date / time when timestamp is missing.
+        field: _tmp.syslog_timestamp
         value: "{{{json.date}}} {{{json.time}}}"
-        if: ctx['@timestamp'] == null
+        if: ctx._tmp?.timestamp == null
     - date:
-        field: _tmp.timestamp
-        target_field: '@timestamp'
+        description: Parse syslog date / time / timezone.
+        field: _tmp.syslog_timestamp
+        target_field: _tmp.timestamp
         formats:
             - yyyy MM dd HH:mm:ss
         timezone: '{{{ json.timezone }}}'
-        if: ctx['@timestamp'] == null
+        if: ctx._tmp?.timestamp == null
     - rename:
         field: json.src_ip
         target_field: source.address
