@@ -21,7 +21,7 @@ processors:
       source: >
         def eventCategory = new HashSet();
         def eventType = new HashSet();
-        if (ctx.json?.category != null && ctx.json.category != '' && ctx.json?.activity != null && ctx.json.activity != '') {
+        if (ctx.json?.category != null && ctx.json.category != '' && ctx.json.activity != null && ctx.json.activity != '') {
           def category = ctx.json.category.toLowerCase();
           def activity = ctx.json.activity.toLowerCase();
           if (['logon and logoff', 'saml single sign-on'].contains(category)) {
@@ -39,11 +39,11 @@ processors:
             eventCategory.add('authentication');
             eventType.add('info');
           }
-          if (category == 'network inventory') {
+          if (category.contains('network inventory')) {
             eventCategory.add('network');
             eventType.add('info');
           }
-          if (category == 'threat intelligence') {
+          if (category.contains('threat intelligence')) {
             eventCategory.add('threat');
             eventType.add('indicator');
           }
@@ -140,7 +140,7 @@ processors:
       field:
         - trend_micro_vision_one.audit.logged_user
         - trend_micro_vision_one.audit.logged_role
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_failure: true
       ignore_missing: true
   - remove:

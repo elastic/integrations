@@ -180,12 +180,12 @@ processors:
       if: ctx.json?.impactScope?.entities instanceof List
       source: >
         def impactscope_entities = ctx.json.impactScope.entities;
-        for (entitiy_object in impactscope_entities) {
-          if (!(entitiy_object.entityValue instanceof HashMap)) {
-            def entityValue = entitiy_object.entityValue;
-            entitiy_object.value = new HashMap();
-            entitiy_object.value.account_value = entityValue;
-            entitiy_object.remove("entityValue");
+        for (entity_object in impactscope_entities) {
+          if (!(entity_object.entityValue instanceof HashMap)) {
+            def entityValue = entity_object.entityValue;
+            entity_object.value = new HashMap();
+            entity_object.value.account_value = entityValue;
+            entity_object.remove("entityValue");
           }
         }
   - foreach:
@@ -528,7 +528,7 @@ processors:
         - trend_micro_vision_one.alert.id
         - trend_micro_vision_one.alert.score
         - trend_micro_vision_one.alert.severity
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_failure: true
       ignore_missing: true
   - remove:
