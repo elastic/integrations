@@ -512,7 +512,7 @@ An example event for `identityprotectionlogs` looks as following:
 | azure.identityprotectionlogs.properties.user_display_name | The user display name of the user. | keyword |
 | azure.identityprotectionlogs.properties.user_id | Unique ID of the user. | keyword |
 | azure.identityprotectionlogs.properties.user_principal_name | The user principal name (UPN) of the user. | keyword |
-| azure.identityprotectionlogs.properties.user_type |  | keyword |
+| azure.identityprotectionlogs.properties.user_type | The type of the user (for example, "member"). | keyword |
 | azure.identityprotectionlogs.result_signature | Result signature | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
