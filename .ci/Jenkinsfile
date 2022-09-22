@@ -24,6 +24,10 @@ pipeline {
     JOB_GCS_EXT_CREDENTIALS = 'fleet-ci-gcs-plugin-file-credentials'
     STACK_VERSION = "${params.stackVersion}"
     BENCHMARK_THRESHOLD = '15'
+
+    // Are integrations tested ?
+    INTEGRATIONS_TESTED = "0"
+
     // Elastic package links definitions
     ELASTIC_PACKAGE_LINKS_FILE_PATH = "${env.HOME}/${env.BASE_DIR}/links_table.yml"
 
@@ -83,6 +87,7 @@ pipeline {
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               if (isPrAffected(it)) {
+                env.INTEGRATIONS_TESTED = "1"
                 integrations[it] = {
                   withNode(labels: 'ubuntu-20 && immutable', sleepMin: 10, sleepMax: 100) {
                     stage("${it}: check") {
@@ -169,6 +174,10 @@ def gitHubCommentWithBenchmarkReport() {
       detailLevel = "full"
     }
     dir("${BASE_DIR}") {
+      if (env.INTEGRATIONS_TESTED != "0" ) {
+        echo "gitHubCommentWithBenchmarkReport: no integrations tested in this run."
+        return
+      }
       // download artifacts for this PR
       def bucketUri = getBenchmarkBucketURI() + "*.xml"
       log(level: 'INFO', text: "googleStorageDownload(bucketUri: ${bucketUri}, localDirectory: ${currentBenchmarkResults}, pathPrefix: ${getBenchmarkPathPrefix()})")
@@ -364,6 +373,10 @@ def stashCoverageReport() {
 def publishCoverageReports() {
   stage('Publish coverage reports') {
     dir("${BASE_DIR}") {
+      if (env.INTEGRATIONS_TESTED != "0" ) {
+        echo "publishCoverageReports: no integrations tested in this run."
+        return
+      }
       def bucketUri = getCoverageBucketURI() + "*.xml"
       googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
       coverageReport('build/test-coverage')
