@@ -117,9 +117,9 @@ Retrieves Azure AD Identity Protection logs. The [Azure AD Identity Protection](
 
 #### Reference
 
-{{event "identityprotectionlogs"}}
+{{event "identity_protection_logs"}}
 
-{{fields "identityprotectionlogs"}}
+{{fields "identity_protection_logs"}}
 
 ### Provisioning logs
 

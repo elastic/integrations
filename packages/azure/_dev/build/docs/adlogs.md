@@ -92,9 +92,9 @@ Retrieves Azure Active Directory sign-in logs. The sign-ins report provides info
 
 Retrieves Azure AD Identity Protection logs. The [Azure AD Identity Protection](https://docs.microsoft.com/en-us/azure/active-directory/identity-protection/overview-identity-protection) service analyzes events from AD users' behavior, detects risk situations, and can respond by reporting only or even blocking users at risk, according to policy configurations.
 
-{{event "identityprotectionlogs"}}
+{{event "identity_protection_logs"}}
 
-{{fields "identityprotectionlogs"}}
+{{fields "identity_protection_logs"}}
 
 ### Provisioning logs
 

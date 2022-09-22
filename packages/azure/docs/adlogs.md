@@ -390,14 +390,14 @@ An example event for `signinlogs` looks as following:
 
 Retrieves Azure AD Identity Protection logs. The [Azure AD Identity Protection](https://docs.microsoft.com/en-us/azure/active-directory/identity-protection/overview-identity-protection) service analyzes events from AD users' behavior, detects risk situations, and can respond by reporting only or even blocking users at risk, according to policy configurations.
 
-An example event for `identityprotectionlogs` looks as following:
+An example event for `identity_protection` looks as following:
 
 ```json
 {
     "@timestamp": "2022-08-22T18:07:16.000Z",
     "azure": {
         "correlation_id": "ce0ed07f9ccf5be15e4b97d2979af6569b1f67db87ddc9b88b5bb743ea091e47",
-        "identityprotectionlogs": {
+        "identityprotection": {
             "category": "UserRiskEvents",
             "operation_name": "User Risk Detection",
             "operation_version": "1.0",
@@ -482,38 +482,38 @@ An example event for `identityprotectionlogs` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation_id | Correlation ID | keyword |
-| azure.identityprotectionlogs.category | Category | keyword |
-| azure.identityprotectionlogs.operation_name | Operation name | keyword |
-| azure.identityprotectionlogs.operation_version | Operation version | keyword |
-| azure.identityprotectionlogs.properties.activity | Indicates the activity type the detected risk is linked to. Possible values are: signin, user, unknownFutureValue. | keyword |
-| azure.identityprotectionlogs.properties.activity_datetime | Date and time that the risky activity occurred. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is look like this: 2014-01-01T00:00:00Z. | date |
-| azure.identityprotectionlogs.properties.additional_info | Additional information associated with the risk detection. Possible keys in the additionalInfo JSON string are: userAgent, alertUrl, relatedEventTimeInUtc, relatedUserAgent, deviceInformation, relatedLocation, requestId, correlationId, lastActivityTimeInUtc, malwareName, clientLocation, clientIp, riskReasons. For more information about riskReasons and possible values, see https://docs.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0#riskreasons-values. | flattened |
-| azure.identityprotectionlogs.properties.correlation_id | Correlation ID of the sign-in associated with the risk detection. This property is null if the risk detection is not associated with a sign-in. | keyword |
-| azure.identityprotectionlogs.properties.cross_tenant_access_type |  | keyword |
-| azure.identityprotectionlogs.properties.detected_datetime | Date and time that the risk was detected. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 looks like this: 2014-01-01T00:00:00Z. | date |
-| azure.identityprotectionlogs.properties.detection_timing_type | Timing of the detected risk (real-time/offline). Possible values are: notDefined, realtime, nearRealtime, offline, unknownFutureValue. | keyword |
-| azure.identityprotectionlogs.properties.home_tenant_id |  | keyword |
-| azure.identityprotectionlogs.properties.id | Unique ID of the risk detection. | keyword |
-| azure.identityprotectionlogs.properties.ip_address | Provides the IP address of the client from where the risk occurred. | ip |
-| azure.identityprotectionlogs.properties.is_deleted | Indicates whether the user is deleted. | boolean |
-| azure.identityprotectionlogs.properties.is_guest |  | boolean |
-| azure.identityprotectionlogs.properties.is_processing | Indicates whether a user's risky state is being processed by the backend. | boolean |
-| azure.identityprotectionlogs.properties.location | Location of the sign-in. | flattened |
-| azure.identityprotectionlogs.properties.request_id | Request ID of the sign-in associated with the risk detection. This property is null if the risk detection is not associated with a sign-in. | keyword |
-| azure.identityprotectionlogs.properties.resource_tenant_id |  | keyword |
-| azure.identityprotectionlogs.properties.risk_detail | Details of the detected risk. Possible values are: none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue. | keyword |
-| azure.identityprotectionlogs.properties.risk_event_type | The type of risk event detected. The possible values are unlikelyTravel, anonymizedIPAddress, maliciousIPAddress, unfamiliarFeatures, malwareInfectedIPAddress, suspiciousIPAddress, leakedCredentials, investigationsThreatIntelligence, generic,adminConfirmedUserCompromised, passwordSpray, impossibleTravel, newCountry, anomalousToken, tokenIssuerAnomaly,suspiciousBrowser, riskyIPAddress, mcasSuspiciousInboxManipulationRules, suspiciousInboxForwarding, and unknownFutureValue. If the risk detection is a premium detection, will show generic. For more information about each value, see https://docs.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0#riskeventtype-values values. | keyword |
-| azure.identityprotectionlogs.properties.risk_last_updated_datetime | Date and time that the risk detection was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is look like this: 2014-01-01T00:00:00Z. | date |
-| azure.identityprotectionlogs.properties.risk_level | Level of the detected risk. Possible values are: low, medium, high, hidden, none, unknownFutureValue. | keyword |
-| azure.identityprotectionlogs.properties.risk_state | The state of a detected risky user or sign-in. Possible values are: none, confirmedSafe, remediated, dismissed, atRisk, confirmedCompromised, unknownFutureValue. | keyword |
-| azure.identityprotectionlogs.properties.risk_type |  | keyword |
-| azure.identityprotectionlogs.properties.source | Source of the risk detection. For example, activeDirectory. | keyword |
-| azure.identityprotectionlogs.properties.token_issuer_type | Indicates the type of token issuer for the detected sign-in risk. Possible values are: AzureAD, ADFederationServices, UnknownFutureValue. | keyword |
-| azure.identityprotectionlogs.properties.user_display_name | The user display name of the user. | keyword |
-| azure.identityprotectionlogs.properties.user_id | Unique ID of the user. | keyword |
-| azure.identityprotectionlogs.properties.user_principal_name | The user principal name (UPN) of the user. | keyword |
-| azure.identityprotectionlogs.properties.user_type | The type of the user (for example, "member"). | keyword |
-| azure.identityprotectionlogs.result_signature | Result signature | keyword |
+| azure.identityprotection.category | Category | keyword |
+| azure.identityprotection.operation_name | Operation name | keyword |
+| azure.identityprotection.operation_version | Operation version | keyword |
+| azure.identityprotection.properties.activity | Indicates the activity type the detected risk is linked to. Possible values are: signin, user, unknownFutureValue. | keyword |
+| azure.identityprotection.properties.activity_datetime | Date and time that the risky activity occurred. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is look like this: 2014-01-01T00:00:00Z. | date |
+| azure.identityprotection.properties.additional_info | Additional information associated with the risk detection. Possible keys in the additionalInfo JSON string are: userAgent, alertUrl, relatedEventTimeInUtc, relatedUserAgent, deviceInformation, relatedLocation, requestId, correlationId, lastActivityTimeInUtc, malwareName, clientLocation, clientIp, riskReasons. For more information about riskReasons and possible values, see https://docs.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0#riskreasons-values. | flattened |
+| azure.identityprotection.properties.correlation_id | Correlation ID of the sign-in associated with the risk detection. This property is null if the risk detection is not associated with a sign-in. | keyword |
+| azure.identityprotection.properties.cross_tenant_access_type |  | keyword |
+| azure.identityprotection.properties.detected_datetime | Date and time that the risk was detected. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 looks like this: 2014-01-01T00:00:00Z. | date |
+| azure.identityprotection.properties.detection_timing_type | Timing of the detected risk (real-time/offline). Possible values are: notDefined, realtime, nearRealtime, offline, unknownFutureValue. | keyword |
+| azure.identityprotection.properties.home_tenant_id |  | keyword |
+| azure.identityprotection.properties.id | Unique ID of the risk detection. | keyword |
+| azure.identityprotection.properties.ip_address | Provides the IP address of the client from where the risk occurred. | ip |
+| azure.identityprotection.properties.is_deleted | Indicates whether the user is deleted. | boolean |
+| azure.identityprotection.properties.is_guest |  | boolean |
+| azure.identityprotection.properties.is_processing | Indicates whether a user's risky state is being processed by the backend. | boolean |
+| azure.identityprotection.properties.location | Location of the sign-in. | flattened |
+| azure.identityprotection.properties.request_id | Request ID of the sign-in associated with the risk detection. This property is null if the risk detection is not associated with a sign-in. | keyword |
+| azure.identityprotection.properties.resource_tenant_id |  | keyword |
+| azure.identityprotection.properties.risk_detail | Details of the detected risk. Possible values are: none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue. | keyword |
+| azure.identityprotection.properties.risk_event_type | The type of risk event detected. The possible values are unlikelyTravel, anonymizedIPAddress, maliciousIPAddress, unfamiliarFeatures, malwareInfectedIPAddress, suspiciousIPAddress, leakedCredentials, investigationsThreatIntelligence, generic,adminConfirmedUserCompromised, passwordSpray, impossibleTravel, newCountry, anomalousToken, tokenIssuerAnomaly,suspiciousBrowser, riskyIPAddress, mcasSuspiciousInboxManipulationRules, suspiciousInboxForwarding, and unknownFutureValue. If the risk detection is a premium detection, will show generic. For more information about each value, see https://docs.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0#riskeventtype-values values. | keyword |
+| azure.identityprotection.properties.risk_last_updated_datetime | Date and time that the risk detection was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is look like this: 2014-01-01T00:00:00Z. | date |
+| azure.identityprotection.properties.risk_level | Level of the detected risk. Possible values are: low, medium, high, hidden, none, unknownFutureValue. | keyword |
+| azure.identityprotection.properties.risk_state | The state of a detected risky user or sign-in. Possible values are: none, confirmedSafe, remediated, dismissed, atRisk, confirmedCompromised, unknownFutureValue. | keyword |
+| azure.identityprotection.properties.risk_type |  | keyword |
+| azure.identityprotection.properties.source | Source of the risk detection. For example, activeDirectory. | keyword |
+| azure.identityprotection.properties.token_issuer_type | Indicates the type of token issuer for the detected sign-in risk. Possible values are: AzureAD, ADFederationServices, UnknownFutureValue. | keyword |
+| azure.identityprotection.properties.user_display_name | The user display name of the user. | keyword |
+| azure.identityprotection.properties.user_id | Unique ID of the user. | keyword |
+| azure.identityprotection.properties.user_principal_name | The user principal name (UPN) of the user. | keyword |
+| azure.identityprotection.properties.user_type | The type of the user (for example, "member"). | keyword |
+| azure.identityprotection.result_signature | Result signature | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |

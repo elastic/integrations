@@ -26,40 +26,40 @@ processors:
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      target_field: azure.identityprotectionlogs
+      target_field: azure.identityprotection
   - drop:
       description: Drop events that are not AD Identity Protection logs.
-      if: ctx?.azure?.identityprotectionlogs?.category == null || ctx.azure.identityprotectionlogs.category != 'RiskyUsers' && ctx.azure.identityprotectionlogs.category != 'UserRiskEvents'
+      if: ctx?.azure?.identityprotection?.category == null || ctx.azure.identityprotection.category != 'RiskyUsers' && ctx.azure.identityprotection.category != 'UserRiskEvents'
   #
   # Common fields
   #   
   - date:
-      field: azure.identityprotectionlogs.time
+      field: azure.identityprotection.time
       target_field: '@timestamp'
       ignore_failure: true
       formats:
         - "M/d/yyyy h:mm:ss a"
         - ISO8601
   - remove:
-      field: azure.identityprotectionlogs.time
+      field: azure.identityprotection.time
       ignore_missing: true
   - rename:
-      field: azure.identityprotectionlogs.resourceId
+      field: azure.identityprotection.resourceId
       target_field: azure.resource_id
       ignore_missing: true
   - convert:
-        field: azure.identityprotectionlogs.callerIpAddress
+        field: azure.identityprotection.callerIpAddress
         target_field: source.ip
         type: ip
         ignore_missing: true
         on_failure:
         - rename: 
-            field: azure.identityprotectionlogs.callerIpAddress
+            field: azure.identityprotection.callerIpAddress
             target_field: source.address
             ignore_missing: true 
             ignore_failure: true
   - remove:
-      field: azure.identityprotectionlogs.callerIpAddress
+      field: azure.identityprotection.callerIpAddress
       if: 'ctx.source?.ip != null'
       ignore_missing: true
   - geoip:
@@ -84,7 +84,7 @@ processors:
       ignore_missing: true
 
   - rename:
-      field: azure.identityprotectionlogs.durationMs
+      field: azure.identityprotection.durationMs
       target_field: event.duration
       ignore_missing: true
   - script:
@@ -95,176 +95,176 @@ processors:
         param_nano: 1000000
       ignore_failure: true
   - rename:
-      field: azure.identityprotectionlogs.operationName
-      target_field: azure.identityprotectionlogs.operation_name
+      field: azure.identityprotection.operationName
+      target_field: azure.identityprotection.operation_name
       ignore_missing: true
   - convert:
-      field: azure.identityprotectionlogs.operation_name
+      field: azure.identityprotection.operation_name
       target_field: event.action
       type: string
       ignore_missing: true
   - rename:
-      field: azure.identityprotectionlogs.operationVersion
-      target_field: azure.identityprotectionlogs.operation_version
+      field: azure.identityprotection.operationVersion
+      target_field: azure.identityprotection.operation_version
       ignore_missing: true
   - rename:
-      field: azure.identityprotectionlogs.tenantId
+      field: azure.identityprotection.tenantId
       target_field: azure.tenant_id
       ignore_missing: true
   - remove:
-      field: azure.identityprotectionlogs.identity
+      field: azure.identityprotection.identity
       description: "identity is undocumented, removing it until we know what it is"
       ignore_missing: true
   - remove:
-      field: azure.identityprotectionlogs.Level
+      field: azure.identityprotection.Level
       description: "Level is undocumented, removing it until we know what it is"
       ignore_missing: true
   - remove:
-      field: azure.identityprotectionlogs.location
+      field: azure.identityprotection.location
       description: "location is undocumented, removing it until we know what it is"
       ignore_missing: true
   - rename:
-      field: azure.identityprotectionlogs.resultSignature
-      target_field: azure.identityprotectionlogs.result_signature
+      field: azure.identityprotection.resultSignature
+      target_field: azure.identityprotection.result_signature
       ignore_missing: true
   - rename:
-      field: azure.identityprotectionlogs.correlationId
+      field: azure.identityprotection.correlationId
       target_field: azure.correlation_id
       ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.isDeleted
-     target_field: azure.identityprotectionlogs.properties.is_deleted
+     field: azure.identityprotection.properties.isDeleted
+     target_field: azure.identityprotection.properties.is_deleted
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.isGuest
-     target_field: azure.identityprotectionlogs.properties.is_guest
+     field: azure.identityprotection.properties.isGuest
+     target_field: azure.identityprotection.properties.is_guest
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.isProcessing
-     target_field: azure.identityprotectionlogs.properties.is_processing
+     field: azure.identityprotection.properties.isProcessing
+     target_field: azure.identityprotection.properties.is_processing
      ignore_missing: true
 
   # Risk-related fields   
   - rename:
-     field: azure.identityprotectionlogs.properties.riskType
-     target_field: azure.identityprotectionlogs.properties.risk_type
+     field: azure.identityprotection.properties.riskType
+     target_field: azure.identityprotection.properties.risk_type
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.riskEventType
-     target_field: azure.identityprotectionlogs.properties.risk_event_type
+     field: azure.identityprotection.properties.riskEventType
+     target_field: azure.identityprotection.properties.risk_event_type
      description: The type of risk event detected. For more information about each value, see https://docs.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0#riskeventtype-values values.
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.riskState
-     target_field: azure.identityprotectionlogs.properties.risk_state
+     field: azure.identityprotection.properties.riskState
+     target_field: azure.identityprotection.properties.risk_state
      description: "The state of a detected risky user or sign-in. Possible values are: none, confirmedSafe, remediated, dismissed, atRisk, confirmedCompromised, unknownFutureValue."
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.riskLevel
-     target_field: azure.identityprotectionlogs.properties.risk_level
+     field: azure.identityprotection.properties.riskLevel
+     target_field: azure.identityprotection.properties.risk_level
      description: "Level of the detected risk. Possible values are: low, medium, high, hidden, none, unknownFutureValue."
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.riskDetail
-     target_field: azure.identityprotectionlogs.properties.risk_detail
+     field: azure.identityprotection.properties.riskDetail
+     target_field: azure.identityprotection.properties.risk_detail
      ignore_missing: true
      description: "Details of the detected risk. Possible values are: none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue."
   - date:
-      field: azure.identityprotectionlogs.properties.lastUpdatedDateTime
-      target_field: azure.identityprotectionlogs.properties.risk_last_updated_datetime
+      field: azure.identityprotection.properties.lastUpdatedDateTime
+      target_field: azure.identityprotection.properties.risk_last_updated_datetime
       ignore_failure: true
       description: "The date and time that the risky user was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z."
       formats:
       - ISO8601
       - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
   - remove:
-      field: azure.identityprotectionlogs.properties.lastUpdatedDateTime
+      field: azure.identityprotection.properties.lastUpdatedDateTime
       ignore_missing: true
   - date:
-      field: azure.identityprotectionlogs.properties.riskLastUpdatedDateTime
-      target_field: azure.identityprotectionlogs.properties.risk_last_updated_datetime
+      field: azure.identityprotection.properties.riskLastUpdatedDateTime
+      target_field: azure.identityprotection.properties.risk_last_updated_datetime
       ignore_failure: true
       description: "The date and time that the risky user was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z."
       formats:
       - ISO8601
       - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
   - remove:
-      field: azure.identityprotectionlogs.properties.riskLastUpdatedDateTime
+      field: azure.identityprotection.properties.riskLastUpdatedDateTime
       ignore_missing: true
   #
   # User-related fields
   #
   - rename:
-     field: azure.identityprotectionlogs.properties.userId
-     target_field: azure.identityprotectionlogs.properties.user_id
+     field: azure.identityprotection.properties.userId
+     target_field: azure.identityprotection.properties.user_id
      description: "Unique ID of the user."
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.userDisplayName
-     target_field: azure.identityprotectionlogs.properties.user_display_name
+     field: azure.identityprotection.properties.userDisplayName
+     target_field: azure.identityprotection.properties.user_display_name
      description: "The user principal name (UPN) of the user."
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.userPrincipalName
-     target_field: azure.identityprotectionlogs.properties.user_principal_name
+     field: azure.identityprotection.properties.userPrincipalName
+     target_field: azure.identityprotection.properties.user_principal_name
      description: "The user principal name (UPN) of the user."
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.userType
-     target_field: azure.identityprotectionlogs.properties.user_type
+     field: azure.identityprotection.properties.userType
+     target_field: azure.identityprotection.properties.user_type
      ignore_missing: true
   #
   # Event-related fields
   #
   - date:
-      field: azure.identityprotectionlogs.properties.activityDateTime
-      target_field: azure.identityprotectionlogs.properties.activity_datetime
+      field: azure.identityprotection.properties.activityDateTime
+      target_field: azure.identityprotection.properties.activity_datetime
       ignore_failure: true
       formats:
       - ISO8601
       - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
   - remove:
-      field: azure.identityprotectionlogs.properties.activityDateTime
+      field: azure.identityprotection.properties.activityDateTime
       ignore_missing: true
 
   - date:
-      field: azure.identityprotectionlogs.properties.detectedDateTime
-      target_field: azure.identityprotectionlogs.properties.detected_datetime
+      field: azure.identityprotection.properties.detectedDateTime
+      target_field: azure.identityprotection.properties.detected_datetime
       ignore_failure: true
       formats:
       - ISO8601
       - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
   - remove:
-      field: azure.identityprotectionlogs.properties.detectedDateTime
+      field: azure.identityprotection.properties.detectedDateTime
       ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.detectionTimingType
-     target_field: azure.identityprotectionlogs.properties.detection_timing_type
+     field: azure.identityprotection.properties.detectionTimingType
+     target_field: azure.identityprotection.properties.detection_timing_type
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.requestId
-     target_field: azure.identityprotectionlogs.properties.request_id
+     field: azure.identityprotection.properties.requestId
+     target_field: azure.identityprotection.properties.request_id
      ignore_missing: true
   - rename:
-      field: azure.identityprotectionlogs.properties.correlationId
-      target_field: azure.identityprotectionlogs.properties.correlation_id
+      field: azure.identityprotection.properties.correlationId
+      target_field: azure.identityprotection.properties.correlation_id
       ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.tokenIssuerType
-     target_field: azure.identityprotectionlogs.properties.token_issuer_type
+     field: azure.identityprotection.properties.tokenIssuerType
+     target_field: azure.identityprotection.properties.token_issuer_type
      ignore_missing: true
   - rename:
-     field: azure.identityprotectionlogs.properties.ipAddress
-     target_field: azure.identityprotectionlogs.properties.ip_address
+     field: azure.identityprotection.properties.ipAddress
+     target_field: azure.identityprotection.properties.ip_address
      ignore_missing: true
   - json:
-      field: azure.identityprotectionlogs.properties.additionalInfo
-      target_field: azure.identityprotectionlogs.properties.additional_info
+      field: azure.identityprotection.properties.additionalInfo
+      target_field: azure.identityprotection.properties.additional_info
       ignore_failure: true
   - remove:
-      field: azure.identityprotectionlogs.properties.additionalInfo
+      field: azure.identityprotection.properties.additionalInfo
       ignore_missing: true
-      if: ctx?.azure.identityprotectionlogs.properties.additional_info != null
+      if: ctx?.azure.identityprotection.properties.additional_info != null
   #
   # Undocumented fields
   # These fields are not documented in the following sources:
@@ -275,13 +275,13 @@ processors:
   # add them back later if needed.
   #
   - remove:
-     field: azure.identityprotectionlogs.properties.resourceTenantId
+     field: azure.identityprotection.properties.resourceTenantId
      ignore_missing: true
   - remove:
-     field: azure.identityprotectionlogs.properties.homeTenantId
+     field: azure.identityprotection.properties.homeTenantId
      ignore_missing: true
   - remove:
-     field: azure.identityprotectionlogs.properties.crossTenantAccessType
+     field: azure.identityprotection.properties.crossTenantAccessType
      ignore_missing: true
 
   - set:
