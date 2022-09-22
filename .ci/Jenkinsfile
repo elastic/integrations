@@ -25,9 +25,6 @@ pipeline {
     STACK_VERSION = "${params.stackVersion}"
     BENCHMARK_THRESHOLD = '15'
 
-    // Are integrations tested ?
-    INTEGRATIONS_TESTED = "0"
-
     // Elastic package links definitions
     ELASTIC_PACKAGE_LINKS_FILE_PATH = "${env.HOME}/${env.BASE_DIR}/links_table.yml"
 
@@ -87,7 +84,6 @@ pipeline {
             // For reference: https://issues.jenkins.io/browse/JENKINS-52750
             findFiles()?.findAll{ !it.name.endsWith('@tmp') }?.collect{ it.name }?.sort()?.each {
               if (isPrAffected(it)) {
-                env.INTEGRATIONS_TESTED = "1"
                 integrations[it] = {
                   withNode(labels: 'ubuntu-20 && immutable', sleepMin: 10, sleepMax: 100) {
                     stage("${it}: check") {
@@ -174,10 +170,6 @@ def gitHubCommentWithBenchmarkReport() {
       detailLevel = "full"
     }
     dir("${BASE_DIR}") {
-      if (env.INTEGRATIONS_TESTED == "0" ) {
-        echo "gitHubCommentWithBenchmarkReport: no integrations tested in this run."
-        return
-      }
       // download artifacts for this PR
       def bucketUri = getBenchmarkBucketURI() + "*.xml"
       log(level: 'INFO', text: "googleStorageDownload(bucketUri: ${bucketUri}, localDirectory: ${currentBenchmarkResults}, pathPrefix: ${getBenchmarkPathPrefix()})")
@@ -278,7 +270,7 @@ def isPrAffected(integrationName) {
   def from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
   def to = env.GIT_BASE_COMMIT
 
-  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS|docs/|README.txt|LICENSE.txt|CONTRIBUTING.md|links_table.yml)'", returnStatus: true)
+  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS|docs/|README.txt|LICENSE.txt|CONTRIBUTING.md|links_table.yml|.ci/Jenkinsfile)'", returnStatus: true)
   if (r == 0) {
     echo "[${integrationName}] PR is affected: found non-package files"
     return true
@@ -373,10 +365,6 @@ def stashCoverageReport() {
 def publishCoverageReports() {
   stage('Publish coverage reports') {
     dir("${BASE_DIR}") {
-      if (env.INTEGRATIONS_TESTED == "0" ) {
-        echo "publishCoverageReports: no integrations tested in this run."
-        return
-      }
       def bucketUri = getCoverageBucketURI() + "*.xml"
       googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
       coverageReport('build/test-coverage')
