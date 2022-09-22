@@ -1,5 +1,10 @@
 # Developer workflow: release a bug fix for supporting older version of the stack?
 
+---
+**NOTE:**
+The method documented here is only valid with Package Storage v1.
+---
+
 In some cases, when we drop the support for an older version of the stack and later on find
 out needing to add a bug fix to the old stack version, we have to make some manual changes
 to release the bug fix to users. For example: currently the latest AWS package version is
@@ -20,8 +25,8 @@ Then click "Browse files" to go to the actual commit:
 ![alt text](./images/browse_file.png)
 
 ### Step2: Create a branch
-Create a branch out of the commit and name it `<package_name>-<stack_version>`.
-For example: `aws-7.15.0`.
+Create a branch out of the commit and name it `backport-<package_name>-<stack_version>`.
+For example: `backport-aws-7.15.0`.
 ![alt text](./images/create_branch.png)
 
 ### Step3: Create a PR for the bug fix
@@ -38,4 +43,4 @@ a [PR](https://github.com/elastic/package-storage/pull/5489) to update the packa
 
 ### Step5: Run elastic-package promote
 After the PR for adding the new version into snapshot is merged, we can run
-`elastic-pacakge promote` to promote this new version into production.
+`elastic-package promote` to promote this new version into production.
