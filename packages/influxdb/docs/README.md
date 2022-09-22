@@ -85,9 +85,9 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T04:36:20.402Z",
+    "@timestamp": "2022-09-22T05:55:26.485Z",
     "agent": {
-        "ephemeral_id": "251c5f56-3529-4604-bf93-e82d0d4da461",
+        "ephemeral_id": "512929a4-20a5-4e02-97d3-f089acc3dc8f",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -129,8 +129,8 @@ An example event for `status` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.status",
-        "duration": 6016011,
-        "ingested": "2022-09-22T04:36:21Z",
+        "duration": 6154570,
+        "ingested": "2022-09-22T05:55:27Z",
         "module": "prometheus"
     },
     "host": {
@@ -157,13 +157,12 @@ An example event for `status` looks as following:
     "influxdb": {
         "status": {
             "http_api": {
-                "http_status": "2XX",
-                "method": "GET",
-                "path": "/metrics",
-                "response_code": "200"
+                "path": "/var/lib/influxdb2/engine"
             },
-            "http_api_requests_total": 2,
-            "instance": "elastic-package-service_influxdb_1:8086"
+            "instance": "elastic-package-service_influxdb_1:8086",
+            "storage": {
+                "writer_timeouts": 0
+            }
         }
     },
     "metricset": {
@@ -195,17 +194,18 @@ Advanced status metric include details of query execution statistics, compaction
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | host.ip | Host ip addresses. | ip |
 | influxdb.advstatus.instance | InfluxDB instance. | keyword |
-| influxdb.advstatus.qc_all_duration_seconds.histogram | Histogram of total times spent in all query states. | histogram |
-| influxdb.advstatus.qc_compiling_duration_seconds.histogram | Histogram of times spent compiling queries. | histogram |
-| influxdb.advstatus.qc_executing_duration_seconds.histogram | Histogram of times spent executing queries. | histogram |
-| influxdb.advstatus.storage_compactions_duration_seconds.histogram | Histogram of compactions by level since startup. | histogram |
-| influxdb.advstatus.storage_retention_check_duration.histogram | Histogram of duration of retention check in seconds. | histogram |
-| influxdb.advstatus.storage_writer_dropped_points.histogram | Histogram of number of points dropped due to partial writes. | histogram |
-| influxdb.advstatus.storage_writer_err_points.histogram | Histogram of number of points in errored shard write requests. | histogram |
-| influxdb.advstatus.storage_writer_ok_points.histogram | Histogram of number of points in successful shard write requests. | histogram |
-| influxdb.advstatus.storage_writer_req_points.histogram | Histogram of number of points requested to be written. | histogram |
-| influxdb.advstatus.task_executor_run_latency_seconds.histogram | Records the latency between the time the run was due to run and the time the task started execution, by task type. | histogram |
-| influxdb.advstatus.task_executor_run_queue_delta.histogram | The duration in seconds between a run being due to start and actually starting. | histogram |
+| influxdb.advstatus.org | Organization id of the Organization created in InfluxDB. | keyword |
+| influxdb.advstatus.query_controller.all_duration_seconds.histogram | Histogram of total times spent in all query states. | histogram |
+| influxdb.advstatus.query_controller.compiling_duration_seconds.histogram | Histogram of times spent compiling queries. | histogram |
+| influxdb.advstatus.query_controller.executing_duration_seconds.histogram | Histogram of times spent executing queries. | histogram |
+| influxdb.advstatus.storage.compactions_duration_seconds.histogram | Histogram of compactions by level since startup. | histogram |
+| influxdb.advstatus.storage.retention_check_duration.histogram | Histogram of duration of retention check in seconds. | histogram |
+| influxdb.advstatus.storage.writer_dropped_points.histogram | Histogram of number of points dropped due to partial writes. | histogram |
+| influxdb.advstatus.storage.writer_err_points.histogram | Histogram of number of points in errored shard write requests. | histogram |
+| influxdb.advstatus.storage.writer_ok_points.histogram | Histogram of number of points in successful shard write requests. | histogram |
+| influxdb.advstatus.storage.writer_req_points.histogram | Histogram of number of points requested to be written. | histogram |
+| influxdb.advstatus.tasks.executor_run_latency_seconds.histogram | Records the latency between the time the run was due to run and the time the task started execution, by task type. | histogram |
+| influxdb.advstatus.tasks.executor_run_queue_delta.histogram | The duration in seconds between a run being due to start and actually starting. | histogram |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
@@ -214,9 +214,9 @@ An example event for `advstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T04:35:12.264Z",
+    "@timestamp": "2022-09-22T05:54:15.452Z",
     "agent": {
-        "ephemeral_id": "86c49333-86f9-46b9-9ae3-5782ba26d059",
+        "ephemeral_id": "2928ccbb-957a-4054-9e87-c1af939d1ebf",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -258,8 +258,8 @@ An example event for `advstatus` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.advstatus",
-        "duration": 6917073,
-        "ingested": "2022-09-22T04:35:13Z",
+        "duration": 5889790,
+        "ingested": "2022-09-22T05:54:16Z",
         "module": "prometheus"
     },
     "host": {
@@ -287,86 +287,92 @@ An example event for `advstatus` looks as following:
         "advstatus": {
             "instance": "elastic-package-service_influxdb_1:8086",
             "labels": {},
-            "storage_writer_dropped_points": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        5,
-                        55,
-                        550,
-                        5500,
-                        55000,
-                        190000
-                    ]
+            "storage": {
+                "writer_dropped_points": {
+                    "histogram": {
+                        "counts": [
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                        ],
+                        "values": [
+                            5,
+                            55,
+                            550,
+                            5500,
+                            55000,
+                            190000
+                        ]
+                    }
+                },
+                "writer_err_points": {
+                    "histogram": {
+                        "counts": [
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                        ],
+                        "values": [
+                            5,
+                            55,
+                            550,
+                            5500,
+                            55000,
+                            190000
+                        ]
+                    }
+                },
+                "writer_ok_points": {
+                    "histogram": {
+                        "counts": [
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                        ],
+                        "values": [
+                            5,
+                            55,
+                            550,
+                            5500,
+                            55000,
+                            190000
+                        ]
+                    }
+                },
+                "writer_req_points": {
+                    "histogram": {
+                        "counts": [
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                        ],
+                        "values": [
+                            5,
+                            55,
+                            550,
+                            5500,
+                            55000,
+                            190000
+                        ]
+                    }
                 }
             },
-            "storage_writer_err_points": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        5,
-                        55,
-                        550,
-                        5500,
-                        55000,
-                        190000
-                    ]
-                }
-            },
-            "storage_writer_ok_points": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        5,
-                        55,
-                        550,
-                        5500,
-                        55000,
-                        190000
-                    ]
-                }
-            },
-            "storage_writer_req_points": {
-                "histogram": {
-                    "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0
-                    ],
-                    "values": [
-                        5,
-                        55,
-                        550,
-                        5500,
-                        55000,
-                        190000
-                    ]
-                }
-            }
+            "storage_writer_dropped_points": {},
+            "storage_writer_err_points": {},
+            "storage_writer_ok_points": {},
+            "storage_writer_req_points": {}
         }
     },
     "metricset": {
