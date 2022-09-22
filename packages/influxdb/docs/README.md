@@ -32,47 +32,47 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | influxdb.status.bucket | Bucket id of the bucket where time series data is stored. | keyword |  |  |
 | influxdb.status.buckets_total | Number of total buckets on the server. | double |  | counter |
 | influxdb.status.dashboards_total | Number of total dashboards on the server. | double |  | counter |
-| influxdb.status.go_memstats_alloc_bytes | Number of bytes allocated and still in use. | double | byte | gauge |
-| influxdb.status.go_memstats_alloc_bytes_total | Total number of bytes allocated, even if freed. | double | byte | counter |
-| influxdb.status.go_memstats_heap_alloc_bytes | Number of heap bytes allocated and still in use. | double | byte | gauge |
-| influxdb.status.go_memstats_heap_idle_bytes | Number of heap bytes waiting to be used. | double | byte | gauge |
-| influxdb.status.go_memstats_heap_inuse_bytes | Number of heap bytes that are in use. | double | byte | gauge |
-| influxdb.status.go_threads | Number of OS threads created. | double |  | gauge |
+| influxdb.status.go_runtime.memstats_alloc_bytes | Number of bytes allocated and still in use. | double | byte | gauge |
+| influxdb.status.go_runtime.memstats_alloc_bytes_total | Total number of bytes allocated, even if freed. | double | byte | counter |
+| influxdb.status.go_runtime.memstats_heap_alloc_bytes | Number of heap bytes allocated and still in use. | double | byte | gauge |
+| influxdb.status.go_runtime.memstats_heap_idle_bytes | Number of heap bytes waiting to be used. | double | byte | gauge |
+| influxdb.status.go_runtime.memstats_heap_inuse_bytes | Number of heap bytes that are in use. | double | byte | gauge |
+| influxdb.status.go_runtime.threads | Number of OS threads created. | double |  | gauge |
+| influxdb.status.http_api.http_status | HTTP API request call status. | keyword |  |  |
+| influxdb.status.http_api.method | HTTP request method. | keyword |  |  |
+| influxdb.status.http_api.path | HTTP request endpoint. | keyword |  |  |
+| influxdb.status.http_api.response_code | Response code of HTTP API request. | keyword |  |  |
 | influxdb.status.http_api_requests_total | Number of http requests received | double |  | counter |
-| influxdb.status.http_status | HTTP API request call status. | keyword |  |  |
 | influxdb.status.instance | InfluxDB instance. | keyword |  |  |
-| influxdb.status.method | HTTP request method. | keyword |  |  |
 | influxdb.status.org | Organization id of the Organization created in InfluxDB. | keyword |  |  |
 | influxdb.status.organizations_total | Number of total organizations on the server. | double |  | counter |
-| influxdb.status.path | HTTP request endpoint. | keyword |  |  |
-| influxdb.status.qc_all_active | Number of queries in all states. | double |  | gauge |
-| influxdb.status.qc_compiling_active | Number of queries actively compiling. | double |  | gauge |
-| influxdb.status.qc_executing_active | Number of queries actively executing. | double |  | gauge |
-| influxdb.status.response_code | Response code of HTTP API request. | keyword |  |  |
+| influxdb.status.query_controller.all_active | Number of queries in all states. | double |  | gauge |
+| influxdb.status.query_controller.compiling_active | Number of queries actively compiling. | double |  | gauge |
+| influxdb.status.query_controller.qc_executing_active | Number of queries actively executing. | double |  | gauge |
 | influxdb.status.scrapers_total | Number of total scrapers on the server. | double |  | counter |
-| influxdb.status.storage_bucket_measurement_num | Gauge of measurement cardinality per bucket. | double |  | gauge |
-| influxdb.status.storage_bucket_series_num | Gauge of series cardinality per bucket. | double |  | gauge |
-| influxdb.status.storage_compactions_failed | Counter of TSM compactions by level that have failed due to error. | double |  | counter |
-| influxdb.status.storage_shard_disk_size | Gauge of the disk size for the shard. | double |  | gauge |
-| influxdb.status.storage_shard_write_count | Count of the number of write requests. | double |  | counter |
-| influxdb.status.storage_shard_write_dropped_sum | Counter of the number of points dropped. | double |  | counter |
-| influxdb.status.storage_shard_write_err_count | Count of the number of write requests with errors. | double |  | counter |
-| influxdb.status.storage_tsm_files_disk_bytes | Gauge of data size in bytes for each shard. | double |  | gauge |
-| influxdb.status.storage_tsm_files_total | Gauge of number of files per shard | double |  | gauge |
-| influxdb.status.storage_wal_size | Gauge of size of WAL in bytes. | double | byte | gauge |
-| influxdb.status.storage_wal_writes | Number of write attempts to the WAL. | double |  | counter |
-| influxdb.status.storage_wal_writes_err | Number of failed write attempts to the WAL. | double |  | counter |
-| influxdb.status.storage_writer_timeouts | Number of shard write request timeouts. | double |  | counter |
-| influxdb.status.task_executor_errors_counter | The number of errors thrown by the executor with the type of error. Example - Invalid, Internal, etc. | double |  | counter |
-| influxdb.status.task_executor_total_runs_active | Total number of workers currently running tasks. | double |  | gauge |
-| influxdb.status.task_executor_total_runs_complete | Total number of runs completed across all tasks, split out by success or failure. | double |  | counter |
-| influxdb.status.task_executor_workers_busy | Percent of total available workers that are currently busy. | double | percent | gauge |
-| influxdb.status.task_scheduler_current_execution | Number of tasks currently being executed. | double |  | gauge |
-| influxdb.status.task_scheduler_total_execute_failure | Total number of times an execution has failed. | double |  | counter |
-| influxdb.status.task_scheduler_total_execution_calls | Total number of executions across all tasks. | double |  | counter |
-| influxdb.status.task_scheduler_total_release_calls | Total number of release requests. | double |  | counter |
-| influxdb.status.task_scheduler_total_schedule_calls | Total number of schedule requests. | double |  | counter |
-| influxdb.status.task_scheduler_total_schedule_fails | Total number of schedule requests that fail to schedule. | double |  | counter |
+| influxdb.status.storage.bucket_measurement_num | Gauge of measurement cardinality per bucket. | double |  | gauge |
+| influxdb.status.storage.bucket_series_num | Gauge of series cardinality per bucket. | double |  | gauge |
+| influxdb.status.storage.compactions_failed | Counter of TSM compactions by level that have failed due to error. | double |  | counter |
+| influxdb.status.storage.shard_disk_size | Gauge of the disk size for the shard. | double |  | gauge |
+| influxdb.status.storage.shard_write_count | Count of the number of write requests. | double |  | counter |
+| influxdb.status.storage.shard_write_dropped_sum | Counter of the number of points dropped. | double |  | counter |
+| influxdb.status.storage.shard_write_err_count | Count of the number of write requests with errors. | double |  | counter |
+| influxdb.status.storage.tsm_files_disk_bytes | Gauge of data size in bytes for each shard. | double |  | gauge |
+| influxdb.status.storage.tsm_files_total | Gauge of number of files per shard | double |  | gauge |
+| influxdb.status.storage.wal_size | Gauge of size of WAL in bytes. | double | byte | gauge |
+| influxdb.status.storage.wal_writes | Number of write attempts to the WAL. | double |  | counter |
+| influxdb.status.storage.wal_writes_err | Number of failed write attempts to the WAL. | double |  | counter |
+| influxdb.status.storage.writer_timeouts | Number of shard write request timeouts. | double |  | counter |
+| influxdb.status.tasks.executor_errors_counter | The number of errors thrown by the executor with the type of error. Example - Invalid, Internal, etc. | double |  | counter |
+| influxdb.status.tasks.executor_total_runs_active | Total number of workers currently running tasks. | double |  | gauge |
+| influxdb.status.tasks.executor_total_runs_complete | Total number of runs completed across all tasks, split out by success or failure. | double |  | counter |
+| influxdb.status.tasks.executor_workers_busy | Percent of total available workers that are currently busy. | double | percent | gauge |
+| influxdb.status.tasks.scheduler_current_execution | Number of tasks currently being executed. | double |  | gauge |
+| influxdb.status.tasks.scheduler_total_execute_failure | Total number of times an execution has failed. | double |  | counter |
+| influxdb.status.tasks.scheduler_total_execution_calls | Total number of executions across all tasks. | double |  | counter |
+| influxdb.status.tasks.scheduler_total_release_calls | Total number of release requests. | double |  | counter |
+| influxdb.status.tasks.scheduler_total_schedule_calls | Total number of schedule requests. | double |  | counter |
+| influxdb.status.tasks.scheduler_total_schedule_fails | Total number of schedule requests that fail to schedule. | double |  | counter |
 | influxdb.status.tokens_total | Number of total tokens on the server. | double |  | counter |
 | influxdb.status.uptime_seconds | InfluxDB process uptime in seconds. | double | s | gauge |
 | influxdb.status.users_total | Number of total users on the server. | double |  | counter |
@@ -85,9 +85,9 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T02:48:15.719Z",
+    "@timestamp": "2022-09-22T04:36:20.402Z",
     "agent": {
-        "ephemeral_id": "d12bb370-e30e-4ecd-9bfa-27e7c47c41a2",
+        "ephemeral_id": "251c5f56-3529-4604-bf93-e82d0d4da461",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -129,8 +129,8 @@ An example event for `status` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.status",
-        "duration": 5915532,
-        "ingested": "2022-09-22T02:48:16Z",
+        "duration": 6016011,
+        "ingested": "2022-09-22T04:36:21Z",
         "module": "prometheus"
     },
     "host": {
@@ -156,8 +156,14 @@ An example event for `status` looks as following:
     },
     "influxdb": {
         "status": {
-            "instance": "elastic-package-service_influxdb_1:8086",
-            "uptime_seconds": 31.229010421
+            "http_api": {
+                "http_status": "2XX",
+                "method": "GET",
+                "path": "/metrics",
+                "response_code": "200"
+            },
+            "http_api_requests_total": 2,
+            "instance": "elastic-package-service_influxdb_1:8086"
         }
     },
     "metricset": {
@@ -208,9 +214,9 @@ An example event for `advstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-22T02:47:08.323Z",
+    "@timestamp": "2022-09-22T04:35:12.264Z",
     "agent": {
-        "ephemeral_id": "7a54a589-2322-4be7-aa02-81ed7c59703a",
+        "ephemeral_id": "86c49333-86f9-46b9-9ae3-5782ba26d059",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -252,8 +258,8 @@ An example event for `advstatus` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.advstatus",
-        "duration": 5026361,
-        "ingested": "2022-09-22T02:47:09Z",
+        "duration": 6917073,
+        "ingested": "2022-09-22T04:35:13Z",
         "module": "prometheus"
     },
     "host": {
