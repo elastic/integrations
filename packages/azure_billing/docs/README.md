@@ -63,11 +63,7 @@ To create the app registration:
 6. Don't enter anything for _Redirect URI_. This is optional and the agent doesn't use it.
 7. Select **Register** to complete the initial app registration.
 
-Take note of the following value. We will use it in the Settings section later:
-
-`Client ID`: use the content of the "Application (client) ID."
-
-You now have a new App Registration ready for the next steps.
+Take note of the **Application (client) ID**, which you will use later when specifying the **Client ID** in the integration settings.
 
 #### Add credentials
 
@@ -81,11 +77,7 @@ This integration uses Client Secrets to prove its identity.
 1. Select an expiration for the secret or specify a custom lifetime.
 1. Select **Add**.
 
-Take note of the following value. We will use it in the Settings section later:
-
-`Client Secret`: use the content of the "Value" field.
-
-This secret value is never displayed again after you leave this page. Record the secret's value in a safe place. You will need it on the integration's settings page.
+Take note of the content in the **Value** column in the **Client secrets** table, which you will use later when specifying a **Client Secret** in the integration settings. **This secret value is never displayed again after you leave this page.** Record the secret's value in a safe place.
 
 #### Assign role
 
@@ -136,13 +128,12 @@ The settings' main section contains all the options needed to access the Azure A
 `Tenant ID` _string_
 : The unique identifier of the Azure Active Directory's Tenant ID.
 
-#### Advanced Options
+#### Advanced options
 
 There are two additional advanced options:
 
-`Resource Manager Endpoint` ::
-_string_
-Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
+`Resource Manager Endpoint` _string_
+: Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
 
 Examples:
 
@@ -151,9 +142,8 @@ Examples:
 * `https://management.azure.com` for Azure PublicCloud
 * `https://management.usgovcloudapi.net` for Azure USGovernmentCloud
 
-`Active Directory Endpoint` ::
-_string_
-Optional. By default, the integration uses the associated Active Directory Endpoint. To override, users can provide a specific active directory endpoint to use a different Azure environment.
+`Active Directory Endpoint`  _string_
+: Optional. By default, the integration uses the associated Active Directory Endpoint. To override, users can provide a specific active directory endpoint to use a different Azure environment.
 
 Examples:
 

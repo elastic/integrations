@@ -132,9 +132,8 @@ The settings' main section contains all the options needed to access the Azure A
 
 There are two additional advanced options:
 
-`Resource Manager Endpoint` ::
-_string_
-Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
+`Resource Manager Endpoint` _string_
+: Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
 
 Examples:
 
