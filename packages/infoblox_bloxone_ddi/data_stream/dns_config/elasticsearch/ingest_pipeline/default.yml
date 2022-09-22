@@ -941,16 +941,6 @@ processors:
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
-  - foreach:
-      field: json.inheritance_sources.query_acl.value
-      if: ctx.json?.inheritance_sources?.query_acl?.value instanceof List
-      processor:
-        rename:
-          field: _ingest._value.tsig_key.key
-          target_field: _ingest._value.tsig_key.value
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.inheritance_sources.query_acl.value
       target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.value
@@ -1012,16 +1002,6 @@ processors:
         rename:
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.inheritance_sources.recursion_acl.value
-      if: ctx.json?.inheritance_sources?.recursion_acl?.value instanceof List
-      processor:
-        rename:
-          field: _ingest._value.tsig_key.key
-          target_field: _ingest._value.tsig_key.value
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
@@ -1133,16 +1113,6 @@ processors:
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
-  - foreach:
-      field: json.inheritance_sources.transfer_acl.value
-      if: ctx.json?.inheritance_sources?.transfer_acl?.value instanceof List
-      processor:
-        rename:
-          field: _ingest._value.tsig_key.key
-          target_field: _ingest._value.tsig_key.value
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.inheritance_sources.transfer_acl.value
       target_field: infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.value
@@ -1204,16 +1174,6 @@ processors:
         rename:
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.inheritance_sources.update_acl.value
-      if: ctx.json?.inheritance_sources?.update_acl?.value instanceof List
-      processor:
-        rename:
-          field: _ingest._value.tsig_key.key
-          target_field: _ingest._value.tsig_key.value
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
@@ -1491,16 +1451,6 @@ processors:
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
-  - foreach:
-      field: json.match_clients_acl
-      if: ctx.json?.match_clients_acl instanceof List
-      processor:
-        rename:
-          field: _ingest._value.tsig_key.key
-          target_field: _ingest._value.tsig_key.value
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.match_clients_acl
       target_field: infoblox_bloxone_ddi.dns_config.match_clients_acl
@@ -1560,16 +1510,6 @@ processors:
         rename:
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.match_destinations_acl
-      if: ctx.json?.match_destinations_acl instanceof List
-      processor:
-        rename:
-          field: _ingest._value.tsig_key.key
-          target_field: _ingest._value.tsig_key.value
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
@@ -1699,16 +1639,6 @@ processors:
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
-  - foreach:
-      field: json.query_acl
-      if: ctx.json?.query_acl instanceof List
-      processor:
-        rename:
-          field: _ingest._value.tsig_key.key
-          target_field: _ingest._value.tsig_key.value
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.query_acl
       target_field: infoblox_bloxone_ddi.dns_config.query_acl
@@ -1768,16 +1698,6 @@ processors:
         rename:
           field: _ingest._value.tsig_key.protocol_name
           target_field: _ingest._value.tsig_key.protocol.name
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
-  - foreach:
-      field: json.recursion_acl
-      if: ctx.json?.recursion_acl instanceof List
-      processor:
-        rename:
-          field: _ingest._value.tsig_key.key
-          target_field: _ingest._value.tsig_key.value
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
@@ -1867,16 +1787,6 @@ processors:
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
-  - foreach:
-      field: json.transfer_acl
-      if: ctx.json?.transfer_acl instanceof List
-      processor:
-        rename:
-          field: _ingest._value.tsig_key.key
-          target_field: _ingest._value.tsig_key.value
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.transfer_acl
       target_field: infoblox_bloxone_ddi.dns_config.transfer_acl
@@ -1939,16 +1849,6 @@ processors:
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
-  - foreach:
-      field: json.update_acl
-      if: ctx.json?.update_acl instanceof List
-      processor:
-        rename:
-          field: _ingest._value.tsig_key.key
-          target_field: _ingest._value.tsig_key.value
-          ignore_missing: true
-      ignore_missing: true
-      ignore_failure: true
   - rename:
       field: json.update_acl
       target_field: infoblox_bloxone_ddi.dns_config.update_acl
@@ -1960,9 +1860,9 @@ processors:
       formats:
         - ISO8601
       on_failure:
-      - append:
-          field: error.message
-          value: '{{{_ingest.on_failure_message}}}'
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
       copy_from: infoblox_bloxone_ddi.dns_config.updated_at

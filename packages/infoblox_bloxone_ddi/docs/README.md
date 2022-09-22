@@ -57,9 +57,9 @@ An example event for `dhcp_lease` looks as following:
 {
     "@timestamp": "2022-07-11T11:51:15.417Z",
     "agent": {
-        "ephemeral_id": "fcbbacc1-cc56-4655-ace0-3ab9860b392b",
+        "ephemeral_id": "a4b27e2a-c005-43ce-9542-7548dcc7b414",
         "hostname": "docker-fleet-agent",
-        "id": "d4dc2c5b-8e71-48d1-978a-a2493b68c52d",
+        "id": "40a09f39-a5b9-4b21-8605-6f6e9cd36138",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -78,7 +78,7 @@ An example event for `dhcp_lease` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "d4dc2c5b-8e71-48d1-978a-a2493b68c52d",
+        "id": "40a09f39-a5b9-4b21-8605-6f6e9cd36138",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -87,10 +87,10 @@ An example event for `dhcp_lease` looks as following:
         "category": [
             "network"
         ],
-        "created": "2022-09-21T12:22:53.498Z",
+        "created": "2022-09-22T08:27:40.118Z",
         "dataset": "infoblox_bloxone_ddi.dhcp_lease",
         "end": "2022-07-11T11:51:15.417Z",
-        "ingested": "2022-09-21T12:22:57Z",
+        "ingested": "2022-09-22T08:27:43Z",
         "kind": "event",
         "original": "{\"address\":\"81.2.69.192\",\"client_id\":\"abc3212abc\",\"ends\":\"2022-07-11T11:51:15.417Z\",\"fingerprint\":\"ab3213cbabab/abc23bca\",\"fingerprint_processed\":\"12abca32bca32abcd\",\"ha_group\":\"abc321cdcbda321\",\"hardware\":\"00:00:5E:00:53:00\",\"host\":\"admin\",\"hostname\":\"Host1\",\"iaid\":0,\"last_updated\":\"2022-07-11T11:51:15.417Z\",\"options\":{\"message\":\"Hello\"},\"preferred_lifetime\":\"2022-07-11T11:51:15.417Z\",\"protocol\":\"ip4\",\"space\":\"DHCP lease Space\",\"starts\":\"2022-07-14T11:51:15.417Z\",\"state\":\"used\",\"type\":\"DHCP lease Type\"}",
         "start": "2022-07-14T11:51:15.417Z",
@@ -239,9 +239,9 @@ An example event for `dns_config` looks as following:
 {
     "@timestamp": "2022-07-15T06:55:25.978Z",
     "agent": {
-        "ephemeral_id": "81dd62b7-0768-4bb1-aaf4-9957a83f141e",
+        "ephemeral_id": "72747b3e-5f2e-4261-a994-aff0ac9b5be1",
         "hostname": "docker-fleet-agent",
-        "id": "d4dc2c5b-8e71-48d1-978a-a2493b68c52d",
+        "id": "40a09f39-a5b9-4b21-8605-6f6e9cd36138",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -260,7 +260,7 @@ An example event for `dns_config` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "d4dc2c5b-8e71-48d1-978a-a2493b68c52d",
+        "id": "40a09f39-a5b9-4b21-8605-6f6e9cd36138",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -272,7 +272,7 @@ An example event for `dns_config` looks as following:
         "created": "2022-07-15T06:55:25.978Z",
         "dataset": "infoblox_bloxone_ddi.dns_config",
         "id": "adv12rgfh",
-        "ingested": "2022-09-21T12:23:36Z",
+        "ingested": "2022-09-22T08:28:25Z",
         "kind": "event",
         "original": "{\"add_edns_option_in_outgoing_query\":true,\"comment\":\"DNS Config Comment\",\"created_at\":\"2022-07-15T06:55:25.978Z\",\"custom_root_ns\":[{\"address\":\"81.2.69.192\",\"fqdn\":\"custom fqdn\",\"protocol_fqdn\":\"custom protocol fqdn\"}],\"custom_root_ns_enabled\":true,\"disabled\":true,\"dnssec_enable_validation\":true,\"dnssec_enabled\":true,\"dnssec_root_keys\":[{\"algorithm\":30,\"protocol_zone\":\"Dnssec root protocol zone\",\"public_key\":\"Dnssec root Public Key\",\"sep\":true,\"zone\":\"Dnssec root Zone\"}],\"dnssec_trust_anchors\":[{\"algorithm\":10,\"protocol_zone\":\"Dnssec trust protocol zone\",\"public_key\":\"Dnssec trust Public Key\",\"sep\":true,\"zone\":\"Dnssec trust zone\"}],\"dnssec_validate_expiry\":true,\"ecs_enabled\":true,\"ecs_forwarding\":true,\"ecs_prefix_v4\":22,\"ecs_prefix_v6\":33,\"ecs_zones\":[{\"access\":\"ecs zones access\",\"fqdn\":\"ecs zones fqdn\",\"protocol_fqdn\":\"ecs zones protocol fqdn\"}],\"edns_udp_size\":568,\"forwarders\":[{\"address\":\"81.2.69.192\",\"fqdn\":\"forwarders fqdn\",\"protocol_fqdn\":\"forwarders protocol fqdn\"}],\"forwarders_only\":true,\"gss_tsig_enabled\":true,\"id\":\"adv12rgfh\",\"inheritance_sources\":{\"add_edns_option_in_outgoing_query\":{\"action\":\"inherit\",\"display_name\":\"displaynameadd_edns_option_in_outgoing_query\",\"source\":\"sourceadd_edns_option_in_outgoing_query\",\"value\":true},\"custom_root_ns_block\":{\"action\":\"override\",\"display_name\":\"displaynamecustom_root_ns_block\",\"source\":\"sourcecustom_root_ns_block\",\"value\":{\"custom_root_ns\":[{\"address\":\"67.43.156.0\",\"fqdn\":\"fqdn_custom_root_ns\",\"protocol_fqdn\":\"protocolfqdn_custom_root_ns\"}],\"custom_root_ns_enabled\":true}},\"dnssec_validation_block\":{\"action\":\"inherit\",\"display_name\":\"displaynamednssec_validation_block\",\"source\":\"sourcednssec_validation_block\",\"value\":{\"dnssec_enable_validation\":true,\"dnssec_enabled\":true,\"dnssec_trust_anchors\":[{\"algorithm\":8,\"protocol_zone\":\"protocolzonednssec_trust_anchors\",\"public_key\":\"publickeydnssec_trust_anchors\",\"sep\":false,\"zone\":\"is3zone\"}],\"dnssec_validate_expiry\":true}},\"ecs_block\":{\"action\":\"inherit\",\"display_name\":\"displaynameecs_block\",\"source\":\"sourceecs_block\",\"value\":{\"ecs_enabled\":false,\"ecs_forwarding\":true,\"ecs_prefix_v4\":4,\"ecs_prefix_v6\":10,\"ecs_zones\":[{\"access\":\"inherit\",\"fqdn\":\"fqdnecs_block\",\"protocol_fqdn\":\"protocol_fqdnecs_block\"}]}},\"ecs_zones\":{\"action\":\"override\",\"display_name\":\"displaynameecs_zones\",\"source\":\"sourceecs_zones\",\"value\":{\"ecs_enabled\":false,\"ecs_forwarding\":true,\"ecs_prefix_v4\":4,\"ecs_prefix_v6\":12,\"ecs_zones\":[{\"access\":\"access_ecs_zones\",\"fqdn\":\"fqdn_ecs_zones\",\"protocol_fqdn\":\"protocolfqdn_ecs_zones\"}]}},\"edns_udp_size\":{\"action\":\"inherit\",\"display_name\":\"displaynameedns_udp_size\",\"source\":\"sourceedns_udp_size\",\"value\":55},\"forwarders_block\":{\"action\":\"inherit\",\"display_name\":\"displaynameforwarders_block\",\"source\":\"sourceforwarders_block\",\"value\":{\"forwarders\":[{\"address\":\"89.160.20.128\",\"fqdn\":\"forwarders_fqdn\",\"protocol_fqdn\":\"forwarders_protocolfqdn\"}],\"forwarders_only\":true}},\"gss_tsig_enabled\":{\"action\":\"inherit\",\"display_name\":\"displaynamegss_tsig_enabled\",\"source\":\"sourcegss_tsig_enabled\",\"value\":true},\"lame_ttl\":{\"action\":\"inherit\",\"display_name\":\"displaynamelame_ttl\",\"source\":\"sourcelame_ttl\",\"value\":45},\"match_recursive_only\":{\"action\":\"inherit\",\"display_name\":\"displaynamematch_recursive_only\",\"source\":\"sourcematch_recursive_only\",\"value\":false},\"max_cache_ttl\":{\"action\":\"inherit\",\"display_name\":\"displaynamemax_cache_ttl\",\"source\":\"sourcemax_cache_ttl\",\"value\":13},\"max_negative_ttl\":{\"action\":\"inherit\",\"display_name\":\"displaynamemax_negative_ttl\",\"source\":\"sourcemax_negative_ttl\",\"value\":12},\"max_udp_size\":{\"action\":\"inherit\",\"display_name\":\"displaynamemax_udp_size\",\"source\":\"sourcemax_udp_size\",\"value\":11},\"minimal_responses\":{\"action\":\"inherit\",\"display_name\":\"displaynameminimal_responses\",\"source\":\"sourceminimal_responses\",\"value\":true},\"notify\":{\"action\":\"inherit\",\"display_name\":\"displayname_notify\",\"source\":\"source_notify\",\"value\":true},\"query_acl\":{\"action\":\"override\",\"display_name\":\"displaynamequery_acl\",\"source\":\"sourcequery_acl\",\"value\":[{\"access\":\"allow\",\"acl\":\"aclvalue_query_acl\",\"address\":\"89.160.20.128\",\"element\":\"elementvaluequery_acl\",\"tsig_key\":{\"algorithm\":\"hmac_sha256\",\"comment\":\"commentquery_acl\",\"key\":\"keyquery_acl\",\"name\":\"namequery_acl\",\"protocol_name\":\"protocolname_query_acl\",\"secret\":\"secretquery_acl\"}}]},\"recursion_acl\":{\"action\":\"override\",\"display_name\":\"displaynamerecursion_acl\",\"source\":\"sourcerecursion_acl\",\"value\":[{\"access\":\"deny\",\"acl\":\"aclrecursion_acl\",\"address\":\"89.160.20.128\",\"element\":\"elementrecursion_acl\",\"tsig_key\":{\"algorithm\":\"hmac_sha384\",\"comment\":\"commentrecursion_acl\",\"key\":\"keyrecursion_acl\",\"name\":\"namerecursion_acl\",\"protocol_name\":\"protocolnamerecursion_acl\",\"secret\":\"secretrecursion_acl\"}}]},\"recursion_enabled\":{\"action\":\"inherit\",\"display_name\":\"displaynamerecursion_enabled\",\"source\":\"sourcerecursion_enabled\",\"value\":true},\"synthesize_address_records_from_https\":{\"action\":\"inherit\",\"display_name\":\"displaynamesynthesize_address_records_from_https\",\"source\":\"sourcesynthesize_address_records_from_https\",\"value\":true},\"transfer_acl\":{\"action\":\"inherit\",\"display_name\":\"displaynametransfer_acl\",\"source\":\"sourcetransfer_acl\",\"value\":[{\"access\":\"allow\",\"acl\":\"acltransfer_acl\",\"address\":\"216.160.83.56\",\"element\":\"elementtransfer_acl\",\"tsig_key\":{\"algorithm\":\"hmac_sha224\",\"comment\":\"commenttransfer_acl\",\"key\":\"keytransfer_acl\",\"name\":\"nametransfer_acl\",\"protocol_name\":\"protocolnametransfer_acl\",\"secret\":\"secrettransfer_acl\"}}]},\"update_acl\":{\"action\":\"override\",\"display_name\":\"displaynameupdate_acl\",\"source\":\"sourceupdate_acl\",\"value\":[{\"access\":\"allow\",\"acl\":\"aclupdate_acl\",\"address\":\"216.160.83.56\",\"element\":\"elementupdate_acl\",\"tsig_key\":{\"algorithm\":\"hmac_sha384\",\"comment\":\"commentupdate_acl\",\"key\":\"keyupdate_acl\",\"name\":\"nameupdate_acl\",\"protocol_name\":\"protocolnameupdate_acl\",\"secret\":\"secretupdate_acl\"}}]},\"use_forwarders_for_subzones\":{\"action\":\"override\",\"display_name\":\"displaynameuse_forwarders_for_subzones\",\"source\":\"sourceuse_forwarders_for_subzones\",\"value\":false},\"zone_authority\":{\"default_ttl\":{\"action\":\"override\",\"display_name\":\"displaynamezone_authority\",\"source\":\"sourcezone_authority\",\"value\":50},\"expire\":{\"action\":\"inherit\",\"display_name\":\"displaynameexpire\",\"source\":\"sourceexpire\",\"value\":70},\"mname_block\":{\"action\":\"inherit\",\"display_name\":\"displaynamemname_block\",\"source\":\"sourcemname_block\",\"value\":{\"mname\":\"mnamevaluemname_block\",\"protocol_mname\":\"protocolmnamemname_block\",\"use_default_mname\":true}},\"negative_ttl\":{\"action\":\"inherit\",\"display_name\":\"displaynamenegative_ttl\",\"source\":\"sourcenegative_ttl\",\"value\":90},\"protocol_rname\":{\"action\":\"inherit\",\"display_name\":\"displaynameprotocol_rname\",\"source\":\"sourceprotocol_rname\",\"value\":\"valueprotocol_rname\"},\"refresh\":{\"action\":\"inherit\",\"display_name\":\"displayname_refresh\",\"source\":\"source_refresh\",\"value\":40},\"retry\":{\"action\":\"inherit\",\"display_name\":\"displayname_retry\",\"source\":\"source_retry\",\"value\":570},\"rname\":{\"action\":\"inherit\",\"display_name\":\"displayname_rname\",\"source\":\"source_rname\",\"value\":\"value_rname\"}}},\"ip_spaces\":[\"testipspaces\"],\"lame_ttl\":350,\"match_clients_acl\":[{\"access\":\"deny\",\"acl\":\"aclmatch_clients_acl\",\"address\":\"81.2.69.192\",\"element\":\"elementmatch_clients_acl\",\"tsig_key\":{\"algorithm\":\"hmac_sha512\",\"comment\":\"commentmatch_clients_acl\",\"key\":\"keymatch_clients_acl\",\"name\":\"namematch_clients_acl\",\"protocol_name\":\"protocolnamematch_clients_acl\",\"secret\":\"secretmatch_clients_acl\"}}],\"match_destinations_acl\":[{\"access\":\"allow\",\"acl\":\"aclmatch_destinations_acl\",\"address\":\"81.2.69.192\",\"element\":\"elementmatch_destinations_acl\",\"tsig_key\":{\"algorithm\":\"hmac_sha384\",\"comment\":\"commentmatch_destinations_acl\",\"key\":\"keymatch_destinations_acl\",\"name\":\"namematch_destinations_acl\",\"protocol_name\":\"protocolnamematch_destinations_acl\",\"secret\":\"secretmatch_destinations_acl\"}}],\"match_recursive_only\":true,\"max_cache_ttl\":90,\"max_negative_ttl\":500,\"max_udp_size\":890,\"minimal_responses\":true,\"name\":\"string\",\"notify\":true,\"query_acl\":[{\"access\":\"accessquery_acl\",\"acl\":\"aclquery_acl\",\"address\":\"81.2.69.192\",\"element\":\"elementquery_acl\",\"tsig_key\":{\"algorithm\":\"hmac_sha224\",\"comment\":\"commentquery_acl\",\"key\":\"keyquery_acl\",\"name\":\"namequery_acl\",\"protocol_name\":\"protocolnamequery_acl\",\"secret\":\"secretquery_acl\"}}],\"recursion_acl\":[{\"access\":\"allow\",\"acl\":\"aclrecursion_acl\",\"address\":\"81.2.69.192\",\"element\":\"elementrecursion_acl\",\"tsig_key\":{\"algorithm\":\"hmac_sha1\",\"comment\":\"commentrecursion_acl\",\"key\":\"keyrecursion_acl\",\"name\":\"namerecursion_acl\",\"protocol_name\":\"protocolnamerecursion_acl\",\"secret\":\"secretrecursion_acl\"}}],\"recursion_enabled\":true,\"synthesize_address_records_from_https\":false,\"tags\":{\"message\":\"Hello\"},\"transfer_acl\":[{\"access\":\"allow\",\"acl\":\"acltransfer_acl\",\"address\":\"216.160.83.56\",\"element\":\"elementtransfer_acl\",\"tsig_key\":{\"algorithm\":\"hmac_sha224\",\"comment\":\"commenttransfer_acl\",\"key\":\"keytransfer_acl\",\"name\":\"nametransfer_acl\",\"protocol_name\":\"protocolnametransfer_acl\",\"secret\":\"secrettransfer_acl\"}}],\"update_acl\":[{\"access\":\"allow\",\"acl\":\"aclupdate_acl\",\"address\":\"216.160.83.56\",\"element\":\"elementupdate_acl\",\"tsig_key\":{\"algorithm\":\"hmac_sha1\",\"comment\":\"commentupdate_acl\",\"key\":\"keyupdate_acl\",\"name\":\"nameupdate_acl\",\"protocol_name\":\"protocolnameupdate_acl\",\"secret\":\"secretupdate_acl\"}}],\"updated_at\":\"2022-07-15T06:55:25.978Z\",\"use_forwarders_for_subzones\":true,\"zone_authority\":{\"default_ttl\":20,\"expire\":10,\"mname\":\"mnamezone_authority\",\"negative_ttl\":30,\"protocol_mname\":\"protocolmnamezone_authority\",\"protocol_rname\":\"protocolrnamezone_authority\",\"refresh\":50,\"retry\":100,\"rname\":\"string\",\"use_default_mname\":true}}",
         "type": [
@@ -552,12 +552,12 @@ An example event for `dns_config` looks as following:
                                 "tsig_key": {
                                     "algorithm": "hmac_sha256",
                                     "comment": "commentquery_acl",
+                                    "key": "keyquery_acl",
                                     "name": "namequery_acl",
                                     "protocol": {
                                         "name": "protocolname_query_acl"
                                     },
-                                    "secret": "secretquery_acl",
-                                    "value": "keyquery_acl"
+                                    "secret": "secretquery_acl"
                                 }
                             }
                         ]
@@ -577,12 +577,12 @@ An example event for `dns_config` looks as following:
                                 "tsig_key": {
                                     "algorithm": "hmac_sha384",
                                     "comment": "commentrecursion_acl",
+                                    "key": "keyrecursion_acl",
                                     "name": "namerecursion_acl",
                                     "protocol": {
                                         "name": "protocolnamerecursion_acl"
                                     },
-                                    "secret": "secretrecursion_acl",
-                                    "value": "keyrecursion_acl"
+                                    "secret": "secretrecursion_acl"
                                 }
                             }
                         ]
@@ -620,12 +620,12 @@ An example event for `dns_config` looks as following:
                                 "tsig_key": {
                                     "algorithm": "hmac_sha224",
                                     "comment": "commenttransfer_acl",
+                                    "key": "keytransfer_acl",
                                     "name": "nametransfer_acl",
                                     "protocol": {
                                         "name": "protocolnametransfer_acl"
                                     },
-                                    "secret": "secrettransfer_acl",
-                                    "value": "keytransfer_acl"
+                                    "secret": "secrettransfer_acl"
                                 }
                             }
                         ]
@@ -645,12 +645,12 @@ An example event for `dns_config` looks as following:
                                 "tsig_key": {
                                     "algorithm": "hmac_sha384",
                                     "comment": "commentupdate_acl",
+                                    "key": "keyupdate_acl",
                                     "name": "nameupdate_acl",
                                     "protocol": {
                                         "name": "protocolnameupdate_acl"
                                     },
-                                    "secret": "secretupdate_acl",
-                                    "value": "keyupdate_acl"
+                                    "secret": "secretupdate_acl"
                                 }
                             }
                         ]
@@ -749,12 +749,12 @@ An example event for `dns_config` looks as following:
                     "tsig_key": {
                         "algorithm": "hmac_sha512",
                         "comment": "commentmatch_clients_acl",
+                        "key": "keymatch_clients_acl",
                         "name": "namematch_clients_acl",
                         "protocol": {
                             "name": "protocolnamematch_clients_acl"
                         },
-                        "secret": "secretmatch_clients_acl",
-                        "value": "keymatch_clients_acl"
+                        "secret": "secretmatch_clients_acl"
                     },
                     "value": "aclmatch_clients_acl"
                 }
@@ -767,12 +767,12 @@ An example event for `dns_config` looks as following:
                     "tsig_key": {
                         "algorithm": "hmac_sha384",
                         "comment": "commentmatch_destinations_acl",
+                        "key": "keymatch_destinations_acl",
                         "name": "namematch_destinations_acl",
                         "protocol": {
                             "name": "protocolnamematch_destinations_acl"
                         },
-                        "secret": "secretmatch_destinations_acl",
-                        "value": "keymatch_destinations_acl"
+                        "secret": "secretmatch_destinations_acl"
                     },
                     "value": "aclmatch_destinations_acl"
                 }
@@ -792,12 +792,12 @@ An example event for `dns_config` looks as following:
                     "tsig_key": {
                         "algorithm": "hmac_sha224",
                         "comment": "commentquery_acl",
+                        "key": "keyquery_acl",
                         "name": "namequery_acl",
                         "protocol": {
                             "name": "protocolnamequery_acl"
                         },
-                        "secret": "secretquery_acl",
-                        "value": "keyquery_acl"
+                        "secret": "secretquery_acl"
                     },
                     "value": "aclquery_acl"
                 }
@@ -810,12 +810,12 @@ An example event for `dns_config` looks as following:
                     "tsig_key": {
                         "algorithm": "hmac_sha1",
                         "comment": "commentrecursion_acl",
+                        "key": "keyrecursion_acl",
                         "name": "namerecursion_acl",
                         "protocol": {
                             "name": "protocolnamerecursion_acl"
                         },
-                        "secret": "secretrecursion_acl",
-                        "value": "keyrecursion_acl"
+                        "secret": "secretrecursion_acl"
                     },
                     "value": "aclrecursion_acl"
                 }
@@ -835,12 +835,12 @@ An example event for `dns_config` looks as following:
                     "tsig_key": {
                         "algorithm": "hmac_sha224",
                         "comment": "commenttransfer_acl",
+                        "key": "keytransfer_acl",
                         "name": "nametransfer_acl",
                         "protocol": {
                             "name": "protocolnametransfer_acl"
                         },
-                        "secret": "secrettransfer_acl",
-                        "value": "keytransfer_acl"
+                        "secret": "secrettransfer_acl"
                     },
                     "value": "acltransfer_acl"
                 }
@@ -853,12 +853,12 @@ An example event for `dns_config` looks as following:
                     "tsig_key": {
                         "algorithm": "hmac_sha1",
                         "comment": "commentupdate_acl",
+                        "key": "keyupdate_acl",
                         "name": "nameupdate_acl",
                         "protocol": {
                             "name": "protocolnameupdate_acl"
                         },
-                        "secret": "secretupdate_acl",
-                        "value": "keyupdate_acl"
+                        "secret": "secretupdate_acl"
                     },
                     "value": "aclupdate_acl"
                 }
@@ -1075,10 +1075,10 @@ An example event for `dns_config` looks as following:
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.value.element | Type of element. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.value.tsig_key.algorithm | TSIG key algorithm. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.value.tsig_key.comment | Comment for TSIG key. | keyword |
+| infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.value.tsig_key.key | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.value.tsig_key.name | TSIG key name, FQDN. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.value.tsig_key.protocol.name | TSIG key name in punycode. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.value.tsig_key.secret | TSIG key secret, base64 string. | keyword |
-| infoblox_bloxone_ddi.dns_config.inheritance.sources.query_acl.value.tsig_key.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.action | The inheritance setting for a field. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.display.name | The human-readable display name for the object referred to by source. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.source | The resource identifier. | keyword |
@@ -1088,10 +1088,10 @@ An example event for `dns_config` looks as following:
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.value.element | Type of element. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.value.tsig_key.algorithm | TSIG key algorithm. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.value.tsig_key.comment | Comment for TSIG key. | keyword |
+| infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.value.tsig_key.key | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.value.tsig_key.name | TSIG key name, FQDN. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.value.tsig_key.protocol.name | TSIG key name in punycode. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.value.tsig_key.secret | TSIG key secret, base64 string. | keyword |
-| infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_acl.value.tsig_key.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_enabled.action | The inheritance setting for a field. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_enabled.display.name | The human-readable display name for the object referred to by source. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.recursion_enabled.source | The resource identifier. | keyword |
@@ -1109,10 +1109,10 @@ An example event for `dns_config` looks as following:
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.value.element | Type of element. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.value.tsig_key.algorithm | TSIG key algorithm. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.value.tsig_key.comment | Comment for TSIG key. | keyword |
+| infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.value.tsig_key.key | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.value.tsig_key.name | TSIG key name, FQDN. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.value.tsig_key.protocol.name | TSIG key name in punycode. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.value.tsig_key.secret | TSIG key secret, base64 string. | keyword |
-| infoblox_bloxone_ddi.dns_config.inheritance.sources.transfer_acl.value.tsig_key.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.action | The inheritance setting for a field. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.display.name | The human-readable display name for the object referred to by source. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.source | The resource identifier. | keyword |
@@ -1122,10 +1122,10 @@ An example event for `dns_config` looks as following:
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.value.element | Type of element. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.value.tsig_key.algorithm | TSIG key algorithm. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.value.tsig_key.comment | Comment for TSIG key. | keyword |
+| infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.value.tsig_key.key | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.value.tsig_key.name | TSIG key name, FQDN. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.value.tsig_key.protocol.name | TSIG key name in punycode. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.value.tsig_key.secret | TSIG key secret, base64 string. | keyword |
-| infoblox_bloxone_ddi.dns_config.inheritance.sources.update_acl.value.tsig_key.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.use_forwarders_for_subzones.action | The inheritance setting for a field. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.use_forwarders_for_subzones.display.name | The human-readable display name for the object referred to by source. | keyword |
 | infoblox_bloxone_ddi.dns_config.inheritance.sources.use_forwarders_for_subzones.source | The resource identifier. | keyword |
@@ -1171,20 +1171,20 @@ An example event for `dns_config` looks as following:
 | infoblox_bloxone_ddi.dns_config.match_clients_acl.element | Type of element. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_clients_acl.tsig_key.algorithm | TSIG key algorithm. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_clients_acl.tsig_key.comment | Comment for TSIG key. | keyword |
+| infoblox_bloxone_ddi.dns_config.match_clients_acl.tsig_key.key | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_clients_acl.tsig_key.name | TSIG key name, FQDN. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_clients_acl.tsig_key.protocol.name | TSIG key name in punycode. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_clients_acl.tsig_key.secret | TSIG key secret, base64 string. | keyword |
-| infoblox_bloxone_ddi.dns_config.match_clients_acl.tsig_key.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_clients_acl.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_destinations_acl.access | Access permission for element. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_destinations_acl.address | Optional. Data for ip element. | ip |
 | infoblox_bloxone_ddi.dns_config.match_destinations_acl.element | Type of element. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_destinations_acl.tsig_key.algorithm | TSIG key algorithm. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_destinations_acl.tsig_key.comment | Comment for TSIG key. | keyword |
-| infoblox_bloxone_ddi.dns_config.match_destinations_acl.tsig_key.name | The resource identifier. | keyword |
-| infoblox_bloxone_ddi.dns_config.match_destinations_acl.tsig_key.protocol.name | TSIG key name, FQDN. | keyword |
-| infoblox_bloxone_ddi.dns_config.match_destinations_acl.tsig_key.secret | TSIG key name in punycode. | keyword |
-| infoblox_bloxone_ddi.dns_config.match_destinations_acl.tsig_key.value | TSIG key secret, base64 string. | keyword |
+| infoblox_bloxone_ddi.dns_config.match_destinations_acl.tsig_key.key | The resource identifier. | keyword |
+| infoblox_bloxone_ddi.dns_config.match_destinations_acl.tsig_key.name | TSIG key name, FQDN. | keyword |
+| infoblox_bloxone_ddi.dns_config.match_destinations_acl.tsig_key.protocol.name | TSIG key name in punycode. | keyword |
+| infoblox_bloxone_ddi.dns_config.match_destinations_acl.tsig_key.secret | TSIG key secret, base64 string. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_destinations_acl.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.match_recursive_only | Optional. If true only recursive queries from matching clients access the view. | boolean |
 | infoblox_bloxone_ddi.dns_config.max_cache_ttl | Optional. Seconds to cache positive responses. | long |
@@ -1198,20 +1198,20 @@ An example event for `dns_config` looks as following:
 | infoblox_bloxone_ddi.dns_config.query_acl.element | Type of element. | keyword |
 | infoblox_bloxone_ddi.dns_config.query_acl.tsig_key.algorithm | TSIG key algorithm. | keyword |
 | infoblox_bloxone_ddi.dns_config.query_acl.tsig_key.comment | Comment for TSIG key. | keyword |
+| infoblox_bloxone_ddi.dns_config.query_acl.tsig_key.key | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.query_acl.tsig_key.name | TSIG key name, FQDN. | keyword |
 | infoblox_bloxone_ddi.dns_config.query_acl.tsig_key.protocol.name | TSIG key name in punycode. | keyword |
 | infoblox_bloxone_ddi.dns_config.query_acl.tsig_key.secret | TSIG key secret, base64 string. | keyword |
-| infoblox_bloxone_ddi.dns_config.query_acl.tsig_key.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.query_acl.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.recursion_acl.access | Access permission for element. | keyword |
 | infoblox_bloxone_ddi.dns_config.recursion_acl.address | Optional. Data for ip element. | ip |
 | infoblox_bloxone_ddi.dns_config.recursion_acl.element | Type of element. | keyword |
 | infoblox_bloxone_ddi.dns_config.recursion_acl.tsig_key.algorithm | TSIG key algorithm. | keyword |
 | infoblox_bloxone_ddi.dns_config.recursion_acl.tsig_key.comment | Comment for TSIG key. | keyword |
-| infoblox_bloxone_ddi.dns_config.recursion_acl.tsig_key.name | The resource identifier. | keyword |
-| infoblox_bloxone_ddi.dns_config.recursion_acl.tsig_key.protocol.name | TSIG key name, FQDN. | keyword |
-| infoblox_bloxone_ddi.dns_config.recursion_acl.tsig_key.secret | TSIG key name in punycode. | keyword |
-| infoblox_bloxone_ddi.dns_config.recursion_acl.tsig_key.value | TSIG key secret, base64 string. | keyword |
+| infoblox_bloxone_ddi.dns_config.recursion_acl.tsig_key.key | The resource identifier. | keyword |
+| infoblox_bloxone_ddi.dns_config.recursion_acl.tsig_key.name | TSIG key name, FQDN. | keyword |
+| infoblox_bloxone_ddi.dns_config.recursion_acl.tsig_key.protocol.name | TSIG key name in punycode. | keyword |
+| infoblox_bloxone_ddi.dns_config.recursion_acl.tsig_key.secret | TSIG key secret, base64 string. | keyword |
 | infoblox_bloxone_ddi.dns_config.recursion_acl.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.recursion_enabled | Optional. true to allow recursive DNS queries. | boolean |
 | infoblox_bloxone_ddi.dns_config.synthesize.address_records_from_https | synthesize_address_records_from_https enables/disables creation of A/AAAA records from HTTPS RR. | boolean |
@@ -1221,20 +1221,20 @@ An example event for `dns_config` looks as following:
 | infoblox_bloxone_ddi.dns_config.transfer_acl.element | Type of element. | keyword |
 | infoblox_bloxone_ddi.dns_config.transfer_acl.tsig_key.algorithm | TSIG key algorithm. | keyword |
 | infoblox_bloxone_ddi.dns_config.transfer_acl.tsig_key.comment | Comment for TSIG key. | keyword |
+| infoblox_bloxone_ddi.dns_config.transfer_acl.tsig_key.key | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.transfer_acl.tsig_key.name | TSIG key name, FQDN. | keyword |
 | infoblox_bloxone_ddi.dns_config.transfer_acl.tsig_key.protocol.name | TSIG key name in punycode. | keyword |
 | infoblox_bloxone_ddi.dns_config.transfer_acl.tsig_key.secret | TSIG key secret, base64 string. | keyword |
-| infoblox_bloxone_ddi.dns_config.transfer_acl.tsig_key.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.transfer_acl.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.update_acl.access | Access permission for element. | keyword |
 | infoblox_bloxone_ddi.dns_config.update_acl.address | Optional. Data for ip element. | ip |
 | infoblox_bloxone_ddi.dns_config.update_acl.element | Type of element. | keyword |
 | infoblox_bloxone_ddi.dns_config.update_acl.tsig_key.algorithm | TSIG key algorithm. | keyword |
 | infoblox_bloxone_ddi.dns_config.update_acl.tsig_key.comment | Comment for TSIG key. | keyword |
+| infoblox_bloxone_ddi.dns_config.update_acl.tsig_key.key | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.update_acl.tsig_key.name | TSIG key name, FQDN. | keyword |
 | infoblox_bloxone_ddi.dns_config.update_acl.tsig_key.protocol.name | TSIG key name in punycode. | keyword |
 | infoblox_bloxone_ddi.dns_config.update_acl.tsig_key.secret | TSIG key secret, base64 string. | keyword |
-| infoblox_bloxone_ddi.dns_config.update_acl.tsig_key.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.update_acl.value | The resource identifier. | keyword |
 | infoblox_bloxone_ddi.dns_config.updated_at | The timestamp when the object has been updated. Equals to created_at if not updated after creation. | date |
 | infoblox_bloxone_ddi.dns_config.use_forwarders_for_subzones | Optional. Use default forwarders to resolve queries for subzones. | boolean |
@@ -1267,9 +1267,9 @@ An example event for `dns_data` looks as following:
 {
     "@timestamp": "2022-07-20T09:59:59.184Z",
     "agent": {
-        "ephemeral_id": "4abbe17d-42d0-49cb-aca5-f10c2364ddc4",
+        "ephemeral_id": "eb4c7711-a048-4458-a48c-5d2045f2d6b1",
         "hostname": "docker-fleet-agent",
-        "id": "d4dc2c5b-8e71-48d1-978a-a2493b68c52d",
+        "id": "40a09f39-a5b9-4b21-8605-6f6e9cd36138",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -1288,7 +1288,7 @@ An example event for `dns_data` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "d4dc2c5b-8e71-48d1-978a-a2493b68c52d",
+        "id": "40a09f39-a5b9-4b21-8605-6f6e9cd36138",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -1300,7 +1300,7 @@ An example event for `dns_data` looks as following:
         "created": "2022-07-20T09:59:59.184Z",
         "dataset": "infoblox_bloxone_ddi.dns_data",
         "id": "ghr123ghf",
-        "ingested": "2022-09-21T12:24:14Z",
+        "ingested": "2022-09-22T08:29:03Z",
         "kind": "event",
         "original": "{\"absolute_name_spec\":\"DNS Data Absolute Name\",\"absolute_zone_name\":\"DNS Data Absolute Zone Name\",\"comment\":\"DNS Data Comment\",\"created_at\":\"2022-07-20T09:59:59.184Z\",\"delegation\":\"DNS Data Delegation\",\"disabled\":true,\"dns_absolute_name_spec\":\"DNS Absolute Name\",\"dns_absolute_zone_name\":\"DNS Absolute Zone Name\",\"dns_name_in_zone\":\"DNS Name in Zone\",\"dns_rdata\":\"DNS RData\",\"id\":\"ghr123ghf\",\"inheritance_sources\":{\"ttl\":{\"action\":\"DNS Data Action\",\"display_name\":\"DNS Display Name\",\"source\":\"DNS Data Source\",\"value\":10}},\"name_in_zone\":\"DNS Data Name in zone\",\"options\":{\"address\":\"67.43.156.0\",\"check_rmz\":true,\"create_ptr\":false},\"rdata\":{\"address\":\"81.2.69.192\",\"cname\":\"DNS Data Canonical Name\",\"dhcid\":\"122zbczba12\",\"dname\":\"DNS Data dname\",\"exchange\":\"DNS Data Exchange\",\"expire\":23131,\"flags\":\"DNS Data Flags\",\"length_kind\":8,\"mname\":\"DNS Data mname\",\"negative_ttl\":213342,\"order\":123124,\"port\":80,\"preference\":12345363467,\"priority\":44,\"refresh\":10800,\"regexp\":\"none\",\"replacement\":\"DNS Data Replacement\",\"retry\":3600,\"rname\":\"DNS Data rname\",\"serial\":12314114,\"services\":\"DNS Data Test Services\",\"tag\":\"issue\",\"target\":\"DNS Data Target\",\"text\":\"DNS Data text field\",\"type\":\"32BIT\",\"value\":\"DNS Data Value\",\"weight\":0},\"source\":[\"STATIC\"],\"tags\":{\"message\":\"Hello\"},\"ttl\":0,\"type\":\"DNS Data Type\",\"updated_at\":\"2022-07-20T09:59:59.184Z\",\"view\":\"DNS Data View\",\"view_name\":\"DNS Data View Name\",\"zone\":\"DNS Data Zone\"}",
         "type": [
