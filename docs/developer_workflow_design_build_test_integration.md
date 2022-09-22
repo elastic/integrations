@@ -138,3 +138,4 @@ It is up to you, as the package developer, to decide how many changes you want t
 For example, you could implement a change in a PR and bump up the package version in the same PR. Or you could
 implement several changes across multiple PRs and then bump up the package version in the last of these PRs
 or in a separate follow up PR.
+
