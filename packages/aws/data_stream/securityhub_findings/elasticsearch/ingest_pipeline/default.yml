@@ -3,7 +3,7 @@ description: Pipeline for processing AWS Security Hub Findings logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.2.0'
+      value: '8.4.0'
   - set:
       field: event.kind
       value: event
@@ -729,10 +729,14 @@ processors:
       field: destination.port
       copy_from: aws.securityhub_findings.network.destination.port
       ignore_failure: true
-  - rename:
-      field: json.Network.Direction
-      target_field: aws.securityhub_findings.network.direction
-      ignore_missing: true
+  - set:
+      field: aws.securityhub_findings.network.direction
+      value: inbound
+      if: ctx.json?.Network?.Direction != null && ctx.json.Network.Direction == 'IN'
+  - set:
+      field: aws.securityhub_findings.network.direction
+      value: outbound
+      if: ctx.json?.Network?.Direction != null && ctx.json.Network.Direction == 'OUT'
   - set:
       field: network.direction
       copy_from: aws.securityhub_findings.network.direction
@@ -1527,24 +1531,58 @@ processors:
           ignore_missing: true
       ignore_failure: true
       if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
-  - foreach:
-      field: json.ThreatIntelIndicators
-      processor:
-        set:
-          field: threat.indicator.last_seen
-          copy_from: _ingest._value.last_observed_at
-          ignore_failure: true
-      ignore_failure: true
+  - script:
+      description: Sets the threat.indicator values
+      lang: painless
       if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
-  - foreach:
-      field: json.ThreatIntelIndicators
-      processor:
-        set:
-          field: threat.indicator.type
-          copy_from: _ingest._value.type
-          ignore_failure: true
-      ignore_failure: true
-      if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+      params:
+        DOMAIN: domain-name
+        EMAIL_ADDRESS: email-addr
+        HASH_MD5: file
+        HASH_SHA1: file
+        HASH_SHA256: file
+        HASH_SHA512: file
+        IPV4_ADDRESS: ipv4-addr
+        IPV6_ADDRESS: ipv6-addr
+        MUTEX: mutex
+        PROCESS: process
+        URL: url
+      source: |
+        def indicators = ctx.json.ThreatIntelIndicators;
+        if(ctx.threat == null) {
+          ctx.put("threat", new HashMap());
+        }
+        if(ctx.threat.indicator == null) {
+          ctx.threat.put("indicator", new HashMap());
+        }
+        for(indicator in indicators) {
+          if(indicator?.last_observed_at != null) {
+            ctx.threat.indicator.put("last_seen", indicator.last_observed_at);
+          }
+          if(indicator?.type != null) {
+            ctx.threat.indicator.put("type", params.get(indicator.type));
+          }
+        }
+      
+
+  # - foreach:
+  #     field: json.ThreatIntelIndicators
+  #     processor:
+  #       set:
+  #         field: threat.indicator.last_seen
+  #         copy_from: _ingest._value.last_observed_at
+  #         ignore_failure: true
+  #     ignore_failure: true
+  #     if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
+  # - foreach:
+  #     field: json.ThreatIntelIndicators
+  #     processor:
+  #       set:
+  #         field: threat.indicator.type
+  #         copy_from: _ingest._value.type
+  #         ignore_failure: true
+  #     ignore_failure: true
+  #     if: ctx.json?.ThreatIntelIndicators != null && ctx.json?.ThreatIntelIndicators instanceof List
   - rename:
       field: json.ThreatIntelIndicators
       target_field: aws.securityhub_findings.threat_intel_indicators
