@@ -1,0 +1,86 @@
+---
+description: Pipeline for Influxdb advanced status metrics
+processors:
+    - rename:
+        field: prometheus
+        target_field: influxdb.advstatus
+        ignore_missing: true
+        ignore_failure: true
+    - remove:
+        field: [influxdb.advstatus.labels.compiler_type, influxdb.advstatus.labels.job, influxdb.advstatus.labels.id, influxdb.advstatus.labels.level, influxdb.advstatus.labels.engine, influxdb.advstatus.labels.handler, influxdb.advstatus.labels.path, influxdb.advstatus.labels.taskID, influxdb.advstatus.labels.task_type, influxdb.advstatus.labels.quantile]
+        ignore_missing: true
+        ignore_failure: true
+    - rename:
+        field: influxdb.advstatus.labels.instance
+        target_field: influxdb.advstatus.instance
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.labels.org
+        target_field: influxdb.advstatus.org
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.qc_all_duration_seconds.histogram
+        target_field: influxdb.advstatus.query_controller.all_duration_seconds.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.qc_compiling_duration_seconds.histogram
+        target_field: influxdb.advstatus.query_controller.compiling_duration_seconds.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.qc_executing_duration_seconds.histogram
+        target_field: influxdb.advstatus.query_controller.executing_duration_seconds.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.qc_executing_duration_seconds.histogram
+        target_field: influxdb.advstatus.query_controller.executing_duration_seconds.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.storage_compactions_duration_seconds.histogram
+        target_field: influxdb.advstatus.storage.compactions_duration_seconds.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.storage_retention_check_duration.histogram
+        target_field: influxdb.advstatus.storage.retention_check_duration.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.storage_writer_dropped_points.histogram
+        target_field: influxdb.advstatus.storage.writer_dropped_points.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.storage_writer_err_points.histogram
+        target_field: influxdb.advstatus.storage.writer_err_points.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.storage_writer_ok_points.histogram
+        target_field: influxdb.advstatus.storage.writer_ok_points.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.storage_writer_req_points.histogram
+        target_field: influxdb.advstatus.storage.writer_req_points.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.task_executor_run_latency_seconds.histogram
+        target_field: influxdb.advstatus.tasks.executor_run_latency_seconds.histogram
+        ignore_failure: true
+        ignore_missing: true
+    - rename:
+        field: influxdb.advstatus.task_executor_run_queue_delta.histogram
+        target_field: influxdb.advstatus.tasks.executor_run_queue_delta.histogram
+        ignore_failure: true
+        ignore_missing: true
+on_failure:
+- set:
+    field: error.message
+    value: "{{ _ingest.on_failure_message }}"
