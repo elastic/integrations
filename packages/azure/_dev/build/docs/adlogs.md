@@ -107,9 +107,9 @@ The Provisioning Logs contain a lot of details about a inbound/outbound sync act
 * Provisioning status.
 * Provisioning steps (with details for each step).
 
-{{event "provisioninglogs"}}
+{{event "provisioning_logs"}}
 
-{{fields "provisioninglogs"}}
+{{fields "provisioning_logs"}}
 
 ### Audit logs
 

@@ -628,14 +628,14 @@ The Provisioning Logs contain a lot of details about a inbound/outbound sync act
 * Provisioning status.
 * Provisioning steps (with details for each step).
 
-An example event for `provisioninglogs` looks as following:
+An example event for `provisioning` looks as following:
 
 ```json
 {
     "@timestamp": "2022-08-23T13:36:50.353Z",
     "azure": {
         "correlation_id": "54416401-eef2-461c-8de7-385dde2b3cba",
-        "provisioninglogs": {
+        "provisioning": {
             "category": "ProvisioningLogs",
             "identity": "d6cbb0bd-c3ec-6455-bd3e-4282141ce369",
             "level": 4,
@@ -773,58 +773,58 @@ An example event for `provisioninglogs` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation_id | Correlation ID | keyword |
-| azure.provisioninglogs.category | Category | keyword |
-| azure.provisioninglogs.identity | Describes the identity of the user or application that performed the operation | keyword |
-| azure.provisioninglogs.level | The severity level of the event | long |
-| azure.provisioninglogs.operation_name | Operation name | keyword |
-| azure.provisioninglogs.operation_version | Operation version | keyword |
-| azure.provisioninglogs.properties.action | Indicates the activity name or the operation name. | keyword |
-| azure.provisioninglogs.properties.activity_datetime | Indicates the date and time the activity was performed. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 would look like this: '2014-01-01T00:00:00Z' | date |
-| azure.provisioninglogs.properties.change_id | Unique ID of this change in this cycle | keyword |
-| azure.provisioninglogs.properties.cycle_id | Unique ID per job iteration | keyword |
-| azure.provisioninglogs.properties.duration_ms | Indicates how long this provisioning action took to finish. Measured in milliseconds. | long |
-| azure.provisioninglogs.properties.id | Indicates the unique ID for the activity | keyword |
-| azure.provisioninglogs.properties.initiated_by.id | Uniquely identifies the person or service that initiated the provisioning event. | keyword |
-| azure.provisioninglogs.properties.initiated_by.name | Name of the person or service that initiated the provisioning event. | keyword |
-| azure.provisioninglogs.properties.initiated_by.type | Type of initiator. Possible values are: user, application, system, unknownFutureValue. | keyword |
-| azure.provisioninglogs.properties.job_id | The unique ID for the whole provisioning job. | keyword |
-| azure.provisioninglogs.properties.modified_properties | Details of each property that was modified in this provisioning action on this object. | flattened |
-| azure.provisioninglogs.properties.provisioning_action | Indicates the activity name or the operation name. Possible values are: create, update, delete, stageddelete, disable, other and unknownFutureValue. For a list of activities logged, refer to Azure AD activity list. | keyword |
-| azure.provisioninglogs.properties.provisioning_status_info.error_information.additional_details | Additional details in case of error. | keyword |
-| azure.provisioninglogs.properties.provisioning_status_info.error_information.error_category | Categorizes the error code. Possible values are failure, nonServiceFailure, success, unknownFutureValue. | keyword |
-| azure.provisioninglogs.properties.provisioning_status_info.error_information.error_code | Unique error code if any occurred. To learn more, visit https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/concept-provisioning-logs#error-codes | keyword |
-| azure.provisioninglogs.properties.provisioning_status_info.error_information.reason | Summarizes the status and describes why the status happened. | keyword |
-| azure.provisioninglogs.properties.provisioning_status_info.error_information.recommended_action | Provides the resolution for the corresponding error. | keyword |
-| azure.provisioninglogs.properties.provisioning_status_info.status | Possible values are: success, warning, failure, skipped, unknownFutureValue. | keyword |
-| azure.provisioninglogs.properties.provisioning_steps.description | Summary of what occurred during the step. | keyword |
-| azure.provisioninglogs.properties.provisioning_steps.details | Details of what occurred during the step. | flattened |
-| azure.provisioninglogs.properties.provisioning_steps.name | Name of the step. | keyword |
-| azure.provisioninglogs.properties.provisioning_steps.provisioning_step_type | Type of step. | long |
-| azure.provisioninglogs.properties.provisioning_steps.status | Status of the step. | long |
-| azure.provisioninglogs.properties.service_principal.id | Uniquely identifies the servicePrincipal used for provisioning. | keyword |
-| azure.provisioninglogs.properties.service_principal.name | Customer-defined name for the servicePrincipal. | keyword |
-| azure.provisioninglogs.properties.source_identity.details | Details of the identity. | flattened |
-| azure.provisioninglogs.properties.source_identity.id | Uniquely identifies the identity. | keyword |
-| azure.provisioninglogs.properties.source_identity.identity_type | Type of identity that has been provisioned, such as 'user' or 'group'. | keyword |
-| azure.provisioninglogs.properties.source_identity.name | Display name of the identity. | keyword |
-| azure.provisioninglogs.properties.source_system.details.application_id |  | keyword |
-| azure.provisioninglogs.properties.source_system.details.dervice_principal_display_name |  | keyword |
-| azure.provisioninglogs.properties.source_system.details.service_principal_id |  | keyword |
-| azure.provisioninglogs.properties.source_system.id | Identifier of the system that a user was provisioned to or from. | keyword |
-| azure.provisioninglogs.properties.source_system.name | Name of the system that a user was provisioned to or from. | keyword |
-| azure.provisioninglogs.properties.target_identity.details | Details of the identity. | flattened |
-| azure.provisioninglogs.properties.target_identity.id | Uniquely identifies the identity. | keyword |
-| azure.provisioninglogs.properties.target_identity.identity_type | Type of identity that has been provisioned, such as 'user' or 'group'. | keyword |
-| azure.provisioninglogs.properties.target_identity.name | Display name of the identity. | keyword |
-| azure.provisioninglogs.properties.target_system.details.application_id |  | keyword |
-| azure.provisioninglogs.properties.target_system.details.dervice_principal_display_name |  | keyword |
-| azure.provisioninglogs.properties.target_system.details.service_principal_id |  | keyword |
-| azure.provisioninglogs.properties.target_system.id | Identifier of the system that a user was provisioned to or from. | keyword |
-| azure.provisioninglogs.properties.target_system.name | Name of the system that a user was provisioned to or from. | keyword |
-| azure.provisioninglogs.properties.tenant_id | Unique Azure AD tenant ID | keyword |
-| azure.provisioninglogs.result_signature | Result signature | keyword |
-| azure.provisioninglogs.result_type | Result type | keyword |
-| azure.provisioninglogs.tenant_id | Unique Azure AD tenant ID | keyword |
+| azure.provisioning.category | Category | keyword |
+| azure.provisioning.identity | Describes the identity of the user or application that performed the operation | keyword |
+| azure.provisioning.level | The severity level of the event | long |
+| azure.provisioning.operation_name | Operation name | keyword |
+| azure.provisioning.operation_version | Operation version | keyword |
+| azure.provisioning.properties.action | Indicates the activity name or the operation name. | keyword |
+| azure.provisioning.properties.activity_datetime | Indicates the date and time the activity was performed. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 would look like this: '2014-01-01T00:00:00Z' | date |
+| azure.provisioning.properties.change_id | Unique ID of this change in this cycle | keyword |
+| azure.provisioning.properties.cycle_id | Unique ID per job iteration | keyword |
+| azure.provisioning.properties.duration_ms | Indicates how long this provisioning action took to finish. Measured in milliseconds. | long |
+| azure.provisioning.properties.id | Indicates the unique ID for the activity | keyword |
+| azure.provisioning.properties.initiated_by.id | Uniquely identifies the person or service that initiated the provisioning event. | keyword |
+| azure.provisioning.properties.initiated_by.name | Name of the person or service that initiated the provisioning event. | keyword |
+| azure.provisioning.properties.initiated_by.type | Type of initiator. Possible values are: user, application, system, unknownFutureValue. | keyword |
+| azure.provisioning.properties.job_id | The unique ID for the whole provisioning job. | keyword |
+| azure.provisioning.properties.modified_properties | Details of each property that was modified in this provisioning action on this object. | flattened |
+| azure.provisioning.properties.provisioning_action | Indicates the activity name or the operation name. Possible values are: create, update, delete, stageddelete, disable, other and unknownFutureValue. For a list of activities logged, refer to Azure AD activity list. | keyword |
+| azure.provisioning.properties.provisioning_status_info.error_information.additional_details | Additional details in case of error. | keyword |
+| azure.provisioning.properties.provisioning_status_info.error_information.error_category | Categorizes the error code. Possible values are failure, nonServiceFailure, success, unknownFutureValue. | keyword |
+| azure.provisioning.properties.provisioning_status_info.error_information.error_code | Unique error code if any occurred. To learn more, visit https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/concept-provisioning-logs#error-codes | keyword |
+| azure.provisioning.properties.provisioning_status_info.error_information.reason | Summarizes the status and describes why the status happened. | keyword |
+| azure.provisioning.properties.provisioning_status_info.error_information.recommended_action | Provides the resolution for the corresponding error. | keyword |
+| azure.provisioning.properties.provisioning_status_info.status | Possible values are: success, warning, failure, skipped, unknownFutureValue. | keyword |
+| azure.provisioning.properties.provisioning_steps.description | Summary of what occurred during the step. | keyword |
+| azure.provisioning.properties.provisioning_steps.details | Details of what occurred during the step. | flattened |
+| azure.provisioning.properties.provisioning_steps.name | Name of the step. | keyword |
+| azure.provisioning.properties.provisioning_steps.provisioning_step_type | Type of step. | long |
+| azure.provisioning.properties.provisioning_steps.status | Status of the step. | long |
+| azure.provisioning.properties.service_principal.id | Uniquely identifies the servicePrincipal used for provisioning. | keyword |
+| azure.provisioning.properties.service_principal.name | Customer-defined name for the servicePrincipal. | keyword |
+| azure.provisioning.properties.source_identity.details | Details of the identity. | flattened |
+| azure.provisioning.properties.source_identity.id | Uniquely identifies the identity. | keyword |
+| azure.provisioning.properties.source_identity.identity_type | Type of identity that has been provisioned, such as 'user' or 'group'. | keyword |
+| azure.provisioning.properties.source_identity.name | Display name of the identity. | keyword |
+| azure.provisioning.properties.source_system.details.application_id |  | keyword |
+| azure.provisioning.properties.source_system.details.dervice_principal_display_name |  | keyword |
+| azure.provisioning.properties.source_system.details.service_principal_id |  | keyword |
+| azure.provisioning.properties.source_system.id | Identifier of the system that a user was provisioned to or from. | keyword |
+| azure.provisioning.properties.source_system.name | Name of the system that a user was provisioned to or from. | keyword |
+| azure.provisioning.properties.target_identity.details | Details of the identity. | flattened |
+| azure.provisioning.properties.target_identity.id | Uniquely identifies the identity. | keyword |
+| azure.provisioning.properties.target_identity.identity_type | Type of identity that has been provisioned, such as 'user' or 'group'. | keyword |
+| azure.provisioning.properties.target_identity.name | Display name of the identity. | keyword |
+| azure.provisioning.properties.target_system.details.application_id |  | keyword |
+| azure.provisioning.properties.target_system.details.dervice_principal_display_name |  | keyword |
+| azure.provisioning.properties.target_system.details.service_principal_id |  | keyword |
+| azure.provisioning.properties.target_system.id | Identifier of the system that a user was provisioned to or from. | keyword |
+| azure.provisioning.properties.target_system.name | Name of the system that a user was provisioned to or from. | keyword |
+| azure.provisioning.properties.tenant_id | Unique Azure AD tenant ID | keyword |
+| azure.provisioning.result_signature | Result signature | keyword |
+| azure.provisioning.result_type | Result type | keyword |
+| azure.provisioning.tenant_id | Unique Azure AD tenant ID | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |

@@ -140,9 +140,9 @@ The Provisioning logs data stream supports the following log categories:
 
 #### Reference
 
-{{event "provisioninglogs"}}
+{{event "provisioning_logs"}}
 
-{{fields "provisioninglogs"}}
+{{fields "provisioning_logs"}}
 
 ### Audit logs
 
