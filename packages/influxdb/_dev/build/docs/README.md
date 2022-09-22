@@ -1,6 +1,6 @@
 # InfluxDB Integration
 
-This integration is for ingesting task, storage, golang, performance related metrics from InfluxDB OSS 2.x databases. This integration provides  out-of-the-box dashboards named Status Metrics, Advanced Status Metrics.
+This integration is for ingesting task, storage, golang, performance related metrics from InfluxDB OSS 2.x databases. This integration provides out-of-the-box dashboards named Status Metrics, Advanced Status Metrics.
 
 
 ## Requirements

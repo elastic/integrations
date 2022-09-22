@@ -1,6 +1,6 @@
 # InfluxDB Integration
 
-This integration is for ingesting task, storage, golang, performance related metrics from InfluxDB OSS 2.x databases. This integration provides  out-of-the-box dashboards named Status Metrics, Advanced Status Metrics.
+This integration is for ingesting task, storage, golang, performance related metrics from InfluxDB OSS 2.x databases. This integration provides out-of-the-box dashboards named Status Metrics, Advanced Status Metrics.
 
 
 ## Requirements
@@ -40,9 +40,9 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | influxdb.status.go_threads | Number of OS threads created. | double |  | gauge |
 | influxdb.status.http_api_requests_total | Number of http requests received | double |  | counter |
 | influxdb.status.http_status | HTTP API request call status. | keyword |  |  |
-| influxdb.status.instance | Influxdb instance. | keyword |  |  |
+| influxdb.status.instance | InfluxDB instance. | keyword |  |  |
 | influxdb.status.method | HTTP request method. | keyword |  |  |
-| influxdb.status.org | Organization id of the Organization created in Influxdb. | keyword |  |  |
+| influxdb.status.org | Organization id of the Organization created in InfluxDB. | keyword |  |  |
 | influxdb.status.organizations_total | Number of total organizations on the server. | double |  | counter |
 | influxdb.status.path | HTTP request endpoint. | keyword |  |  |
 | influxdb.status.qc_all_active | Number of queries in all states. | double |  | gauge |
@@ -74,7 +74,7 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | influxdb.status.task_scheduler_total_schedule_calls | Total number of schedule requests. | double |  | counter |
 | influxdb.status.task_scheduler_total_schedule_fails | Total number of schedule requests that fail to schedule. | double |  | counter |
 | influxdb.status.tokens_total | Number of total tokens on the server. | double |  | counter |
-| influxdb.status.uptime_seconds | influxdb process uptime in seconds. | double | s | gauge |
+| influxdb.status.uptime_seconds | InfluxDB process uptime in seconds. | double | s | gauge |
 | influxdb.status.users_total | Number of total users on the server. | double |  | counter |
 | influxdb.status.walPath | Directory path where InfluxDB stores Write Ahead Log. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
@@ -85,9 +85,9 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-21T10:30:47.814Z",
+    "@timestamp": "2022-09-22T02:48:15.719Z",
     "agent": {
-        "ephemeral_id": "caec0dbc-efe5-42fc-89ed-adc509c8507d",
+        "ephemeral_id": "d12bb370-e30e-4ecd-9bfa-27e7c47c41a2",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -129,8 +129,8 @@ An example event for `status` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.status",
-        "duration": 6566998,
-        "ingested": "2022-09-21T10:30:48Z",
+        "duration": 5915532,
+        "ingested": "2022-09-22T02:48:16Z",
         "module": "prometheus"
     },
     "host": {
@@ -156,12 +156,8 @@ An example event for `status` looks as following:
     },
     "influxdb": {
         "status": {
-            "http_api_requests_total": 1,
-            "http_status": "2XX",
             "instance": "elastic-package-service_influxdb_1:8086",
-            "method": "GET",
-            "path": "/metrics",
-            "response_code": "200"
+            "uptime_seconds": 31.229010421
         }
     },
     "metricset": {
@@ -192,7 +188,7 @@ Advanced status metric include details of query execution statistics, compaction
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | host.ip | Host ip addresses. | ip |
-| influxdb.advstatus.instance | Influxdb instance. | keyword |
+| influxdb.advstatus.instance | InfluxDB instance. | keyword |
 | influxdb.advstatus.qc_all_duration_seconds.histogram | Histogram of total times spent in all query states. | histogram |
 | influxdb.advstatus.qc_compiling_duration_seconds.histogram | Histogram of times spent compiling queries. | histogram |
 | influxdb.advstatus.qc_executing_duration_seconds.histogram | Histogram of times spent executing queries. | histogram |
@@ -212,9 +208,9 @@ An example event for `advstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-21T10:29:39.482Z",
+    "@timestamp": "2022-09-22T02:47:08.323Z",
     "agent": {
-        "ephemeral_id": "50b42c65-10f9-49b9-9cbb-338b891c0e4f",
+        "ephemeral_id": "7a54a589-2322-4be7-aa02-81ed7c59703a",
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -256,8 +252,8 @@ An example event for `advstatus` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "influxdb.advstatus",
-        "duration": 5403544,
-        "ingested": "2022-09-21T10:29:40Z",
+        "duration": 5026361,
+        "ingested": "2022-09-22T02:47:09Z",
         "module": "prometheus"
     },
     "host": {
@@ -285,15 +281,9 @@ An example event for `advstatus` looks as following:
         "advstatus": {
             "instance": "elastic-package-service_influxdb_1:8086",
             "labels": {},
-            "storage_retention_check_duration": {
+            "storage_writer_dropped_points": {
                 "histogram": {
                     "counts": [
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
                         0,
                         0,
                         0,
@@ -302,18 +292,72 @@ An example event for `advstatus` looks as following:
                         0
                     ],
                     "values": [
-                        0.0025,
-                        0.0075,
-                        0.0175,
-                        0.037500000000000006,
-                        0.07500000000000001,
-                        0.175,
-                        0.375,
-                        0.75,
-                        1.75,
-                        3.75,
-                        7.5,
-                        15
+                        5,
+                        55,
+                        550,
+                        5500,
+                        55000,
+                        190000
+                    ]
+                }
+            },
+            "storage_writer_err_points": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        5,
+                        55,
+                        550,
+                        5500,
+                        55000,
+                        190000
+                    ]
+                }
+            },
+            "storage_writer_ok_points": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        5,
+                        55,
+                        550,
+                        5500,
+                        55000,
+                        190000
+                    ]
+                }
+            },
+            "storage_writer_req_points": {
+                "histogram": {
+                    "counts": [
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0
+                    ],
+                    "values": [
+                        5,
+                        55,
+                        550,
+                        5500,
+                        55000,
+                        190000
                     ]
                 }
             }
