@@ -1,0 +1,133 @@
+---
+description: Pipeline for parsing  Couchbase Sync Gateway Resource Utilization metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.3.0
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.type
+      value: [info]
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.kind
+      value: metric
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.category
+      value: [database]
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.module
+      value: couchbase
+      override: true
+      ignore_failure: true
+      ignore_empty_value: true
+  - rename:
+      field: prometheus.labels.instance
+      target_field: server.address
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.sgw_resource_utilization_process_cpu_percent_utilization
+      target_field: couchbase.resource.process.cpu.pct
+      ignore_missing: true
+      ignore_failure: true
+  - rename: 
+      field: prometheus.metrics.sgw_resource_utilization_process_memory_resident
+      target_field: couchbase.resource.process.memory.resident
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.sgw_resource_utilization_admin_net_bytes_recv
+      target_field: couchbase.resource.admin_net.bytes.received
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.sgw_resource_utilization_admin_net_bytes_sent
+      target_field: couchbase.resource.admin_net.bytes.sent
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.sgw_resource_utilization_go_memstats_heapalloc
+      target_field: couchbase.resource.go_memstats.heap.alloc
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.sgw_resource_utilization_go_memstats_heapinuse
+      target_field: couchbase.resource.go_memstats.heap.in_use
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.sgw_resource_utilization_go_memstats_heapidle
+      target_field: couchbase.resource.go_memstats.heap.idle
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.sgw_resource_utilization_go_memstats_heapreleased
+      target_field: couchbase.resource.go_memstats.heap.released
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.sgw_resource_utilization_go_memstats_stackinuse
+      target_field: couchbase.resource.go_memstats.stack.in_use
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.sgw_resource_utilization_error_count
+      target_field: couchbase.resource.error.count
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.sgw_resource_utilization_warn_count
+      target_field: couchbase.resource.warn.count
+      ignore_missing: true
+      ignore_failure: true
+  - rename:    
+      field: prometheus.metrics.go_memstats_last_gc_time_seconds
+      target_field: couchbase.resource.last_gc
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      description: Add job to tag list.
+      lang: painless
+      ignore_failure: true
+      source: |
+        if (ctx.tags == null) {
+            ctx.tags = new ArrayList();
+        }
+        ctx.tags.add(ctx.prometheus.labels.job)
+  - remove:
+      field: prometheus
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
