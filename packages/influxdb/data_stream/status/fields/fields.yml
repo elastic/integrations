@@ -1,0 +1,249 @@
+- name: influxdb.status
+  type: group
+  release: beta
+  fields:
+    - name: instance
+      type: keyword
+      description: |
+        InfluxDB instance.
+    - name: org
+      type: keyword
+      description: |
+        Organization id of the Organization created in InfluxDB.
+    - name: http_api_requests_total
+      metric_type: counter
+      type: double
+      description: |
+        Number of http requests received
+    - name: buckets_total
+      metric_type: counter
+      type: double
+      description: |
+        Number of total buckets on the server.
+    - name: dashboards_total
+      type: double
+      metric_type: counter
+      description: |
+        Number of total dashboards on the server.
+    - name: organizations_total
+      type: double
+      metric_type: counter
+      description: |
+        Number of total organizations on the server.
+    - name: scrapers_total
+      type: double
+      metric_type: counter
+      description: |
+        Number of total scrapers on the server.
+    - name: tokens_total
+      type: double
+      metric_type: counter
+      description: Number of total tokens on the server.
+    - name: uptime_seconds
+      type: double
+      metric_type: gauge
+      description: InfluxDB process uptime in seconds.
+      unit: s
+    - name: users_total
+      type: double
+      metric_type: counter
+      description: Number of total users on the server.
+    - name: go_runtime
+      type: group
+      fields:
+        - name: memstats_alloc_bytes
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: Number of bytes allocated and still in use.
+        - name: memstats_alloc_bytes_total
+          type: double
+          unit: byte
+          metric_type: counter
+          description: |
+            Total number of bytes allocated, even if freed.
+        - name: memstats_heap_alloc_bytes
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: |
+            Number of heap bytes allocated and still in use.
+        - name: memstats_heap_idle_bytes
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: |
+            Number of heap bytes waiting to be used.
+        - name: memstats_heap_inuse_bytes
+          type: double
+          unit: byte
+          metric_type: gauge
+          description: |
+            Number of heap bytes that are in use.
+        - name: threads
+          type: double
+          metric_type: gauge
+          description: |
+            Number of OS threads created.
+    - name: query_controller
+      type: group
+      fields:
+        - name: all_active
+          type: double
+          metric_type: gauge
+          description: |
+            Number of queries in all states.
+        - name: compiling_active
+          type: double
+          metric_type: gauge
+          description: |
+            Number of queries actively compiling.
+        - name: qc_executing_active
+          type: double
+          metric_type: gauge
+          description: |
+            Number of queries actively executing.
+    - name: storage
+      type: group
+      fields:
+        - name: bucket_measurement_num
+          type: double
+          metric_type: gauge
+          description: |
+            Gauge of measurement cardinality per bucket.
+        - name: bucket_series_num
+          type: double
+          metric_type: gauge
+          description: |
+            Gauge of series cardinality per bucket.
+        - name: compactions_failed
+          type: double
+          metric_type: counter
+          description: |
+            Counter of TSM compactions by level that have failed due to error.
+        - name: shard_disk_size
+          type: double
+          metric_type: gauge
+          description: |
+            Gauge of the disk size for the shard.
+        - name: shard_write_count
+          type: double
+          metric_type: counter
+          description: |
+            Count of the number of write requests.
+        - name: shard_write_dropped_sum
+          type: double
+          metric_type: counter
+          description: |
+            Counter of the number of points dropped.
+        - name: shard_write_err_count
+          type: double
+          metric_type: counter
+          description: |
+            Count of the number of write requests with errors.
+        - name: tsm_files_disk_bytes
+          type: double
+          metric_type: gauge
+          description: Gauge of data size in bytes for each shard.
+        - name: tsm_files_total
+          type: double
+          metric_type: gauge
+          description: Gauge of number of files per shard
+        - name: wal_size
+          type: double
+          metric_type: gauge
+          unit: byte
+          description: Gauge of size of WAL in bytes.
+        - name: wal_writes
+          type: double
+          metric_type: counter
+          description: Number of write attempts to the WAL.
+        - name: wal_writes_err
+          type: double
+          metric_type: counter
+          description: Number of failed write attempts to the WAL.
+        - name: writer_timeouts
+          type: double
+          metric_type: counter
+          description: Number of shard write request timeouts.
+    - name: tasks
+      type: group
+      fields:
+        - name: executor_errors_counter
+          type: double
+          metric_type: counter
+          description: |
+            The number of errors thrown by the executor with the type of error. Example - Invalid, Internal, etc.
+        - name: executor_total_runs_active
+          type: double
+          metric_type: gauge
+          description: |
+            Total number of workers currently running tasks.
+        - name: executor_total_runs_complete
+          type: double
+          metric_type: counter
+          description: |
+            Total number of runs completed across all tasks, split out by success or failure.
+        - name: executor_workers_busy
+          type: double
+          metric_type: gauge
+          unit: percent
+          description: |
+            Percent of total available workers that are currently busy.
+        - name: scheduler_current_execution
+          type: double
+          metric_type: gauge
+          description: |
+            Number of tasks currently being executed.
+        - name: scheduler_total_execute_failure
+          type: double
+          metric_type: counter
+          description: |
+            Total number of times an execution has failed.
+        - name: scheduler_total_execution_calls
+          type: double
+          metric_type: counter
+          description: |
+            Total number of executions across all tasks.
+        - name: scheduler_total_release_calls
+          type: double
+          metric_type: counter
+          description: |
+            Total number of release requests.
+        - name: scheduler_total_schedule_calls
+          type: double
+          metric_type: counter
+          description: |
+            Total number of schedule requests.
+        - name: scheduler_total_schedule_fails
+          type: double
+          metric_type: counter
+          description: |
+            Total number of schedule requests that fail to schedule.
+    - name: http_api
+      type: group
+      fields:
+        - name: method
+          type: keyword
+          description: |
+            HTTP request method.
+        - name: path
+          type: keyword
+          description: |
+            HTTP request endpoint.
+        - name: response_code
+          type: keyword
+          description: |
+            Response code of HTTP API request.
+        - name: http_status
+          type: keyword
+          description: |
+            HTTP API request call status.
+    - name: walPath
+      type: keyword
+      description: |
+        Directory path where InfluxDB stores Write Ahead Log.
+    - name: bucket
+      type: keyword
+      description: |
+        Bucket id of the bucket where time series data is stored.
