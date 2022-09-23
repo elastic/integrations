@@ -3,8 +3,8 @@ type: logs
 streams:
   - input: httpjson
     template_path: httpjson.yml.hbs
-    title: Box Shield Suspicious Sessions Alerts
-    description: Collect Box Shield Suspicious Sessions Alerts with appropriate Box Opt-in Settings
+    title: Box user and enterprise events
+    description: Collect user and enterprise events from the Box API
     vars:
       - name: interval
         type: text
@@ -15,14 +15,14 @@ streams:
         show_user: true
         default: 300s
       - name: stream_type
-        type: text
-        title: Stream Type
-        description: >-
-          To retrieve events for the entire enterprise, set the stream_type to admin_logs_streaming for live monitoring of new events, or admin_logs for querying across historical events. The user making the API call will need to have admin privileges, and the application will need to have the scope manage enterprise properties checked.
-        multi: false
         required: true
         show_user: true
-        default: admin_logs
+        title: Stream Type
+        description: >-
+          To retrieve events for a single user, set stream type to `all` (default). To select only events that may cause file tree changes such as file updates or collaborations, use `changes`. To select a subset of `changes` for synced folders, use `sync`. For `all`, `changes` or `sync`, the user making the API call will need to have admin privileges, and the application will need to have the scope manage enterprise properties checked. To retrieve events for the entire enterprise, you will need additional privileges (TBC). In this case, set the stream_type to `admin_logs_streaming` for live monitoring of new events, or `admin_logs` for querying across historical events.
+        type: text
+        multi: false
+        default: all
       - name: preserve_original_event
         required: true
         show_user: true

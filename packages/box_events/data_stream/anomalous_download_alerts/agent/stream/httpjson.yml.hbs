@@ -8,13 +8,17 @@ auth.oauth2:
     box_subject_id: "{{box_subject_id}}"
     box_subject_type: "{{box_subject_type}}"
     grant_type: "{{grant_type}}"
-    stream_type: "{{stream_type}}"
 request.url: "{{api_url}}/2.0/events"
 request.method: "GET"
 request.transforms:
   - set:
       target: url.params.stream_position
       value: '[[.cursor.next_stream_position]]'
+{{#if stream_type}}
+  - set:
+      target: url.params.stream_type
+      value: "{{stream_type}}"
+{{/if}}
 response.decode_as: application/json
 response.split:
   target: body.entries
