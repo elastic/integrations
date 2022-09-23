@@ -99,7 +99,7 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | slack.audit.entity.domain | Domain of the entity when entity_type is Workspace or Enterprise | keyword |
 | slack.audit.entity.email | Email address of the entity when entity_type is user | keyword |
 | slack.audit.entity.entity_type | Type of the entity: workspace, enterprise, user, file, channel, app, workflow, user, usergroup, barrier, message, role, account_type_role. | keyword |
-| slack.audit.entity.filetype | Filetype of the entity when entity_type is file | keyword |
+| slack.audit.entity.filetype | Title of the entity when entity_type is file | keyword |
 | slack.audit.entity.id | ID of the entity | keyword |
 | slack.audit.entity.is_directory_approved | If App is approved when entity_type is app | boolean |
 | slack.audit.entity.is_distributed | If App is distributed when entity_type is app | boolean |
@@ -162,7 +162,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "592bbba2-ceea-4a3a-8ccb-0c8c92d1eed3",
