@@ -17,6 +17,11 @@ An example event for `access` looks as following:
 ```json
 {
     "@timestamp": "2022-07-20T09:52:24.955Z",
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "istio.access_logs"
+    },
     "destination": {
         "address": "10.68.2.10:9080",
         "ip": "10.68.2.10",
@@ -116,6 +121,7 @@ An example event for `access` looks as following:
         "ip": "89.160.20.156",
         "port": 39696
     },
+    "stream": "stdout",
     "tags": [
         "preserve_original_event"
     ],
@@ -227,3 +233,132 @@ An example event for `access` looks as following:
 | user_agent.os.version | Operating system version as a raw string. | keyword |
 | user_agent.version | Version of the user agent. | keyword |
 
+
+
+## Metrics
+
+### Istiod Metrics
+
+The `istiod_metrics` data stream collects Istiod metrics.
+
+An example event for `istiod` looks as following:
+
+```json
+{
+    "istio": {
+        "istiod": {
+            "pilot_inbound_updates": {
+                "rate": 0,
+                "counter": 26
+            },
+            "labels": {
+                "instance": "10.124.0.8:15014",
+                "type": "svc",
+                "job": "istio"
+            }
+        }
+    },
+    "@timestamp": "2022-09-23T09:30:56.055Z",
+    "ecs": {
+        "version": "8.4.0"
+    },
+    "service": {
+        "address": "http://10.124.0.8:15014/metrics",
+        "type": "prometheus"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "istio.istiod_metrics"
+    },
+    "metricset": {
+        "period": 10000
+    },
+    "event": {
+        "duration": 10806443,
+        "agent_id_status": "verified",
+        "kind": "metric",
+        "ingested": "2022-09-23T09:30:57Z",
+        "module": "istio",
+        "dataset": "istio.istiod_metrics"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+
+
+### Proxy Metrics
+
+The `proxy_metrics` data stream collects Istio proxy metrics.
+
+An example event for `proxy` looks as following:
+
+```json
+{
+    "@timestamp": "2022-09-23T09:34:52.047Z",
+    "data_stream": {
+        "dataset": "istio.proxy_metrics",
+        "namespace": "default",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.4.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "istio.proxy_metrics",
+        "duration": 35506510,
+        "ingested": "2022-09-23T09:34:52Z",
+        "kind": "metric",
+        "module": "istio"
+    },
+    "istio": {
+        "proxy": {
+            "istio_agent_go_gc_duration_seconds": {
+                "value": 0.000039482
+            },
+            "labels": {
+                "instance": "10.124.0.12:15020",
+                "job": "istio",
+                "quantile": "0"
+            }
+        }
+    },
+    "metricset": {
+        "period": 10000
+    },
+    "service": {
+        "address": "http://10.124.0.12:15020/stats/prometheus",
+        "type": "prometheus"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Event dataset | constant_keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
