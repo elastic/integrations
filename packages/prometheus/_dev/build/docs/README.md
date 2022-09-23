@@ -2,7 +2,7 @@
 
 This integration periodically fetches metrics from [Prometheus](https://prometheus.io/) metrics endpoints.
 This integration can collect metrics from Prometheus Exporters, receive metrics from Prometheus server using Remote Write
-and execute specific Prometheus queries against Promethes Query API.
+or execute specific Prometheus queries against Promethes Query API.
 
 ## Metrics
 
