@@ -1,6 +1,6 @@
 # Developer workflow: Promote an integration update
 
-## Using Package Storage
+## Using Package Storage (V1)
 
 ### Prerequisites
 
