@@ -174,7 +174,7 @@ An example event for `database_audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "5940e9e3-013b-43c0-a459-261d69b08862",
@@ -1025,7 +1025,7 @@ Performance metrics give an overview of where time is spent in the system and en
 | oracle.performance.cursors.max | Max cursors opened by username and machine. | double |  | gauge |
 | oracle.performance.cursors.opened.current | Total number of current open cursors. | long |  | gauge |
 | oracle.performance.cursors.opened.total | Total number of cursors opened since the instance started. | long |  | counter |
-| oracle.performance.cursors.parse.real | "Real number of parses that occurred: session cursor cache hits - parse count (total)." | double |  | gauge |
+| oracle.performance.cursors.parse.real | "Real number of parses that occurred: session cursor cache hits - parse count (total)." | long |  | gauge |
 | oracle.performance.cursors.parse.total | Total number of parse calls (hard and soft). A soft parse is a check on an object already in the shared pool, to verify that the permissions on the underlying object have not changed. | long |  | gauge |
 | oracle.performance.cursors.session.cache_hits | Number of hits in the session cursor cache. A hit means that the SQL statement did not have to be reparsed. | double |  | gauge |
 | oracle.performance.cursors.total | Total opened cursors by username and machine. | double |  | gauge |
