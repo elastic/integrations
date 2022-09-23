@@ -1,0 +1,153 @@
+- name: box
+  type: object
+  fields:
+    - name: created_by
+      type: object
+      fields:
+        - name: id
+          description: The unique identifier for the connection user
+          type: keyword
+        - name: name
+          description: The display name of the connection user. Maps from **.name
+          type: keyword
+        - name: login
+          description: The primary email address of the connection user. Maps from **.login
+        - name: type
+          description: E.g. `user`
+    - name: session.id
+      description: The session of the user that performed the action. Not all events will populate this attribute
+      type: keyword
+    - name: recorded_at
+      description: The date and time at which this event occurred
+      type: date
+    - name: created_at
+      description: When the event object was created
+      type: date
+    - name: additional_details
+      type: object
+      fields:
+        - name: shield_alert
+          type: object
+          fields:
+            - name: alert_id
+              description: Box Shield alert ID
+              type: keyword
+            - name: created_at
+              description: Time alert was created
+              type: date
+            - name: priority
+              description: Box Shield priority of this alert
+              type: keyword
+            - name: alert_summary
+              type: object
+              fields:
+                - name: upload_activity
+                  type: object
+                  fields:
+                    - name: event_type
+                      description: Type of event, e.g. `Upload`
+                      type: keyword
+                    - name: ip_info
+                      type: object
+                      fields:
+                        - name: ip
+                          description: IP address
+                          type: ip
+                        - name: registrant
+                          description: Registrant of IP
+                    - name: item_id
+                      description: ID of item
+                      type: keyword
+                    - name: item_name
+                      description: Name of item
+                      type: keyword
+                    - name: item_path
+                      description: Path to Item
+                      type: keyword
+                    - name: item_type
+                      description: Type of Item
+                      type: keyword
+                    - name: occurred_at
+                      description: Time of Upload
+                      type: keyword
+                    - name: service_name
+                      description: Service used to upload the suspected Malware
+                      type: keyword
+            - name: malware_info
+              type: object
+              fields:
+                - name: categories
+                  description: Array of Malware Categories e.g. `Adware`, `Spyware`
+                  type: keyword
+                - name: description
+                  description: Describes the Malware
+                  type: keyword
+                - name: detail_link
+                  description: URL with detail of Malware
+                  type: keyword
+                - name: family
+                  description: Malware Family
+                  type: keyword
+                - name: file_created
+                  description: Date of file creation
+                  type: date
+                - name: file_created_by
+                  type: object
+                  fields:
+                    - name: email
+                      description: Email of file creator
+                      type: keyword
+                    - name: id
+                      description: ID of file creator
+                      type: long
+                    - name: name
+                      description: Display name of file creator
+                      type: keyword
+                - name: file_hash
+                  description: File hash
+                  type: keyword
+                - name: file_hash_type
+                  description: Hash type, e.g. `SHA-1`
+                  type: keyword
+                - name: file_id
+                  description: File ID
+                  type: long
+                - name: file_name
+                  description: File name
+                  type: keyword
+                - name: file_size_bytes
+                  description: File size in bytes
+                  type: long
+                - name: file_version
+                  description: File version
+                  type: long
+                - name: file_version_uploaded
+                  description: Date this version of file was uploaded
+                  type: date
+                - name: file_version_uploaded_by
+                  type: object
+                  fields:
+                    - name: email
+                      description: Email of file uploader
+                      type: keyword
+                    - name: id
+                      description: ID of file uploader
+                      type: long
+                    - name: name
+                      description: Display name of file uploader
+                      type: keyword
+                - name: first_seen
+                  description: Time Malware first observed
+                  type: date
+                - name: last_seen
+                  description: Time Malware last observed
+                  type: date
+                - name: malware_name
+                  description: Malware name
+                  type: keyword
+                - name: status
+                  description: Malware status e.g. `Malicious`
+                  type: keyword
+                - name: tags
+                  description: Array of Malware Tags e.g. `FILE_MALICIOUS_EXECUTION`
+                  type: keyword
