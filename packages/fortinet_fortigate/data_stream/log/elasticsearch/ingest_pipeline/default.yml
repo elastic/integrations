@@ -417,6 +417,13 @@ processors:
       value: "{{dns.question.name}}"
       if: "ctx.dns?.question?.name != null"
       allow_duplicates: false
+
+  # Fix up network direction field to match ECS-allowable values.
+  - set:
+      field: network.direction
+      value: unknown
+      if: "ctx.network?.direction != null && !(['ingress', 'egress', 'inbound', 'outbound', 'internal', 'external'].contains(ctx.network.direction))"
+
   - script:
       lang: painless
       source: |
