@@ -39,16 +39,17 @@ When you configure the AWS integration, you can collect data from as many AWS se
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-Each gateway type has a multitude of variables that can be logged and different log formats that can be used.  The integration expects JSON logs using the below formats.
+The API Gateways can log both Access and Debug logs.  This integration is only configured to log Access logs and has not been tested with debug logging enabled.
+Each gateway type has a multitude of variables that can be logged and different log formats that can be used. The integration expects JSON logs using the below formats/patterns.
 
 [REST API](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-logging.html#apigateway-cloudwatch-log-formats):  
-`{"accountId":"$context.accountId","apiId":"$context.apiId","domainName":"$context.domainName","extendedRequestId":"$context.extendedRequestId","httpMethod":"$context.httpMethod","ip":"$context.identity.sourceIp","clientCertPem":"$context.identity.clientCert.clientCertPem","clientsubjectDN":"$context.identity.clientCert.subjectDN","clientissuerDN":"$context.identity.clientCert.issuerDN","clientserialNumber":"$context.identity.clientCert.serialNumber","clientnotBefore":"$context.identity.clientCert.validity.notBefore","clientnotAfter":"$context.identity.clientCert.validity.notAfter","user":"$context.identity.user","userAgent":"$context.identity.userAgent","userArn":"$context.identity.userArn","protocol":"$context.protocol","requestTimeEpoch":"$context.requestTimeEpoch","path":"$context.path","status":"$context.status","responseLength":"$context.responseLength","stage":"$context.stage"}`
+`{"accountId":"$context.accountId","apiId":"$context.apiId","domainName":"$context.domainName","extendedRequestId":"$context.extendedRequestId","requestId":"$context.requestId","httpMethod":"$context.httpMethod","ip":"$context.identity.sourceIp","clientCertPem":"$context.identity.clientCert.clientCertPem","clientsubjectDN":"$context.identity.clientCert.subjectDN","clientissuerDN":"$context.identity.clientCert.issuerDN","clientserialNumber":"$context.identity.clientCert.serialNumber","clientnotBefore":"$context.identity.clientCert.validity.notBefore","clientnotAfter":"$context.identity.clientCert.validity.notAfter","user":"$context.identity.user","userAgent":"$context.identity.userAgent","userArn":"$context.identity.userArn","apiKeyId":"$context.identity.apiKeyId","protocol":"$context.protocol","requestTimeEpoch":"$context.requestTimeEpoch","path":"$context.path","status":"$context.status","responseLength":"$context.responseLength","stage":"$context.stage"}`
 
 [HTTP API](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-logging.html#http-api-enable-logging.examples):  
 `{"accountId":"$context.accountId","apiId":"$context.apiId","domainName":"$context.domainName","extendedRequestId":"$context.extendedRequestId","httpMethod":"$context.httpMethod","ip":"$context.identity.sourceIp","clientCertPem":"$context.identity.clientCert.clientCertPem","clientsubjectDN":"$context.identity.clientCert.subjectDN","clientissuerDN":"$context.identity.clientCert.issuerDN","clientserialNumber":"$context.identity.clientCert.serialNumber","clientnotBefore":"$context.identity.clientCert.validity.notBefore","clientnotAfter":"$context.identity.clientCert.validity.notAfter","user":"$context.identity.user","userAgent":"$context.identity.userAgent","userArn":"$context.identity.userArn","protocol":"$context.protocol","requestTimeEpoch":"$context.requestTimeEpoch","path":"$context.path","status":"$context.status","responseLength":"$context.responseLength","stage":"$context.stage"}`
 
 [WebSocket API](https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-logging.html#apigateway-cloudwatch-log-formats):  
-``
+`{"apiId":"$context.apiId","eventType":"$context.eventType","domainName":"$context.domainName","extendedRequestId":"$context.extendedRequestId","requestId":"$context.requestId","ip":"$context.identity.sourceIp","user":"$context.identity.user","userAgent":"$context.identity.userAgent","userArn":"$context.identity.userArn","apiKeyId":"$context.identity.apiKeyId","requestTimeEpoch":"$context.requestTimeEpoch","status":"$context.status","stage":"$context.stage"}`
 ## Logs reference
 
 The `api_gateway_logs` dataset is specifically for API Gateway logs. Export logs to Cloudwatch Logs.
@@ -60,8 +61,10 @@ The `api_gateway_logs` dataset is specifically for API Gateway logs. Export logs
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | aws.api_gateway.api_id | The identifier API Gateway assigns to your API. | keyword |
-| aws.api_gateway.principal_id | The principal identifier of the user that will be authorized against resource access. Supported for resources that use IAM authorization. | keyword |
+| aws.api_gateway.event_type | The event type for WebSocket Gateways: CONNECT, MESSAGE, or DISCONNECT. | keyword |
 | aws.api_gateway.stage | The deployment stage of the API request (for example, Beta or Prod). | keyword |
+| aws.api_gateway.user.account_id | The AWS account ID associated with the request. | keyword |
+| aws.api_gateway.user.principal_id | The principal identifier of the user that will be authorized against resource access. Supported for resources that use IAM authorization. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -108,6 +111,9 @@ The `api_gateway_logs` dataset is specifically for API Gateway logs. Export logs
 | http.response.body.bytes | Size in bytes of the response body. | long |
 | http.response.status_code | HTTP response status code. | long |
 | http.version | HTTP version. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
