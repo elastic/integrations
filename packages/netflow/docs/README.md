@@ -74,7 +74,7 @@ The `log` dataset collects netflow logs.
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.image.tag | Container image tags. | keyword |
