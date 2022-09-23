@@ -35,7 +35,7 @@ Package Storage V2 is the successor of the [package-storage](https://github.com/
 You can find more info about this [here](https://github.com/elastic/elastic-package/blob/main/docs/howto/use_package_storage_v2.md#use-package-storage-v2).
 
 This new storage is already set up in this repository. Everytime a new version of a package is merged, that version is built and
-published into this storage. Jenkins stage: [Publish to Package Storage V2](../.ci/Jenkinsfile).
+published into this storage automatically. Jenkins stage where this step is performed: [Publish to Package Storage V2](../.ci/Jenkinsfile).
 
 This storage is based completely in [semantic versioning](https://semver.org) to release the packages as snapshots, technical previews or stable versions.
 More info about the versioning [here](https://github.com/elastic/elastic-package/blob/main/docs/howto/use_package_storage_v2.md#prerelease-and-stable-version).
