@@ -168,7 +168,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "9bcd741c-af93-434c-ad55-1ec23d08ab89",
@@ -525,7 +525,7 @@ An example event for `winlog` looks as following:
         "type": "filebeat"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     }
 }
 ```
