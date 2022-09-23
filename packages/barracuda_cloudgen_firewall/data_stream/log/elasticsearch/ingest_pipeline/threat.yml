@@ -1,0 +1,126 @@
+---
+description: Pipeline for Barracuda CloudGen Firewall Threat logs
+processors:
+  - date:
+      field: json.timestamp
+      target_field: _tmp.timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null && ctx.json?.timestamp != '' && ctx.json?.timestamp != '-'
+  - set:
+      description: Use the syslog date / time when timestamp is missing.
+      field: _tmp.syslog_timestamp
+      value: "{{{json.date}}} {{{json.time}}}"
+      if: ctx._tmp?.timestamp == null
+  - date:
+      description: Parse syslog date / time / timezone.
+      field: _tmp.syslog_timestamp
+      target_field: _tmp.timestamp
+      formats:
+        - yyyy MM dd HH:mm:ss
+      timezone: '{{{ json.timezone }}}'
+      if: ctx._tmp?.timestamp == null
+  - rename:
+      field: json.src_ip
+      target_field: source.address
+      ignore_missing: true
+      if: ctx.json?.src_ip != '-'
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  - rename:
+      field: json.dst_ip
+      target_field: destination.address
+      ignore_missing: true
+      if: ctx.json?.dst_ip != '-'
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: json.port
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+      if: ctx.json?.port != '-'
+  - rename:
+      field: json.severity
+      target_field: log.level
+      ignore_missing: true
+      if: ctx.json?.severity != '-'
+  - rename:
+      field: json.fw_rule
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: json.trans_proto
+      target_field: network.transport
+      ignore_missing: true
+      if: ctx.json?.trans_proto != '-'
+  - lowercase:
+      field: network.transport
+      ignore_missing: true
+  - set:
+      field: network.iana_number
+      value: '6'
+      if: ctx.network?.transport == "tcp"
+  - set:
+      field: network.iana_number
+      value: '17'
+      if: ctx.network?.transport == "udp"
+  - rename:
+      field: json.description
+      target_field: rule.description
+      ignore_missing: true
+  - convert:
+      field: json.threat_severity
+      target_field: event.severity
+      type: long
+      ignore_missing: true
+      if: ctx.json?.threat_severity != '-'
+  - rename:
+      field: json.ips_category
+      target_field: rule.category
+      ignore_missing: true
+  - rename:
+      field: json.type
+      target_field: rule.ruleset
+      ignore_missing: true
+      if: ctx.json?.type != '-'
+  - rename:
+      field: json.app_proto
+      target_field: barracuda_cloudgen_firewall.log.app_proto
+      ignore_missing: true
+  - rename:
+      field: json.user
+      target_field: user.name
+      ignore_missing: true
+  - lowercase:
+      field: json.operation
+      target_field: event.action
+      ignore_missing: true
+      if: ctx.json?.operation != '-'
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      if: ctx.event.action == 'block'
+  - append:
+      field: event.type
+      value: allowed
+      allow_duplicates: false
+      if: ctx.event.action == 'allow'
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
