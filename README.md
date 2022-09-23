@@ -19,7 +19,7 @@ explore the builder tools.
 
 ### Package Specification
 * [Repository](https://github.com/elastic/package-spec)
-* [Explore the current version of the package specification](https://github.com/elastic/package-spec/tree/master/versions/1)
+* [Explore the package specification](https://github.com/elastic/package-spec/tree/main/spec)
 * [Suggest changes to the package specification](https://github.com/elastic/package-spec/issues/new)
   repository. Let's discuss any spec extensions together
 
@@ -32,7 +32,7 @@ explore the builder tools.
 * [Update Docker images of Package Storage to include latest release of the Package Registry](https://github.com/elastic/package-storage#update-package-registry-for-a-distribution)
 
 ### Elastic Agent
-* [Repository](https://github.com/elastic/beats/tree/master/x-pack/elastic-agent)
+* [Repository](https://github.com/elastic/elastic-agent/tree/main)
 
 ## Test Coverage
 

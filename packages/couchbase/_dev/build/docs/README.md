@@ -87,6 +87,14 @@ Global Secondary Indexes (GSI) support queries made by the Query Service.
 
 {{fields "miscellaneous"}}
 
+### Resource Utilization
+
+This is the `resource` data stream. The Resource Utilization metrics are related to [MemStats](https://golang.org/pkg/runtime/#MemStats) records statistics about the memory allocator.
+
+{{event "resource"}}
+
+{{fields "resource"}}
+
 ### XDCR
 
 This is the `xdcr` data stream. Cross Data Center Replication (XDCR) replicates data between a source bucket and a target bucket. XDCR collects metrics related to statistics of XDCR. Metrics can be fetched from multiple buckets.

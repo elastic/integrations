@@ -51,25 +51,25 @@ An example event for `bucket` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-22T10:40:36.032Z",
+    "@timestamp": "2022-09-22T12:12:39.838Z",
     "agent": {
-        "ephemeral_id": "b6b8e21b-ded1-41d8-a193-c5aead533ff1",
-        "id": "5d67808a-0fe5-4f5f-9636-ec161f0cdcf0",
+        "ephemeral_id": "c8726d7e-0c72-46ee-bc4a-fc7b5baf11ce",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.2"
+        "version": "8.4.1"
     },
     "couchbase": {
         "bucket": {
             "data": {
                 "used": {
-                    "bytes": 20892210
+                    "bytes": 4578094
                 }
             },
             "disk": {
                 "fetches": 0,
                 "used": {
-                    "bytes": 20914347
+                    "bytes": 15977057
                 }
             },
             "item": {
@@ -77,16 +77,16 @@ An example event for `bucket` looks as following:
             },
             "memory": {
                 "used": {
-                    "bytes": 34972008
+                    "bytes": 35163472
                 }
             },
             "name": "beer-sample",
             "operations_per_sec": 0,
             "ram": {
                 "quota": {
-                    "bytes": 104857600,
+                    "bytes": 209715200,
                     "used": {
-                        "pct": 33.35190582275391
+                        "pct": 16.76725006103516
                     }
                 }
             },
@@ -102,9 +102,9 @@ An example event for `bucket` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "5d67808a-0fe5-4f5f-9636-ec161f0cdcf0",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -112,8 +112,8 @@ An example event for `bucket` looks as following:
             "database"
         ],
         "dataset": "couchbase.bucket",
-        "duration": 6674276,
-        "ingested": "2022-07-22T10:40:39Z",
+        "duration": 106105674,
+        "ingested": "2022-09-22T12:12:43Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -124,17 +124,18 @@ An example event for `bucket` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "51511c1493f34922b559a964798246ec",
         "ip": [
-            "172.26.0.7"
+            "192.168.128.7"
         ],
         "mac": [
-            "02:42:ac:1a:00:07"
+            "02:42:c0:a8:80:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-110-generic",
+            "kernel": "5.4.0-126-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -196,13 +197,13 @@ An example event for `cluster` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-28T06:12:30.084Z",
+    "@timestamp": "2022-09-22T12:22:58.614Z",
     "agent": {
-        "ephemeral_id": "29c9e6b7-8cac-4452-9f3f-b8934052b319",
-        "id": "8afbcf13-ea5f-4341-8d24-1b2826ad8010",
+        "ephemeral_id": "8eef3fd1-bd0a-446f-8782-072423d4cd18",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.2"
+        "version": "8.4.1"
     },
     "couchbase": {
         "cluster": {
@@ -213,61 +214,61 @@ An example event for `cluster` looks as following:
             },
             "hdd": {
                 "free": {
-                    "bytes": 30303183422
+                    "bytes": 28196471071
                 },
                 "quota": {
                     "total": {
-                        "bytes": 104493735936
+                        "bytes": 104431374336
                     }
                 },
                 "total": {
-                    "bytes": 104493735936
+                    "bytes": 104431374336
                 },
                 "used": {
                     "data": {
-                        "bytes": 22595962
+                        "bytes": 19215612
                     },
                     "value": {
-                        "bytes": 74190552514
+                        "bytes": 76234903265
                     }
                 }
             },
             "memory": {
                 "quota": {
                     "index": {
-                        "mb": 300
+                        "mb": 512
                     },
-                    "mb": 300
+                    "mb": 512
                 }
             },
             "ram": {
                 "quota": {
                     "total": {
                         "per_node": {
-                            "bytes": 314572800
+                            "bytes": 536870912
                         },
                         "value": {
-                            "bytes": 314572800
+                            "bytes": 536870912
                         }
                     },
                     "used": {
                         "per_node": {
-                            "bytes": 104857600
+                            "bytes": 419430400
                         },
                         "value": {
-                            "bytes": 104857600
+                            "bytes": 419430400
                         }
                     }
                 },
                 "total": {
-                    "bytes": 12527374336
+                    "bytes": 12527394816
                 },
                 "used": {
                     "data": {
-                        "bytes": 33342376
+                        "bytes": 103561776
                     },
                     "value": {
-                        "bytes": 10380521472
+                        "bytes": 11362357248
                     }
                 }
             }
@@ -282,9 +283,9 @@ An example event for `cluster` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "8afbcf13-ea5f-4341-8d24-1b2826ad8010",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -292,8 +293,8 @@ An example event for `cluster` looks as following:
             "database"
         ],
         "dataset": "couchbase.cluster",
-        "duration": 7422215,
-        "ingested": "2022-07-28T06:12:33Z",
+        "duration": 139808174,
+        "ingested": "2022-09-22T12:23:01Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -304,17 +305,18 @@ An example event for `cluster` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "51511c1493f34922b559a964798246ec",
         "ip": [
-            "172.18.0.7"
+            "192.168.128.7"
         ],
         "mac": [
-            "02:42:ac:12:00:07"
+            "02:42:c0:a8:80:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-110-generic",
+            "kernel": "5.4.0-126-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -385,13 +387,13 @@ An example event for `cbl_replication` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-01T12:29:02.626Z",
+    "@timestamp": "2022-09-22T12:19:30.637Z",
     "agent": {
-        "ephemeral_id": "e90e29db-34fd-4bba-a4bf-da0c2e5f1d15",
-        "id": "980dcead-2dc9-4d20-a59b-a81f43d3a52c",
+        "ephemeral_id": "bdda1dcc-d922-49f1-a3ea-9e3bdfb6a767",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.2"
+        "version": "8.4.1"
     },
     "couchbase": {
         "cbl_replication": {
@@ -447,7 +449,7 @@ An example event for `cbl_replication` looks as following:
                 },
                 "sync": {
                     "function": {
-                        "time": 1732351964
+                        "time": 125292068
                     }
                 },
                 "write": {
@@ -467,9 +469,9 @@ An example event for `cbl_replication` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "980dcead-2dc9-4d20-a59b-a81f43d3a52c",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -477,8 +479,8 @@ An example event for `cbl_replication` looks as following:
             "database"
         ],
         "dataset": "couchbase.cbl_replication",
-        "duration": 50168237,
-        "ingested": "2022-08-01T12:29:03Z",
+        "duration": 92869141,
+        "ingested": "2022-09-22T12:19:32Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -489,17 +491,18 @@ An example event for `cbl_replication` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "51511c1493f34922b559a964798246ec",
         "ip": [
-            "192.168.192.6"
+            "192.168.128.7"
         ],
         "mac": [
-            "02:42:c0:a8:c0:06"
+            "02:42:c0:a8:80:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-110-generic",
+            "kernel": "5.4.0-126-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -583,13 +586,13 @@ An example event for `miscellaneous` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-07T12:09:30.395Z",
+    "@timestamp": "2022-09-22T12:25:08.789Z",
     "agent": {
-        "ephemeral_id": "b53d49b9-ac2c-4c23-956a-61b60d17ed45",
-        "id": "52f5e6b6-f0bd-445c-b9fc-35a9e47ae49b",
+        "ephemeral_id": "80e23f4e-e519-4dd9-9f55-4945b05b22e0",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.3"
+        "version": "8.4.1"
     },
     "couchbase": {
         "miscellaneous": {
@@ -643,9 +646,9 @@ An example event for `miscellaneous` looks as following:
             "shared_bucket": {
                 "import": {
                     "documents": {
-                        "count": 31486,
+                        "count": 1983,
                         "errors": {
-                            "count": 105
+                            "count": 0
                         }
                     }
                 }
@@ -661,9 +664,9 @@ An example event for `miscellaneous` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "52f5e6b6-f0bd-445c-b9fc-35a9e47ae49b",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
         "snapshot": false,
-        "version": "8.3.3"
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -671,8 +674,8 @@ An example event for `miscellaneous` looks as following:
             "database"
         ],
         "dataset": "couchbase.miscellaneous",
-        "duration": 298010717,
-        "ingested": "2022-09-07T12:09:31Z",
+        "duration": 20727658,
+        "ingested": "2022-09-22T12:25:12Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -683,17 +686,18 @@ An example event for `miscellaneous` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "51511c1493f34922b559a964798246ec",
         "ip": [
-            "172.23.0.7"
+            "192.168.128.7"
         ],
         "mac": [
-            "02:42:ac:17:00:07"
+            "02:42:c0:a8:80:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-110-generic",
+            "kernel": "5.4.0-126-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -757,6 +761,161 @@ An example event for `miscellaneous` looks as following:
 | tags | List of keywords used to tag each event. | keyword |  |
 
 
+### Resource Utilization
+
+This is the `resource` data stream. The Resource Utilization metrics are related to [MemStats](https://golang.org/pkg/runtime/#MemStats) records statistics about the memory allocator.
+
+An example event for `resource` looks as following:
+
+```json
+{
+    "@timestamp": "2022-09-22T12:28:41.959Z",
+    "agent": {
+        "ephemeral_id": "9ad36c65-a888-48a3-a26b-2cda5e7c6278",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.4.1"
+    },
+    "couchbase": {
+        "resource": {
+            "admin_net": {
+                "bytes": {
+                    "received": 0,
+                    "sent": 0
+                }
+            },
+            "error": {
+                "count": 0
+            },
+            "go_memstats": {
+                "heap": {
+                    "alloc": 0,
+                    "idle": 0,
+                    "in_use": 0,
+                    "released": 0
+                },
+                "stack": {
+                    "in_use": 0
+                }
+            },
+            "last_gc": 1.66,
+            "process": {
+                "cpu": {
+                    "pct": 0
+                },
+                "memory": {
+                    "resident": 0
+                }
+            },
+            "warn": {
+                "count": 13
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "couchbase.resource",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.3.0"
+    },
+    "elastic_agent": {
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
+        "snapshot": false,
+        "version": "8.4.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "couchbase.resource",
+        "duration": 35180651,
+        "ingested": "2022-09-22T12:28:45Z",
+        "kind": "metric",
+        "module": "couchbase",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "51511c1493f34922b559a964798246ec",
+        "ip": [
+            "192.168.128.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:80:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-126-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "server": {
+        "address": "elastic-package-service_exporter_1:9421"
+    },
+    "service": {
+        "address": "http://elastic-package-service_exporter_1:9421/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "forwarded",
+        "couchbase-resource",
+        "prometheus"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| couchbase.resource.admin_net.bytes.received | The total number of bytes received (since node start-up) on the network interface to which the Sync Gateway api.admin_interface is bound. | scaled_float | byte | gauge |
+| couchbase.resource.admin_net.bytes.sent | The total number of bytes sent (since node start-up) on the network interface to which the Sync Gateway api.admin_interface is bound. | scaled_float | byte | gauge |
+| couchbase.resource.error.count | The total number of errors logged. | long |  | counter |
+| couchbase.resource.go_memstats.heap.alloc | Bytes of allocated heap objects. | scaled_float | byte | gauge |
+| couchbase.resource.go_memstats.heap.idle | Bytes in idle (unused) spans. | scaled_float | byte | gauge |
+| couchbase.resource.go_memstats.heap.in_use | Bytes in in-use spans. | scaled_float | byte | gauge |
+| couchbase.resource.go_memstats.heap.released | Bytes of physical memory returned to the OS. | scaled_float | byte | gauge |
+| couchbase.resource.go_memstats.stack.in_use | Bytes in stack spans. | scaled_float | byte | gauge |
+| couchbase.resource.last_gc | The time the last garbage collection finished, as nanoseconds since 1970 (the UNIX epoch). | scaled_float | nanos | gauge |
+| couchbase.resource.process.cpu.pct | The CPU’s utilization as percentage value. | scaled_float | percent | gauge |
+| couchbase.resource.process.memory.resident | The memory utilization (Resident Set Size) for the process, in bytes. | scaled_float | byte | gauge |
+| couchbase.resource.warn.count | The total number of warnings logged. | long |  | counter |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
+
 ### XDCR
 
 This is the `xdcr` data stream. Cross Data Center Replication (XDCR) replicates data between a source bucket and a target bucket. XDCR collects metrics related to statistics of XDCR. Metrics can be fetched from multiple buckets.
@@ -767,13 +926,13 @@ An example event for `xdcr` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-23T16:45:55.606Z",
+    "@timestamp": "2022-09-22T12:31:35.753Z",
     "agent": {
-        "ephemeral_id": "7a61c681-02d1-4fb4-b301-b070496f4fa7",
-        "id": "ed147562-a613-47df-b28f-63d25828d405",
+        "ephemeral_id": "c8cc6265-9464-4d65-bed6-d10ae5a0a310",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.2"
+        "version": "8.4.1"
     },
     "couchbase": {
         "xdcr": {
@@ -803,9 +962,9 @@ An example event for `xdcr` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "ed147562-a613-47df-b28f-63d25828d405",
+        "id": "e1c61e89-8171-47ed-be0b-eb7f11396b0d",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -813,8 +972,8 @@ An example event for `xdcr` looks as following:
             "database"
         ],
         "dataset": "couchbase.xdcr",
-        "duration": 452877621,
-        "ingested": "2022-08-23T16:45:59Z",
+        "duration": 932117118,
+        "ingested": "2022-09-22T12:31:38Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -825,17 +984,18 @@ An example event for `xdcr` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "51511c1493f34922b559a964798246ec",
         "ip": [
-            "172.25.0.7"
+            "192.168.128.7"
         ],
         "mac": [
-            "02:42:ac:19:00:07"
+            "02:42:c0:a8:80:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-110-generic",
+            "kernel": "5.4.0-126-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",

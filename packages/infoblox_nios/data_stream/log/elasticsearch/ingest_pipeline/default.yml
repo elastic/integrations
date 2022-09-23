@@ -14,6 +14,12 @@ processors:
         - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{NOTSPACE:host.domain}\\s+%{IP:host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
         - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+(%{IP:host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
         - "^%{GREEDYDATA:message}$"
+  - rename:
+      field: _conf.tz_offset
+      target_field: event.timezone
+      if: "ctx?._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'"
+      ignore_missing: true
+      ignore_failure: true
   - date:
       field: event.created
       target_field: event.created
@@ -23,6 +29,18 @@ processors:
         - MMM d HH:mm:ss
         - dd-MMM-yyyy HH:mm:ss.SSS
       ignore_failure: true
+      timezone: "{{{event.timezone}}}"
+      if: ctx.event?.timezone != null   
+  - date:
+      field: event.created
+      target_field: event.created
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - dd-MMM-yyyy HH:mm:ss.SSS
+      ignore_failure: true
+      if: ctx.event?.timezone == null
   - set:
       field: infoblox_nios.log.type
       value: 'DHCP'
@@ -86,6 +104,10 @@ processors:
   - remove:
       field: event.original
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: _conf
       ignore_failure: true
       ignore_missing: true
 on_failure:
