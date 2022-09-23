@@ -58,16 +58,6 @@ processors:
     field: cisco_meraki.event_subtype
     value: dhcp_no_offer
     if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'no' && ctx?._temp?.dhcp_op2.toLowerCase() == 'offers'
-- gsub:
-    field: client.mac
-    pattern: '[-:.]'
-    replacement: '-'
-    if: ctx?.msgtype.toLowerCase() == "dhcp"
-- gsub:
-    field: server.mac
-    pattern: '[-:.]'
-    replacement: '-'
-    if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp.dhcp_op == 'lease'
 ####################################################
 # Handle Site-to-Site VPN message
 ####################################################
@@ -124,11 +114,6 @@ processors:
 - rename:
     field: cisco_meraki.multiple_dhcp_servers_detected.original_server_mac
     target_field: server.mac
-    if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
-- gsub:
-    field: server.mac
-    pattern: '[-:.]'
-    replacement: '-'
     if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
 # process original_server_ip
 - grok:
@@ -200,3 +185,22 @@ processors:
     target_field: client.ip
     if: ctx?._temp?.client_ip != null
     ignore_failure: true
+
+# Make MAC addresses conform to ECS spec.
+- gsub:
+    field: client.mac
+    pattern: '[:.]'
+    replacement: '-'
+    ignore_missing: true
+- uppercase:
+    field: client.mac
+    ignore_missing: true
+- gsub:
+    field: server.mac
+    pattern: '[:.]'
+    replacement: '-'
+    ignore_missing: true
+- uppercase:
+    field: server.mac
+    ignore_missing: true
+
