@@ -141,7 +141,6 @@ implement several changes across multiple PRs and then bump up the package versi
 or in a separate follow up PR. As an example, it could be followed this procedure:
 
 1. Add a new version entry in the changelog with the prerelease tag `next`. Example: `2.6.0-next`
-    - Other formats of prerelease are allowed: 2.6.0-rc1, 2.6.0-SNAPSHOT
    ```yaml
    - version: "2.6.0-next"
      changes:
@@ -150,7 +149,7 @@ or in a separate follow up PR. As an example, it could be followed this procedur
          link: https://github.com/elastic/integrations/pull/1
    - version: "2.5.0"
    ```
-2. Add the required Pull Requests under this entry.
+2. Add the required Pull Requests under this entry:
    ```yaml
    - version: "2.6.0-next"
      changes:
@@ -164,7 +163,7 @@ or in a separate follow up PR. As an example, it could be followed this procedur
          type: enhancement
          link: https://github.com/elastic/integrations/pull/3
    ```
-3. Once everything is merged, another PR is required to bump up the manifest version to be `2.6.0` and also replace the changelog entry to be `2.6.0`
+3. Once everything is merged, another PR is required to bump up the manifest version and replace the changelog entry to be `2.6.0`:
    ```yaml
    - version: "2.6.0"
      changes:
