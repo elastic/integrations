@@ -299,7 +299,6 @@ An example event for `istiod` looks as following:
 | istio.istiod.\*.rate | Istiod rated counter metric | object |
 | istio.istiod.\*.value | Istiod gauge metric | object |
 | istio.istiod.labels.\* | Istiod metric labels | object |
-| istio.istiod.metrics.\* | Istiod metric | object |
 
 
 ### Proxy Metrics
@@ -364,4 +363,3 @@ An example event for `proxy` looks as following:
 | istio.proxy.\*.rate | Istio Proxy rated counter metric | object |
 | istio.proxy.\*.value | Istio Proxy gauge metric | object |
 | istio.proxy.labels.\* | Istio Proxy metric labels | object |
-| istio.proxy.metrics.\* | Istio Proxy metric | object |
