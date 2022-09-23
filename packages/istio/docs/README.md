@@ -246,13 +246,33 @@ An example event for `istiod` looks as following:
 {
     "istio": {
         "istiod": {
-            "pilot_inbound_updates": {
-                "rate": 0,
-                "counter": 26
+            "metrics": {
+                "pilot_xds_config_size_bytes": {
+                    "histogram": {
+                        "counts": [
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0
+                        ],
+                        "values": [
+                            0.5,
+                            5000.5,
+                            505000,
+                            2500000,
+                            7000000,
+                            25000000,
+                            70000000
+                        ]
+                    }
+                }
             },
             "labels": {
                 "instance": "10.124.0.8:15014",
-                "type": "svc",
+                "type": "type.googleapis.com/envoy.config.route.v3.RouteConfiguration",
                 "job": "istio"
             }
         }
@@ -294,11 +314,11 @@ An example event for `istiod` looks as following:
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| istio.istiod.\*.counter | Istiod counter metric | object |
-| istio.istiod.\*.histogram | Istiod histogram metric | object |
-| istio.istiod.\*.rate | Istiod rated counter metric | object |
-| istio.istiod.\*.value | Istiod gauge metric | object |
 | istio.istiod.labels.\* | Istiod metric labels | object |
+| istio.istiod.metrics.\*.counter | Istiod counter metric | object |
+| istio.istiod.metrics.\*.histogram | Istiod histogram metric | object |
+| istio.istiod.metrics.\*.rate | Istiod rated counter metric | object |
+| istio.istiod.metrics.\*.value | Istiod gauge metric | object |
 
 
 ### Proxy Metrics
@@ -328,13 +348,15 @@ An example event for `proxy` looks as following:
     },
     "istio": {
         "proxy": {
-            "istio_agent_go_gc_duration_seconds": {
-                "value": 0.000039482
+            "metrics": {
+                "istio_agent_go_gc_duration_seconds": {
+                    "value": 0.000142478
+                }
             },
             "labels": {
-                "instance": "10.124.0.12:15020",
-                "job": "istio",
-                "quantile": "0"
+                "instance": "10.124.1.5:15020",
+                "quantile": "0.25",
+                "job": "istio"
             }
         }
     },
@@ -358,8 +380,8 @@ An example event for `proxy` looks as following:
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
-| istio.proxy.\*.counter | Istio Proxy counter metric | object |
-| istio.proxy.\*.histogram | Istio Proxy histogram metric | object |
-| istio.proxy.\*.rate | Istio Proxy rated counter metric | object |
-| istio.proxy.\*.value | Istio Proxy gauge metric | object |
 | istio.proxy.labels.\* | Istio Proxy metric labels | object |
+| istio.proxy.metrics.\*.counter | Istio Proxy counter metric | object |
+| istio.proxy.metrics.\*.histogram | Istio Proxy histogram metric | object |
+| istio.proxy.metrics.\*.rate | Istio Proxy rated counter metric | object |
+| istio.proxy.metrics.\*.value | Istio Proxy gauge metric | object |
