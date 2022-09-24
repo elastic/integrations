@@ -171,12 +171,12 @@ processors:
      description: "Details of the detected risk. Possible values are: none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue."
   - date:
       field: azure.identityprotection.properties.lastUpdatedDateTime
-      target_field: azure.identityprotection.properties.risk_last_updated_datetime
+      target_field: azure.identityprotection.properties.last_updated_datetime
       ignore_failure: true
-      description: "The date and time that the risky user was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z."
+      description: "Date and time when the risk detection was last updated."
       formats:
       - ISO8601
-      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
+      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # This field's values drop to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z', hours have no leading zero), so we need to add this format to account for that.
   - remove:
       field: azure.identityprotection.properties.lastUpdatedDateTime
       ignore_missing: true
@@ -184,10 +184,10 @@ processors:
       field: azure.identityprotection.properties.riskLastUpdatedDateTime
       target_field: azure.identityprotection.properties.risk_last_updated_datetime
       ignore_failure: true
-      description: "The date and time that the risky user was last updated. The DateTimeOffset type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z."
+      description: "The date and time that the risky user was last updated."
       formats:
       - ISO8601
-      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # drops to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z')
+      - yyyy-MM-dd'T'H:mm:ss.SSS'Z' # This field's values drop to single-digit for hours 1-9 (for example, '2022-09-09T8:48:50.361Z', hours have no leading zero), so we need to add this format to account for that.
   - remove:
       field: azure.identityprotection.properties.riskLastUpdatedDateTime
       ignore_missing: true
