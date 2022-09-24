@@ -24,13 +24,13 @@ In order to ingest data from the Google Reports API you must:
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for your ServiceAccount.
 
-This module will make use of the following *oauth2 scope*:
+This integration will make use of the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting admin, drive, groups, login, saml and user accounts logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `admin`, `drive`, `groups`, `login`, `saml`, and `user accounts` logs.
 
 # Google Workspace Alert
 
@@ -98,21 +98,14 @@ In order to ingest data from the Google Alert Center API, you must:
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for the ServiceAccount.
 
-This module will make use of the following *oauth2 scope*:
+This integration will make use of the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/apps.alerts`
 
-Once Service Account credentials are downloaded as a JSON file, then integration can be setup to collect data.
+Once Service Account credentials are downloaded as a JSON file, then the integration can be setup to collect data.
 
-### Enabling the integration in Elastic
-1. In Kibana, go to Management > Integrations
-2. In the integrations search bar type **Google Workspace**.
-3. Click the **Google Workspace** integration from the search results.
-4. Click the **Add Google Workspace** button to add Google Workspace integration.
-5. Configure Google Workspace to send logs to the Elastic Agent.
-5. Click the Advanced option of Alert Data Stream. The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
->  Note: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement.
+>  Note: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
 ## Logs
 
