@@ -117,9 +117,9 @@ Retrieves Azure AD Identity Protection logs. The [Azure AD Identity Protection](
 
 #### Reference
 
-{{event "identity_protection_logs"}}
+{{event "identity_protection"}}
 
-{{fields "identity_protection_logs"}}
+{{fields "identity_protection"}}
 
 ### Provisioning logs
 
@@ -140,9 +140,9 @@ The Provisioning logs data stream supports the following log categories:
 
 #### Reference
 
-{{event "provisioning_logs"}}
+{{event "provisioning"}}
 
-{{fields "provisioning_logs"}}
+{{fields "provisioning"}}
 
 ### Audit logs
 
