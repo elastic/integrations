@@ -75,7 +75,8 @@ An example event for `log` looks as following:
     },
     "host": {
         "ip": "2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6",
-        "name": "test-host"
+        "name": "test-host.local",
+        "domain": "local"
     },
     "event": {
         "agent_id_status": "verified",
