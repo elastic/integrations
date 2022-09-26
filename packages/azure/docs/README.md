@@ -35,7 +35,7 @@ Before using the Azure integration you will need:
 
 ### Diagnostic setting
 
-Azure Diagnostic settings allow users to export metrics and logs from a **source** service or resource to one **destination**.
+Azure Diagnostic settings allow users to export metrics and logs from a **source** service or resource to one **destination** for analysis and long term storage.
 
 ```text
    ┌──────────────────┐      ┌──────────────┐     ┌─────────────────┐
@@ -48,6 +48,7 @@ Examples of source services:
 
 * Active Directory
 * Azure Monitor
+* Spring Cloud
 
 Examples of destinations:
 
@@ -77,25 +78,25 @@ The Azure Logs integration uses the Event Hubs service to receive and store logs
   └────────────────┘   └──────────────┘   └────────────────┘                                
 ```
 
-To successfully use Event Hubs to set up the Azure Logs integration, you need to also be aware of Consumer group and a Connection String.
+To successfully use Event Hubs to set up the Azure Logs integration, you need to also be aware of **Consumer Group** and how to get a **Connection String**.
 
-#### Consumer group
+#### Consumer Group
 
-A consumer group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and with their own offsets.
+A Consumer Group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and with their own offsets.
 
 The Azure Logs integration uses a consumer group to access Event Hubs and track which logs have already been fetched and are new.
 
 #### Connection String
 
-A connection string is require to allow the Elastic Agent to access the Event Hub and fetch the exported logs. It contains details about Event Hubs used the credentials required to access it.
+The Elastic Agent requries a Connection String to access the Event Hub and fetch the exported logs. It contains details about the Event Hub used and the credentials required to access it.
 
 To learn more about Event Hubs, you can read the in-depth document [Features and terminology in Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-features).
 
-### Storage Account Container
+### Storage account container
 
-What is a Storage Account Container?
+The Storage account is a versatile Azure service that allows users to store data in various storage types, including blobs, file shares, queues, tables, and disks.
 
-The Azure Logs integration uses Storage Account Container to store information (state, position, or offset) about the Consumer Group. The Storage Account Container allows multiple Elastic Agents to access the same Event Hub and share the processing logs to increase ingestion throughput.
+The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows the integration to allocate the logs processing among existing Elastic Agents to increase ingestion throughput if required.
 
 ```text
   ┌────────────────┐      ┌────────────┐
