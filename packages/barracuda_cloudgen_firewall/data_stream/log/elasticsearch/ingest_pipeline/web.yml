@@ -1,0 +1,126 @@
+---
+description: Pipeline for Barracuda CloudGen Firewall Web Messages logs
+processors:
+  - date:
+      field: json.timestamp
+      target_field: '_tmp.timestamp'
+      formats:
+        - UNIX_MS
+      if: ctx.json?.timestamp != '-'
+  - rename:
+      field: json.source_ip
+      target_field: source.address
+      ignore_missing: true
+      if: ctx.json?.source_ip != '-'
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: json.source_port
+      target_field: source.port
+      type: long
+      ignore_missing: true
+      if: ctx.json?.source_port != '-'
+  - rename:
+      field: json.destination_ip
+      target_field: destination.address
+      ignore_missing: true
+      if: ctx.json?.destination_ip != '-'
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: json.destination_port
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+      if: ctx.json?.destination_port != '-'
+  - rename:
+      field: json.method
+      target_field: http.request.method
+      ignore_missing: true
+  - convert:
+      field: json.status_code
+      target_field: http.response.status_code
+      type: long
+      ignore_missing: true
+      if: ctx.json?.status_code != '0'
+  - user_agent:
+      field: json.user_agent
+      ignore_missing: true
+  - rename:
+      field: json.content_type
+      target_field: http.request.mime_type
+      ignore_missing: true
+  - uri_parts:
+      field: json.name
+      ignore_failure: true
+  - rename:
+      field: json.domain
+      target_field: http.request.referrer
+      ignore_missing: true
+      if: ctx.json?.domain != null && ctx.json?.domain != "" && (/^https?:\/\/.*$/.matcher(ctx.json?.domain)).matches()
+  - set:
+      field: url.domain
+      value: "{{{destination.domain}}}"
+      if: ctx.url?.domain == null && ctx.destination?.domain != null
+  - convert:
+      field: json.size
+      target_field: http.response.body.bytes
+      type: long
+      ignore_missing: true
+      if: ctx.json?.size != '0'
+  - convert:
+      field: json.user_type
+      target_field: barracuda_cloudgen_firewall.log.user_type
+      type: string
+      ignore_missing: true
+      if: ctx.json?.user_type != null && ctx.json?.user_type != '-'
+  - rename:
+      field: json.user
+      target_field: user.name
+      ignore_missing: true
+      if: ctx.json?.user != null && ctx.json?.user != '-' && ctx.barracuda_cloudgen_firewall?.log?.user_type == 1
+  - rename:
+      field: json.traffic_type
+      target_field: barracuda_cloudgen_firewall.log.traffic_type
+      ignore_missing: true
+      if: ctx.json?.traffic_type != null && ctx.json?.traffic_type != '-'
+  - rename:
+      field: json.fw_rule
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: json.app_rule
+      target_field: barracuda_cloudgen_firewall.log.app_rule
+      ignore_missing: true
+  - convert:
+      field: json.action
+      target_field: event.action
+      type: string
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      if: ctx.event.action == '1'
+  - append:
+      field: event.type
+      value: allowed
+      allow_duplicates: false
+      if: ctx.event.action == '0'
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

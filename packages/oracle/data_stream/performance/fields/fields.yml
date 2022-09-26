@@ -29,6 +29,11 @@
       metric_type: gauge
       description: |
         Average of all pinhits/pins ratios, where 'PinHits' is the number of times all of the metadata pieces of the library object were found in memory and 'pins' is the number of times a PIN was requested for objects of this namespace.
+    - name: failed_db_jobs
+      type: double
+      metric_type: gauge
+      description: |
+        This metric checks for failed DBMS jobs.
     - name: cache
       type: group
       fields:
@@ -117,3 +122,43 @@
           metric_type: gauge
           description: |
             Ratio of session cursor cache hits from total number of cursors.
+    - name: session_count
+      type: group
+      fields:
+        - name: active
+          type: double
+          metric_type: gauge
+          description: Total count of sessions.
+        - name: inactive_morethan_onehr
+          type: double
+          metric_type: gauge
+          description: Total inactive sessions more than one hour.
+        - name: inactive
+          type: double
+          metric_type: gauge
+          description: Total count of Inactive sessions.
+    - name: wait
+      type: group
+      fields:
+        - name: pct_time
+          type: double
+          unit: percent
+          metric_type: gauge
+          description: Percentage of time waits that are not Idle wait class.
+        - name: pct_waits
+          type: double
+          unit: percent
+          metric_type: gauge
+          description: Percentage of number of pct time waits that are not of Idle wait class.
+        - name: time_waited_secs
+          type: double
+          metric_type: gauge
+          unit: s
+          description: Amount of time spent in the wait class by the session.
+        - name: total_waits
+          type: double
+          metric_type: counter
+          description: Number of times waits of the class occurred for the session.
+        - name: wait_class
+          type: keyword
+          description: Every wait event belongs to a class of wait event. Wait classes can be one of the following - Administrative, Application, Cluster, Commit, Concurrency, Configuration, Idle, Network, Other, Scheduler, System IO, User IO

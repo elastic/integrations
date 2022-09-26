@@ -50,6 +50,12 @@ processors:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.events?.event_timestamp != null
   - date:
+      field: panw_cortex.xdr.events.agent_host_boot_time
+      target_field: panw_cortex.xdr.events.agent_host_boot_time
+      formats:
+        - UNIX_MS
+      if: ctx.panw_cortex?.xdr?.events?.agent_host_boot_time != null
+  - date:
       field: panw_cortex.xdr.detection_timestamp
       target_field: event.created
       formats:
@@ -212,11 +218,6 @@ processors:
       target_field: process.entity_id
       ignore_missing: true
   - rename:
-      field: panw_cortex.xdr.events.actor_process_command_line
-      target_field: process.command_line
-      ignore_missing: true
-      if: ctx.process?.command_line == null
-  - rename:
       field: panw_cortex.xdr.events.action_file_path
       target_field: file.path
       ignore_missing: true
@@ -257,6 +258,7 @@ processors:
       field: panw_cortex.xdr.events.actor_process_instance_id
       target_field: process.entity_id
       ignore_missing: true
+      if: ctx.process?.entity_id == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_image_path
       target_field: process.executable
@@ -265,10 +267,12 @@ processors:
       field: panw_cortex.xdr.events.actor_process_command_line
       target_field: process.command_line
       ignore_missing: true
+      if: ctx.process?.command_line == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_image_name
       target_field: process.name
       ignore_missing: true
+      if: ctx.process?.name == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_signature_vendor
       target_field: process.code_signature.subject_name
@@ -278,6 +282,7 @@ processors:
       field: panw_cortex.xdr.events.actor_process_image_sha256
       target_field: process.hash.sha256
       ignore_missing: true
+      if: ctx.process?.hash?.sha256 == null
   - rename:
       field: panw_cortex.xdr.events.actor_process_image_md5
       target_field: process.hash.md5

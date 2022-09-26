@@ -21,7 +21,7 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 ### (Optional) Enable Security rules
 
-In order to maximize the benefit of the DGA detection framework, you might consider activating detection rules that are triggered when certain conditions for the supervised model or anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
+In order to maximize the benefit of the DGA detection framework, you might consider activating detection rules that are triggered when certain conditions for the supervised model or anomaly detection jobs are satisfied. See the {{ url "security-detection-engine" "documentation" }} for more information on importing and enabling the rules.
 
 Note that there are search rules as well as ML job rules.
 
