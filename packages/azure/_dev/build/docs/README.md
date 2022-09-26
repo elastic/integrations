@@ -1,30 +1,114 @@
 # Azure Logs Integration
 
-The azure logs integration retrieves activity, platform, sign-in, audit, identity protection, provisioning, and Spring Cloud data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
+## Overview
 
-Use the Azure Logs integration to collect logs from Azure.
-Then visualize that data in Kibana, create alerts to notify you if something goes wrong,
-and reference data when troubleshooting an issue.
+The Azure Logs integration retrieves Activity, Active Directory (Sign-in, Audit, Identity Protection, Provisioning), Platform, and Spring Cloud data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
+
+Use the Azure Logs integration to collect logs from Azure service. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
 For example, if you wanted to detect possible brute force sign-in attacks, you
 could install the Azure Logs integration to send Azure sign-in logs to Elastic.
 Then, set up a new rule in the Elastic Observability Logs app to alert you when the number of failed sign-in attempts exceeds a certain threshold.
 Or, perhaps you want to better plan your Azure capacity.
-Send Azure activity logs to Elastic to track and visualize when your virtual machines
+Send Azure Activity logs to Elastic to track and visualize when your virtual machines
 fail to start due to an exceed quota limit.
 
 ## Data streams
 
 The Azure Logs integration collects logs.
 
-**Logs** help you keep a record of events that happen on your machine.
-Log data streams collected by the Azure Logs integration include activity, platform, sign-in, audit, and Spring Cloud logs.
+**Logs** help you keep a record of events that happen on your Azure account.
+Log data streams collected by the Azure Logs integration include Activity, Platform, Active Directory (Sign-in, Audit, Identity Protection, Provisioning), and Spring Cloud logs.
+
 See more details in the [Logs reference](#logs-reference).
 
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using the Azure integration you will need:
+
+* One or more **Diagnostic setting** to export logs from Azure services to Event Hubs.
+* One or more **Event Hub** to store in-flight logs exported by Azure services and make them available to Elastic Agent.
+* One **Storage Account Container** to store information about logs consumed by the Elastic Agent
+
+### Diagnostic setting
+
+Azure Diagnostic settings allow users to export metrics and logs from a **source** service or resource to one **destination**.
+
+```text
+   ┌──────────────────┐      ┌──────────────┐     ┌─────────────────┐
+   │ Active Directory │      │  Diagnostic  │     │    Event Hub    │
+   │    <<source>>    │─────▶│   settings   │────▶│ <<destination>> │
+   └──────────────────┘      └──────────────┘     └─────────────────┘
+```
+
+Examples of source services:
+
+* Active Directory
+* Azure Monitor
+
+Examples of destinations:
+
+* Azure Event Hubs
+* Azure Storage Account
+* Azure partner integraions
+* more
+
+The Azure Logs integration uses Event Hubs as destination.
+
+### Event Hub
+
+[Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service. I can receive and temporary store millions of events.
+
+The Azure Logs integration uses the Event Hubs service to receive and store logs exported by a Diagnostic settings and make them available to Elastic Agent.
+
+```text
+  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐                    
+  │    Azure AD    │   │  Diagnostic  │   │ Azure AD logs  │                    
+  │  <<service>>   │──▶│   settings   │──▶│ <<event hub>>  │──┐                 
+  └────────────────┘   └──────────────┘   └────────────────┘  │   ┌────────────┐
+                                                              │   │  Elastic   │
+                                                              ├──▶│   Agent    │
+  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐  │   └────────────┘
+  │ Azure Monitor  │   │  Diagnostic  │   │ Activity logs  │  │                 
+  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │──┘                 
+  └────────────────┘   └──────────────┘   └────────────────┘                                
+```
+
+To successfully use Event Hubs to set up the Azure Logs integration, you need to also be aware of Consumer group and a Connection String.
+
+#### Consumer group
+
+A consumer group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and with their own offsets.
+
+The Azure Logs integration uses a consumer group to access Event Hubs and track which logs have already been fetched and are new.
+
+#### Connection String
+
+A connection string is require to allow the Elastic Agent to access the Event Hub and fetch the exported logs. It contains details about Event Hubs used the credentials required to access it.
+
+To learn more about Event Hubs, you can read the in-depth document [Features and terminology in Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-features).
+
+### Storage Account Container
+
+What is a Storage Account Container?
+
+The Azure Logs integration uses Storage Account Container to store information (state, position, or offset) about the Consumer Group. The Storage Account Container allows multiple Elastic Agents to access the same Event Hub and share the processing logs to increase ingestion throughput.
+
+```text
+  ┌────────────────┐      ┌────────────┐
+  │ Azure AD logs  │      │  Elastic   │
+  │ <<event hub>>  │─────▶│   Agent    │
+  └────────────────┘      └────────────┘
+                                 │      
+                                 │      
+  ┌────────────────┐             │      
+  │     adlogs     │             │      
+  │ <<container>>  │◀────────────┘      
+  └────────────────┘                    
+```
 
 ## Setup
 
