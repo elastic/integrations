@@ -12,11 +12,11 @@ For example, you could use the data from this integration to know when there are
 
 The Couchbase integration collects metrics data.
 
-Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html),  [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Couchbase Lite Replication](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cbl_replication_pull), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), [Resource Utilization](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#resource_utilization), and [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
+Metrics give you insight into the state of the Couchbase. Metrics data streams collected by the Couchbase integration include [Bucket](https://docs.couchbase.com/server/current/rest-api/rest-buckets-summary.html), [Cluster](https://docs.couchbase.com/server/current/rest-api/rest-cluster-details.html), [Cache](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cache), [Couchbase Lite Replication](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#cbl_replication_pull), [Database](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#database), [Delta Sync](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#delta_sync), [GSI views](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#gsi_views), [Import](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#shared_bucket_import), [Resource Utilization](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#resource_utilization), [Security](https://docs.couchbase.com/sync-gateway/current/stats-monitoring.html#security), and [XDCR](https://docs.couchbase.com/server/current/rest-api/rest-bucket-stats.html) metrics from [Couchbase](https://www.couchbase.com/) so that the user could monitor and troubleshoot the performance of the Couchbase instances.
 
 This integration uses:
-- `http` metricbeat module to collect `bucket` and `cluster` metrics.
-- `prometheus` metricbeat module to collect `cbl_replication`, `delta_sync`, `gsi_views`, `import`, `resource`, and `security` metrics.
+- `http` metricbeat module to collect `bucket`, `cluster`, and `xdcr` metrics.
+- `prometheus` metricbeat module to collect `cache`, `cbl_replication`, `database_stats`, `delta_sync`, `gsi_views`, `import`, `resource`, and `security` metrics.
 
 Note: For Couchbase cluster setup, there is an ideal scenario of a single host with administrator access for the entire cluster to collect metrics. Providing multiple hosts from the same cluster might lead to data duplication. In the case of multiple clusters, adding a new integration to collect data from different cluster hosts is a good option.
 
@@ -94,3 +94,13 @@ This is the `resource` data stream. The Resource Utilization metrics are related
 {{event "resource"}}
 
 {{fields "resource"}}
+
+### XDCR
+
+This is the `xdcr` data stream. Cross Data Center Replication (XDCR) replicates data between a source bucket and a target bucket. XDCR collects metrics related to statistics of XDCR. Metrics can be fetched from multiple buckets.
+
+Note: It is preferable to add a new integration if user requires to fetch metrics from multiple hosts for XDCR data stream.
+
+{{event "xdcr"}}
+
+{{fields "xdcr"}}
