@@ -573,13 +573,19 @@ processors:
       lang: painless
       source: |
         if (ctx?.related?.user != null) {
-            ctx.related.user = new HashSet(ctx.related.user)
-        }
-        if (ctx?.related?.hash != null) {
-            ctx.related.hash = new HashSet(ctx.related.hash)
+          ctx.related.user = new HashSet(ctx.related.user)
         }
         if (ctx?.related?.ip != null) {
-            ctx.related.ip = new HashSet(ctx.related.ip)
+          ctx.related.ip = new HashSet(ctx.related.ip)
+        }
+        if (ctx?.related?.hash != null) {
+          def hashes = new HashSet(ctx.related.hash);
+          def hash = new ArrayList();
+          for (def h: hashes) {
+            hash.add(h);
+          }
+          Collections.sort(hash);
+          ctx.related.hash = hash;
         }
 on_failure:
   - set:
