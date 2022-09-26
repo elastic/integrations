@@ -54,7 +54,7 @@
 The `elastic-package stack` provides an enrolled instance of the Elastic Agent. Use that one instead of a local application
 if you can run the service (you're integrating with) in the Docker network and you don't need to rebuild the Elastic-Agent
 or it's subprocesses (e.g. Filebeat or Metricbeat). The service Docker image can be used for [system
-testing](https://github.com/elastic/elastic-package/blob/master/docs/howto/system_testing.md). If you prefer to use a local
+testing](https://github.com/elastic/elastic-package/blob/main/docs/howto/system_testing.md). If you prefer to use a local
 instance of the Elastic Agent, proceed with steps 4 an 5:
 
 4. (Optional) Download the Elastic-Agent from https://www.elastic.co/downloads/elastic-agent
@@ -80,7 +80,7 @@ instance of the Elastic Agent, proceed with steps 4 an 5:
 
 ## Use test runners
 
-`elastic-package` provides different types of test runners. Review [howto](https://github.com/elastic/elastic-package/tree/master/docs/howto) guides
+`elastic-package` provides different types of test runners. Review [howto](https://github.com/elastic/elastic-package/tree/main/docs/howto) guides
 to learn about the various methods for testing packages.
 
 The `test` subcommand requires a reference to the live Elastic stack. Service endpoints can be defined via environment variables.
