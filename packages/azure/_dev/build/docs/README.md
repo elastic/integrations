@@ -99,16 +99,16 @@ The Storage account is a versatile Azure service that allows users to store data
 The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows the integration to allocate the logs processing among existing Elastic Agents to increase ingestion throughput if required.
 
 ```text
-  ┌────────────────┐      ┌────────────┐
-  │ Azure AD logs  │      │  Elastic   │
-  │ <<event hub>>  │─────▶│   Agent    │
-  └────────────────┘      └────────────┘
-                                 │      
-                                 │      
-  ┌────────────────┐             │      
-  │     adlogs     │             │      
-  │ <<container>>  │◀────────────┘      
-  └────────────────┘                    
+  ┌────────────────┐                     ┌────────────┐
+  │ Azure AD logs  │        logs         │  Elastic   │
+  │ <<event hub>>  │────────────────────▶│   Agent    │
+  └────────────────┘                     └────────────┘
+                                                │      
+                       consumer group info      │      
+  ┌────────────────┐   (state, position, or     │      
+  │     adlogs     │         offset)            │      
+  │ <<container>>  │◀───────────────────────────┘      
+  └────────────────┘                                                   
 ```
 
 ## Setup
