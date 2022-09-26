@@ -1,8 +1,8 @@
 # Prometheus Integration
 
-This integration periodically fetches metrics from [Prometheus](https://prometheus.io/) servers.
-This integration can collect metrics from Prometheus Exporters, receive metrics from Prometheus using Remote Write
-and execute specific Prometheus queries against Promethes Query API.
+This integration periodically fetches metrics from [Prometheus](https://prometheus.io/) metrics endpoints.
+This integration can collect metrics from Prometheus Exporters, receive metrics from Prometheus server using Remote Write
+or execute specific Prometheus queries against Promethes Query API.
 
 ## Metrics
 
@@ -130,36 +130,47 @@ An example event for `collector` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-07-06T10:22:23.034Z",
-    "agent": {},
-    "event": {
-        "dataset": "prometheus.collector",
-        "module": "prometheus",
-        "duration": 13290705
-    },
-    "metricset": {
-        "name": "collector",
-        "period": 10000
+    "@timestamp": "2022-09-21T13:53:53.737Z",
+    "ecs": {
+        "version": "8.0.0"
     },
     "service": {
-        "address": "localhost:9090",
+        "address": "http://prometheus-server-server:80/metrics",
         "type": "prometheus"
     },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "prometheus.collector"
+    },
+    "elastic_agent": {
+        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
+        "version": "8.4.0",
+        "snapshot": true
+    },
+    "host": {},
+    "metricset": {
+        "period": 10000,
+        "name": "collector"
+    },
     "prometheus": {
-        "metrics": {
-            "prometheus_wal_watcher_records_read_total": 74
+        "prometheus_target_sync_length_seconds": {
+            "value": 0.000103602
         },
         "labels": {
-            "job": "prometheus",
-            "consumer": "ee9cb2",
-            "type": "series",
-            "instance": "localhost:9090"
+            "scrape_job": "kubernetes-services",
+            "instance": "prometheus-server-server:80",
+            "quantile": "0.5",
+            "job": "prometheus"
         }
     },
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "host": {}
+    "event": {
+        "duration": 10509824,
+        "agent_id_status": "verified",
+        "ingested": "2022-09-21T13:53:54Z",
+        "module": "prometheus",
+        "dataset": "prometheus.collector"
+    }
 }
 ```
 
@@ -245,7 +256,7 @@ Capacity sets the number of samples that are queued in memory per shard, and hen
 be able to cover `max_samples_per_send`.
 
 
-Metrics sent to the http endpoint will be put by default under the `prometheus.metrics` prefix with their labels under `prometheus.labels`.
+Metrics sent to the http endpoint will be put by default under the `prometheus.` prefix with their labels under `prometheus.labels`.
 A basic configuration would look like:
 
 ```yml
@@ -279,38 +290,64 @@ An example event for `remote_write` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T16:46:40.018Z",
-    "ecs": {
-        "version": "1.5.0"
-    },
-    "host": {},
     "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "cb348102-0121-4c5b-8fcd-10ea27d25f77",
-        "id": "3bdc7670-9ced-4c70-bba9-00d7e183ae4b",
-        "name": "Christoss-MBP",
-        "type": "metricbeat"
+        "name": "kind-control-plane",
+        "id": "af0df4c2-33b7-41fd-8eb5-573376996db2",
+        "ephemeral_id": "5c3d912b-9bf3-4747-b784-1f7c275a5979",
+        "type": "metricbeat",
+        "version": "8.4.0"
     },
-    "metricset": {
-        "name": "remote_write"
-    },
-    "prometheus": {
-        "metrics": {
-            "container_fs_reads_bytes_total": 1196032,
-            "container_fs_reads_total": 27
-        },
-        "labels": {
-            "instance": "cadvisor:8080",
-            "job": "cadvisor",
-            "id": "/systemreserved/acpid"
-        }
+    "@timestamp": "2022-09-22T12:23:35.757Z",
+    "ecs": {
+        "version": "8.0.0"
     },
     "service": {
         "type": "prometheus"
     },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "prometheus.remote_write"
+    },
+    "elastic_agent": {
+        "id": "af0df4c2-33b7-41fd-8eb5-573376996db2",
+        "version": "8.4.0",
+        "snapshot": true
+    },
+    "host": {},
+    "metricset": {
+        "name": "remote_write"
+    },
+    "prometheus": {
+        "node_cpu_guest_seconds_total": {
+            "rate": 0,
+            "counter": 0
+        },
+        "node_cpu_seconds_total": {
+            "rate": 0,
+            "counter": 2284.68
+        },
+        "labels": {
+            "app": "prometheus",
+            "app_kubernetes_io_managed_by": "Helm",
+            "instance": "172.19.0.2:9100",
+            "release": "prometheus-server",
+            "cpu": "5",
+            "heritage": "Helm",
+            "mode": "user",
+            "node": "kind-control-plane",
+            "component": "node-exporter",
+            "service": "prometheus-server-node-exporter",
+            "namespace": "kube-system",
+            "job": "kubernetes-service-endpoints",
+            "chart": "prometheus-15.10.1"
+        }
+    },
     "event": {
-        "dataset": "prometheus.remote_write",
-        "module": "prometheus"
+        "agent_id_status": "verified",
+        "ingested": "2022-09-22T12:24:16Z",
+        "module": "prometheus",
+        "dataset": "prometheus.remote_write"
     }
 }
 ```
@@ -490,36 +527,48 @@ An example event for `query` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T15:36:54.000Z",
-    "host": {},
     "agent": {
+        "name": "kind-control-plane",
+        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
         "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "98420e91-ee6d-4883-8ad3-02fa8d47f5c1",
-        "id": "9fc3e975-6789-4738-a11a-ba7108b0a92c",
-        "name": "minikube"
+        "ephemeral_id": "63ab98c3-c4ae-4a30-84f9-9a2d7f459728",
+        "version": "8.4.0"
     },
-    "event": {
-        "module": "prometheus",
-        "duration": 2123733,
-        "dataset": "prometheus.query"
-    },
-    "metricset": {
-        "name": "query",
-        "period": 10000
-    },
+    "@timestamp": "2022-09-21T14:06:49.000Z",
     "ecs": {
-        "version": "1.5.0"
+        "version": "8.0.0"
     },
     "service": {
-        "address": "localhost:9090",
+        "address": "http://prometheus-server-server:80",
         "type": "prometheus"
     },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "prometheus.query"
+    },
+    "elastic_agent": {
+        "id": "68e3d23a-08cd-4477-924b-25f491194aba",
+        "version": "8.4.0",
+        "snapshot": true
+    },
+    "host": {},
+    "metricset": {
+        "period": 10000,
+        "name": "query"
+    },
     "prometheus": {
-        "labels": {},
         "query": {
-            "prometheus_http_requests_total_rate": 0.3818181818181818
-        }
+            "instant_vector": 0.7838951248394681
+        },
+        "labels": {}
+    },
+    "event": {
+        "duration": 1153570,
+        "agent_id_status": "verified",
+        "ingested": "2022-09-21T14:06:50Z",
+        "module": "prometheus",
+        "dataset": "prometheus.query"
     }
 }
 ```
@@ -571,3 +620,9 @@ The fields reported are:
 | prometheus.query.\* | Prometheus value resulted from PromQL | object |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+
+
+## Dashboard
+
+Prometheus integration is shipped including default overview dashboard.
+Default dashboard works only for `remote_write` datastream and `collector` darastream, if metrics are scraped from the Prometheus server metrics endpoint.

@@ -1,8 +1,8 @@
 # Prometheus Integration
 
-This integration periodically fetches metrics from [Prometheus](https://prometheus.io/) servers.
-This integration can collect metrics from Prometheus Exporters, receive metrics from Prometheus using Remote Write
-and execute specific Prometheus queries against Promethes Query API.
+This integration periodically fetches metrics from [Prometheus](https://prometheus.io/) metrics endpoints.
+This integration can collect metrics from Prometheus Exporters, receive metrics from Prometheus server using Remote Write
+or execute specific Prometheus queries against Promethes Query API.
 
 ## Metrics
 
@@ -161,7 +161,7 @@ Capacity sets the number of samples that are queued in memory per shard, and hen
 be able to cover `max_samples_per_send`.
 
 
-Metrics sent to the http endpoint will be put by default under the `prometheus.metrics` prefix with their labels under `prometheus.labels`.
+Metrics sent to the http endpoint will be put by default under the `prometheus.` prefix with their labels under `prometheus.labels`.
 A basic configuration would look like:
 
 ```yml
@@ -320,3 +320,8 @@ queries:
 The fields reported are:
 
 {{fields "query"}}
+
+## Dashboard
+
+Prometheus integration is shipped including default overview dashboard.
+Default dashboard works only for `remote_write` datastream and `collector` darastream, if metrics are scraped from the Prometheus server metrics endpoint.
