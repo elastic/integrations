@@ -6,11 +6,11 @@ The [PingOne](https://www.pingidentity.com/en.html) integration allows you to mo
 
 Use the PingOne integration to collect and parse data from the REST APIs or HTTP Endpoint input. Then visualize that data in Kibana.
 
-For example, you could use the data from this integration to know which action or activity is performed against a defined PingOne resource. And also tracks the actor or agent who initiated the action.
+For example, you could use the data from this integration to know which action or activity is performed against a defined PingOne resource, and also track the actor or agent who initiated the action.
 
 ## Data streams
 
-The PingOne integration collect logs for one type of event: Audit.
+The PingOne integration collects logs for one type of event: Audit.
 
 **Audit** reporting stores incoming audit messages in a cache and provides endpoints for requesting audit events for a specific time period.
 
@@ -46,15 +46,9 @@ For more details, see [Documentation](https://docs.pingidentity.com/bundle/pingo
 2. In Destination, enter the full URL, including the port.  
 `Example Format: http[s]://{AGENT_ADDRESS}:{AGENT_PORT}/{URL}`.
 
-**Note** : Select Ping Activity Format (JSON) in the format drop down.
-
-### Enabling the integration in Elastic
-
-1. In Kibana go to **Management > Integrations**.
-2. In the "Search for integrations" search bar, type **PingOne**.
-3. Click on **PingOne** integration from the search results.
-4. Click on **Add PingOne** button to add PingOne integration.
-5. Enable the Integration with either via API or HTTP Endpoint input and provide required parameters.
+**Note** :  
+- Select Ping Activity Format (JSON) in the format drop down.
+- HTTP Endpoint Remote logging will expose the port to the internet, therefore it is advised to have proper network access configured.
 
 ## Logs Reference
 
