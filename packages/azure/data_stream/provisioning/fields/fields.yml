@@ -1,0 +1,239 @@
+- name: azure.provisioning
+  type: group
+  fields:
+    - name: tenant_id
+      type: keyword
+      description: |
+        Unique Azure AD tenant ID
+    - name: level
+      type: long
+      description: |
+        The severity level of the event
+    - name: operation_version
+      type: keyword
+      description: |
+        Operation version
+    - name: operation_name
+      type: keyword
+      description: |
+        Operation name
+    - name: result_type
+      type: keyword
+      description: |
+        Result type
+    - name: result_signature
+      type: keyword
+      description: |
+        Result signature
+    - name: category
+      type: keyword
+      description: |
+        Category
+    - name: identity
+      type: keyword
+      description: |
+        Describes the identity of the user or application that performed the operation
+    - name: properties
+      type: group
+      fields:
+        - name: tenant_id
+          type: keyword
+          description: |
+            Unique Azure AD tenant ID
+        - name: action
+          type: keyword
+          description: |
+            Indicates the activity name or the operation name.
+        - name: provisioning_action
+          type: keyword
+          description: |
+            Indicates the activity name or the operation name. Possible values are: create, update, delete, stageddelete, disable, other and unknownFutureValue. For a list of activities logged, refer to Azure AD activity list.
+        - name: activity_datetime
+          type: date
+          description: |
+            Indicates the date and time the activity was performed. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 would look like this: '2014-01-01T00:00:00Z'
+        - name: change_id
+          type: keyword
+          description: |
+            Unique ID of this change in this cycle
+        - name: cycle_id
+          type: keyword
+          description: |
+            Unique ID per job iteration
+        - name: duration_ms
+          type: long
+          description: |
+            Indicates how long this provisioning action took to finish. Measured in milliseconds.
+        - name: id
+          type: keyword
+          description: |
+            Indicates the unique ID for the activity
+        - name: initiated_by
+          type: group
+          description: |
+            Details of who initiated this provisioning
+          fields:
+            - name: id
+              type: keyword
+              description: |
+                Uniquely identifies the person or service that initiated the provisioning event.
+            - name: name
+              type: keyword
+              description: |
+                Name of the person or service that initiated the provisioning event.
+            - name: type
+              type: keyword
+              description: |
+                Type of initiator. Possible values are: user, application, system, unknownFutureValue.
+        - name: job_id
+          type: keyword
+          description: |
+            The unique ID for the whole provisioning job.
+        - name: modified_properties
+          type: flattened
+          description: |
+            Details of each property that was modified in this provisioning action on this object.
+        - name: provisioning_status_info
+          type: group
+          description: |
+            Details of provisioning status.
+          fields:
+            - name: status
+              type: keyword
+              description: |
+                Possible values are: success, warning, failure, skipped, unknownFutureValue.
+            - name: error_information
+              type: group
+              description: |
+                If status is not success/skipped details for the error are contained in this. See https://docs.microsoft.com/en-us/graph/api/resources/provisioningerrorinfo?view=graph-rest-1.0 for more details.
+              fields:
+                - name: additional_details
+                  type: keyword
+                  description: |
+                    Additional details in case of error.
+                - name: error_category
+                  type: keyword
+                  description: |
+                    Categorizes the error code. Possible values are failure, nonServiceFailure, success, unknownFutureValue.
+                - name: error_code
+                  type: keyword
+                  description: |
+                    Unique error code if any occurred. To learn more, visit https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/concept-provisioning-logs#error-codes
+                - name: reason
+                  type: keyword
+                  description: |
+                    Summarizes the status and describes why the status happened.
+                - name: recommended_action
+                  type: keyword
+                  description: |
+                    Provides the resolution for the corresponding error.
+        - name: provisioning_steps
+          type: group
+          description: |
+            Describes the steps taken to perform an action. See https://docs.microsoft.com/en-us/graph/api/resources/provisioningstep?view=graph-rest-1.0 for more details.
+          fields:
+            - name: name
+              type: keyword
+              description: Name of the step.
+            - name: description
+              type: keyword
+              description: Summary of what occurred during the step.
+            - name: provisioning_step_type
+              type: long
+              description: |
+                Type of step.
+            - name: status
+              type: long
+              description: |
+                Status of the step.
+            - name: details
+              type: flattened
+              description: |
+                Details of what occurred during the step.
+        - name: service_principal
+          type: group
+          description: |
+            Represents the service principal used for provisioning. See https://docs.microsoft.com/en-us/graph/api/resources/provisioningserviceprincipal?view=graph-rest-1.0 for more details.
+          fields:
+            - name: id
+              type: keyword
+              description: Uniquely identifies the servicePrincipal used for provisioning.
+            - name: name
+              type: keyword
+              description: Customer-defined name for the servicePrincipal.
+        - name: source_identity
+          type: group
+          description: |
+            Describes the identity associated with the provisioning object summary event. See https://docs.microsoft.com/en-us/graph/api/resources/provisionedidentity?view=graph-rest-1.0 for more details.
+          fields:
+            - name: id
+              type: keyword
+              description: Uniquely identifies the identity.
+            - name: name
+              type: keyword
+              description: Display name of the identity.
+            - name: identity_type
+              type: keyword
+              description: Type of identity that has been provisioned, such as 'user' or 'group'.
+            - name: details
+              type: flattened
+              description: Details of the identity.
+        - name: source_system
+          type: group
+          description: |
+            Represents the system that a user was provisioned to or from. For example, when provisioning a user from Azure Active Directory (Azure AD) to ServiceNow, the source system is Azure AD, and the target system is ServiceNow. See https://docs.microsoft.com/en-us/graph/api/resources/provisioningsystem?view=graph-rest-1.0 for more details.
+          fields:
+            - name: id
+              type: keyword
+              description: Identifier of the system that a user was provisioned to or from.
+            - name: name
+              type: keyword
+              description: Name of the system that a user was provisioned to or from.
+            - name: details
+              type: group
+              description: Details of the system.
+              fields:
+                - name: application_id
+                  type: keyword
+                - name: service_principal_id
+                  type: keyword
+                - name: dervice_principal_display_name
+                  type: keyword
+        - name: target_identity
+          type: group
+          description: |
+            Describes the identity associated with the provisioning object summary event. See https://docs.microsoft.com/en-us/graph/api/resources/provisionedidentity?view=graph-rest-1.0 for more details.
+          fields:
+            - name: id
+              type: keyword
+              description: Uniquely identifies the identity.
+            - name: name
+              type: keyword
+              description: Display name of the identity.
+            - name: identity_type
+              type: keyword
+              description: Type of identity that has been provisioned, such as 'user' or 'group'.
+            - name: details
+              type: flattened
+              description: Details of the identity.
+        - name: target_system
+          type: group
+          description: |
+            Details of target system of the object being provisioned. See https://docs.microsoft.com/en-us/graph/api/resources/provisioningsystem?view=graph-rest-1.0 for more details.
+          fields:
+            - name: id
+              type: keyword
+              description: Identifier of the system that a user was provisioned to or from.
+            - name: name
+              type: keyword
+              description: Name of the system that a user was provisioned to or from.
+            - name: details
+              type: group
+              description: Details of the system.
+              fields:
+                - name: application_id
+                  type: keyword
+                - name: service_principal_id
+                  type: keyword
+                - name: dervice_principal_display_name
+                  type: keyword

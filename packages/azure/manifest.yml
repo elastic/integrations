@@ -1,6 +1,6 @@
 name: azure
 title: Azure Logs
-version: 1.3.0
+version: 1.4.0
 release: ga
 description: This Elastic integration collects logs from Azure
 type: integration
@@ -30,6 +30,8 @@ vars:
     multi: false
     required: true
     show_user: true
+    description: >-
+      Use Event Hub names up to 30 characters long to avoid compatibility issues. The integration uses this name to create Azure resources.
   - name: consumer_group
     type: text
     title: Consumer Group
@@ -43,18 +45,24 @@ vars:
     multi: false
     required: true
     show_user: true
+    description: >-
+      The connection string required to communicate with Event Hubs. See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string) to learn more.
   - name: storage_account
     type: text
     title: Storage Account
     multi: false
     required: true
     show_user: true
+    description: >-
+      The name of the storage account where the consumer group's state/offsets will be stored and updated.
   - name: storage_account_key
     type: text
     title: Storage Account Key
     multi: false
     required: true
     show_user: true
+    description: >-
+      The storage account key, this key will be used to authorize access to data in your storage account.
   - name: resource_manager_endpoint
     type: text
     title: Resource Manager Endpoint
@@ -69,7 +77,7 @@ policy_templates:
       - eventhub
     inputs:
       - type: "azure-eventhub"
-        title: "Collect events Event Hub"
+        title: "Collect events from Event Hub"
         description: "Collecting events from Azure eventhub inputs (input: azure-eventhub)"
         input_group: logs
     icons:
@@ -88,9 +96,11 @@ policy_templates:
     data_streams:
       - auditlogs
       - signinlogs
+      - identity_protection
+      - provisioning
     inputs:
       - type: "azure-eventhub"
-        title: "Collect Azure Active Directory from Event Hub"
+        title: "Collect Azure Active Directory logs from Event Hub"
         description: "Collecting Active Directory logs as audit logs and signin logs from Azure instances (input: azure-eventhub)"
         input_group: logs
     icons:
