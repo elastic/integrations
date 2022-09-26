@@ -1,76 +1,193 @@
-# Azure Billing Integration
+# Azure Billing Metrics Integration
 
-The [Azure Billing](https://docs.microsoft.com/en-us/azure/cost-management-billing/) Integration allows users to retrieve usage details and forecast information of the subscription configured.
+## Overview
 
-### Integration level configuration options
+The Azure Billing Metrics integration allows you to monitor your actual and future Azure spending to optimize resource use.
 
-All the tasks executed against the Azure Consumption REST API will use the [Azure Resource Manager authentication model](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/consumption-api-overview).
-Therefore, all requests must be authenticated with Azure Active Directory (Azure AD).
-One approach to authenticate the client application is to create an Azure AD service principal and retrieve the authentication (JWT) token.
-For a more detailed walk-through, see: [Using Azure PowerShell to create a service principal to access resources](https://docs.microsoft.com/en-us/powershell/azure/create-azure-service-principal-azureps?view=azps-2.7.0).
-It is also possible to create a service principal via the [Azure portal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal).
-Users will have to make sure the roles assigned to the application contain at least reading permissions to the monitor data. See: [Role-based access control](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles).
+The integration uses the [Azure Consumption API](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/consumption-api-overview) to collect usage details and leverages the [Azure Cost Management API](https://docs.microsoft.com/en-us/rest/api/cost-management/forecast) to bring forecast data.
 
-Required credentials for the `azure_billing` integration:
+Use the Azure Billing Metrics integration to collect detailed resource usage and forecast expenses for the coming weeks. For example, if you want to know which resources cost you most, you could view the top resources donut chart included in the dashboard for this integration. Then you can visualize the prediction for the coming weeks by looking at the forecast chart.
 
-`Client ID`:: The unique identifier for the application (also known as Application Id)
-
-`Client Secret`:: The client/application secret/key
-
-`Subscription ID`:: The unique identifier for the azure subscription
-
-`Tenant ID`:: The unique identifier of the Azure Active Directory instance
+## Data streams
 
 
-The azure credentials keys can be used if configured `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`
+The Azure Billing Metrics integration collects one type of data stream: metrics.
 
-`Resource Manager Endpoint` ::
-_string_
-Optional, by default the azure public environment will be used, to override, users can provide a specific resource manager endpoint in order to use a different azure environment.
+**Metrics** give you insight into the state of your Azure costs.
+Data streams collected by this integration include usage details and forecast metrics.
+Usage details metrics track actual expenses including details like subscription ID, resource group, type and name. Forecast metrics track projected expenses over the coming weeks.
+
+## Requirements
+
+To use this integration you will need:
+
+* **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires the Billing Reader role to access the billing information for the subscription, department, or billing account. See more details in the [Setup section](#setup).
+* **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch?tab=Overview), or self-manage the Elastic Stack on your hardware.
+* **Payment method**: Azure Billing Metrics integration queries are charged based on the number of standard API calls. One integration makes two calls every 24 hours in the standard configuration.
+
+## Setup
+
+
+The Elastic Agent connects to Azure APIs, fetches usage details and forecast data, and sends it to a dedicated data stream named `metrics-azure.billing-default` in Elasticsearch.
+
+```text
+         ┌────────────────────┐       ┌─────────┐       ┌─-─────────────────────┐
+         │                    │       │         │       │ metrics-azure.billing │
+         │     Azure APIs     │──────▶│  Agent  │──────▶│    <<data stream>>    │
+         │                    │       │         │       │                       │
+         └────────────────────┘       └─────────┘       └───-───────────────────┘                                              
+```
+
+Elastic Agent needs an App Registration to access Azure on your behalf to collect data using the Azure REST APIs. App Registrations are required to access Azure APIs programmatically.
+
+To start collecting data with this integration, you need to:
+
+* Set up a new Azure [app registration](#app-registration) by registering an app, adding credentials, and assigning the role.
+* Specify integration [settings](#settings) in Kibana, which will determine how the integration will access the Azure APIs.
+* Define the [scope](#scope).
+
+
+### App registration
+
+Set up a new app registration in Azure.
+
+#### Register a new app
+
+To create the app registration:
+
+1. Sign in to the [Azure Portal](https://portal.azure.com/).
+2. Search for and select **Azure Active Directory**.
+3. Under **Manage**, select **App registrations** > **New registration**.
+4. Enter a display _Name_ for your application (for example, "elastic-agent").
+5. Specify who can use the application.
+6. Don't enter anything for _Redirect URI_. This is optional and the agent doesn't use it.
+7. Select **Register** to complete the initial app registration.
+
+Take note of the **Application (client) ID**, which you will use later when specifying the **Client ID** in the integration settings.
+
+#### Add credentials
+
+Credentials allow your application to access Azure APIs and authenticate itself, requiring no interaction from a user at runtime.
+
+This integration uses Client Secrets to prove its identity.
+
+1. In the [Azure Portal](https://portal.azure.com/), select the application you created in the previous section.
+1. Select **Certificates & secrets** > **Client secrets** > **New client secret**.
+1. Add a description (for example, "Elastic Agent client secrets").
+1. Select an expiration for the secret or specify a custom lifetime.
+1. Select **Add**.
+
+Take note of the content in the **Value** column in the **Client secrets** table, which you will use later when specifying a **Client Secret** in the integration settings. **This secret value is never displayed again after you leave this page.** Record the secret's value in a safe place.
+
+#### Assign role
+
+1. In the [Azure Portal](https://portal.azure.com/), search for and select **Subscriptions**.
+1. Select the subscription to assign the application.
+1. Select **Access control (IAM)**.
+1. Select **Add** > **Add role assignment** to open the _Add role assignment page_.
+1. In the **Role** tab, search and select the role **Billing Reader**.
+1. Select the **Next** button to move to the **Members** tab.
+1. Select **Assign access to** > **User, group, or service principal**, and select **Select members**. This page does not display Azure AD applications in the available options by default.
+1. To find your application, search by name (for example, "elastic-agent") and select it from the list.
+1. Click the **Select** button.
+1. Then click the **Review + assign** button.
+
+Take note of the following values, which you will use later when specifying settings.
+
+* `Subscription ID`: use the content of the "Subscription ID" you selected.
+* `Tenant ID`: use the "Tenant ID" from the Azure Active Directory you use.
+
+Your App Registration is now ready for the Elastic Agent.
+
+#### Additional Resources
+
+If you want to learn more about this process, you can read these two general guides from Microsoft:
+
+* [Quickstart: Register an application with the Microsoft identity platform](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) 
+* [Use the portal to create an Azure AD application and service principal that can access resources](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)
+
+### Settings
+
+Add the Azure Billing Metrics integration in Kibana and specify settings.
+
+If you're new to integrations, you can find  step-by-step instructions on how to set up an integration in the {{ url "getting-started-observability" "Getting started" }} guide.
+
+#### Main options
+
+The settings' main section contains all the options needed to access the Azure APIs and collect the billing data. You will now use all the values from [App registration](#app-registration) including:
+
+`Client ID` _string_
+: The unique identifier of the App Registration (sometimes referred to as Application ID).
+
+`Client Secret` _string_
+: The client secret for authentication.
+
+`Subscription ID` _string_
+: The unique identifier for the Azure subscription. You can provide just one subscription ID. The Agent uses this ID to access Azure APIs. The Agent also uses this ID as the default scope for billing information: see the "Scope" section for more details about how to collect data for more than one subscription.
+
+`Tenant ID` _string_
+: The unique identifier of the Azure Active Directory's Tenant ID.
+
+#### Advanced options
+
+There are two additional advanced options:
+
+`Resource Manager Endpoint` _string_
+: Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
+
 Examples:
-* https://management.chinacloudapi.cn for azure ChinaCloud
-* https://management.microsoftazure.de for azure GermanCloud
-* https://management.azure.com for azure PublicCloud
-* https://management.usgovcloudapi.net for azure USGovernmentCloud
 
-`Active Directory Endpoint` ::
-_string_
-Optional, by default the associated active directory endpoint to the resource manager endpoint will be used, to override, users can provide a specific active directory endpoint in order to use a different azure environment.
+* `https://management.chinacloudapi.cn` for Azure ChinaCloud
+* `https://management.microsoftazure.de` for Azure GermanCloud
+* `https://management.azure.com` for Azure PublicCloud
+* `https://management.usgovcloudapi.net` for Azure USGovernmentCloud
+
+`Active Directory Endpoint`  _string_
+: Optional. By default, the integration uses the associated Active Directory Endpoint. To override, users can provide a specific active directory endpoint to use a different Azure environment.
+
 Examples:
-* https://login.microsoftonline.com for azure ChinaCloud
-* https://login.microsoftonline.us for azure GermanCloud
-* https://login.chinacloudapi.cn for azure PublicCloud
-* https://login.microsoftonline.de for azure USGovernmentCloud
 
-The integration contains the following data streams:
+* `https://login.chinacloudapi.cn` for Azure ChinaCloud
+* `https://login.microsoftonline.de` for Azure GermanCloud
+* `https://login.microsoftonline.com` for Azure PublicCloud
+* `https://login.microsoftonline.us` for Azure USGovernmentCloud
 
-### billing
+#### Data stream options
 
+The data stream has some additional options about scope and period. To learn more about the scope, read the [Scope](#scope) section.
 
+`Billing Scope Department ID` _string_
+: Retrieve data based on the department ID.
 
-#### Configuration options
+`Billing Scope Account ID`  _string_
+: Retrieve data based on the billing account ID. The billing account ID is available on the [Azure Portal](https://portal.azure.com/) at **Cost Management + Billing**, select a billing scope of the type "billing account", then **Setting** > **Properties** > **ID**.
 
-`Period`:: (_string_) The time interval to use when retrieving metric values.
+`Period` _string_
+: The time interval to use when retrieving metric values.
 
-`Billing Scope Department`:: (_string_) Retrieve usage details based on the department scope.
+### Scope
 
-`Billing Scope Account Id`:: (_string_) Retrieve usage details based on the billing account ID scope.
+There are three supported scopes for this integration:
 
-If none of the 2 options are entered then the subscription ID will be used as scope.
+* Subscription
+* Department
+* Billing Account
 
+The integration uses the Subscription ID as the default scope for the billing data.
 
-## Additional notes about metrics and costs
+To change the scope, expand the data stream section named **Collect Azure Billing metrics** in the integration settings and set one of the two available options (if you set both, the billing account scope take precedence over the department):
 
-Costs: Metric queries are charged based on the number of standard API calls.
+* `Billing Scope Department ID` : Collect user details and forecast data for the given department ID.
+* `Billing Scope Account ID` : Collect user details and forecast data for the given billing account ID.
 
+## Metrics Reference
+
+### Azure Billing Metrics
+
+The Azure Billing Metrics data stream provides events from Consumption and Cost Management APIs of the following types: usage details and forecast.
+
+#### Example
 
 {{event "billing"}}
 
-
-
-
-
-
-
-
-
+{{fields "billing"}}
