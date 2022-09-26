@@ -1,0 +1,23 @@
+metricsets: ["json"]
+namespace: "xdcr"
+hosts:
+{{#each hosts as |host|}}
+  {{#each ../buckets as |bucket|}}
+    - "{{host}}/pools/default/buckets/{{bucket}}/stats"
+  {{/each}}
+{{/each}}
+{{#if ssl}}
+{{ssl}}
+{{/if}}
+period: {{period}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
