@@ -264,12 +264,11 @@ processors:
             }
             ctx.related.ip = setList;
             Map indicator = new HashMap();
-            indicator.put("description",ctx.box.additional_details.shield_alert.alert_summary.description);
-            indicator.put("first_seen",ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date);
-            indicator.put("last_seen",ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date);
-            indicator.put("sightings",ctx.box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count);
-            indicator.put("type","file");
-            ctx.threat.enrichments.add(indicator)
+            ctx.threat.indicator.description = ctx.box.additional_details.shield_alert.alert_summary.description;
+            ctx.threat.indicator.first_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date;
+            ctx.threat.indicator.last_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date;
+            ctx.threat.indicator.sightings = ctx.box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count;
+            ctx.threat.indicator.type = "file";
         }
   - script:
       description: Unpack Malicious Content properties
@@ -277,19 +276,18 @@ processors:
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Malicious Content")) {
             Map indicator = new HashMap();
-            indicator.put("description",
+            ctx.threat.indicator.description = 
                     ctx.box.additional_details.shield_alert.malware_info.malware_name +
                     ", " + ctx.box.additional_details.shield_alert.malware_info.family +
                     ", " + ctx.box.additional_details.shield_alert.malware_info.file_name +
                     " Detected by Box Shield from IP " + ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip +
                     ". " + ctx.box.additional_details.shield_alert.malware_info.description +
-                    " see " + ctx.box.additional_details.shield_alert.malware_info.detail_link);
-            indicator.put("provider",ctx.box.additional_details.shield_alert.alert_summary.upload_activity.service_name);
-            indicator.put("type","software");
-            indicator.put("first_seen",ctx.box.additional_details.shield_alert.malware_info.first_seen);
-            indicator.put("last_seen",ctx.box.additional_details.shield_alert.malware_info.last_seen);
-            indicator.put("reference",ctx.box.additional_details.shield_alert.malware_info.detail_link);
-            ctx.threat.enrichments.add(indicator)
+                    " see " + ctx.box.additional_details.shield_alert.malware_info.detail_link;
+            ctx.threat.indicator.provider = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.service_name;
+            ctx.threat.indicator.type = "software";
+            ctx.threat.indicator.first_seen = ctx.box.additional_details.shield_alert.malware_info.first_seen;
+            ctx.threat.indicator.last_seen = ctx.box.additional_details.shield_alert.malware_info.last_seen;
+            ctx.threat.indicator.reference = ctx.box.additional_details.shield_alert.malware_info.detail_link;
         }
   - script:
       description: Capitalize Priority to match Appendix A of the STIX 2.1 framework
@@ -325,7 +323,36 @@ processors:
                 ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() + 
                 ctx.box.additional_details.shield_alert.priority.substring(1);
         }
-# Do AS look-ups as well
+# AS look-ups on enrichments within Array
+  - foreach:
+      field: threat.indicator.enrichments
+      ignore_missing: true
+      processor:
+        geoip:
+          database_file: GeoLite2-ASN.mmdb
+          field: "_ingest._value.ip"
+          target_field: "_ingest._value.as"
+          properties:
+            - asn
+            - organization_name
+          ignore_missing: true
+  - foreach:
+      field: threat.indicator.enrichments
+      ignore_missing: true
+      processor:
+        rename:
+          field: "_ingest._value.as.asn"
+          target_field: "_ingest._value.as.number"
+          ignore_missing: true
+  - foreach:
+      field: threat.indicator.enrichments
+      ignore_missing: true
+      processor:
+        rename:
+          field: "_ingest._value.as.organization_name"
+          target_field: "_ingest._value.as.organization.name"
+          ignore_missing: true
+# AS lookup for stand-alone indicator 
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: threat.indicator.ip
