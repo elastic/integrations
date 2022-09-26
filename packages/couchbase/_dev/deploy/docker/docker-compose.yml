@@ -3,8 +3,11 @@ services:
   couchbase:
     image: couchbase/server-sandbox:${COUCHBASE_VERSION:-7.1.0}
     hostname: cb
+    volumes:
+      - ./files/setup.sh:/setup.sh
+      - ./files/entrypoint.sh:/entrypoint.sh
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://admin:password@localhost:8091/pools/default"]
+      test: ["CMD", "curl", "-f", "http://admin:password@localhost:8091/pools/default/"]
       interval: 2s
       timeout: 2s
       retries: 40
