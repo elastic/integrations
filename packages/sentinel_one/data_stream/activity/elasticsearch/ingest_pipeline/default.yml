@@ -72,10 +72,20 @@ processors:
               }
           }
           if (!eventCategory.isEmpty()) {
-              ctx.event.category = eventCategory;
+              def category = new ArrayList();
+              for (def c: eventCategory) {
+                category.add(c);
+              }
+              Collections.sort(category);
+              ctx.event.category = category;
           }
           if (!eventType.isEmpty()) {
-              ctx.event.type = eventType;
+              def type = new ArrayList();
+              for (def t: eventType) {
+                type.add(t);
+              }
+              Collections.sort(type);
+              ctx.event.type = type;
           }
           if (['suspicious', 'malicious'].contains(ctx.json?.data?.confidenceLevel)) {
               ctx.event.kind = 'alert';
