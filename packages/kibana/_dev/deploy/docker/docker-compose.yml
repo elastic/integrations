@@ -1,0 +1,50 @@
+version: "2.3"
+services:
+  elasticsearch:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}"
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - ELASTIC_PASSWORD
+    ports:
+      - "127.0.0.1:9201:9200"
+    volumes:
+      - "./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+    healthcheck:
+      test: curl -sfo /dev/null -u elastic:${ELASTIC_PASSWORD} localhost:9200 || exit 1
+      retries: 300
+      interval: 1s
+  setup:
+    image: "alpine/curl:latest"
+    environment:
+      - "ES_SERVICE_HOST=http://elasticsearch:9200"
+      - ELASTIC_PASSWORD
+      - KIBANA_PASSWORD
+    command: ["/bin/sh", "./setup.sh"]
+    volumes:
+      - ./scripts/setup.sh:/setup.sh
+  kibana:
+    image: "docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./config/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - ${SERVICE_LOGS_DIR}:/usr/share/kibana/logs
+    ports:
+      - "127.0.0.1:5602:5601"
+    healthcheck:
+      test: curl -sfo /dev/null localhost:5601 || exit 1
+      retries: 600
+      interval: 1s
+  log_generation:
+    image: "alpine/curl:latest"
+    depends_on:
+      kibana:
+        condition: service_healthy
+    environment:
+      - "KIBANA_SERVICE_HOST=http://kibana:5601"
+      - ELASTIC_PASSWORD
+      - KIBANA_PASSWORD
+    command: ["/bin/sh", "./generate-audit-logs.sh"]
+    volumes:
+      - ./scripts/generate-audit-logs.sh:/generate-audit-logs.sh
