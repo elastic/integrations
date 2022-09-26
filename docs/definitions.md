@@ -40,7 +40,7 @@ The `_dev` directory is part of [the package spec](https://github.com/elastic/pa
 1. the package-level `_dev` folder contains files needed to setup the testing environment for that package. This environment setup is specified via folders/files in the `_dev/deploy` folder. For example, the `apache` package [specifies](https://github.com/elastic/integrations/tree/main/packages/apache/_dev/deploy) how to spin up an Apache Docker container for testing.
 1. the data stream-level `_dev` folder contains test configuration files for various types of tests. For example, see the [`_dev/test` folder](https://github.com/elastic/integrations/tree/main/packages/apache/data_stream/error/_dev/test) under the `apache/error` data stream.
 
-The integrations have also [asset](https://github.com/elastic/elastic-package/blob/master/docs/howto/asset_testing.md) and [static](https://github.com/elastic/elastic-package/blob/master/docs/howto/static_testing.md) tests. They don't require config files, but configs can be used to mark them as optional.
+The integrations have also [asset](https://github.com/elastic/elastic-package/blob/main/docs/howto/asset_testing.md) and [static](https://github.com/elastic/elastic-package/blob/main/docs/howto/static_testing.md) tests. They don't require config files, but configs can be used to mark them as optional.
 
 ## Migration from Beats Modules
 
