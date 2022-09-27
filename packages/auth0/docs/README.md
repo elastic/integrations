@@ -71,7 +71,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | auth0.logs.data.location_info.latitude | Global latitude (horizontal) position. | keyword |
 | auth0.logs.data.location_info.longitude | Global longitude (vertical) position. | keyword |
 | auth0.logs.data.location_info.time_zone | Time zone name as found in the [tz database](https://www.iana.org/time-zones). | keyword |
-| auth0.logs.data.log_id | Unique ID of the event. | keyword |
+| auth0.logs.data.log_id | Unique log event identifier | keyword |
 | auth0.logs.data.login.completedAt | Time at which the operation was completed | date |
 | auth0.logs.data.login.elapsedTime | Number of milliseconds the operation took to complete. | long |
 | auth0.logs.data.login.initiatedAt | Time at which the operation was initiated | date |
@@ -174,12 +174,11 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2021-11-03T03:25:28.923Z",
     "agent": {
-        "ephemeral_id": "3c2232a0-df0e-48e0-8440-96d5500ce25c",
-        "hostname": "docker-fleet-agent",
-        "id": "38ed1ea2-8c9a-4d5a-81ee-826cead96859",
+        "ephemeral_id": "005f183d-a5c1-4e35-8786-2b6fb9e1a1c2",
+        "id": "95de1bcd-72e1-4790-8a3a-0e1890f86f92",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.4.1"
     },
     "auth0": {
         "logs": {
@@ -257,12 +256,12 @@ An example event for `logs` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "38ed1ea2-8c9a-4d5a-81ee-826cead96859",
+        "id": "95de1bcd-72e1-4790-8a3a-0e1890f86f92",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.4.1"
     },
     "event": {
         "action": "successful-login",
@@ -273,7 +272,7 @@ An example event for `logs` looks as following:
         ],
         "dataset": "auth0.logs",
         "id": "90020211103032530111223343147286033102509916061341581378",
-        "ingested": "2022-01-20T05:57:05Z",
+        "ingested": "2022-09-27T04:16:10Z",
         "kind": "event",
         "original": "{\"data\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"client_name\":\"Default App\",\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"date\":\"2021-11-03T03:25:28.923Z\",\"details\":{\"completedAt\":1635909928922,\"elapsedTime\":1110091,\"initiatedAt\":1635908818831,\"prompts\":[{\"completedAt\":1635909903693,\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"elapsedTime\":null,\"identity\":\"6182002f34f4dd006b05b5c7\",\"name\":\"prompt-authenticate\",\"stats\":{\"loginsCount\":1},\"strategy\":\"auth0\"},{\"completedAt\":1635909903745,\"elapsedTime\":1084902,\"flow\":\"universal-login\",\"initiatedAt\":1635908818843,\"name\":\"login\",\"timers\":{\"rules\":5},\"user_id\":\"auth0|6182002f34f4dd006b05b5c7\",\"user_name\":\"neo@test.com\"},{\"completedAt\":1635909928352,\"elapsedTime\":23378,\"flow\":\"consent\",\"grantInfo\":{\"audience\":\"https://dev-yoj8axza.au.auth0.com/userinfo\",\"expiration\":null,\"id\":\"618201284369c9b4f9cd6d52\",\"scope\":\"openid profile\"},\"initiatedAt\":1635909904974,\"name\":\"consent\"}],\"session_id\":\"1TAd-7tsPYzxWudzqfHYXN0e6q1D0GSc\",\"stats\":{\"loginsCount\":1}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103032530111223343147286033102509916061341581378\",\"strategy\":\"auth0\",\"strategy_type\":\"database\",\"type\":\"s\",\"user_agent\":\"Mozilla/5.0 (X11;Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\",\"user_id\":\"auth0|6182002f34f4dd006b05b5c7\",\"user_name\":\"neo@test.com\"},\"log_id\":\"90020211103032530111223343147286033102509916061341581378\"}",
         "outcome": "success",
