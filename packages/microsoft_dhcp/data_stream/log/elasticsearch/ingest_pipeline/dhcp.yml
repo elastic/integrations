@@ -10,7 +10,7 @@ processors:
         - _tmp_.time
         - message
         - host.ip
-        - host.domain
+        - host.name
         - _tmp_.mac
         - user.name
         - microsoft.dhcp.transaction_id
@@ -24,6 +24,14 @@ processors:
         - microsoft.dhcp.user.string
         - microsoft.dhcp.relay_agent_info
         - microsoft.dhcp.dns_error_code
+      ignore_failure: true
+  - grok:
+      field: host.name
+      if: 'ctx.host?.name != null && ctx.host.name.contains(".")'
+      patterns:
+        - "%{HOSTNAME}\\.%{GREEDYDATA:host.domain}"
+      pattern_definitions:
+        "HOSTNAME": "[^.]+"
       ignore_failure: true
   - set:
       field: _tmp_.timestamp
