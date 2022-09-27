@@ -50,45 +50,13 @@ Examples of source services:
 * Azure Monitor
 * Spring Cloud
 
-Examples of destinations:
-
-* Azure Event Hubs
-* Azure Storage Account
-* Azure partner integraions
-* more
-
-The Azure Logs integration uses Event Hubs as destination.
+The Azure Logs integration uses Event Hub as destination.
 
 ### Event Hub
 
 [Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service. I can receive and temporary store millions of events.
 
 The Azure Logs integration uses the Event Hubs service to receive and store logs exported by a Diagnostic settings and make them available to Elastic Agent.
-
-```text
-  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐                    
-  │    Azure AD    │   │  Diagnostic  │   │ Azure AD logs  │                    
-  │  <<service>>   │──▶│   settings   │──▶│ <<event hub>>  │──┐                 
-  └────────────────┘   └──────────────┘   └────────────────┘  │   ┌────────────┐
-                                                              │   │  Elastic   │
-                                                              ├──▶│   Agent    │
-  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐  │   └────────────┘
-  │ Azure Monitor  │   │  Diagnostic  │   │ Activity logs  │  │                 
-  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │──┘                 
-  └────────────────┘   └──────────────┘   └────────────────┘                                
-```
-
-To successfully use Event Hubs to set up the Azure Logs integration, you need to also be aware of **Consumer Group** and how to get a **Connection String**.
-
-#### Consumer Group
-
-A Consumer Group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and with their own offsets.
-
-The Azure Logs integration uses a consumer group to access Event Hubs and track which logs have already been fetched and are new.
-
-#### Connection String
-
-The Elastic Agent requries a Connection String to access the Event Hub and fetch the exported logs. It contains details about the Event Hub used and the credentials required to access it.
 
 To learn more about Event Hubs, you can read the in-depth document [Features and terminology in Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-features).
 
@@ -106,18 +74,134 @@ The Azure Logs integration uses a Storage account container to store and share i
                                                 │      
                        consumer group info      │      
   ┌────────────────┐   (state, position, or     │      
-  │     adlogs     │         offset)            │      
+  │     azlogs     │         offset)            │      
   │ <<container>>  │◀───────────────────────────┘      
   └────────────────┘                                                   
 ```
 
 ## Setup
 
-Before adding the integration, you must complete the following tasks as logs are read from Azure Event Hubs:
+Before adding the integration, you must complete the following tasks as logs are read from Azure Event Hubs.
 
-* Your logs have to first be exported to the [Event Hub](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-create-kafka-enabled)
-* To export activity logs to event hubs, follow the steps in Microsoft's [Legacy collection methods documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export)
-* To export audit and sign-in logs to event hubs, follow the steps in Microsoft's [Stream Azure Active Directory logs to an Azure Event Hub tutorial](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub)
+### Create an Event Hub
+
+The Event Hub receives the logs exported from the Azure service you're interested in and makes them available to the Elastic Agent to pick up.
+
+Here's the high-level overview of the required steps:
+
+* Create a resource group, or use an existing one.
+* Create an Event Hubs namespace.
+* Create an event hub.
+
+For a detailed step-by-step guide, please follow the instructions at [Quickstart: Create an event hub using Azure portal](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create).
+
+Take note of the event hub **Name**, which you will use later when specifying a **eventhub** in the integration settings.
+
+#### How many event hubs?
+
+Elastic recommends to create one event hub for each Azure service you are collecting data. For example, if you plan to collect Azure Active Directory logs and Activity logs, create two event hubs: one for Azure AD and one for Activity logs.
+
+```text
+  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐                    
+  │    Azure AD    │   │  Diagnostic  │   │ Azure AD logs  │                    
+  │  <<service>>   │──▶│   settings   │──▶│ <<event hub>>  │──┐                 
+  └────────────────┘   └──────────────┘   └────────────────┘  │   ┌────────────┐
+                                                              │   │  Elastic   │
+                                                              ├──▶│   Agent    │
+  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐  │   └────────────┘
+  │ Azure Monitor  │   │  Diagnostic  │   │ Activity logs  │  │                 
+  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │──┘                 
+  └────────────────┘   └──────────────┘   └────────────────┘                    
+```
+
+For high-volume deployments, we recommend one event hub for each data stream.
+
+#### Consumer Group
+
+A Consumer Group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and with their own offsets.
+
+The Azure Logs integration uses a consumer group to access Event Hubs and track which logs have already been fetched and are new.
+
+In most cases, you can use the default value of `$Default`.
+
+#### Connection String
+
+The Elastic Agent requries a Connection String to access the Event Hub and fetch the exported logs. It contains details about the Event Hub used and the credentials required to access it.
+
+1. Visit the **Event Hubs namespace** you created in a previous step.
+1. Select **Settings** > **Shared access policies**.
+
+Create a new Shared Access Policy (SAS):
+
+1. Select **Add** to open the creation panel.
+1. Add a **Policy name** (for example, "ElasticAgent").
+1. Select the **Listen** claim.
+1. Select **Create**.
+
+When the SAS Policy is ready, select it to display the information panel.
+
+Take note of the **Connection string–primary key**, which you will use later when specifying a **connection_string** in the integration settings.
+
+### Create a Diagnostic settings
+
+The Diagnostic settings export the logs from Azure services to a destination. The Azure Logs integration uses an event hub as the destination for the logs.
+
+1. Locate the Diagnostic settings for the service (for example, Azure Active Directory).
+1. Select Diagnostic settings in the **Monitoring** section of the service. Please note that different services may place the diagnostic settings in different positions.
+1. Select **Add diagnostic setting**.
+
+In the diagnostic settings page you have to select the **log categories** you want to export and select the **destination**.
+
+#### Select log categories
+
+Each Azure services exports a well-defined list of log categories. Check which log categories are supported by the integration.
+
+#### Select the destination
+
+Select the subscription and the event hub namespace you previously created. Select the event hub dedicated to this integration.
+
+```text
+  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐      ┌────────────┐
+  │ Azure Monitor  │   │  Diagnostic  │   │ Activity logs  │      │  Elastic   │
+  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │─────▶│   Agent    │
+  └────────────────┘   └──────────────┘   └────────────────┘      └────────────┘
+```
+
+### Create a Storage account container
+
+The Storage account container stores the consumer group info (state, position, or offset). This allow the Elastic Agent to resume from the last processed logs after a restart, or share the load between multiple Elastic Agents.
+
+To create the Storage accounts:
+
+1. Sign in to the [Azure Portal](https://portal.azure.com/).
+1. Search for and select **Storage accounts**.
+1. Under **Project details**, select a subscription and a resource group.
+1. Under **Instance details**, enter a **Storage account name**.
+1. Select **Create**.
+
+Take note of the **Storage account name**, which you will use later when specifying the **storage_account** in the integration settings.
+
+When the new Storage account is ready, we can look for the access keys:
+
+1. Select the Storage account.
+1. In **Security + networking** select **Access keys**.
+1. In the **key1** section, click on the **Show** button and copy the **Key** value.
+
+Take note of the **Key** value, which you will use later when specifying the **storage_account_key** in the integration settings.
+
+This is the final diagram of the a setup for collecting Activity logs from the Azure Monitor service.
+
+```text
+  ┌────────────────┐   ┌──────────────┐   ┌────────────────┐         ┌────────────┐
+  │ Azure Monitor  │   │  Diagnostic  │   │ Activity logs  │  logs   │  Elastic   │
+  │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │────────▶│   Agent    │
+  └────────────────┘   └──────────────┘   └────────────────┘         └────────────┘
+                                                                            │      
+                       ┌──────────────┐          consumer group info        │      
+                       │    azlogs    │          (state, position, or       │      
+                       │<<container>> │◀───────────────offset)──────────────┘      
+                       └──────────────┘                                                                          
+```
 
 ## Settings
 
