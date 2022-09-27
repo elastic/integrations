@@ -3,27 +3,50 @@ description: "Pipeline for parsing CoreDNS logs."
 processors:
   - set:
       field: ecs.version
-      value: '8.3.0'
-  - rename:
-      field: message
-      target_field: event.original
+      value: '8.4.0'
+  - set:
+      field: event.original
+      copy_from: message
+      ignore_empty_value: true
+  - pipeline:
+      if: ctx.event.original.charAt(0) == (char)("{")
+      name: '{{ IngestPipeline "json" }}'
   - set:
       field: event.kind
       value: event
   - set:
       field: event.category
       value: network
+  - append:
+      field: event.type
+      value: protocol
   - grok:
-      field: event.original
+      field: message
       patterns:
-      - '\[%{LOGLEVEL:log.level}\] \[?%{IP:source.address}\]?:%{POSINT:source.port:long} - %{POSINT:dns.id} "%{WORD:dns.question.type} %{WORD:dns.question.class}
-         %{IPORHOST:dns.question.name}\. %{WORD:network.transport} %{POSINT:source.bytes:long} %{WORD:coredns.log.edns0.do:boolean} %{POSINT:coredns.log.edns0.buffer_size:long}"
+      - '(%{TIMESTAMP_ISO8601:_tmp.timestamp} )?\[%{LOGLEVEL:log.level}\] \[?%{IP:source.address}\]?:%{POSINT:source.port:long} - %{POSINT:dns.id} "%{WORD:dns.question.type} %{WORD:dns.question.class}
+         %{IPORHOST:dns.question.name}\. %{WORD:network.transport} %{POSINT:source.bytes:long} %{WORD:coredns.log.dnssec_ok:boolean} %{POSINT:coredns.log.buffer_size:long}"
          %{WORD:dns.response_code} %{NOTSPACE:dns.header_flags} %{POSINT:destination.bytes:long} %{NOTSPACE:event.duration}s( "%{NONNEGINT:dns.op_code}")?'
       ignore_missing: true
       ecs_compatibility: v1
     #   on_failure:
     #     - drop:
     #         description: Drop if a log other than query
+  - rename:
+      field: "@timestamp"
+      target_field: event.created
+      ignore_missing: true
+  - date:
+      field: _tmp.timestamp
+      formats:
+        - ISO8601
+      if: ctx._tmp?.timestamp != null
+  - script:
+      lang: painless
+      source: >
+        ctx.event.created = ctx['@timestamp'];
+        ctx['@timestamp'] = ctx['timestamp'];
+        ctx.remove('timestamp');
+      ignore_failure: true
   - lowercase:
       field: network.transport
       ignore_missing: true
@@ -51,14 +74,18 @@ processors:
       field: dns.header_flags
       separator: ","
       ignore_missing: true
+  - append:
+      if: ctx.coredns?.log?.dnssec_ok
+      field: dns.header_flags
+      value: DO
   - set: 
       field: event.outcome
       value: success
-      if: ctx?.dns?.response_code != null && ctx?.dns?.response_code == "NOERROR"
+      if: ctx?.dns?.response_code != null && ctx.dns.response_code == "NOERROR"
   - set: 
       field: event.outcome
       value: failure
-      if: ctx?.dns?.response_code != null && ctx?.dns?.response_code != "NOERROR"
+      if: ctx?.dns?.response_code != null && ctx.dns.response_code != "NOERROR"
   - script:
       lang: painless
       if: ctx.event?.duration != null
@@ -107,6 +134,11 @@ processors:
       value: "{{dns.question.name}}"
       allow_duplicates: false
       if: ctx.dns?.question?.name != null && ctx.dns?.question?.type == 'PTR'
+  - remove:
+      field:
+        - message
+        - _tmp
+      ignore_failure: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.

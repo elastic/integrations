@@ -28,8 +28,8 @@ CoreDNS query logs.
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
-| coredns.log.edns0.buffer_size | the EDNS0 buffer size advertised in the query | long |
-| coredns.log.edns0.do | The DO bit is included in a DNS query and is an abbreviation for "DNSSEC OK".  If the DO bit is set (DO=1), then the client is DNSSEC-aware, and it is OK for the DNS server to return DNSSEC data in a response.  If the DO bit is not set (DO=0), then the client is not DNSSEC-aware, and the DNS server must not include any DNSSEC data in a DNS response. | boolean |
+| coredns.log.buffer_size | the EDNS0 buffer size advertised in the query | long |
+| coredns.log.dnssec_ok | The DO bit is included in a DNS query and is an abbreviation for "DNSSEC OK".  If the DO bit is set (DO=1), then the client is DNSSEC-aware, and it is OK for the DNS server to return DNSSEC data in a response.  If the DO bit is not set (DO=0), then the client is not DNSSEC-aware, and the DNS server must not include any DNSSEC data in a DNS response. | boolean |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -71,6 +71,13 @@ CoreDNS query logs.
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| kubernetes.container.name | Kubernetes container name | keyword |
+| kubernetes.labels.\* | Kubernetes labels map | object |
+| kubernetes.namespace | Kubernetes namespace | keyword |
+| kubernetes.node.name | Kubernetes node name | keyword |
+| kubernetes.pod.name | Kubernetes pod name | keyword |
+| kubernetes.pod.uid | Kubernetes pod UID | keyword |
+| kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
