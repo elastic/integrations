@@ -13,8 +13,8 @@ CIFv3 `confidence` field values (0..10) are converted to ECS confidence (None, L
 | CIFv3 Confidence | ECS Conversion |
 | ---------------- | -------------- |
 | Beyond Range     | None           |
-| 0 - <3           | Low            |
-| 3 - <7           | Medium         |
+| 0 - \<3          | Low            |
+| 3 - \<7          | Medium         |
 | 7 - 10           | High           |
 
 {{fields "feed"}}
