@@ -66,7 +66,7 @@ An example event for `log` looks as following:
     },
     "@timestamp": "2021-12-06T12:43:57.000-05:00",
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "data_stream": {
         "namespace": "ep",
