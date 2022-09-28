@@ -1,4 +1,4 @@
-# Azure WAF Logs
+# Azure Application Gateway Logs
 
 The Azure Logs integration retrieves different types of log data from Azure.
 
@@ -56,11 +56,11 @@ https://management.usgovcloudapi.net/
 
 ## Logs
 
-### waf_logs 
+### application_gateway_logs 
 
-The `waf_logs` data stream of the Azure Logs package will collect any WAF log events that have been streamed through an Azure event hub.
+The `application_gateway_logs` data stream of the Azure Logs package will collect any Application Gateway log events that have been streamed through an Azure event hub.
 
-An example event for `waf` looks as following:
+An example event for `application_gateway` looks as following:
 
 ```json
 {
@@ -73,7 +73,7 @@ An example event for `waf` looks as following:
             "provider": "MICROSOFT.NETWORK/APPLICATIONGATEWAYS"
         },
         "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129",
-        "waf": {
+        "application_gateway_logs": {
             "instance_id": "ApplicationGatewayRole_IN_0",
             "operation_name": "ApplicationGatewayAccess"
         }
@@ -163,6 +163,14 @@ An example event for `waf` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure.application_gateway_logs.action | Action taken on the request. Available values are: Blocked and Allowed (for custom rules) Matched (when a rule matches a part of the request) Detected and Blocked (these are both for mandatory rules, depending on if the WAF is in detection or prevention mode). | keyword |
+| azure.application_gateway_logs.hostname | Hostname or IP address of the Application Gateway. | keyword |
+| azure.application_gateway_logs.instance_id | Application Gateway instance for which firewall data is being generated. For a multiple-instance application gateway, there is one row per instance. | keyword |
+| azure.application_gateway_logs.operation_name | Operation name | keyword |
+| azure.application_gateway_logs.policy.id | Unique ID of the Firewall Policy associated with the Application Gateway, Listener, or Path. | keyword |
+| azure.application_gateway_logs.policy.scope | The location of the policy - values can be "Global", "Listener", or "Location". | keyword |
+| azure.application_gateway_logs.policy.scope_name | The name of the object where the policy is applied. | keyword |
+| azure.application_gateway_logs.transaction_id | Unique ID for a given transaction which helps group multiple rule violations that occurred within the same request. | keyword |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
@@ -172,14 +180,6 @@ An example event for `waf` looks as following:
 | azure.resource.provider | Resource type/namespace | keyword |
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
-| azure.waf.action | Action taken on the request. Available values are: Blocked and Allowed (for custom rules) Matched (when a rule matches a part of the request) Detected and Blocked (these are both for mandatory rules, depending on if the WAF is in detection or prevention mode). | keyword |
-| azure.waf.hostname | Hostname or IP address of the Application Gateway. | keyword |
-| azure.waf.instance_id | Application Gateway instance for which firewall data is being generated. For a multiple-instance application gateway, there is one row per instance. | keyword |
-| azure.waf.operation_name | Operation name | keyword |
-| azure.waf.policy.id | Unique ID of the Firewall Policy associated with the Application Gateway, Listener, or Path. | keyword |
-| azure.waf.policy.scope | The location of the policy - values can be "Global", "Listener", or "Location". | keyword |
-| azure.waf.policy.scope_name | The name of the object where the policy is applied. | keyword |
-| azure.waf.transaction_id | Unique ID for a given transaction which helps group multiple rule violations that occurred within the same request. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |

@@ -1,4 +1,4 @@
-# Azure WAF Logs
+# Azure Application Gateway Logs
 
 The Azure Logs integration retrieves different types of log data from Azure.
 
@@ -56,10 +56,10 @@ https://management.usgovcloudapi.net/
 
 ## Logs
 
-### waf_logs 
+### application_gateway_logs 
 
-The `waf_logs` data stream of the Azure Logs package will collect any WAF log events that have been streamed through an Azure event hub.
+The `application_gateway_logs` data stream of the Azure Logs package will collect any Application Gateway log events that have been streamed through an Azure event hub.
 
-{{event "waf_logs"}}
+{{event "application_gateway_logs"}}
 
-{{fields "waf_logs"}}
+{{fields "application_gateway_logs"}}
