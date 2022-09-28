@@ -276,3 +276,7 @@ Examples:
 * Azure USGovernmentCloud: `https://management.usgovcloudapi.net/`
 
 This setting can also be used to define your own endpoints, like for hybrid cloud models.
+
+## Reference
+
+Visit the page for each individual Azure Logs integration to see details about exported fields and sample events.
