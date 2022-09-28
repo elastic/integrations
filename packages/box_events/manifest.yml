@@ -1,0 +1,154 @@
+format_version: 1.0.0
+name: box_events
+title: Box Events
+version: 0.1.0
+release: beta
+license: basic
+description: "Collect logs from Box with Elastic Agent."
+type: integration
+categories:
+  - cloud
+  - datastore
+conditions:
+  kibana.version: "^7.17.0 || ^8.3.0"
+screenshots:
+  - src: /img/box_screenshot.png
+    title: "[Logs Box Events Integration] Events Dashboard"
+    size: 3036x1342
+    type: image/png
+  - src: /img/box_screenshot_histogram.png
+    title: "Box Events over Time by Event Type"
+    size: 2201x752
+    type: image/png
+  - src: /img/box_screenshot_type.png
+    title: "All Box Events by Event Type"
+    size: 828x842
+    type: image/png
+  - src: /img/box_screenshot_ecs_event_classification.png
+    title: "Box Events by ECS Event Classification"
+    size: 1430x668
+    type: image/png
+  - src: /img/box_screenshot_name.png
+    title: "All Box Events by File Name"
+    size: 826x830
+    type: image/png
+  - src: /img/box_screenshot_upload.png
+    title: "Total Upload Bytes"
+    size: 440x240
+    type: image/png
+  - src: /img/box_screenshot_download.png
+    title: "Total Download Bytes"
+    size: 428x243
+    type: image/png
+  - src: /img/box_screenshot_trash.png
+    title: "Total Trash Bytes"
+    size: 428x249
+    type: image/png
+  - src: /img/box_screenshot_actions.png
+    title: "Top 10 Users x Number of Events associated with the user"
+    size: 888x750
+    type: image/png
+  - src: /img/box_screenshot_failed_logins.png
+    title: "Top 10 Users x number of Failed Logins"
+    size: 872x740
+    type: image/png
+  - src: /img/box_screenshot_shield_alerts.png
+    title: "[Logs Box Events Integration] Box Shield Alerts Dashboard"
+    size: 3032x1352
+    type: image/png
+  - src: /img/box_screenshot_shield_alerts_threat_histogram.png
+    title: "Box Shield Threat Histogram"
+    size: 1512x600
+    type: image/png
+  - src: /img/box_screenshot_shield_alerts_threat_locations.png
+    title: "Box Shield Threat Locations"
+    size: 1528x597
+    type: image/png
+  - src: /img/box_screenshot_shield_ecs_event_classification.png
+    title: "Box Shield Alerts By ECS Threat Classification"
+    size: 1505x671
+    type: image/png
+  - src: /img/box_screenshot_shield_top_threats.png
+    title: "Top Threats"
+    size: 1436x670
+    type: image/png
+  - src: /img/box_screenshot_shield_alerts_anomalous_downloads.png
+    title: "Box Shield Anomalous Downloads"
+    size: 3040x591
+    type: image/png
+  - src: /img/box_screenshot_shield_alerts_malware.png
+    title: "Box Shield Malware"
+    size: 3038x598
+    type: image/png
+  - src: /img/box_screenshot_shield_alerts_suspicious_locations.png
+    title: "Box Shield Suspicious Locations"
+    size: 3035x595
+    type: image/png
+  - src: /img/box_screenshot_shield_alerts_suspicious_sessions.png
+    title: "Box Shield Suspicious Locations"
+    size: 3042x592
+    type: image/png
+icons:
+  - src: /img/box.svg
+    title: Box Blue Logo
+    size: 60x32
+    type: image/svg+xml
+policy_templates:
+  - name: box_events
+    title: Box Events
+    description: Collect Events from BOX
+    inputs:
+      - type: httpjson
+        title: "Collect BOX Events via API"
+        description: "Collecting events from BOX via API"
+        vars:
+          - name: client_id
+            type: password
+            title: CLIENT ID
+            description: >-
+              The Client ID of the application that is requesting to authenticate the user. To get the Client ID for your application, log in to your Box developer console and click My Apps, then select the application you're working with. Under the Configuration tab, scroll down to OAuth 2.0 Credentials to copy the Client ID.
+            multi: false
+            required: true
+            show_user: true
+          - name: client_secret
+            type: password
+            title: CLIENT SECRET
+            description: >-
+              The client secret of the application requesting an access token. To get the Client Secret for your application, log in to your Box developer console and click My Apps, then select the application you're working with. Under the Configuration tab, scroll down to OAuth 2.0 Credentials to locate the Client Secret. You may need to enable/use 2FA to retrieve this value.
+            multi: false
+            required: true
+            show_user: true
+          - name: api_url
+            type: text
+            title: API URL
+            description: URL to interact with the BOX api.
+            default: https://api.box.com
+            multi: false
+            required: true
+            show_user: false
+          - name: box_subject_id
+            type: password
+            title: Box Subject ID endpoint parameter
+            description: >-
+              The ID of the User Account that is leveraged to call the API. To get the Subject ID for your application, log in to your Box developer console and click My Apps, then select the application you're working with. Under the General Settings tab, scroll down to App Info to locate the User ID.
+            multi: false
+            required: true
+            show_user: true
+          - name: box_subject_type
+            type: text
+            title: Box Subject Type endpoint parameter
+            description: Subject Type for the user
+            default: user
+            multi: false
+            required: true
+            show_user: false
+          - name: grant_type
+            type: text
+            title: Grant Type
+            description: Grant Type endpoint parameter
+            default: client_credentials
+            multi: false
+            required: true
+            show_user: false
+owner:
+  github: elastic/security-external-integrations

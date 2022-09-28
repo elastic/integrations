@@ -1,8 +1,8 @@
 # Prometheus Integration
 
-This integration periodically fetches metrics from [Prometheus](https://prometheus.io/) servers.
-This integration can collect metrics from Prometheus Exporters, receive metrics from Prometheus using Remote Write
-and execute specific Prometheus queries against Promethes Query API.
+This integration periodically fetches metrics from [Prometheus](https://prometheus.io/) metrics endpoints.
+This integration can collect metrics from Prometheus Exporters, receive metrics from Prometheus server using Remote Write
+or execute specific Prometheus queries against Promethes Query API.
 
 ## Metrics
 
@@ -18,7 +18,7 @@ to retrieve the metrics from (`/metrics` by default) can be configured with Metr
 #### Histograms and types [x-pack]
 
 `Use Types` paramater (default: false) enables a different layout for metrics storage, leveraging Elasticsearch
-types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html).
+types, including {{ url "elasticsearch-histograms" "histograms" }}.
 
 `Rate Counters` paramater (default: false) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
@@ -161,7 +161,7 @@ Capacity sets the number of samples that are queued in memory per shard, and hen
 be able to cover `max_samples_per_send`.
 
 
-Metrics sent to the http endpoint will be put by default under the `prometheus.metrics` prefix with their labels under `prometheus.labels`.
+Metrics sent to the http endpoint will be put by default under the `prometheus.` prefix with their labels under `prometheus.labels`.
 A basic configuration would look like:
 
 ```yml
@@ -200,7 +200,7 @@ The fields reported are:
 #### Histograms and types [x-pack]
 
 `use_types` parameter (default: false) enables a different layout for metrics storage, leveraging Elasticsearch
-types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html).
+types, including {{ url "elasticsearch-histograms" "histograms" }}.
 
 `rate_counters` parameter (default: false) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
@@ -320,3 +320,8 @@ queries:
 The fields reported are:
 
 {{fields "query"}}
+
+## Dashboard
+
+Prometheus integration is shipped including default overview dashboard.
+Default dashboard works only for `remote_write` datastream and `collector` darastream, if metrics are scraped from the Prometheus server metrics endpoint.
