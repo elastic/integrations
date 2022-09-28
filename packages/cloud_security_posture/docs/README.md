@@ -93,3 +93,78 @@ Just like every other integration, the KSPM integration requires an Elastic agen
 See agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/running-on-kubernetes-managed-by-fleet.html).
 
 Note, this integration can only be added to Elastic agents with versions 8.4 or higher.
+
+
+## EKS Managed Deployment
+
+The following AWS authentication options are avaliable to run KSPM integration
+1. Access Key & Secret
+2. ARN Role
+3. Credentials File
+
+### Access Key & Secret
+Get the credentials from `~/.aws/credentials` file.
+Copy the `aws_access_key_id` and `aws_secret_access_key` from the profile.
+#### Session Token
+When using a session token it is required to provide a new session token every `duration`.
+For example: to generate session token that last for one hour, run `aws sts get-session-token --duration-seconds 3600`.
+
+### ARN Role
+To assume a different role, make sure that the target role has a `trusted-entity`
+```json
+{
+    {
+        "Effect": "Allow",
+        "Principal": {
+            "AWS": "arn:aws:iam::{AWS_ACCOUNT}:assumed-role/{AWS_ROLE}/{EC2_INSTANCE}"
+        },
+        "Action": "sts:AssumeRole",
+        "Condition": {}
+    }
+}
+```
+
+## Shared Credentials File
+To use a shared credentials file:
+1. Make sure the credentials file exist on the file-system of the pod
+2. In case the file has multiple profiles or the profile is not `default` specify the profile name in "Credential Profile Name" field.
+
+### Example with Kustomize
+1. Go to your Kibna UI `app/fleet/agents` and add new agent `Add Agent`
+2. Download the kubernetes manifests
+3. Copy the `~/.aws/credentials`: `cp ~/.aws/credentials .`
+4. Apply the following Kustomization `kubectl apply -k kustomize.yaml`
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kube-system
+
+resources:
+  # download the manifests from Kibana UI
+  - elastic-agent-managed-kubernetes.yaml 
+
+# make sure to
+# cp ~/.aws/credentials .
+secretGenerator:
+  - behavior: create
+    name: aws-credentials
+    files:
+      - credentials
+patches:
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/volumes/-
+        value:
+          name: aws-credentials
+          secret:
+            defaultMode: 420
+            secretName: aws-credentials
+      - op: add
+        path: /spec/template/spec/containers/0/volumeMounts/-
+        value:
+          name: aws-credentials
+          mountPath: /etc/.aws
+    target:
+      kind: DaemonSet 
+```
+ 
