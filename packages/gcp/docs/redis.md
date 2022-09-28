@@ -106,7 +106,7 @@ An example event for `redis` looks as following:
 | gcp.redis.replication.master.slaves.lag | The number of seconds that replica is lagging behind primary. | long |
 | gcp.redis.replication.master.slaves.offset | The number of bytes that have been acknowledged by replicas. | long |
 | gcp.redis.replication.master_repl_offset | The number of bytes that master has produced and sent to replicas. | long |
-| gcp.redis.replication.offset_diff | The largest number of bytes that have not been replicated across all replicas. This is the biggest difference between replication byte offset (master) and replication byte offset (replica) of all replicas. | byte |
+| gcp.redis.replication.offset_diff | The largest number of bytes that have not been replicated across all replicas. This is the biggest difference between replication byte offset (master) and replication byte offset (replica) of all replicas. | long |
 | gcp.redis.replication.role | Returns a value indicating the node role. 1 indicates primary and 0 indicates replica. | long |
 | gcp.redis.server.uptime | Uptime in seconds. | long |
 | gcp.redis.stats.cache_hit_ratio | Cache Hit ratio as a fraction. | double |
@@ -119,9 +119,9 @@ An example event for `redis` looks as following:
 | gcp.redis.stats.memory.maxmemory | Maximum amount of memory Redis can consume. | long |
 | gcp.redis.stats.memory.system_memory_overload_duration | The amount of time in microseconds the instance is in system memory overload mode. | long |
 | gcp.redis.stats.memory.system_memory_usage_ratio | Memory usage as a ratio of maximum system memory. | double |
-| gcp.redis.stats.memory.usage | Total number of bytes allocated by Redis. | byte |
+| gcp.redis.stats.memory.usage | Total number of bytes allocated by Redis. | long |
 | gcp.redis.stats.memory.usage_ratio | Memory usage as a ratio of maximum memory. | double |
-| gcp.redis.stats.network_traffic | Total number of bytes sent to/from redis (includes bytes from commands themselves, payload data, and delimiters). | byte |
+| gcp.redis.stats.network_traffic | Total number of bytes sent to/from redis (includes bytes from commands themselves, payload data, and delimiters). | long |
 | gcp.redis.stats.pubsub.channels | Global number of pub/sub channels with client subscriptions. | long |
 | gcp.redis.stats.pubsub.patterns | Global number of pub/sub pattern with client subscriptions. | long |
 | gcp.redis.stats.reject_connections_count | Number of connections rejected because of maxclients limit. | long |
