@@ -85,11 +85,11 @@ Before adding the integration, you must complete the following tasks.
 
 ### Create an event hub
 
-The event hub receives the logs exported from the Azure service you're interested in and makes them available to the Elastic Agent to pick up.
+The event hub receives the logs exported from the Azure service and makes them available to the Elastic Agent to pick up.
 
 Here's the high-level overview of the required steps:
 
-* Create a resource group, or use an existing one.
+* Create a resource group, or select an existing one.
 * Create an event hubs namespace.
 * Create an event hub.
 
@@ -97,9 +97,25 @@ For a detailed step-by-step guide, please follow the instructions at [Quickstart
 
 Take note of the event hub **Name**, which you will use later when specifying an **eventhub** in the integration settings.
 
+#### Event hub namespace vs event hub
+
+You should use the event hub name (not the event hub namespace name) as a value for the  **eventhub** option in the integration settings.
+
+If you are new to Event Hub, think of the event hub namespace as the cluster and the event hub as the topic. You will typically have one cluster and multiple topics.
+
+If you are familiar with Kafka, here's a conceptual mapping between the two:
+
+| Kafka Concept  | Event Hub Concept |
+|----------------|-------------------|
+| Cluster        | Namespace         |
+| Topic          | An event hub      |
+| Partition      | Partition         |
+| Consumer Group | Consumer Group    |
+| Offset         | Offset            |
+
 #### How many event hubs?
 
-Elastic recommends to create one event hub for each Azure service you are collecting data. For example, if you plan to collect Azure Active Directory (Azure AD) logs and Activity logs, create two event hubs: one for Azure AD and one for Activity logs.
+Elastic recommends creating one event hub for each Azure service you collect data from. For example, if you plan to collect Azure Active Directory (Azure AD) logs and Activity logs, create two event hubs: one for Azure AD and one for Activity logs.
 
 ```text
   ┌────────────────┐   ┌──────────────┐   ┌────────────────┐                    
@@ -260,91 +276,3 @@ Examples:
 * Azure USGovernmentCloud: `https://management.usgovcloudapi.net/`
 
 This setting can also be used to define your own endpoints, like for hybrid cloud models.
-
-## Logs reference
-
-### Activity logs
-
-Retrieves Azure activity logs. Activity logs provide insight into the operations that were performed on resources in your subscription.
-
-{{event "activitylogs"}}
-
-{{fields "activitylogs"}}
-
-### Platform logs
-
-Retrieves Azure platform logs. Platform logs provide detailed diagnostic and auditing information for Azure resources and the Azure platform they depend on.
-
-{{event "platformlogs"}}
-
-{{fields "platformlogs"}}
-
-### Sign-in logs
-
-Retrieves Azure Active Directory sign-in logs. The sign-ins report provides information about the usage of managed applications and user sign-in activities.
-
-{{event "signinlogs"}}
-
-{{fields "signinlogs"}}
-
-### Identity Protection logs
-
-Retrieves Azure AD Identity Protection logs. The [Azure AD Identity Protection](https://docs.microsoft.com/en-us/azure/active-directory/identity-protection/overview-identity-protection) service analyzes events from AD users' behavior, detects risk situations, and can respond by reporting only or even blocking users at risk, according to policy configurations.
-
-| Data Stream         | Log Category                                                                                              |
-|:------------------:------------------------------------------------------------------------------------------------------------:|
-| Identity Protection | [RiskyUsers](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadriskyusers)         |
-| Identity Protection | [UserRiskEvents](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aaduserriskevents) |
-
-#### Reference
-
-{{event "identity_protection"}}
-
-{{fields "identity_protection"}}
-
-### Provisioning logs
-
-Retrieves Azure Active Directory Provisioning logs. The [Azure AD Provisioning](https://docs.microsoft.com/en-us/azure/active-directory/app-provisioning/how-provisioning-works) service syncs AD users and groups to and from external enterprise applications. For example, you can configure the provisioning service to replicate all existing AD users and groups to an external Dropbox Business account or vice-versa.
-
-The Provisioning Logs contain a lot of details about a inbound/outbound sync activity, like:
-
-* User or group details.
-* Source and target systems (e.g., from Azure AD to Dropbox).
-* Provisioning status.
-* Provisioning steps (with details for each step).
-
-The Provisioning logs data stream supports the following log categories:
-
-| Data Stream   | Log Category                                                                                                  |
-|:-------------:|:-------------------------------------------------------------------------------------------------------------:|
-| Provisioning  | [ProvisioningLogs](https://docs.microsoft.com/en-us/azure/azure-monitor/reference/tables/aadprovisioninglogs) |
-
-#### Reference
-
-{{event "provisioning"}}
-
-{{fields "provisioning"}}
-
-### Audit logs
-
-Retrieves Azure Active Directory audit logs. The audit logs provide traceability through logs for all changes done by various features within Azure AD. Examples of audit logs include changes made to any resources within Azure AD like adding or removing users, apps, groups, roles and policies.
-
-{{event "auditlogs"}}
-
-{{fields "auditlogs"}}
-
-### Spring Cloud logs
-
-Retrieves Azure Spring Cloud system and application logs.
-
-{{event "springcloudlogs"}}
-
-{{fields "springcloudlogs"}}
-
-### Firewall logs
-
-Retrieves Azure Firewall application rule, network rule, and DNS proxy logs.
-
-{{event "firewall_logs"}}
-
-{{fields "firewall_logs"}}
