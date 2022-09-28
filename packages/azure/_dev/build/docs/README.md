@@ -68,65 +68,69 @@ The Azure Logs integration uses a Storage account container to store and share i
 
 ```text
   ┌────────────────┐                     ┌────────────┐
-  │ Azure AD logs  │        logs         │  Elastic   │
+  │     adlogs     │        logs         │  Elastic   │
   │ <<event hub>>  │────────────────────▶│   Agent    │
   └────────────────┘                     └────────────┘
                                                 │      
                        consumer group info      │      
   ┌────────────────┐   (state, position, or     │      
-  │     azlogs     │         offset)            │      
+  │   azurelogs    │         offset)            │      
   │ <<container>>  │◀───────────────────────────┘      
-  └────────────────┘                                                   
+  └────────────────┘                                                                            
 ```
 
 ## Setup
 
-Before adding the integration, you must complete the following tasks as logs are read from Azure Event Hubs.
+Before adding the integration, you must complete the following tasks.
 
-### Create an Event Hub
+### Create an event hub
 
-The Event Hub receives the logs exported from the Azure service you're interested in and makes them available to the Elastic Agent to pick up.
+The event hub receives the logs exported from the Azure service you're interested in and makes them available to the Elastic Agent to pick up.
 
 Here's the high-level overview of the required steps:
 
 * Create a resource group, or use an existing one.
-* Create an Event Hubs namespace.
+* Create an event hubs namespace.
 * Create an event hub.
 
 For a detailed step-by-step guide, please follow the instructions at [Quickstart: Create an event hub using Azure portal](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create).
 
-Take note of the event hub **Name**, which you will use later when specifying a **eventhub** in the integration settings.
+Take note of the event hub **Name**, which you will use later when specifying an **eventhub** in the integration settings.
 
 #### How many event hubs?
 
-Elastic recommends to create one event hub for each Azure service you are collecting data. For example, if you plan to collect Azure Active Directory logs and Activity logs, create two event hubs: one for Azure AD and one for Activity logs.
+Elastic recommends to create one event hub for each Azure service you are collecting data. For example, if you plan to collect Azure Active Directory (Azure AD) logs and Activity logs, create two event hubs: one for Azure AD and one for Activity logs.
 
 ```text
   ┌────────────────┐   ┌──────────────┐   ┌────────────────┐                    
-  │    Azure AD    │   │  Diagnostic  │   │ Azure AD logs  │                    
+  │    Azure AD    │   │  Diagnostic  │   │     adlogs     │                    
   │  <<service>>   │──▶│   settings   │──▶│ <<event hub>>  │──┐                 
   └────────────────┘   └──────────────┘   └────────────────┘  │   ┌────────────┐
                                                               │   │  Elastic   │
                                                               ├──▶│   Agent    │
   ┌────────────────┐   ┌──────────────┐   ┌────────────────┐  │   └────────────┘
-  │ Azure Monitor  │   │  Diagnostic  │   │ Activity logs  │  │                 
+  │ Azure Monitor  │   │  Diagnostic  │   │  activitylogs  │  │                 
   │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │──┘                 
-  └────────────────┘   └──────────────┘   └────────────────┘                    
+  └────────────────┘   └──────────────┘   └────────────────┘                                    
 ```
+
+It is not recommended to use the same event hub for multiple integrations.
 
 For high-volume deployments, we recommend one event hub for each data stream.
 
 #### Consumer Group
 
-A Consumer Group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple consuming applications to each have a separate view of the event stream, and to read the stream independently at their own pace and with their own offsets.
+Like all other clients, Elastic Agent should specify a consumer group to access the event hub.
 
-The Azure Logs integration uses a consumer group to access Event Hubs and track which logs have already been fetched and are new.
+A Consumer Group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple agents to each have a separate view of the event stream, and to read the logs independently at their own pace and with their own offsets.
 
 In most cases, you can use the default value of `$Default`.
 
-#### Connection String
+#### Connection string
 
-The Elastic Agent requries a Connection String to access the Event Hub and fetch the exported logs. It contains details about the Event Hub used and the credentials required to access it.
+The Elastic Agent requries a connection string to access the event hub and fetch the exported logs. The connection string contains details about the event hub used and the credentials required to access it.
+
+To get the connection string for your event hub namespace:
 
 1. Visit the **Event Hubs namespace** you created in a previous step.
 1. Select **Settings** > **Shared access policies**.
@@ -144,34 +148,36 @@ Take note of the **Connection string–primary key**, which you will use later w
 
 ### Create a Diagnostic settings
 
-The Diagnostic settings export the logs from Azure services to a destination. The Azure Logs integration uses an event hub as the destination for the logs.
+The Diagnostic settings export the logs from Azure services to a destination. The Azure Logs integration uses the Event Hub service as the destination for the logs.
+
+To create a diagnostic settings to export logs:
 
 1. Locate the Diagnostic settings for the service (for example, Azure Active Directory).
 1. Select Diagnostic settings in the **Monitoring** section of the service. Please note that different services may place the diagnostic settings in different positions.
 1. Select **Add diagnostic setting**.
 
-In the diagnostic settings page you have to select the **log categories** you want to export and select the **destination**.
+In the diagnostic settings page you have to select the source **log categories** you want to export and then select their **destination**.
 
 #### Select log categories
 
-Each Azure services exports a well-defined list of log categories. Check which log categories are supported by the integration.
+Each Azure services exports a well-defined list of log categories. Check the individual integration doc to learn which log categories are supported by the integration.
 
 #### Select the destination
 
-Select the subscription and the event hub namespace you previously created. Select the event hub dedicated to this integration.
+Select the **subscription** and the **event hub namespace** you previously created. Select the event hub dedicated to this integration.
 
 ```text
   ┌────────────────┐   ┌──────────────┐   ┌────────────────┐      ┌────────────┐
-  │ Azure Monitor  │   │  Diagnostic  │   │ Activity logs  │      │  Elastic   │
+  │    Azure AD    │   │  Diagnostic  │   │     adlogs     │      │  Elastic   │
   │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │─────▶│   Agent    │
   └────────────────┘   └──────────────┘   └────────────────┘      └────────────┘
 ```
 
 ### Create a Storage account container
 
-The Storage account container stores the consumer group info (state, position, or offset). This allow the Elastic Agent to resume from the last processed logs after a restart, or share the load between multiple Elastic Agents.
+The Elastic Agent stores the consumer group information (state, position, or offset) in a Storage account container. Making this information available to all agents allows them to share the logs processing and resume from the last processed logs after a restart.
 
-To create the Storage accounts:
+To create the Storage account:
 
 1. Sign in to the [Azure Portal](https://portal.azure.com/).
 1. Search for and select **Storage accounts**.
@@ -193,15 +199,21 @@ This is the final diagram of the a setup for collecting Activity logs from the A
 
 ```text
   ┌────────────────┐   ┌──────────────┐   ┌────────────────┐         ┌────────────┐
-  │ Azure Monitor  │   │  Diagnostic  │   │ Activity logs  │  logs   │  Elastic   │
+  │Active Directory│   │  Diagnostic  │   │     adlogs     │  logs   │  Elastic   │
   │  <<service>>   ├──▶│   settings   │──▶│ <<event hub>>  │────────▶│   Agent    │
   └────────────────┘   └──────────────┘   └────────────────┘         └────────────┘
                                                                             │      
                        ┌──────────────┐          consumer group info        │      
-                       │    azlogs    │          (state, position, or       │      
+                       │  azurelogs   │          (state, position, or       │      
                        │<<container>> │◀───────────────offset)──────────────┘      
-                       └──────────────┘                                                                          
+                       └──────────────┘                                                             
 ```
+
+#### How many Storage account containers?
+
+The Elastic Agent can use one Storage account container for all integrations.
+
+The Agent will use the integration name and the event hub name to identify the blob to store the consumer group information uniquely.
 
 ## Settings
 
