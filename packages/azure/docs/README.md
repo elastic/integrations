@@ -4,7 +4,7 @@
 
 The Azure Logs integration retrieves Activity, Active Directory (Sign-in, Audit, Identity Protection, Provisioning), Platform, and Spring Cloud data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
 
-Use the Azure Logs integration to collect logs from Azure service. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
+Use the Azure Logs integration to collect logs from Azure service. You can then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
 For example, if you wanted to detect possible brute force sign-in attacks, you
 could install the Azure Logs integration to send Azure sign-in logs to Elastic.
@@ -20,7 +20,7 @@ The Azure Logs integration collects logs.
 **Logs** help you keep a record of events that happen on your Azure account.
 Log data streams collected by the Azure Logs integration include Activity, Platform, Active Directory (Sign-in, Audit, Identity Protection, Provisioning), and Spring Cloud logs.
 
-See more details in the [Logs reference](#logs-reference).
+Check the [Logs reference](#logs-reference) for more details.
 
 ## Requirements
 
@@ -31,11 +31,11 @@ Before using the Azure integration you will need:
 
 * One or more **Diagnostic setting** to export logs from Azure services to Event Hubs.
 * One or more **Event Hub** to store in-flight logs exported by Azure services and make them available to Elastic Agent.
-* One **Storage Account Container** to store information about logs consumed by the Elastic Agent
+* One **Storage Account Container** to store information about logs consumed by the Elastic Agent.
 
-### Diagnostic setting
+### Diagnostic settings
 
-Azure Diagnostic settings allow users to export metrics and logs from a **source** service or resource to one **destination** for analysis and long term storage.
+Azure Diagnostic settings allow you to export metrics and logs from a **source** service, or resource, to one **destination** for analysis and long-term storage.
 
 ```text
    ┌──────────────────┐      ┌──────────────┐     ┌─────────────────┐
@@ -54,17 +54,17 @@ The Diagnostic settings support several destination types. The Elastic Agent req
 
 ### Event Hub
 
-[Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service. I can receive and temporary store millions of events.
+[Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service. It can receive and temporary store millions of events.
 
-The Azure Logs integration uses the Event Hubs service to receive and store logs exported by a Diagnostic settings and make them available to Elastic Agent.
+Elastic Agent with the Azure Logs integration will consume logs from the Event Hubs service.
 
-To learn more about Event Hubs, you can read the in-depth document [Features and terminology in Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-features).
+To learn more about Event Hubs, refer to [Features and terminology in Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-features).
 
 ### Storage account container
 
-The Storage account is a versatile Azure service that allows users to store data in various storage types, including blobs, file shares, queues, tables, and disks.
+The Storage account is a versatile Azure service that allows you to store data in various storage types, including blobs, file shares, queues, tables, and disks.
 
-The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows the integration to allocate the logs processing among existing Elastic Agents to increase ingestion throughput if required.
+The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows to keep track of the logs processing among existing Elastic Agents with Azure Logs integration to increase ingestion throughput if required.
 
 ```text
   ┌────────────────┐                     ┌────────────┐
@@ -93,7 +93,7 @@ Here's the high-level overview of the required steps:
 * Create an event hubs namespace.
 * Create an event hub.
 
-For a detailed step-by-step guide, please follow the instructions at [Quickstart: Create an event hub using Azure portal](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create).
+For a detailed step-by-step guide, check the quickstart [Create an event hub using Azure portal](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-create).
 
 Take note of the event hub **Name**, which you will use later when specifying an **eventhub** in the integration settings.
 
@@ -164,12 +164,12 @@ Take note of the **Connection string–primary key**, which you will use later w
 
 ### Create a Diagnostic settings
 
-The Diagnostic settings export the logs from Azure services to a destination. The Azure Logs integration uses the Event Hub service as the destination for the logs.
+The Diagnostic settings export the logs from Azure services to a destination and in order to use Azure Logs integration, it must be an Event Hub.
 
 To create a diagnostic settings to export logs:
 
 1. Locate the Diagnostic settings for the service (for example, Azure Active Directory).
-1. Select Diagnostic settings in the **Monitoring** section of the service. Please note that different services may place the diagnostic settings in different positions.
+1. Select Diagnostic settings in the **Monitoring** section of the service. Note that different services may place the diagnostic settings in different positions.
 1. Select **Add diagnostic setting**.
 
 In the diagnostic settings page you have to select the source **log categories** you want to export and then select their **destination**.
@@ -203,7 +203,7 @@ To create the Storage account:
 
 Take note of the **Storage account name**, which you will use later when specifying the **storage_account** in the integration settings.
 
-When the new Storage account is ready, we can look for the access keys:
+When the new Storage account is ready, you can look for the access keys:
 
 1. Select the Storage account.
 1. In **Security + networking** select **Access keys**.
