@@ -150,6 +150,7 @@ Visit the page for each individual AWS integration to see details about exported
 
 | Service          | Metrics | Logs    |
 |------------------|:-------:|:-------:|
+| API Gateway      |         |    x    |
 | Billing          |    x    |         |
 | CloudFront       |         |    x    |
 | CloudTrail       |         |    x    |
