@@ -1,0 +1,244 @@
+---
+description: Pipeline for parsing DHCP lease logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [protocol]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.starts
+        - json.last_updated
+        - json.ends
+      target_field: _id
+      ignore_missing: true
+  - convert:
+      field: json.address
+      target_field: infoblox_bloxone_ddi.dhcp_lease.address
+      if: ctx.json?.address != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{infoblox_bloxone_ddi.dhcp_lease.address}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.client_id
+      target_field: infoblox_bloxone_ddi.dhcp_lease.client_id
+      ignore_missing: true
+  - set:
+      field: client.user.id
+      copy_from: infoblox_bloxone_ddi.dhcp_lease.client_id
+      ignore_failure: true
+  - date:
+      field: json.ends
+      target_field: infoblox_bloxone_ddi.dhcp_lease.ends
+      if: ctx.json?.ends != null && ctx.json.ends != ''
+      formats:
+        - ISO8601
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      copy_from: infoblox_bloxone_ddi.dhcp_lease.ends
+      ignore_failure: true
+  - rename:
+      field: json.fingerprint
+      target_field: infoblox_bloxone_ddi.dhcp_lease.fingerprint.value
+      ignore_missing: true
+  - rename:
+      field: json.fingerprint_processed
+      target_field: infoblox_bloxone_ddi.dhcp_lease.fingerprint.processed
+      ignore_missing: true
+  - rename:
+      field: json.ha_group
+      target_field: infoblox_bloxone_ddi.dhcp_lease.ha_group
+      ignore_missing: true
+  - gsub:
+      field: json.hardware
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: json.hardware
+      ignore_missing: true
+  - rename:
+      field: json.hardware
+      target_field: infoblox_bloxone_ddi.dhcp_lease.hardware
+      ignore_missing: true
+  - rename:
+      field: json.host
+      target_field: infoblox_bloxone_ddi.dhcp_lease.host
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: infoblox_bloxone_ddi.dhcp_lease.host
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.hostname
+      target_field: infoblox_bloxone_ddi.dhcp_lease.hostname
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      copy_from: infoblox_bloxone_ddi.dhcp_lease.hostname
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.iaid
+      target_field: infoblox_bloxone_ddi.dhcp_lease.iaid
+      if: ctx.json?.iaid != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_updated
+      target_field: infoblox_bloxone_ddi.dhcp_lease.last_updated
+      if: ctx.json?.last_updated != null && ctx.json.last_updated != ''
+      formats:
+        - ISO8601
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: infoblox_bloxone_ddi.dhcp_lease.last_updated
+      ignore_failure: true
+  - rename:
+      field: json.options
+      target_field: infoblox_bloxone_ddi.dhcp_lease.options
+      ignore_missing: true
+  - date:
+      field: json.preferred_lifetime
+      target_field: infoblox_bloxone_ddi.dhcp_lease.preferred_lifetime
+      if: ctx.json?.preferred_lifetime != null && ctx.json.preferred_lifetime != ''
+      formats:
+        - ISO8601
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: json.protocol
+      value: ipv4
+      if: ctx.json?.protocol == 'ip4'
+      ignore_failure: true
+  - set:
+      field: json.protocol
+      value: ipv6
+      if: ctx.json?.protocol == 'ip6'
+      ignore_failure: true
+  - rename:
+      field: json.protocol
+      target_field: infoblox_bloxone_ddi.dhcp_lease.protocol
+      ignore_missing: true
+  - set:
+      field: network.type
+      copy_from: infoblox_bloxone_ddi.dhcp_lease.protocol
+      ignore_failure: true
+  - lowercase:
+      field: network.type
+      ignore_failure: true
+  - rename:
+      field: json.space
+      target_field: infoblox_bloxone_ddi.dhcp_lease.space
+      ignore_missing: true
+  - date:
+      field: json.starts
+      target_field: infoblox_bloxone_ddi.dhcp_lease.starts
+      if: ctx.json?.starts != null && ctx.json.starts != ''
+      formats:
+        - ISO8601
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      copy_from: infoblox_bloxone_ddi.dhcp_lease.starts
+      ignore_failure: true
+  - rename:
+      field: json.state
+      target_field: infoblox_bloxone_ddi.dhcp_lease.state
+      ignore_missing: true
+  - rename:
+      field: json.type
+      target_field: infoblox_bloxone_ddi.dhcp_lease.type
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - infoblox_bloxone_ddi.dhcp_lease.last_updated
+        - infoblox_bloxone_ddi.dhcp_lease.client_id
+        - infoblox_bloxone_ddi.dhcp_lease.ends
+        - infoblox_bloxone_ddi.dhcp_lease.starts
+        - infoblox_bloxone_ddi.dhcp_lease.hostname
+        - infoblox_bloxone_ddi.dhcp_lease.host
+        - infoblox_bloxone_ddi.dhcp_lease.protocol
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

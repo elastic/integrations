@@ -1,0 +1,54 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: GET
+request.url: {{url}}/api/ddi/v1/dns/record
+request.transforms:
+  - set:
+      target: header.Authorization
+      value: 'Token {{api_key}}'
+  - set:
+      target: url.params._offset
+      value: 0
+  - set:
+      target: url.params._limit
+      value: 100
+  - set:
+      target: url.params._order_by
+      value: 'updated_at asc'
+  - set:
+      target: url.params._filter
+      value: 'updated_at>="[[(formatDate (parseDate .cursor.last_updated_at) "2006-01-02T15:04:05.999Z")]]"'
+      default: 'updated_at>="[[(formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.999Z")]]"'
+response.pagination:
+  - set:
+      target: url.params._offset
+      value: '[[if (eq (len .last_response.body.results) 100)]][[add (toInt (.last_response.url.params.Get "_offset")) 100]][[else]][[.last_response.terminate_pagination]][[end]]'
+      fail_on_template_error: true
+cursor:
+  last_updated_at:
+    value: '[[.last_event.updated_at]]'
+response.split:
+  target: body.results
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
