@@ -1,14 +1,14 @@
 # CoreDNS Integration
 
-This integration parses logs from [CoreDNS](https://coredns.io/) instances running in kubernetes clusters
+This integration parses logs from [CoreDNS](https://coredns.io/) instances.
 
 ## Compatibility
 
-The CoreDNS datasets were tested with version 1.9.3.
+This integration is designed to read CoreDNS logs running within a Kubernetes cluster or via systemd with logs output to Journald. The CoreDNS datasets were tested with version 1.9.3.
 
 ## Logs
 
-CoreDNS query logs.
+CoreDNS Query and Error logs.  The integration expects Query logs using the `common` or `combined` Log format explain [here](https://coredns.io/plugins/log/#log-format)
 
 **Exported fields**
 
@@ -28,13 +28,14 @@ CoreDNS query logs.
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
 | container.name | Container name. | keyword |
-| coredns.log.buffer_size | the EDNS0 buffer size advertised in the query | long |
+| coredns.log.buffer_size | The EDNS0 buffer size advertised in the query | long |
 | coredns.log.dnssec_ok | The DO bit is included in a DNS query and is an abbreviation for "DNSSEC OK".  If the DO bit is set (DO=1), then the client is DNSSEC-aware, and it is OK for the DNS server to return DNSSEC data in a response.  If the DO bit is not set (DO=0), then the client is not DNSSEC-aware, and the DNS server must not include any DNSSEC data in a DNS response. | boolean |
+| coredns.log.error.message | The error message | text |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
-| dns.header_flags | Array of 2 letter DNS header flags. Expected values are: AA, TC, RD, RA, AD, CD, DO. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.op_code | The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
@@ -80,6 +81,7 @@ CoreDNS query logs.
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |

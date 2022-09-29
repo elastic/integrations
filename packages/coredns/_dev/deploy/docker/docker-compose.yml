@@ -1,0 +1,21 @@
+version: '3.0'
+services:
+  coredns:
+    image: coredns:1.9.3
+    hostname: coredns
+    ports:
+      - 53/udp
+    volumes:
+      - ./files:/config:ro
+      - ${SERVICE_LOGS_DIR}:/service_logs
+    entrypoint: /bin/sh
+    # Create a log file for the operational log tests to read.
+    command:
+      - -ec
+      - /coredns -conf /config/Corefile 2>&1 | tee /service_logs/coredns.log
+  coredns-dig:
+    image: praqma/network-multitool
+    command:
+      - sleep 10s && dig @coredns google.com && dig @coredns bob.example.com
+    depends_on:
+      - coredns

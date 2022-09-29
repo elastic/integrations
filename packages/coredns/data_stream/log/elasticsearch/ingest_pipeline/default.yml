@@ -8,13 +8,17 @@ processors:
       field: event.original
       copy_from: message
       ignore_empty_value: true
+  - rename:
+      field: "@timestamp"
+      target_field: event.created
+      ignore_missing: true
   - pipeline:
       if: ctx.event.original.charAt(0) == (char)("{")
       name: '{{ IngestPipeline "json" }}'
   - set:
       field: event.kind
       value: event
-  - set:
+  - append:
       field: event.category
       value: network
   - append:
@@ -23,47 +27,56 @@ processors:
   - grok:
       field: message
       patterns:
-      - '(%{TIMESTAMP_ISO8601:_tmp.timestamp} )?\[%{LOGLEVEL:log.level}\] \[?%{IP:source.address}\]?:%{POSINT:source.port:long} - %{POSINT:dns.id} "%{WORD:dns.question.type} %{WORD:dns.question.class}
+      # Query log
+      - '\[%{LOGLEVEL:log.level}\] \[?%{IP:source.address}\]?:%{POSINT:source.port:long} - %{POSINT:dns.id} "%{WORD:dns.question.type} %{WORD:dns.question.class}
          %{IPORHOST:dns.question.name}\. %{WORD:network.transport} %{POSINT:source.bytes:long} %{WORD:coredns.log.dnssec_ok:boolean} %{POSINT:coredns.log.buffer_size:long}"
          %{WORD:dns.response_code} %{NOTSPACE:dns.header_flags} %{POSINT:destination.bytes:long} %{NOTSPACE:event.duration}s( "%{NONNEGINT:dns.op_code}")?'
+      # Standard error log
+      - '\[%{LOGLEVEL:log.level}\] %{DATA:log.logger}: (%{WORD:dns.response_code}|%{NONNEGINT:dns.response_code:long}) %{IPORHOST:dns.question.name}\. %{WORD:dns.question.type}: %{GREEDYDATA:coredns.log.error.message}'
+      # Consolidated error logs
+      - '\[%{LOGLEVEL:log.level}\] %{DATA:log.logger}: %{GREEDYDATA:coredns.log.error.message}'
       ignore_missing: true
       ecs_compatibility: v1
-    #   on_failure:
-    #     - drop:
-    #         description: Drop if a log other than query
-  - rename:
-      field: "@timestamp"
-      target_field: event.created
+  - lowercase:
+      field: log.level
       ignore_missing: true
-  - date:
-      field: _tmp.timestamp
-      formats:
-        - ISO8601
-      if: ctx._tmp?.timestamp != null
-  - script:
-      lang: painless
-      source: >
-        ctx.event.created = ctx['@timestamp'];
-        ctx['@timestamp'] = ctx['timestamp'];
-        ctx.remove('timestamp');
-      ignore_failure: true
   - lowercase:
       field: network.transport
       ignore_missing: true
   - set:
       field: network.iana_number
       value: '6'
-      if: ctx.network?.transport == "tcp"
+      if: ctx.network?.transport != null && ctx.network.transport == "tcp"
   - set:
       field: network.iana_number
       value: '17'
-      if: ctx.network?.transport == "udp"
+      if: ctx.network?.transport != null && ctx.network.transport == "udp"
   - set:
       field: network.protocol
       value: dns
+  - script:
+      description: Converts numerical response codes to strings
+      lang: painless
+      if: ctx.dns?.response_code != null && ctx.dns.response_code instanceof Integer
+      params:
+        codes:
+          - NOERROR
+          - FORMERR
+          - SERVFAIL
+          - NXDOMAIN
+          - NOTIMP
+          - REFUSED
+          - YXDOMAIN
+          - XRRSET
+          - NOTAUTH
+          - NOTZONE
+      source: |
+        def response_code = ctx.dns.response_code;
+        ctx.dns.response_code = params.codes[response_code];
   - registered_domain:
       field: dns.question.name
       target_field: dns.question
+      ignore_missing: true
   - remove:
       field: dns.question.domain
       ignore_missing: true
@@ -74,10 +87,24 @@ processors:
       field: dns.header_flags
       separator: ","
       ignore_missing: true
+  - script:
+      lang: painless
+      ignore_failure: true
+      description: remove QR header since it is not allowed per ECS spec in 8.4.0
+      if: ctx.dns?.header_flags != null && ctx.dns.header_flags instanceof List
+      source: |
+        for (int i=ctx.dns.header_flags.length-1; i>=0; i--) {
+            if (ctx.dns.header_flags[i] == 'QR') {
+                ctx.dns.header_flags.remove(i);
+            }
+        }    
   - append:
-      if: ctx.coredns?.log?.dnssec_ok
+      if: ctx.coredns?.log?.dnssec_ok != null && ctx.coredns.log.dnssec_ok   
       field: dns.header_flags
       value: DO
+  - remove:
+      field: dns.header_flags
+      if: ctx.coredns?.log?.dnssec_ok != null && ctx.coredns.log.dnssec_ok      
   - set: 
       field: event.outcome
       value: success
@@ -99,6 +126,7 @@ processors:
       target_field: source.ip
       type: ip
       ignore_failure: true
+      ignore_missing: true
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -138,7 +166,7 @@ processors:
       field:
         - message
         - _tmp
-      ignore_failure: true
+      ignore_missing: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
