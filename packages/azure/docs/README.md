@@ -50,7 +50,7 @@ Examples of source services:
 * Azure Monitor
 * Spring Cloud
 
-The Azure Logs integration uses Event Hub as destination.
+The Diagnostic settings support several destination types. The Elastic Agent requires a Diagnostic setting configured with Event Hub as the destination.
 
 ### Event Hub
 
