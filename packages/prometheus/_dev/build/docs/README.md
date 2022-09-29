@@ -1,14 +1,15 @@
 # Prometheus Integration
 
-This integration periodically fetches metrics from [Prometheus](https://prometheus.io/) metrics endpoints.
-This integration can collect metrics from Prometheus Exporters, receive metrics from Prometheus server using Remote Write
-or execute specific Prometheus queries against Promethes Query API.
+This integration can collect metrics from:
+- Prometheus Exporters (Collectors)
+- Prometheus Server Remote-Write
+- Prometheus Queries (PromQL)
 
 ## Metrics
 
 ### Collector Metrics
 
-The Prometheus `collector` dataset scrapes data from [prometheus exporters](https://prometheus.io/docs/instrumenting/exporters/).
+The Prometheus integration `collector` dataset connects to the Prometheus server and pulls metrics using either the `/metrics` endpoint or the [Prometheus Federation API](https://prometheus.io/docs/prometheus/latest/federation/).
 
 #### Scraping from a Prometheus exporter
 
@@ -138,7 +139,6 @@ The fields reported are:
 The Prometheus `remote_write` can receive metrics from a Prometheus server that
 has configured [remote_write](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write)
 setting accordingly, for instance:
-
 ```yml
 remote_write:
   - url: "http://localhost:9201/write"
@@ -276,7 +276,7 @@ will be handled as a histogram, even if it has the suffix `_total` which is a de
 
 ### Query Metrics
 
-The Prometheus `query` dataset to query from [querying API of Prometheus](https://prometheus.io/docs/prometheus/latest/querying/api/#expression-queries).
+The Prometheus `query` dataset executes specific Prometheus queries against [Promethes Query API](https://prometheus.io/docs/prometheus/latest/querying/api/#expression-queries).
 
 #### Instant queries
 
