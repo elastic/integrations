@@ -71,7 +71,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | auth0.logs.data.location_info.latitude | Global latitude (horizontal) position. | keyword |
 | auth0.logs.data.location_info.longitude | Global longitude (vertical) position. | keyword |
 | auth0.logs.data.location_info.time_zone | Time zone name as found in the [tz database](https://www.iana.org/time-zones). | keyword |
-| auth0.logs.data.log_id | Unique ID of the event. | keyword |
+| auth0.logs.data.log_id | Unique log event identifier | keyword |
 | auth0.logs.data.login.completedAt | Time at which the operation was completed | date |
 | auth0.logs.data.login.elapsedTime | Number of milliseconds the operation took to complete. | long |
 | auth0.logs.data.login.initiatedAt | Time at which the operation was initiated | date |
