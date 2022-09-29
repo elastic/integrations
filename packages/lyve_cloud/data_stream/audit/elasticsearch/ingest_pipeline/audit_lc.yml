@@ -1,0 +1,106 @@
+---
+description: Pipeline for Lyve Cloud audit logs
+
+processors:
+  - set:
+      field: ecs.version
+      value: '8.5.0'
+  - json:
+      field: message
+      target_field: lyve_cloud.audit
+  - rename:
+      field: "message"
+      target_field: "event.original"
+  - rename:
+      field: lyve_cloud.audit.serviceAccountName
+      target_field: user.name
+  - rename:
+      field: lyve_cloud.audit.serviceAccountCreatorId
+      target_field: user.id
+  - set:
+      copy_from: user.id
+      field: user.email
+  - date:
+      field: lyve_cloud.audit.auditEntry.time
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.S'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+      
+  - remove:
+      field: lyve_cloud.audit.auditEntry.time
+  - user_agent:
+      field: lyve_cloud.audit.auditEntry.userAgent
+  - remove:
+      field: lyve_cloud.audit.auditEntry.userAgent
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.User-Agent
+  - rename:
+      field: lyve_cloud.audit.auditEntry.api.statusCode
+      target_field: http.response.status_code
+  
+  - gsub:
+      field: lyve_cloud.audit.auditEntry.api.timeToFirstByte
+      pattern: "ns"
+      replacement: ""
+      ignore_missing: True
+  - gsub:
+      field: lyve_cloud.audit.auditEntry.api.timeToResponse
+      pattern: "ns"
+      replacement: ""
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.api.timeToFirstByte      
+      type: long
+      ignore_missing: True
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.api.timeToResponse    
+      type: long
+  - remove:
+      field: lyve_cloud.audit.auditEntry.deploymentid
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.Authorization
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Amz-Content-Sha256
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Amz-Date
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-For
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-Proto
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestID
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestQuery
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.Content-Security-Policy
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.ETag
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.X-Amz-Request-Id            
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.X-Xss-Protection
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.Vary
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.responseHeader.Content-Length      
+      type: long
+  - rename:
+      field: lyve_cloud.audit.auditEntry.responseHeader.Content-Length
+      target_field: http.request.body.bytes
+
+  - rename: 
+      field: lyve_cloud.audit.auditEntry.responseHeader.Content-Type 
+      target_field: http.response.mime_type
+      
+on_failure:
+    - set:
+        field: error.message
+        value: "{{ _ingest.on_failure_message }}"
+    
