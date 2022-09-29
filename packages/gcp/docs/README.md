@@ -233,7 +233,7 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | gcp.audit.request_metadata.caller_ip | The IP address of the caller. | ip |
 | gcp.audit.request_metadata.caller_supplied_user_agent | The user agent of the caller. This information is not authenticated and  should be treated accordingly. | keyword |
 | gcp.audit.request_metadata.raw.caller_ip | The raw IP address of the caller. | keyword |
-| gcp.audit.resource_location.current_locations | Current locations of the resource. | array |
+| gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
 | gcp.audit.response |  | flattened |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
@@ -502,7 +502,7 @@ The `firewall` dataset collects logs from Firewall Rules in your Virtual Private
 | gcp.firewall.rule_details.action | Action that the rule performs on match. | keyword |
 | gcp.firewall.rule_details.destination_range | List of destination ranges that the firewall applies to. | keyword |
 | gcp.firewall.rule_details.direction | Direction of traffic that matches this rule. | keyword |
-| gcp.firewall.rule_details.ip_port_info | List of ip protocols and applicable port ranges for rules. | array |
+| gcp.firewall.rule_details.ip_port_info | List of ip protocols and applicable port ranges for rules. | keyword |
 | gcp.firewall.rule_details.priority | The priority for the firewall rule. | long |
 | gcp.firewall.rule_details.reference | Reference to the firewall rule. | keyword |
 | gcp.firewall.rule_details.source_range | List of source ranges that the firewall rule applies to. | keyword |
@@ -1162,14 +1162,14 @@ The `billing` dataset collects GCP Billing information from Google Cloud BigQuer
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -1260,14 +1260,14 @@ The `compute` dataset is designed to fetch metrics for [Compute Engine](https://
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -1426,7 +1426,7 @@ The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.co
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
