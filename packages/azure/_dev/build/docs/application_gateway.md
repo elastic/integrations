@@ -8,6 +8,13 @@ There are several requirements before using the integration since the logs will 
 - To export activity logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/activity-log-export).
 - To export audit and sign-in logs to event hubs users can follow the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/reports-monitoring/tutorial-azure-monitor-stream-logs-to-event-hub).
 
+Supported log categories:
+
+| Log Category         | Description                                                                                                                          |
+|:-------------------:|:-------------------------------------------------------------------------------------------------------------------------------------:|
+| [Access log](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-diagnostics#access-log)             |  This log can be used to view Application Gateway access patterns and analyze important information. This includes the caller's IP, requested URL, response latency, return code, and bytes in and out. An access log is collected every 60 seconds. This log contains one record per instance of Application Gateway. The Application Gateway instance is identified by the instanceId property.     
+| [Firewall log](https://learn.microsoft.com/en-us/azure/application-gateway/application-gateway-diagnostics#firewall-log)                | This log can be used to view the requests that are logged through either detection or prevention mode of an application gateway that is configured with the web application firewall. Firewall logs are collected every 60 seconds.                                                                                                     |
+
 ## Settings
 
 `eventhub` :
