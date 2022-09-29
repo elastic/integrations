@@ -97,6 +97,12 @@ processors:
       field: json.users.sites
       target_field: lastpass.detailed_shared_folder.user.site
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
   - remove:
       field:
         - json
