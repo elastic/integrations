@@ -140,7 +140,7 @@ Like all other clients, Elastic Agent should specify a consumer group to access 
 
 A Consumer Group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple agents to each have a separate view of the event stream, and to read the logs independently at their own pace and with their own offsets.
 
-In most cases, you can use the default value of `$Default`.
+In most cases, you can use the default consumer group named `$Default`. If `$Default` is already used by other applications, you can create a consumer group dedicated to the Azure Logs integration.
 
 #### Connection string
 
