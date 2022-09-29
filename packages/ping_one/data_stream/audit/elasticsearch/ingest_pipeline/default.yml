@@ -15,57 +15,61 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
-  - script:
-      description: Set the value of event.type and event.category.
-      lang: painless
-      source: >
-          def eventType = new HashSet();
-          def eventCategory = new HashSet();
-          if(ctx.json?.action?.type != null){
-              if(ctx.json?.action?.type?.toLowerCase().contains("created")){
-                    eventType.add("creation");
-                    eventCategory.add("configuration");
-              }
-              if(ctx.json?.action?.type?.toLowerCase().contains("deleted")){
-                    eventType.add("deletion");
-                    eventCategory.add("configuration");
-              }
-              if(ctx.json?.action?.type?.toLowerCase().contains("updated")){
-                    eventType.add("change");
-                    eventCategory.add("configuration");
-              }
-              if(ctx.json?.action?.type?.toLowerCase().contains("user")){
-                    eventType.add("user");
-              }
-              if(ctx.json?.action?.type?.toLowerCase().contains("group")){
-                    eventType.add("group");
-              }
-              if(ctx.json?.action?.type?.toLowerCase().contains("allowed")){
-                    eventType.add("allowed");
-              }
-              if(ctx.json?.action?.type?.toLowerCase().contains("denied")){
-                    eventType.add("denied");
-              }
-              if(ctx.json?.action?.type?.toLowerCase().contains("started")){
-                    eventType.add("start");
-              }
-              if(ctx.json?.action?.type?.toLowerCase().contains("access_allowed")){
-                    eventType.add("access");
-                    eventCategory.add("configuration");
-              }
-              if(ctx.json?.action?.type?.toLowerCase().contains("password.check_succeeded")){
-                    eventCategory.add("authentication");
-              }
-              if(ctx.json?.action?.type?.toLowerCase().contains("email")){
-                    eventCategory.add("email");
-              }
-              if(ctx.event.type = eventType.size()==0){
-                    eventType.add("info");
-              }
-          }
-          eventCategory.add("iam");
-          if (!eventCategory.isEmpty()) { ctx.event.category = eventCategory }
-          if (!eventType.isEmpty()) { ctx.event.type = eventType }
+  - append:
+      field: event.category
+      value: [iam]
+  - append:
+      field: event.category
+      if: ctx.json?.action?.type?.toLowerCase().contains('created') || ctx.json.action.type.toLowerCase().contains('deleted') || ctx.json.action.type.toLowerCase().contains('updated') || ctx.json.action.type.toLowerCase().contains('access_allowed')
+      value: [configuration]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('created')
+      value: [creation]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('deleted')
+      value: [deletion]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('updated')
+      value: [change]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('user')
+      value: [user]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('group')
+      value: [group]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('allowed')
+      value: [allowed]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('denied')
+      value: [denied]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('started')
+      value: [start]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('access_allowed')
+      value: [access]
+  - append:
+      field: event.category
+      if: ctx.json?.action?.type?.toLowerCase().contains('password.check_succeeded')
+      value: [authentication]
+  - append:
+      field: event.category
+      if: ctx.json?.action?.type?.toLowerCase().contains('email')
+      value: [email]
+  - set:
+      field: event.type
+      if: ctx.event?.type == null
+      value: [info]
   - fingerprint:
       fields:
         - json.recordedAt
