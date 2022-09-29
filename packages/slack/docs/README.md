@@ -113,6 +113,7 @@ Audit logs summarize the history of changes made within the Slack Enterprise.
 | slack.audit.entity.team | Team that the entity exists within when entity_type is user or message | keyword |
 | slack.audit.entity.teams_shared_with | List of orgs channel is shared with when entity_type is channel | keyword |
 | slack.audit.entity.timestamp | The timestamp of the entity when entity_type is message | date |
+| slack.audit.entity.title | Title of the entity when entity_type is file | keyword |
 | slack.audit.entity.type | The type of the entity when entity_type is role | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
