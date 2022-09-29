@@ -56,7 +56,7 @@ The Diagnostic settings support several destination types. The Elastic Agent req
 
 [Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-about) is a data streaming platform and event ingestion service. It can receive and temporary store millions of events.
 
-The Azure Logs integration uses the Event Hubs service to receive and store logs exported by a Diagnostic settings and make them available to Elastic Agent.
+Elastic Agent with the Azure Logs integration will consume logs from the Event Hubs service.
 
 To learn more about Event Hubs, refer to [Features and terminology in Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-features).
 
@@ -64,7 +64,7 @@ To learn more about Event Hubs, refer to [Features and terminology in Azure Even
 
 The Storage account is a versatile Azure service that allows you to store data in various storage types, including blobs, file shares, queues, tables, and disks.
 
-The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows the integration to allocate the logs processing among existing Elastic Agents to increase ingestion throughput if required.
+The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows to keep track of the logs processing among existing Elastic Agents with Azure Logs integration to increase ingestion throughput if required.
 
 ```text
   ┌────────────────┐                     ┌────────────┐
