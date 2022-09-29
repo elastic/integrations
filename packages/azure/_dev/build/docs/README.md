@@ -164,7 +164,7 @@ Take note of the **Connection string–primary key**, which you will use later w
 
 ### Create a Diagnostic settings
 
-The Diagnostic settings export the logs from Azure services to a destination. The Azure Logs integration uses the Event Hub service as the destination for the logs.
+The Diagnostic settings export the logs from Azure services to a destination and in order to use Azure Logs integration, it must be an Event Hub.
 
 To create a diagnostic settings to export logs:
 
