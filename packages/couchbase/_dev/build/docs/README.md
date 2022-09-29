@@ -51,6 +51,14 @@ This is the `bucket` data stream. A bucket is a logical container for a related 
 
 {{fields "bucket"}}
 
+### Cache
+
+This is the `cache` data stream. The cache is hardware or software that is used to store something, usually data, temporarily in a computing environment. These metrics are related to caching in Couchbase.
+
+{{event "cache"}}
+
+{{fields "cache"}}
+
 ### Cluster
 
 This is the `cluster` data stream. A cluster is a collection of nodes that are accessed and managed as a single group. Each node is an equal partner in orchestrating the cluster to provide facilities such as operational information (monitoring) or managing cluster membership of nodes and the health of nodes.
