@@ -1909,7 +1909,7 @@ An example event for `firewall` looks as following:
 | destination.nat.ip | Translated ip of destination based NAT sessions (e.g. internet to private DMZ) Typically used with load balancers, firewalls, or routers. | ip |
 | destination.nat.port | Port the source session is translated to by NAT Device. Typically used with load balancers, firewalls, or routers. | long |
 | destination.port | Port of the destination. | long |
-| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. Expected values are: AA, TC, RD, RA, AD, CD, DO. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.type | The type of record being queried. | keyword |
@@ -1969,9 +1969,9 @@ An example event for `firewall` looks as following:
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 
 
-### application_gateway_logs 
+### application_gateway 
 
-The `application_gateway_logs` data stream of the Azure Logs package will collect any Application Gateway log events that have been streamed through an Azure event hub.
+The `application_gateway` data stream of the Azure Logs package will collect any Application Gateway log events that have been streamed through an Azure event hub.
 
 An example event for `application_gateway` looks as following:
 
@@ -2003,7 +2003,7 @@ An example event for `application_gateway` looks as following:
         "domain": "www.contoso.com"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "event": {
         "category": [
@@ -2076,14 +2076,14 @@ An example event for `application_gateway` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.application_gateway_logs.action | Action taken on the request. Available values are: Blocked and Allowed (for custom rules) Matched (when a rule matches a part of the request) Detected and Blocked (these are both for mandatory rules, depending on if the WAF is in detection or prevention mode). | keyword |
-| azure.application_gateway_logs.hostname | Hostname or IP address of the Application Gateway. | keyword |
-| azure.application_gateway_logs.instance_id | Application Gateway instance for which firewall data is being generated. For a multiple-instance application gateway, there is one row per instance. | keyword |
-| azure.application_gateway_logs.operation_name | Operation name | keyword |
-| azure.application_gateway_logs.policy.id | Unique ID of the Firewall Policy associated with the Application Gateway, Listener, or Path. | keyword |
-| azure.application_gateway_logs.policy.scope | The location of the policy - values can be "Global", "Listener", or "Location". | keyword |
-| azure.application_gateway_logs.policy.scope_name | The name of the object where the policy is applied. | keyword |
-| azure.application_gateway_logs.transaction_id | Unique ID for a given transaction which helps group multiple rule violations that occurred within the same request. | keyword |
+| azure.application_gateway.action | Action taken on the request. Available values are: Blocked and Allowed (for custom rules) Matched (when a rule matches a part of the request) Detected and Blocked (these are both for mandatory rules, depending on if the WAF is in detection or prevention mode). | keyword |
+| azure.application_gateway.hostname | Hostname or IP address of the Application Gateway. | keyword |
+| azure.application_gateway.instance_id | Application Gateway instance for which firewall data is being generated. For a multiple-instance application gateway, there is one row per instance. | keyword |
+| azure.application_gateway.operation_name | Operation name | keyword |
+| azure.application_gateway.policy.id | Unique ID of the Firewall Policy associated with the Application Gateway, Listener, or Path. | keyword |
+| azure.application_gateway.policy.scope | The location of the policy - values can be "Global", "Listener", or "Location". | keyword |
+| azure.application_gateway.policy.scope_name | The name of the object where the policy is applied. | keyword |
+| azure.application_gateway.transaction_id | Unique ID for a given transaction which helps group multiple rule violations that occurred within the same request. | keyword |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |

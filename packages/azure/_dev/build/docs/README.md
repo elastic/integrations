@@ -168,10 +168,10 @@ Retrieves Azure Firewall application rule, network rule, and DNS proxy logs.
 
 {{fields "firewall_logs"}}
 
-### application_gateway_logs 
+### application_gateway 
 
-The `application_gateway_logs` data stream of the Azure Logs package will collect any Application Gateway log events that have been streamed through an Azure event hub.
+The `application_gateway` data stream of the Azure Logs package will collect any Application Gateway log events that have been streamed through an Azure event hub.
 
-{{event "application_gateway_logs"}}
+{{event "application_gateway"}}
 
-{{fields "application_gateway_logs"}}
+{{fields "application_gateway"}}

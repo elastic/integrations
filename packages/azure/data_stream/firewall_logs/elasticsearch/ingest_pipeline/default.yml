@@ -199,21 +199,12 @@ processors:
   - uppercase:
       field: dns.header_flags
       ignore_missing: true
+
   - split:
       field: dns.header_flags
       separator: ","
-      ignore_missing: true
-  - script:
-      lang: painless
-      ignore_failure: true
-      description: remove QR header since it is not allowed per ECS spec in 8.4.0
-      if: ctx?.dns?.header_flags != null && ctx.dns.header_flags instanceof List
-      source: |
-        for (int i=ctx.dns.header_flags.length-1; i>=0; i--) {
-            if (ctx.dns.header_flags[i] == 'QR') {
-                ctx.dns.header_flags.remove(i);
-            }
-        }    
+      ignore_missing: true  
+
   - rename:
       field: json.category
       target_field: azure.firewall.category
