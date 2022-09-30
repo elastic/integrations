@@ -40,14 +40,6 @@ Elasticsearch is needed to store and search data, and Kibana is needed for visua
     - To proceed with creating a new provisioning hash, click **Reset your provisioning hash** -> **OK**, then a new provisioning hash is shown at the top of the page.
     ![LastPass Provisioning Hash](../img/lastpass-provisioning-hash-screenshot.png)
 
-### Enabling the integration in Elastic
-
-1. In Kibana, go to **Management -> Integrations**.
-2. In the "Search for integrations" search bar, type **LastPass**.
-3. Click on **LastPass** integration from the search results.
-4. Click on the **Add LastPass** button to add the LastPass integration.
-5. Enable the integration to collect logs via API.
-
 ## Logs reference
 
 ### detailed_shared_folder

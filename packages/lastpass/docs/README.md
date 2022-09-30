@@ -40,14 +40,6 @@ Elasticsearch is needed to store and search data, and Kibana is needed for visua
     - To proceed with creating a new provisioning hash, click **Reset your provisioning hash** -> **OK**, then a new provisioning hash is shown at the top of the page.
     ![LastPass Provisioning Hash](../img/lastpass-provisioning-hash-screenshot.png)
 
-### Enabling the integration in Elastic
-
-1. In Kibana, go to **Management -> Integrations**.
-2. In the "Search for integrations" search bar, type **LastPass**.
-3. Click on **LastPass** integration from the search results.
-4. Click on the **Add LastPass** button to add the LastPass integration.
-5. Enable the integration to collect logs via API.
-
 ## Logs reference
 
 ### detailed_shared_folder
@@ -60,11 +52,11 @@ An example event for `detailed_shared_folder` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-29T05:53:44.454Z",
+    "@timestamp": "2022-09-30T10:43:14.648Z",
     "agent": {
-        "ephemeral_id": "6b8ef0ad-86a9-4e03-b932-d3421db5b088",
+        "ephemeral_id": "9ffd2019-4880-44c2-a638-b3329f681bbf",
         "hostname": "docker-fleet-agent",
-        "id": "c44d5e21-86a8-47dc-8873-de13497d31f3",
+        "id": "c8a45af4-c8db-4a9e-bad1-f0fd8ef21467",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -78,15 +70,15 @@ An example event for `detailed_shared_folder` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "c44d5e21-86a8-47dc-8873-de13497d31f3",
+        "id": "c8a45af4-c8db-4a9e-bad1-f0fd8ef21467",
         "snapshot": false,
         "version": "7.17.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-09-29T05:53:44.454Z",
+        "created": "2022-09-30T10:43:14.648Z",
         "dataset": "lastpass.detailed_shared_folder",
-        "ingested": "2022-09-29T05:53:47Z",
+        "ingested": "2022-09-30T10:43:18Z",
         "kind": "state",
         "original": "{\"id\":\"101\",\"score\":99,\"sharedfoldername\":\"ThisSFName\",\"users\":{\"can_administer\":true,\"give\":false,\"readonly\":true,\"sites\":[\"aaa.com\",\"bbb.com\"],\"username\":\"joe.user@lastpass.com\"}}",
         "type": [
@@ -124,7 +116,7 @@ An example event for `detailed_shared_folder` looks as following:
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "lastpass_detailed_shared_folder"
+        "lastpass-detailed_shared_folder"
     ],
     "user": {
         "email": "joe.user@lastpass.com"
@@ -206,9 +198,9 @@ An example event for `event_report` looks as following:
 {
     "@timestamp": "2015-07-17T09:51:51.000Z",
     "agent": {
-        "ephemeral_id": "0dc1d8b0-943b-4754-b598-60deebdf6ad6",
+        "ephemeral_id": "13953b06-3145-46e7-a5fd-faa2fa36dff5",
         "hostname": "docker-fleet-agent",
-        "id": "c44d5e21-86a8-47dc-8873-de13497d31f3",
+        "id": "c8a45af4-c8db-4a9e-bad1-f0fd8ef21467",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -222,16 +214,16 @@ An example event for `event_report` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "c44d5e21-86a8-47dc-8873-de13497d31f3",
+        "id": "c8a45af4-c8db-4a9e-bad1-f0fd8ef21467",
         "snapshot": false,
         "version": "7.17.0"
     },
     "event": {
         "action": "Failed Login Attempt",
         "agent_id_status": "verified",
-        "created": "2022-09-29T05:54:27.445Z",
+        "created": "2022-09-30T10:43:58.475Z",
         "dataset": "lastpass.event_report",
-        "ingested": "2022-09-29T05:54:30Z",
+        "ingested": "2022-09-30T10:44:02Z",
         "kind": "event",
         "original": "{\"Action\":\"Failed Login Attempt\",\"Data\":\"\",\"IP_Address\":\"10.16.21.21\",\"Time\":\"2015-07-17 09:51:51\",\"Username\":\"j.user@example.com\",\"id\":\"Event1\"}",
         "type": [
@@ -264,7 +256,7 @@ An example event for `event_report` looks as following:
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "lastpass_event_report"
+        "lastpass-event_report"
     ],
     "user": {
         "email": [
@@ -365,11 +357,11 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-29T05:55:11.660Z",
+    "@timestamp": "2022-09-30T10:44:43.542Z",
     "agent": {
-        "ephemeral_id": "2c9b2aec-c9a8-4cc8-b8b8-a85686b57886",
+        "ephemeral_id": "7b68e43e-222f-4be8-a47a-53f48a2ac80d",
         "hostname": "docker-fleet-agent",
-        "id": "c44d5e21-86a8-47dc-8873-de13497d31f3",
+        "id": "c8a45af4-c8db-4a9e-bad1-f0fd8ef21467",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -383,7 +375,7 @@ An example event for `user` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "c44d5e21-86a8-47dc-8873-de13497d31f3",
+        "id": "c8a45af4-c8db-4a9e-bad1-f0fd8ef21467",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -392,9 +384,9 @@ An example event for `user` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2022-09-29T05:55:11.660Z",
+        "created": "2022-09-30T10:44:43.542Z",
         "dataset": "lastpass.user",
-        "ingested": "2022-09-29T05:55:15Z",
+        "ingested": "2022-09-30T10:44:47Z",
         "kind": "state",
         "original": "{\"admin\":false,\"applications\":0,\"attachments\":1,\"created\":\"2014-03-12 10:02:56\",\"disabled\":false,\"formfills\":2,\"fullname\":\"Ned Flanders\",\"groups\":[\"Domain Admins\",\"Dev Team\",\"Support Team\"],\"id\":\"101\",\"last_login\":\"2015-05-29 11:45:05\",\"last_pw_change\":\"2015-05-19 10:58:33\",\"linked\":\"personal.account@mydomain.com\",\"mpstrength\":\"100\",\"neverloggedin\":false,\"notes\":19,\"password_reset_required\":false,\"sites\":72,\"username\":\"user1@lastpass.com\"}",
         "type": [
@@ -439,7 +431,7 @@ An example event for `user` looks as following:
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "lastpass_user"
+        "lastpass-user"
     ],
     "user": {
         "email": "user1@lastpass.com",
