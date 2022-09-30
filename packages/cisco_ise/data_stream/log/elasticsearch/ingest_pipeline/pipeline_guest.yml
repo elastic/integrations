@@ -32,23 +32,21 @@ processors:
       field_split: ', '
       value_split: =
       ignore_failure: true
+      target_field: cisco_ise.log.log_details_object
   - script:
       lang: painless
       if: ctx?.cisco_ise?.log?.message?.description != null
       source: 
         ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
-  - convert:
-      field: ConfigVersionId
-      target_field: cisco_ise.log.config_version.id
-      type: long
-      ignore_failure: true
   - rename:
-      field: UserType
+      field: cisco_ise.log.log_details_object.UserType
       target_field: cisco_ise.log.user.type
+      ignore_failure: true
       ignore_missing: true
   - rename:
-      field: UserName
+      field: cisco_ise.log.log_details_object.UserName
       target_field: user.name
+      ignore_failure: true
       ignore_missing: true
   - append:
       field: related.user
@@ -57,10 +55,17 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - convert:
-      field: IpAddress
+      field: cisco_ise.log.log_details_object.IpAddress
       target_field: source.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details_object.IpAddress
+      ignore_missing: true
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
@@ -68,33 +73,46 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: AuthenticationIdentityStore
+      field: cisco_ise.log.log_details_object.AuthenticationIdentityStore
       target_field: cisco_ise.log.authentication.identity_store
+      ignore_failure: true
       ignore_missing: true
   - rename:
-      field: PortalName
+      field: cisco_ise.log.log_details_object.PortalName
       target_field: cisco_ise.log.portal.name
+      ignore_failure: true
       ignore_missing: true
   - rename:
-      field: IdentityGroup
+      field: cisco_ise.log.log_details_object.IdentityGroup
       target_field: cisco_ise.log.identity.group
+      ignore_failure: true
       ignore_missing: true
   - rename:
-      field: PsnHostName
+      field: cisco_ise.log.log_details_object.PsnHostName
       target_field: cisco_ise.log.psn.hostname
+      ignore_failure: true
       ignore_missing: true
   - convert:
-      field: ResponseTime
+      field: cisco_ise.log.log_details_object.ResponseTime
       target_field: cisco_ise.log.response.time
       type: long
-      ignore_failure: true
-  - rename:
-      field: GuestUserName
-      target_field: cisco_ise.log.guest.user.name
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details_object.ResponseTime
       ignore_missing: true
   - rename:
-      field: FailureReason
+      field: cisco_ise.log.log_details_object.GuestUserName
+      target_field: cisco_ise.log.guest.user.name
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details_object.FailureReason
       target_field: cisco_ise.log.failure.reason
+      ignore_failure: true
       ignore_missing: true
   - append:
       field: related.user.name
@@ -102,11 +120,3 @@ processors:
       if: ctx?.cisco_ise?.log?.guest?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
-  - remove:
-      field:
-        - _tmp
-        - ConfigVersionId
-        - IpAddress
-        - cisco_ise.log.log_details
-        - ResponseTime
-      ignore_missing: true

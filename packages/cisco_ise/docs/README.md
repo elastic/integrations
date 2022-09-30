@@ -343,6 +343,7 @@ An example event for `log` looks as following:
 | cisco_ise.log.local_logging |  | keyword |
 | cisco_ise.log.location |  | keyword |
 | cisco_ise.log.log_details |  | text |
+| cisco_ise.log.log_details_object |  | flattened |
 | cisco_ise.log.log_error.message |  | keyword |
 | cisco_ise.log.log_severity_level |  | keyword |
 | cisco_ise.log.logger.name |  | keyword |
@@ -492,6 +493,7 @@ An example event for `log` looks as following:
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
+| tmp |  | flattened |
 | user.full_name | User's full name, if available. | keyword |
 | user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
 | user.name | Short name or login of the user. | keyword |
