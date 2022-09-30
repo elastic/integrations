@@ -7,15 +7,13 @@ services:
     command:
       - '--replSet'
       - 'beats'
-    volumes:
-      - ./creator/setup.sh:/docker-entrypoint-initdb.d/setup.sh
   mongodb-log:
-    image: docker.elastic.co/integrations-ci/beats-mongodb:${MONGODB_VERSION:-5.0}
+    image: docker.elastic.co/integrations-ci/beats-mongodb:${MONGODB_VERSION:-3.4}-1
     user: root
     build:
       context: .
     volumes:
       - ${SERVICE_LOGS_DIR}:/var/log/mongodb
     entrypoint: >
-      bash -c "chmod a+wx /var/log/mongodb && chmod a+r -R /var/log/mongodb && touch /var/log/mongodb/mongodb.log && chmod 644 /var/log/mongodb/mongodb.log && mongod --bind_ip_all --replSet beats --logpath /var/log/mongodb/mongodb.log --logappend"
+      bash -c "chmod a+wx /var/log/mongodb && chmod a+r -R /var/log/mongodb && touch /var/log/mongodb/mongodb.log && chmod 644 /var/log/mongodb/mongodb.log && mongod --replSet beats --logpath /var/log/mongodb/mongodb.log --logappend"
 
