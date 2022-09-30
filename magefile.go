@@ -10,11 +10,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 
+	"github.com/elastic/integrations/dev/benchreport"
 	"github.com/elastic/integrations/dev/codeowners"
 )
 
@@ -29,7 +31,7 @@ var (
 func Check() error {
 	mg.Deps(build)
 	mg.Deps(format)
-	mg.Deps(modTidy)
+	mg.Deps(ModTidy)
 	mg.Deps(goTest)
 	mg.Deps(codeowners.Check)
 	return nil
@@ -51,6 +53,19 @@ func ImportBeats() error {
 	return sh.Run("go", args...)
 }
 
+func GetGithubMarkdownBenchReport(source, target, threshold, outputFile, detailLevel string) error {
+	t, err := strconv.ParseFloat(threshold, 64)
+	if err != nil {
+		return err
+	}
+	isFull := detailLevel == "full"
+	report, err := benchreport.GetBenchReport(source, target, t, isFull)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(outputFile, report, 0644)
+}
+
 func build() error {
 	mg.Deps(buildImportBeats)
 	return nil
@@ -70,7 +85,7 @@ func format() {
 }
 
 func addLicenseHeaders() error {
-	return sh.RunV("go-licenser", "-license", "Elastic")
+	return sh.RunV("go", "run", "github.com/elastic/go-licenser", "-license", "Elastic")
 }
 
 func goImports() error {
@@ -85,10 +100,10 @@ func goImports() error {
 	}
 
 	args := append(
-		[]string{"-local", GoImportsLocalPrefix, "-l", "-w"},
+		[]string{"run", "golang.org/x/tools/cmd/goimports", "-local", GoImportsLocalPrefix, "-l", "-w"},
 		goFiles...,
 	)
-	return sh.RunV("goimports", args...)
+	return sh.RunV("go", args...)
 }
 
 func goTest() error {
@@ -125,6 +140,6 @@ func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 	return matches, err
 }
 
-func modTidy() error {
+func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
 }

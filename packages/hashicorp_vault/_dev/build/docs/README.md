@@ -9,7 +9,7 @@ three data streams:
 
 ## Compatibility
 
-This integration has been tested with Vault 1.7.
+This integration has been tested with Vault 1.11.
 
 ## Audit Logs
 

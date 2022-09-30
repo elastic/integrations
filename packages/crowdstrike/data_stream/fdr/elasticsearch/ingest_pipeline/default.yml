@@ -1544,6 +1544,22 @@ processors:
       field: crowdstrike.ImageFileName
       target_field: process.executable
       ignore_missing: true
+  - script:
+      tag: process-name
+      lang: painless
+      description: Calculate process.name
+      source: |-
+        def executable = ctx.process.executable;
+        def exe_arr = [];
+        def name = executable;
+        if(executable.substring(0,1) == "\\") {
+          name = executable.splitOnToken("\\")[-1];
+        } else if(executable.substring(0,1) == "/") {
+          name = executable.splitOnToken("/")[-1];
+        }
+        ctx.process.put("name", name);
+
+      if: ctx.process?.executable != null && ctx.process.executable != ""
   - convert:
       field: crowdstrike.ExitCode
       type: long
