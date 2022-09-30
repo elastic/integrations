@@ -2,9 +2,9 @@
 
 ## Overview
 
-The Azure Logs integration retrieves Activity, Active Directory (Sign-in, Audit, Identity Protection, Provisioning), Platform, and Spring Cloud data from [Azure](https://docs.microsoft.com/en-us/azure/?product=popular).
+The Azure Logs integration collects logs for specific Azure services like Azure Active Directory (Sign-in, Audit, Identity Protection, and Provisioning logs), Azure Spring Cloud, Azure Firewall, and serveral others using the Activity and Platform logs.
 
-Use the Azure Logs integration to collect logs from Azure service. You can then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
+You can then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
 For example, if you wanted to detect possible brute force sign-in attacks, you
 could install the Azure Logs integration to send Azure sign-in logs to Elastic.
@@ -58,13 +58,20 @@ The Diagnostic settings support several destination types. The Elastic Agent req
 
 Elastic Agent with the Azure Logs integration will consume logs from the Event Hubs service.
 
+```text
+  ┌────────────────┐      ┌────────────┐
+  │     adlogs     │      │  Elastic   │
+  │ <<event hub>>  │─────▶│   Agent    │
+  └────────────────┘      └────────────┘
+```
+
 To learn more about Event Hubs, refer to [Features and terminology in Azure Event Hubs](https://learn.microsoft.com/en-us/azure/event-hubs/event-hubs-features).
 
 ### Storage account container
 
-The Storage account is a versatile Azure service that allows you to store data in various storage types, including blobs, file shares, queues, tables, and disks.
+The [Storage account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview) is a versatile Azure service that allows you to store data in various storage types, including blobs, file shares, queues, tables, and disks.
 
-The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows to keep track of the logs processing among existing Elastic Agents with Azure Logs integration to increase ingestion throughput if required.
+The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows the Elastic Agents assigned to the same agent policy to work together on the logs processing to increase ingestion throughput if required.
 
 ```text
   ┌────────────────┐                     ┌────────────┐
@@ -80,6 +87,8 @@ The Azure Logs integration uses a Storage account container to store and share i
 ```
 
 ## Setup
+
+Elastic strongly recommends installing the individual integrations ("Azure Active Directory" logs or "Azure Activity logs") instead of the collective ones ("Azure Logs"). This allows you to have a dedicated event hub for each Azure service or log group, the recommended approach for optimal performance.
 
 Before adding the integration, you must complete the following tasks.
 
@@ -115,7 +124,11 @@ If you are familiar with Kafka, here's a conceptual mapping between the two:
 
 #### How many event hubs?
 
-Elastic recommends creating one event hub for each Azure service you collect data from. For example, if you plan to collect Azure Active Directory (Azure AD) logs and Activity logs, create two event hubs: one for Azure AD and one for Activity logs.
+Elastic strongly recommends creating one event hub for each Azure service you collect data from.
+
+For example, if you plan to collect Azure Active Directory (Azure AD) logs and Activity logs, create two event hubs: one for Azure AD and one for Activity logs.
+
+Here's an high-level diagram of the solution:
 
 ```text
   ┌────────────────┐   ┌──────────────┐   ┌────────────────┐                    
@@ -130,15 +143,34 @@ Elastic recommends creating one event hub for each Azure service you collect dat
   └────────────────┘   └──────────────┘   └────────────────┘                                    
 ```
 
-It is not recommended to use the same event hub for multiple integrations.
+Having one event hub for each Azure service is beneficial in terms of performance and easy of troubleshooting.
 
-For high-volume deployments, we recommend one event hub for each data stream.
+For high-volume deployments, we recommend one event hub for each data stream:
+
+```text
+                       ┌──────────────┐   ┌─────────────────────┐                   
+                       │  Diagnostic  │   │   signin (adlogs)   │                   
+                    ┌─▶│   settings   │──▶│    <<event hub>>    │──┐                
+                    │  └──────────────┘   └─────────────────────┘  │                
+                    │                                              │                
+ ┌────────────────┐ │  ┌──────────────┐   ┌─────────────────────┐  │  ┌────────────┐
+ │    Azure AD    │ │  │  Diagnostic  │   │   audit (adlogs)    │  │  │  Elastic   │
+ │  <<service>>   │─┼─▶│   settings   │──▶│    <<event hub>>    │──┼─▶│   Agent    │
+ └────────────────┘ │  └──────────────┘   └─────────────────────┘  │  └────────────┘
+                    │                                              │                
+                    │  ┌──────────────┐   ┌─────────────────────┐  │                
+                    │  │  Diagnostic  │   │provisioning (adlogs)│  │                
+                    └─▶│   settings   │──▶│    <<event hub>>    │──┘                
+                       └──────────────┘   └─────────────────────┘                   
+```
 
 #### Consumer Group
 
-Like all other clients, Elastic Agent should specify a consumer group to access the event hub.
+Like all other event hub clients, Elastic Agent needs a consumer group name to access the event hub.
 
 A Consumer Group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple agents to each have a separate view of the event stream, and to read the logs independently at their own pace and with their own offsets.
+
+Consumer groups allow the Elastic Agents assigned to the same agent policy to work together on the logs processing to increase ingestion throughput if required.
 
 In most cases, you can use the default consumer group named `$Default`. If `$Default` is already used by other applications, you can create a consumer group dedicated to the Azure Logs integration.
 
