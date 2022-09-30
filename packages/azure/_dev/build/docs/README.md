@@ -71,7 +71,7 @@ To learn more about Event Hubs, refer to [Features and terminology in Azure Even
 
 The [Storage account](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview) is a versatile Azure service that allows you to store data in various storage types, including blobs, file shares, queues, tables, and disks.
 
-The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows the Elastic Agents assigned to the same agent policy to work together on the logs processing to increase ingestion throughput if required.
+The Azure Logs integration uses a Storage account container to store and share information about the Consumer Group (state, position, or offset). Sharing such information allows multiple Elastic Agents assigned to the same agent policy to work together; this enables horizontal scaling of the logs processing when required.
 
 ```text
   ┌────────────────┐                     ┌────────────┐
@@ -170,7 +170,7 @@ Like all other event hub clients, Elastic Agent needs a consumer group name to a
 
 A Consumer Group is a view (state, position, or offset) of an entire event hub. Consumer groups enable multiple agents to each have a separate view of the event stream, and to read the logs independently at their own pace and with their own offsets.
 
-Consumer groups allow the Elastic Agents assigned to the same agent policy to work together on the logs processing to increase ingestion throughput if required.
+Consumer groups allow multiple Elastic Agents assigned to the same agent policy to work together; this enables horizontal scaling of the logs processing when required.
 
 In most cases, you can use the default consumer group named `$Default`. If `$Default` is already used by other applications, you can create a consumer group dedicated to the Azure Logs integration.
 
