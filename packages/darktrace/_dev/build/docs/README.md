@@ -97,14 +97,6 @@ For more details, see [Documentation](https://customerportal.darktrace.com/produ
 **Note** : A Fully Qualified Domain Name (FQDN) must be configured for the Darktrace instance in order for links to be included in external alerts.
   - An FQDN can be configured from the **System** subsection on the **Settings** tab of the Darktrace **System Config** page.
 
-### Enabling the integration in Elastic
-
-1. In Kibana go to **Management > Integrations**.
-2. In the "Search for integrations" search bar, type **Darktrace**.
-3. Click on **Darktrace** integration from the search results.
-4. Click on **Add Darktrace** button to add Darktrace integration.
-5. Enable the Integration with either via API or TCP or UDP input.
-
 ## Logs reference
 
 ### ai_analyst_alert
