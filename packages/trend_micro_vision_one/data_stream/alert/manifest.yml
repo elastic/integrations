@@ -9,7 +9,7 @@ streams:
       - name: initial_interval
         type: text
         title: Initial Interval
-        description: How far back to pull the alert from Trend Micro Vision One.
+        description: How far back to pull the alert from Trend Micro Vision One. NOTE:- Supported units for this parameter are h/m/s.
         multi: false
         required: true
         show_user: true
@@ -17,11 +17,19 @@ streams:
       - name: interval
         type: text
         title: Interval
-        description: Duration between requests to the Trend Micro Vision One API.
+        description: Duration between requests to the Trend Micro Vision One API. NOTE:- Supported units for this parameter are h/m/s.
         default: 5m
         multi: false
         required: true
         show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. NOTE:- Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
       - name: tags
         type: text
         title: Tags
@@ -30,7 +38,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - trend_micro_vision_one_alert
+          - trend_micro_vision_one-alert
       - name: preserve_original_event
         required: true
         show_user: true
@@ -41,7 +49,7 @@ streams:
         default: false
       - name: preserve_duplicate_custom_fields
         required: true
-        show_user: true
+        show_user: false
         title: Preserve duplicate custom fields
         description: Preserve trend_micro_vision_one.alert fields that were copied to Elastic Common Schema (ECS) fields.
         type: bool

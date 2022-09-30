@@ -35,14 +35,6 @@ This module has been tested against `Trend Micro Vision One API version 3.0`.
 ![Trend Micro Vision One generate API token ](../img/trend-micro-vision-one-api-token-generate.png)
 4. Copy the Authentication token.
 
-### Enabling the integration in Elastic
-
-1. In Kibana go to **Management > Integrations**.
-2. In the "Search for integrations" search bar, type **Trend Micro Vision One**.
-3. Click on **Trend Micro Vision One** integration from the search results.
-4. Click on **Add Trend Micro Vision One** button to add Trend Micro Vision One integration.
-5. Enable the Integration to collect logs via API.
-
 ## Logs Reference
 
 ### alert
