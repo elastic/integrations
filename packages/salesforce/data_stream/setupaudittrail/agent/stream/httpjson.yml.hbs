@@ -1,0 +1,34 @@
+config_version: 2
+interval: {{period}}
+request.method: GET
+auth.oauth2:
+  enabled: true
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  user: {{username}}
+  password: {{password}}
+request.url: {{instance_url}}/services/data/v54.0/query?q=setupaudittrail+rest
+request.transforms:
+  - set:
+      target: url.params.q
+      value: "SELECT Action,CreatedByContext,CreatedById,CreatedByIssuer,CreatedDate,DelegateUser,Display,Id,ResponsibleNamespacePrefix,Section FROM SetupAuditTrail WHERE CreatedDate > [[.cursor.last_published_setupaudittrail]] ORDER BY CreatedDate ASC NULLS FIRST"
+      default: "SELECT Action,CreatedByContext,CreatedById,CreatedByIssuer,CreatedDate,DelegateUser,Display,Id,ResponsibleNamespacePrefix,Section FROM SetupAuditTrail ORDER BY CreatedDate ASC NULLS FIRST"
+response.split:
+  target: body.records
+cursor:
+  last_published_setupaudittrail:
+    value: '[[.last_event.CreatedDate]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+{{processors}}
+{{/if}}
