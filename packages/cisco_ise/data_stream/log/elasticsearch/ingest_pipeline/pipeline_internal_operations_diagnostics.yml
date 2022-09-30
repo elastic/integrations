@@ -47,35 +47,34 @@ processors:
         ctx.event.category = eventCategory;
   - kv:
       field: cisco_ise.log.log_details
+      target_field: cisco_ise.log.log_details_object
       field_split: ', '
       value_split: =
       ignore_failure: true
   - convert:
-      field: ConfigVersionId
-      target_field: cisco_ise.log.config_version.id
-      type: long
-      ignore_failure: true
-  - convert:
-      field: DestinationPort
+      field: cisco_ise.log.log_details_object.DestinationPort
       target_field: destination.port
       type: long
-      ignore_failure: true
-  - rename:
-      field: LoggerName
-      target_field: cisco_ise.log.logger.name
       ignore_missing: true
-  - rename:
-      field: LogFileName
-      target_field: cisco_ise.log.file.name
-      ignore_missing: true
-  - rename:
-      field: LogErrorMessage
-      target_field: cisco_ise.log.error.message
-      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field:
-        - _tmp
-        - ConfigVersionId
-        - DestinationPort
-        - cisco_ise.log.log_details
+      field: cisco_ise.log.log_details_object.DestinationPort
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details_object.LoggerName
+      target_field: cisco_ise.log.logger.name
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details_object.LogFileName
+      target_field: cisco_ise.log.file.name
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details_object.LogErrorMessage
+      target_field: cisco_ise.log.error.message
+      ignore_failure: true
       ignore_missing: true
