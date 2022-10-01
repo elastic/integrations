@@ -40,8 +40,8 @@ An example event for `logout_rest` looks as following:
 {
     "@timestamp": "2022-09-19T07:37:07.360Z",
     "agent": {
-        "ephemeral_id": "9214e0a5-bd4e-4cf9-94c9-f6c91645a0cd",
-        "id": "d81be70a-a7c5-4378-a35a-65460992be69",
+        "ephemeral_id": "9e04e1ab-90d7-4cce-927e-18f8e80ef9d9",
+        "id": "35b9dd81-eb97-48f7-b48c-89422faafb81",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -55,7 +55,7 @@ An example event for `logout_rest` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "d81be70a-a7c5-4378-a35a-65460992be69",
+        "id": "35b9dd81-eb97-48f7-b48c-89422faafb81",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -66,9 +66,9 @@ An example event for `logout_rest` looks as following:
             "authentication"
         ],
         "code": "4exLFFQZ1234xFl1cJNwOV",
-        "created": "2022-09-27T13:09:53.176Z",
+        "created": "2022-09-27T05:34:59.938Z",
         "dataset": "salesforce.logout_rest",
-        "ingested": "2022-09-27T13:09:56Z",
+        "ingested": "2022-09-27T05:35:03Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"54.0\",\"APP_TYPE\":\"1000\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36\",\"CLIENT_IP\":\"43.200.10.11\",\"CLIENT_VERSION\":\"9998\",\"EVENT_TYPE\":\"Logout\",\"LOGIN_KEY\":\"Obv9123BzbaxqCo1\",\"ORGANIZATION_ID\":\"00D5j001234VI3n\",\"PLATFORM_TYPE\":\"1015\",\"REQUEST_ID\":\"4exLFFQZ1234xFl1cJNwOV\",\"RESOLUTION_TYPE\":\"9999\",\"SESSION_KEY\":\"WvtsJ1235oW24EbH\",\"SESSION_LEVEL\":\"1\",\"SESSION_TYPE\":\"O\",\"TIMESTAMP\":\"20220919073707.360\",\"TIMESTAMP_DERIVED\":\"2022-09-19T07:37:07.360Z\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_INITIATED_LOGOUT\":\"0\",\"USER_TYPE\":\"S\"}",

@@ -6,6 +6,24 @@ rules:
         headers:
           content-type: ['application/json']
         body: '{"access_token":"access_token","instance_url":"https://temporary-intance-url","id":"https://login.salesforce.com/id/temp_id/temp_token","token_type":"Bearer","issued_at":"1633689089545","signature":"signature"}'
+  - path: /services/data/v54.0/query
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Login' ORDER BY LogDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD"},"Id":"0AT5j00002GVrfnGAD","CreatedDate":"2022-09-14T21:43:41.000+0000","LogDate":"2022-09-13T00:00:00.000+0000","LogFile":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD/LogFile"}]}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v54.0/query
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT Action,CreatedByContext,CreatedById,CreatedByIssuer,CreatedDate,DelegateUser,Display,Id,ResponsibleNamespacePrefix,Section FROM SetupAuditTrail ORDER BY CreatedDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"done":true,"records":[{"Action":"insertConnectedApplication","CreatedByContext":"Einstein","CreatedById":"0055j000000utlPAAQ","CreatedByIssuer":null,"CreatedDate":"2022-08-16T09:26:38.000+0000","DelegateUser":"user1","Display":"For user user@elastic.co, the User Verified Email status changed to verified","Id":"0Ym5j000019nwonCAA","ResponsibleNamespacePrefix":"namespaceprefix","Section":"Connected Apps","attributes":{"type":"SetupAuditTrail","url":"/services/data/v54.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA"}}],"totalSize":160}'
+        headers:
+          content-type: ["text/json"]
   - path: /services/data/v54.0/sobjects/EventLogFile/0AT5j00002GVrfnGAD/LogFile
     methods: ["GET"]
     responses:
@@ -18,7 +36,7 @@ rules:
   - path: /services/data/v54.0/query
     methods: ["GET"]
     query_params:
-      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Logout' ORDER BY CreatedDate ASC NULLS FIRST"]
+      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Logout' ORDER BY LogDate ASC NULLS FIRST"]
     responses:
       - status_code: 200
         body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"EventLogFile","url":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX"},"Id":"0AT5j00002GWEsRGAX","CreatedDate":"2022-09-19T21:03:41.000+0000","LogDate":"2022-09-18T00:00:00.000+0000","LogFile":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAX/LogFile"}]}'
