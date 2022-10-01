@@ -12,8 +12,8 @@ request.url: {{instance_url}}/services/data/v54.0/query?q=login+rest
 request.transforms:
   - set:
       target: url.params.q
-      value: "SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Login' AND CreatedDate > [[.cursor.last_published_login]] ORDER BY CreatedDate ASC NULLS FIRST"
-      default: "SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Login' ORDER BY CreatedDate ASC NULLS FIRST"
+      value: "SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Login' AND LogDate > [[.cursor.last_published_login]] ORDER BY LogDate ASC NULLS FIRST"
+      default: "SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND EventType = 'Login' ORDER BY LogDate ASC NULLS FIRST"
 response.split:
   target: body.records
 chain:
@@ -23,7 +23,7 @@ chain:
       replace: $.records[:].Id
 cursor:
   last_published_login:
-    value: '[[.last_event.CreatedDate]]'
+    value: '[[.last_event.LogDate]]'
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

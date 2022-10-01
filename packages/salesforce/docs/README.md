@@ -19,6 +19,10 @@ This integration uses:
 - `httpjson` filebeat input to collect `login_rest`, `logout_rest`, `apex` and `setupaudittrail` events.
 - `cometd` filebeat input to collect `login_stream` and `logout_stream` events.
 
+## Compatibility
+
+This integration has been tested against Salesforce API version `v54.0`.
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
@@ -36,8 +40,8 @@ An example event for `login_rest` looks as following:
 {
     "@timestamp": "2021-10-06T07:13:07.550Z",
     "agent": {
-        "ephemeral_id": "ee2331e8-fdcf-453c-803c-4f08328bdd78",
-        "id": "2764cc15-ad17-412f-b4a6-fdc1357be72f",
+        "ephemeral_id": "d83ddb5f-170c-4f5d-bb0d-538403b08f29",
+        "id": "35b9dd81-eb97-48f7-b48c-89422faafb81",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -51,7 +55,7 @@ An example event for `login_rest` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "2764cc15-ad17-412f-b4a6-fdc1357be72f",
+        "id": "35b9dd81-eb97-48f7-b48c-89422faafb81",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -61,12 +65,12 @@ An example event for `login_rest` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-09-21T13:21:19.180Z",
+        "created": "2022-09-27T05:34:14.077Z",
         "dataset": "salesforce.login_rest",
-        "ingested": "2022-09-21T13:21:22Z",
+        "ingested": "2022-09-27T05:34:17Z",
         "kind": "event",
         "module": "salesforce",
-        "original": "{\\\"API_TYPE\\\":\\\"f\\\",\\\"API_VERSION\\\":\\\"9998.0\\\",\\\"AUTHENTICATION_METHOD_REFERENCE\\\":\\\"\\\",\\\"BROWSER_TYPE\\\":\\\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\\\",\\\"CIPHER_SUITE\\\":\\\"ECDHE-RSA-AES256-GCM-SHA384\\\",\\\"CLIENT_IP\\\":\\\"43.200.10.11\\\",\\\"CPU_TIME\\\":\\\"30\\\",\\\"DB_TOTAL_TIME\\\":\\\"52435102\\\",\\\"EVENT_TYPE\\\":\\\"Login\\\",\\\"LOGIN_KEY\\\":\\\"QfNecrLXSII6fsBq\\\",\\\"LOGIN_STATUS\\\":\\\"LOGIN_NO_ERROR\\\",\\\"ORGANIZATION_ID\\\":\\\"00D5j000000VI3n\\\",\\\"REQUEST_ID\\\":\\\"4ehU_U-nbQyAPFl1cJILm-\\\",\\\"REQUEST_STATUS\\\":\\\"Success\\\",\\\"RUN_TIME\\\":\\\"83\\\",\\\"SESSION_KEY\\\":\\\"\\\",\\\"SOURCE_IP\\\":\\\"43.200.10.11\\\",\\\"TIMESTAMP\\\":\\\"20211006071307.550\\\",\\\"TIMESTAMP_DERIVED\\\":\\\"2021-10-06T07:13:07.550Z\\\",\\\"TLS_PROTOCOL\\\":\\\"TLSv1.2\\\",\\\"URI\\\":\\\"/index.jsp\\\",\\\"URI_ID_DERIVED\\\":\\\"s4heK3WbH-lcJIL3-n\\\",\\\"USER_ID\\\":\\\"0055j000000utlP\\\",\\\"USER_ID_DERIVED\\\":\\\"0055j000000utlPAAQ\\\",\\\"USER_NAME\\\":\\\"user@elastic.co\\\",\\\"USER_TYPE\\\":\\\"Standard\\\"}",
+        "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"9998.0\",\"AUTHENTICATION_METHOD_REFERENCE\":\"\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\",\"CIPHER_SUITE\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"CLIENT_IP\":\"43.200.10.11\",\"CPU_TIME\":\"30\",\"DB_TOTAL_TIME\":\"52435102\",\"EVENT_TYPE\":\"Login\",\"LOGIN_KEY\":\"QfNecrLXSII6fsBq\",\"LOGIN_STATUS\":\"LOGIN_NO_ERROR\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"4ehU_U-nbQyAPFl1cJILm-\",\"REQUEST_STATUS\":\"Success\",\"RUN_TIME\":\"83\",\"SESSION_KEY\":\"\",\"SOURCE_IP\":\"43.200.10.11\",\"TIMESTAMP\":\"20211006071307.550\",\"TIMESTAMP_DERIVED\":\"2021-10-06T07:13:07.550Z\",\"TLS_PROTOCOL\":\"TLSv1.2\",\"URI\":\"/index.jsp\",\"URI_ID_DERIVED\":\"s4heK3WbH-lcJIL3-n\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_NAME\":\"user@elastic.co\",\"USER_TYPE\":\"Standard\"}",
         "outcome": "success",
         "type": [
             "info"
@@ -89,16 +93,16 @@ An example event for `login_rest` looks as following:
                 "version": "9998.0"
             },
             "client_ip": "43.200.10.11",
-            "cpu_time": "30",
+            "cpu_time": 30,
             "db_time": {
-                "total": "52435102"
+                "total": 52435104
             },
             "event_type": "Login",
             "key": "QfNecrLXSII6fsBq",
             "organization_id": "00D5j000000VI3n",
             "request_id": "4ehU_U-nbQyAPFl1cJILm-",
             "request_status": "Success",
-            "run_time": "83",
+            "run_time": 83,
             "uri_derived_id": "s4heK3WbH-lcJIL3-n",
             "user_id": "0055j000000utlP"
         }
@@ -155,14 +159,14 @@ An example event for `login_rest` looks as following:
 | salesforce.login.api.version | The version of the API that's being used. | keyword |  |  |
 | salesforce.login.auth.service_id | The authentication method used by a third-party identification provider for an OpenID Connect single sign-on protocol. | keyword |  |  |
 | salesforce.login.client_ip | The IP address of the client that's using Salesforce services. A Salesforce internal IP (such as a login from Salesforce Workbench or AppExchange) is shown as “Salesforce.com IP”. | keyword |  |  |
-| salesforce.login.cpu_time | The CPU time in milliseconds used to complete the request. This field indicates the amount of activity taking place in the app server layer. | keyword | ms | gauge |
-| salesforce.login.db_time.total | The time in nanoseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and DB_CPU_TIME. Compare this field to CPU_TIME to determine whether performance issues are occurring in the database layer or in your own code. | keyword | nanos | gauge |
+| salesforce.login.cpu_time | The CPU time in milliseconds used to complete the request. This field indicates the amount of activity taking place in the app server layer. | float | ms | gauge |
+| salesforce.login.db_time.total | The time in nanoseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and DB_CPU_TIME. Compare this field to CPU_TIME to determine whether performance issues are occurring in the database layer or in your own code. | float | nanos | gauge |
 | salesforce.login.event_type | The type of event. The value is always Login. | keyword |  |  |
 | salesforce.login.key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |  |  |
 | salesforce.login.organization_id | The 15-character ID of the organization. | keyword |  |  |
 | salesforce.login.request_id | The unique ID of a single transaction. A transaction can contain one or more events. Each event in a given transaction has the same REQUEST_ID. | keyword |  |  |
 | salesforce.login.request_status | The status of the request for a page view or user interface action. | keyword |  |  |
-| salesforce.login.run_time | The amount of time that the request took in milliseconds. | keyword | ms | gauge |
+| salesforce.login.run_time | The amount of time that the request took in milliseconds. | float | ms | gauge |
 | salesforce.login.uri_derived_id | The 18-character case insensitive ID of the URI of the page that's receiving the request. | keyword |  |  |
 | salesforce.login.user_id | The 15-character ID of the user who's using Salesforce services through the UI or the API. | keyword |  |  |
 | source.geo.city_name | City name. | keyword |  |  |

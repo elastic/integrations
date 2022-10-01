@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Salesforce integration allows you to monitor {{ url "salesforce-url" "Salesforce" }} instance. Salesforce provides customer relationship management service and also provides enterprise applications focused on customer service, marketing automation, analytics, and application development.
+The Salesforce integration allows you to monitor [Salesforce](https://www.salesforce.com/) instance. Salesforce provides customer relationship management service and also provides enterprise applications focused on customer service, marketing automation, analytics, and application development.
 
 Use the Salesforce integration to get visibility into the Salesforce Org operations and hold Salesforce accountable to the Service Level Agreements. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
@@ -13,11 +13,15 @@ For example, if you want to check the number of successful and failed login atte
 The Salesforce integration collects log events using REST and Streaming API of Salesforce.
 
 **Logs** help you keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include {{ url "salesforce-login" "Login" }} (using REST and Streaming API), {{ url "salesforce-logout" "Logout" }} (using REST and Streaming API), {{ url "salesforce-apex" "Apex" }}, and {{ url "salesforce-setupaudittrail" "SetupAuditTrail" }}.
+Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm) (using REST and Streaming API), [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm) (using REST and Streaming API), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
 
 This integration uses:
 - `httpjson` filebeat input to collect `login_rest`, `logout_rest`, `apex` and `setupaudittrail` events.
 - `cometd` filebeat input to collect `login_stream` and `logout_stream` events.
+
+## Compatibility
+
+This integration has been tested against Salesforce API version `v54.0`.
 
 ## Requirements
 

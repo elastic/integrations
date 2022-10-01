@@ -1,19 +1,22 @@
 ---
-description: Pipeline for parsing Salesforce Login (REST) logs
+description: Pipeline for parsing Salesforce Login (REST) logs.
 processors:
 - json:
     field: message
     target_field: json
 - set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-    ignore_failure: true
-    ignore_empty_value: true
-- set:
     field: event.original
-    value: '{{message}}'
+    value: '{{{message}}}'
     ignore_failure: true
     ignore_empty_value: true
+- fingerprint:
+    fields:
+    - json.REQUEST_ID
+    - json.SESSION_KEY
+    - json.TIMESTAMP_DERIVED
+    - json.USER_ID
+    target_field: _id
+    ignore_missing: true
 - set:
     field: salesforce.login.access_mode
     value: rest
@@ -80,14 +83,29 @@ processors:
     target_field: salesforce.login.run_time
     ignore_failure: true
     ignore_missing: true
+- convert:
+    field: salesforce.login.run_time
+    type: float
+    ignore_failure: true
+    ignore_missing: true
 - rename:
     field: json.CPU_TIME
     target_field: salesforce.login.cpu_time
     ignore_failure: true
     ignore_missing: true
+- convert:
+    field: salesforce.login.cpu_time
+    type: float
+    ignore_failure: true
+    ignore_missing: true
 - rename:
     field: json.DB_TOTAL_TIME
     target_field: salesforce.login.db_time.total
+    ignore_failure: true
+    ignore_missing: true
+- convert:
+    field: salesforce.login.db_time.total
+    type: float
     ignore_failure: true
     ignore_missing: true
 - rename:
@@ -101,21 +119,43 @@ processors:
     ignore_failure: true
     ignore_missing: true
 - script:
-    description: Set API TYPE value from API TYPE character.
+    description: Set request status value from request status character.
     lang: painless
     ignore_failure: true
     source: |
-        Map m = new HashMap();
-        m.put("D", "Apex Class");
-        m.put("E", "SOAP Enterprise");
-        m.put("M", "SOAP Metadata");
-        m.put("P", "SOAP Partner");
-        m.put("S", "SOAP Apex");
-        m.put("T", "SOAP Tooling");
-        m.put("f", "Feed");
-        m.put("l", "Live Agent");
-        m.put("p", "SOAP ClientSync");
-        ctx.salesforce.login.api.type = m.get(ctx.salesforce.login.api.type);
+        Map map = new HashMap();
+        map.put("S", "Success");
+        map.put("F", "Failure");
+        map.put("U", "Undefined");
+        map.put("A", "Authorization Error");
+        map.put("R", "Redirect");
+        map.put("N", "Not Found");
+        String temp = map.get(ctx.salesforce?.login?.request_status);
+        if (temp != null) {
+          ctx.salesforce.login.request_status = temp;
+        }
+- script:
+    description: Set api type value from api type character.
+    lang: painless
+    ignore_failure: true
+    source: |
+        Map map = new HashMap();
+        map.put("D", "Apex Class");
+        map.put("E", "SOAP Enterprise");
+        map.put("I", "SOAP Cross Instance");
+        map.put("M", "SOAP Metadata");
+        map.put("O", "Old SOAP");
+        map.put("P", "SOAP Partner");
+        map.put("S", "SOAP Apex");
+        map.put("T", "SOAP Tooling");
+        map.put("X", "XmlRPC");
+        map.put("f", "Feed");
+        map.put("l", "Live Agent");
+        map.put("p", "SOAP ClientSync");
+        String temp = map.get(ctx.salesforce?.login?.api?.type);
+        if (temp != null) {
+            ctx.salesforce.login.api.type = temp;
+        }
 - rename:
     field: json.URI
     target_field: event.url
@@ -222,7 +262,7 @@ processors:
     ignore_failure: true
     ignore_missing: true
 - script:
-    description: Drops null/empty values recursively
+    description: Drops null/empty values recursively.
     lang: painless
     source: |
         boolean dropEmptyFields(Object object) {
@@ -242,6 +282,7 @@ processors:
     field:
       - json
       - message
+    ignore_failure: true
     ignore_missing: true
 on_failure:
 - set:
