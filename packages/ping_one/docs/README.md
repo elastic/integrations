@@ -62,11 +62,12 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-06-10T17:04:25.518Z",
     "agent": {
-        "ephemeral_id": "50ba30b3-bc7f-4985-8716-8772f82bd678",
-        "id": "1a8919bc-be61-4151-b433-72aec4507b95",
+        "ephemeral_id": "3ec0008f-3b03-448a-8617-f9798d15e68d",
+        "hostname": "docker-fleet-agent",
+        "id": "8e2910ec-3bb9-439a-90a1-acedb9847388",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "7.17.0"
     },
     "client": {
         "user": {
@@ -83,9 +84,9 @@ An example event for `audit` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "1a8919bc-be61-4151-b433-72aec4507b95",
+        "id": "8e2910ec-3bb9-439a-90a1-acedb9847388",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "7.17.0"
     },
     "event": {
         "action": "group.created",
@@ -94,10 +95,10 @@ An example event for `audit` looks as following:
             "iam",
             "configuration"
         ],
-        "created": "2022-09-29T11:01:04.713Z",
+        "created": "2022-10-03T07:21:04.317Z",
         "dataset": "ping_one.audit",
         "id": "2076da4e-81ae-4cf4-803a-4ccc16419bc9",
-        "ingested": "2022-09-29T11:01:05Z",
+        "ingested": "2022-10-03T07:21:05Z",
         "kind": "event",
         "original": "{\"_links\":{\"self\":{\"href\":\"https://api.pingone.com/v1/environments/bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa/activities/2076da4e-81ae-4cf4-803a-4ccc16419bc9\"}},\"action\":{\"description\":\"Group Created\",\"type\":\"GROUP.CREATED\"},\"actors\":{\"client\":{\"environment\":{\"id\":\"bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa\"},\"href\":\"https://api.pingone.com/v1/environments/bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa/applications/830109c7-f8aa-491e-b2f2-8f7532ae85e9\",\"id\":\"830109c7-f8aa-491e-b2f2-8f7532ae85e9\",\"name\":\"RichardPatchetWorker\",\"type\":\"CLIENT\"}},\"correlationId\":\"28b1f3ca-2ab6-4cc0-b33f-50153c7c9c14\",\"createdAt\":\"2022-06-10T17:04:25.534Z\",\"id\":\"2076da4e-81ae-4cf4-803a-4ccc16419bc9\",\"recordedAt\":\"2022-06-10T17:04:25.518Z\",\"resources\":[{\"environment\":{\"id\":\"bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa\"},\"href\":\"https://api.pingone.com/v1/environments/bf4cb8b8-33e9-4576-8d70-c0ab679fe0fa/groups/ac05e3ff-60e2-4e03-bbac-f9455e6a6d51\",\"id\":\"ac05e3ff-60e2-4e03-bbac-f9455e6a6d51\",\"name\":\"Managers\",\"type\":\"GROUP\"}],\"result\":{\"description\":\"Created Group Managers\",\"status\":\"SUCCESS\"}}",
         "outcome": "success",
@@ -159,7 +160,7 @@ An example event for `audit` looks as following:
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "ping_one_audit"
+        "ping_one-audit"
     ],
     "url": {
         "domain": "api.pingone.com",
