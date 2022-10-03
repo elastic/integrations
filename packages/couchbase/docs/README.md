@@ -719,13 +719,13 @@ An example event for `database_stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-10T09:05:17.597Z",
+    "@timestamp": "2022-09-30T07:42:58.582Z",
     "agent": {
-        "ephemeral_id": "883f46cb-37ab-4f8a-93bc-5ed3beb1389f",
-        "id": "b365f969-9439-42a9-9009-e7bbb1577cdd",
+        "ephemeral_id": "357178ff-c390-497b-9a1a-956cb0bfd30d",
+        "id": "61e15a42-577a-47f3-81b5-e06c78c1d9ff",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.2"
+        "version": "8.4.1"
     },
     "couchbase": {
         "database_stats": {
@@ -734,7 +734,7 @@ An example event for `database_stats` looks as following:
             },
             "dcp": {
                 "received": {
-                    "time": 449627444366
+                    "time": 481958841497
                 }
             },
             "document": {
@@ -742,7 +742,7 @@ An example event for `database_stats` looks as following:
                     "blip": 0,
                     "rest": 0
                 },
-                "writes": 1556
+                "writes": 3
             },
             "replications": {
                 "active": 0,
@@ -759,9 +759,9 @@ An example event for `database_stats` looks as following:
         "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "b365f969-9439-42a9-9009-e7bbb1577cdd",
+        "id": "61e15a42-577a-47f3-81b5-e06c78c1d9ff",
         "snapshot": false,
-        "version": "8.3.2"
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -769,8 +769,8 @@ An example event for `database_stats` looks as following:
             "database"
         ],
         "dataset": "couchbase.database_stats",
-        "duration": 27915779,
-        "ingested": "2022-08-10T09:05:22Z",
+        "duration": 602572504,
+        "ingested": "2022-09-30T07:43:02Z",
         "kind": "metric",
         "module": "couchbase",
         "type": [
@@ -781,17 +781,18 @@ An example event for `database_stats` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "51511c1493f34922b559a964798246ec",
         "ip": [
-            "172.22.0.7"
+            "172.23.0.7"
         ],
         "mac": [
-            "02:42:ac:16:00:07"
+            "02:42:ac:17:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.4.0-110-generic",
+            "kernel": "5.4.0-126-generic",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
