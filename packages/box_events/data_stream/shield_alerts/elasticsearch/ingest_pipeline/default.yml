@@ -61,28 +61,9 @@ processors:
       target_field: event.risk_score
       ignore_missing: true
   - rename:
-      field: box.additional_details.shield_alert.link
-      target_field: threat.indicator.reference
-      ignore_missing: true
-  - rename:
-      field: box.additional_details.shield_alert.alert_summary.description
-      target_field: threat.indicator.description
-      ignore_missing: true
-  - rename:
-      field: box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date
-      target_field: threat.indicator.first_seen
-      ignore_missing: true
-  - rename:
-      field: box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date
-      target_field: threat.indicator.last_seen
-      ignore_missing: true
-  - rename:
       field: ctx.box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count
       target_field: threat.indicator.sightings
       ignore_missing: true
-  - set:
-      field: threat.indicator.type
-      value: "file"
   - rename:
       field: box.additional_details.shield_alert.rule_category
       target_field: rule.category
@@ -172,20 +153,21 @@ processors:
                     l.add(activity.ip_info.ip);
                     if (session.session_type.equals("suspicious")) {
                         Map indicator = new HashMap();
+                        indicator.indicator = new HashMap();
                         Map location = new HashMap();
                         location.put("lon",activity.ip_info.longitude);
                         location.put("lat",activity.ip_info.latitude);
                         Map geo = new HashMap();
                         geo.put("ip",activity.ip_info.ip);
                         geo.put("location",location);
-                        indicator.put("geo",geo);
-                        indicator.put("description",
+                        indicator.indicator.put("geo",geo);
+                        indicator.indicator.put("description",
                             "IP " + activity.ip_info.ip + " was observed to " +
                             activity.event_type + " " + activity.item_type + " " +
                             activity.item_path + "/" + activity.item_name + " by " +
                             activity.service_name);
-                        indicator.put("provider",activity.service_name);
-                        indicator.put("type","user-account");    
+                        indicator.indicator.put("provider",activity.service_name);
+                        indicator.indicator.put("type","user-account");    
                         ctx.threat.enrichments.add(indicator)
                     }
                 }
@@ -210,23 +192,24 @@ processors:
             }
             for (alert_activity in ctx.box.additional_details.shield_alert.alert_summary.alert_activities) {
                 Map indicator = new HashMap();
+                indicator.indicator = new HashMap();
                 Map location = new HashMap();
                 location.put("lon",alert_activity.ip_info.longitude);
                 location.put("lat",alert_activity.ip_info.latitude);
                 Map geo = new HashMap();
                 geo.put("ip",alert_activity.ip_info.ip);
                 geo.put("location",location);
-                indicator.put("geo",geo);
-                indicator.put("description",
+                indicator.indicator.put("geo",geo);
+                indicator.indicator.put("description",
                     "IP " + alert_activity.ip_info.ip + " was observed to " +
                     alert_activity.event_type + " " + alert_activity.item_type + " " +
                     alert_activity.item_path + "/" + alert_activity.item_name + " by " +
                     alert_activity.service_name);
-                indicator.put("provider",alert_activity.service_name);
+                indicator.indicator.put("provider",alert_activity.service_name);
                 if (alert_activity.ip_info.ip.indexOf(":") > -1) {
-                    indicator.put("type","ipv6-addr");    
+                    indicator.indicator.put("type","ipv6-addr");    
                 } else { 
-                    indicator.put("type","ipv4-addr");   
+                    indicator.indicator.put("type","ipv4-addr");   
                 }  
                 ctx.threat.enrichments.add(indicator)
             }
@@ -250,12 +233,14 @@ processors:
             for (ip in ctx.box.additional_details.shield_alert.alert_summary.download_ips) {
                 l.add(ip.ip);
                 Map indicator = new HashMap();
-                indicator.description = ctx.box.additional_details.shield_alert.alert_summary.description;
-                indicator.first_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date;
-                indicator.last_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date;
-                indicator.sightings = ctx.box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count;
-                indicator.type = "file";
-                ctx.threat.enrichments.add(indicator)
+                indicator.indicator = new HashMap();
+                indicator.indicator.ip = ip.ip;
+                indicator.indicator.description = ctx.box.additional_details.shield_alert.alert_summary.description;
+                indicator.indicator.first_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date;
+                indicator.indicator.last_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date;
+                indicator.indicator.sightings = ctx.box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count;
+                indicator.indicator.type = "file";
+                ctx.threat.enrichments.add(indicator);
             }
             List setList = new ArrayList(new HashSet(l));
             if (ctx?.related == null) {
@@ -298,9 +283,13 @@ processors:
       value: "{{{client.ip}}}"
       ignore_failure: true
       allow_duplicates: false
-# already have ip in `client.ip`
+# remove fields remapped by scripts
   - remove:
       field: 
+        - box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date
+        - box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date
+        - box.additional_details.shield_alert.alert_summary.description
+        - box.additional_details.shield_alert.alert_summary.sessions
         - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.city_name
         - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.country_code
         - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip
@@ -308,15 +297,13 @@ processors:
         - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.longitude
         - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.region_name
         - box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.registrant
-        - box.additional_details.shield_alert.alert_summary.sessions
-        - box.additional_details.shield_alert.priority
-        - box.additional_details.shield_alert.created_at
-        - box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date
-        - box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date
         - box.additional_details.shield_alert.alert_summary.upload_activity.service_name
+        - box.additional_details.shield_alert.created_at
+        - box.additional_details.shield_alert.link
+        - box.additional_details.shield_alert.malware_info.detail_link
         - box.additional_details.shield_alert.malware_info.first_seen
         - box.additional_details.shield_alert.malware_info.last_seen
-        - box.additional_details.shield_alert.malware_info.detail_link
+        - box.additional_details.shield_alert.priority
       ignore_failure: true
       ignore_missing: true
   - script:
@@ -330,12 +317,12 @@ processors:
         }
 # geo
   - foreach:
-      field: threat.indicator.enrichments
+      field: threat.enrichments
       ignore_missing: true
       processor:
         geoip:
-          field: "_ingest._value.ip"
-          target_field: "_ingest._value.geo"
+          field: "_ingest._value.indicator.ip"
+          target_field: "_ingest._value.indicator.geo"
           ignore_missing: true
   - geoip: 
       field: threat.indicator.ip
@@ -343,32 +330,32 @@ processors:
       ignore_missing: true
 # AS look-ups on enrichments within Array
   - foreach:
-      field: threat.indicator.enrichments
+      field: threat.enrichments
       ignore_missing: true
       processor:
         geoip:
           database_file: GeoLite2-ASN.mmdb
-          field: "_ingest._value.ip"
-          target_field: "_ingest._value.as"
+          field: "_ingest._value.indicator.ip"
+          target_field: "_ingest._value.indicator.as"
           properties:
             - asn
             - organization_name
           ignore_missing: true
   - foreach:
-      field: threat.indicator.enrichments
+      field: threat.enrichments
       ignore_missing: true
       processor:
         rename:
-          field: "_ingest._value.as.asn"
-          target_field: "_ingest._value.as.number"
+          field: "_ingest._value.indicator.as.asn"
+          target_field: "_ingest._value.indicator.as.number"
           ignore_missing: true
   - foreach:
-      field: threat.indicator.enrichments
+      field: threat.enrichments
       ignore_missing: true
       processor:
         rename:
-          field: "_ingest._value.as.organization_name"
-          target_field: "_ingest._value.as.organization.name"
+          field: "_ingest._value.indicator.as.organization_name"
+          target_field: "_ingest._value.indicator.as.organization.name"
           ignore_missing: true
 # AS lookup for stand-alone indicator 
   - geoip:
