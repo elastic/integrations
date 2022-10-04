@@ -103,6 +103,14 @@ Global Secondary Indexes (GSI) support queries made by the Query Service.
 
 {{fields "miscellaneous"}}
 
+### Query Index
+
+This is the `query_index` data stream. The Query service enables you to issue queries to extract data from the Couchbase server. The Index collects statistics provided by the Index service.
+
+{{event "query_index"}}
+
+{{fields "query_index"}}
+
 ### Resource Utilization
 
 This is the `resource` data stream. The Resource Utilization metrics are related to [MemStats](https://golang.org/pkg/runtime/#MemStats) records statistics about the memory allocator.
