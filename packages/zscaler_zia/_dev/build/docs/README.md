@@ -18,7 +18,7 @@ The log message is expected to be in JSON format. The data is mapped to ECS fiel
             ![NSS server setup image](../img/nss_server.png?raw=true)
     - In the ZIA Admin Portal, add an NSS Feed.
         - Refer to [Add NSS Feeds](https://help.zscaler.com/zia/adding-nss-feeds) and select the type of feed you want to configure. The following fields require specific inputs:
-            - **SIEM IP Address**: Enter the IP address of the [Elastic agent](https://www.elastic.co/guide/en/fleet/current/fleet-overview.html) you’ll be assigning the Zscaler integration to.
+            - **SIEM IP Address**: Enter the IP address of the {{ url "fleet-overview" "Elastic agent" }} you’ll be assigning the Zscaler integration to.
             - **SIEM TCP Port**: Enter the port number, depending on the logs associated with the NSS Feed. You will need to create an NSS Feed for each log type.
                 - **Alerts**: 9010
                 - **DNS**: 9011
@@ -156,6 +156,10 @@ Sample Response:
 ```json
 { "sourcetype" : "zscalernss-web", "event" :{"time":"Fri Dec 17 07:04:57 2021","login":"test@example.com","proto":"HTTP_PROXY","eurl":"browser.events.data.msn.com:443","action":"Blocked","appname":"General Browsing","appclass":"General Browsing","reqsize":"600","respsize":"65","stime":"0","ctime":"0","urlclass":"Business Use","urlsupercat":"Information Technology","urlcat":"Web Search","malwarecat":"None","threatname":"None","riskscore":"0","dlpeng":"None","dlpdict":"None","location":"Test DB","dept":"Unknown","cip":"81.2.69.193","sip":"81.2.69.145","reqmethod":"CONNECT","respcode":"200","ua":"Windows Microsoft Windows 10 Pro ZTunnel/1.0","ereferer":"None","ruletype":"FwFilter","rulelabel":"Zscaler Proxy Traffic","contenttype":"Other","unscannabletype":"None","deviceowner":"administrator1","devicehostname":"TestMachine35"}}
 ```
+
+Caveats:
+
+- To ensure that URLs are processed correctly, logs which have a `network.protocol` value that is not `http` or `https` will be implicitly converted to `https` for the purposes of URL parsing. The original value of `network.protocol` will be preserved.
 
 ## Fields and Sample event
 

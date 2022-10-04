@@ -1,0 +1,87 @@
+- name: istio.access
+  type: group
+  fields:
+    - name: log
+      type: keyword
+      description: |
+        Access log in custom Json format.
+    - name: response
+      type: group
+      fields:
+        - name: flags
+          type: keyword
+          description: |
+            Additional details about the response or connection. Field not implemented ("-") for UDP.
+        - name: code_details
+          type: text
+          description: |
+            Additional information about the response code, such as who set it (the upstream or envoy) and why. For TCP/UDP this field is not implemented ("-").
+    - name: connection_termination_details
+      type: text
+      description: |
+        Connection termination details may provide additional information about why the connection was terminated by Envoy for L4 reasons.
+    - name: authority
+      type: keyword
+      description: |
+        The value of the Host (HTTP/1.1) or Authority (HTTP/2) header.
+    - name: downstream
+      type: group
+      fields:
+        - name: local_address
+          type: keyword
+          description: |
+            Local address of the downstream connection. If the address is an IP address it includes both address and port.
+        - name: remote_address
+          type: keyword
+          description: |
+            Remote address of the downstream connection. If the address is an IP address it includes both address and port.
+    - name: duration
+      type: long
+      description: |
+        For HTTP/THRIFT this field is the total duration in milliseconds of the request from the start time to the last byte out. For TCP this field is the total duration in milliseconds of the downstream connection. For UDP this field is not implemented (0).
+    - name: requested_server_name
+      type: keyword
+      description: |
+        For HTTP/TCP/THRIFT this field is a string value set on ssl connection socket for Server Name Indication (SNI). For UDP this field is not implemented ("-").
+    - name: route_name
+      type: keyword
+      description: |
+        For HTTP/TCP this field is the name of the route. For UDP this field is not implemented ("-").
+    - name: bytes
+      type: group
+      fields:
+        - name: received
+          type: long
+          description: |
+            For HTTP/THRIFT this field is the body bytes received. For TCP this field is the downstream bytes received on connection. For UDP this field is not implemented (0).
+        - name: sent
+          type: long
+          description: |
+            For HTTP/THRIFT this field is the body bytes sent. For WebSocket connection it will also include response header bytes. For TCP this field is the downstream bytes sent on connection. For UDP this field is not implemented (0).
+    - name: upstream
+      type: group
+      fields:
+        - name: local_address
+          type: keyword
+          description: |
+            Local address of the upstream connection. If the address is an IP address it includes both address and port.
+        - name: cluster
+          type: text
+          description: |
+            Upstream cluster to which the upstream host belongs to. alt_stat_name will be used if provided.
+        - name: host
+          type: keyword
+          description: |
+            Upstream host URL (e.g., tcp://ip:port for TCP connections).
+        - name: service_time
+          type: long
+          description: |
+            Envoy Upstream service time.
+        - name: transport_failure_reason
+          type: text
+          description: |
+            For HTTP if upstream connection failed due to transport socket (e.g. TLS handshake), provides the failure reason from the transport socket. The format of this field depends on the configured upstream transport socket. For TCP/UDP this field is not implemented ("-").
+    - name: x_forwarded_for
+      type: keyword
+      description: |
+        x_forwarded_for (XFF) is a standard proxy header which indicates the IP addresses that a request has flowed through on its way from the client to the server.
