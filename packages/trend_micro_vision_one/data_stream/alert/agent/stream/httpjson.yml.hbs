@@ -1,0 +1,57 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: GET
+request.url: {{hostname}}/v3.0/workbench/alerts
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: header.Authorization
+      value: 'Bearer {{api_token}}'
+  - set:
+      target: url.params.startDateTime
+      value: '[[formatDate (parseDate .cursor.last_update_at)]]'
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
+  - set:
+      target: url.params.endDateTime
+      value: '[[formatDate (now)]]'
+  - set:
+      target: url.params.orderBy
+      value: 'updatedDateTime asc'
+  - set:
+      target: url.params.dateTimeTarget
+      value: 'createdDateTime'
+response.pagination:
+  - set:
+      target: url.value
+      value: '[[if index .last_response.body "nextLink"]][[replaceAll " " "%20" .last_response.body.nextLink]][[else]][[.last_response.terminate_pagination]][[end]]'
+      fail_on_template_error: true
+cursor:
+  last_update_at:
+    value: '[[.last_response.url.params.Get "endDateTime"]]'
+response.split:
+  target: body.items
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,559 @@
+---
+description: Pipeline for processing Trend Micro Vision One Alert logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - script:
+      description: Set the value of event.category and event.type.
+      lang: painless
+      source: >
+        def eventCategory = new HashSet();
+        def eventType = new HashSet();
+        if (ctx.json?.description != null && ctx.json.description != '') {
+          def description = ctx.json.description.toLowerCase();
+          if (description.contains('logon')) {
+            eventCategory.add('authentication');
+            eventCategory.add('host');
+            eventType.add('info');
+          } else if (description.contains('email')) {
+            eventCategory.add('email');
+            eventType.add('info');
+          } else if (description.contains('network')) {
+            eventCategory.add('network');
+            eventType.add('info');
+          } else {
+            eventCategory.add('malware');
+            eventType.add('info');
+          }
+        }
+        if (!eventCategory.isEmpty()) {
+          ctx.event.category = eventCategory;
+        }
+        if (!eventType.isEmpty()) {
+          ctx.event.type = eventType;
+        }
+  - fingerprint:
+      fields:
+        - json.updatedDateTime
+        - json.createdDateTime
+        - json.id
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.updatedDateTime
+      if: ctx.json?.updatedDateTime != null && ctx.json.updatedDateTime != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.id
+      target_field: trend_micro_vision_one.alert.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: trend_micro_vision_one.alert.id
+      ignore_failure: true
+  - convert:
+      field: json.score
+      target_field: trend_micro_vision_one.alert.score
+      if: ctx.json?.score != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      copy_from: trend_micro_vision_one.alert.score
+      ignore_failure: true
+  - rename:
+      field: json.severity
+      target_field: trend_micro_vision_one.alert.severity
+      ignore_missing: true
+  - set:
+      field: log.level
+      copy_from: trend_micro_vision_one.alert.severity
+      ignore_failure: true
+  - lowercase:
+      field: log.level
+      ignore_missing: true
+  - rename:
+      field: json.schemaVersion
+      target_field: trend_micro_vision_one.alert.schema_version
+      ignore_missing: true
+  - rename:
+      field: json.investigationStatus
+      target_field: trend_micro_vision_one.alert.investigation_status
+      ignore_missing: true
+  - rename:
+      field: json.workbenchLink
+      target_field: trend_micro_vision_one.alert.workbench_link
+      ignore_missing: true
+  - uri_parts:
+      field: trend_micro_vision_one.alert.workbench_link
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.alertProvider
+      target_field: trend_micro_vision_one.alert.alert_provider
+      ignore_missing: true
+  - rename:
+      field: json.model
+      target_field: trend_micro_vision_one.alert.model
+      ignore_missing: true
+  - convert:
+      field: json.impactScope.desktopCount
+      target_field: trend_micro_vision_one.alert.impact_scope.desktop_count
+      if: ctx.json?.impactScope?.desktopCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.impactScope.serverCount
+      target_field: trend_micro_vision_one.alert.impact_scope.server_count
+      if: ctx.json?.impactScope?.serverCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.impactScope.accountCount
+      target_field: trend_micro_vision_one.alert.impact_scope.account_count
+      if: ctx.json?.impactScope?.accountCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.impactScope.emailAddressCount
+      target_field: trend_micro_vision_one.alert.impact_scope.email_address_count
+      if: ctx.json?.impactScope?.emailAddressCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.impactScope.entities
+      processor:
+        foreach:
+          field: _ingest._value.entityValue.ips
+          processor:
+            append:
+              field: related.ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+              ignore_failure: true
+          ignore_missing: true
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      description: Mapped value object field of impactScope.
+      lang: painless
+      if: ctx.json?.impactScope?.entities instanceof List
+      source: >
+        def impactscope_entities = ctx.json.impactScope.entities;
+        for (entity_object in impactscope_entities) {
+          if (!(entity_object.entityValue instanceof HashMap)) {
+            def entityValue = entity_object.entityValue;
+            entity_object.value = new HashMap();
+            entity_object.value.account_value = entityValue;
+            entity_object.remove("entityValue");
+          }
+        }
+  - foreach:
+      field: json.impactScope.entities
+      processor:
+        rename:
+          field: _ingest._value.entityValue
+          target_field: _ingest._value.value
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.impactScope.entities
+      processor:
+        convert:
+          field: _ingest._value.entityValue.ips
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.impactScope.entities
+      processor:
+        rename:
+          field: _ingest._value.entityType
+          target_field: _ingest._value.type
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.impactScope.entities
+      processor:
+        rename:
+          field: _ingest._value.entityId
+          target_field: _ingest._value.id
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.impactScope.entities
+      processor:
+        rename:
+          field: _ingest._value.relatedEntities
+          target_field: _ingest._value.related_entities
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.impactScope.entities
+      processor:
+        convert:
+          field: _ingest._value.relatedIndicatorIds
+          target_field: _ingest._value.related_indicator_id
+          type: long
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.impactScope.entities
+      processor:
+        remove:
+          field: _ingest._value.relatedIndicatorIds
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.impactScope.entities
+      target_field: trend_micro_vision_one.alert.impact_scope.entities
+      ignore_missing: true
+  - date:
+      field: json.createdDateTime
+      target_field: trend_micro_vision_one.alert.created_date
+      if: ctx.json?.createdDateTime != null && ctx.json.createdDateTime != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.description
+      target_field: trend_micro_vision_one.alert.description
+      ignore_missing: true
+  - foreach:
+      field: json.indicators
+      processor:
+        rename:
+          field: _ingest._value.relatedEntities
+          target_field: _ingest._value.related_entities
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.indicators
+      processor:
+        rename:
+          field: _ingest._value.matchedIndicatorPatternIds
+          target_field: _ingest._value.matched_indicator.pattern_id
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.indicators
+      processor:
+        foreach:
+          field: _ingest._value.firstSeenDateTimes
+          processor:
+            date:
+              field: _ingest._value
+              target_field: _ingest._value
+              formats:
+                - ISO8601
+              ignore_failure: true
+          ignore_missing: true
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.indicators
+      processor:
+        rename:
+          field: _ingest._value.firstSeenDateTimes
+          target_field: _ingest._value.first_seen_date
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.indicators
+      processor:
+        rename:
+          field: _ingest._value.filterIds
+          target_field: _ingest._value.filter_id
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.indicators
+      processor:
+        foreach:
+          field: _ingest._value.lastSeenDateTimes
+          processor:
+            date:
+              field: _ingest._value
+              target_field: _ingest._value
+              formats:
+                - ISO8601
+              ignore_failure: true
+          ignore_missing: true
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.indicators
+      processor:
+        rename:
+          field: _ingest._value.lastSeenDateTimes
+          target_field: _ingest._value.last_seen_date
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.indicators
+      target_field: trend_micro_vision_one.alert.indicators
+      ignore_missing: true
+  - foreach:
+      field: json.matchedIndicatorPatterns
+      processor:
+        rename:
+          field: _ingest._value.matchedLogs
+          target_field: _ingest._value.matched_log
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.matchedIndicatorPatterns
+      target_field: trend_micro_vision_one.alert.matched_indicators_pattern
+      ignore_missing: true
+  - foreach:
+      field: json.matchedRules
+      processor:
+        foreach:
+          field: _ingest._value.matchedFilters
+          processor:
+            date:
+              field: _ingest._value.matchedDateTime
+              target_field: _ingest._value.date
+              formats:
+                - ISO8601
+              ignore_failure: true
+          ignore_missing: true
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.matchedRules
+      processor:
+        foreach:
+          field: _ingest._value.matchedFilters
+          processor:
+            remove:
+              field: _ingest._value.matchedDateTime
+              ignore_missing: true
+          ignore_missing: true
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.matchedRules
+      processor:
+        foreach:
+          field: _ingest._value.matchedFilters
+          processor:
+            rename:
+              field: _ingest._value.mitreTechniqueIds
+              target_field: _ingest._value.mitre_technique_id
+              ignore_missing: true
+          ignore_missing: true
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.matchedRules
+      processor:
+        foreach:
+          field: _ingest._value.matchedFilters
+          processor:
+            foreach:
+              field: _ingest._value.matchedEvents
+              processor:
+                date:
+                  field: _ingest._value.matchedDateTime
+                  target_field: _ingest._value.date
+                  formats:
+                    - ISO8601
+                  ignore_failure: true
+              ignore_missing: true
+              ignore_failure: true
+          ignore_missing: true
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.matchedRules
+      processor:
+        foreach:
+          field: _ingest._value.matchedFilters
+          processor:
+            foreach:
+              field: _ingest._value.matchedEvents
+              processor:
+                remove:
+                  field: _ingest._value.matchedDateTime
+                  ignore_missing: true
+              ignore_missing: true
+              ignore_failure: true
+          ignore_missing: true
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.matchedRules
+      processor:
+        foreach:
+          field: _ingest._value.matchedFilters
+          processor:
+            rename:
+              field: _ingest._value.matchedEvents
+              target_field: _ingest._value.events
+              ignore_missing: true
+          ignore_missing: true
+          ignore_failure: true
+      ignore_missing: true
+      ignore_failure: true
+  - foreach:
+      field: json.matchedRules
+      processor:
+        rename:
+          field: _ingest._value.matchedFilters
+          target_field: _ingest._value.filter
+          ignore_missing: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.matchedRules
+      target_field: trend_micro_vision_one.alert.matched_rule
+      ignore_missing: true
+  - rename:
+      field: json.campaign
+      target_field: trend_micro_vision_one.alert.campaign
+      ignore_missing: true
+  - rename:
+      field: json.industry
+      target_field: trend_micro_vision_one.alert.industry
+      ignore_missing: true
+  - rename:
+      field: json.regionAndCountry
+      target_field: trend_micro_vision_one.alert.region_and_country
+      ignore_missing: true
+  - rename:
+      field: json.createdBy
+      target_field: trend_micro_vision_one.alert.created_by
+      ignore_missing: true
+  - convert:
+      field: json.totalIndicatorCount
+      target_field: trend_micro_vision_one.alert.total_indicator_count
+      if: ctx.json?.totalIndicatorCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.matchedIndicatorCount
+      target_field: trend_micro_vision_one.alert.matched_indicator_count
+      if: ctx.json?.matchedIndicatorCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.reportLink
+      target_field: trend_micro_vision_one.alert.report_link
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - trend_micro_vision_one.alert.id
+        - trend_micro_vision_one.alert.score
+        - trend_micro_vision_one.alert.severity
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

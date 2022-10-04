@@ -1,0 +1,171 @@
+---
+description: Pipeline for processing Trend Micro Vision One Audit logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: event
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - script:
+      description: Set the value of event.category and event.type.
+      lang: painless
+      source: >
+        def eventCategory = new HashSet();
+        def eventType = new HashSet();
+        if (ctx.json?.category != null && ctx.json.category != '' && ctx.json.activity != null && ctx.json.activity != '') {
+          def category = ctx.json.category.toLowerCase();
+          def activity = ctx.json.activity.toLowerCase();
+          if (['logon and logoff', 'saml single sign-on'].contains(category)) {
+            eventCategory.add('authentication');
+            if (['log on', 'enable single sign-on'].contains(activity)) {
+              eventType.add('start');
+            }
+            if (['log off', 'disable single sign-on'].contains(activity)) {
+              eventType.add('end');
+            } else {
+              eventType.add('info');
+            }
+          }
+          if (['account management', 'product connector', 'Notifications', 'detection model management', 'workbench', 'response management', 'search', 'managed xdr', 'third-party integration', 'service gateway inventory', 'endpoint inventory', 'endpoint security policies', 'zero trust secure access', 'sandbox analysis', 'oat', 'security playbooks'].contains(category)) {
+            eventCategory.add('authentication');
+            eventType.add('info');
+          }
+          if (category == 'network inventory') {
+            eventCategory.add('network');
+            eventType.add('info');
+          }
+          if (category == 'threat intelligence') {
+            eventCategory.add('threat');
+            eventType.add('indicator');
+          }
+          if (activity == 'email') {
+            eventCategory.add('email');
+          }
+          if (activity == 'file') {
+            eventCategory.add('file');
+          }
+          if (activity == 'threat') {
+            eventCategory.add('threat');
+          }
+        }
+        if (!eventCategory.isEmpty()) {
+          ctx.event.category = eventCategory;
+        }
+        if (!eventType.isEmpty()) {
+          ctx.event.type = eventType;
+        }
+  - fingerprint:
+      fields:
+        - json.loggedDateTime
+        - json.loggedUser
+        - json.loggedRole
+        - json.category
+        - json.activity
+        - json.details
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.loggedDateTime
+      if: ctx.json?.loggedDateTime != null && ctx.json.loggedDateTime != ''
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.loggedUser
+      target_field: trend_micro_vision_one.audit.logged_user
+      ignore_missing: true
+  - set:
+      field: source.user.name
+      copy_from: trend_micro_vision_one.audit.logged_user
+      ignore_failure: true
+  - rename:
+      field: json.loggedRole
+      target_field: trend_micro_vision_one.audit.logged_role
+      ignore_missing: true
+  - set:
+      field: source.user.roles
+      copy_from: trend_micro_vision_one.audit.logged_role
+      ignore_failure: true
+  - rename:
+      field: json.accessType
+      target_field: trend_micro_vision_one.audit.access_type
+      ignore_missing: true
+  - rename:
+      field: json.category
+      target_field: trend_micro_vision_one.audit.category
+      ignore_missing: true
+  - rename:
+      field: json.activity
+      target_field: trend_micro_vision_one.audit.activity
+      ignore_missing: true
+  - rename:
+      field: json.result
+      target_field: trend_micro_vision_one.audit.result
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: 'success'
+      if: ctx.trend_micro_vision_one?.audit?.result == 'Successful'
+  - set:
+      field: event.outcome
+      value: 'failure'
+      if: ctx.trend_micro_vision_one?.audit?.result == 'Unsuccessful'
+  - rename:
+      field: json.details
+      target_field: trend_micro_vision_one.audit.details
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{source.user.name}}}'
+      if: ctx.source?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field:
+        - trend_micro_vision_one.audit.logged_user
+        - trend_micro_vision_one.audit.logged_role
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'
