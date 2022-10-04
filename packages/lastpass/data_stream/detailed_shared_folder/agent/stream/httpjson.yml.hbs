@@ -1,0 +1,56 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: POST
+request.url: {{url}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: body.cid
+      value: '{{account_number}}'
+  - set:
+      target: body.provhash
+      value: '{{provisioning_hash}}'
+  - set:
+      target: body.cmd
+      value: 'getdetailedsfdata'
+  - set:
+      target: body.data
+      value: 'all'
+response.transforms:
+  - set:
+      target: body.data
+      value: '[[.last_response.body]]'
+      value_type: json
+response.split:
+  target: body.data
+  type: map
+  keep_parent: false
+  key_field: id
+  split:
+    target: body.users
+    keep_parent: true
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

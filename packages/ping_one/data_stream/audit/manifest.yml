@@ -1,0 +1,119 @@
+title: Collect Audit logs from PingOne
+type: logs
+streams:
+  - input: http_endpoint
+    template_path: http_endpoint.yml.hbs
+    title: Audit logs
+    description: Collect audit logs from PingOne via HTTP Endpoint.
+    vars:
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The port number on which listener binds to.
+        multi: false
+        required: true
+        show_user: true
+        default: 9100
+      - name: url
+        type: text
+        title: URL
+        description: This options specific which URL path to accept requests on. Defaults to /.
+        multi: false
+        required: false
+        show_user: false
+        default: /
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - ping_one-audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve ping_one.audit fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+  - input: httpjson
+    title: Audit logs
+    description: Collect audit logs from PingOne via REST API.
+    template_path: httpjson.yml.hbs
+    vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to pull the activities from PingOne. NOTE:- Supported units for this parameter are h/m/s. (Maximum - 2 years)
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the PingOne API. NOTE:- Supported units for this parameter are h/m/s.
+        default: 1m
+        multi: false
+        required: true
+        show_user: true
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. NOTE:- Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - ping_one-audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve ping_one.audit fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
