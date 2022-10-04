@@ -80,7 +80,7 @@ An example event for `application_gateway` looks as following:
             "provider": "MICROSOFT.NETWORK/APPLICATIONGATEWAYS"
         },
         "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129",
-        "application_gateway_logs": {
+        "application_gateway": {
             "instance_id": "ApplicationGatewayRole_IN_0",
             "operation_name": "ApplicationGatewayAccess"
         }
