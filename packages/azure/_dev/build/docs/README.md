@@ -311,15 +311,4 @@ This setting can also be used to define your own endpoints, like for hybrid clou
 
 ## Reference
 
-{{fields "firewall_logs"}}
-
-### application_gateway 
-
-The `application_gateway` data stream of the Azure Logs package will collect any Application Gateway log events that have been streamed through an Azure event hub.
-
-{{event "application_gateway"}}
-
-{{fields "application_gateway"}}
-
 Visit the page for each individual Azure Logs integration to see details about exported fields and sample events.
-
