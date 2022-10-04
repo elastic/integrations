@@ -1,0 +1,290 @@
+---
+description: Pipeline for processing Azure firewall logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.5.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.type
+      value: [connection]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - date:
+      field: json.time
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - ISO8601
+      if: ctx.json?.time != null
+  - date:
+      field: json.timestamp
+      target_field: '@timestamp'
+      ignore_failure: true
+      formats:
+        - ISO8601
+      if: ctx.json?.timestamp != null
+  - rename:
+      field: json.resourceId
+      target_field: azure.resource_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.clientIP
+      target_field: source.address
+      ignore_missing: true
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: json.properties.clientPort
+      target_field: source.port
+      type: long
+      ignore_missing: true
+  - rename:
+      field: json.properties.httpMethod
+      target_field: http.request.method
+      ignore_missing: true
+  - rename:
+      field: json.properties.requestUri
+      target_field: url.path
+      ignore_missing: true
+  - set:
+      field: url.path
+      copy_from: url.original
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.requestQuery
+      target_field: url.query
+      ignore_missing: true
+  - user_agent:
+      field: json.properties.userAgent
+      ignore_missing: true
+      if: ctx.json?.properties?.userAgent != "-"
+  - rename:
+      field: json.properties.httpStatus
+      target_field: http.response.status_code
+      ignore_missing: true
+  - dissect:
+      field: json.properties.httpVersion
+      pattern: "%{}/%{http.version}"
+      ignore_failure: true
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      value: http
+  - rename:
+      field: json.properties.receivedBytes
+      target_field: source.bytes
+      ignore_missing: true
+  - rename:
+      field: json.properties.sentBytes
+      target_field: destination.bytes
+      ignore_missing: true
+  - script:
+      lang: painless
+      source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+      if: ctx.source?.bytes != null && ctx.destination?.bytes != null && ctx.network?.bytes == null
+      ignore_failure: true
+  - script:
+      lang: painless
+      if: ctx.event?.duration != null
+      params:
+        MS_TO_NS: 1000000
+      source: >-
+        ctx.event.duration *= params.MS_TO_NS;
+  - rename:
+      field: json.properties.host
+      target_field: url.domain
+      ignore_missing: true
+  - set:
+      field: destination.address
+      copy_from: url.domain
+      ignore_empty_value: true
+  - set:
+      field: destination.domain
+      copy_from: url.domain
+      ignore_empty_value: true
+  - rename:
+      field: json.properties.sslCipher
+      target_field: tls.cipher
+      ignore_missing: true
+  - dissect:
+      field: json.properties.sslProtocol
+      pattern: "%{tls.version_protocol}v%{tls.version}"
+      ignore_failure: true
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  - append:
+      if: ctx?.source?.ip != null
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      if: ctx?.destination?.domain != null
+      field: related.hosts
+      value: "{{destination.domain}}"
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      if: ctx?.url?.domain != null
+      field: related.hosts
+      value: "{{url.domain}}"
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.operationName
+      target_field: azure.application_gateway.operation_name
+      ignore_missing: true
+  - rename:
+      field: json.properties.instanceId
+      target_field: azure.application_gateway.instance_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.hostname
+      target_field: azure.application_gateway.hostname
+      ignore_missing: true
+  - rename:
+      field: json.properties.action
+      target_field: event.action
+      ignore_missing: true      
+  - set:
+      field: json.event.alert.action
+      value: denied
+      if: ctx.azure?.firewall?.action == 'Deny'
+  - set:
+      field: json.event.alert.action
+      value: allowed
+      if: ctx.azure?.firewall?.action == 'Allow'
+  - append:
+      field: event.type
+      value: "allowed"
+      if: 'ctx.event?.action != null && ["Allowed","Matched","Detected"].contains(ctx.event.action)'
+  - append:
+      field: event.type
+      value: "denied"
+      if: 'ctx.event?.action != null && ["Blocked"].contains(ctx.event.action)'
+  - rename:
+      field: json.properties.ruleSetType
+      target_field: rule.category
+      ignore_missing: true
+  - rename:
+      field: json.properties.ruleSetVersion
+      target_field: rule.version
+      ignore_missing: true
+  - rename:
+      field: json.properties.ruleId
+      target_field: rule.id
+      ignore_missing: true
+  - rename:
+      field: json.properties.ruleGroup
+      target_field: rule.ruleset
+      ignore_missing: true
+  - rename:
+      field: json.properties.message
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: json.properties.details.message
+      target_field: rule.description
+      ignore_missing: true
+  - rename:
+      field: json.properties.transactionId
+      target_field: azure.application_gateway.transaction_id
+      ignore_missing: true
+  - rename:
+      field: json.properties.policyId
+      target_field: azure.application_gateway.policy.id
+      ignore_missing: true
+  - rename:
+      field: json.properties.policyScope
+      target_field: azure.application_gateway.policy.scope
+      ignore_missing: true
+  - rename:
+      field: json.properties.policyScopeName
+      target_field: azure.application_gateway.policy.scope_name
+      ignore_missing: true
+  - set:
+      field: observer.type
+      value: firewall
+  - set:
+      field: observer.vendor
+      value: Azure
+  - set:
+      field: observer.product
+      value: "Web Application Firewall"
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - pipeline:
+      name: '{{ IngestPipeline "azure-shared-pipeline" }}'
+  - set:
+      field: observer.name
+      copy_from: azure.resource.name
+      ignore_empty_value: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: "error.message"
+      value: "{{ _ingest.on_failure_message }} {{ _ingest.on_failure_processor_type }}"
+  - remove:
+      field:
+        - json
+        - _conf
+        - message
+      ignore_missing: true
