@@ -1,0 +1,319 @@
+---
+description: Pipeline for processing audit logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - set:
+      field: event.kind
+      value: event
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: [iam]
+  - append:
+      field: event.category
+      if: ctx.json?.action?.type?.toLowerCase().contains('created') || ctx.json.action.type.toLowerCase().contains('deleted') || ctx.json.action.type.toLowerCase().contains('updated') || ctx.json.action.type.toLowerCase().contains('access_allowed')
+      value: [configuration]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('created')
+      value: [creation]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('deleted')
+      value: [deletion]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('updated')
+      value: [change]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('user')
+      value: [user]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('group')
+      value: [group]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('allowed')
+      value: [allowed]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('denied')
+      value: [denied]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('started')
+      value: [start]
+  - append:
+      field: event.type
+      if: ctx.json?.action?.type?.toLowerCase().contains('access_allowed')
+      value: [access]
+  - append:
+      field: event.category
+      if: ctx.json?.action?.type?.toLowerCase().contains('password.check_succeeded')
+      value: [authentication]
+  - append:
+      field: event.category
+      if: ctx.json?.action?.type?.toLowerCase().contains('email')
+      value: [email]
+  - set:
+      field: event.type
+      if: ctx.event?.type == null
+      value: [info]
+  - fingerprint:
+      fields:
+        - json.recordedAt
+        - json.id
+      target_field: _id
+      ignore_missing: true
+  - date:
+      field: json.createdAt
+      target_field: ping_one.audit.created_at
+      if: ctx.json?.createdAt != null && ctx.json?.createdAt != ''
+      formats:
+          - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json._embedded
+      target_field: ping_one.audit.embedded
+      ignore_missing: true
+  - rename:
+      field: json.tags
+      target_field: ping_one.audit.tags
+      ignore_missing: true
+  - foreach:
+      field: ping_one.audit.tags
+      processor:
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.ping_one?.audit?.tags != null && ctx.ping_one?.audit?.tags instanceof List
+  - rename:
+      field: json.id
+      target_field: ping_one.audit.id
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: ping_one.audit.id
+      ignore_failure: true
+  - date:
+      field: json.recordedAt
+      target_field: ping_one.audit.recorded_at
+      if: ctx.json?.recordedAt != null && ctx.json?.recordedAt != ''
+      formats:
+          - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: ping_one.audit.recorded_at
+      ignore_failure: true
+  - rename:
+      field: json.correlationId
+      target_field: ping_one.audit.correlation.id
+      ignore_missing: true
+  - rename:
+      field: json.actors.client.id
+      target_field: ping_one.audit.actors.client.id
+      ignore_missing: true
+  - set:
+      field: client.user.id
+      copy_from: ping_one.audit.actors.client.id
+      ignore_failure: true
+  - rename:
+      field: json.actors.client.name
+      target_field: ping_one.audit.actors.client.name
+      ignore_missing: true
+  - set:
+      field: client.user.name
+      copy_from: ping_one.audit.actors.client.name
+      ignore_failure: true
+  - rename:
+      field: json.actors.client.environment.id
+      target_field: ping_one.audit.actors.client.environment.id
+      ignore_missing: true
+  - rename:
+      field: json.actors.client.href
+      target_field: ping_one.audit.actors.client.href
+      ignore_missing: true
+  - rename:
+      field: json.actors.client.type
+      target_field: ping_one.audit.actors.client.type
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{client.user.id}}}'
+      if: ctx.client?.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{client.user.name}}}'
+      if: ctx.client?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.actors.user.id
+      target_field: ping_one.audit.actors.user.id
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: ping_one.audit.actors.user.id
+      ignore_failure: true
+  - rename:
+      field: json.actors.user.name
+      target_field: ping_one.audit.actors.user.name
+      ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: ping_one.audit.actors.user.name
+      ignore_failure: true
+  - rename:
+      field: json.actors.user.population.id
+      target_field: ping_one.audit.actors.user.population.id
+      ignore_missing: true
+  - rename:
+      field: json.actors.user.environment.id
+      target_field: ping_one.audit.actors.user.environment.id
+      ignore_missing: true
+  - rename:
+      field: json.actors.user.href
+      target_field: ping_one.audit.actors.user.href
+      ignore_missing: true
+  - rename:
+      field: json.actors.user.type
+      target_field: ping_one.audit.actors.user.type
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.action.type
+      target_field: ping_one.audit.action.type
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: ping_one.audit.action.type
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.action.description
+      target_field: ping_one.audit.action.description
+      ignore_missing: true
+  - foreach:
+      field: json.resources
+      processor:
+        uri_parts:
+          field: _ingest._value.href
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.resources != null && ctx.json?.resources instanceof List
+  - rename:
+      field: json.resources
+      target_field: ping_one.audit.resources
+      ignore_missing: true
+  - rename:
+      field: json.result.id
+      target_field: ping_one.audit.result.id
+      ignore_missing: true
+  - rename:
+      field: json.result.status
+      target_field: ping_one.audit.result.status
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.ping_one?.audit?.result?.status == 'SUCCESS' || ctx.ping_one?.audit?.result?.status == 'succeeded'
+      ignore_failure: true
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.ping_one?.audit?.result?.status == 'FAILURE' || ctx.ping_one?.audit?.result?.status == 'failed'
+      ignore_failure: true
+  - rename:
+      field: json.result.description
+      target_field: ping_one.audit.result.description
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+# Remove ping_one.audit fields that are copied into an ECS field.
+  - foreach:
+      field: ping_one.audit.resources
+      processor:
+        remove:
+          field: _ingest._value.href
+          ignore_failure: true
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.ping_one?.audit?.resources != null && ctx.ping_one?.audit?.resources instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - ping_one.audit.recorded_at
+        - ping_one.audit.tags
+        - ping_one.audit.id
+        - ping_one.audit.result.status
+        - ping_one.audit.action.type
+        - ping_one.audit.actors.user.id
+        - ping_one.audit.actors.user.name
+        - ping_one.audit.actors.client.id
+        - ping_one.audit.actors.client.name
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'
