@@ -1,0 +1,241 @@
+---
+description: Pipeline for processing User logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - set:
+      field: event.kind
+      value: state
+  - set:
+      field: event.category
+      value: [iam]
+  - set:
+      field: event.type
+      value: [user]
+  - date:
+      field: json.created
+      target_field: lastpass.user.created
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd HH:mm:ss ZZZZ
+        - yyyy-MM-dd HH:mm:ssZZZZ
+      if: ctx.json?.created != null && ctx.json.created != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.id
+      target_field: lastpass.user.id
+      ignore_missing: true
+  - set:
+      field: user.id
+      copy_from: lastpass.user.id
+      ignore_failure: true
+  - rename:
+      field: json.username
+      target_field: lastpass.user.user_name
+      ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: lastpass.user.user_name
+      ignore_failure: true
+  - rename:
+      field: json.fullname
+      target_field: lastpass.user.full_name
+      ignore_missing: true
+  - set:
+      field: user.full_name
+      copy_from: lastpass.user.full_name
+      ignore_failure: true
+  - rename:
+      field: json.groups
+      target_field: lastpass.user.group
+      ignore_missing: true
+  - set:
+      field: user.group.name
+      copy_from: lastpass.user.group
+      ignore_failure: true
+  - convert:
+      field: json.applications
+      target_field: lastpass.user.application
+      if: ctx.json?.applications != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.attachments
+      target_field: lastpass.user.attachment
+      if: ctx.json?.attachments != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.disabled
+      target_field: lastpass.user.disabled
+      if: ctx.json?.disabled != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.duousername
+      target_field: lastpass.user.duo.user_name
+      ignore_missing: true
+  - convert:
+      field: json.formfills
+      target_field: lastpass.user.form_fill
+      if: ctx.json?.formfills != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_login
+      target_field: lastpass.user.last_login
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd HH:mm:ss ZZZZ
+        - yyyy-MM-dd HH:mm:ssZZZZ
+      if: ctx.json?.last_login != null && ctx.json.last_login != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_pw_change
+      target_field: lastpass.user.last_password_change
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd HH:mm:ss ZZZZ
+        - yyyy-MM-dd HH:mm:ssZZZZ
+      if: ctx.json?.last_pw_change != null && ctx.json.last_pw_change != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.linked
+      target_field: lastpass.user.linked
+      ignore_missing: true
+  - convert:
+      field: json.mpstrength
+      target_field: lastpass.user.master_password_strength
+      if: ctx.json?.mpstrength != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.neverloggedin
+      target_field: lastpass.user.never_logged_in
+      if: ctx.json?.neverloggedin != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.notes
+      target_field: lastpass.user.note
+      if: ctx.json?.notes != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.password_reset_required
+      target_field: lastpass.user.password_reset_required
+      if: ctx.json?.password_reset_required != ''
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.sites
+      target_field: lastpass.user.sites
+      ignore_missing: true
+  - convert:
+      field: json.totalscore
+      target_field: lastpass.user.total_score
+      if: ctx.json?.totalscore != ''
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      value:
+        - '{{{user.email}}}'
+        - '{{{user.full_name}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - lastpass.user.id
+        - lastpass.user.user_name
+        - lastpass.user.full_name
+        - lastpass.user.group
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source:
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == '') {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+on_failure:
+- append:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'
