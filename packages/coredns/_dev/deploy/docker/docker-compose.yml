@@ -1,20 +1,21 @@
 version: '3.0'
 services:
   coredns:
-    image: coredns/coredns:1.9.3
     hostname: coredns
+    build: .
     ports:
       - 53/udp
     volumes:
       - ./files:/config:ro
-      # - ${SERVICE_LOGS_DIR}:/service_logs
-    entrypoint: /coredns -conf /config/Corefile 2>&1 | tee /tmp/coredns.log
-    # # Create a log file for the operational log tests to read.
-    # command:
-    # #   - -ec
-    #   - /coredns -conf /config/Corefile 2>&1 | tee /tmp/coredns.log
+      - ${SERVICE_LOGS_DIR}:/service_logs
+    entrypoint: /bin/sh
+    command:
+      - -ec
+      - >
+        /coredns -conf /config/Corefile 2>&1 | tee /service_logs/coredns.log
+
   coredns-dig:
     image: wbitt/network-multitool
-    command: sh -c "sleep 10h && dig @coredns google.com && dig @coredns bob.example.com"
+    command: sh -c "sleep 5s && dig @coredns google.com && dig @coredns bob.example.com"
     depends_on:
       - coredns

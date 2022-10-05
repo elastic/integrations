@@ -4,7 +4,7 @@ This integration parses logs from [CoreDNS](https://coredns.io/) instances.
 
 ## Compatibility
 
-This integration is designed to read CoreDNS logs running within a Kubernetes cluster or via systemd with logs output to Journald. The CoreDNS datasets were tested with version 1.9.3.
+This integration is designed to read CoreDNS logs running within a Kubernetes cluster or via systemd with logs output to Journald. The CoreDNS datasets were tested with version 1.9.3 and 1.10.0.
 
 ## Logs
 
