@@ -1,99 +1,118 @@
 ---
 description: Pipeline for ForgeRock audit logs
 processors: 
-- set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- set:
-    field: ecs.version
-    value: '8.4.0'
-- set:
+  - set:
+      field: event.ingested
+      value: '{{_ingest.timestamp}}'
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - set:
       field: observer.vendor
       value: ForgeRock Identity Platform
-- rename:
-    field: message
-    target_field: event.original
-    ignore_missing: true
-- json:
-    field: event.original
-    target_field: json
-- rename:
-    field: json.payload
-    target_field: forgerock
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - rename:
+      field: json.payload
+      target_field: forgerock
 
-- set:
-    field: event.id
-    copy_from: forgerock._id
-    ignore_failure: true
-- set: 
-    field: transaction.id
-    copy_from: forgerock.transactionId
-    ignore_failure: true
-
-- date:
-    field: forgerock.timestamp
-    formats:
-      - ISO8601
-    target_field: '@timestamp'
-    timezone: UTC
-    on_failure:
-      - append:
-          field: error.message
-          value: '{{ _ingest.on_failure_message }}'
-
-# parse AM event name into action
-- grok:
-    if: ctx.forgerock?.eventName.contains("-")
-    field: forgerock.eventName
-    patterns:
-      - '%{WORD:forgerock.system}-%{GREEDYDATA:forgerock.action}'
-
-# AM - access
-- pipeline:
-    if: ctx.forgerock?.topic == "access" && ctx.forgerock?.system == "AM"
-    name: '{{ IngestPipeline "am-access" }}'
-# AM - activity
-- pipeline:
-    if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.system == "AM"
-    name: '{{ IngestPipeline "am-activity" }}'
-# AM - authentication
-- pipeline:
-    if: ctx.forgerock?.topic == "authentication" && ctx.forgerock?.system == "AM"
-    name: '{{ IngestPipeline "am-authentication" }}'
-# AM - config
-- pipeline:
-    if: ctx.forgerock?.topic == "config" && ctx.forgerock?.system == "AM"
-    name: '{{ IngestPipeline "am-config" }}'
-# IDM - access
-- pipeline:
-    if: ctx.forgerock?.topic == "access" && ctx.forgerock?.eventName == "access"
-    name: '{{ IngestPipeline "idm-access" }}'
-# IDM - activity
-- pipeline:
-    if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.eventName == "activity"
-    name: '{{ IngestPipeline "idm-activity" }}'
-# IDM - authentication
-- pipeline:
-    if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.eventName == "activity"
-    name: '{{ IngestPipeline "idm-activity" }}'
-# IDM - config
-- pipeline:
-    if: ctx.forgerock?.topic == "config" && ctx.forgerock?.eventName == "CONFIG"
-    name: '{{ IngestPipeline "idm-config" }}'
-# IDM - sync
-- pipeline:
-    if: ctx.forgerock?.topic == "sync"
-    name: '{{ IngestPipeline "idm-sync" }}'
-
-- remove:
-    field: message
-    if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-    ignore_failure: true
-    ignore_missing: true
-on_failure:
   - set:
-      field: error.message
-      value: "{{ _ingest.on_failure_message }}"
-  - set:
-      field: event.kind
-      value: pipeline_error
+      field: event.id
+      copy_from: forgerock._id
+      ignore_failure: true
+  - set: 
+      field: transaction.id
+      copy_from: forgerock.transactionId
+      ignore_failure: true
+
+  - date:
+      field: forgerock.timestamp
+      formats:
+        - ISO8601
+      target_field: '@timestamp'
+      timezone: UTC
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{ _ingest.on_failure_message }}'
+
+  # parse AM event name into action
+  - grok:
+      if: ctx.forgerock?.eventName.contains("-")
+      field: forgerock.eventName
+      patterns:
+        - '%{WORD:forgerock.system}-%{GREEDYDATA:forgerock.action}'
+
+  # AM - access
+  - pipeline:
+      if: ctx.forgerock?.topic == "access" && ctx.forgerock?.system == "AM"
+      name: '{{ IngestPipeline "am-access" }}'
+  # AM - activity
+  - pipeline:
+      if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.system == "AM"
+      name: '{{ IngestPipeline "am-activity" }}'
+  # AM - authentication
+  - pipeline:
+      if: ctx.forgerock?.topic == "authentication" && ctx.forgerock?.system == "AM"
+      name: '{{ IngestPipeline "am-authentication" }}'
+  # AM - config
+  - pipeline:
+      if: ctx.forgerock?.topic == "config" && ctx.forgerock?.system == "AM"
+      name: '{{ IngestPipeline "am-config" }}'
+  # IDM - access
+  - pipeline:
+      if: ctx.forgerock?.topic == "access" && ctx.forgerock?.eventName == "access"
+      name: '{{ IngestPipeline "idm-access" }}'
+  # IDM - activity
+  - pipeline:
+      if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.eventName == "activity"
+      name: '{{ IngestPipeline "idm-activity" }}'
+  # IDM - authentication
+  - pipeline:
+      if: ctx.forgerock?.topic == "activity" && ctx.forgerock?.eventName == "activity"
+      name: '{{ IngestPipeline "idm-activity" }}'
+  # IDM - config
+  - pipeline:
+      if: ctx.forgerock?.topic == "config" && ctx.forgerock?.eventName == "CONFIG"
+      name: '{{ IngestPipeline "idm-config" }}'
+  # IDM - sync
+  - pipeline:
+      if: ctx.forgerock?.topic == "sync"
+      name: '{{ IngestPipeline "idm-sync" }}'
+
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - forgerock._id
+        - forgerock.transactionId
+        - forgerock.eventName
+        - forgerock.userId
+        - forgerock.client.host
+        - forgerock.client.port
+        - forgerock.server.host
+        - forgerock.http.request.method
+        - forgerock.http.request.path
+        - forgerock.response.statusCode
+        - forgerock.component
+        - forgerock.runAs
+        - forgerock.operation
+      ignore_failure: true
+      ignore_missing: true
+
+  - remove:
+      field: message
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  on_failure:
+    - set:
+        field: error.message
+        value: "{{ _ingest.on_failure_message }}"
+    - set:
+        field: event.kind
+        value: pipeline_error
