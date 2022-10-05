@@ -35,7 +35,9 @@ An example event for `redis` looks as following:
     "gcp": {
         "redis": {
             "clients": {
-                "blocked": 1
+                "blocked": {
+                    "count": 4
+                }
             }
         },
         "labels": {
