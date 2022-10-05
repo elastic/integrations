@@ -1,7 +1,5 @@
 # Azure Logs Integration
 
-## Overview
-
 The Azure Logs integration collects logs for specific Azure services like Azure Active Directory (Sign-in, Audit, Identity Protection, and Provisioning logs), Azure Spring Cloud, Azure Firewall, and serveral others using the Activity and Platform logs.
 
 You can then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.

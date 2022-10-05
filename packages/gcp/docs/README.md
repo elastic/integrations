@@ -1048,98 +1048,104 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-23T09:16:05.341Z",
+    "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "0b86920e-9dac-4b22-91c8-e594b22a00b4",
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "ephemeral_id": "87190725-9632-41a5-ba26-ebffca397d74",
+        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.3"
+        "version": "8.4.1"
     },
     "cloud": {
-        "availability_zone": "europe-west2-a",
-        "instance": {
-            "id": "8340998530665147",
-            "name": "instance"
-        },
         "project": {
-            "id": "project"
+            "id": "key-reference-123456"
         },
         "provider": "gcp",
-        "region": "europe-west2"
+        "region": "global"
     },
     "data_stream": {
         "dataset": "gcp.dns",
         "namespace": "ep",
         "type": "logs"
     },
+    "destination": {
+        "address": "216.239.32.106",
+        "ip": "216.239.32.106"
+    },
     "dns": {
         "answers": [
             {
                 "class": "IN",
-                "data": "127.0.0.1",
-                "name": "elastic.co",
-                "ttl": "300",
+                "data": "67.43.156.13",
+                "name": "asdf.gcp.example.com.",
+                "ttl": 300,
                 "type": "A"
             }
         ],
         "question": {
-            "name": "elastic.co",
-            "registered_domain": "elastic.co",
-            "top_level_domain": "co",
+            "name": "asdf.gcp.example.com",
+            "registered_domain": "example.com",
+            "subdomain": "asdf.gcp",
+            "top_level_domain": "com",
             "type": "A"
         },
         "resolved_ip": [
-            "127.0.0.1"
+            "67.43.156.13"
         ],
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
         "snapshot": false,
-        "version": "8.2.3"
+        "version": "8.4.1"
     },
     "event": {
+        "action": "dns-query",
         "agent_id_status": "verified",
-        "created": "2022-06-28T02:46:41.230Z",
+        "category": "network",
+        "created": "2022-10-03T22:33:56.157Z",
         "dataset": "gcp.dns",
-        "id": "vwroyze8pg7y",
-        "ingested": "2022-06-28T02:46:42Z",
+        "id": "zir4wud11tm",
+        "ingested": "2022-10-03T22:33:57Z",
         "kind": "event",
         "outcome": "success"
     },
     "gcp": {
         "dns": {
             "auth_answer": true,
+            "destination_ip": "216.239.32.106",
             "protocol": "UDP",
-            "query_name": "elastic.co.",
+            "query_name": "asdf.gcp.example.com.",
             "query_type": "A",
-            "rdata": "elastic.co.\t300\tIN\ta\t127.0.0.1",
             "response_code": "NOERROR",
-            "server_latency": 14,
-            "source_ip": "10.154.0.3",
-            "source_network": "default",
-            "vm_instance_id": "8340998530665147",
-            "vm_instance_name": "694119234537.instance",
-            "vm_project_id": "project",
-            "vm_zone_name": "europe-west2-a"
+            "server_latency": 0,
+            "source_type": "internet",
+            "target_type": "public-zone"
         }
     },
     "input": {
         "type": "gcp-pubsub"
     },
     "log": {
-        "logger": "projects/project/logs/dns.googleapis.com%2Fdns_queries"
+        "level": "INFO",
+        "logger": "projects/key-reference-123456/logs/dns.googleapis.com%2Fdns_queries"
     },
     "network": {
+        "iana_number": "17",
+        "protocol": "dns",
         "transport": "udp"
     },
-    "source": {
-        "address": "10.154.0.3",
-        "ip": "10.154.0.3"
+    "related": {
+        "hosts": [
+            "asdf.gcp.example.com"
+        ],
+        "ip": [
+            "67.43.156.13",
+            "216.239.32.106"
+        ]
     },
     "tags": [
         "forwarded",
