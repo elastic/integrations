@@ -16,7 +16,7 @@ Once you’ve installed the package you can ingest your data using the ingest pi
 
 Create a data view for the indices that are enriched by the pipeline.
 
-In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Domain Exfiltration Detection (DED). When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment. Note this job is only useful for indices that have been enriched by the ingest pipeline.
+In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Data Exfiltration Detection (DED). When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment. Note this job is only useful for indices that have been enriched by the ingest pipeline.
 
 ## ML Modules
 
