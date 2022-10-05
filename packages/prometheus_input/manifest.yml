@@ -1,0 +1,90 @@
+format_version: 1.0.0
+name: prometheus_input
+title: "Prometheus Input"
+version: 0.0.3
+license: basic
+description: "This is a new package."
+type: input
+categories:
+  - kubernetes
+conditions:
+  kibana.version: "^8.4.0"
+  elastic.subscription: "basic"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/sample-logo.svg
+    title: Sample logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: prometheus_collector
+    type: metrics
+    title: Prometheus collector metrics
+    description: Collect prometheus metrics
+    input: prometheus
+    template_path: input.yml.hbs
+    vars:
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - localhost:9090
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        multi: false
+        required: false
+        show_user: true
+        default: /metrics
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: use_types
+        type: bool
+        title: Use Types
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: rate_counters
+        type: bool
+        title: Rate Counters
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: leaderelection
+        type: bool
+        title: Leader Election
+        description: Enable leaderelection between a set of Elastic Agents running on Kubernetes
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: metrics_filters.exclude
+        type: text
+        title: Metrics Filters Exclude
+        multi: true
+        required: false
+        show_user: false
+        default: []
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        multi: true
+        required: false
+        show_user: false
+        default: []
+owner:
+  github: elastic/integrations
