@@ -58,15 +58,17 @@ To access the `events` endpoint, the user making the API call will need to have 
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | box.created_at | When the event object was created | date |
-| box.created_by.id | The unique identifier for the connection user | keyword |
+| box.created_by.id | The unique identifier for the connection user | long |
 | box.created_by.login | The primary email address of the connection user. Maps from \*\*.login |  |
 | box.created_by.name | The display name of the connection user. Maps from \*\*.name | keyword |
 | box.created_by.type | E.g. `user` |  |
 | box.recorded_at | The date and time at which this event occurred | date |
 | box.session.id | The session of the user that performed the action. Not all events will populate this attribute | keyword |
+| box.source.address | Physical Address associated with the event | keyword |
+| box.source.avatar_url | URL for user avatar | boolean |
 | box.source.created_at | The date and time at which this folder was originally created | date |
 | box.source.created_by | The user who created this folder | object |
-| box.source.created_by.id | The unique identifier for this user | keyword |
+| box.source.created_by.id | The unique identifier for this user | long |
 | box.source.created_by.login | The primary email address of this user. Maps from \*\*.login | keyword |
 | box.source.created_by.name | The display name of this user. Maps from \*\*.name | keyword |
 | box.source.created_by.type | Value is always `user` | keyword |
@@ -75,14 +77,20 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.source.file_version | The information about the current version of the file | object |
 | box.source.file_version.id | The unique identifier that represent a file version | keyword |
 | box.source.file_version.type | Value is always `file_version` | keyword |
-| box.source.id | The unique identifier that represent a folder | keyword |
+| box.source.id | The unique identifier that represent a folder | long |
 | box.source.item_status | Defines if this item has been deleted or not. active when the item has is not in the trash trashed when the item has been moved to the trash but not deleted deleted when the item has been permanently deleted. Value is one of `active`, `trashed`, `deleted` | keyword |
+| box.source.job_title | User job title | boolean |
+| box.source.language | User preferred language | boolean |
+| box.source.login | User login | boolean |
+| box.source.max_upload_size | Max upload size | boolean |
 | box.source.modified_at | The date and time at which this folder was last updated | date |
 | box.source.modified_by | The user who last modified this folder | object |
 | box.source.modified_by.id | The unique identifier for this user | keyword |
 | box.source.modified_by.login | The primary email address of this user. Maps from \*\*.login | keyword |
 | box.source.modified_by.name | The display name of this user. Maps from \*\*.name | keyword |
 | box.source.modified_by.type | Value is always `user` | keyword |
+| box.source.notification_email.email | Email to send notifications | boolean |
+| box.source.notification_email.is_confirmed | True if `notification_email.email` has been confirmed else false | boolean |
 | box.source.owned_by | The user who owns this folder | keyword |
 | box.source.owned_by.id | The unique identifier for this user | keyword |
 | box.source.owned_by.login | The primary email address of this user. Maps from \*\*.login | keyword |
@@ -100,10 +108,15 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.source.path_collection.entries.name | The name of the folder. This field is an array | array |
 | box.source.path_collection.entries.type | Value is always `folder`. This field is an array | array |
 | box.source.path_collection.total_count | The number of folders in this list | long |
+| box.source.phone | Phone number | boolean |
 | box.source.purged_at | The time at which this file is expected to be purged from the trash | boolean |
 | box.source.sequence_id | A numeric identifier that represents the most recent user event that has been applied to this item | keyword |
 | box.source.sha1 | SHA1 hash of the item concerned | keyword |
+| box.source.space_amount | Space amount | boolean |
+| box.source.space_used | Space used | boolean |
+| box.source.status | For example: `active` | boolean |
 | box.source.synced | Legacy property for compatibility with Box Desktop | boolean |
+| box.source.timezone | Timezone | boolean |
 | box.source.trashed_at | The time at which this file was put in the trash | boolean |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.user.email | User email address. | keyword |
