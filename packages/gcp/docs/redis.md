@@ -70,7 +70,7 @@ An example event for `redis` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |  |  |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
 | cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
 | cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
 | cloud.instance.name | Instance name of the host machine. | keyword |  |  |
