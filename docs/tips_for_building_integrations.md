@@ -27,23 +27,18 @@ $ ./elastic-package help
    Tagging the integration with a lower version, like `0.0.1`, means that it's at very early stage and most likely
    it doesn't work at all. It might be partially developed.
 
-2. Set the initial release to `beta`.
-
-   If you working on the new integration that will be release in the next release cycle, you can tag it with `beta`.
-   Otherwise, feel free to stick with the `experimental` tag.
-
-3. Select one or two categories for the integration.
+2. Select one or two categories for the integration.
 
    The list of available categories is present in the Package Registry source: https://github.com/elastic/package-registry/blob/79e456c86a7a83b1da1f3f5b15d0ca59fdb48337/packages/package.go#L29-L54
 
-4. Make sure that the version condition for Kibana is set to `^7.10.0` and not `>=7.10.0`. Otherwise the package is also in 8.0.0 but we do not know today if it will actually be compatible with >= 8.0.0.
+3. Make sure that the version condition for Kibana is set to `^7.10.0` and not `>=7.10.0`. Otherwise the package is also in 8.0.0 but we do not know today if it will actually be compatible with >= 8.0.0.
 
    ```yaml
    conditions:
      kibana.version: '^7.10.0'
    ```
 
-5. Set the proper package owner (either Github team or personal account)
+4. Set the proper package owner (either Github team or personal account)
 
    Good candidates for a team: `elastic/integrations`, `elastic/security-external-integrations`
 
@@ -134,5 +129,4 @@ $ ./elastic-package help
    ```yaml
    - name: mypackage.mydataset
      type: group
-     release: experimental
    ```
