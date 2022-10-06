@@ -1,7 +1,5 @@
 # Azure Billing Metrics Integration
 
-## Overview
-
 The Azure Billing Metrics integration allows you to monitor your actual and future Azure spending to optimize resource use.
 
 The integration uses the [Azure Consumption API](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/consumption-api-overview) to collect usage details and leverages the [Azure Cost Management API](https://docs.microsoft.com/en-us/rest/api/cost-management/forecast) to bring forecast data.
