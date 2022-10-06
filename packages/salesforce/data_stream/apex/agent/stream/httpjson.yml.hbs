@@ -1,0 +1,39 @@
+config_version: 2
+interval: {{period}}
+request.method: GET
+auth.oauth2:
+  enabled: true
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  user: {{username}}
+  password: {{password}}
+request.url: {{instance_url}}/services/data/v54.0/query?q=apex
+request.transforms:
+  - set:
+      target: url.params.q
+      value: "SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND LogDate > [[.cursor.last_published_apex]] AND (EventType = 'ApexCallout' OR EventType = 'ApexExecution' OR EventType = 'ApexRestApi' OR EventType = 'ApexSoap' OR EventType = 'ApexTrigger' OR EventType = 'ExternalCustomApexCallout') ORDER BY LogDate ASC NULLS FIRST"
+      default: "SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND (EventType = 'ApexCallout' OR EventType = 'ApexExecution' OR EventType = 'ApexRestApi' OR EventType = 'ApexSoap' OR EventType = 'ApexTrigger' OR EventType = 'ExternalCustomApexCallout') ORDER BY LogDate ASC NULLS FIRST"
+chain:
+  - step:
+      request.url: {{instance_url}}/services/data/v54.0/sobjects/EventLogFile/$.records[:].Id/LogFile
+      request.method: GET
+      replace: $.records[:].Id
+response.split:
+  target: body.records
+cursor:
+  last_published_apex:
+    value: '[[.last_event.LogDate]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+{{processors}}
+{{/if}}
