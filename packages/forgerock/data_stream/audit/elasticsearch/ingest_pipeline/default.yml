@@ -85,6 +85,14 @@ processors:
       if: ctx.forgerock?.topic == "sync"
       name: '{{ IngestPipeline "idm-sync" }}'
 
+  # cleaning up
+  - remove:
+      field:
+        - json.timestamp
+        - json.type
+        - forgerock.system
+        - forgerock.action
+
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
@@ -94,13 +102,17 @@ processors:
         - forgerock.userId
         - forgerock.client.host
         - forgerock.client.port
+        - forgerock.client.ip
         - forgerock.server.host
+        - forgerock.server.port
+        - forgerock.server.ip
         - forgerock.http.request.method
         - forgerock.http.request.path
         - forgerock.response.statusCode
         - forgerock.component
         - forgerock.runAs
         - forgerock.operation
+        - forgerock.timestamp
       ignore_failure: true
       ignore_missing: true
 
@@ -109,10 +121,11 @@ processors:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
-  on_failure:
-    - set:
-        field: error.message
-        value: "{{ _ingest.on_failure_message }}"
-    - set:
-        field: event.kind
-        value: pipeline_error
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
