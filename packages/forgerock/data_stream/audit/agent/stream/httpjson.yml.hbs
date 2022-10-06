@@ -33,6 +33,18 @@ request.transforms:
 response.split: 
   target: body.result
 
+{{!-- response.pagination:
+  - set:
+      target: url.value
+      value: >
+        [[sprintf "https://%s/monitoring/logs?sources=%s&endTime=%s&beginTime=%s&_pagedResultsCookie=%s"
+        "{{tenant_env_fqdn}}"
+        "{{log_sources}}"
+        (.last_response.url.params.Get "endTime")
+        (.last_response.url.params.Get "beginTime")
+        (.last_response.body.Get "pagedResultsCookie")
+      fail_on_template_error: true --}}
+
 cursor:
   last_timestamp:
     value: '[[.last_response.url.params.Get "endTime"]]'
