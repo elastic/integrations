@@ -14,7 +14,7 @@ Ingest logs from Microsoft DHCP Server, by default logged with the filename form
 Logs may also be ingested from Microsoft DHCPv6 Server, by default logged with the filename format:
 `%windir%\System32\DHCP\DhcpV6SrvLog-*.log`
 
-Relevant documentation for Microsoft DHCP can be found on [this]https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd183591(v=ws.10) location.
+Relevant documentation for Microsoft DHCP can be found on [this](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-R2-and-2008/dd183591(v=ws.10)) location.
 
 An example event for `log` looks as following:
 
@@ -143,3 +143,4 @@ An example event for `log` looks as following:
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
+
