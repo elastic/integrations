@@ -1,0 +1,235 @@
+---
+description: Pipeline for processing System Status Alert logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - grok:
+      field: message
+      patterns:
+        - "^%{FIELD:log.syslog.appname}\\s*%{GREEDYDATA:message}$"
+      pattern_definitions:
+        FIELD: "[a-zA-Z]*"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.uuid
+        - json.last_updated
+        - json.last_updated_status
+        - json.message
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.type
+      value: [info]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.kind
+      value: alert
+      if: (['active','resolved'].contains(ctx.json?.status?.toLowerCase()))
+  - date:
+      field: json.last_updated
+      target_field: darktrace.system_status_alert.last_updated
+      formats:
+        - ISO8601
+        - UNIX
+        - UNIX_MS
+        - 'MMM dd HH:mm:ss'
+      if: ctx.json?.last_updated != null
+      on_failure:
+        - remove:
+            field: json.last_updated
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: darktrace.system_status_alert.last_updated
+      ignore_failure: true
+  - rename:
+      field: json.uuid
+      target_field: darktrace.system_status_alert.uuid
+      ignore_missing: true
+  - set:
+      field: event.id
+      copy_from: darktrace.system_status_alert.uuid
+      ignore_failure: true
+  - rename:
+      field: json.message
+      target_field: darktrace.system_status_alert.message
+      ignore_missing: true
+  - set:
+      field: event.reason
+      copy_from: darktrace.system_status_alert.message
+      ignore_failure: true
+  - convert:
+      field: json.priority
+      target_field: darktrace.system_status_alert.priority
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.priority
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.risk_score
+      copy_from: darktrace.system_status_alert.priority
+      ignore_failure: true
+  - set:
+      field: event.risk_score_norm
+      copy_from: darktrace.system_status_alert.priority
+      ignore_failure: true
+  - uri_parts:
+      field: json.url
+      target_field: darktrace.system_status_alert.url
+      if: ctx.json?.url != null
+      keep_original: true
+      on_failure:
+        - remove:
+            field: json.url
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.url
+      copy_from: darktrace.system_status_alert.url.original
+      ignore_failure: true
+  - rename:
+      field: json.hostname
+      target_field: darktrace.system_status_alert.hostname
+      ignore_missing: true
+  - convert:
+      field: darktrace.system_status_alert.hostname
+      target_field: darktrace.system_status_alert._temp_.hostname_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - set:
+            field: host.hostname
+            copy_from: darktrace.system_status_alert.hostname
+            ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{darktrace.system_status_alert._temp_.hostname_ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.ip_address
+      target_field: darktrace.system_status_alert._temp_.ip_address
+      type: ip
+      ignore_failure: true
+  - set:
+      field: host.ip
+      copy_from: darktrace.system_status_alert._temp_.ip_address
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{host.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.ip_address
+      target_field: darktrace.system_status_alert.ip_address
+      ignore_missing: true
+  - remove:
+      field: darktrace.system_status_alert._temp_
+      ignore_missing: true
+  - rename:
+      field: json.acknowledge_timeout
+      target_field: darktrace.system_status_alert.acknowledge_timeout
+      ignore_missing: true
+  - rename:
+      field: json.alert_name
+      target_field: darktrace.system_status_alert.alert_name
+      ignore_missing: true
+  - convert:
+      field: json.child_id
+      target_field: darktrace.system_status_alert.child_id
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.last_updated_status
+      target_field: darktrace.system_status_alert.last_updated_status
+      formats:
+        - ISO8601
+        - UNIX
+        - UNIX_MS
+        - 'MMM dd HH:mm:ss'
+      if: ctx.json?.last_updated_status != null
+      on_failure:
+        - remove:
+            field: json.last_updated_status
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.name
+      target_field: darktrace.system_status_alert.name
+      ignore_missing: true
+  - rename:
+      field: json.priority_level
+      target_field: darktrace.system_status_alert.priority_level
+      ignore_missing: true
+  - lowercase:
+      field: json.status
+      target_field: darktrace.system_status_alert.status
+      ignore_failure: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - darktrace.system_status_alert.last_updated
+        - darktrace.system_status_alert.uuid
+        - darktrace.system_status_alert.message
+        - darktrace.system_status_alert.priority
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
