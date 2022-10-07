@@ -1,0 +1,1446 @@
+---
+description: Pipeline for processing Model Breach Alert logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - grok:
+      field: message
+      patterns:
+        - "^%{FIELD:log.syslog.appname}\\s*%{GREEDYDATA:message}$"
+      pattern_definitions:
+        FIELD: "[a-zA-Z]*"
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+  - fingerprint:
+      fields:
+        - json.time
+        - json.creationTime
+        - json.pbid
+        - json.model.phid
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+      if: (['critical','suspicious'].contains(ctx.json?.model?.category?.toLowerCase()))
+  - set:
+      field: event.kind
+      value: event
+      if: (['compliance','informational'].contains(ctx.json?.model?.category?.toLowerCase()))
+  - set:
+      field: event.category
+      value: [threat]
+      if: ctx.event?.kind == 'alert'
+  - set:
+      field: event.type
+      value: [info]
+  - script:
+      description: Dynamically map event.* fields from metric label.
+      lang: painless
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      source:
+        for (component in ctx.json.triggeredComponents) {
+          if (component?.metric?.label?.toLowerCase().contains('connection')) {
+            ctx.event?.type?.add('connection');
+            if (ctx.event.category == null) {
+              ctx.event.category = new ArrayList();
+            }
+            ctx.event.category.add('network');
+          }
+        }
+  - foreach:
+      field: json.aianalystData
+      if: ctx.json?.aianalystData instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.related
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value
+              type: long
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.aianalystData
+      target_field: darktrace.model_breach_alert.aianalyst_data
+      ignore_missing: true
+  - uri_parts:
+      field: json.breachUrl
+      target_field: darktrace.model_breach_alert.breach_url
+      if: ctx.json?.breachUrl != null
+      keep_original: true
+      on_failure:
+        - remove:
+            field: json.breachUrl
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.url
+      copy_from: darktrace.model_breach_alert.breach_url.original
+      ignore_failure: true
+  - convert:
+      field: json.commentCount
+      target_field: darktrace.model_breach_alert.comment.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.creationTime
+      target_field: darktrace.model_breach_alert.creation_time
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - 'MMM dd HH:mm:ss'
+      if: ctx.json?.creationTime != null
+      on_failure:
+        - remove:
+            field: json.creationTime
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      copy_from: darktrace.model_breach_alert.creation_time
+      ignore_failure: true
+  - convert:
+      field: json.devicescore
+      target_field: darktrace.model_breach_alert.device_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.device.credentials
+      target_field: darktrace.model_breach_alert.device.credentials
+      ignore_missing: true
+  - convert:
+      field: json.device.did
+      target_field: darktrace.model_breach_alert.device.did
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: darktrace.model_breach_alert.device.did
+      ignore_missing: true
+      if: ctx.darktrace?.model_breach_alert?.device?.did != null && ctx.darktrace?.model_breach_alert?.device?.did < 0
+  - convert:
+      field: darktrace.model_breach_alert.device.did
+      target_field: host.id
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: darktrace.model_breach_alert.device.did
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.device.firstSeen
+      target_field: darktrace.model_breach_alert.device.first_seen
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - 'MMM dd HH:mm:ss'
+      if: ctx.json?.device?.firstSeen != null
+      on_failure:
+        - remove:
+            field: json.device.firstseen
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.device.hostname
+      target_field: json.device._temp_.hostname_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - set:
+            field: host.hostname
+            copy_from: json.device.hostname
+            ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{json.device._temp_.hostname_ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.device.hostname
+      target_field: darktrace.model_breach_alert.device.hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.device.ip
+      target_field: darktrace.model_breach_alert.device._temp_.ip
+      type: ip
+      ignore_failure: true
+  - append:
+      field: host.ip
+      value: '{{{darktrace.model_breach_alert.device._temp_.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.device.ip6
+      target_field: darktrace.model_breach_alert.device._temp_.ip6
+      type: ip
+      ignore_failure: true
+  - append:
+      field: host.ip
+      value: '{{{darktrace.model_breach_alert.device._temp_.ip6}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.device.ip
+      target_field: darktrace.model_breach_alert.device.ip
+      ignore_missing: true
+  - rename:
+      field: json.device.ip6
+      target_field: darktrace.model_breach_alert.device.ip6
+      ignore_missing: true
+  - remove:
+      field:
+        - darktrace.model_breach_alert.device._temp_
+      ignore_missing: true
+  - foreach:
+      field: host.ip
+      if: ctx.host?.ip instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.device.ips
+      if: ctx.json?.device?.ips instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.ip
+          target_field: _ingest._value._temp_.ip
+          type: ip
+          ignore_failure: true
+  - foreach:
+      field: json.device.ips
+      if: ctx.json?.device?.ips instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value._temp_.ip}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.device.ips
+      if: ctx.json?.device?.ips instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.timems
+          target_field: _ingest._value.timems
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - 'MMM dd HH:mm:ss'
+          on_failure:
+            - remove:
+                field: _ingest._value.timems
+                ignore_missing: true
+  - foreach:
+      field: json.device.ips
+      if: ctx.json?.device?.ips instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.time
+          target_field: _ingest._value.time
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - 'MMM dd HH:mm:ss'
+            - 'yyyy-MM-dd HH:mm:ss'
+          on_failure:
+            - remove:
+                field: _ingest._value.time
+                ignore_missing: true
+  - foreach:
+      field: json.device.ips
+      if: ctx.json?.device?.ips instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.sid
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.sid
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.device.ips
+      if: ctx.json?.device?.ips instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field: _ingest._value._temp_
+          ignore_missing: true
+  - rename:
+      field: json.device.ips
+      target_field: darktrace.model_breach_alert.device.ips
+      ignore_missing: true
+  - date:
+      field: json.device.lastSeen
+      target_field: darktrace.model_breach_alert.device.last_seen
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - 'MMM dd HH:mm:ss'
+      if: ctx.json?.device?.lastSeen != null
+      on_failure:
+        - remove:
+            field: json.device.lastseen
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - gsub:
+      field: json.device.macaddress
+      target_field: darktrace.model_breach_alert.device.mac_address
+      pattern: '[:.]'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: darktrace.model_breach_alert.device.mac_address
+      ignore_missing: true
+  - set:
+      field: host.mac
+      copy_from: darktrace.model_breach_alert.device.mac_address
+      ignore_failure: true
+  - convert:
+      field: json.device.sid
+      target_field: darktrace.model_breach_alert.device.sid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.device.tags
+      if: ctx.json?.device?.tags instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.tid
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.tid
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.device.tags
+      if: ctx.json?.device?.tags instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.thid
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.thid
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.device.tags
+      if: ctx.json?.device?.tags instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.expiry
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.expiry
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.device.tags
+      if: ctx.json?.device?.tags instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.restricted
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.restricted
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.device.tags
+      if: ctx.json?.device?.tags instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.isReferenced
+          target_field: _ingest._value.is_referenced
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.isReferenced
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.device.tags
+      if: ctx.json?.device?.tags instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.data.auto
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.data.auto
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.device.tags
+      if: ctx.json?.device?.tags instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.data.color
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.color
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.device.tags
+      if: ctx.json?.device?.tags instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field: _ingest._value.isReferenced
+          ignore_missing: true
+  - rename:
+      field: json.device.tags
+      target_field: darktrace.model_breach_alert.device.tags
+      ignore_missing: true
+  - rename:
+      field: json.device.typelabel
+      target_field: darktrace.model_breach_alert.device.type_label
+      ignore_missing: true
+  - rename:
+      field: json.device.typename
+      target_field: darktrace.model_breach_alert.device.type_name
+      ignore_missing: true
+  - set:
+      field: host.type
+      copy_from: darktrace.model_breach_alert.device.type_name
+      ignore_failure: true
+  - rename:
+      field: json.device.vendor
+      target_field: darktrace.model_breach_alert.device.vendor
+      ignore_missing: true
+  - convert:
+      field: json.acknowledged
+      target_field: darktrace.model_breach_alert.is_acknowledged
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.mitreTechniques
+      if: ctx.json?.mitreTechniques instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.techniqueID
+          target_field: _ingest._value.id
+          ignore_missing: true
+  - foreach:
+      field: json.mitreTechniques
+      if: ctx.json?.mitreTechniques instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.technique
+          target_field: _ingest._value.name
+          ignore_missing: true
+  - rename:
+      field: json.mitreTechniques
+      target_field: darktrace.model_breach_alert.mitre_techniques
+      ignore_missing: true
+  - foreach:
+      field: darktrace.model_breach_alert.mitre_techniques
+      if: ctx.darktrace?.model_breach_alert?.mitre_techniques instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: threat.technique.id
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: darktrace.model_breach_alert.mitre_techniques
+      if: ctx.darktrace?.model_breach_alert?.mitre_techniques instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: threat.technique.name
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - rename:
+      field: json.model.actions.antigena.action
+      target_field: darktrace.model_breach_alert.model.actions.antigena.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: darktrace.model_breach_alert.model.actions.antigena.action
+      ignore_failure: true
+  - convert:
+      field: json.model.actions.antigena.duration
+      target_field: darktrace.model_breach_alert.model.actions.antigena.duration
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.actions.antigena.confirm
+      target_field: darktrace.model_breach_alert.model.actions.antigena.is_confirm_by_human_operator
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.actions.antigena.threshold
+      target_field: darktrace.model_breach_alert.model.actions.antigena.threshold
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.actions.alert
+      target_field: darktrace.model_breach_alert.model.actions.is_alerting
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.actions.breach
+      target_field: darktrace.model_breach_alert.model.actions.is_breach
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.actions.setPriority
+      target_field: darktrace.model_breach_alert.model.actions.is_priority_set
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.actions.setTag
+      target_field: darktrace.model_breach_alert.model.actions.is_tag_set
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.actions.setType
+      target_field: darktrace.model_breach_alert.model.actions.is_type_set
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.actions.model
+      target_field: darktrace.model_breach_alert.model.actions.model
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.activeTimes.version
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.model.activeTimes.version
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.model.activeTimes
+      target_field: darktrace.model_breach_alert.model.active_times
+      ignore_missing: true
+  - rename:
+      field: json.model.behaviour
+      target_field: darktrace.model_breach_alert.model.behaviour
+      ignore_missing: true
+  - rename:
+      field: json.model.category
+      target_field: darktrace.model_breach_alert.model.category
+      ignore_missing: true
+  - set:
+      field: rule.category
+      copy_from: darktrace.model_breach_alert.model.category
+      ignore_failure: true
+  - rename:
+      field: json.model.created.by
+      target_field: darktrace.model_breach_alert.model.created.by
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{darktrace.model_breach_alert.model.created.by}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - set:
+      field: rule.author
+      copy_from: darktrace.model_breach_alert.model.created.by
+      ignore_failure: true
+  - foreach:
+      field: json.model.defeats
+      if: ctx.json?.model?.defeats instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.defeatID
+          target_field: _ingest._value.id
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.defeatID
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.model.defeats
+      if: ctx.json?.model?.defeats instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field: _ingest._value.defeatID
+          ignore_missing: true
+  - rename:
+      field: json.model.defeats
+      target_field: darktrace.model_breach_alert.model.defeats
+      ignore_missing: true
+  - convert:
+      field: json.model.delay
+      target_field: darktrace.model_breach_alert.model.delay
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.model.description
+      target_field: darktrace.model_breach_alert.model.description
+      ignore_missing: true
+  - set:
+      field: rule.description
+      copy_from: darktrace.model_breach_alert.model.description
+      ignore_failure: true
+  - rename:
+      field: json.model.edited.by
+      target_field: darktrace.model_breach_alert.model.edited.by
+      ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{darktrace.model_breach_alert.model.edited.by}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.model.compliance
+      target_field: darktrace.model_breach_alert.model.in_compliance_behavior_category
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.interval
+      target_field: darktrace.model_breach_alert.model.interval
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.active
+      target_field: darktrace.model_breach_alert.model.is_active
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.autoSuppress
+      target_field: darktrace.model_breach_alert.model.is_auto_suppress
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.autoUpdatable
+      target_field: darktrace.model_breach_alert.model.is_auto_updatable
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.autoUpdate
+      target_field: darktrace.model_breach_alert.model.is_auto_update
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.sequenced
+      target_field: darktrace.model_breach_alert.model.is_sequenced
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.sharedEndpoints
+      target_field: darktrace.model_breach_alert.model.is_shared_endpoints
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      description: Dynamically map model.logic.data array using model.logic.type field.
+      if: ctx.json?.model?.logic?.data instanceof List
+      lang: painless
+      ignore_failure: true
+      params:
+        componentList: data_component_list
+        weightedComponentList: data_weighted_component_list
+      source:
+        def data = ctx.json.model.logic.data;
+        if (ctx.json.model.logic?.type != null) {
+          if (['componentList', 'weightedComponentList'].contains(ctx.json.model.logic?.type)) {
+            ctx["json"]["model"]["logic"][params.get(ctx.json.model.logic?.type)] = data;
+          } else {
+            ctx["json"]["model"]["logic"]["data_" + ctx.json.model.logic?.type] = data;
+          }
+        }
+        ctx.json.model.logic.remove("data");
+  - convert:
+      field: json.model.logic.data_component_list
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.model.logic.data_component_list
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.logic.data_weighted_component_list.cid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.model.logic.data_weighted_component_list.cid
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.logic.data_weighted_component_list.weight
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.model.logic.data_weighted_component_list.weight
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.logic.version
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.model.logic.version
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.logic.targetScore
+      target_field: json.model.logic.target_score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json.model.logic.targetScore
+      ignore_missing: true
+  - rename:
+      field: json.model.logic
+      target_field: darktrace.model_breach_alert.model.logic
+      ignore_missing: true
+  - date:
+      field: json.model.modified
+      target_field: darktrace.model_breach_alert.model.modified
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - 'MMM dd HH:mm:ss'
+        - 'yyyy-MM-dd HH:mm:ss'
+      if: ctx.json?.model?.modified != null
+      on_failure:
+        - remove:
+            field: json.model.modified
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.model.name
+      target_field: darktrace.model_breach_alert.model.name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      copy_from: darktrace.model_breach_alert.model.name
+      ignore_failure: true
+  - convert:
+      field: json.model.phid
+      target_field: darktrace.model_breach_alert.model.phid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.pid
+      target_field: darktrace.model_breach_alert.model.pid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.priority
+      target_field: darktrace.model_breach_alert.model.priority
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.model.priority
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.severity
+      copy_from: darktrace.model_breach_alert.model.priority
+      ignore_failure: true
+  - rename:
+      field: json.model.tags
+      target_field: darktrace.model_breach_alert.model.tags
+      ignore_missing: true
+  - set:
+      field: rule.ruleset
+      copy_from: darktrace.model_breach_alert.model.tags
+      ignore_failure: true
+  - convert:
+      field: json.model.throttle
+      target_field: darktrace.model_breach_alert.model.throttle
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.model.userID
+      target_field: darktrace.model_breach_alert.model.userid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.model.uuid
+      target_field: darktrace.model_breach_alert.model.uuid
+      ignore_missing: true
+  - set:
+      field: rule.uuid
+      copy_from: darktrace.model_breach_alert.model.uuid
+      ignore_failure: true
+  - convert:
+      field: json.model.version
+      target_field: darktrace.model_breach_alert.model.version
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.model.version
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: darktrace.model_breach_alert.model.version
+      target_field: rule.version
+      type: string
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: darktrace.model_breach_alert.model.version
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.pbscore
+      target_field: darktrace.model_breach_alert.pb_score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.pbid
+      target_field: darktrace.model_breach_alert.pbid
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.score
+      target_field: darktrace.model_breach_alert.score
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.score
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.risk_score
+      copy_from: darktrace.model_breach_alert.score
+      ignore_failure: true
+  - script:
+      description: Normalize event.risk_score to event.risk_score_norm
+      lang: painless
+      if: ctx.event?.risk_score != null
+      source:
+        def normalizedRiskScore = ctx.event.risk_score * 100.0;
+        ctx.event.risk_score_norm = normalizedRiskScore;
+  - date:
+      field: json.time
+      target_field: darktrace.model_breach_alert.time
+      formats:
+        - ISO8601
+        - UNIX_MS
+        - 'MMM dd HH:mm:ss'
+      if: ctx.json?.time != null
+      on_failure:
+        - remove:
+            field: json.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: darktrace.model_breach_alert.time
+      ignore_failure: true
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.cbid
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cbid
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.chid
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.chid
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.cid
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cid
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.interval
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.interval
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - script:
+      description: Stringify logic.data field of triggeredComponents array.
+      lang: painless
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      source:
+        for (component in ctx.json.triggeredComponents) {
+          component.logic.data = component?.logic?.data.toString();
+        }
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.metric.mlid
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.metric.mlid
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.size
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.size
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        convert:
+          field: _ingest._value.threshold
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.threshold
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.time
+          target_field: _ingest._value.time
+          formats:
+            - ISO8601
+            - UNIX_MS
+            - 'MMM dd HH:mm:ss'
+          on_failure:
+            - remove:
+                field: _ingest._value.time
+                ignore_missing: true
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: event.start
+          value: '{{{_ingest._value.time}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.cfid
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.cfid
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            rename:
+              field: _ingest._value.comparatorType
+              target_field: _ingest._value.comparator_type
+              ignore_missing: true
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            rename:
+              field: _ingest._value.filterType
+              target_field: _ingest._value.filter_type
+              ignore_missing: true
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.trigger.tag.data.auto
+              type: boolean
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.trigger.tag.data.auto
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.trigger.tag.data.color
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.trigger.tag.data.color
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.trigger.tag.expiry
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.trigger.tag.expiry
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.trigger.tag.isReferenced
+              target_field: _ingest._value.trigger.tag.is_referenced
+              type: boolean
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.trigger.tag.isReferenced
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.trigger.tag.restricted
+              type: boolean
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.trigger.tag.restricted
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.trigger.tag.thid
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.trigger.tag.thid
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value.trigger.tag.tid
+              type: long
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value.trigger.tag.tid
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        foreach:
+          field: _ingest._value.triggeredFilters
+          ignore_failure: true
+          processor:
+            remove:
+              field: _ingest._value.trigger.tag.isReferenced
+              ignore_missing: true
+  - foreach:
+      field: json.triggeredComponents
+      if: ctx.json?.triggeredComponents instanceof List
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.triggeredFilters
+          target_field: _ingest._value.triggered_filters
+          ignore_missing: true
+  - rename:
+      field: json.triggeredComponents
+      target_field: darktrace.model_breach_alert.triggered_components
+      ignore_missing: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - darktrace.model_breach_alert.time
+        - darktrace.model_breach_alert.model.actions.antigena.action
+        - darktrace.model_breach_alert.creation_time
+        - darktrace.model_breach_alert.score
+        - darktrace.model_breach_alert.model.priority
+        - darktrace.model_breach_alert.device.did
+        - darktrace.model_breach_alert.device.mac_address
+        - darktrace.model_breach_alert.device.type_name
+        - darktrace.model_breach_alert.model.created.by
+        - darktrace.model_breach_alert.model.category
+        - darktrace.model_breach_alert.model.description
+        - darktrace.model_breach_alert.model.name
+        - darktrace.model_breach_alert.model.tags
+        - darktrace.model_breach_alert.model.uuid
+        - darktrace.model_breach_alert.model.version
+        - darktrace.model_breach_alert.mitre_techniques
+      ignore_failure: true
+      ignore_missing: true
+  - foreach:
+      field: darktrace.model_breach_alert.triggered_components
+      if: ctx.darktrace?.model_breach_alert?.triggered_components instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.time
+          ignore_missing: true
+          ignore_failure: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
