@@ -79,6 +79,14 @@ CBL Replication pull is a process by which clients download database changes fro
 
 {{fields "cbl_replication"}}
 
+### Database Stats
+
+This is the `database_stats` data stream. Database statistics provides stats relative to the database like document writes, read and received.
+
+{{event "database_stats"}}
+
+{{fields "database_stats"}}
+
 ### Delta Sync, Import, Security and GSI views
 
 This is the `miscellaneous` data stream.
