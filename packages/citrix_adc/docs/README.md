@@ -39,10 +39,10 @@ An example event for `interface` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-27T12:34:58.605Z",
+    "@timestamp": "2022-10-07T06:24:46.588Z",
     "agent": {
-        "ephemeral_id": "6a81039e-519f-461d-8e02-bf47ce75857b",
-        "id": "04786469-2ec8-4e0d-9625-c6b28809bf3b",
+        "ephemeral_id": "6bbf5dd0-e14b-4006-ac77-ee175a9e81b8",
+        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -52,7 +52,6 @@ An example event for `interface` looks as following:
             "disabled": {
                 "count": 0
             },
-            "id": "0/1",
             "link": {
                 "down_time": "00:00:11",
                 "up_time": "4.06:45:16"
@@ -154,7 +153,7 @@ An example event for `interface` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "04786469-2ec8-4e0d-9625-c6b28809bf3b",
+        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -163,9 +162,9 @@ An example event for `interface` looks as following:
         "category": [
             "web"
         ],
-        "created": "2022-09-27T12:34:58.605Z",
+        "created": "2022-10-07T06:24:46.588Z",
         "dataset": "citrix_adc.interface",
-        "ingested": "2022-09-27T12:35:02Z",
+        "ingested": "2022-10-07T06:24:50Z",
         "kind": "event",
         "module": "citrix_adc",
         "original": "{\"curintfstate\":\"UP\",\"curlinkdowntime\":\"00:00:11\",\"curlinkstate\":\"DOWN\",\"curlinkuptime\":\"4.06:45:16\",\"errdroppedrxpkts\":\"2797172\",\"errdroppedrxpktsrate\":32,\"errdroppedtxpkts\":\"0\",\"errdroppedtxpktsrate\":0,\"errifindiscards\":\"0\",\"errifindiscardsrate\":0,\"errlinkhangs\":\"0\",\"errnicmuted\":\"0\",\"errpktrx\":\"0\",\"errpktrxrate\":0,\"errpkttx\":\"0\",\"errpkttxrate\":0,\"id\":\"0/1\",\"interfacealias\":\"\",\"jumbopktsreceived\":\"0\",\"jumbopktsreceivedrate\":0,\"jumbopktstransmitted\":\"0\",\"jumbopktstransmittedrate\":0,\"linkreinits\":\"0\",\"macmovedrate\":0,\"netscalerpktsrate\":6,\"nicerrdisables\":\"0\",\"nicerrifoutdiscards\":\"0\",\"nicerrifoutdiscardsrate\":0,\"nicmulticastpktsrate\":0,\"nicrxstalls\":\"0\",\"nicstsstalls\":\"0\",\"nictotmulticastpkts\":\"278537\",\"nictxstalls\":\"0\",\"rxbytesrate\":4603,\"rxcrcerrors\":\"0\",\"rxcrcerrorsrate\":0,\"rxlacpdu\":\"0\",\"rxlacpdurate\":0,\"rxpktsrate\":38,\"totmacmoved\":\"0\",\"totnetscalerpkts\":\"2493179\",\"totrxbytes\":\"1103884064\",\"totrxpkts\":\"5396347\",\"tottxbytes\":\"776571619\",\"tottxpkts\":\"2511171\",\"trunkpktsreceived\":\"0\",\"trunkpktsreceivedrate\":0,\"trunkpktstransmitted\":\"0\",\"trunkpktstransmittedrate\":0,\"txbytesrate\":1924,\"txlacpdu\":\"0\",\"txlacpdurate\":0,\"txpktsrate\":5}",
@@ -175,6 +174,9 @@ An example event for `interface` looks as following:
     },
     "input": {
         "type": "httpjson"
+    },
+    "interface": {
+        "id": "0/1"
     },
     "tags": [
         "preserve_original_event",
@@ -190,7 +192,6 @@ An example event for `interface` looks as following:
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
 | citrix_adc.interface.disabled.count | Number of times the specified interface is disabled by the NetScaler. | float |  | counter |
-| citrix_adc.interface.id | Interface number, in C/U format. | keyword |  |  |
 | citrix_adc.interface.link.down_time | Duration for which the link is DOWN. | keyword |  |  |
 | citrix_adc.interface.link.up_time | Duration for which the link is UP. | keyword |  |  |
 | citrix_adc.interface.mac.moved.count | Number of MAC moves between ports. | float |  | counter |
@@ -239,5 +240,6 @@ An example event for `interface` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
+| interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 

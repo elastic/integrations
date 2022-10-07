@@ -8,7 +8,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: event.type
-      value: [info]
+      value: ["info"]
       ignore_failure: true
       ignore_empty_value: true
   - set:
@@ -18,7 +18,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: event.category
-      value: [web]
+      value: ["web"]
       ignore_failure: true
       ignore_empty_value: true
   - set:
@@ -51,18 +51,8 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.errdroppedrxpkts
-      target_field: citrix_adc.interface.packets.inbound.dropped.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.errdroppedrxpktsrate
       target_field: citrix_adc.interface.packets.inbound.dropped.rate
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.errdroppedtxpkts
-      target_field: citrix_adc.interface.packets.transmission.dropped.count
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -71,28 +61,13 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.errifindiscards
-      target_field: citrix_adc.interface.packets.inbound.error_free.discarded.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.errifindiscardsrate
       target_field: citrix_adc.interface.packets.inbound.error_free.discarded.rate
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.errpktrx
-      target_field: citrix_adc.interface.packets.inbound.dropped_by_hardware.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.errpktrxrate
       target_field: citrix_adc.interface.packets.inbound.dropped_by_hardware.rate
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.errpkttx
-      target_field: citrix_adc.interface.packets.outbound.dropped_by_hardware.count
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -102,12 +77,7 @@ processors:
       ignore_failure: true
   - rename:
       field: json.id
-      target_field: citrix_adc.interface.id
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.jumbopktsreceived
-      target_field: citrix_adc.interface.packets.received.jumbo.count
+      target_field: interface.id
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -116,23 +86,8 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.jumbopktstransmitted
-      target_field: citrix_adc.interface.packets.transmitted.jumbo.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.jumbopktstransmittedrate
       target_field: citrix_adc.interface.packets.transmitted.jumbo.rate
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.nicerrdisables
-      target_field: citrix_adc.interface.disabled.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.nicerrifoutdiscards
-      target_field: citrix_adc.interface.packets.outbound.error_free.discarded.count
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -141,23 +96,8 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.nicrxstalls
-      target_field: citrix_adc.interface.stalled.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.nictotmulticastpkts
-      target_field: citrix_adc.interface.packets.received.multicast.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.nicmulticastpktsrate
       target_field: citrix_adc.interface.packets.received.multicast.rate
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.totmacmoved
-      target_field: citrix_adc.interface.mac.moved.count
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -166,18 +106,8 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.tottxpkts
-      target_field: citrix_adc.interface.packets.transmitted.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.txpktsrate
       target_field: citrix_adc.interface.packets.transmitted.rate
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.totrxbytes
-      target_field: citrix_adc.interface.received.bytes.value
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -186,18 +116,8 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.totrxpkts
-      target_field: citrix_adc.interface.packets.received.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.rxpktsrate
       target_field: citrix_adc.interface.packets.received.rate
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.tottxbytes
-      target_field: citrix_adc.interface.transmitted.bytes.value
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -206,18 +126,8 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.trunkpktsreceived
-      target_field: citrix_adc.interface.packets.received.tagged.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.trunkpktsreceivedrate
       target_field: citrix_adc.interface.packets.received.tagged.rate
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.trunkpktstransmitted
-      target_field: citrix_adc.interface.packets.transmitted.tagged.count
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -230,99 +140,112 @@ processors:
       if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_missing: true
       ignore_failure: true
-  # Converting fields to float
+  # Renaming and converting fields to float
   - convert:
-      field: citrix_adc.interface.disabled.count
+      field: json.nicerrdisables
+      target_field: citrix_adc.interface.disabled.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.stalled.count
+      field: json.nicrxstalls
+      target_field: citrix_adc.interface.stalled.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.received.bytes.value
+      field: json.totrxbytes
+      target_field: citrix_adc.interface.received.bytes.value
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.transmitted.bytes.value
+      field: json.tottxbytes
+      target_field: citrix_adc.interface.transmitted.bytes.value
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.received.count
+      field: json.totrxpkts
+      target_field: citrix_adc.interface.packets.received.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.received.jumbo.count
+      field: json.jumbopktsreceived
+      target_field: citrix_adc.interface.packets.received.jumbo.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.received.tagged.count
+      field: json.trunkpktsreceived
+      target_field: citrix_adc.interface.packets.received.tagged.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.received.multicast.count
+      field: json.nictotmulticastpkts
+      target_field: citrix_adc.interface.packets.received.multicast.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.transmission.dropped.count
+      field: json.errdroppedtxpkts
+      target_field: citrix_adc.interface.packets.transmission.dropped.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.transmitted.count
+      field: json.tottxpkts
+      target_field: citrix_adc.interface.packets.transmitted.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.transmitted.jumbo.count
+      field: json.jumbopktstransmitted
+      target_field: citrix_adc.interface.packets.transmitted.jumbo.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.transmitted.tagged.count
+      field: json.trunkpktstransmitted
+      target_field: citrix_adc.interface.packets.transmitted.tagged.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.inbound.dropped.count
+      field: json.errdroppedrxpkts
+      target_field: citrix_adc.interface.packets.inbound.dropped.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.inbound.error_free.discarded.count
+      field: json.errifindiscards
+      target_field: citrix_adc.interface.packets.inbound.error_free.discarded.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.inbound.error_free.discarded.count
+      field: json.errpktrx
+      target_field: citrix_adc.interface.packets.inbound.dropped_by_hardware.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.inbound.dropped_by_hardware.count
+      field: json.errpkttx
+      target_field: citrix_adc.interface.packets.outbound.dropped_by_hardware.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.outbound.dropped_by_hardware.count
+      field: json.nicerrifoutdiscards
+      target_field: citrix_adc.interface.packets.outbound.error_free.discarded.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.interface.packets.outbound.error_free.discarded.count
-      type: float
-      ignore_missing: true
-      ignore_failure: true
-  - convert:
-      field: citrix_adc.interface.mac.moved.count
+      field: json.totmacmoved
+      target_field: citrix_adc.interface.mac.moved.count
       type: float
       ignore_missing: true
       ignore_failure: true
