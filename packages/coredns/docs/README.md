@@ -83,6 +83,7 @@ CoreDNS Query and Error logs.  The integration expects Query logs using the `com
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |
+| network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
@@ -105,3 +106,126 @@ CoreDNS Query and Error logs.  The integration expects Query logs using the `com
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
 
+
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2022-10-07T02:50:02.588Z",
+    "agent": {
+        "ephemeral_id": "7c321bdc-21a4-41a9-b385-6901d4839399",
+        "id": "1d543703-6e96-4447-8849-f48060c958a8",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.2"
+    },
+    "coredns": {
+        "log": {
+            "buffer_size": 4096,
+            "dnssec_ok": false
+        }
+    },
+    "data_stream": {
+        "dataset": "coredns.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "bytes": 65
+    },
+    "dns": {
+        "header_flags": [
+            "RD",
+            "RA"
+        ],
+        "id": "1200",
+        "question": {
+            "class": "IN",
+            "name": "google.com",
+            "registered_domain": "google.com",
+            "top_level_domain": "com",
+            "type": "A"
+        },
+        "response_code": "NOERROR"
+    },
+    "ecs": {
+        "version": "8.4.0"
+    },
+    "elastic_agent": {
+        "id": "1d543703-6e96-4447-8849-f48060c958a8",
+        "snapshot": false,
+        "version": "8.4.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "created": "2022-10-07T02:50:02.588Z",
+        "dataset": "coredns.log",
+        "duration": 16305799,
+        "ingested": "2022-10-07T02:50:04Z",
+        "kind": "event",
+        "original": "[INFO] 192.168.16.3:43573 - 1200 \"A IN google.com. udp 51 false 4096\" NOERROR qr,rd,ra 65 0.016305799s",
+        "outcome": "success",
+        "type": [
+            "protocol"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "17324e6953704d468a4643ede9e5c958",
+        "ip": [
+            "192.168.0.7"
+        ],
+        "mac": [
+            "02:42:c0:a8:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.15.0-48-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/coredns.log"
+        },
+        "level": "info",
+        "offset": 67
+    },
+    "network": {
+        "iana_number": "17",
+        "protocol": "dns",
+        "transport": "udp"
+    },
+    "related": {
+        "hosts": [
+            "google.com"
+        ],
+        "ip": [
+            "192.168.16.3"
+        ]
+    },
+    "source": {
+        "address": "192.168.16.3",
+        "bytes": 51,
+        "ip": "192.168.16.3",
+        "port": 43573
+    },
+    "tags": [
+        "preserve_original_event",
+        "coredns-log"
+    ]
+}
+```

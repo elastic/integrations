@@ -8,10 +8,10 @@ processors:
       field: event.original
       copy_from: message
       ignore_empty_value: true
-  - rename:
-      field: "@timestamp"
-      target_field: event.created
-      ignore_missing: true
+  - set:
+      field: event.created
+      copy_from: "@timestamp"
+      ignore_empty_value: true
   - pipeline:
       if: ctx.event.original.charAt(0) == (char)("{")
       name: '{{ IngestPipeline "json" }}'
@@ -24,6 +24,8 @@ processors:
   - append:
       field: event.type
       value: protocol
+  - drop:
+      if: "!ctx.message.startsWith('[')"
   - grok:
       field: message
       patterns:
@@ -51,6 +53,11 @@ processors:
       field: network.iana_number
       value: '17'
       if: ctx.network?.transport != null && ctx.network.transport == "udp"
+  - script:
+      lang: painless
+      source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+      if: ctx?.source?.bytes != null && ctx?.destination?.bytes != null && ctx?.network?.bytes == null
+      ignore_failure: true
   - set:
       field: network.protocol
       value: dns
@@ -93,11 +100,11 @@ processors:
       description: remove QR header since it is not allowed per ECS spec in 8.4.0
       if: ctx.dns?.header_flags != null && ctx.dns.header_flags instanceof List
       source: |
-        for (int i=ctx.dns.header_flags.length-1; i>=0; i--) {
-            if (ctx.dns.header_flags[i] == 'QR') {
-                ctx.dns.header_flags.remove(i);
-            }
-        }    
+        for (int i=0; i<ctx.dns.header_flags.length; i++) {
+          if (ctx.dns.header_flags[i] == 'QR') {
+            ctx.dns.header_flags.remove(i);
+          }
+        }
   - append:
       if: ctx.coredns?.log?.dnssec_ok != null && ctx.coredns.log.dnssec_ok   
       field: dns.header_flags

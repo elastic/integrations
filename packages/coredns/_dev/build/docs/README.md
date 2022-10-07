@@ -11,3 +11,5 @@ This integration is designed to read CoreDNS logs running within a Kubernetes cl
 CoreDNS Query and Error logs.  The integration expects Query logs using the `common` or `combined` Log format explain [here](https://coredns.io/plugins/log/#log-format)
 
 {{fields "log"}}
+
+{{event "log"}}
