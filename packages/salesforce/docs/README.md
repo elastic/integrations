@@ -40,8 +40,8 @@ An example event for `setupaudittrail` looks as following:
 {
     "@timestamp": "2022-08-16T09:26:38.000Z",
     "agent": {
-        "ephemeral_id": "bcd0056b-54d8-4472-91ec-479be1e1d851",
-        "id": "74e83e88-b0f6-4eaa-ab9c-ccf00abcf412",
+        "ephemeral_id": "f3d13e01-7cfb-4e01-9bbd-99e08c5157b1",
+        "id": "dbe82fcc-9eea-4080-91fe-9f4a6afa87ee",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -55,7 +55,7 @@ An example event for `setupaudittrail` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "74e83e88-b0f6-4eaa-ab9c-ccf00abcf412",
+        "id": "dbe82fcc-9eea-4080-91fe-9f4a6afa87ee",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -65,7 +65,7 @@ An example event for `setupaudittrail` looks as following:
         "created": "2022-08-16T09:26:38.000Z",
         "dataset": "salesforce.setupaudittrail",
         "id": "0Ym5j000019nwonCAA",
-        "ingested": "2022-09-28T10:07:25Z",
+        "ingested": "2022-10-04T11:43:33Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"Action\":\"insertConnectedApplication\",\"CreatedByContext\":\"Einstein\",\"CreatedById\":\"0055j000000utlPAAQ\",\"CreatedByIssuer\":null,\"CreatedDate\":\"2022-08-16T09:26:38.000+0000\",\"DelegateUser\":\"user1\",\"Display\":\"For user user@elastic.co, the User Verified Email status changed to verified\",\"Id\":\"0Ym5j000019nwonCAA\",\"ResponsibleNamespacePrefix\":\"namespaceprefix\",\"Section\":\"Connected Apps\",\"attributes\":{\"type\":\"SetupAuditTrail\",\"url\":\"/services/data/v54.0/sobjects/SetupAuditTrail/0Ym5j000019nwonCAA\"}}",
