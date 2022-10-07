@@ -711,6 +711,143 @@ An example event for `cbl_replication` looks as following:
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
 
+### Database Stats
+
+This is the `database_stats` data stream. Database statistics provides stats relative to the database like document writes, read and received.
+
+An example event for `database_stats` looks as following:
+
+```json
+{
+    "@timestamp": "2022-09-30T07:42:58.582Z",
+    "agent": {
+        "ephemeral_id": "357178ff-c390-497b-9a1a-956cb0bfd30d",
+        "id": "61e15a42-577a-47f3-81b5-e06c78c1d9ff",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.4.1"
+    },
+    "couchbase": {
+        "database_stats": {
+            "database": {
+                "name": "beer-sample"
+            },
+            "dcp": {
+                "received": {
+                    "time": 481958841497
+                }
+            },
+            "document": {
+                "reads": {
+                    "blip": 0,
+                    "rest": 0
+                },
+                "writes": 3
+            },
+            "replications": {
+                "active": 0,
+                "total": 0
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "couchbase.database_stats",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.3.0"
+    },
+    "elastic_agent": {
+        "id": "61e15a42-577a-47f3-81b5-e06c78c1d9ff",
+        "snapshot": false,
+        "version": "8.4.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "dataset": "couchbase.database_stats",
+        "duration": 602572504,
+        "ingested": "2022-09-30T07:43:02Z",
+        "kind": "metric",
+        "module": "couchbase",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "51511c1493f34922b559a964798246ec",
+        "ip": [
+            "172.23.0.7"
+        ],
+        "mac": [
+            "02:42:ac:17:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-126-generic",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "collector",
+        "period": 10000
+    },
+    "server": {
+        "address": "elastic-package-service_exporter_1:9421"
+    },
+    "service": {
+        "address": "http://elastic-package-service_exporter_1:9421/metrics",
+        "type": "prometheus"
+    },
+    "tags": [
+        "forwarded",
+        "couchbase-database_stats",
+        "prometheus"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| couchbase.database_stats.database.name | The database for which the data is being extracted. | keyword |  |  |
+| couchbase.database_stats.dcp.received.time | The time between a document write and that document being received by Sync Gateway over DCP. | long | s | gauge |
+| couchbase.database_stats.document.reads.blip | The total number of documents read via Couchbase Lite 2.x replication since Sync Gateway node startup. | long |  | counter |
+| couchbase.database_stats.document.reads.rest | The total number of documents read via the REST API since Sync Gateway node startup. | long |  | counter |
+| couchbase.database_stats.document.writes | The total number of documents written by any means (replication, rest API interaction or imports) since Sync Gateway node startup. | long |  | counter |
+| couchbase.database_stats.replications.active | The total number of active replications. | long |  | gauge |
+| couchbase.database_stats.replications.total | The total number of replications created since Sync Gateway node startup. | long |  | counter |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |  |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
+
 ### Delta Sync, Import, Security and GSI views
 
 This is the `miscellaneous` data stream.
