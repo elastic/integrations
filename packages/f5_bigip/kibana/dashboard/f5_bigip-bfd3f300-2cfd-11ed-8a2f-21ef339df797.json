@@ -4,10 +4,53 @@
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "f5_bigip.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "f5_bigip.log"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "f5_bigip.log.telemetry.event.category",
+                            "negate": false,
+                            "params": {
+                                "query": "LTM"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "f5_bigip.log.telemetry.event.category": "LTM"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"LTM\""
+                    "query": ""
                 }
             }
         },
@@ -79,7 +122,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"LTM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -177,7 +220,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"LTM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -278,7 +321,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"LTM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -390,7 +433,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"LTM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -455,7 +498,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "HTTP Status Code",
+                                                    "label": "HTTP Status",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -468,7 +511,7 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "http.response.status_code"
+                                                    "sourceField": "f5_bigip.log.http.status"
                                                 },
                                                 "be382677-c8b2-433c-ac91-bce8c5f572b9": {
                                                     "customLabel": true,
@@ -488,7 +531,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"LTM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -523,7 +566,7 @@
                     "y": 30
                 },
                 "panelIndex": "6b1404bb-0cff-4602-9df3-a951b57e8dca",
-                "title": "Distribution of LTM Events by HTTP Status Code [Logs F5 BIG-IP]",
+                "title": "Distribution of LTM Events by HTTP Status [Logs F5 BIG-IP]",
                 "type": "lens",
                 "version": "7.17.0"
             },
@@ -589,7 +632,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"LTM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -639,6 +682,16 @@
         "dashboard": "7.17.0"
     },
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "2466d169-11d1-4d4b-8335-7f07811dc474:indexpattern-datasource-current-indexpattern",

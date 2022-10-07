@@ -7,6 +7,7 @@ processors:
       if: ctx.json?.event_timestamp != null && ctx.json.event_timestamp != ''
       formats:
         - yyyy-MM-dd:HH:mm:ss.SSSz
+        - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
       on_failure:
       - append:
           field: error.message
@@ -50,20 +51,10 @@ processors:
       field: http.request.referrer
       copy_from: f5_bigip.log.http.referrer
       ignore_failure: true
-  - convert:
+  - rename:
       field: json.http_status
       target_field: f5_bigip.log.http.status
-      if: ctx.json?.http_status != ''
-      type: long
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - set:
-      field: http.response.status_code
-      copy_from: f5_bigip.log.http.status
-      ignore_failure: true
   - rename:
       field: json.http_version
       target_field: f5_bigip.log.http.version
@@ -121,17 +112,6 @@ processors:
             field: user_agent.original
             copy_from: f5_bigip.log.http.user.agent
             ignore_failure: true
-  - rename:
-      field: json.application
-      target_field: f5_bigip.log.application.name
-      ignore_missing: true
-  - set:
-      field: network.application
-      copy_from: f5_bigip.log.application.name
-      ignore_failure: true
-  - lowercase:
-      field: network.application
-      ignore_failure: true
   - rename:
       field: json.event_source
       target_field: f5_bigip.log.event.source
@@ -289,20 +269,10 @@ processors:
       value: '{{{user.name}}}'
       allow_duplicates: false
       ignore_failure: true
-  - convert:
+  - rename:
       field: json.vip
       target_field: f5_bigip.log.vip
-      type: ip
       ignore_missing: true
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{f5_bigip.log.vip}}}'
-      allow_duplicates: false
-      ignore_failure: true
   - rename:
       field: json.virtual_server
       target_field: f5_bigip.log.virtual.server
@@ -318,7 +288,6 @@ processors:
         - f5_bigip.log.hostname
         - f5_bigip.log.http.method
         - f5_bigip.log.http.referrer
-        - f5_bigip.log.http.status
         - f5_bigip.log.http.version
         - f5_bigip.log.server.ip
         - f5_bigip.log.src.ip

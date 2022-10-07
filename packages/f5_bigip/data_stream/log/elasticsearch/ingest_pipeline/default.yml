@@ -34,6 +34,17 @@ processors:
       value: '{{{host.name}}}'
       allow_duplicates: false
       ignore_failure: true
+  - rename:
+      field: json.application
+      target_field: f5_bigip.log.application.name
+      ignore_missing: true
+  - set:
+      field: network.application
+      copy_from: f5_bigip.log.application.name
+      ignore_failure: true
+  - lowercase:
+      field: network.application
+      ignore_failure: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_bigipltm" }}'
       if: ctx.json?.telemetryEventCategory == "LTM"

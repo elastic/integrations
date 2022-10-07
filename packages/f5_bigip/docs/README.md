@@ -161,9 +161,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-11-19T22:34:40.000Z",
     "agent": {
-        "ephemeral_id": "d07236a1-b4b4-4ded-ab30-dd913f34d104",
+        "ephemeral_id": "800e2fed-584f-4e98-9d72-d90d517f3cba",
         "hostname": "docker-fleet-agent",
-        "id": "c071ce06-9eec-480a-bfdf-9b7facbc9a64",
+        "id": "34a7fb75-cbfb-415d-9c8b-30cf820fe53e",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -184,7 +184,7 @@ An example event for `log` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "c071ce06-9eec-480a-bfdf-9b7facbc9a64",
+        "id": "34a7fb75-cbfb-415d-9c8b-30cf820fe53e",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -194,7 +194,7 @@ An example event for `log` looks as following:
             "network"
         ],
         "dataset": "f5_bigip.log",
-        "ingested": "2022-09-20T10:17:01Z",
+        "ingested": "2022-10-04T11:36:26Z",
         "kind": "event",
         "original": "{\"application\":\"app.app\",\"attack_type\":\"Detection Evasion\",\"blocking_exception_reason\":\"test\",\"captcha_result\":\"not_received\",\"date_time\":\"2018-11-19 22:34:40\",\"dest_ip\":\"81.2.69.142\",\"dest_port\":\"80\",\"device_id\":\"12bdca32\",\"fragment\":\"test_Fragment\",\"geo_location\":\"US\",\"hostname\":\"hostname\",\"http_class_name\":\"/Common/abc/test\",\"ip_address_intelligence\":\"host1\",\"ip_client\":\"81.2.69.142\",\"management_ip_address\":\"81.2.69.142\",\"management_ip_address_2\":\"81.2.69.144\",\"method\":\"GET\",\"policy_apply_date\":\"2018-11-19 22:17:57\",\"policy_name\":\"/Common/abc\",\"protocol\":\"HTTP\",\"query_string\":\"name=abc\",\"request\":\"GET /admin/.\",\"request_status\":\"blocked\",\"response_code\":\"0\",\"route_domain\":\"example.com\",\"session_id\":\"abc123abcd\",\"severity\":\"Critical\",\"sig_ids\":\"abc12bcd\",\"sig_names\":\"Sig_Name\",\"src_port\":\"49804\",\"staged_sig_ids\":\"abc23121bc\",\"staged_sig_names\":\"test_name\",\"staged_threat_campaign_names\":\"test\",\"sub_violations\":\"Evasion technique detected:Directory traversals\",\"support_id\":\"123456789\",\"telemetryEventCategory\":\"ASM\",\"tenant\":\"Common\",\"threat_campaign_names\":\"threat\",\"uri\":\"/directory/file\",\"username\":\"test User\",\"violation_rating\":\"3\",\"violations\":\"Evasion technique detected\",\"virus_name\":\"test Virus\",\"web_application_name\":\"/Common/abc\",\"websocket_direction\":\"test\",\"websocket_message_type\":\"test\",\"x_forwarded_for_header_value\":\"81.2.69.144\"}",
         "type": [
@@ -365,7 +365,7 @@ An example event for `log` looks as following:
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "f5_bigip_log"
+        "f5_bigip-log"
     ],
     "user": {
         "name": "test User"
@@ -410,6 +410,9 @@ An example event for `log` looks as following:
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| f5_bigip.log.abandoned_conns |  | long |
+| f5_bigip.log.accept_fails |  | long |
+| f5_bigip.log.accepts |  | long |
 | f5_bigip.log.access.policy.result |  | keyword |
 | f5_bigip.log.access.profile |  | keyword |
 | f5_bigip.log.acl.policy.name |  | keyword |
@@ -417,6 +420,7 @@ An example event for `log` looks as following:
 | f5_bigip.log.acl.rule.name |  | keyword |
 | f5_bigip.log.acl.rule.uuid |  | keyword |
 | f5_bigip.log.action |  | keyword |
+| f5_bigip.log.active_conns |  | long |
 | f5_bigip.log.aggr.interval |  | long |
 | f5_bigip.log.application.name |  | keyword |
 | f5_bigip.log.application.response.max_time |  | long |
@@ -438,6 +442,7 @@ An example event for `log` looks as following:
 | f5_bigip.log.browser.name |  | keyword |
 | f5_bigip.log.bytes.in |  | long |
 | f5_bigip.log.bytes.out |  | long |
+| f5_bigip.log.bytes.total |  | long |
 | f5_bigip.log.captcha.result |  | keyword |
 | f5_bigip.log.client.ip |  | ip |
 | f5_bigip.log.client.latency.hit.count |  | long |
@@ -451,11 +456,19 @@ An example event for `log` looks as following:
 | f5_bigip.log.clientttfb.max |  | long |
 | f5_bigip.log.clientttfb.min |  | long |
 | f5_bigip.log.clientttfb.value |  | long |
+| f5_bigip.log.concurrent.connections.avg |  | long |
+| f5_bigip.log.concurrent.connections.health |  | long |
+| f5_bigip.log.concurrent.connections.max |  | long |
 | f5_bigip.log.concurrent.users.max |  | long |
 | f5_bigip.log.context.name |  | keyword |
 | f5_bigip.log.context.type |  | keyword |
 | f5_bigip.log.cookie |  | keyword |
 | f5_bigip.log.country.code |  | keyword |
+| f5_bigip.log.cpu.analysis_plane.avg |  | long |
+| f5_bigip.log.cpu.avg |  | long |
+| f5_bigip.log.cpu.control_plane.avg |  | long |
+| f5_bigip.log.cpu.data_plane.avg |  | long |
+| f5_bigip.log.cpu.health |  | long |
 | f5_bigip.log.date_time |  | date |
 | f5_bigip.log.dest.fqdn |  | keyword |
 | f5_bigip.log.dest.ip |  | ip |
@@ -481,6 +494,8 @@ An example event for `log` looks as following:
 | f5_bigip.log.event.source |  | keyword |
 | f5_bigip.log.event.timestamp |  | date |
 | f5_bigip.log.events.total |  | long |
+| f5_bigip.log.expired_conns |  | long |
+| f5_bigip.log.failed_conns |  | long |
 | f5_bigip.log.flow.id |  | keyword |
 | f5_bigip.log.fragment |  | keyword |
 | f5_bigip.log.geo.code |  | keyword |
@@ -497,11 +512,12 @@ An example event for `log` looks as following:
 | f5_bigip.log.http.host |  | keyword |
 | f5_bigip.log.http.method |  | keyword |
 | f5_bigip.log.http.referrer |  | keyword |
-| f5_bigip.log.http.status |  | long |
+| f5_bigip.log.http.status |  | keyword |
 | f5_bigip.log.http.uri |  | keyword |
 | f5_bigip.log.http.url |  | keyword |
 | f5_bigip.log.http.user.agent |  | keyword |
 | f5_bigip.log.http.version |  | keyword |
+| f5_bigip.log.hw_cookie_valid |  | long |
 | f5_bigip.log.ip.protocol |  | keyword |
 | f5_bigip.log.ip.reputation |  | keyword |
 | f5_bigip.log.ip.route.domain |  | keyword |
@@ -513,12 +529,17 @@ An example event for `log` looks as following:
 | f5_bigip.log.latency.histogram |  | keyword |
 | f5_bigip.log.management.ip.address |  | ip |
 | f5_bigip.log.management.ip.address_2 |  | ip |
+| f5_bigip.log.max_active_conns |  | long |
+| f5_bigip.log.memory.avg |  | long |
+| f5_bigip.log.memory.health |  | long |
 | f5_bigip.log.method |  | keyword |
 | f5_bigip.log.mgmt.ip |  | ip |
+| f5_bigip.log.microservice |  | keyword |
 | f5_bigip.log.mitigation.max |  | long |
 | f5_bigip.log.mitigation.min |  | long |
 | f5_bigip.log.module |  | keyword |
 | f5_bigip.log.network.protocol |  | keyword |
+| f5_bigip.log.new_conns |  | long |
 | f5_bigip.log.node |  | ip |
 | f5_bigip.log.node_port |  | long |
 | f5_bigip.log.object.tags.list |  | keyword |
@@ -550,7 +571,14 @@ An example event for `log` looks as following:
 | f5_bigip.log.response.duration |  | long |
 | f5_bigip.log.response.max_duration |  | long |
 | f5_bigip.log.response.min_duration |  | long |
+| f5_bigip.log.response.value |  | keyword |
 | f5_bigip.log.route.domain |  | keyword |
+| f5_bigip.log.rxbad_cookie |  | long |
+| f5_bigip.log.rxbadseg |  | long |
+| f5_bigip.log.rxbadsum |  | long |
+| f5_bigip.log.rxcookie |  | long |
+| f5_bigip.log.rxooseg |  | long |
+| f5_bigip.log.rxrst |  | long |
 | f5_bigip.log.sa.translation.pool |  | keyword |
 | f5_bigip.log.sa.translation.type |  | keyword |
 | f5_bigip.log.send_to.vs |  | keyword |
@@ -565,9 +593,11 @@ An example event for `log` looks as following:
 | f5_bigip.log.session.id |  | keyword |
 | f5_bigip.log.severity.code |  | long |
 | f5_bigip.log.severity.name |  | keyword |
+| f5_bigip.log.sig.cves |  | keyword |
 | f5_bigip.log.sig.ids |  | keyword |
 | f5_bigip.log.sig.names |  | keyword |
 | f5_bigip.log.slot.id |  | keyword |
+| f5_bigip.log.sndpack |  | long |
 | f5_bigip.log.software.drops |  | long |
 | f5_bigip.log.sos.application.response.time |  | long |
 | f5_bigip.log.sos.clientside.network.latency |  | long |
@@ -586,6 +616,7 @@ An example event for `log` looks as following:
 | f5_bigip.log.src.ip |  | ip |
 | f5_bigip.log.src.port |  | long |
 | f5_bigip.log.src.zone |  | keyword |
+| f5_bigip.log.staged.sig.cves |  | keyword |
 | f5_bigip.log.staged.sig.ids |  | keyword |
 | f5_bigip.log.staged.sig.names |  | keyword |
 | f5_bigip.log.staged.threat_campaign.names |  | keyword |
@@ -595,10 +626,16 @@ An example event for `log` looks as following:
 | f5_bigip.log.subnet.name |  | keyword |
 | f5_bigip.log.subnet.route.domain |  | keyword |
 | f5_bigip.log.support.id |  | keyword |
+| f5_bigip.log.syncacheover |  | long |
+| f5_bigip.log.tap.event_id |  | keyword |
+| f5_bigip.log.tap.vid |  | keyword |
+| f5_bigip.log.tcp_prof |  | keyword |
 | f5_bigip.log.telemetry.event.category |  | keyword |
 | f5_bigip.log.telemetry.timestamp |  | date |
 | f5_bigip.log.tenant |  | keyword |
 | f5_bigip.log.threat_campaign.names |  | keyword |
+| f5_bigip.log.throughput.avg |  | long |
+| f5_bigip.log.throughput.health |  | long |
 | f5_bigip.log.throughput.reqperinterval.total |  | long |
 | f5_bigip.log.throughput.reqpersec.max |  | long |
 | f5_bigip.log.throughput.respperinterval.total |  | long |
@@ -612,6 +649,7 @@ An example event for `log` looks as following:
 | f5_bigip.log.translated.source.ip |  | ip |
 | f5_bigip.log.translated.source.port |  | long |
 | f5_bigip.log.translated.vlan |  | keyword |
+| f5_bigip.log.txrexmits |  | long |
 | f5_bigip.log.unit.host |  | keyword |
 | f5_bigip.log.uri |  | keyword |
 | f5_bigip.log.url |  | keyword |
@@ -622,7 +660,7 @@ An example event for `log` looks as following:
 | f5_bigip.log.violate.details |  | keyword |
 | f5_bigip.log.violation.rating |  | long |
 | f5_bigip.log.violations |  | keyword |
-| f5_bigip.log.vip |  | ip |
+| f5_bigip.log.vip |  | keyword |
 | f5_bigip.log.virtual.name |  | keyword |
 | f5_bigip.log.virtual.server |  | keyword |
 | f5_bigip.log.virus.name |  | keyword |

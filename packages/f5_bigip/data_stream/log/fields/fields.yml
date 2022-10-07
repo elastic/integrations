@@ -1,6 +1,12 @@
 - name: f5_bigip.log
   type: group
   fields:
+    - name: abandoned_conns
+      type: long
+    - name: accept_fails
+      type: long
+    - name: accepts
+      type: long
     - name: access
       type: group
       fields:
@@ -30,6 +36,8 @@
               type: keyword
     - name: action
       type: keyword
+    - name: active_conns
+      type: long
     - name: aggr
       type: group
       fields:
@@ -114,6 +122,8 @@
           type: long
         - name: out
           type: long
+        - name: total
+          type: long
     - name: captcha
       type: group
       fields:
@@ -173,6 +183,15 @@
     - name: concurrent
       type: group
       fields:
+        - name: connections
+          type: group
+          fields:
+            - name: avg
+              type: long
+            - name: health
+              type: long
+            - name: max
+              type: long
         - name: users
           type: group
           fields:
@@ -192,6 +211,28 @@
       fields:
         - name: code
           type: keyword
+    - name: cpu
+      type: group
+      fields:
+        - name: analysis_plane
+          type: group
+          fields:
+            - name: avg
+              type: long
+        - name: avg
+          type: long
+        - name: control_plane
+          type: group
+          fields:
+            - name: avg
+              type: long
+        - name: data_plane
+          type: group
+          fields:
+            - name: avg
+              type: long
+        - name: health
+          type: long
     - name: date_time
       type: date
     - name: dest
@@ -281,6 +322,10 @@
       fields:
         - name: total
           type: long
+    - name: expired_conns
+      type: long
+    - name: failed_conns
+      type: long
     - name: flow
       type: group
       fields:
@@ -341,7 +386,7 @@
         - name: referrer
           type: keyword
         - name: status
-          type: long
+          type: keyword
         - name: uri
           type: keyword
         - name: url
@@ -353,6 +398,8 @@
               type: keyword
         - name: version
           type: keyword
+    - name: hw_cookie_valid
+      type: long
     - name: ip_address
       type: group
       fields:
@@ -393,6 +440,15 @@
               type: ip
             - name: address_2
               type: ip
+    - name: max_active_conns
+      type: long
+    - name: memory
+      type: group
+      fields:
+        - name: avg
+          type: long
+        - name: health
+          type: long
     - name: method
       type: keyword
     - name: mgmt
@@ -400,6 +456,8 @@
       fields:
         - name: ip
           type: ip
+    - name: microservice
+      type: keyword
     - name: mitigation
       type: group
       fields:
@@ -414,6 +472,8 @@
       fields:
         - name: protocol
           type: keyword
+    - name: new_conns
+      type: long
     - name: node
       type: ip
     - name: node_port
@@ -520,11 +580,25 @@
           type: long
         - name: min_duration
           type: long
+        - name: value
+          type: keyword
     - name: route
       type: group
       fields:
         - name: domain
           type: keyword
+    - name: rxbad_cookie
+      type: long
+    - name: rxbadseg
+      type: long
+    - name: rxbadsum
+      type: long
+    - name: rxcookie
+      type: long
+    - name: rxooseg
+      type: long
+    - name: rxrst
+      type: long
     - name: sa
       type: group
       fields:
@@ -586,6 +660,8 @@
     - name: sig
       type: group
       fields:
+        - name: cves
+          type: keyword
         - name: ids
           type: keyword
         - name: names
@@ -595,6 +671,8 @@
       fields:
         - name: id
           type: keyword
+    - name: sndpack
+      type: long
     - name: software
       type: group
       fields:
@@ -679,6 +757,8 @@
         - name: sig
           type: group
           fields:
+            - name: cves
+              type: keyword
             - name: ids
               type: keyword
             - name: names
@@ -709,6 +789,17 @@
       fields:
         - name: id
           type: keyword
+    - name: syncacheover
+      type: long
+    - name: tap
+      type: group
+      fields:
+        - name: event_id
+          type: keyword
+        - name: vid
+          type: keyword
+    - name: tcp_prof
+      type: keyword
     - name: telemetry
       type: group
       fields:
@@ -729,6 +820,10 @@
     - name: throughput
       type: group
       fields:
+        - name: avg
+          type: long
+        - name: health
+          type: long
         - name: reqperinterval
           type: group
           fields:
@@ -788,6 +883,8 @@
               type: long
         - name: vlan
           type: keyword
+    - name: txrexmits
+      type: long
     - name: unit
       type: group
       fields:
@@ -824,7 +921,7 @@
     - name: violations
       type: keyword
     - name: vip
-      type: ip
+      type: keyword
     - name: virtual
       type: group
       fields:

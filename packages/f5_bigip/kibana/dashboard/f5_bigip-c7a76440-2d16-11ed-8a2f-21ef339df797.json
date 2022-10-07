@@ -4,10 +4,53 @@
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "f5_bigip.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "f5_bigip.log"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "f5_bigip.log.telemetry.event.category",
+                            "negate": false,
+                            "params": {
+                                "query": "ASM"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "f5_bigip.log.telemetry.event.category": "ASM"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"ASM\""
+                    "query": ""
                 }
             }
         },
@@ -79,7 +122,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"ASM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -131,6 +174,11 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-c84f5e5e-48c0-43f2-b7bb-928361b32b7a",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-index-pattern-0",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -177,10 +225,32 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "indexRefName": "filter-index-pattern-0",
+                                        "key": "user.name",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "N/A"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "user.name": "N/A"
+                                        }
+                                    }
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"ASM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -213,320 +283,6 @@
                 },
                 "panelIndex": "d5916251-792b-4ced-ba08-c8fa8e56a3ca",
                 "title": "Top 10 User Name [Logs F5 BIG-IP]",
-                "type": "lens",
-                "version": "7.17.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-7203bfea-3456-40f3-9e34-1cafe2514d1d",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "7203bfea-3456-40f3-9e34-1cafe2514d1d": {
-                                            "columnOrder": [
-                                                "b9f9dcc3-3815-4ca7-b4a4-ad3b824e8333",
-                                                "1231d7ef-7d69-4b73-a529-58461d9e663a"
-                                            ],
-                                            "columns": {
-                                                "1231d7ef-7d69-4b73-a529-58461d9e663a": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "Records"
-                                                },
-                                                "b9f9dcc3-3815-4ca7-b4a4-ad3b824e8333": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Request Status",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "1231d7ef-7d69-4b73-a529-58461d9e663a",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "f5_bigip.log.request_status"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"ASM\""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "1231d7ef-7d69-4b73-a529-58461d9e663a"
-                                        ],
-                                        "layerId": "7203bfea-3456-40f3-9e34-1cafe2514d1d",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_stacked",
-                                        "showGridlines": false,
-                                        "xAccessor": "b9f9dcc3-3815-4ca7-b4a4-ad3b824e8333"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide",
-                                "yLeftExtent": {
-                                    "mode": "full"
-                                },
-                                "yRightExtent": {
-                                    "mode": "full"
-                                }
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "da6cf3fc-e580-4113-9a34-8656a2f28234",
-                    "w": 24,
-                    "x": 0,
-                    "y": 15
-                },
-                "panelIndex": "da6cf3fc-e580-4113-9a34-8656a2f28234",
-                "title": "Distribution of ASM Events by Request Status [Logs F5 BIG-IP]",
-                "type": "lens",
-                "version": "7.17.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-1ccbd60e-a364-4760-8ed4-ee98562712f2",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "1ccbd60e-a364-4760-8ed4-ee98562712f2": {
-                                            "columnOrder": [
-                                                "ff9b05ca-94f0-42f2-b6c1-be573e1bf0a5",
-                                                "0311c3fb-966f-42e3-8cfe-433d96133e87"
-                                            ],
-                                            "columns": {
-                                                "0311c3fb-966f-42e3-8cfe-433d96133e87": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "Records"
-                                                },
-                                                "ff9b05ca-94f0-42f2-b6c1-be573e1bf0a5": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Attack Type",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "0311c3fb-966f-42e3-8cfe-433d96133e87",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "f5_bigip.log.attack.type"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"ASM\""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "groups": [
-                                            "ff9b05ca-94f0-42f2-b6c1-be573e1bf0a5"
-                                        ],
-                                        "layerId": "1ccbd60e-a364-4760-8ed4-ee98562712f2",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metric": "0311c3fb-966f-42e3-8cfe-433d96133e87",
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent"
-                                    }
-                                ],
-                                "shape": "pie"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "15194ac8-2a72-4697-bad1-b99eaa111463",
-                    "w": 24,
-                    "x": 24,
-                    "y": 15
-                },
-                "panelIndex": "15194ac8-2a72-4697-bad1-b99eaa111463",
-                "title": "Distribution of ASM Events by Attack Type [Logs F5 BIG-IP]",
-                "type": "lens",
-                "version": "7.17.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-34b8ab3c-1099-4828-b2dc-bc60faec076e",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "34b8ab3c-1099-4828-b2dc-bc60faec076e": {
-                                            "columnOrder": [
-                                                "c0a13c96-4b90-4234-bfb2-6e767038d6ff",
-                                                "f0df6ed2-b311-4b72-80b1-409b4bc30b34"
-                                            ],
-                                            "columns": {
-                                                "c0a13c96-4b90-4234-bfb2-6e767038d6ff": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Virus Name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "f0df6ed2-b311-4b72-80b1-409b4bc30b34",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "f5_bigip.log.virus.name"
-                                                },
-                                                "f0df6ed2-b311-4b72-80b1-409b4bc30b34": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "Records"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"ASM\""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "groups": [
-                                            "c0a13c96-4b90-4234-bfb2-6e767038d6ff"
-                                        ],
-                                        "layerId": "34b8ab3c-1099-4828-b2dc-bc60faec076e",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metric": "f0df6ed2-b311-4b72-80b1-409b4bc30b34",
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent"
-                                    }
-                                ],
-                                "shape": "pie"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "d29afaad-97f4-49d8-b3d2-01ae5e9e9e2f",
-                    "w": 24,
-                    "x": 0,
-                    "y": 30
-                },
-                "panelIndex": "d29afaad-97f4-49d8-b3d2-01ae5e9e9e2f",
-                "title": "Distribution of ASM Events by Virus Name [Logs F5 BIG-IP]",
                 "type": "lens",
                 "version": "7.17.0"
             },
@@ -592,7 +348,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"ASM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -620,11 +376,426 @@
                     "h": 15,
                     "i": "b0926d06-1b6b-4c14-8f1b-fb9f04eba074",
                     "w": 24,
-                    "x": 24,
-                    "y": 30
+                    "x": 0,
+                    "y": 15
                 },
                 "panelIndex": "b0926d06-1b6b-4c14-8f1b-fb9f04eba074",
                 "title": "Top 10 Host Name [Logs F5 BIG-IP]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7203bfea-3456-40f3-9e34-1cafe2514d1d",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "7203bfea-3456-40f3-9e34-1cafe2514d1d": {
+                                            "columnOrder": [
+                                                "b9f9dcc3-3815-4ca7-b4a4-ad3b824e8333",
+                                                "1231d7ef-7d69-4b73-a529-58461d9e663a"
+                                            ],
+                                            "columns": {
+                                                "1231d7ef-7d69-4b73-a529-58461d9e663a": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "b9f9dcc3-3815-4ca7-b4a4-ad3b824e8333": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Request Status",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "1231d7ef-7d69-4b73-a529-58461d9e663a",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "f5_bigip.log.request_status"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "1231d7ef-7d69-4b73-a529-58461d9e663a"
+                                        ],
+                                        "layerId": "7203bfea-3456-40f3-9e34-1cafe2514d1d",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "b9f9dcc3-3815-4ca7-b4a4-ad3b824e8333"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "da6cf3fc-e580-4113-9a34-8656a2f28234",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "da6cf3fc-e580-4113-9a34-8656a2f28234",
+                "title": "Distribution of ASM Events by Request Status [Logs F5 BIG-IP]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-34b8ab3c-1099-4828-b2dc-bc60faec076e",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "34b8ab3c-1099-4828-b2dc-bc60faec076e": {
+                                            "columnOrder": [
+                                                "c0a13c96-4b90-4234-bfb2-6e767038d6ff",
+                                                "f0df6ed2-b311-4b72-80b1-409b4bc30b34"
+                                            ],
+                                            "columns": {
+                                                "c0a13c96-4b90-4234-bfb2-6e767038d6ff": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Virus Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f0df6ed2-b311-4b72-80b1-409b4bc30b34",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "f5_bigip.log.virus.name"
+                                                },
+                                                "f0df6ed2-b311-4b72-80b1-409b4bc30b34": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "c0a13c96-4b90-4234-bfb2-6e767038d6ff"
+                                        ],
+                                        "layerId": "34b8ab3c-1099-4828-b2dc-bc60faec076e",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "f0df6ed2-b311-4b72-80b1-409b4bc30b34",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "d29afaad-97f4-49d8-b3d2-01ae5e9e9e2f",
+                    "w": 17,
+                    "x": 0,
+                    "y": 30
+                },
+                "panelIndex": "d29afaad-97f4-49d8-b3d2-01ae5e9e9e2f",
+                "title": "Distribution of ASM Events by Virus Name [Logs F5 BIG-IP]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-1ccbd60e-a364-4760-8ed4-ee98562712f2",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "1ccbd60e-a364-4760-8ed4-ee98562712f2": {
+                                            "columnOrder": [
+                                                "ff9b05ca-94f0-42f2-b6c1-be573e1bf0a5",
+                                                "0311c3fb-966f-42e3-8cfe-433d96133e87"
+                                            ],
+                                            "columns": {
+                                                "0311c3fb-966f-42e3-8cfe-433d96133e87": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "ff9b05ca-94f0-42f2-b6c1-be573e1bf0a5": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Attack Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0311c3fb-966f-42e3-8cfe-433d96133e87",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "f5_bigip.log.attack.type"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "ff9b05ca-94f0-42f2-b6c1-be573e1bf0a5"
+                                        ],
+                                        "layerId": "1ccbd60e-a364-4760-8ed4-ee98562712f2",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "0311c3fb-966f-42e3-8cfe-433d96133e87",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "15194ac8-2a72-4697-bad1-b99eaa111463",
+                    "w": 16,
+                    "x": 17,
+                    "y": 30
+                },
+                "panelIndex": "15194ac8-2a72-4697-bad1-b99eaa111463",
+                "title": "Distribution of ASM Events by Attack Type [Logs F5 BIG-IP]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-2ec6dace-e947-4f9b-9098-abc94d8e7886",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "2ec6dace-e947-4f9b-9098-abc94d8e7886": {
+                                            "columnOrder": [
+                                                "3b1713b2-3cab-4823-bdba-0d15090cad64",
+                                                "4857a363-7302-4713-b219-fc806ae65a57"
+                                            ],
+                                            "columns": {
+                                                "3b1713b2-3cab-4823-bdba-0d15090cad64": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": true,
+                                                    "label": "Response Status Code",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "4857a363-7302-4713-b219-fc806ae65a57",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "f5_bigip.log.response.code"
+                                                },
+                                                "4857a363-7302-4713-b219-fc806ae65a57": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "3b1713b2-3cab-4823-bdba-0d15090cad64"
+                                        ],
+                                        "layerId": "2ec6dace-e947-4f9b-9098-abc94d8e7886",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "4857a363-7302-4713-b219-fc806ae65a57",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "62416a41-27e8-4dcc-8eb2-aa619f6ba3b9",
+                    "w": 15,
+                    "x": 33,
+                    "y": 30
+                },
+                "panelIndex": "62416a41-27e8-4dcc-8eb2-aa619f6ba3b9",
+                "title": "Distribution of ASM Events by Response Status Code [Logs F5 BIG-IP]",
                 "type": "lens",
                 "version": "7.17.0"
             },
@@ -690,7 +861,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"ASM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -802,7 +973,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"f5_bigip.log\" and f5_bigip.log.telemetry.event.category : \"ASM\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -888,6 +1059,16 @@
     "references": [
         {
             "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "f6288292-7fa2-4706-a5ad-df2bf822bb01:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
@@ -908,22 +1089,27 @@
         },
         {
             "id": "logs-*",
+            "name": "d5916251-792b-4ced-ba08-c8fa8e56a3ca:filter-index-pattern-0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b0926d06-1b6b-4c14-8f1b-fb9f04eba074:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b0926d06-1b6b-4c14-8f1b-fb9f04eba074:indexpattern-datasource-layer-c1923ee9-926c-499d-81cf-b899b4087028",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "da6cf3fc-e580-4113-9a34-8656a2f28234:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "da6cf3fc-e580-4113-9a34-8656a2f28234:indexpattern-datasource-layer-7203bfea-3456-40f3-9e34-1cafe2514d1d",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "15194ac8-2a72-4697-bad1-b99eaa111463:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "15194ac8-2a72-4697-bad1-b99eaa111463:indexpattern-datasource-layer-1ccbd60e-a364-4760-8ed4-ee98562712f2",
             "type": "index-pattern"
         },
         {
@@ -938,12 +1124,22 @@
         },
         {
             "id": "logs-*",
-            "name": "b0926d06-1b6b-4c14-8f1b-fb9f04eba074:indexpattern-datasource-current-indexpattern",
+            "name": "15194ac8-2a72-4697-bad1-b99eaa111463:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "b0926d06-1b6b-4c14-8f1b-fb9f04eba074:indexpattern-datasource-layer-c1923ee9-926c-499d-81cf-b899b4087028",
+            "name": "15194ac8-2a72-4697-bad1-b99eaa111463:indexpattern-datasource-layer-1ccbd60e-a364-4760-8ed4-ee98562712f2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "62416a41-27e8-4dcc-8eb2-aa619f6ba3b9:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "62416a41-27e8-4dcc-8eb2-aa619f6ba3b9:indexpattern-datasource-layer-2ec6dace-e947-4f9b-9098-abc94d8e7886",
             "type": "index-pattern"
         },
         {
