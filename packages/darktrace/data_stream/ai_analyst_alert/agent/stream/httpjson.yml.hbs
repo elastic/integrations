@@ -1,0 +1,50 @@
+config_version: 2
+interval: {{interval}}
+request.method: GET
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.url: {{url}}/aianalyst/incidentevents?includeacknowledged=true&includeincidenteventurl=true
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: header.DTAPI-Token
+      value: {{public_token}}
+  - set:
+      target: header.DTAPI-Date
+      value: '[[formatDate (now) "20060102T150405"]]'
+  - set:
+      target: url.params.starttime
+      value: '[[.cursor.last_execution_datetime]]'
+      default: '[[(now (parseDuration "-{{initial_interval}}")).UnixMilli]]'
+  - set:
+      target: url.params.endtime
+      value: '[[(now).UnixMilli]]'
+  - set:
+      target: header.DTAPI-Signature
+      value: '[[hmac "sha1" "{{private_token}}" (sprintf "%s?%s\n%s\n%s" .url.Path .url.RawQuery "{{public_token}}" (formatDate (now) "20060102T150405"))]]'
+cursor:
+  last_execution_datetime:
+    value: '[[.last_response.url.params.Get "endtime"]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
