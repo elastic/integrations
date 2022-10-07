@@ -39,6 +39,13 @@ When you configure the AWS integration, you can collect data from as many AWS se
 For step-by-step instructions on how to set up an integration, see the
 {{ url "getting-started-observability" "Getting started" }} guide.
 
+To enable Access logging on an API gateway follow the below steps:
+
+* Select the Stage Configuration
+* Select Logs/Tracing
+* Enable "Custom Access Logging" (and NOT enable the generic CloudWatch logs)
+* Enter the appropriate format for the list below
+
 The API Gateways can log both Access and Debug logs.  This integration is only configured to log Access logs and has not been tested with debug logging enabled.
 Each gateway type has a multitude of variables that can be logged and different log formats that can be used. The integration expects JSON logs using the below formats/patterns.
 
