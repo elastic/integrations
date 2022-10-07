@@ -51,3 +51,21 @@ rules:
         body: |-
           "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","USER_TYPE","SESSION_TYPE","SESSION_LEVEL","BROWSER_TYPE","PLATFORM_TYPE","RESOLUTION_TYPE","APP_TYPE","CLIENT_VERSION","API_TYPE","API_VERSION","USER_INITIATED_LOGOUT","SESSION_KEY","LOGIN_KEY","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP"
           "Logout","20220919073707.360","4exLFFQZ1234xFl1cJNwOV","00D5j001234VI3n","0055j000000utlP","S","O","1","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36","1015","9999","1000","9998","f","54.0","0","WvtsJ1235oW24EbH","Obv9123BzbaxqCo1","2022-09-19T07:37:07.360Z","0055j000000utlPAAQ","43.200.10.11"
+  - path: /services/data/v54.0/query
+    methods: ["GET"]
+    query_params:
+      q: ["SELECT Id,CreatedDate,LogDate,LogFile FROM EventLogFile WHERE Interval = 'Hourly' AND (EventType = 'ApexCallout' OR EventType = 'ApexExecution' OR EventType = 'ApexRestApi' OR EventType = 'ApexSoap' OR EventType = 'ApexTrigger' OR EventType = 'ExternalCustomApexCallout') ORDER BY LogDate ASC NULLS FIRST"]
+    responses:
+      - status_code: 200
+        body: '{"done":true,"records":[{"CreatedDate":"2022-10-01T23:22:27.000+0000","Id":"0AT5j00002GWEsRGAY","LogDate":"2022-09-30T00:00:00.000+0000","LogFile":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY/LogFile","attributes":{"type":"EventLogFile","url":"/services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY"}}],"totalSize":1}'
+        headers:
+          content-type: ["text/json"]
+  - path: /services/data/v54.0/sobjects/EventLogFile/0AT5j00002GWEsRGAY/LogFile
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/csv"]
+        body: |-
+          "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","URI","SESSION_KEY","LOGIN_KEY","TYPE","METHOD","SUCCESS","TIME","REQUEST_SIZE","RESPONSE_SIZE","URL","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED"
+          "ApexCallout","20211102091250.488","ABCDE","00D5j000000VABC","0055j000000ABCD","1305","10","CALLOUT-LOG","ABCDEF","ABCDEFGH","OData","GET","1","1293","10","256","https://temp.sh/odata/Accounts","2021-11-02T09:12:50.488Z","0055j012345utlPAAQ","127.0.0.1","0055j000000utlPABCD"

@@ -4,6 +4,7 @@ processors:
 - json:
     field: message
     target_field: json
+    ignore_failure: true
 - set:
     field: event.original
     value: '{{{message}}}'
@@ -19,12 +20,12 @@ processors:
     ignore_missing: true
 - set:
     field: salesforce.logout.access_mode
-    value: rest
+    value: "rest"
     ignore_failure: true
     ignore_empty_value: true
 - set:
     field: ecs.version
-    value: 8.4.0
+    value: "8.4.0"
     ignore_failure: true
     ignore_empty_value: true
 - date:
@@ -105,7 +106,7 @@ processors:
     ignore_missing: true
 - set:
     field: event.type
-    value: [info]
+    value: ["info"]
     ignore_failure: true
     ignore_empty_value: true
 - set:
@@ -120,7 +121,7 @@ processors:
     ignore_empty_value: true
 - set:
     field: event.category
-    value: [authentication]
+    value: ["authentication"]
     ignore_failure: true
     ignore_empty_value: true
 - set:
@@ -160,7 +161,7 @@ processors:
     ignore_missing: true
 - append:
     field: related.ip
-    value: "{{{source.ip}}}"
+    value: '{{{source.ip}}}'
     if: ctx.source?.ip != null
     allow_duplicates: false
     ignore_failure: true
@@ -318,6 +319,6 @@ processors:
 on_failure:
 - set:
     field: error.message
-    value: '{{_ingest.on_failure_message}}'
+    value: '{{{_ingest.on_failure_message}}}'
     ignore_failure: true
     ignore_empty_value: true
