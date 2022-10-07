@@ -157,15 +157,35 @@ An example event for `database_audit` looks as following:
 {
     "@timestamp": "2020-10-07T14:57:51.000Z",
     "agent": {
-        "ephemeral_id": "021be4f6-f6ea-47c5-aa38-62ba8c3f0f3c",
-        "id": "5940e9e3-013b-43c0-a459-261d69b08862",
+        "ephemeral_id": "cf73ef69-db0e-4217-b240-391d59365c36",
+        "id": "b7d99b9e-37d8-491c-8b31-63f13dd1cfa4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.4.0"
     },
     "client": {
         "user": {
             "name": "oracle"
+        }
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
         }
     },
     "data_stream": {
@@ -174,19 +194,19 @@ An example event for `database_audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "5940e9e3-013b-43c0-a459-261d69b08862",
+        "id": "b7d99b9e-37d8-491c-8b31-63f13dd1cfa4",
         "snapshot": false,
-        "version": "8.0.0"
+        "version": "8.4.0"
     },
     "event": {
         "action": "database_audit",
         "agent_id_status": "verified",
         "category": "database",
         "dataset": "oracle.database_audit",
-        "ingested": "2022-02-24T08:25:06Z",
+        "ingested": "2022-10-07T12:47:15Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "-04:00",
@@ -196,21 +216,22 @@ An example event for `database_audit` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
+        "id": "5016511f0829451ea244f458eebf2212",
         "ip": [
-            "192.168.240.7"
+            "192.168.176.7"
         ],
         "mac": [
-            "02:42:c0:a8:f0:07"
+            "02:42:c0:a8:b0:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.60.1-microsoft-standard-WSL2",
+            "kernel": "5.4.0-1078-gcp",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.3 LTS (Focal Fossa)"
+            "version": "20.04.4 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -223,7 +244,7 @@ An example event for `database_audit` looks as following:
         "flags": [
             "multiline"
         ],
-        "offset": 882
+        "offset": 858
     },
     "oracle": {
         "database_audit": {
@@ -750,41 +771,104 @@ An example event for `memory` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-08-07T04:32:07.853Z",
+    "@timestamp": "2022-10-07T12:27:01.976Z",
+    "agent": {
+        "ephemeral_id": "ae1917e2-2dca-426f-814d-ddc3d375b9ae",
+        "id": "214f8e99-a5a1-4e05-9c4c-78d203f489d7",
+        "name": "docker-custom-agent",
+        "type": "metricbeat",
+        "version": "8.4.0"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
+        }
+    },
+    "data_stream": {
+        "dataset": "oracle.memory",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "214f8e99-a5a1-4e05-9c4c-78d203f489d7",
+        "snapshot": false,
+        "version": "8.4.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "oracle.memory",
+        "duration": 211032836,
+        "ingested": "2022-10-07T12:27:03Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-custom-agent",
+        "id": "5016511f0829451ea244f458eebf2212",
+        "ip": [
+            "192.168.112.3",
+            "172.21.0.4"
+        ],
+        "mac": [
+            "02:42:ac:15:00:04",
+            "02:42:c0:a8:70:03"
+        ],
+        "name": "docker-custom-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-1078-gcp",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 60000
+    },
     "oracle": {
         "memory": {
             "pga": {
-                "total_inuse": 171153408,
-                "aggregate_auto_target": 579262464,
-                "total_allocated": 212888576,
-                "maximum_allocated": 694778880,
-                "total_freeable_memory": 14876672,
-                "global_memory_bound": 104857600,
+                "aggregate_auto_target": 593593344,
                 "aggregate_target_parameter": 805306368,
-                "total_used_for_auto_workareas": 738304,
-                "cache_hit_pct": 100
+                "cache_hit_pct": 100,
+                "global_memory_bound": 104857600,
+                "maximum_allocated": 332349440,
+                "total_allocated": 196837376,
+                "total_freeable_memory": 34471936,
+                "total_inuse": 145900544,
+                "total_used_for_auto_workareas": 0
+            },
+            "sga": {
+                "free_memory": 30206144,
+                "total_memory": 318767104
             }
         }
     },
     "service": {
-        "address": "0.0.0.0:1521",
+        "address": "elastic-package-service_oracle_1:1521",
         "type": "sql"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "oracle.memory"
-    },
-    "metricset": {
-        "period": 60000,
-        "name": "query"
-    },
-    "event": {
-        "duration": 53225246,
-        "agent_id_status": "verified",
-        "ingested": "2022-08-07T04:32:07Z",
-        "module": "sql",
-        "dataset": "oracle.memory"
     }
 }
 ```
@@ -1051,11 +1135,77 @@ An example event for `performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2017-10-12T08:05:34.853Z",
-    "event": {
+    "@timestamp": "2022-10-07T12:30:04.670Z",
+    "agent": {
+        "ephemeral_id": "ed3589c3-2724-4c4e-a491-58dafee6ec11",
+        "id": "f4c6dc69-1291-4c88-805f-f0499ddf3969",
+        "name": "docker-custom-agent",
+        "type": "metricbeat",
+        "version": "8.4.0"
+    },
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "availability_zone": "asia-south1-c",
+        "instance": {
+            "id": "3010911784348669868",
+            "name": "service-integration-dev-idc-01"
+        },
+        "machine": {
+            "type": "n1-standard-8"
+        },
+        "project": {
+            "id": "elastic-obs-integrations-dev"
+        },
+        "provider": "gcp",
+        "service": {
+            "name": "GCE"
+        }
+    },
+    "data_stream": {
         "dataset": "oracle.performance",
-        "duration": 115000,
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "f4c6dc69-1291-4c88-805f-f0499ddf3969",
+        "snapshot": false,
+        "version": "8.4.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "oracle.performance",
+        "duration": 75659358,
+        "ingested": "2022-10-07T12:30:05Z",
         "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-custom-agent",
+        "id": "5016511f0829451ea244f458eebf2212",
+        "ip": [
+            "192.168.128.3",
+            "172.21.0.4"
+        ],
+        "mac": [
+            "02:42:ac:15:00:04",
+            "02:42:c0:a8:80:03"
+        ],
+        "name": "docker-custom-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.4.0-1078-gcp",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
         "name": "query",
@@ -1063,29 +1213,23 @@ An example event for `performance` looks as following:
     },
     "oracle": {
         "performance": {
-            "cursors": {
-                "opened": {
-                    "current": 7,
-                    "total": 6225
+            "buffer_pool": "DEFAULT",
+            "cache": {
+                "buffer": {
+                    "hit": {
+                        "pct": 0.9538286033448905
+                    }
                 },
-                "parse": {
-                    "real": 1336,
-                    "total": 3684
+                "get": {
+                    "consistent": 352283,
+                    "db_blocks": 27281
                 },
-                "session": {
-                    "cache_hits": 5020
-                },
-                "cache_hit": {
-                    "pct": 0.8064257028112449
-                }
-            },
-            "io_reloads": 0.0013963503027202182,
-            "lock_requests": 0.5725039956419224,
-            "pin_requests": 0.7780581056654354
+                "physical_reads": 17525
+            }
         }
     },
     "service": {
-        "address": "oracle://localhost:1521/ORCLCDB.localdomain",
+        "address": "elastic-package-service_oracle_1:1521",
         "type": "sql"
     }
 }
