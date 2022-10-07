@@ -1,0 +1,11 @@
+---
+description: Pipeline for parsing MySQL performance metrics
+processors:
+- gsub:
+    field: mysql.performance.events_statements.last.seen
+    pattern: ' '
+    replacement: "T"
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}'

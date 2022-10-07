@@ -6,9 +6,9 @@ touch /var/log/mysql/$HOSTNAME-error.log
 touch /var/log/mysql/$HOSTNAME-slow.log
 
 chown mysql:mysql /var/log/mysql/*.log
-
 chmod a+wx /var/log/mysql
 chmod a+r -R /var/log/mysql
+
 
 # Write "test.cnf" config
 cat << EOF > /etc/mysql/conf.d/test.cnf
