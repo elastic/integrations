@@ -4,7 +4,7 @@ description: Pipeline for parsing IIS access logs. Requires the geoip and user_a
 processors:
   - set:
       field: ecs.version
-      value: '8.2.1'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -59,6 +59,11 @@ processors:
           (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user_agent.original}) (?:-|%{NOTSPACE:iis.access.cookie}) (?:-|%{NOTSPACE:http.request.referrer})
           (?:-|%{NUMBER:http.response.status_code:long}) (?:-|%{NUMBER:iis.access.sub_status:long})
           (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:_temp_.duration:long})( (?:-|%{IPORHOST:network.forwarded_ip}))?'
+        #  FTP logs 
+        # date time, c-ip, cs-username, s-ip, s-port, cs-method, cs-uri-stem, sc-status sc-win32-status, sc-substatus, x-session, x-fullpath
+        - '%{TIMESTAMP_ISO8601:iis.access.time} (?:-|%{IPORHOST:source.address}) (?:-|%{NOTSPACE:user.name}) (?:-|%{IPORHOST:destination.address})
+           (?:-|%{NUMBER:destination.port:long}) (?:-|%{WORD:http.request.method}) (?:-|%{NOTSPACE:_temp_.url_query}) (?:-|%{NUMBER:http.response.status_code:long})
+           (?:-|%{NUMBER:iis.access.win32_status:long}) (?:-|%{NUMBER:iis.access.sub_status:long}) (?:-|%{NOTSPACE:iis.access.session_id}) (?:-|%{NOTSPACE:_temp_.url_path})'  
   - uri_parts:
       field: _temp_.url_path
       ignore_failure: true
