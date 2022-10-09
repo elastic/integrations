@@ -1,0 +1,27 @@
+---
+description: Pipeline for dissecting CoreDNS JSON logs.
+processors:
+  - json:
+      field: message
+      target_field: json
+  - set:
+      field: message
+      copy_from: json.message
+      ignore_empty_value: true
+  - rename:
+      field: json.kubernetes
+      target_field: kubernetes
+      ignore_missing: true
+  - date:
+      field: json.time
+      formats:
+        - ISO8601
+      if: ctx.json?.time != null
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
