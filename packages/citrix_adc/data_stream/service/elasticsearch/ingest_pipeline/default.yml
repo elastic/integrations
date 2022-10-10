@@ -36,33 +36,18 @@ processors:
       target_field: json
       ignore_failure: true
   - rename:
-      field: json.curclntconnections
-      target_field: citrix_adc.service.client_connection.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.primaryipaddress
-      target_field: citrix_adc.service.ip_address.primary
+      field: json.primaryport
+      target_field: citrix_adc.service.primary.port
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.name
-      target_field: citrix_adc.service.name
+      target_field: service.name
       ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.requestbytesrate
       target_field: citrix_adc.service.request.bytes.rate
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.totalrequestbytes
-      target_field: citrix_adc.service.request.bytes.value
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.totalrequests
-      target_field: citrix_adc.service.request.count
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -76,48 +61,13 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.totalresponsebytes
-      target_field: citrix_adc.service.response.bytes.value
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.totalresponses
-      target_field: citrix_adc.service.response.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.responsesrate
       target_field: citrix_adc.service.response.rate
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.curreusepool
-      target_field: citrix_adc.service.reuse_pool
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.cursrvrconnections
-      target_field: citrix_adc.service.server.connection.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.svrestablishedconn
-      target_field: citrix_adc.service.server.connection.established.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.avgsvrttfb
-      target_field: citrix_adc.service.server.time_to_first_byte.avg
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.state
-      target_field: citrix_adc.service.state
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.surgecount
-      target_field: citrix_adc.service.surge_queue.count
+      target_field: service.state
       ignore_missing: true
       ignore_failure: true
   - rename:
@@ -126,33 +76,8 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-      field: json.throughput
-      target_field: citrix_adc.service.throughput.value
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.activetransactions
-      target_field: citrix_adc.service.transaction.active.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.frustratingttlbtransactions
-      target_field: citrix_adc.service.transaction.frustrating.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.totsvrttlbtransactions
-      target_field: citrix_adc.service.transaction.time_to_last_byte.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
-      field: json.toleratingttlbtransactions
-      target_field: citrix_adc.service.transaction.tolarating.count
-      ignore_missing: true
-      ignore_failure: true
-  - rename:
       field: json.servicetype
-      target_field: citrix_adc.service.type
+      target_field: service.type
       ignore_missing: true
       ignore_failure: true
   - remove:
@@ -160,92 +85,108 @@ processors:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_missing: true
       ignore_failure: true
-  # Converting fields to float
+  # Renaming and converting fields to float
   - convert:
-      field: citrix_adc.service.client_connection.count
+      field: json.curclntconnections
+      target_field: citrix_adc.service.client_connection.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.request.bytes.value
+      field: json.totalrequestbytes
+      target_field: citrix_adc.service.request.bytes.value
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.request.count
+      field: json.totalrequests
+      target_field: citrix_adc.service.request.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.response.bytes.value
+      field: json.totalresponsebytes
+      target_field: citrix_adc.service.response.bytes.value
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.response.count
+      field: json.totalresponses
+      target_field: citrix_adc.service.response.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.reuse_pool
+      field: json.curreusepool
+      target_field: citrix_adc.service.reuse_pool
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.server.connection.count
+      field: json.cursrvrconnections
+      target_field: citrix_adc.service.server.connection.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.server.connection.established.count
+      field: json.svrestablishedconn
+      target_field: citrix_adc.service.server.connection.established.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.server.time_to_first_byte.avg
+      field: json.avgsvrttfb
+      target_field: citrix_adc.service.server.time_to_first_byte.avg
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.surge_queue.count
+      field: json.surgecount
+      target_field: citrix_adc.service.surge_queue.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.throughput.value
+      field: json.throughput
+      target_field: citrix_adc.service.throughput.value
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.transaction.active.count
+      field: json.activetransactions
+      target_field: citrix_adc.service.transaction.active.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.transaction.frustrating.count
+      field: json.frustratingttlbtransactions
+      target_field: citrix_adc.service.transaction.frustrating.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.transaction.time_to_last_byte.count
+      field: json.totsvrttlbtransactions
+      target_field: citrix_adc.service.transaction.time_to_last_byte.count
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
-      field: citrix_adc.service.transaction.tolarating.count
+      field: json.toleratingttlbtransactions
+      target_field: citrix_adc.service.transaction.tolerable.count
       type: float
       ignore_missing: true
       ignore_failure: true
-  # Converting fields to ip
+  # Renaming and converting field to ip
   - convert:
-      field: citrix_adc.service.ip_address.primary
+      field: json.primaryipaddress
+      target_field: citrix_adc.service.primary.ip_address
       type: ip
       ignore_missing: true
       ignore_failure: true
   - append:
       field: related.ip
-      value: "{{{citrix_adc.service.ip_address.primary}}}"
-      if: ctx.citrix_adc?.service?.ip_address?.primary != null
+      value: "{{{citrix_adc.service.primary.ip_address}}}"
+      if: ctx.citrix_adc?.service?.primary?.ip_address != null
       allow_duplicates: false
       ignore_failure: true
   - script:

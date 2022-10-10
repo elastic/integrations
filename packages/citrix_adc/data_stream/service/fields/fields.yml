@@ -8,12 +8,15 @@
           type: float
           description: Number of current client connections.
           metric_type: counter
-        - name: ip_address.primary
-          type: ip
-          description: The IP address on which specific service is running.
-        - name: name
-          type: keyword
-          description: Name of specific service.
+        - name: primary
+          type: group
+          fields:
+            - name: ip_address
+              type: ip
+              description: The IP address on which specific service is running.
+            - name: port
+              type: long
+              description: The port on which the service is running.
         - name: request
           type: group
           fields:
@@ -25,6 +28,7 @@
               type: float
               description: Total number of request bytes received on specific service or virtual server.
               metric_type: counter
+              unit: byte
             - name: count
               type: float
               description: Total number of requests received on specific service or virtual server.
@@ -44,6 +48,7 @@
               type: float
               description: Number of response bytes received by specific service or virtual server.
               metric_type: counter
+              unit: byte
             - name: count
               type: float
               description: Number of responses received on specific service or virtual server.
@@ -72,10 +77,7 @@
             - name: time_to_first_byte.avg
               type: float
               description: Average TTFB (Time To First Byte) between the NetScaler appliance and the server.
-              metric_type: counter
-        - name: state
-          type: keyword
-          description: Current state of specific server.
+              metric_type: gauge
         - name: surge_queue.count
           type: float
           description: Number of requests in the surge queue.
@@ -101,15 +103,12 @@
             - name: frustrating.count
               type: float
               description: Frustrating transactions based on APDEX (Application Performance Index) threshold (>4T).
-              metric_type: counter
+              metric_type: gauge
             - name: time_to_last_byte.count
               type: float
               description: Total transactions where server TTLB (Time To Last Byte) is calculated.
               metric_type: counter
-            - name: tolarating.count
+            - name: tolerable.count
               type: float
               description: Tolerable transactions based on APDEX (Application Performance Index) threshold (>T ;; <4T).
               metric_type: counter
-        - name: type
-          type: keyword
-          description: The service type of specific service.
