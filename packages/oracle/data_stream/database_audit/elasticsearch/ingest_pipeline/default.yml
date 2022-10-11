@@ -26,7 +26,9 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "%{GREEDYDATA:tmp_timestamp}\\\nLENGTH : '%{GREEDYDATA:LENGTH}'\\\n(?m)%{GREEDYDATA:audit}"
+        - "%{GREEDYDATA:tmp_timestamp}\\nLENGTH : '%{GREEDYDATA:LENGTH}'\\nACTION :\\[\\d+\\] (?m)%{GREEDYDATA:action}(DATABASE USER):\\S+ '%{FIELD:db_user}'\\n(?m)%{GREEDYDATA:audit}"
+      pattern_definitions:
+          "FIELD": "[^']+"
   - kv:
       field: audit
       field_split: "\\\n(?=[a-zA-Z])"
@@ -39,6 +41,14 @@ processors:
       patterns:
         - "%{BASE10NUM:process.pid}\\_%{BASE10NUM}\\.aud(\\.log)?$"
       if: ctx.log?.file?.path != null
+  - rename:
+      field: action
+      target_field: oracle.database_audit.action
+      ignore_missing: true
+  - rename:
+      field: db_user
+      target_field: oracle.database_audit.database_user
+      ignore_missing: true
   # All field names are uppercase by default, converts them to lowercase
   - script:
       source: "ctx.oracle.database_audit = ctx.oracle.database_audit.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey().toLowerCase(), Map.Entry::getValue));"
@@ -55,6 +65,14 @@ processors:
       field: "oracle.database_audit.action"
       pattern: "\\s{2,}"
       replacement: " "
+  - gsub:
+      field: "oracle.database_audit.action"
+      pattern: "^\\'"
+      replacement: ""
+  - gsub:
+      field: "oracle.database_audit.action"
+      pattern: "\\'$"
+      replacement: ""
   - trim:
       field: "oracle.database_audit.action_number"
       ignore_missing: true
