@@ -79,7 +79,7 @@ An example event for `dynamodb` looks as following:
     },
     "metricset": {
         "period": 300000,
-        "name": "dynamodb"
+        "name": "cloudwatch"
     },
     "event": {
         "duration": 10586366300,
