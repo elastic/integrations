@@ -12,8 +12,8 @@ The Citrix ADC integration collects metrics data.
 
 Metrics give you insight into the statistics of the Citrix ADC. Metrics data streams collected by the Citrix ADC integration include [interface](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/network/Interface/), so that the user could monitor and troubleshoot the performance of the Citrix ADC instances.
 
-This integration uses:
-- `httpjson` filebeat module to collect `interface` metrics.
+Note:
+- Users can monitor and see the metrics inside the ingested documents for Citrix ADC in the logs-* index pattern from `Discover`.
 
 ## Compatibility
 
