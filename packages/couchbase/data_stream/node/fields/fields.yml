@@ -4,9 +4,16 @@
     - name: node
       type: group
       fields:
-        - name: commands.get.count
-          type: long
-          description: Number of get commands.
+        - name: commands
+          type: group
+          fields:
+            - name: get
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: Number of get commands.
+                  metric_type: counter
         - name: couch
           type: group
           fields:
@@ -81,18 +88,22 @@
             - name: total
               type: long
               description: Total number of items associated with the node.
+              metric_type: counter
             - name: value
               type: long
               description: Number of current items.
+              metric_type: gauge
         - name: ep_bg_fetched
           type: long
           description: Number of disk fetches performed since the server was started.
+          metric_type: counter
         - name: get
           type: group
           fields:
             - name: hits
               type: long
               description: Number of hits get.
+              metric_type: gauge
         - name: hostname
           type: keyword
           description: The hostname of the node.
@@ -148,6 +159,7 @@
             - name: count
               type: long
               description: Number of operations performed on Couchbase.
+              metric_type: counter
         - name: swap
           type: group
           fields:
@@ -174,6 +186,7 @@
               type: long
               description: Time during which the node was in operation (sec).
               unit: s
+              metric_type: gauge
         - name: vb_replica
           type: group
           fields:
@@ -183,3 +196,4 @@
                 - name: current
                   type: long
                   description: Number of items/documents that are replicas.
+                  metric_type: gauge

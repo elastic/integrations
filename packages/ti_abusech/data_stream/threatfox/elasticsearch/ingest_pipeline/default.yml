@@ -1,0 +1,209 @@
+---
+description: Pipeline for parsing Abuse.ch Threat Fox Threat Intel
+processors:
+  ####################
+  # Event ECS fields #
+  ####################
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - set:
+      field: event.kind
+      value: enrichment
+  - set:
+      field: event.category
+      value: threat
+  - set:
+      field: event.type
+      value: indicator
+
+  ######################
+  # General ECS fields #
+  ######################
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: abusech.threatfox
+  - fingerprint:
+      fields:
+        - abusech.threatfox.id
+        - abusech.threatfox.ioc_type
+      target_field: "_id"
+  - rename:
+      field: abusech.threatfox.id
+      target_field: event.id
+      ignore_missing: true
+
+  #####################
+  # Threat ECS Fields #
+  #####################
+  - date:
+      field: abusech.threatfox.first_seen
+      target_field: threat.indicator.first_seen
+      formats:
+        - "yyyy-MM-dd HH:mm:ss z"
+        - "yyyy-MM-dd HH:mm:ss Z"
+        - "yyyy-MM-dd HH:mm:ss"
+      if: "ctx.abusech?.threatfox?.first_seen != null"
+  - date:
+      field: abusech.threatfox.last_seen
+      target_field: threat.indicator.last_seen
+      formats:
+        - "yyyy-MM-dd HH:mm:ss z"
+        - "yyyy-MM-dd HH:mm:ss Z"
+        - "yyyy-MM-dd HH:mm:ss"
+      if: "ctx.abusech?.threatfox?.last_seen != null"
+  - rename:
+      field: abusech.threatfox.ioc_type_desc
+      target_field: threat.indicator.description
+      ignore_missing: true
+  - rename:
+      field: abusech.threatfox.reporter
+      target_field: threat.indicator.provider
+      ignore_missing: true
+  - split:
+      field: abusech.threatfox.malware_alias
+      target_field: threat.software.alias
+      separator: ","
+      ignore_missing: true
+  - rename:
+      field: abusech.threatfox.reporter
+      target_field: threat.indicator.provider
+      ignore_missing: true
+  - rename:
+      field: abusech.threatfox.reference
+      target_field: threat.indicator.reference
+      ignore_missing: true
+  - rename:
+      field: abusech.threatfox.malware_printable
+      target_field: threat.software.name
+      ignore_missing: true
+  - rename:
+      field: abusech.threatfox.malware_malpedia
+      target_field: threat.software.reference
+      ignore_missing: true
+  #
+  # Convert confidence field (-1..100) to ECS confidence (0..10).
+  #
+  - script:
+      lang: painless
+      if: ctx.abusech?.threatfox?.confidence_level != null
+      description: Normalize confidence level.
+      source: >
+        def value = ctx.abusech.threatfox.confidence_level;
+        def confidence = "None";
+        if (value > 0 && value < 30) {
+          confidence = "Low";
+        } if (value >= 30.0 && value < 70) {
+          confidence = "Medium";
+        } else if (value >= 70 && value <= 100) {
+          confidence = "High";
+        }
+        ctx.threat.indicator.put("confidence", confidence)
+  ## URL/URI indicator operations
+  - set:
+      field: threat.indicator.type
+      value: url
+      if: "ctx.abusech?.threatfox?.ioc_type != null && ['url'].contains(ctx.abusech.threatfox.ioc_type)"
+  - uri_parts:
+      field: abusech.threatfox.ioc
+      target_field: threat.indicator.url
+      keep_original: true
+      remove_if_successful: true
+      if: ctx.abusech?.threatfox?.ioc_type == 'url'
+
+  ## IP/Port indicator operations
+  - set:
+      field: threat.indicator.type
+      value: domain-name
+      if: "ctx.abusech?.threatfox?.ioc_type != null && ['domain'].contains(ctx.abusech.threatfox.ioc_type)"
+  - rename:
+      field: abusech.threatfox.ioc
+      target_field: threat.indicator.url.domain
+      ignore_missing: true
+      if: "ctx.abusech?.threatfox?.ioc_type != null && ['domain'].contains(ctx.abusech.threatfox.ioc_type)"
+  - set:
+      field: threat.indicator.type
+      value: ipv4-addr
+      if: "ctx.abusech?.threatfox?.ioc_type != null && ['ip:port'].contains(ctx.abusech.threatfox.ioc_type)"
+  - grok:
+      field: abusech.threatfox.ioc
+      patterns:
+        - "%{IP:threat.indicator.ip}:%{NUMBER:threat.indicator.port:long}"
+      ignore_missing: true
+      if: "ctx.abusech?.threatfox?.ioc_type == 'ip:port'"
+  - set:
+      field: threat.indicator.type
+      value: ipv6-addr
+      if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip.contains(':')
+
+  ## File/Hash indicator operations
+  - set:
+      field: threat.indicator.type
+      value: file
+      if: "ctx.abusech?.threatfox?.ioc_type != null && ['md5_hash', 'sha1_hash', 'sha256_hash'].contains(ctx.abusech.threatfox.ioc_type)"
+  - grok:
+      field: abusech.threatfox.ioc_type
+      patterns:
+        - "%{DATA:_tmp.hashtype}_hash"
+      ignore_missing: true
+      if: ctx.abusech?.threatfox?.ioc_type != null && ctx.abusech?.threatfox?.ioc_type.endsWith('_hash')
+  - rename:
+      field: abusech.threatfox.ioc
+      target_field: threat.indicator.file.hash.{{_tmp.hashtype}}
+      if: "ctx.abusech?.threatfox?.ioc_type != null && ctx.abusech.threatfox.ioc_type.endsWith('_hash') && ctx._tmp.hashtype != null"
+
+  ######################
+  # Cleanup processors #
+  ######################
+  - set:
+      field: threat.indicator.type
+      value: unknown
+      if: ctx?.threat?.indicator?.type == null
+  - script:
+      lang: painless
+      if: ctx?.abusech != null
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+        map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - abusech.threatfox.first_seen
+        - abusech.threatfox.last_seen
+        - threatintel_indicator_confidence
+        - abusech.threatfox.malware_alias
+        - abusech.threatfox.ioc_type
+        - abusech.threatfox.ioc
+        - message
+        - _tmp
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
