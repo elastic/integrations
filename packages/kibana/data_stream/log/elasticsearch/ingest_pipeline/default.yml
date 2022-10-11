@@ -1,12 +1,6 @@
 ---
 description: Pipeline for parsing Kibana logs
 processors:
-  - set:
-      copy_from: '@timestamp'
-      field: event.created
-  - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-json" }}'
       if: |-
@@ -16,17 +10,23 @@ processors:
           && message.endsWith('}')
           && message.contains('"@timestamp"')
   - set:
+      copy_from: "@timestamp"
+      field: event.created
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
       field: event.kind
       value: event
   - set:
       field: event.outcome
       value: success
-      if: 'ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400'
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code < 400"
   - set:
       field: event.outcome
       value: failure
-      if: 'ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400'
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: "{{ _ingest.on_failure_message }}"
