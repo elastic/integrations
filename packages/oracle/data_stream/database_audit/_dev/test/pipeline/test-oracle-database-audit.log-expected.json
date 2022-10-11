@@ -1235,6 +1235,63 @@
             "user": {
                 "roles": "NONE"
             }
+        },
+        {
+            "@timestamp": "2021-01-28T23:27:48.000Z",
+            "client": {
+                "user": {
+                    "name": "oracle"
+                }
+            },
+            "ecs": {
+                "version": "8.4.0"
+            },
+            "event": {
+                "action": "database_audit",
+                "category": "database",
+                "kind": "event",
+                "original": "Thu Jan 28 18:27:48 2021 -05:00\nLENGTH : '2462'\nACTION :[2192] 'DECLARE\n  link_failed boolean;\n\nBEGIN\n       FOR f IN (  SELECT *\n                     FROM test_db\n                   where field1 not in ('teststring')\n                     and field1 = upper('teststring2')\n                     and test_db = upper('test.domain')\n                 ORDER BY field, test_db)\n       LOOP\n           TEST.create_job (\n               job_name     =\u003e f.owner || '.TESTSTRING',\n               job_type     =\u003e 'TESTSTRING',\n               job_action   =\u003e    'TESTSTRING '\n                               || '  TESTSTRING; '\n                               || 'TESTSTRING '\n                               || '  SELECT dummy into x from TEST@'\n                               || f.test3\n                               || '  ;'\n                               || '  TEST.put_line('''\n                               || f.test2\n                               || ' '\n                               || f.test\n                               || '     VALID !!!!!!!!!!!!!!!!!!'');'\n                               || 'END ; ');\n\n          BEGIN\n               TEST.run_job (f.owner || '.TESTSTRING ', TRUE);\n           EXCEPTION\n               WHEN OTHERS\n               THEN\n                   link_failed:=true;\n                   TEST.put_line (\n                          f.owner\n                       || ' '\n                       || f.db_link\n                       || ' INVALID (ORA'\n                       || SQLCODE\n                       || ')');\n           END;\n\n           TEST.job (f.owner || ' . TESTSTRING ');\n\n           if link_failed THEN\n              TEST.put_line (\n                     f.owner\n                  || ' '\n                  || f.TEST\n                  || ' TESTSTRING - TEST (ORA'\n                  || SQLCODE\n                  || ')');\n              insert into TEST.somestring\n                values (f.owner, f.test, 'INVALID', sysdate);\n              commit;\n           else\n              insert into TEST.somestring\n                values (f.owner, f.test, 'VALID', sysdate);\n              commit;\n           end if;\n\n       END LOOP;\nEND;'\nDATABASE USER:[1] '/'\nPRIVILEGE :[6] 'SYSDBA'\nCLIENT USER:[6] 'oracle'\nCLIENT TERMINAL:[5] 'pts/0'\nSTATUS:[1] '0'\nDBID:[10] '123'\nSESSIONID:[10] '123'\nUSERHOST:[24] 'testmachine.local'\nCLIENT ADDRESS:[0] ''\nACTION NUMBER:[2] '47'",
+                "outcome": "success",
+                "timezone": "-05:00",
+                "type": "access"
+            },
+            "oracle": {
+                "database_audit": {
+                    "action": "DECLARE link_failed boolean;BEGIN FOR f IN ( SELECT * FROM test_db where field1 not in ('teststring') and field1 = upper('teststring2') and test_db = upper('test.domain') ORDER BY field, test_db) LOOP TEST.create_job ( job_name =\u003e f.owner || '.TESTSTRING', job_type =\u003e 'TESTSTRING', job_action =\u003e 'TESTSTRING ' || ' TESTSTRING; ' || 'TESTSTRING ' || ' SELECT dummy into x from TEST@' || f.test3 || ' ;' || ' TEST.put_line(''' || f.test2 || ' ' || f.test || ' VALID !!!!!!!!!!!!!!!!!!'');' || 'END ; '); BEGIN TEST.run_job (f.owner || '.TESTSTRING ', TRUE); EXCEPTION WHEN OTHERS THEN link_failed:=true; TEST.put_line ( f.owner || ' ' || f.db_link || ' INVALID (ORA' || SQLCODE || ')'); END; TEST.job (f.owner || ' . TESTSTRING '); if link_failed THEN TEST.put_line ( f.owner || ' ' || f.TEST || ' TESTSTRING - TEST (ORA' || SQLCODE || ')'); insert into TEST.somestring values (f.owner, f.test, 'INVALID', sysdate); commit; else insert into TEST.somestring values (f.owner, f.test, 'VALID', sysdate); commit; end if; END LOOP;END;",
+                    "action_number": "47",
+                    "client": {
+                        "terminal": "pts/0"
+                    },
+                    "database": {
+                        "id": "123"
+                    },
+                    "length": 2462,
+                    "session_id": "123",
+                    "status": "0"
+                }
+            },
+            "related": {
+                "hosts": [
+                    "testmachine.local"
+                ],
+                "user": [
+                    "/",
+                    "oracle"
+                ]
+            },
+            "server": {
+                "address": "testmachine.local",
+                "domain": "testmachine.local",
+                "user": {
+                    "name": "/"
+                }
+            },
+            "tags": [
+                "preserve_original_event"
+            ],
+            "user": {
+                "roles": "SYSDBA"
+            }
         }
     ]
 }
