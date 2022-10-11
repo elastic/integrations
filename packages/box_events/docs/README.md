@@ -57,18 +57,73 @@ To access the `events` endpoint, the user making the API call will need to have 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| box.additional_details.shield_alert.alert_id | Box Shield alert ID | long |
+| box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date | When the anomaly was last observed | keyword |
+| box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date | When the anomaly was last observed | keyword |
+| box.additional_details.shield_alert.alert_summary.anomaly_period.download_size | Volume of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content | keyword |
+| box.additional_details.shield_alert.alert_summary.anomaly_period.downloaded_files_count | Number of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content | long |
+| box.additional_details.shield_alert.alert_summary.description | Description of Alert | keyword |
+| box.additional_details.shield_alert.alert_summary.download_delta_percent | Anomaly delta percentage relative to historical expectation | long |
+| box.additional_details.shield_alert.alert_summary.download_delta_size | Anomaly delta size relative to historical expectation | keyword |
+| box.additional_details.shield_alert.alert_summary.download_ips.ip | IP address | ip |
+| box.additional_details.shield_alert.alert_summary.historical_period.date_range.end_date | End of historical period for calculation of historical expectation | keyword |
+| box.additional_details.shield_alert.alert_summary.historical_period.date_range.start_date | Start of historical period for calculation of historical expectation | keyword |
+| box.additional_details.shield_alert.alert_summary.historical_period.download_size | Volume of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content | keyword |
+| box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count | Number of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content | long |
+| box.additional_details.shield_alert.alert_summary.upload_activity.event_type | Type of event, e.g. `Upload` | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip | IP address | ip |
+| box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.registrant | Registrant of IP |  |
+| box.additional_details.shield_alert.alert_summary.upload_activity.item_id | ID of item | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.item_name | Name of item | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.item_path | Path to Item | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.item_type | Type of Item | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.occurred_at | Time of Upload | keyword |
+| box.additional_details.shield_alert.alert_summary.upload_activity.service_name | Service used to upload the suspected Malware | keyword |
+| box.additional_details.shield_alert.created_at | Time alert was created | date |
+| box.additional_details.shield_alert.link | URL with information about this alert | keyword |
+| box.additional_details.shield_alert.malware_info.categories | Array of Malware Categories e.g. `Adware`, `Spyware` | keyword |
+| box.additional_details.shield_alert.malware_info.description | Describes the Malware | keyword |
+| box.additional_details.shield_alert.malware_info.detail_link | URL with detail of Malware | keyword |
+| box.additional_details.shield_alert.malware_info.family | Malware Family | keyword |
+| box.additional_details.shield_alert.malware_info.file_created | Date of file creation | date |
+| box.additional_details.shield_alert.malware_info.file_created_by.email | Email of file creator | keyword |
+| box.additional_details.shield_alert.malware_info.file_created_by.id | ID of file creator. The Box Shield documentation example uses `long`, not `string` | long |
+| box.additional_details.shield_alert.malware_info.file_created_by.name | Display name of file creator | keyword |
+| box.additional_details.shield_alert.malware_info.file_hash | File hash | keyword |
+| box.additional_details.shield_alert.malware_info.file_hash_type | Hash type, e.g. `SHA-1` | keyword |
+| box.additional_details.shield_alert.malware_info.file_id | File ID | long |
+| box.additional_details.shield_alert.malware_info.file_name | File name | keyword |
+| box.additional_details.shield_alert.malware_info.file_size_bytes | File size in bytes | long |
+| box.additional_details.shield_alert.malware_info.file_version | File version | long |
+| box.additional_details.shield_alert.malware_info.file_version_uploaded | Date this version of file was uploaded | date |
+| box.additional_details.shield_alert.malware_info.file_version_uploaded_by.email | Email of file uploader | keyword |
+| box.additional_details.shield_alert.malware_info.file_version_uploaded_by.id | ID of file uploader | long |
+| box.additional_details.shield_alert.malware_info.file_version_uploaded_by.name | Display name of file uploader | keyword |
+| box.additional_details.shield_alert.malware_info.first_seen | Time Malware first observed | date |
+| box.additional_details.shield_alert.malware_info.last_seen | Time Malware last observed | date |
+| box.additional_details.shield_alert.malware_info.malware_name | Malware name | keyword |
+| box.additional_details.shield_alert.malware_info.status | Malware status e.g. `Malicious` | keyword |
+| box.additional_details.shield_alert.malware_info.tags | Array of Malware Tags e.g. `FILE_MALICIOUS_EXECUTION` | keyword |
+| box.additional_details.shield_alert.priority | Box Shield priority of alert | keyword |
+| box.additional_details.shield_alert.risk_score | Risk score as calculated by Box Shield | long |
+| box.additional_details.shield_alert.rule_category | Rule Category as allocated by Box Shield | long |
+| box.additional_details.shield_alert.rule_id | Box Shield rule ID | long |
+| box.additional_details.shield_alert.rule_name | Box Shield rule name | long |
+| box.additional_details.shield_alert.user.email | User email | long |
+| box.additional_details.shield_alert.user.id | User ID | keyword |
+| box.additional_details.shield_alert.user.name | User name | keyword |
 | box.created_at | When the event object was created | date |
-| box.created_by.id | The unique identifier for the connection user | long |
+| box.created_by.id | The unique identifier for the connection user. The Box Shield documentation example uses `string`, not `long`, however, box `Events` API documentation uses long | keyword |
 | box.created_by.login | The primary email address of the connection user. Maps from \*\*.login |  |
 | box.created_by.name | The display name of the connection user. Maps from \*\*.name | keyword |
 | box.created_by.type | E.g. `user` |  |
+| box.ip_address | IP Address | keyword |
 | box.recorded_at | The date and time at which this event occurred | date |
 | box.session.id | The session of the user that performed the action. Not all events will populate this attribute | keyword |
 | box.source.address | Physical Address associated with the event | keyword |
 | box.source.avatar_url | URL for user avatar | boolean |
 | box.source.created_at | The date and time at which this folder was originally created | date |
-| box.source.created_by | The user who created this folder | object |
-| box.source.created_by.id | The unique identifier for this user | long |
+| box.source.created_by.id | The unique identifier for this user | keyword |
 | box.source.created_by.login | The primary email address of this user. Maps from \*\*.login | keyword |
 | box.source.created_by.name | The display name of this user. Maps from \*\*.name | keyword |
 | box.source.created_by.type | Value is always `user` | keyword |
@@ -77,7 +132,7 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.source.file_version | The information about the current version of the file | object |
 | box.source.file_version.id | The unique identifier that represent a file version | keyword |
 | box.source.file_version.type | Value is always `file_version` | keyword |
-| box.source.id | The unique identifier that represent a folder | long |
+| box.source.id | The unique identifier that represent a folder | keyword |
 | box.source.item_status | Defines if this item has been deleted or not. active when the item has is not in the trash trashed when the item has been moved to the trash but not deleted deleted when the item has been permanently deleted. Value is one of `active`, `trashed`, `deleted` | keyword |
 | box.source.job_title | User job title | boolean |
 | box.source.language | User preferred language | boolean |
@@ -91,18 +146,15 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.source.modified_by.type | Value is always `user` | keyword |
 | box.source.notification_email.email | Email to send notifications | boolean |
 | box.source.notification_email.is_confirmed | True if `notification_email.email` has been confirmed else false | boolean |
-| box.source.owned_by | The user who owns this folder | keyword |
 | box.source.owned_by.id | The unique identifier for this user | keyword |
 | box.source.owned_by.login | The primary email address of this user. Maps from \*\*.login | keyword |
 | box.source.owned_by.name | The display name of this user. Maps from \*\*.name | keyword |
 | box.source.owned_by.type | Value is always `user` | keyword |
-| box.source.parent | The optional folder that this folder is located within. This value may be null for some folders such as the root folder or the trash folder | object |
 | box.source.parent.etag | The HTTP etag of this folder | keyword |
 | box.source.parent.id | The unique identifier that represent a folder | keyword |
 | box.source.parent.name | The name of the folder | keyword |
 | box.source.parent.sequence_id | A numeric identifier that represents the most recent user event that has been applied to this item (parent) | keyword |
 | box.source.parent.type | Value is always `folder` | keyword |
-| box.source.path_collection | The tree of folders that this folder is contained in, starting at the root | object |
 | box.source.path_collection.entries | The parent folders for this item | object |
 | box.source.path_collection.entries.id | The unique identifier that represent a folder. This field is an array | array |
 | box.source.path_collection.entries.name | The name of the folder. This field is an array | array |
@@ -184,6 +236,47 @@ To access the `events` endpoint, the user making the API call will need to have 
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Type of Filebeat input. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| related.ip | All of the IPs seen on your event. | ip |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| rule.uuid | A rule ID that is unique within the scope of a set or group of agents, observers, or other entities using the rule for detection of this event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
+| threat.enrichments.indicator.description | Describes the type of action conducted by the threat. | keyword |
+| threat.enrichments.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.enrichments.indicator.geo.city_name | City name. | keyword |
+| threat.enrichments.indicator.geo.continent_name | Name of the continent. | keyword |
+| threat.enrichments.indicator.geo.country_iso_code | Country ISO code. | keyword |
+| threat.enrichments.indicator.geo.country_name | Country name. | keyword |
+| threat.enrichments.indicator.geo.location | Longitude and latitude. | geo_point |
+| threat.enrichments.indicator.geo.region_iso_code | Region ISO code. | keyword |
+| threat.enrichments.indicator.geo.region_name | Region name. | keyword |
+| threat.enrichments.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
+| threat.enrichments.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.enrichments.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
+| threat.enrichments.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| threat.indicator.as.organization.name | Organization name. | keyword |
+| threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
+| threat.indicator.confidence | Identifies the vendor-neutral confidence rating using the None/Low/Medium/High scale defined in Appendix A of the STIX 2.1 framework. Vendor-specific confidence scales may be added as custom fields. | keyword |
+| threat.indicator.description | Describes the type of action conducted by the threat. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.geo.city_name | City name. | keyword |
+| threat.indicator.geo.continent_name | Name of the continent. | keyword |
+| threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
+| threat.indicator.geo.country_name | Country name. | keyword |
+| threat.indicator.geo.location | Longitude and latitude. | geo_point |
+| threat.indicator.geo.region_iso_code | Region ISO code. | keyword |
+| threat.indicator.geo.region_name | Region name. | keyword |
+| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
+| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
+| threat.indicator.provider | The name of the indicator's provider. | keyword |
+| threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| user.effective.email | User email address. | keyword |
+| user.effective.id | Unique identifier of the user. | keyword |
+| user.effective.name | Short name or login of the user. | keyword |
+| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
 
