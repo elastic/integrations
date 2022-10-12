@@ -19,14 +19,28 @@ processors:
   - set:
       field: event.outcome
       value: success
+  # Need to know which type of audit event it is, oracle_event_type is a temp field.
+  - set:
+      field: oracle_event_type
+      value: database
+      if: 'ctx.message.contains("LENGTH :")'
+  - set:
+      field: oracle_event_type
+      value: object
+      if: 'ctx.message.contains("LENGTH:")'
+  - set:
+      field: event.outcome
+      value: success
   - rename:
       field: message
       target_field: event.original
       ignore_missing: true
+  # First pattern for object, second for database audit events.
   - grok:
       field: event.original
       patterns:
         - "%{GREEDYDATA:tmp_timestamp}\\nLENGTH : '%{GREEDYDATA:LENGTH}'\\nACTION :\\[\\d+\\] (?m)%{GREEDYDATA:action}(DATABASE USER):\\S+ '%{FIELD:db_user}'\\n(?m)%{GREEDYDATA:audit}"
+        - "%{GREEDYDATA:tmp_timestamp}\\nLENGTH: \"%{GREEDYDATA:LENGTH}\"\\n%{GREEDYDATA:audit}"
       pattern_definitions:
           "FIELD": "[^']+"
   - kv:
@@ -36,6 +50,14 @@ processors:
       trim_value: " '"
       trim_key: " "
       prefix: oracle.database_audit.
+      if: ctx.oracle_event_type == "database"
+  - kv:
+      field: audit
+      field_split: "\" "
+      value_split: ":\\S\\d+\\S (?=\")"
+      strip_brackets: true
+      prefix: oracle.database_audit.
+      if: ctx.oracle_event_type == "object"
   - grok:
       field: log.file.path
       patterns:
@@ -127,6 +149,38 @@ processors:
       target_field: client.user.name
       ignore_missing: true
   - rename:
+      field: oracle.database_audit.userid
+      target_field: client.user.id
+      ignore_missing: true
+  - rename:
+      field: oracle.database_audit.current_user
+      target_field: client.user.name
+      ignore_missing: true
+  - rename:
+      field: oracle.database_audit.comment$text
+      target_field: oracle.database_audit.comment_text
+      ignore_missing: true
+  - rename:
+      field: oracle.database_audit.obj$creator
+      target_field: oracle.database_audit.obj_creator
+      ignore_missing: true
+  - rename:
+      field: oracle.database_audit.obj$name
+      target_field: oracle.database_audit.obj_name
+      ignore_missing: true
+  - rename:
+      field: oracle.database_audit.os$userid
+      target_field: oracle.database_audit.os_userid
+      ignore_missing: true
+  - rename:
+      field: oracle.database_audit.ses$actions
+      target_field: oracle.database_audit.ses_actions
+      ignore_missing: true
+  - rename:
+      field: oracle.database_audit.ses$tid
+      target_field: oracle.database_audit.ses_tid
+      ignore_missing: true
+  - rename:
       field: oracle.database_audit.client_address
       target_field: client.address
       ignore_missing: true
@@ -183,6 +237,14 @@ processors:
       field: oracle.database_audit.entry_id
       target_field: oracle.database_audit.entry.id
       ignore_missing: true
+  - rename:
+      field: oracle.database_audit.entryid
+      target_field: oracle.database_audit.entry.id
+      ignore_missing: true
+  - convert:
+      field: oracle.database_audit.entry.id
+      type: long
+      ignore_missing: true
   - convert:
       field: process.pid
       type: long
@@ -226,6 +288,7 @@ processors:
       field:
         - tmp_timestamp
         - audit
+        - oracle_event_type
       ignore_missing: true
 on_failure:
   - set:
