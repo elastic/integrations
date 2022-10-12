@@ -29,6 +29,13 @@ After this integration has been installed for the first time, the following asse
 | Findings          | Findings communicate the outcome of a specific resource being evaluated with a specific rule. All latest findings are viewable on the findings page |
 | Benchmark Rules   | Benchmark rules are used to assess Kubernetes resources for secure configuration. Benchmark rules are viewable on the Benchmark page                                                                                                                                                   |
 
+## How KSPM works 
+
+When adding the KSPM integration, a Kubernetes manifest is generated that, when applied to a cluster, deploys an elastic agent as a DaemonSet- this ensures that all Nodes are evaluated for secure configuration. 
+When first deployed, the security posture of relevant resources is calculated immediately and every four hours after that. 
+After every evaluation, findings are sent back to elasticsearch and can be viewed as a summary on the posture dashboard or individually on the findings page. 
+
+
 ## Compatibility
 
 This integration is tested with Kubernetes 1.21.x and currently supports the security posture assessment of:
