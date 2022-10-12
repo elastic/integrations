@@ -116,7 +116,7 @@ This will cause down time in coverage if the configuration is not updated with t
 
 If you use different credentials for different tools or applications, you can use profiles to 
 configure multiple access keys in the same configuration file.
-For more details see [Create Shared Credentials File](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html#file-format-creds)
+For more details refer to [Create Shared Credentials File](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html#file-format-creds)
 
 Instead of providing the `access_key_id` and `secret_access_key` directly to the integration,
 you will provide the following values to reference the access keys in the shared credentials file:
