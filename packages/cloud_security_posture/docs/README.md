@@ -101,7 +101,7 @@ Then, use the response to provide the following information to the KSPM integrat
 * `secret_access_key`: The second part of the access key.
 * `session_token`: A token required when using temporary security credentials.
 
-Because temporary security credentials are short term, after they expire, you will need
+Because temporary security credentials are short term, after they expire you will need
 to generate new ones and manually update the package configuration to continue posture evaluations.
 This will cause down time in coverage if the configuration is not updated with the new credentials before the old ones expire. 
 
