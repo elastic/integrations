@@ -3,10 +3,24 @@
 # Sends queries to the elasticsearch service configured in _dev/deploy in order
 # to generate all existing log types. `server` and `gc` logs will be generated
 # without external trigger.
-
 set -e
 
 auth=$(echo -n $ES_SERVICE_USERNAME:$ES_SERVICE_PASSWORD | base64)
+
+# Copy the log files from this container to /var/log/ which is a bind mount of ${SERVICE_LOGS_DIR}
+# This sh must be executed by a root user in order to have permission to write in the ${SERVICE_LOGS_DIR} folder
+copy_log_files () {
+  for f in /logs/*;
+  do
+    echo "Copy ${f##*/} file..."
+
+    if [[ ! -e /var/log/${f##*/} ]]; then
+      touch /var/log/${f##*/}
+    fi
+
+    cat "$f" >> /var/log/${f##*/}
+  done
+}
 
 # create an index that will trace every indexing/searching operations
 curl --request PUT \
@@ -190,6 +204,8 @@ do
           }
       }
   }'
+
+  copy_log_files
 
   sleep 10
 done
