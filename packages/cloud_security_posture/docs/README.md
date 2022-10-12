@@ -142,7 +142,7 @@ If neither is given, the default credential profile will be used.
 
 ### AWS Permissions
 
-Specific AWS permissions are required for an IAM user to make specific AWS API calls.
+Specific AWS permissions are required for an IAM user to make the necessary AWS API calls.
 To enable the KSPM integration to collect metrics and logs from all necssary services,
 make sure these permissions are given:
 
