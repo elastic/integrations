@@ -1,12 +1,6 @@
 ---
 description: Pipeline for parsing Kibana logs
 processors:
-  - set:
-      copy_from: "@timestamp"
-      field: event.created
-  - set:
-      field: event.ingested
-      value: "{{_ingest.timestamp}}"
   - pipeline:
       name: '{{ IngestPipeline "pipeline-json" }}'
       if: |-
@@ -15,6 +9,12 @@ processors:
           && message.startsWith('{')
           && message.endsWith('}')
           && message.contains('"@timestamp"')
+  - set:
+      copy_from: "@timestamp"
+      field: event.created
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
   - set:
       field: event.kind
       value: event
