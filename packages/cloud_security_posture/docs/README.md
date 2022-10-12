@@ -144,7 +144,7 @@ If neither is given, the default credential profile will be used.
 
 Specific AWS permissions are required for an IAM user to make the necessary AWS API calls.
 To enable the KSPM integration to collect metrics and logs from all necssary services,
-make sure these permissions are given:
+make sure to grant the following permissions:
 
 * `ecr:GetRegistryPolicy`,
 * `eks:ListTagsForResource`
