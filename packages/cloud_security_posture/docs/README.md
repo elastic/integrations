@@ -25,7 +25,7 @@ After this integration has been installed for the first time, the following page
 | [Findings](https://ela.st/findings-8-5)          | Findings communicate the outcome of a specific resource being evaluated with a specific rule. All latest findings are viewable on the findings page |
 | [Benchmark Rules](https://ela.st/benchmark-rules-8-5)   | Benchmark rules are used to assess Kubernetes resources for secure configuration. Benchmark rules are viewable on the Benchmark page                                                                                                                                                   |
 
-Please read the ["Use Cases" section](https://ela.st/kspm-use-cases-8-5) of the KSPM documentation for step-by-step instructions on how to use the pages above to get insight into and improve the security posture of your Kubernetes clusters.  
+Please read the ["Use Cases"](https://ela.st/kspm-use-cases-8-5) section of the KSPM documentation for step-by-step instructions on how to use the pages above to get insight into and improve the security posture of your Kubernetes clusters.  
 
 
 ## Compatibility
