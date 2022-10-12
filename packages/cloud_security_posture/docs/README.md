@@ -112,7 +112,7 @@ configure multiple access keys in the same configuration file.
 For more details see [Create Shared Credentials File](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html#file-format-creds)
 
 Instead of providing the `access_key_id` and `secret_access_key` directly to the integration,
-you will provide two options to look up the access keys in the shared credentials file:
+you will provide the following values to reference the access keys in the shared credentials file:
 
 * `credential_profile_name`: The profile name in shared credentials file.
 * `shared_credential_file`: The directory of the shared credentials file.
