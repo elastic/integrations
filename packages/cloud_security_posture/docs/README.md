@@ -1,10 +1,6 @@
 # Kubernetes Security Posture Management 
 
-This integration periodically monitors and compares Kubernetes infrastructure against security best practices defined by CIS to help security, DevOps, and DevSecOps personnel to: 
-
-1. Identify and remediate misconfigurations 
-2. Understand the overall security posture of their Kubernetes clusters both- individually and holistically 
-
+The Kubernetes Security Posture Management (KSPM) integration allows you to identify and remediate configuration risks in the various components that make up your Kubernetes cluster. It does this by evaluating the various components of your cluster with secure configuration guidelines as defined by the Center for Internet Security (CIS) and generating “findings” with step-by-step instructions on how to remediate failed findings. Please read through the [KSPM documentation](https://ela.st/kspm) for an overview of KSPM. 
 
 We recommend reading through this entire readme before getting started with KSPM. You can also jump to the section that you're specifically interested in using the quick links below. 
 
@@ -19,21 +15,17 @@ We recommend reading through this entire readme before getting started with KSPM
 
 For in-depth, step-by-step, instructions to help you get started with KSPM, please read through [our getting started guide](https://ela.st/getting-started-with-kspm). 
 
-## Integration Assets 
+## Using KSPM  
 
-After this integration has been installed for the first time, the following assets will get created and made available in the Security solution UI: 
+After this integration has been installed for the first time, the following pages will begin to get populated with kubernetes security posture data: 
 
-| Asset             | Description                                                                                                                                         |
+| Page             | Description                                                                                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Posture Dashboard | The posture dashboard provides an overview of the security posture of all Kubernetes clusters monitored                                                |
-| Findings          | Findings communicate the outcome of a specific resource being evaluated with a specific rule. All latest findings are viewable on the findings page |
-| Benchmark Rules   | Benchmark rules are used to assess Kubernetes resources for secure configuration. Benchmark rules are viewable on the Benchmark page                                                                                                                                                   |
+| [Posture Dashboard](https://ela.st/posture-dashboard-8-5) | The posture dashboard provides an overview of the security posture of all Kubernetes clusters monitored                                                |
+| [Findings](https://ela.st/findings-8-5)          | Findings communicate the outcome of a specific resource being evaluated with a specific rule. All latest findings are viewable on the findings page |
+| [Benchmark Rules](https://ela.st/benchmark-rules-8-5)   | Benchmark rules are used to assess Kubernetes resources for secure configuration. Benchmark rules are viewable on the Benchmark page                                                                                                                                                   |
 
-## How KSPM works 
-
-When adding the KSPM integration, a Kubernetes manifest is generated that, when applied to a cluster, deploys an elastic agent as a DaemonSet- this ensures that all Nodes are evaluated for secure configuration. 
-When first deployed, the security posture of relevant resources is calculated immediately and every four hours after that. 
-After every evaluation, findings are sent back to elasticsearch and can be viewed as a summary on the posture dashboard or individually on the findings page. 
+Please read the ["Use Cases" section](https://ela.st/kspm-use-cases-8-5) of the KSPM documentation for step-by-step instructions on how to use the pages above to get insight into and improve the security posture of your Kubernetes clusters.  
 
 
 ## Compatibility
@@ -84,7 +76,7 @@ To use access keys as credentials, you need to provide:
 * `access_key_id`: The first part of the access key.
 * `secret_access_key`: The second part of the access key.
 
-For more details see [AWS Access Keys and Secret Access Keys](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
+For more details refer to [AWS Access Keys and Secret Access Keys](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
 
 #### Use temporary security credentials
 
@@ -93,7 +85,7 @@ They consist of an access key ID, a secret access key, and a security token, whi
 typically returned using `GetSessionToken`.
 IAM users with multi-factor authentication (MFA) enabled need to submit an MFA code
 while calling `GetSessionToken`.
-For more details see [Temporary Security Credentials](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html).
+For more details refer to [Temporary Security Credentials](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html).
 
 You can use AWS CLI to generate temporary credentials. 
 For example, you would use `sts get-session-token` if you have MFA enabled:
@@ -109,7 +101,7 @@ Then, use the response to provide the following information to the KSPM integrat
 * `session_token`: A token required when using temporary security credentials.
 
 Because temporary security credentials are short term, after they expire you will need
-to generate new ones and manually update the package configuration to continue posture evaluations.
+to generate new ones and manually update the integration's configuration to continue posture evaluations.
 This will cause down time in coverage if the configuration is not updated with the new credentials before the old ones expire. 
 
 #### Use a shared credentials file
@@ -135,8 +127,8 @@ you will provide the following values to reference the access keys in the shared
 An IAM role ARN is an IAM identity that you can create in your AWS account. You determine what the role has permission to do.
 A role does not have standard long-term credentials such as a password or access keys.
 Instead, when you assume a role it provides you with temporary security credentials for your role session.
-IAM role ARN can be used to specify which AWS IAM role to assume to generate temporary credentials.
-For more details refer to the [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
+An IAM role's ARN can be used to specify which AWS IAM role to use to generate temporary credentials..
+For more details refer to [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
 
 To use an IAM role's ARN, you need to provide either a [credential profile](#use-a-shared-credentials-file) or
 [access keys](#use-access-keys-directly) along with the `role_arn` advanced option.
@@ -150,7 +142,7 @@ If neither is given, the default credential profile will be used.
 ### AWS Permissions
 
 Specific AWS permissions are required for an IAM user to make the necessary AWS API calls.
-To enable the KSPM integration to collect metrics and logs from all necssary services,
+To enable the KSPM integration to collect the configuration state of all necessary services,
 make sure to grant the following permissions:
 
 * `ecr:GetRegistryPolicy`,
