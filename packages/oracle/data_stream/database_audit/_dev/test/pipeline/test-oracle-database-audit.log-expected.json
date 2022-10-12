@@ -1250,7 +1250,7 @@
                 "action": "database_audit",
                 "category": "database",
                 "kind": "event",
-                "original": "Thu Jan 28 18:27:48 2021 -05:00\nLENGTH : '2462'\nACTION :[2192] 'DECLARE\n  link_failed boolean;\n\nBEGIN\n       FOR f IN (  SELECT *\n                     FROM test_db\n                   where field1 not in ('teststring')\n                     and field1 = upper('teststring2')\n                     and test_db = upper('test.domain')\n                 ORDER BY field, test_db)\n       LOOP\n           TEST.create_job (\n               job_name     =\u003e f.owner || '.TESTSTRING',\n               job_type     =\u003e 'TESTSTRING',\n               job_action   =\u003e    'TESTSTRING '\n                               || '  TESTSTRING; '\n                               || 'TESTSTRING '\n                               || '  SELECT dummy into x from TEST@'\n                               || f.test3\n                               || '  ;'\n                               || '  TEST.put_line('''\n                               || f.test2\n                               || ' '\n                               || f.test\n                               || '     VALID !!!!!!!!!!!!!!!!!!'');'\n                               || 'END ; ');\n\n          BEGIN\n               TEST.run_job (f.owner || '.TESTSTRING ', TRUE);\n           EXCEPTION\n               WHEN OTHERS\n               THEN\n                   link_failed:=true;\n                   TEST.put_line (\n                          f.owner\n                       || ' '\n                       || f.db_link\n                       || ' INVALID (ORA'\n                       || SQLCODE\n                       || ')');\n           END;\n\n           TEST.job (f.owner || ' . TESTSTRING ');\n\n           if link_failed THEN\n              TEST.put_line (\n                     f.owner\n                  || ' '\n                  || f.TEST\n                  || ' TESTSTRING - TEST (ORA'\n                  || SQLCODE\n                  || ')');\n              insert into TEST.somestring\n                values (f.owner, f.test, 'INVALID', sysdate);\n              commit;\n           else\n              insert into TEST.somestring\n                values (f.owner, f.test, 'VALID', sysdate);\n              commit;\n           end if;\n\n       END LOOP;\nEND;'\nDATABASE USER:[1] '/'\nPRIVILEGE :[6] 'SYSDBA'\nCLIENT USER:[6] 'oracle'\nCLIENT TERMINAL:[5] 'pts/0'\nSTATUS:[1] '0'\nDBID:[10] '123'\nSESSIONID:[10] '123'\nUSERHOST:[24] 'testmachine.local'\nCLIENT ADDRESS:[0] ''\nACTION NUMBER:[2] '47'",
+                "original": "Thu Jan 28 18:27:48 2021 -05:00\nLENGTH : '2462'\nACTION :[2192] 'DECLARE\n  link_failed boolean;\n\nBEGIN\n       FOR f IN (  SELECT *\n                     FROM test_db\n                   where field1 not in ('teststring')\n                     and field1 = upper('teststring2')\n                     and test_db = upper('test.domain')\n                 ORDER BY field, test_db)\n       LOOP\n           TEST.create_job (\n               job_name     =\u003e f.owner || '.TESTSTRING',\n               job_type     =\u003e 'TESTSTRING',\n               job_action   =\u003e    'TESTSTRING '\n                               || '  TESTSTRING; '\n                               || 'TESTSTRING '\n                               || '  SELECT dummy into x from TEST@'\n                               || f.test3\n                               || '  ;'\n                               || '  TEST.put_line('''\n                               || f.test2\n                               || ' '\n                               || f.test\n                               || '     VALID !!!!!!!!!!!!!!!!!!'');'\n                               || 'END ; ');\n\n          BEGIN\n               TEST.run_job (f.owner || '.TESTSTRING ', TRUE);\n           EXCEPTION\n               WHEN OTHERS\n               THEN\n                   link_failed:=true;\n                   TEST.put_line (\n                          f.owner\n                       || ' '\n                       || f.db_link\n                       || ' INVALID (ORA'\n                       || SQLCODE\n                       || ')');\n           END;\n\n           TEST.job (f.owner || ' . TESTSTRING ');\n\n           if link_failed THEN\n              TEST.put_line (\n                     f.owner\n                  || ' '\n                  || f.TEST\n                  || ' TESTSTRING - TEST (ORA'\n                  || SQLCODE\n                  || ')');\n              insert into TEST.somestring\n                values (f.owner, f.test, 'INVALID', sysdate);\n              commit;\n           else\n              insert into TEST.somestring\n                values (f.owner, f.test, 'VALID', sysdate);\n              commit;\n           end if;\n\n       END LOOP;\nEND;'\nDATABASE USER:[1] '/'\nPRIVILEGE :[6] 'SYSDBA'\nCLIENT USER:[6] 'oracle'\nCLIENT TERMINAL:[5] 'pts/0'\nSTATUS:[1] '0'\nDBID:[10] '123'\nSESSIONID:[10] '123'\nUSERHOST:[24] 'testmachine.local'\nCLIENT ADDRESS:[0] ''\nACTION NUMBER:[2] '47'\n",
                 "outcome": "success",
                 "timezone": "-05:00",
                 "type": "access"
@@ -1292,6 +1292,113 @@
             "user": {
                 "roles": "SYSDBA"
             }
+        },
+        {
+            "@timestamp": "2021-05-14T03:20:32.000Z",
+            "client": {
+                "user": {
+                    "id": "TEST_USER",
+                    "name": "TEST_USR"
+                }
+            },
+            "ecs": {
+                "version": "8.4.0"
+            },
+            "event": {
+                "action": "database_audit",
+                "category": "database",
+                "kind": "event",
+                "original": "Thu May 13 23:20:32 2021 -04:00\nLENGTH: \"385\"\nSESSIONID:[10] \"12354\" ENTRYID:[1] \"1\" STATEMENT:[1] \"9\" USERID:[11] \"TEST_USER\" USERHOST:[25] \"test.local\" TERMINAL:[7] \"unknown\" ACTION:[3] \"103\" RETURNCODE:[1] \"0\" OBJ$CREATOR:[11] \"TEST_OBJ\" OBJ$NAME:[10] \"ATTRIBUTES\" SES$ACTIONS:[16] \"---------S------\" SES$TID:[6] \"157827\" OS$USERID:[8] \"test_id\" DBID:[10] \"12345\" CURRENT_USER:[11] \"TEST_USR\"\n",
+                "outcome": "success",
+                "timezone": "-04:00",
+                "type": "access"
+            },
+            "oracle": {
+                "database_audit": {
+                    "action": "103",
+                    "database": {
+                        "id": "12345"
+                    },
+                    "entry": {
+                        "id": 1
+                    },
+                    "length": 385,
+                    "obj_creator": "TEST_OBJ",
+                    "obj_name": "ATTRIBUTES",
+                    "os_userid": "test_id",
+                    "returncode": "0",
+                    "ses_actions": "---------S------",
+                    "ses_tid": "157827",
+                    "session_id": "12354",
+                    "statement": "9",
+                    "terminal": "unknown"
+                }
+            },
+            "related": {
+                "hosts": [
+                    "test.local"
+                ],
+                "user": [
+                    "TEST_USR"
+                ]
+            },
+            "server": {
+                "address": "test.local",
+                "domain": "test.local"
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
+        },
+        {
+            "@timestamp": "2020-08-17T09:25:25.000Z",
+            "client": {
+                "user": {
+                    "id": "TEST_USER"
+                }
+            },
+            "ecs": {
+                "version": "8.4.0"
+            },
+            "event": {
+                "action": "database_audit",
+                "category": "database",
+                "kind": "event",
+                "original": "Mon Aug 17 05:25:25 2020 -04:00\nLENGTH: \"361\"\nSESSIONID:[9] \"123456\" ENTRYID:[1] \"1\" STATEMENT:[1] \"1\" USERID:[14] \"TEST_USER\" USERHOST:[26] \"test.local\" TERMINAL:[7] \"unknown\" ACTION:[3] \"100\" RETURNCODE:[1] \"0\" COMMENT$TEXT:[99] \"TEST_COMMENT\" OS$USERID:[8] \"test_id\" DBID:[10] \"1123554\"",
+                "outcome": "success",
+                "timezone": "-04:00",
+                "type": "access"
+            },
+            "oracle": {
+                "database_audit": {
+                    "action": "100",
+                    "comment_text": "TEST_COMMENT",
+                    "database": {
+                        "id": "1123554"
+                    },
+                    "entry": {
+                        "id": 1
+                    },
+                    "length": 361,
+                    "os_userid": "test_id",
+                    "returncode": "0",
+                    "session_id": "123456",
+                    "statement": "1",
+                    "terminal": "unknown"
+                }
+            },
+            "related": {
+                "hosts": [
+                    "test.local"
+                ]
+            },
+            "server": {
+                "address": "test.local",
+                "domain": "test.local"
+            },
+            "tags": [
+                "preserve_original_event"
+            ]
         }
     ]
 }
