@@ -131,7 +131,7 @@ Instead, when you assume a role it provides you with temporary security credenti
 IAM role ARN can be used to specify which AWS IAM role to assume to generate temporary credentials.
 For more details see [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
 
-To use an IAM role ARN, you need to provide either a [credential profile](#use-a-shared-credentials-file) or
+To use an IAM role's ARN, you need to provide either a [credential profile](#use-a-shared-credentials-file) or
 [access keys](#use-access-keys-directly) along with the `role_arn` advanced option.
 `role_arn` is used to specify which AWS IAM role to assume for generating temporary credentials.
 
