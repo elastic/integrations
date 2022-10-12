@@ -95,7 +95,7 @@ For example, you would use `sts get-session-token` if you have MFA enabled:
 aws sts get-session-token --serial-number arn:aws:iam::1234:mfa/your-email@example.com --duration-seconds 129600 --token-code 123456
 ```
 
-Then, use the response to provide the following options to the KSPM integration:
+Then, use the response to provide the following information to the KSPM integration:
 
 * `access_key_id`: The first part of the access key.
 * `secret_access_key`: The second part of the access key.
