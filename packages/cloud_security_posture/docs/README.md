@@ -126,7 +126,7 @@ you will provide the following values to reference the access keys in the shared
 #### Use an IAM role Amazon Resource Name (ARN)
 
 An IAM role ARN is an IAM identity that you can create in your AWS account. You determine what the role has permission to do.
-A role does not have standard long-term credentials such as a password or access keys associated with it.
+A role does not have standard long-term credentials such as a password or access keys.
 Instead, when you assume a role it provides you with temporary security credentials for your role session.
 IAM role ARN can be used to specify which AWS IAM role to assume to generate temporary credentials.
 For more details see [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
