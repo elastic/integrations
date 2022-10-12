@@ -117,7 +117,7 @@ you will provide the following values to reference the access keys in the shared
 * `credential_profile_name`: The profile name in shared credentials file.
 * `shared_credential_file`: The directory of the shared credentials file.
 
-**Note**: If you don't provide values for all keys, the integration will use defaults:
+**Note**: If you don't provide values for all keys, the integration will use these defaults:
 - If `access_key_id`, `secret_access_key` and `role_arn` are all not provided, then the package will check for `credential_profile_name`.
 - If there is no `credential_profile_name` given, the default profile will be used.
 - If `shared_credential_file` is empty, the default directory will be used.
