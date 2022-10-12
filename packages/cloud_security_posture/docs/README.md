@@ -136,7 +136,7 @@ To use an IAM role's ARN, you need to provide either a [credential profile](#use
 `role_arn` is used to specify which AWS IAM role to assume for generating temporary credentials.
 
 Note: If `role_arn` is given, the package will check if access keys are given.
-If they are not given, the package will check for a credential profile name.
+If they are not given, the integration will check for a credential profile name.
 If neither is given, the default credential profile will be used. 
 
 
