@@ -5,7 +5,7 @@ The Kubernetes Security Posture Management (KSPM) integration allows you to iden
 We recommend reading through this entire readme before getting started with KSPM. You can also jump to the section that you're specifically interested in using the quick links below. 
 
 * [Getting Started Guide](#getting-started-guide)
-* [Integration Assets](#integration-assets)
+* [Integration Assets](#using-kspm)
 * [Compatibility](#compatibility)
 * [Integration Requirments](#requirments)
 * [Leader election](#leader-election)
