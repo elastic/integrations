@@ -106,11 +106,11 @@ To access the `events` endpoint, the user making the API call will need to have 
 | box.additional_details.shield_alert.malware_info.tags | Array of Malware Tags e.g. `FILE_MALICIOUS_EXECUTION` | keyword |
 | box.additional_details.shield_alert.priority | Box Shield priority of alert | keyword |
 | box.additional_details.shield_alert.risk_score | Risk score as calculated by Box Shield | long |
-| box.additional_details.shield_alert.rule_category | Rule Category as allocated by Box Shield | long |
+| box.additional_details.shield_alert.rule_category | Rule Category as allocated by Box Shield | keyword |
 | box.additional_details.shield_alert.rule_id | Box Shield rule ID | long |
-| box.additional_details.shield_alert.rule_name | Box Shield rule name | long |
-| box.additional_details.shield_alert.user.email | User email | long |
-| box.additional_details.shield_alert.user.id | User ID | keyword |
+| box.additional_details.shield_alert.rule_name | Box Shield rule name | keyword |
+| box.additional_details.shield_alert.user.email | User email | keyword |
+| box.additional_details.shield_alert.user.id | User ID | long |
 | box.additional_details.shield_alert.user.name | User name | keyword |
 | box.created_at | When the event object was created | date |
 | box.created_by.id | The unique identifier for the connection user. The Box Shield documentation example uses `string`, not `long`, however, box `Events` API documentation uses long | keyword |
