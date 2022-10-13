@@ -33,6 +33,11 @@
                             },
                             {
                                 "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a3e76909-120f-482f-9bba-256bef25da4f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
                                 "name": "filter-index-pattern-0",
                                 "type": "index-pattern"
                             }
@@ -87,6 +92,53 @@
                                                 }
                                             },
                                             "incompleteColumns": {}
+                                        },
+                                        "a3e76909-120f-482f-9bba-256bef25da4f": {
+                                            "columnOrder": [
+                                                "9f32a1bb-1d17-4b5b-b7b7-995e53f37f38",
+                                                "3a38e48c-e88a-4cc8-bd50-17b83f9d4a5a",
+                                                "9c6f9941-4176-4ed3-9f2d-4d530f7bb76e"
+                                            ],
+                                            "columns": {
+                                                "3a38e48c-e88a-4cc8-bd50-17b83f9d4a5a": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "9c6f9941-4176-4ed3-9f2d-4d530f7bb76e": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "9f32a1bb-1d17-4b5b-b7b7-995e53f37f38": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of threat.enrichments.indicator.type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "9c6f9941-4176-4ed3-9f2d-4d530f7bb76e",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "threat.enrichments.indicator.type"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
                                         }
                                     }
                                 }
@@ -103,10 +155,7 @@
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
-                                            "box_events.anomalous_download_alerts",
-                                            "box_events.suspicious_locations",
-                                            "box_events.suspicious_sessions",
-                                            "box_events.malicious_content_alerts"
+                                            "box_events.events"
                                         ],
                                         "type": "phrases"
                                     },
@@ -116,22 +165,7 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "data_stream.dataset": "box_events.anomalous_download_alerts"
-                                                    }
-                                                },
-                                                {
-                                                    "match_phrase": {
-                                                        "data_stream.dataset": "box_events.suspicious_locations"
-                                                    }
-                                                },
-                                                {
-                                                    "match_phrase": {
-                                                        "data_stream.dataset": "box_events.suspicious_sessions"
-                                                    }
-                                                },
-                                                {
-                                                    "match_phrase": {
-                                                        "data_stream.dataset": "box_events.malicious_content_alerts"
+                                                        "data_stream.dataset": "box_events.events"
                                                     }
                                                 }
                                             ]
@@ -172,6 +206,16 @@
                                         "showGridlines": false,
                                         "splitAccessor": "c865b852-60b2-4d16-b356-b1966fb34bd7",
                                         "xAccessor": "f7828a09-1e04-458e-8a91-ccd7f10ab1ad"
+                                    },
+                                    {
+                                        "accessors": [
+                                            "9c6f9941-4176-4ed3-9f2d-4d530f7bb76e"
+                                        ],
+                                        "layerId": "a3e76909-120f-482f-9bba-256bef25da4f",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessor": "9f32a1bb-1d17-4b5b-b7b7-995e53f37f38",
+                                        "xAccessor": "3a38e48c-e88a-4cc8-bd50-17b83f9d4a5a"
                                     }
                                 ],
                                 "legend": {
@@ -1913,7 +1957,7 @@
     "coreMigrationVersion": "7.17.0",
     "id": "box_events-ff3d9940-2e03-11ed-8003-6d5721603181",
     "migrationVersion": {
-        "dashboard": "7.17.0"
+        "dashboard": "7.17.6"
     },
     "references": [
         {
@@ -1924,6 +1968,11 @@
         {
             "id": "logs-*",
             "name": "edbbe9f0-fe40-47b4-aa4a-8067bb51fb95:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "edbbe9f0-fe40-47b4-aa4a-8067bb51fb95:indexpattern-datasource-layer-a3e76909-120f-482f-9bba-256bef25da4f",
             "type": "index-pattern"
         },
         {
