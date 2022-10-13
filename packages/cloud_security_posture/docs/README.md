@@ -120,7 +120,7 @@ you will provide the following values to reference the access keys in the shared
 - If none of `access_key_id`, `secret_access_key` and `role_arn` are provided, then the integration will check for `credential_profile_name`.
 - If there is no `Credential Profile Name` given, the default profile will be used.
 - If `shared_credential_file` is empty, the default directory will be used.
-  - For Linux, or Unix, the shared credentials file is located at `~/.aws/credentials`.
+  - For Linux or Unix, the shared credentials file is located at `~/.aws/credentials`.
 
 #### Use an IAM role Amazon Resource Name (ARN)
 
