@@ -1,8 +1,8 @@
 # Kubernetes Security Posture Management 
 
-The Kubernetes Security Posture Management (KSPM) integration allows you to identify and remediate configuration risks in the various components that make up your Kubernetes cluster. It does this by evaluating the various components of your cluster with secure configuration guidelines as defined by the Center for Internet Security (CIS) and generating “findings” with step-by-step instructions on how to remediate failed findings. Please read through the [KSPM documentation](https://ela.st/kspm) for an overview of KSPM. 
+The Kubernetes Security Posture Management (KSPM) integration allows you to identify and remediate configuration risks in the various components that make up your Kubernetes cluster. It does this by evaluating the various components of your cluster with secure configuration guidelines, as defined by the Center for Internet Security (CIS), in order to identify configuration risks. When configuration risks are discovered in your cluster, [findings](https://ela.st/findings-8-5) are generated that tell you exactly what is misconfigured and how you can remediate it. Please read through the [KSPM documentation](https://ela.st/kspm) for an overview of KSPM. 
 
-We recommend reading through this entire readme before getting started with KSPM. You can also jump to the section that you're specifically interested in using the quick links below. 
+We recommend reading through this entire readme before getting started with KSPM. You can also jump to the section you're specifically interested in using the quick links below: 
 
 * [Getting Started Guide](#getting-started-guide)
 * [Using KSPM](#using-kspm)
@@ -13,18 +13,17 @@ We recommend reading through this entire readme before getting started with KSPM
 
 ## Getting started guide
 
-For in-depth, step-by-step, instructions to help you get started with KSPM, please read through [our getting started guide](https://ela.st/getting-started-with-kspm). 
+For in-depth, step-by-step instructions to help you get started with KSPM, please read through [our getting started guide](https://ela.st/getting-started-with-kspm). 
 
 ## Using KSPM  
 
-After this integration has been installed for the first time, the pages described in the table below will begin to get populated with security posture data. Please read the ["Use Cases"](https://ela.st/kspm-use-cases-8-5) section of the KSPM documentation for step-by-step instructions on how to use these pages to get insight into and improve the security posture of your Kubernetes clusters. 
-
+After the installation of this integration, the pages described in the table below will begin to get populated with security posture data. Please read the ["Use Cases"](https://ela.st/kspm-use-cases-8-5) section of the KSPM documentation for step-by-step instructions on how to use these pages to get insight into and improve the security posture of your Kubernetes clusters. 
 
 | Page             | Description                                                                                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Posture Dashboard](https://ela.st/posture-dashboard-8-5) | The posture dashboard provides an overview of the security posture of all Kubernetes clusters monitored                                                |
-| [Findings](https://ela.st/findings-8-5)          | Findings communicate the outcome of a specific resource being evaluated with a specific rule. All latest findings are viewable on the findings page |
-| [Benchmark Rules](https://ela.st/benchmark-rules-8-5)   | Benchmark rules are used to assess Kubernetes resources for secure configuration. Benchmark rules are viewable on the Benchmark page                                                                                                                                                   |
+| Posture Dashboard | The posture dashboard provides an overview of the security posture of all Kubernetes clusters monitored. You can access the posture dashboard via the dashboards section of the security solution. Please read the [posture dashboard documentation](https://ela.st/findings-8-5) to learn more.                                                |
+| Findings          | Findings communicate the configuration risks discovered in your clusters. The findings page will always display the most up-to-date configuration risks discovered. You can access the findings page in the main navigation pane of the security solution. Please read the [findings documentation](https://ela.st/findings-8-5) to learn more. |
+| Benchmark Rules   | Benchmark rules are used to assess your Kubernetes clusters for secure configuration. You can access benchmark rules in the `Manage` section of the security solution under `CLOUD SECURITY POSTURE.` To learn more, please read the [benchmark rules documentation](https://ela.st/benchmark-rules-8-5)                                                                                                                                                   |
 
 
 ## Compatibility
@@ -38,7 +37,7 @@ This integration has not been tested on
 
 1. Amazon EKS on AWS Outposts
 
-This Integration does not currently support the security posture assessment of of the managed kubernetes services below:
+This Integration does not currently support the security posture assessment of the managed kubernetes services below:
 
 1. Google GKE
 2. Azure AKS 
@@ -97,36 +96,36 @@ Then, use the response to provide the following information to the KSPM integrat
 
 * `Access Key ID`: The first part of the access key.
 * `Secret Access Key`: The second part of the access key.
-* `Session Token`: A token required when using temporary security credentials.
+* `Session Token`: A token is required when using temporary security credentials.
 
-Because temporary security credentials are short term, after they expire you will need
-to generate new ones and manually update the integration's configuration to continue posture evaluations.
-This will cause down time in coverage if the configuration is not updated with the new credentials before the old ones expire. 
+Because temporary security credentials are short-term, after they expire you will need
+to generate new ones and manually update the integration's configuration to continue posture evaluations. There will be downtime in coverage if the configuration is not updated with the new credentials before the old ones expire. 
+
 
 #### Use a shared credentials file
 
 If you use different credentials for different tools or applications, you can use profiles to 
 configure multiple access keys in the same configuration file.
-For more details refer to [Create Shared Credentials File](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html#file-format-creds)
+For more details, refer to [Create Shared Credentials File](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html#file-format-creds).
 
 Instead of providing the `Access Key ID` and `Secret Access Key` directly to the integration,
 you will provide the following values to reference the access keys in the shared credentials file:
 
-* `Credential Profile Name`: The profile name in shared credentials file.
+* `Credential Profile Name`: The profile name in the shared credentials file.
 * `Shared Credential File`: The directory of the shared credentials file.
 
 **Note**: If you don't provide values for all keys, the integration will use these defaults:
-- If none of `Access Key ID`, `Secret Access Key` and `ARN Role` are provided, then the integration will check for `Credential Profile Name`.
-- If there is no `Credential Profile Name` given, the default profile will be used.
-- If `Shared Credential File` is empty, the default directory will be used.
+- If none of the `Access Key ID`, `Secret Access Key`, and `ARN Role` options are provided, then the integration will check for `Credential Profile Name.`
+- If there is no `Credential Profile Name` given, the integration will use the default profile.
+- If `Shared Credential File` is empty, the integration will use the default directory.
   - For Linux or Unix, the shared credentials file is located at `~/.aws/credentials`.
-- If no values are provided, the integration will use the EC2 attached role. 
+- The integration will use the EC2 attached role if no values are provided. 
 
 #### Use an IAM role Amazon Resource Name (ARN)
 
-An IAM role ARN is an IAM identity that you can create in your AWS account. You define the role's permissions.
-A role does not have standard long-term credentials such as a password or access keys.
-Instead, when you assume a role it provides you with temporary security credentials for your role session.
+An IAM role ARN is an IAM identity you can create in your AWS account. You define the role's permissions.
+A role does not have standard long-term credentials such as passwords or access keys.
+Instead, when you assume a role, it provides you with temporary security credentials for your session.
 An IAM role's ARN can be used to specify which AWS IAM role to use to generate temporary credentials..
 For more details refer to [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
 
@@ -209,7 +208,9 @@ make sure to grant the following permissions:
 ## Leader election
 
 To collect cluster level data (compared to node level information) the integration makes use of the [leader election](https://www.elastic.co/guide/en/fleet/master/kubernetes_leaderelection-provider.html) mechanism.
-This mechanism assures that the cluster level data is collected by only one of the agents running as a part of the DaemonSet and not by all of them.
+This mechanism assures that the cluster-level data is collected by only one of the agents running as a part of the DaemonSet and not all.
 
 Cluster level data example: List of the running pods.
 Node level data example: kubelet configuration.
+
+
