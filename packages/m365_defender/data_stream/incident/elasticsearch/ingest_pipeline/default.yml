@@ -2180,6 +2180,14 @@ processors:
       lang: painless
       if: ctx.json?.alerts?.evidence instanceof List
       source:
+        def convertToOrderedArray(def list) {
+          def result = new ArrayList();
+          for (element in list) {
+            result.add(element);
+          }
+          Collections.sort(result);
+          return result;
+        }
         if (!(ctx.cloud instanceof HashMap)) {
           ctx.cloud = new HashMap();
         }
@@ -2242,38 +2250,28 @@ processors:
             cloudProvider.add('azure');
           }
         }
-        if (!cloudProvider.isEmpty()) {
-          ctx.cloud.provider = cloudProvider;
-        }
-        if (!groupName.isEmpty()) {
-          ctx.group.name = groupName;
-        }
-        if (!hostId.isEmpty()) {
-          ctx.host.id = hostId;
-        }
-        if (!userDomain.isEmpty()) {
-          ctx.user.domain = userDomain;
-        }
-        if (!userId.isEmpty()) {
-          ctx.user.id = userId;
-        }
-        if (!userName.isEmpty()) {
-          ctx.user.name = userName;
-        }
-        if (!userEmail.isEmpty()) {
-          ctx.user.email = userEmail;
-        }
-        if (!processUserId.isEmpty()) {
-          ctx.process.user.id = processUserId;
-        }
-        if (!processUserName.isEmpty()) {
-          ctx.process.user.name = processUserName;
-        }
+        ctx.cloud.provider = convertToOrderedArray(cloudProvider);
+        ctx.group.name = convertToOrderedArray(groupName);
+        ctx.host.id = convertToOrderedArray(hostId);
+        ctx.user.domain = convertToOrderedArray(userDomain);
+        ctx.user.id = convertToOrderedArray(userId);
+        ctx.user.name = convertToOrderedArray(userName);
+        ctx.user.email = convertToOrderedArray(userEmail);
+        ctx.process.user.id = convertToOrderedArray(processUserId);
+        ctx.process.user.name = convertToOrderedArray(processUserName);
   - script:
       description: Set file.size, process.id, process.parent.id fields.
       lang: painless
       if: ctx.json?.alerts?.evidence instanceof List
       source:
+        def convertToOrderedArray(def list) {
+          def result = new ArrayList();
+          for (element in list) {
+            result.add(element);
+          }
+          Collections.sort(result);
+          return result;
+        }
         if (!(ctx.file instanceof HashMap)) {
           ctx.file = new HashMap();
         }
@@ -2300,15 +2298,9 @@ processors:
             }
           }
         }
-        if (!fileSize.isEmpty()) {
-          ctx.file.size = fileSize;
-        }
-        if (!processPid.isEmpty()) {
-          ctx.process.pid = processPid;
-        }
-        if (!processParentPid.isEmpty()) {
-          ctx.process.parent.pid = processParentPid;
-        }
+        ctx.file.size = convertToOrderedArray(fileSize);
+        ctx.process.pid = convertToOrderedArray(processPid);
+        ctx.process.parent.pid = convertToOrderedArray(processParentPid);
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
