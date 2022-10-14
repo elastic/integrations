@@ -1,0 +1,15 @@
+version: '2.3'
+services:
+  docker-custom-agent:
+    image: docker.elastic.co/employees/agithomas/elastic-agent-oracle-client:0.3
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo 'select 1 from dual;' | ORACLE_HOME=/opt/oracle/instantclient_21_4 /opt/oracle/instantclient_21_4/sqlplus -s sys/Oradoc_db1@oracle:1521/ORCLCDB.localdomain?sysdba=1"]
+      interval: 10s
+      timeout: 10s
+      retries: 60
+    user: root
+  oracle:
+    image: docker.elastic.co/observability-ci/database-enterprise:12.2.0.1
+    ports:
+      - 1521:1521
+      - 5500:5500
