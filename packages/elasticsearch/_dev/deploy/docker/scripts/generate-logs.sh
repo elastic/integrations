@@ -7,10 +7,10 @@ set -e
 
 auth=$(echo -n $ES_SERVICE_USERNAME:$ES_SERVICE_PASSWORD | base64)
 
-# Copy the log files from this container to /var/log/ which is a bind mount of ${SERVICE_LOGS_DIR}
+# Copy the log files content from this container to /var/log/ which is a bind mounted to ${SERVICE_LOGS_DIR}
 # This sh must be executed by a root user in order to have permission to write in the ${SERVICE_LOGS_DIR} folder
 copy_log_files () {
-  for f in /logs/*;
+  for f in /es_logs/*;
   do
     echo "Copy ${f##*/} file..."
 
@@ -18,7 +18,8 @@ copy_log_files () {
       touch /var/log/${f##*/}
     fi
 
-    cat "$f" >> /var/log/${f##*/}
+    ## appends only new lines
+    comm -23 "$f" /var/log/${f##*/} >> /var/log/${f##*/}
   done
 }
 
