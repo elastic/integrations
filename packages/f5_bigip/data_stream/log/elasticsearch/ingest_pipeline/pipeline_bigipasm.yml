@@ -152,11 +152,11 @@ processors:
       ignore_missing: true
   - rename:
       field: json.blocking_exception_reason
-      target_field: f5_bigip.log.blocking.exception.reason
+      target_field: f5_bigip.log.blocking_exception_reason
       ignore_missing: true
   - rename:
       field: json.captcha_result
-      target_field: f5_bigip.log.captcha.result
+      target_field: f5_bigip.log.captcha_result
       ignore_missing: true
   - rename:
       field: json.fragment
@@ -164,15 +164,15 @@ processors:
       ignore_missing: true
   - rename:
       field: json.http_class_name
-      target_field: f5_bigip.log.http.class.name
+      target_field: f5_bigip.log.http.class_name
       ignore_missing: true
   - rename:
       field: json.ip_address_intelligence
-      target_field: f5_bigip.log.ip_address.intelligence
+      target_field: f5_bigip.log.ip_address_intelligence
       ignore_missing: true
   - convert:
       field: json.management_ip_address
-      target_field: f5_bigip.log.management.ip.address
+      target_field: f5_bigip.log.management.ip_address
       if: ctx.json?.management_ip_address != ''
       type: ip
       ignore_missing: true
@@ -182,12 +182,12 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: '{{{f5_bigip.log.management.ip.address}}}'
+      value: '{{{f5_bigip.log.management.ip_address}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: json.management_ip_address_2
-      target_field: f5_bigip.log.management.ip.address_2
+      target_field: f5_bigip.log.management.ip_address_2
       if: ctx.json?.management_ip_address_2 != ''
       type: ip
       ignore_missing: true
@@ -197,7 +197,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: '{{{f5_bigip.log.management.ip.address_2}}}'
+      value: '{{{f5_bigip.log.management.ip_address_2}}}'
       allow_duplicates: false
       ignore_failure: true
   - date:
@@ -216,15 +216,15 @@ processors:
       ignore_missing: true
   - rename:
       field: json.query_string
-      target_field: f5_bigip.log.query_string
+      target_field: f5_bigip.log.query.string
       ignore_missing: true
   - rename:
       field: json.request
-      target_field: f5_bigip.log.request_detail
+      target_field: f5_bigip.log.request.detail
       ignore_missing: true
   - rename:
       field: json.request_status
-      target_field: f5_bigip.log.request_status
+      target_field: f5_bigip.log.request.status
       ignore_missing: true
   - convert:
       field: json.response_code
@@ -238,11 +238,11 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.route_domain
-      target_field: f5_bigip.log.route.domain
+      target_field: f5_bigip.log.route_domain
       ignore_missing: true
   - append:
       field: related.hosts
-      value: '{{{f5_bigip.log.route.domain}}}'
+      value: '{{{f5_bigip.log.route_domain}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -267,7 +267,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.staged_threat_campaign_names
-      target_field: f5_bigip.log.staged.threat_campaign.names
+      target_field: f5_bigip.log.staged.threat_campaign_names
       ignore_missing: true
   - rename:
       field: json.sub_violations
@@ -287,7 +287,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.threat_campaign_names
-      target_field: f5_bigip.log.threat_campaign.names
+      target_field: f5_bigip.log.threat_campaign_names
       ignore_missing: true
   - rename:
       field: json.uri
@@ -309,11 +309,11 @@ processors:
       ignore_missing: true
   - rename:
       field: json.virus_name
-      target_field: f5_bigip.log.virus.name
+      target_field: f5_bigip.log.virus_name
       ignore_missing: true
   - rename:
       field: json.web_application_name
-      target_field: f5_bigip.log.web_application.name
+      target_field: f5_bigip.log.web_application_name
       ignore_missing: true
   - rename:
       field: json.websocket_direction
@@ -321,11 +321,11 @@ processors:
       ignore_missing: true
   - rename:
       field: json.websocket_message_type
-      target_field: f5_bigip.log.websocket.message.type
+      target_field: f5_bigip.log.websocket.message_type
       ignore_missing: true
   - convert:
       field: json.x_forwarded_for_header_value
-      target_field: f5_bigip.log.x_forwarded_for.header.value
+      target_field: f5_bigip.log.x_forwarded_for_header_value
       if: ctx.json?.x_forwarded_for_header_value != ''
       type: ip
       ignore_missing: true
@@ -335,7 +335,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: '{{{f5_bigip.log.x_forwarded_for.header.value}}}'
+      value: '{{{f5_bigip.log.x_forwarded_for_header_value}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -348,11 +348,11 @@ processors:
       ignore_missing: true
   - rename:
       field: json.ip_route_domain
-      target_field: f5_bigip.log.ip.route.domain
+      target_field: f5_bigip.log.ip_route_domain
       ignore_missing: true
   - append:
       field: related.hosts
-      value: '{{{f5_bigip.log.ip.route.domain}}}'
+      value: '{{{f5_bigip.log.ip_route_domain}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -365,11 +365,16 @@ processors:
       ignore_missing: true
   - rename:
       field: json.unit_host
-      target_field: f5_bigip.log.unit.host
+      target_field: f5_bigip.log.unit_host
       ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{f5_bigip.log.unit_host}}}'
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.violate_details
-      target_field: f5_bigip.log.violate.details
+      target_field: f5_bigip.log.violate_details
       ignore_missing: true
   - rename:
       field: json.microservice
@@ -397,7 +402,131 @@ processors:
       ignore_missing: true
   - rename:
       field: json.vs_name
-      target_field: f5_bigip.log.vs.name
+      target_field: f5_bigip.log.vs_name
+      ignore_missing: true
+  - rename:
+      field: json.compression_method
+      target_field: f5_bigip.log.compression_method
+      ignore_missing: true
+  - rename:
+      field: json.client_type
+      target_field: f5_bigip.log.client.type
+      ignore_missing: true
+  - rename:
+      field: json.conviction_traps
+      target_field: f5_bigip.log.conviction_traps
+      ignore_missing: true
+  - rename:
+      field: json.credential_stuffing_lookup_result
+      target_field: f5_bigip.log.credential_stuffing_lookup_result
+      ignore_missing: true
+  - rename:
+      field: json.enforced_by
+      target_field: f5_bigip.log.enforced_by
+      ignore_missing: true
+  - rename:
+      field: json.enforcement_action
+      target_field: f5_bigip.log.enforcement_action
+      ignore_missing: true
+  - date:
+      field: json.epoch_time
+      target_field: f5_bigip.log.epoch_time
+      if: ctx.json?.epoch_time != null && ctx.json.epoch_time != ''
+      formats:
+        - UNIX
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ip_with_route_domain
+      target_field: f5_bigip.log.ip_with_route_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{f5_bigip.log.ip_with_route_domain}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.is_truncated
+      target_field: f5_bigip.log.is_truncated
+      ignore_missing: true
+  - rename:
+      field: json.likely_false_positive_sig_ids
+      target_field: f5_bigip.log.likely_false_positive_sig_ids
+      ignore_missing: true
+  - rename:
+      field: json.login_result
+      target_field: f5_bigip.log.login_result
+      ignore_missing: true
+  - rename:
+      field: json.mobile_application_name
+      target_field: f5_bigip.log.mobile_application.name
+      ignore_missing: true
+  - rename:
+      field: json.mobile_application_version
+      target_field: f5_bigip.log.mobile_application.version
+      ignore_missing: true
+  - rename:
+      field: json.operation_id
+      target_field: f5_bigip.log.operation.id
+      ignore_missing: true
+  - rename:
+      field: json.password_hash_prefix
+      target_field: f5_bigip.log.password_hash_prefix
+      ignore_missing: true
+  - rename:
+      field: json.protocol_info
+      target_field: f5_bigip.log.protocol_info
+      ignore_missing: true
+  - rename:
+      field: json.sig_set_names
+      target_field: f5_bigip.log.sig.set_names
+      ignore_missing: true
+  - convert:
+      field: json.slot_number
+      target_field: f5_bigip.log.slot.number
+      if: ctx.json?.slot_number != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.staged_sig_set_names
+      target_field: f5_bigip.log.staged.sig.set_names
+      ignore_missing: true
+  - rename:
+      field: json.tap_requested_actions
+      target_field: f5_bigip.log.tap.requested_actions
+      ignore_missing: true
+  - convert:
+      field: json.tap_sent_token
+      target_field: f5_bigip.log.tap.sent_token
+      if: ctx.json?.tap_sent_token != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.tap_transaction_id
+      target_field: f5_bigip.log.tap.transaction_id
+      ignore_missing: true
+  - rename:
+      field: json.unit_hostname
+      target_field: f5_bigip.log.unit_hostname
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{f5_bigip.log.unit_hostname}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.violation_details
+      target_field: f5_bigip.log.violation.details
       ignore_missing: true
   - remove:
       field: json

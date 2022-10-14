@@ -47,19 +47,19 @@ processors:
       ignore_failure: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline_bigipltm" }}'
-      if: ctx.json?.telemetryEventCategory == "LTM"
+      if: ctx.json?.telemetryEventCategory == 'LTM'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_bigipafm" }}'
-      if: ctx.json?.telemetryEventCategory == "AFM"
+      if: ctx.json?.telemetryEventCategory == 'AFM'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_bigipapm" }}'
-      if: ctx.json?.telemetryEventCategory == "APM"
+      if: ctx.json?.telemetryEventCategory == 'APM'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_bigipasm" }}'
-      if: ctx.json?.telemetryEventCategory == "ASM"
+      if: ctx.json?.telemetryEventCategory == 'ASM'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_bigipavr" }}'
-      if: ctx.json?.telemetryEventCategory == "AVR"
+      if: ctx.json?.telemetryEventCategory == 'AVR'
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
@@ -70,7 +70,7 @@ processors:
       lang: painless
       source:
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));

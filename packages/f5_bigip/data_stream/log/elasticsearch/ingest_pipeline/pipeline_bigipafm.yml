@@ -73,11 +73,11 @@ processors:
       ignore_failure: true
   - rename:
       field: json.ip_protocol
-      target_field: f5_bigip.log.ip.protocol
+      target_field: f5_bigip.log.ip_protocol
       ignore_missing: true
   - set:
       field: network.transport
-      copy_from: f5_bigip.log.ip.protocol
+      copy_from: f5_bigip.log.ip_protocol
       ignore_failure: true
   - lowercase:
       field: network.transport
@@ -150,7 +150,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.bigip_mgmt_ip
-      target_field: f5_bigip.log.mgmt.ip
+      target_field: f5_bigip.log.mgmt_ip
       if: ctx.json?.bigip_mgmt_ip != ''
       type: ip
       ignore_missing: true
@@ -160,7 +160,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: '{{{f5_bigip.log.mgmt.ip}}}'
+      value: '{{{f5_bigip.log.mgmt_ip}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -222,24 +222,24 @@ processors:
       ignore_missing: true
   - rename:
       field: json.route_domain
-      target_field: f5_bigip.log.route.domain
+      target_field: f5_bigip.log.route_domain
       ignore_missing: true
   - append:
       field: related.hosts
-      value: '{{{f5_bigip.log.route.domain}}}'
+      value: '{{{f5_bigip.log.route_domain}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.sa_translation_pool
-      target_field: f5_bigip.log.sa.translation.pool
+      target_field: f5_bigip.log.sa_translation.pool
       ignore_missing: true
   - rename:
       field: json.sa_translation_type
-      target_field: f5_bigip.log.sa.translation.type
+      target_field: f5_bigip.log.sa_translation.type
       ignore_missing: true
   - rename:
       field: json.send_to_vs
-      target_field: f5_bigip.log.send_to.vs
+      target_field: f5_bigip.log.send_to_vs
       ignore_missing: true
   - rename:
       field: json.source_fqdn
@@ -293,15 +293,15 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.translated_ip_protocol
-      target_field: f5_bigip.log.translated.ip.protocol
+      target_field: f5_bigip.log.translated.ip_protocol
       ignore_missing: true
   - rename:
       field: json.translated_route_domain
-      target_field: f5_bigip.log.translated.route.domain
+      target_field: f5_bigip.log.translated.route_domain
       ignore_missing: true
   - append:
       field: related.hosts
-      value: '{{{f5_bigip.log.translated.route.domain}}}'
+      value: '{{{f5_bigip.log.translated.route_domain}}}'
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -376,7 +376,7 @@ processors:
         - f5_bigip.log.dest.fqdn
         - f5_bigip.log.source.fqdn
         - f5_bigip.log.application.name
-        - f5_bigip.log.ip.protocol
+        - f5_bigip.log.ip_protocol
         - f5_bigip.log.source.ip
         - f5_bigip.log.source.port
         - f5_bigip.log.source.user_group

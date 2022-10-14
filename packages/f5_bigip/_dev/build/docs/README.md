@@ -36,7 +36,7 @@ The reference link for requirements of telemetry streaming is [here](https://clo
 
 The reference link for requirements of Application Services 3(AS3) Extension is [here](https://clouddocs.f5.com/products/extensions/f5-appsvcs-extension/latest/userguide/prereqs.html).
 
-This module has been tested against `F5 BIG-IP version 17.0` and `Telemetry Streaming version 1.30`.
+This module has been tested against `F5 BIG-IP version 16.1.0`, `Telemetry Streaming version 1.32.0` and `AS3 version 3.40.0`.
 
 ## Setup
 

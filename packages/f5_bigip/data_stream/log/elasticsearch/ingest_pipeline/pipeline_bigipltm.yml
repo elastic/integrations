@@ -103,14 +103,14 @@ processors:
       ignore_failure: true
   - rename:
       field: json.http_user_agent
-      target_field: f5_bigip.log.http.user.agent
+      target_field: f5_bigip.log.http.user_agent
       ignore_missing: true
   - user_agent:
-      field: f5_bigip.log.http.user.agent
+      field: f5_bigip.log.http.user_agent
       on_failure:
         - set:
             field: user_agent.original
-            copy_from: f5_bigip.log.http.user.agent
+            copy_from: f5_bigip.log.http.user_agent
             ignore_failure: true
   - rename:
       field: json.event_source
@@ -154,24 +154,24 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      if: ctx.f5_bigip?.log?.bytes?.in != null && ctx.f5_bigip?.log?.bytes?.out != null
+      if: ctx.f5_bigip?.log?.bytes?.in != null && ctx.f5_bigip.log.bytes.out != null
       source: |
         ctx.network = new HashMap();
-        ctx.network.bytes = ctx.f5_bigip?.log?.bytes?.in + ctx.f5_bigip?.log?.bytes?.out;
+        ctx.network.bytes = ctx.f5_bigip.log.bytes.in + ctx.f5_bigip.log.bytes.out;
   - set:
       field: network.direction
       value: ingress
-      if: ctx.f5_bigip?.log?.bytes?.in != null && ctx.f5_bigip?.log?.bytes?.in != 0 && ctx.f5_bigip?.log?.bytes?.out == 0
+      if: ctx.f5_bigip?.log?.bytes?.in != null && ctx.f5_bigip.log.bytes.in != 0 && ctx.f5_bigip.log.bytes.out == 0
       ignore_failure: true
   - set:
       field: network.direction
       value: egress
-      if: ctx.f5_bigip?.log?.bytes?.out != null && ctx.f5_bigip?.log?.bytes?.out != 0 && ctx.f5_bigip?.log?.bytes?.in == 0
+      if: ctx.f5_bigip?.log?.bytes?.out != null && ctx.f5_bigip.log.bytes.out != 0 && ctx.f5_bigip.log.bytes.in == 0
       ignore_failure: true
   - set:
       field: network.protocol
       value: http
-      if: ctx.f5_bigip?.log?.http?.method != null && ctx.f5_bigip?.log?.http?.method != ''
+      if: ctx.f5_bigip?.log?.http?.method != null && ctx.f5_bigip.log.http.method != ''
       ignore_failure: true
   - rename:
       field: json.cookie
@@ -179,7 +179,7 @@ processors:
       ignore_missing: true
   - rename:
       field: json.http_content_type
-      target_field: f5_bigip.log.http.content.type
+      target_field: f5_bigip.log.http.content_type
       ignore_missing: true
   - rename:
       field: json.http_host
@@ -293,7 +293,7 @@ processors:
         - f5_bigip.log.src.ip
         - f5_bigip.log.user.name
         - f5_bigip.log.application.name
-        - f5_bigip.log.http.user.agent
+        - f5_bigip.log.http.user_agent
       ignore_failure: true
       ignore_missing: true
 on_failure:
