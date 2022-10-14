@@ -17,7 +17,7 @@ For in-depth, step-by-step instructions to help you get started with KSPM, pleas
 
 ## Using KSPM  
 
-After the installation of this integration, the pages described in the table below will begin to get populated with security posture data. Please read the ["Use Cases"](https://ela.st/kspm-use-cases-8-5) section of the KSPM documentation for step-by-step instructions on how to use these pages to get insight into and improve the security posture of your Kubernetes clusters. 
+After you install this integration, the pages described in the table below will begin to get populated with security posture data. Please read the ["Use Cases"](https://ela.st/kspm-use-cases-8-5) section of the KSPM documentation for step-by-step instructions on how to use these pages to get insight into and improve the security posture of your Kubernetes clusters. 
 
 | Page             | Description                                                                                                                                         |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
