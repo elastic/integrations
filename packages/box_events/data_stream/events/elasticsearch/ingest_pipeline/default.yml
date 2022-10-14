@@ -18,13 +18,6 @@ processors:
       formats:
         - yyyy-MM-dd'T'hh:mm:ssXXX
       if: "ctx.box?.source != null"
-  - date:
-      field: box.additional_details.shield_alert.alert_summary.historical_period.date_range.start_date
-      target_field: "@timestamp"
-      ignore_failure: true
-      formats:
-        - yyyy-MM-dd'T'hh:mm:ssXXX
-      if: "ctx.box?.additional_details != null"
   - rename:
       field: box.session_id
       target_field: box.session.id
@@ -717,6 +710,15 @@ processors:
             if (ctx?.related.ip == null) {
                 ctx.related.ip = new ArrayList();
             }
+            if (ctx?.related.description == null) {
+                ctx.related.description = new ArrayList();
+            }
+            if (ctx?.related.location == null) {
+                ctx.related.location = new ArrayList();
+            }
+            if (ctx?.related.indicator_type == null) {
+                ctx.related.indicator_type = new ArrayList();
+            }
         }
 #
   - script:
@@ -724,17 +726,18 @@ processors:
       lang: painless
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Suspicious Sessions")) {
+            if (ctx.additional_details?.shield_alert?.alert_summary?.sessions.length > 0 &&
+                ctx.additional_details.shield_alert.alert_summary.sessions[0].activities.length > 0) {
+               ctx.shield_date = ctx.additional_details.shield_alert.alert_summary.sessions[0].activities[0].occurred_at;
+            }
             ctx.event.category.add("network");
             ctx.event.type.add("access");
             ctx.event.type.add("connection");
             if (ctx?.threat?.enrichments == null) {
                 ctx.threat.enrichments = new ArrayList();
             }
-            List l = new ArrayList();
             for (session in ctx.box.additional_details.shield_alert.alert_summary.sessions) {
                 for (activity in session?.activities) {
-                    l.add(activity.ip_info.ip);
-                    ctx.related.ip.add(activity.ip_info.ip);
                     if (session.session_type.equals("suspicious")) {
                         Map indicator = new HashMap();
                         indicator.indicator = new HashMap();
@@ -752,7 +755,11 @@ processors:
                             activity.service_name);
                         indicator.indicator.put("provider",activity.service_name);
                         indicator.indicator.put("type","user-account");    
-                        ctx.threat.enrichments.add(indicator)
+                        ctx.threat.enrichments.add(indicator);
+                        ctx.related.ip.add(geo.ip);
+                        ctx.related.location.add(geo.location);
+                        ctx.related.description.add(indicator.indicator.description);
+                        ctx.related.indicator_type.add(indicator.indicator.type);
                     }
                 }
             }
@@ -763,6 +770,9 @@ processors:
       lang: painless
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Suspicious Locations")) {
+            if (ctx.additional_details?.shield_alert?.alert_summary?.alert_activities.length > 0) {
+               ctx.shield_date = ctx.additional_details.shield_alert.alert_summary.alert_activities[0].occurred_at;
+            } 
             ctx.event.category.add("network");
             ctx.event.type.add("access");
             ctx.event.type.add("connection");
@@ -777,7 +787,6 @@ processors:
                 location.put("lat",alert_activity.ip_info.latitude);
                 Map geo = new HashMap();
                 geo.put("ip",alert_activity.ip_info.ip);
-                ctx.related.ip.add(alert_activity.ip_info.ip);
                 geo.put("location",location);
                 indicator.indicator.put("geo",geo);
                 indicator.indicator.put("description",
@@ -791,19 +800,21 @@ processors:
                 } else { 
                     indicator.indicator.put("type","ipv4-addr");   
                 }  
-                ctx.threat.enrichments.add(indicator)
+                ctx.threat.enrichments.add(indicator);
+                ctx.related.ip.add(geo.ip);
+                ctx.related.location.add(geo.location);
+                ctx.related.description.add(indicator.indicator.description);
+                ctx.related.indicator_type.add(indicator.indicator.type);
             }
         }
-  - remove:
-      field: 
-        - box.additional_details.shield_alert.alert_summary.alert_activities
-      ignore_failure: true
-      ignore_missing: true
   - script:
       description: Unpack Anomalous Download properties
       lang: painless
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Anomalous Download")) {
+            if (ctx.additional_details?.shield_alert?.alert_summary?.anomaly_period?.date_range?.start_date != null) {
+               ctx.shield_date = ctx.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date;
+            }
             ctx.event.category.add("file");
             ctx.event.type.add("access");
             if (ctx?.threat?.enrichments == null) {
@@ -812,7 +823,6 @@ processors:
             List l = new ArrayList();
             for (ip in ctx.box.additional_details.shield_alert.alert_summary.download_ips) {
                 l.add(ip.ip);
-                ctx.related.ip.add(ip.ip);
                 Map indicator = new HashMap();
                 indicator.indicator = new HashMap();
                 indicator.indicator.ip = ip.ip;
@@ -822,15 +832,19 @@ processors:
                 indicator.indicator.sightings = ctx.box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count;
                 indicator.indicator.type = "file";
                 ctx.threat.enrichments.add(indicator);
+                ctx.related.ip.add(ip.ip);
+                ctx.related.description.add(indicator.indicator.description);
+                ctx.related.indicator_type.add(indicator.indicator.type);
             }
-            List setList = new ArrayList(new HashSet(l));
-            ctx.related.ip = setList;
         }
   - script:
       description: Unpack Malicious Content properties
       lang: painless
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Malicious Content")) {
+            if (ctx.additional_details?.shield_alert?.alert_summary?.upload_activity?.occurred_at != null) {
+               ctx.shield_date = ctx.additional_details.shield_alert.alert_summary.upload_activity.occurred_at;
+            }
             ctx.event.category.add("malware");
             if (ctx?.threat?.indicator == null) {
                 ctx.threat.indicator = new HashMap();
@@ -843,15 +857,24 @@ processors:
                     ". " + ctx.box.additional_details.shield_alert.malware_info.description +
                     " see " + ctx.box.additional_details.shield_alert.malware_info.detail_link;
             ctx.threat.indicator.ip = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip;
-            ctx.related.ip.add(ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip);
             ctx.threat.indicator.provider = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.service_name;
             ctx.threat.indicator.type = "software";
             ctx.threat.indicator.first_seen = ctx.box.additional_details.shield_alert.malware_info.first_seen;
             ctx.threat.indicator.last_seen = ctx.box.additional_details.shield_alert.malware_info.last_seen;
             ctx.threat.indicator.reference = ctx.box.additional_details.shield_alert.malware_info.detail_link;
+            ctx.related.ip.add(ctx.threat.indicator.ip);
+            ctx.related.description.add(ctx.threat.indicator.description);
+            ctx.related.indicator_type.add(ctx.threat.indicator.type);
         }
 # post-script processors dependent on outcome of scripts, or append to fields
 # created by scripts - prefer allow_duplicates = false to assuming scripts always terminated
+  - date:
+      field: shield_date
+      target_field: "@timestamp"
+      ignore_failure: true
+      formats:
+        - yyyy-MM-dd'T'hh:mm:ssXXX
+      if: "ctx.shield_date != null"
   - append:
       field: related.ip
       value: "{{{threat.indicator.ip}}}"
@@ -939,6 +962,7 @@ processors:
 # remove fields remapped by scripts
   - remove:
       field: 
+        - box.additional_details.shield_alert.alert_summary.alert_activities
         - box.additional_details.shield_alert.alert_summary.alert_summary.anomaly_period.date_range.end_date
         - box.additional_details.shield_alert.alert_summary.alert_summary.anomaly_period.date_range.start_date
         - box.additional_details.shield_alert.alert_summary.alert_summary.description
@@ -957,6 +981,7 @@ processors:
         - box.additional_details.shield_alert.malware_info.first_seen
         - box.additional_details.shield_alert.malware_info.last_seen
         - box.additional_details.shield_alert.priority
+        - shield_date
       ignore_failure: true
       ignore_missing: true
   - script:
