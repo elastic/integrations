@@ -706,11 +706,17 @@ processors:
             if (ctx.event.category == null) {
                 ctx.event.category = new ArrayList();
             }
+            ctx.event.category.add("threat");
             if (ctx.event.type == null) {
                 ctx.event.type = new ArrayList();
             }
-            ctx.event.category.add("threat");
             ctx.event.type.add("indicator");
+            if (ctx?.related == null) {
+                ctx.related = new HashMap();
+            }
+            if (ctx?.related.ip == null) {
+                ctx.related.ip = new ArrayList();
+            }
         }
 #
   - script:
@@ -728,6 +734,7 @@ processors:
             for (session in ctx.box.additional_details.shield_alert.alert_summary.sessions) {
                 for (activity in session?.activities) {
                     l.add(activity.ip_info.ip);
+                    ctx.related.ip.add(activity.ip_info.ip);
                     if (session.session_type.equals("suspicious")) {
                         Map indicator = new HashMap();
                         indicator.indicator = new HashMap();
@@ -749,11 +756,6 @@ processors:
                     }
                 }
             }
-            List setList = new ArrayList(new HashSet(l));
-            if (ctx?.related == null) {
-                ctx.related = new HashMap();
-            }
-            ctx.related.ip = setList;
         }
 #
   - script:
@@ -775,6 +777,7 @@ processors:
                 location.put("lat",alert_activity.ip_info.latitude);
                 Map geo = new HashMap();
                 geo.put("ip",alert_activity.ip_info.ip);
+                ctx.related.ip.add(alert_activity.ip_info.ip);
                 geo.put("location",location);
                 indicator.indicator.put("geo",geo);
                 indicator.indicator.put("description",
@@ -809,6 +812,7 @@ processors:
             List l = new ArrayList();
             for (ip in ctx.box.additional_details.shield_alert.alert_summary.download_ips) {
                 l.add(ip.ip);
+                ctx.related.ip.add(ip.ip);
                 Map indicator = new HashMap();
                 indicator.indicator = new HashMap();
                 indicator.indicator.ip = ip.ip;
@@ -820,9 +824,6 @@ processors:
                 ctx.threat.enrichments.add(indicator);
             }
             List setList = new ArrayList(new HashSet(l));
-            if (ctx?.related == null) {
-                ctx.related = new HashMap();
-            }
             ctx.related.ip = setList;
         }
   - script:
@@ -842,6 +843,7 @@ processors:
                     ". " + ctx.box.additional_details.shield_alert.malware_info.description +
                     " see " + ctx.box.additional_details.shield_alert.malware_info.detail_link;
             ctx.threat.indicator.ip = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip;
+            ctx.related.ip.add(ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip);
             ctx.threat.indicator.provider = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.service_name;
             ctx.threat.indicator.type = "software";
             ctx.threat.indicator.first_seen = ctx.box.additional_details.shield_alert.malware_info.first_seen;
@@ -849,77 +851,91 @@ processors:
             ctx.threat.indicator.reference = ctx.box.additional_details.shield_alert.malware_info.detail_link;
         }
 # post-script processors dependent on outcome of scripts, or append to fields
-# created by scripts
+# created by scripts - prefer allow_duplicates = false to assuming scripts always terminated
   - append:
       field: related.ip
       value: "{{{threat.indicator.ip}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.threat?.indicator?.ip != null
   - append:
       field: related.ip
       value: "{{{client.ip}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.client?.ip != null
   - append:
       field: related.user
       value: "{{{box.source.created_by.id}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.source?.created_by?.id != null
   - append:
       field: related.user
       value: "{{{box.source.created_by.login}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.source?.created_by?.login != null
   - append:
       field: related.user
       value: "{{{box.source.created_by.name}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.source?.created_by?.name != null
   - append:
       field: related.user
       value: "{{{box.source.modified_by.id}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.source?.modified_by?.id != null
   - append:
       field: related.user
       value: "{{{box.source.modified_by.login}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.source?.modified_by?.login != null
   - append:
       field: related.user
       value: "{{{box.source.modified_by.name}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.source?.modified_by?.name != null
   - append:
       field: related.user
       value: "{{{box.source.owned_by.id}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.source?.owned_by?.id != null
   - append:
       field: related.user
       value: "{{{box.source.owned_by.login}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.source?.owned_by?.login != null
   - append:
       field: related.user
       value: "{{{box.source.owned_by.name}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.source?.owned_by?.name != null
   - append:
       field: related.user
       value: "{{{user.effective.email}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.user?.effective?.email != null
   - append:
       field: related.user
       value: "{{{user.effective.id}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.user?.effective?.id != null
   - append:
       field: related.user
       value: "{{{user.effective.name}}}"
       ignore_failure: true
       allow_duplicates: false
+      if: ctx.box.user?.effective?.name != null
 # remove fields remapped by scripts
   - remove:
       field: 
@@ -965,6 +981,42 @@ processors:
       field: threat.indicator.ip
       target_field: threat.indicator.geo
       ignore_missing: true
+  - script:
+      description: Initialize related.geo prior to geoip
+      lang: painless
+      source: |
+        if (ctx.related?.ip != null) {
+              ctx.related.geo = new ArrayList();
+              for (ip in ctx.related.ip) {
+                Map geo = new HashMap();
+                geo.put("ip",ip);
+                ctx.related.geo.add(geo);
+              }
+            }
+  - foreach:
+      field: related.geo
+      ignore_missing: true
+      processor:
+        geoip:
+          field: "_ingest._value.ip"
+          target_field: "_ingest._value.location"
+          ignore_missing: true
+  - script:
+      description: Collate derived locations to related.location
+      lang: painless
+      source: |
+        if (ctx.related?.geo != null) {
+          ctx.related.location = new ArrayList();
+          for (geo in ctx.related.geo) {
+            if (geo.location != null) {
+              ctx.related.location.add(geo.location.location);
+            }
+          }
+        }
+  - remove:
+      field: "related.geo"   
+      ignore_failure: true
+      ignore_missing: true      
 # AS look-ups on enrichments within Array
   - foreach:
       field: threat.enrichments
