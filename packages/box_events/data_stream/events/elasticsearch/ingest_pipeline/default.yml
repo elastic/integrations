@@ -36,14 +36,6 @@ processors:
       value: "alert"
       if: "ctx.box?.additional_details?.shield_alert != null"
       ignore_failure: true
-  - rename:
-      field: box.event_type
-      target_field: event.action
-      ignore_missing: true
-  - rename:
-      field: box.event_id
-      target_field: event.id
-      ignore_missing: true
   - script:
       description: Set event.category + event.type
       lang: painless
@@ -574,6 +566,14 @@ processors:
           ctx.event.category = eventType.map.get('category');
           ctx.event.type = eventType.map.get('type');
         }   
+  - rename:
+      field: box.event_type
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: box.event_id
+      target_field: event.id
+      ignore_missing: true
 # If a user or item triggers an event, The response of the GET /events endpoint contains an event source object.
   - convert:
       field: box.source.sequence_id
