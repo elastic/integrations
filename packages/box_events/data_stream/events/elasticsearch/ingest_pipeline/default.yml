@@ -548,7 +548,7 @@ processors:
           map:
             category: ['file']
             type: ['creation']
-        user_authenticate_oauth2_access_token_create:
+        USER_AUTHENTICATE_OAUTH2_ACCESS_TOKEN_CREATE:
           map:
             category: ['authentication','iam']
             type: ['user','creation']
@@ -870,6 +870,43 @@ processors:
             ctx.threat.indicator.type = "software";
             ctx.related.indicator_type.add(ctx.threat.indicator.type);
         }
+# Deduplicate Arrays 
+  - script:
+      description: Deduplicate Arrays
+      lang: painless
+      source: |
+        if (ctx.event.category != null) {
+            ctx.event.category = ctx.event.category.stream()
+              .distinct()
+              .collect(Collectors.toList());
+        }
+        if (ctx.event.type != null) {
+            ctx.event.type = ctx.event.type.stream()
+              .distinct()
+              .collect(Collectors.toList());
+        } /*
+        if (ctx.related != null) {
+            if (ctx.related.description != null) {
+                ctx.related.description = ctx.related.description.stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            }
+            if (ctx.related.indicator_type != null) {
+                ctx.related.indicator_type = ctx.related.indicator_type.stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            }
+            if (ctx.related.ip != null) {
+                ctx.related.ip = ctx.related.ip.stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            }
+            if (ctx.related.location != null) {
+                ctx.related.location = ctx.related.location.stream()
+                    .distinct()
+                    .collect(Collectors.toList());
+            }
+        } */
 # post-script processors dependent on outcome of scripts, or append to fields
 # created by scripts - prefer allow_duplicates = false to assuming scripts always terminated
   - date:
