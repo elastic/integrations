@@ -40,6 +40,11 @@
                                 "id": "logs-*",
                                 "name": "filter-index-pattern-0",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-index-pattern-1",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -66,7 +71,7 @@
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": true,
-                                                        "size": 3
+                                                        "size": 10
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "event.type"
@@ -132,7 +137,7 @@
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": true,
-                                                        "size": 3
+                                                        "size": 10
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "event.category"
@@ -169,6 +174,27 @@
                                                     }
                                                 }
                                             ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "indexRefName": "filter-index-pattern-1",
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "SHIELD_ALERT"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.action": "SHIELD_ALERT"
                                         }
                                     }
                                 }
@@ -702,8 +728,8 @@
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
-                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true},\"id\":\"9b84ad63-e18b-4c0b-b40e-d1c0b6160e35\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"VECTOR_TILE\"},{\"sourceDescriptor\":{\"indexPatternId\":\"logs-*\",\"geoField\":\"threat.indicator.geo.location\",\"filterByMapBounds\":true,\"scalingType\":\"CLUSTERS\",\"id\":\"09351277-7f7b-4cda-91c0-90537fd6fcab\",\"type\":\"ES_SEARCH\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"tooltipProperties\":[],\"sortField\":\"\",\"sortOrder\":\"desc\",\"topHitsSplitField\":\"\",\"topHitsSize\":1},\"id\":\"57bb3a3b-3d89-4eb1-9982-7cdbdcb4cc45\",\"label\":\"BOX SHIELD ALERTS\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"VECTOR\",\"properties\":{\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"fillColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#54B399\"}},\"lineColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#41937c\"}},\"lineWidth\":{\"type\":\"STATIC\",\"options\":{\"size\":1}},\"iconSize\":{\"type\":\"STATIC\",\"options\":{\"size\":6}},\"iconOrientation\":{\"type\":\"STATIC\",\"options\":{\"orientation\":0}},\"labelText\":{\"type\":\"STATIC\",\"options\":{\"value\":\"\"}},\"labelColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#000000\"}},\"labelSize\":{\"type\":\"STATIC\",\"options\":{\"size\":14}},\"labelBorderColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#FFFFFF\"}},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}}},\"isTimeAware\":true},\"includeInFitToBounds\":true,\"type\":\"BLENDED_VECTOR\",\"joins\":[],\"query\":{\"query\":\"data_stream.dataset : \\\"box_events.anomalous_download_alerts\\\"\",\"language\":\"kuery\"}}]",
-                        "mapStateJSON": "{\"zoom\":1.96,\"center\":{\"lon\":-52.5311,\"lat\":49.55871},\"timeFilters\":{\"from\":\"2022-06-26T18:59:22.017Z\",\"to\":\"2022-07-22T07:40:46.690Z\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
+                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true},\"id\":\"9b84ad63-e18b-4c0b-b40e-d1c0b6160e35\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"VECTOR_TILE\"},{\"sourceDescriptor\":{\"indexPatternId\":\"logs-*\",\"geoField\":\"related.location\",\"filterByMapBounds\":true,\"scalingType\":\"CLUSTERS\",\"id\":\"319102d1-eb48-4448-adc3-e07c46bddc9b\",\"type\":\"ES_SEARCH\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"tooltipProperties\":[],\"sortField\":\"\",\"sortOrder\":\"desc\",\"topHitsSplitField\":\"\",\"topHitsSize\":1},\"id\":\"41294e09-b28a-482a-a6c3-93efa1d07d81\",\"label\":\"ANOMALOUS DOWNLOAD\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"VECTOR\",\"properties\":{\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"fillColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#6092C0\"}},\"lineColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#4379aa\"}},\"lineWidth\":{\"type\":\"STATIC\",\"options\":{\"size\":1}},\"iconSize\":{\"type\":\"STATIC\",\"options\":{\"size\":6}},\"iconOrientation\":{\"type\":\"STATIC\",\"options\":{\"orientation\":0}},\"labelText\":{\"type\":\"STATIC\",\"options\":{\"value\":\"\"}},\"labelColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#000000\"}},\"labelSize\":{\"type\":\"STATIC\",\"options\":{\"size\":14}},\"labelBorderColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#FFFFFF\"}},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}}},\"isTimeAware\":true},\"includeInFitToBounds\":true,\"type\":\"BLENDED_VECTOR\",\"joins\":[],\"query\":{\"query\":\"data_stream.dataset : \\\"box_events.events\\\"  and rule.category :\\\"Anomalous Download\\\" \",\"language\":\"kuery\"}}]",
+                        "mapStateJSON": "{\"zoom\":2.56,\"center\":{\"lon\":45.20345,\"lat\":41.05884},\"timeFilters\":{\"from\":\"2022-06-26T18:59:22.017Z\",\"to\":\"now\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
                         "title": "Threat Locations",
                         "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[]}"
                     },
@@ -712,27 +738,27 @@
                     "hidePanelTitles": false,
                     "isLayerTOCOpen": false,
                     "mapBuffer": {
-                        "maxLat": 61.6064,
-                        "maxLon": 33.75,
-                        "minLat": 48.9225,
-                        "minLon": -11.25
+                        "maxLat": 43.88206,
+                        "maxLon": 125.32654,
+                        "minLat": 43.8781,
+                        "minLon": 125.3183
                     },
                     "mapCenter": {
-                        "lat": 55.17998,
-                        "lon": 7.7618,
-                        "zoom": 4.1
+                        "lat": 43.88,
+                        "lon": 125.3228,
+                        "zoom": 17
                     },
                     "openTOCDetails": []
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "d50c91d5-37d4-44b0-a775-995b26c18eb9",
+                    "i": "9d9557b3-786a-4b48-84fe-1f6602661bb8",
                     "w": 21,
                     "x": 14,
                     "y": 30
                 },
-                "panelIndex": "d50c91d5-37d4-44b0-a775-995b26c18eb9",
-                "title": "Anomalous Download Locations Target IP",
+                "panelIndex": "9d9557b3-786a-4b48-84fe-1f6602661bb8",
+                "title": "Anomalous Download Locations",
                 "type": "map",
                 "version": "7.17.0"
             },
@@ -829,13 +855,13 @@
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "box_events.malicious_content_alerts"
+                                            "query": "box_events.anomalous_download_alerts"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "box_events.malicious_content_alerts"
+                                            "data_stream.dataset": "box_events.anomalous_download_alerts"
                                         }
                                     }
                                 }
@@ -873,13 +899,13 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "c479176c-d1d0-401e-ac88-cd7eff9c6f83",
+                    "i": "67c15713-00be-4e33-aa2c-7f9077d87ca5",
                     "w": 13,
                     "x": 35,
-                    "y": 45
+                    "y": 30
                 },
-                "panelIndex": "c479176c-d1d0-401e-ac88-cd7eff9c6f83",
-                "title": "Top Malware Indicator Descriptions",
+                "panelIndex": "67c15713-00be-4e33-aa2c-7f9077d87ca5",
+                "title": "Top Anomalous Download Indicator Descriptions",
                 "type": "lens",
                 "version": "7.17.0"
             },
@@ -1057,8 +1083,8 @@
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
-                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true},\"id\":\"9b84ad63-e18b-4c0b-b40e-d1c0b6160e35\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"VECTOR_TILE\"},{\"sourceDescriptor\":{\"indexPatternId\":\"logs-*\",\"geoField\":\"threat.indicator.geo.location\",\"filterByMapBounds\":true,\"scalingType\":\"CLUSTERS\",\"id\":\"09351277-7f7b-4cda-91c0-90537fd6fcab\",\"type\":\"ES_SEARCH\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"tooltipProperties\":[],\"sortField\":\"\",\"sortOrder\":\"desc\",\"topHitsSplitField\":\"\",\"topHitsSize\":1},\"id\":\"57bb3a3b-3d89-4eb1-9982-7cdbdcb4cc45\",\"label\":\"BOX SHIELD ALERTS\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"VECTOR\",\"properties\":{\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"fillColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#54B399\"}},\"lineColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#41937c\"}},\"lineWidth\":{\"type\":\"STATIC\",\"options\":{\"size\":1}},\"iconSize\":{\"type\":\"STATIC\",\"options\":{\"size\":6}},\"iconOrientation\":{\"type\":\"STATIC\",\"options\":{\"orientation\":0}},\"labelText\":{\"type\":\"STATIC\",\"options\":{\"value\":\"\"}},\"labelColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#000000\"}},\"labelSize\":{\"type\":\"STATIC\",\"options\":{\"size\":14}},\"labelBorderColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#FFFFFF\"}},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}}},\"isTimeAware\":true},\"includeInFitToBounds\":true,\"type\":\"BLENDED_VECTOR\",\"joins\":[],\"query\":{\"query\":\"data_stream.dataset : \\\"box_events.malicious_content_alerts\\\"\",\"language\":\"kuery\"}}]",
-                        "mapStateJSON": "{\"zoom\":1.96,\"center\":{\"lon\":-52.5311,\"lat\":49.55871},\"timeFilters\":{\"from\":\"2022-06-26T18:59:22.017Z\",\"to\":\"2022-07-22T07:40:46.690Z\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
+                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true},\"id\":\"9b84ad63-e18b-4c0b-b40e-d1c0b6160e35\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"VECTOR_TILE\"},{\"sourceDescriptor\":{\"indexPatternId\":\"logs-*\",\"geoField\":\"related.location\",\"filterByMapBounds\":true,\"scalingType\":\"CLUSTERS\",\"id\":\"319102d1-eb48-4448-adc3-e07c46bddc9b\",\"type\":\"ES_SEARCH\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"tooltipProperties\":[],\"sortField\":\"\",\"sortOrder\":\"desc\",\"topHitsSplitField\":\"\",\"topHitsSize\":1},\"id\":\"41294e09-b28a-482a-a6c3-93efa1d07d81\",\"label\":\"MALWARE\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"VECTOR\",\"properties\":{\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"fillColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#6092C0\"}},\"lineColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#4379aa\"}},\"lineWidth\":{\"type\":\"STATIC\",\"options\":{\"size\":1}},\"iconSize\":{\"type\":\"STATIC\",\"options\":{\"size\":6}},\"iconOrientation\":{\"type\":\"STATIC\",\"options\":{\"orientation\":0}},\"labelText\":{\"type\":\"STATIC\",\"options\":{\"value\":\"\"}},\"labelColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#000000\"}},\"labelSize\":{\"type\":\"STATIC\",\"options\":{\"size\":14}},\"labelBorderColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#FFFFFF\"}},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}}},\"isTimeAware\":true},\"includeInFitToBounds\":true,\"type\":\"BLENDED_VECTOR\",\"joins\":[],\"query\":{\"query\":\"data_stream.dataset : \\\"box_events.events\\\"  and rule.category :\\\"Anomalous Download\\\" \",\"language\":\"kuery\"}}]",
+                        "mapStateJSON": "{\"zoom\":17,\"center\":{\"lon\":125.3228,\"lat\":43.88},\"timeFilters\":{\"from\":\"2022-06-26T18:59:22.017Z\",\"to\":\"now\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
                         "title": "Threat Locations",
                         "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[]}"
                     },
@@ -1067,27 +1093,27 @@
                     "hidePanelTitles": false,
                     "isLayerTOCOpen": false,
                     "mapBuffer": {
-                        "maxLat": 38.82259,
-                        "maxLon": -118.125,
-                        "minLat": 36.59789,
-                        "minLon": -123.75
+                        "maxLat": 43.88206,
+                        "maxLon": 125.32654,
+                        "minLat": 43.8781,
+                        "minLon": 125.3183
                     },
                     "mapCenter": {
-                        "lat": 37.5555,
-                        "lon": -120.6789,
-                        "zoom": 7.02
+                        "lat": 43.88,
+                        "lon": 125.3228,
+                        "zoom": 17
                     },
                     "openTOCDetails": []
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "0ba381d1-a56e-4ae2-81e4-d287581e11f0",
+                    "i": "48b07ffd-cd45-4b08-b3dc-f68cba81a1e4",
                     "w": 21,
                     "x": 14,
                     "y": 45
                 },
-                "panelIndex": "0ba381d1-a56e-4ae2-81e4-d287581e11f0",
-                "title": "Malware Locations Source IP",
+                "panelIndex": "48b07ffd-cd45-4b08-b3dc-f68cba81a1e4",
+                "title": "Malware Locations",
                 "type": "map",
                 "version": "7.17.0"
             },
@@ -1184,13 +1210,13 @@
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "box_events.anomalous_download_alerts"
+                                            "query": "box_events.malicious_content_alerts"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "box_events.anomalous_download_alerts"
+                                            "data_stream.dataset": "box_events.malicious_content_alerts"
                                         }
                                     }
                                 }
@@ -1228,13 +1254,13 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "67c15713-00be-4e33-aa2c-7f9077d87ca5",
+                    "i": "c479176c-d1d0-401e-ac88-cd7eff9c6f83",
                     "w": 13,
                     "x": 35,
-                    "y": 30
+                    "y": 45
                 },
-                "panelIndex": "67c15713-00be-4e33-aa2c-7f9077d87ca5",
-                "title": "Top Anomalous Download Indicator Descriptions",
+                "panelIndex": "c479176c-d1d0-401e-ac88-cd7eff9c6f83",
+                "title": "Top Malware Indicator Descriptions",
                 "type": "lens",
                 "version": "7.17.0"
             },
@@ -1412,8 +1438,8 @@
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
-                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true},\"id\":\"9b84ad63-e18b-4c0b-b40e-d1c0b6160e35\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"VECTOR_TILE\"},{\"sourceDescriptor\":{\"indexPatternId\":\"logs-*\",\"geoField\":\"threat.indicator.geo.location\",\"filterByMapBounds\":true,\"scalingType\":\"CLUSTERS\",\"id\":\"09351277-7f7b-4cda-91c0-90537fd6fcab\",\"type\":\"ES_SEARCH\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"tooltipProperties\":[],\"sortField\":\"\",\"sortOrder\":\"desc\",\"topHitsSplitField\":\"\",\"topHitsSize\":1},\"id\":\"57bb3a3b-3d89-4eb1-9982-7cdbdcb4cc45\",\"label\":\"BOX SHIELD ALERTS\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"VECTOR\",\"properties\":{\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"fillColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#54B399\"}},\"lineColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#41937c\"}},\"lineWidth\":{\"type\":\"STATIC\",\"options\":{\"size\":1}},\"iconSize\":{\"type\":\"STATIC\",\"options\":{\"size\":6}},\"iconOrientation\":{\"type\":\"STATIC\",\"options\":{\"orientation\":0}},\"labelText\":{\"type\":\"STATIC\",\"options\":{\"value\":\"\"}},\"labelColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#000000\"}},\"labelSize\":{\"type\":\"STATIC\",\"options\":{\"size\":14}},\"labelBorderColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#FFFFFF\"}},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}}},\"isTimeAware\":true},\"includeInFitToBounds\":true,\"type\":\"BLENDED_VECTOR\",\"joins\":[],\"query\":{\"query\":\"data_stream.dataset : \\\"box_events.suspicious_locations\\\" \",\"language\":\"kuery\"}}]",
-                        "mapStateJSON": "{\"zoom\":7.02,\"center\":{\"lon\":-120.6789,\"lat\":37.5555},\"timeFilters\":{\"from\":\"2022-06-26T18:59:22.017Z\",\"to\":\"2022-07-22T07:40:46.690Z\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
+                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true},\"id\":\"9b84ad63-e18b-4c0b-b40e-d1c0b6160e35\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"VECTOR_TILE\"},{\"sourceDescriptor\":{\"indexPatternId\":\"logs-*\",\"geoField\":\"related.location\",\"filterByMapBounds\":true,\"scalingType\":\"CLUSTERS\",\"id\":\"319102d1-eb48-4448-adc3-e07c46bddc9b\",\"type\":\"ES_SEARCH\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"tooltipProperties\":[],\"sortField\":\"\",\"sortOrder\":\"desc\",\"topHitsSplitField\":\"\",\"topHitsSize\":1},\"id\":\"41294e09-b28a-482a-a6c3-93efa1d07d81\",\"label\":\"SUSPICIOUS LOCATIONS\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"VECTOR\",\"properties\":{\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"fillColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#6092C0\"}},\"lineColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#4379aa\"}},\"lineWidth\":{\"type\":\"STATIC\",\"options\":{\"size\":1}},\"iconSize\":{\"type\":\"STATIC\",\"options\":{\"size\":6}},\"iconOrientation\":{\"type\":\"STATIC\",\"options\":{\"orientation\":0}},\"labelText\":{\"type\":\"STATIC\",\"options\":{\"value\":\"\"}},\"labelColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#000000\"}},\"labelSize\":{\"type\":\"STATIC\",\"options\":{\"size\":14}},\"labelBorderColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#FFFFFF\"}},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}}},\"isTimeAware\":true},\"includeInFitToBounds\":true,\"type\":\"BLENDED_VECTOR\",\"joins\":[],\"query\":{\"query\":\"data_stream.dataset : \\\"box_events.events\\\"  and rule.category :\\\"Suspicious Locations\\\" \",\"language\":\"kuery\"}}]",
+                        "mapStateJSON": "{\"zoom\":17,\"center\":{\"lon\":125.3228,\"lat\":43.88},\"timeFilters\":{\"from\":\"2022-06-26T18:59:22.017Z\",\"to\":\"now\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
                         "title": "Threat Locations",
                         "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[]}"
                     },
@@ -1422,27 +1448,65 @@
                     "hidePanelTitles": false,
                     "isLayerTOCOpen": false,
                     "mapBuffer": {
-                        "maxLat": 38.82259,
-                        "maxLon": -118.125,
-                        "minLat": 36.59789,
-                        "minLon": -123.75
+                        "maxLat": 66.51326,
+                        "maxLon": 135,
+                        "minLat": 0,
+                        "minLon": -45
                     },
                     "mapCenter": {
-                        "lat": 37.5555,
-                        "lon": -120.6789,
-                        "zoom": 7.02
+                        "lat": 41.05884,
+                        "lon": 45.20345,
+                        "zoom": 2.36
                     },
                     "openTOCDetails": []
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "65d1c96f-92ff-4e91-b0a9-9bf4885b83db",
+                    "i": "3640bffe-8904-4537-968b-f3f08db7106d",
                     "w": 21,
                     "x": 14,
                     "y": 60
                 },
-                "panelIndex": "65d1c96f-92ff-4e91-b0a9-9bf4885b83db",
-                "title": "Suspicious Locations IP Location",
+                "panelIndex": "3640bffe-8904-4537-968b-f3f08db7106d",
+                "title": "Suspicious Locations",
+                "type": "map",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true},\"id\":\"9b84ad63-e18b-4c0b-b40e-d1c0b6160e35\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"VECTOR_TILE\"},{\"sourceDescriptor\":{\"indexPatternId\":\"logs-*\",\"geoField\":\"related.location\",\"filterByMapBounds\":true,\"scalingType\":\"CLUSTERS\",\"id\":\"319102d1-eb48-4448-adc3-e07c46bddc9b\",\"type\":\"ES_SEARCH\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"tooltipProperties\":[],\"sortField\":\"\",\"sortOrder\":\"desc\",\"topHitsSplitField\":\"\",\"topHitsSize\":1},\"id\":\"41294e09-b28a-482a-a6c3-93efa1d07d81\",\"label\":\"SUSPICIOUS SESSIONS\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"VECTOR\",\"properties\":{\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"fillColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#6092C0\"}},\"lineColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#4379aa\"}},\"lineWidth\":{\"type\":\"STATIC\",\"options\":{\"size\":1}},\"iconSize\":{\"type\":\"STATIC\",\"options\":{\"size\":6}},\"iconOrientation\":{\"type\":\"STATIC\",\"options\":{\"orientation\":0}},\"labelText\":{\"type\":\"STATIC\",\"options\":{\"value\":\"\"}},\"labelColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#000000\"}},\"labelSize\":{\"type\":\"STATIC\",\"options\":{\"size\":14}},\"labelBorderColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#FFFFFF\"}},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}}},\"isTimeAware\":true},\"includeInFitToBounds\":true,\"type\":\"BLENDED_VECTOR\",\"joins\":[],\"query\":{\"query\":\"data_stream.dataset : \\\"box_events.events\\\"  and rule.category :\\\"Suspicious Sessions\\\" \",\"language\":\"kuery\"}}]",
+                        "mapStateJSON": "{\"zoom\":0.84,\"center\":{\"lon\":125.3228,\"lat\":39.08219},\"timeFilters\":{\"from\":\"2022-06-26T18:59:22.017Z\",\"to\":\"now\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
+                        "title": "Threat Locations",
+                        "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[]}"
+                    },
+                    "enhancements": {},
+                    "hiddenLayers": [],
+                    "hidePanelTitles": false,
+                    "isLayerTOCOpen": false,
+                    "mapBuffer": {
+                        "maxLat": 51.51558,
+                        "maxLon": -0.09064,
+                        "minLat": 51.51216,
+                        "minLon": -0.09613
+                    },
+                    "mapCenter": {
+                        "lat": 51.5142,
+                        "lon": -0.0931,
+                        "zoom": 17
+                    },
+                    "openTOCDetails": []
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "87467424-ae23-4010-8caf-fac52e59a39f",
+                    "w": 21,
+                    "x": 14,
+                    "y": 75
+                },
+                "panelIndex": "87467424-ae23-4010-8caf-fac52e59a39f",
+                "title": "Suspicious Sessions",
                 "type": "map",
                 "version": "7.17.0"
             },
@@ -1766,44 +1830,6 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "",
-                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true},\"id\":\"9b84ad63-e18b-4c0b-b40e-d1c0b6160e35\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"VECTOR_TILE\"},{\"sourceDescriptor\":{\"indexPatternId\":\"logs-*\",\"geoField\":\"threat.indicator.geo.location\",\"filterByMapBounds\":true,\"scalingType\":\"CLUSTERS\",\"id\":\"09351277-7f7b-4cda-91c0-90537fd6fcab\",\"type\":\"ES_SEARCH\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"tooltipProperties\":[],\"sortField\":\"\",\"sortOrder\":\"desc\",\"topHitsSplitField\":\"\",\"topHitsSize\":1},\"id\":\"57bb3a3b-3d89-4eb1-9982-7cdbdcb4cc45\",\"label\":\"BOX SHIELD ALERTS\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"style\":{\"type\":\"VECTOR\",\"properties\":{\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"fillColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#54B399\"}},\"lineColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#41937c\"}},\"lineWidth\":{\"type\":\"STATIC\",\"options\":{\"size\":1}},\"iconSize\":{\"type\":\"STATIC\",\"options\":{\"size\":6}},\"iconOrientation\":{\"type\":\"STATIC\",\"options\":{\"orientation\":0}},\"labelText\":{\"type\":\"STATIC\",\"options\":{\"value\":\"\"}},\"labelColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#000000\"}},\"labelSize\":{\"type\":\"STATIC\",\"options\":{\"size\":14}},\"labelBorderColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#FFFFFF\"}},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}}},\"isTimeAware\":true},\"includeInFitToBounds\":true,\"type\":\"BLENDED_VECTOR\",\"joins\":[],\"query\":{\"query\":\"data_stream.dataset :\\\"box_events.suspicious_sessions\\\" \",\"language\":\"kuery\"}}]",
-                        "mapStateJSON": "{\"zoom\":7.02,\"center\":{\"lon\":-120.6789,\"lat\":37.5555},\"timeFilters\":{\"from\":\"2022-06-26T18:59:22.017Z\",\"to\":\"2022-07-22T07:40:46.690Z\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
-                        "title": "Threat Locations",
-                        "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[]}"
-                    },
-                    "enhancements": {},
-                    "hiddenLayers": [],
-                    "hidePanelTitles": false,
-                    "isLayerTOCOpen": false,
-                    "mapBuffer": {
-                        "maxLat": 66.51326,
-                        "maxLon": 0,
-                        "minLat": 0,
-                        "minLon": -135
-                    },
-                    "mapCenter": {
-                        "lat": 37.5555,
-                        "lon": -70.6789,
-                        "zoom": 2.21
-                    },
-                    "openTOCDetails": []
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "aa321506-5bb5-4458-acb1-797629d3e789",
-                    "w": 21,
-                    "x": 14,
-                    "y": 75
-                },
-                "panelIndex": "aa321506-5bb5-4458-acb1-797629d3e789",
-                "title": "Suspicious Sessions IP Location",
-                "type": "map",
-                "version": "7.17.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
                         "references": [
                             {
                                 "id": "logs-*",
@@ -1981,6 +2007,11 @@
         },
         {
             "id": "logs-*",
+            "name": "edbbe9f0-fe40-47b4-aa4a-8067bb51fb95:filter-index-pattern-1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "b19fd684-ab5c-4dc7-9680-6407f17959e5:layer_1_source_index_pattern",
             "type": "index-pattern"
         },
@@ -2036,42 +2067,7 @@
         },
         {
             "id": "logs-*",
-            "name": "d50c91d5-37d4-44b0-a775-995b26c18eb9:layer_1_source_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c479176c-d1d0-401e-ac88-cd7eff9c6f83:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c479176c-d1d0-401e-ac88-cd7eff9c6f83:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "c479176c-d1d0-401e-ac88-cd7eff9c6f83:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "3ddcfc57-8157-43ad-822a-376a390b95eb:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "3ddcfc57-8157-43ad-822a-376a390b95eb:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "3ddcfc57-8157-43ad-822a-376a390b95eb:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "0ba381d1-a56e-4ae2-81e4-d287581e11f0:layer_1_source_index_pattern",
+            "name": "9d9557b3-786a-4b48-84fe-1f6602661bb8:layer_1_source_index_pattern",
             "type": "index-pattern"
         },
         {
@@ -2091,6 +2087,41 @@
         },
         {
             "id": "logs-*",
+            "name": "3ddcfc57-8157-43ad-822a-376a390b95eb:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3ddcfc57-8157-43ad-822a-376a390b95eb:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3ddcfc57-8157-43ad-822a-376a390b95eb:filter-index-pattern-0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "48b07ffd-cd45-4b08-b3dc-f68cba81a1e4:layer_1_source_index_pattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c479176c-d1d0-401e-ac88-cd7eff9c6f83:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c479176c-d1d0-401e-ac88-cd7eff9c6f83:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c479176c-d1d0-401e-ac88-cd7eff9c6f83:filter-index-pattern-0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "7347e441-012b-4aab-9795-33eb2f8e9447:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
@@ -2106,7 +2137,12 @@
         },
         {
             "id": "logs-*",
-            "name": "65d1c96f-92ff-4e91-b0a9-9bf4885b83db:layer_1_source_index_pattern",
+            "name": "3640bffe-8904-4537-968b-f3f08db7106d:layer_1_source_index_pattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "87467424-ae23-4010-8caf-fac52e59a39f:layer_1_source_index_pattern",
             "type": "index-pattern"
         },
         {
@@ -2137,11 +2173,6 @@
         {
             "id": "logs-*",
             "name": "55fd3ed2-81a9-4418-abbe-4301efc066fb:filter-index-pattern-0",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "aa321506-5bb5-4458-acb1-797629d3e789:layer_1_source_index_pattern",
             "type": "index-pattern"
         },
         {
