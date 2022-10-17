@@ -6,7 +6,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/elastic/elastic-package v0.65.1
 	github.com/elastic/go-licenser v0.4.1
-	github.com/elastic/package-registry v1.14.0
+	github.com/elastic/package-registry v1.15.0
 	github.com/magefile/mage v1.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.0
