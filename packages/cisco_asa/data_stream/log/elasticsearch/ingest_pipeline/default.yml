@@ -105,13 +105,13 @@ processors:
             "append":
               {
                 "field": "error.message",
-                "value": "{{ _ingest.on_failure_message }}",
+                "value": "{{{ _ingest.on_failure_message }}}",
               },
           },
         ]
   - date:
       if: "ctx.event?.timezone != null && ctx._temp_?.raw_date != null"
-      timezone: "{{ event.timezone }}"
+      timezone: "{{{ event.timezone }}}"
       field: "_temp_.raw_date"
       target_field: "@timestamp"
       formats:
@@ -138,7 +138,7 @@ processors:
             "append":
               {
                 "field": "error.message",
-                "value": "{{ _ingest.on_failure_message }}",
+                "value": "{{{ _ingest.on_failure_message }}}",
               },
           },
         ]
@@ -494,7 +494,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338001'"
       field: "server.domain"
       description: "338001"
-      value: "{{source.domain}}"
+      value: "{{{source.domain}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338002'"
@@ -505,7 +505,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338002'"
       field: "server.domain"
       description: "338002"
-      value: "{{destination.domain}}"
+      value: "{{{destination.domain}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338003'"
@@ -526,7 +526,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338005'"
       field: "server.domain"
       description: "338005"
-      value: "{{source.domain}}"
+      value: "{{{source.domain}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338006'"
@@ -537,7 +537,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338006'"
       field: "server.domain"
       description: "338006"
-      value: "{{destination.domain}}"
+      value: "{{{destination.domain}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338007'"
@@ -558,7 +558,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338101'"
       field: "server.domain"
       description: "338101"
-      value: "{{source.domain}}"
+      value: "{{{source.domain}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338102'"
@@ -569,7 +569,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338102'"
       field: "server.domain"
       description: "338102"
-      value: "{{destination.domain}}"
+      value: "{{{destination.domain}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338103'"
@@ -590,7 +590,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338201'"
       field: "server.domain"
       description: "338201"
-      value: "{{source.domain}}"
+      value: "{{{source.domain}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338202'"
@@ -601,7 +601,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338202'"
       field: "server.domain"
       description: "338202"
-      value: "{{destination.domain}}"
+      value: "{{{destination.domain}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338203'"
@@ -612,7 +612,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338203'"
       field: "server.domain"
       description: "338203"
-      value: "{{source.domain}}"
+      value: "{{{source.domain}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338204'"
@@ -623,7 +623,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338204'"
       field: "server.domain"
       description: "338204"
-      value: "{{destination.domain}}"
+      value: "{{{destination.domain}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '338301'"
@@ -634,25 +634,25 @@ processors:
       if: "ctx._temp_.cisco.message_id == '338301'"
       field: "client.address"
       description: "338301"
-      value: "{{destination.address}}"
+      value: "{{{destination.address}}}"
       ignore_empty_value: true
   - set:
       if: "ctx._temp_.cisco.message_id == '338301'"
       field: "client.port"
       description: "338301"
-      value: "{{destination.port}}"
+      value: "{{{destination.port}}}"
       ignore_empty_value: true
   - set:
       if: "ctx._temp_.cisco.message_id == '338301'"
       field: "server.address"
       description: "338301"
-      value: "{{source.address}}"
+      value: "{{{source.address}}}"
       ignore_empty_value: true
   - set:
       if: "ctx._temp_.cisco.message_id == '338301'"
       field: "server.port"
       description: "338301"
-      value: "{{source.port}}"
+      value: "{{{source.port}}}"
       ignore_empty_value: true
   - dissect:
       if: "ctx._temp_.cisco.message_id == '502103'"
@@ -664,8 +664,8 @@ processors:
       field: "event.type"
       description: "502103"
       value:
-      - "group"
-      - "change"
+        - "group"
+        - "change"
   - append:
       if: "ctx._temp_.cisco.message_id == '502103'"
       field: "event.category"
@@ -819,7 +819,7 @@ processors:
       if: '["713905", "713904", "713906", "713902", "713901"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
       patterns:
-      - "^(Group = %{IP}, )?(IP = %{IP:source.address}, )?%{GREEDYDATA:event.reason}$"
+        - "^(Group = %{IP}, )?(IP = %{IP:source.address}, )?%{GREEDYDATA:event.reason}$"
    # Handle ecs action outcome protocol
   - set:
       if: '["434002", "434004"].contains(ctx._temp_.cisco.message_id)'
@@ -1437,7 +1437,7 @@ processors:
   # processor converts it to the right value and populates start and end.
   - set:
       field: "_temp_.duration_hms"
-      value: "{{event.duration}}"
+      value: "{{{event.duration}}}"
       ignore_empty_value: true
 
   #
@@ -1792,7 +1792,7 @@ processors:
   # Fills nat.ip and nat.port even when only the ip or port changed.
   - set:
       field: source.nat.ip
-      value: "{{_temp_.cisco.mapped_source_ip}}"
+      value: "{{{_temp_.cisco.mapped_source_ip}}}"
       if: "ctx?._temp_?.cisco?.mapped_source_ip != ctx?.source?.ip"
       ignore_empty_value: true
   - convert:
@@ -1801,7 +1801,7 @@ processors:
       ignore_missing: true
   - set:
       field: source.nat.port
-      value: "{{_temp_.cisco.mapped_source_port}}"
+      value: "{{{_temp_.cisco.mapped_source_port}}}"
       if: "ctx?._temp_?.cisco?.mapped_source_port != ctx?.source?.port"
       ignore_empty_value: true
   - convert:
@@ -1810,7 +1810,7 @@ processors:
       ignore_missing: true
   - set:
       field: destination.nat.ip
-      value: "{{_temp_.cisco.mapped_destination_ip}}"
+      value: "{{{_temp_.cisco.mapped_destination_ip}}}"
       if: "ctx?._temp_?.cisco.mapped_destination_ip != ctx?.destination?.ip"
       ignore_empty_value: true
   - convert:
@@ -1819,7 +1819,7 @@ processors:
       ignore_missing: true
   - set:
       field: destination.nat.port
-      value: "{{_temp_.cisco.mapped_destination_port}}"
+      value: "{{{_temp_.cisco.mapped_destination_port}}}"
       if: "ctx?._temp_?.cisco?.mapped_destination_port != ctx?.destination?.port"
       ignore_empty_value: true
   - convert:
@@ -1893,7 +1893,7 @@ processors:
 
   - set:
       field: _temp_.url_domain
-      value: "{{url.domain}}"
+      value: "{{{url.domain}}}"
       ignore_failure: true
       if: ctx?.url?.domain != null
 
@@ -1903,7 +1903,7 @@ processors:
       if: ctx?.url?.original != null
   - append:
       field: url.domain
-      value: "{{_temp_.url_domain}}"
+      value: "{{{_temp_.url_domain}}}"
       ignore_failure: true
       allow_duplicates: false
       if: ctx?._temp_?.url_domain != null
@@ -2097,17 +2097,27 @@ processors:
           ctx.event.outcome = 'success';
         }
 
+  # Malware event kind is classified as alert when sha_disposition is "Malware", "Custom Detection" not for other cases.
+  - set:
+      if: 'ctx?.event?.code == "430005" && ["Malware", "Custom Detection"].contains(ctx.cisco.asa.security.sha_disposition)'
+      field: event.kind
+      value: alert
+  - append:
+      if: 'ctx?.event?.code == "430005" && !["Malware", "Custom Detection"].contains(ctx.cisco.asa.security.sha_disposition)'
+      field: event.category
+      value: file
+
   - set:
       description: copy destination.user.name to user.name if it is not set
       field: user.name
-      value: "{{destination.user.name}}"
+      value: "{{{destination.user.name}}}"
       ignore_empty_value: true
       if: ctx?.user?.name == null
 
   # Configures observer fields with a copy from cisco and host fields. Later on these might replace host.hostname.
   - set:
       field: observer.hostname
-      value: "{{ host.hostname }}"
+      value: "{{{ host.hostname }}}"
       ignore_empty_value: true
   - set:
       field: observer.vendor
@@ -2123,30 +2133,30 @@ processors:
       ignore_empty_value: true
   - set:
       field: observer.egress.interface.name
-      value: "{{ cisco.asa.destination_interface }}"
+      value: "{{{ cisco.asa.destination_interface }}}"
       ignore_empty_value: true
   - set:
       field: observer.ingress.interface.name
-      value: "{{ cisco.asa.source_interface }}"
+      value: "{{{ cisco.asa.source_interface }}}"
       ignore_empty_value: true
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       if: "ctx?.source?.ip != null"
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{source.nat.ip}}"
+      value: "{{{source.nat.ip}}}"
       if: "ctx?.source?.nat?.ip != null"
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       if: "ctx?.destination?.ip != null"
       allow_duplicates: false
   - append:
       field: related.ip
-      value: "{{destination.nat.ip}}"
+      value: "{{{destination.nat.ip}}}"
       if: "ctx?.destination?.nat?.ip != null"
       allow_duplicates: false
   - append:
@@ -2156,7 +2166,7 @@ processors:
       allow_duplicates: false
   - append:
       field: related.user
-      value: "{{server.user.name}}"
+      value: "{{{server.user.name}}}"
       if: ctx?.server?.user?.name != null && ctx?.server?.user?.name != ''
       allow_duplicates: false
   - append:
@@ -2171,37 +2181,37 @@ processors:
       allow_duplicates: false
   - append:
       field: related.hash
-      value: "{{file.hash.sha256}}"
+      value: "{{{file.hash.sha256}}}"
       if: "ctx?.file?.hash?.sha256 != null"
       allow_duplicates: false
   - append:
       field: related.hosts
-      value: "{{host.hostname}}"
+      value: "{{{host.hostname}}}"
       if: ctx.host?.hostname != null && ctx.host?.hostname != ''
       allow_duplicates: false
   - append:
       field: related.hosts
-      value: "{{observer.hostname}}"
+      value: "{{{observer.hostname}}}"
       if: ctx.observer?.hostname != null && ctx.observer?.hostname != ''
       allow_duplicates: false
   - append:
       field: related.hosts
-      value: "{{destination.domain}}"
+      value: "{{{destination.domain}}}"
       if: ctx.destination?.domain != null && ctx.destination?.domain != ''
       allow_duplicates: false
   - append:
       field: related.hosts
-      value: "{{source.domain}}"
+      value: "{{{source.domain}}}"
       if: ctx.source?.domain != null && ctx.source?.domain != ''
       allow_duplicates: false
   - append:
       field: related.hosts
-      value: "{{source.user.domain}}"
+      value: "{{{source.user.domain}}}"
       if: ctx.source?.user?.domain != null && ctx.source?.user?.domain != ''
       allow_duplicates: false
   - append:
       field: related.hosts
-      value: "{{destination.user.domain}}"
+      value: "{{{destination.user.domain}}}"
       if: ctx.destination?.user?.domain != null && ctx.destination?.user?.domain != ''
       allow_duplicates: false
   - script:
@@ -2249,4 +2259,4 @@ on_failure:
       ignore_missing: true
   - append:
       field: "error.message"
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"
