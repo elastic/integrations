@@ -2,8 +2,8 @@
 description: Pipeline for processing Intrusion Prevention event logs
 processors:
   - set:
-      field: event.category
-      value: 'intrusion-prevention'
+      field: trendmicro.event.category
+      value: "intrusion-prevention"
   - script:
       lang: painless
       params:
@@ -46,7 +46,7 @@ processors:
           #     '5': notice
           #     '6': informational
           #     '7': debug
-               
+
       source: |
         def actions = new ArrayList();
         def exts = ctx.cef?.extensions;
@@ -88,4 +88,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: "{{ _ingest.on_failure_message }}"

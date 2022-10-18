@@ -2,8 +2,8 @@
 description: Pipeline for processing Integrity Monitoring event logs
 processors:
   - set:
-      field: event.category
-      value: 'integrity-monitor'
+      field: trendmicro.event.category
+      value: "integrity-monitor"
   - script:
       lang: painless
       params:
@@ -32,7 +32,7 @@ processors:
           #     '5': notice
           #     '6': informational
           #     '7': debug
-               
+
       source: |
         def actions = new ArrayList();
         def exts = ctx.cef?.extensions;
@@ -74,4 +74,4 @@ processors:
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: "{{ _ingest.on_failure_message }}"
