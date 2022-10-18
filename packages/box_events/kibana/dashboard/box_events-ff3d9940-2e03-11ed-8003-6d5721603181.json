@@ -554,6 +554,11 @@
                                 "id": "logs-*",
                                 "name": "filter-index-pattern-0",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-index-pattern-1",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -612,6 +617,27 @@
                                             "data_stream.dataset": "box_events.events"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "indexRefName": "filter-index-pattern-1",
+                                        "key": "rule.category",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "Anomalous Download"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "rule.category": "Anomalous Download"
+                                        }
+                                    }
                                 }
                             ],
                             "query": {
@@ -657,6 +683,9 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
                                 "yRightExtent": {
                                     "mode": "full"
                                 }
@@ -853,7 +882,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
+                                "name": "indexpattern-datasource-layer-8a260e0f-39a2-468a-b03f-4dac60f39c20",
                                 "type": "index-pattern"
                             },
                             {
@@ -866,30 +895,150 @@
                             "datasourceStates": {
                                 "indexpattern": {
                                     "layers": {
-                                        "566c210c-4661-4558-b93f-47ae73b8d4b9": {
+                                        "8a260e0f-39a2-468a-b03f-4dac60f39c20": {
                                             "columnOrder": [
-                                                "d9b4be5e-b623-4d51-b0cd-49830dd135c7",
-                                                "f7828a09-1e04-458e-8a91-ccd7f10ab1ad",
-                                                "1765ec8c-842a-4d18-9667-4d5bf6864c12"
+                                                "763a44f5-c5d6-47ba-a2e8-23c69f04afba",
+                                                "8275f89e-9783-4384-8355-fb6ef2158be4"
                                             ],
                                             "columns": {
-                                                "1765ec8c-842a-4d18-9667-4d5bf6864c12": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Unique count of @timestamp",
-                                                    "operationType": "unique_count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "d9b4be5e-b623-4d51-b0cd-49830dd135c7": {
+                                                "763a44f5-c5d6-47ba-a2e8-23c69f04afba": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top values of box.additional_details.shield_alert.malware_info.malware_name",
+                                                    "label": "Top values of related.description",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "1765ec8c-842a-4d18-9667-4d5bf6864c12",
+                                                            "columnId": "8275f89e-9783-4384-8355-fb6ef2158be4",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "related.description"
+                                                },
+                                                "8275f89e-9783-4384-8355-fb6ef2158be4": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "indexRefName": "filter-index-pattern-0",
+                                        "key": "rule.category",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "Malicious Content"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "rule.category": "Malicious Content"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "8275f89e-9783-4384-8355-fb6ef2158be4",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "763a44f5-c5d6-47ba-a2e8-23c69f04afba",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "8a260e0f-39a2-468a-b03f-4dac60f39c20",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "7532bcde-d517-434b-a0a2-378251fb3c1b",
+                    "w": 13,
+                    "x": 35,
+                    "y": 45
+                },
+                "panelIndex": "7532bcde-d517-434b-a0a2-378251fb3c1b",
+                "title": "Top Malware Indicator Descriptions",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-index-pattern-0",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-index-pattern-1",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "566c210c-4661-4558-b93f-47ae73b8d4b9": {
+                                            "columnOrder": [
+                                                "52de2eb2-32e8-4f62-90f3-0ed37d9089e6",
+                                                "a48dbc0b-cdea-40a3-9a5e-aecfed1c8b88",
+                                                "f51d6a9d-ebf1-4a7f-9b0b-c5f875593c68"
+                                            ],
+                                            "columns": {
+                                                "52de2eb2-32e8-4f62-90f3-0ed37d9089e6": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of box.additional_details.shield_alert.malware_info.categories",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f51d6a9d-ebf1-4a7f-9b0b-c5f875593c68",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -897,9 +1046,9 @@
                                                         "size": 3
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "box.additional_details.shield_alert.malware_info.malware_name"
+                                                    "sourceField": "box.additional_details.shield_alert.malware_info.categories"
                                                 },
-                                                "f7828a09-1e04-458e-8a91-ccd7f10ab1ad": {
+                                                "a48dbc0b-cdea-40a3-9a5e-aecfed1c8b88": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
                                                     "label": "@timestamp",
@@ -909,6 +1058,14 @@
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
+                                                },
+                                                "f51d6a9d-ebf1-4a7f-9b0b-c5f875593c68": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Median of box.additional_details.shield_alert.alert_id",
+                                                    "operationType": "median",
+                                                    "scale": "ratio",
+                                                    "sourceField": "box.additional_details.shield_alert.alert_id"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -928,13 +1085,34 @@
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "box_events.malicious_content_alerts"
+                                            "query": "box_events.events"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "box_events.malicious_content_alerts"
+                                            "data_stream.dataset": "box_events.events"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "indexRefName": "filter-index-pattern-1",
+                                        "key": "rule.category",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "Malicious Content"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "rule.category": "Malicious Content"
                                         }
                                     }
                                 }
@@ -963,15 +1141,13 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "1765ec8c-842a-4d18-9667-4d5bf6864c12"
+                                            "f51d6a9d-ebf1-4a7f-9b0b-c5f875593c68"
                                         ],
                                         "layerId": "566c210c-4661-4558-b93f-47ae73b8d4b9",
                                         "layerType": "data",
-                                        "position": "top",
                                         "seriesType": "bar_stacked",
-                                        "showGridlines": false,
-                                        "splitAccessor": "d9b4be5e-b623-4d51-b0cd-49830dd135c7",
-                                        "xAccessor": "f7828a09-1e04-458e-8a91-ccd7f10ab1ad"
+                                        "splitAccessor": "52de2eb2-32e8-4f62-90f3-0ed37d9089e6",
+                                        "xAccessor": "a48dbc0b-cdea-40a3-9a5e-aecfed1c8b88"
                                     }
                                 ],
                                 "legend": {
@@ -1002,12 +1178,12 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "3ddcfc57-8157-43ad-822a-376a390b95eb",
+                    "i": "742a4f87-d277-4fae-8c8e-22bbd6215cff",
                     "w": 14,
                     "x": 0,
                     "y": 45
                 },
-                "panelIndex": "3ddcfc57-8157-43ad-822a-376a390b95eb",
+                "panelIndex": "742a4f87-d277-4fae-8c8e-22bbd6215cff",
                 "title": "Malware over time by Malware Name",
                 "type": "lens",
                 "version": "7.17.0"
@@ -1143,13 +1319,13 @@
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "box_events.malicious_content_alerts"
+                                            "query": "box_events.suspicious_locations"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "box_events.malicious_content_alerts"
+                                            "data_stream.dataset": "box_events.suspicious_locations"
                                         }
                                     }
                                 }
@@ -1187,13 +1363,13 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "c479176c-d1d0-401e-ac88-cd7eff9c6f83",
+                    "i": "748d7b63-9430-49f1-9192-e091986feefc",
                     "w": 13,
                     "x": 35,
-                    "y": 45
+                    "y": 60
                 },
-                "panelIndex": "c479176c-d1d0-401e-ac88-cd7eff9c6f83",
-                "title": "Top Malware Indicator Descriptions",
+                "panelIndex": "748d7b63-9430-49f1-9192-e091986feefc",
+                "title": "Suspicious Locations Alert Descriptions",
                 "type": "lens",
                 "version": "7.17.0"
             },
@@ -1498,13 +1674,13 @@
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "box_events.suspicious_locations"
+                                            "query": "box_events.suspicious_sessions"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "box_events.suspicious_locations"
+                                            "data_stream.dataset": "box_events.suspicious_sessions"
                                         }
                                     }
                                 }
@@ -1542,13 +1718,13 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "748d7b63-9430-49f1-9192-e091986feefc",
+                    "i": "adfc862f-f9e5-4adf-9fee-59c267bc8ec3",
                     "w": 13,
                     "x": 35,
-                    "y": 60
+                    "y": 75
                 },
-                "panelIndex": "748d7b63-9430-49f1-9192-e091986feefc",
-                "title": "Suspicious Locations Alert Descriptions",
+                "panelIndex": "adfc862f-f9e5-4adf-9fee-59c267bc8ec3",
+                "title": "Suspicious Sessions Alert Descriptions",
                 "type": "lens",
                 "version": "7.17.0"
             },
@@ -1759,153 +1935,6 @@
                 "title": "Suspicious Sessions",
                 "type": "map",
                 "version": "7.17.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-current-indexpattern",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "filter-index-pattern-0",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "indexpattern": {
-                                    "layers": {
-                                        "566c210c-4661-4558-b93f-47ae73b8d4b9": {
-                                            "columnOrder": [
-                                                "baba854b-fcfa-4fcf-b499-7e759be43d17",
-                                                "82b63630-768d-434d-81fd-0834271bfea6",
-                                                "b7b02161-38d6-4317-b17f-6909db21ffe2"
-                                            ],
-                                            "columns": {
-                                                "82b63630-768d-434d-81fd-0834271bfea6": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top values of threat.indicator.geo.country_iso_code",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "b7b02161-38d6-4317-b17f-6909db21ffe2",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "threat.indicator.geo.country_iso_code"
-                                                },
-                                                "b7b02161-38d6-4317-b17f-6909db21ffe2": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "scale": "ratio",
-                                                    "sourceField": "Records"
-                                                },
-                                                "baba854b-fcfa-4fcf-b499-7e759be43d17": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top values of threat.indicator.description",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "b7b02161-38d6-4317-b17f-6909db21ffe2",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "threat.indicator.description"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "indexRefName": "filter-index-pattern-0",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "box_events.suspicious_sessions"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "box_events.suspicious_sessions"
-                                        }
-                                    }
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "baba854b-fcfa-4fcf-b499-7e759be43d17",
-                                        "isTransposed": false,
-                                        "width": 608
-                                    },
-                                    {
-                                        "columnId": "82b63630-768d-434d-81fd-0834271bfea6",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "b7b02161-38d6-4317-b17f-6909db21ffe2",
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "layerId": "566c210c-4661-4558-b93f-47ae73b8d4b9",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "adfc862f-f9e5-4adf-9fee-59c267bc8ec3",
-                    "w": 13,
-                    "x": 35,
-                    "y": 75
-                },
-                "panelIndex": "adfc862f-f9e5-4adf-9fee-59c267bc8ec3",
-                "title": "Suspicious Sessions Alert Descriptions",
-                "type": "lens",
-                "version": "7.17.0"
             }
         ],
         "timeRestore": false,
@@ -2000,6 +2029,11 @@
         },
         {
             "id": "logs-*",
+            "name": "c3534520-ed7f-4989-8ca5-04255b81b6ae:filter-index-pattern-1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "9d9557b3-786a-4b48-84fe-1f6602661bb8:layer_1_source_index_pattern",
             "type": "index-pattern"
         },
@@ -2020,17 +2054,37 @@
         },
         {
             "id": "logs-*",
-            "name": "3ddcfc57-8157-43ad-822a-376a390b95eb:indexpattern-datasource-current-indexpattern",
+            "name": "7532bcde-d517-434b-a0a2-378251fb3c1b:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "3ddcfc57-8157-43ad-822a-376a390b95eb:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
+            "name": "7532bcde-d517-434b-a0a2-378251fb3c1b:indexpattern-datasource-layer-8a260e0f-39a2-468a-b03f-4dac60f39c20",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "3ddcfc57-8157-43ad-822a-376a390b95eb:filter-index-pattern-0",
+            "name": "7532bcde-d517-434b-a0a2-378251fb3c1b:filter-index-pattern-0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "742a4f87-d277-4fae-8c8e-22bbd6215cff:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "742a4f87-d277-4fae-8c8e-22bbd6215cff:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "742a4f87-d277-4fae-8c8e-22bbd6215cff:filter-index-pattern-0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "742a4f87-d277-4fae-8c8e-22bbd6215cff:filter-index-pattern-1",
             "type": "index-pattern"
         },
         {
@@ -2040,17 +2094,17 @@
         },
         {
             "id": "logs-*",
-            "name": "c479176c-d1d0-401e-ac88-cd7eff9c6f83:indexpattern-datasource-current-indexpattern",
+            "name": "748d7b63-9430-49f1-9192-e091986feefc:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "c479176c-d1d0-401e-ac88-cd7eff9c6f83:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
+            "name": "748d7b63-9430-49f1-9192-e091986feefc:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "c479176c-d1d0-401e-ac88-cd7eff9c6f83:filter-index-pattern-0",
+            "name": "748d7b63-9430-49f1-9192-e091986feefc:filter-index-pattern-0",
             "type": "index-pattern"
         },
         {
@@ -2075,17 +2129,17 @@
         },
         {
             "id": "logs-*",
-            "name": "748d7b63-9430-49f1-9192-e091986feefc:indexpattern-datasource-current-indexpattern",
+            "name": "adfc862f-f9e5-4adf-9fee-59c267bc8ec3:indexpattern-datasource-current-indexpattern",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "748d7b63-9430-49f1-9192-e091986feefc:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
+            "name": "adfc862f-f9e5-4adf-9fee-59c267bc8ec3:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "748d7b63-9430-49f1-9192-e091986feefc:filter-index-pattern-0",
+            "name": "adfc862f-f9e5-4adf-9fee-59c267bc8ec3:filter-index-pattern-0",
             "type": "index-pattern"
         },
         {
@@ -2106,21 +2160,6 @@
         {
             "id": "logs-*",
             "name": "87467424-ae23-4010-8caf-fac52e59a39f:layer_1_source_index_pattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "adfc862f-f9e5-4adf-9fee-59c267bc8ec3:indexpattern-datasource-current-indexpattern",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "adfc862f-f9e5-4adf-9fee-59c267bc8ec3:indexpattern-datasource-layer-566c210c-4661-4558-b93f-47ae73b8d4b9",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "adfc862f-f9e5-4adf-9fee-59c267bc8ec3:filter-index-pattern-0",
             "type": "index-pattern"
         }
     ],
