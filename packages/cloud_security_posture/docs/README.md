@@ -158,10 +158,8 @@ make sure to grant the following permissions:
 * `elasticloadbalancing:DescribeInstanceHealth`
 * `ecr:GetRepositoryPolicy`
 
-<details>
-<summary>IAM Policy JSON object</summary>
 
-```js
+JSON object of an IAM Policy with the permissions above: 
 
 {
     "Version": "2012-10-17",
@@ -193,10 +191,6 @@ make sure to grant the following permissions:
         }
     ]
 }
-
-```
-
-</details>
 
 
 ## Leader election
