@@ -2250,15 +2250,33 @@ processors:
             cloudProvider.add('azure');
           }
         }
-        ctx.cloud.provider = convertToOrderedArray(cloudProvider);
-        ctx.group.name = convertToOrderedArray(groupName);
-        ctx.host.id = convertToOrderedArray(hostId);
-        ctx.user.domain = convertToOrderedArray(userDomain);
-        ctx.user.id = convertToOrderedArray(userId);
-        ctx.user.name = convertToOrderedArray(userName);
-        ctx.user.email = convertToOrderedArray(userEmail);
-        ctx.process.user.id = convertToOrderedArray(processUserId);
-        ctx.process.user.name = convertToOrderedArray(processUserName);
+        if (!cloudProvider.isEmpty()) {
+          ctx.cloud.provider = convertToOrderedArray(cloudProvider);
+        }
+        if (!groupName.isEmpty()) {
+          ctx.group.name = convertToOrderedArray(groupName);
+        }
+        if (!hostId.isEmpty()) {
+          ctx.host.id = convertToOrderedArray(hostId);
+        }
+        if (!userDomain.isEmpty()) {
+          ctx.user.domain = convertToOrderedArray(userDomain);
+        }
+        if (!userId.isEmpty()) {
+          ctx.user.id = convertToOrderedArray(userId);
+        }
+        if (!userName.isEmpty()) {
+          ctx.user.name = convertToOrderedArray(userName);
+        }
+        if (!userEmail.isEmpty()) {
+          ctx.user.email = convertToOrderedArray(userEmail);
+        }
+        if (!processUserId.isEmpty()) {
+          ctx.process.user.id = convertToOrderedArray(processUserId);
+        }
+        if (!processUserName.isEmpty()) {
+          ctx.process.user.name = convertToOrderedArray(processUserName);
+        }
   - script:
       description: Set file.size, process.id, process.parent.id fields.
       lang: painless
@@ -2298,9 +2316,15 @@ processors:
             }
           }
         }
-        ctx.file.size = convertToOrderedArray(fileSize);
-        ctx.process.pid = convertToOrderedArray(processPid);
-        ctx.process.parent.pid = convertToOrderedArray(processParentPid);
+        if (!fileSize.isEmpty()) {
+          ctx.file.size = convertToOrderedArray(fileSize);
+        }
+        if (!processPid.isEmpty()) {
+          ctx.process.pid = convertToOrderedArray(processPid);
+        }
+        if (!processParentPid.isEmpty()) {
+          ctx.process.parent.pid = convertToOrderedArray(processParentPid);
+        }
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
