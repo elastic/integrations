@@ -69,6 +69,7 @@ The `database_audit` dataset collects Oracle Audit logs.
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
+| client.user.id | Unique identifier of the user. | keyword |
 | client.user.name | Short name or login of the user. | keyword |
 | client.user.name.text | Multi-field of `client.user.name`. | match_only_text |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
@@ -125,14 +126,23 @@ The `database_audit` dataset collects Oracle Audit logs.
 | oracle.database_audit.client.address | The IP Address or Domain used by the client. | keyword |
 | oracle.database_audit.client.terminal | If available, the client terminal type, for example "pty". | keyword |
 | oracle.database_audit.client.user | The user running the client or connection to the database. | keyword |
+| oracle.database_audit.comment_text | Additional comments about the related audit record. | text |
 | oracle.database_audit.database.host | Client host machine name. | keyword |
 | oracle.database_audit.database.id | Database identifier calculated when the database is created. It corresponds to the DBID column of the V$DATABASE data dictionary view. | keyword |
 | oracle.database_audit.database.user | The database user used to authenticate. | keyword |
-| oracle.database_audit.entry.id | Indicates the current audit entry number, assigned to each audit trail record. The audit entry.id sequence number is shared between fine-grained audit records and regular audit records. | keyword |
+| oracle.database_audit.entry.id | Indicates the current audit entry number, assigned to each audit trail record. The audit entry.id sequence number is shared between fine-grained audit records and regular audit records. | long |
 | oracle.database_audit.length | Refers to the total number of bytes used in this audit record. This number includes the trailing newline bytes (\n), if any, at the end of the audit record. | long |
+| oracle.database_audit.obj_creator | The owner of the object, equivalent field in DBA_AUDIT_Trail is OWNER. | keyword |
+| oracle.database_audit.obj_name | The name of the object. | keyword |
+| oracle.database_audit.os_userid | The related OS user. | keyword |
 | oracle.database_audit.privilege | The privilege group related to the database user. | keyword |
+| oracle.database_audit.returncode | Indicates if the audited action was successful. 0 indicates success. If the action fails, the return code lists the Oracle Database error number. | keyword |
+| oracle.database_audit.ses_actions | Defines the type of action performed using 12 characters, each position indicates the result of an action. They are: ALTER, AUDIT, COMMENT, DELETE, GRANT, INDEX, INSERT, LOCK, RENAME, SELECT, UPDATE, and FLASHBACK. | keyword |
+| oracle.database_audit.ses_tid | The ID of the object related to the audit event. | keyword |
 | oracle.database_audit.session_id | Indicates the audit session ID number. | keyword |
+| oracle.database_audit.statement | The statement ID related to the audit event. | keyword |
 | oracle.database_audit.status | Database Audit Status. | keyword |
+| oracle.database_audit.terminal | The terminal identifier. | keyword |
 | process.pid | Process id. | long |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
