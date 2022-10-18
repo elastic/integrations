@@ -1,10 +1,13 @@
 ---
 description: Pipeline for Lyve Cloud
 processors:
+  - drop:
+      if: ctx?.log?.file?.path == null || !ctx.log.file.path.contains("/S3")
   - pipeline:
       name: '{{ IngestPipeline "audit_lc" }}'
-    #   if: ctx?.log?.file?.path?.contains('/S3');
-            
+      if: ctx?.log?.file?.path != null && ctx.log.file.path.contains("/S3")
+  
+      
 
 on_failure:
     - set:
