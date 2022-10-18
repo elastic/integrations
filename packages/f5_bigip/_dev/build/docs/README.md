@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [F5 BIG-IP](https://www.f5.com) integration allows users to monitor LTM, AFM, APM, ASM, and AVR activity. F5 BIG-IP covers software and hardware designed around application availability, access control, and security solutions.
+The [F5 BIG-IP](https://www.f5.com/products/big-ip-services) integration allows users to monitor LTM, AFM, APM, ASM, and AVR activity. F5 BIG-IP covers software and hardware designed around application availability, access control, and security solutions.
 
 Use the F5 BIG-IP integration to collect and parse data from F5 BIG-IP using **telemetry streaming** and then visualize that data in Kibana.
 
@@ -22,11 +22,11 @@ The log data stream collected by the F5 BIG-IP integration includes events that 
 
 This integration targets the five types of events as mentioned below:
 
-- **LTM** provides the platform for creating virtual servers, performance, service, protocol, authentication, and security profiles to define and shape users’ application traffic.
-- **AFM** is designed to reduce the hardware and extra hops required when ADC's are paired with traditional firewalls and helps to protect traffic destined for the user's data center.
-- **APM** provides federation, SSO, application access policies, and secure web tunneling and allows granular access to users' various applications, virtualized desktop environments, or just go full VPN tunnel.
-- **ASM** is F5's web application firewall (WAF) solution. It allows users to tailor acceptable and expected application behavior on a per-application basis.
-- **AVR** provides detailed charts and graphs to give users more insight into the performance of web applications, with detailed views on HTTP and TCP stats, as well as system performance (CPU, memory, etc.).
+- **LTM** provides the platform for creating virtual servers, performance, service, protocol, authentication, and security profiles to define and shape users’ application traffic. For more information, refer to the link [here](https://www.f5.com/products/big-ip-services/local-traffic-manager).
+- **AFM** is designed to reduce the hardware and extra hops required when ADC's are paired with traditional firewalls and helps to protect traffic destined for the user's data center. For more information, refer to the link [here](https://www.f5.com/products/security/advanced-firewall-manager).
+- **APM** provides federation, SSO, application access policies, and secure web tunneling and allows granular access to users' various applications, virtualized desktop environments, or just go full VPN tunnel. For more information, refer to the link [here](https://www.f5.com/products/security/access-policy-manager).
+- **ASM** is F5's web application firewall (WAF) solution. It allows users to tailor acceptable and expected application behavior on a per-application basis. For more information, refer to the link [here](https://www.f5.com/pdf/products/big-ip-application-security-manager-overview.pdf).
+- **AVR** provides detailed charts and graphs to give users more insight into the performance of web applications, with detailed views on HTTP and TCP stats, as well as system performance (CPU, memory, etc.). For more information, refer to the link [here](https://clouddocs.f5.com/training/community/analytics/html/class1/class1.html).
 
 ## Requirements
 
@@ -46,9 +46,9 @@ To set up the F5 BIG-IP environment, users can use the BIG-IP system browser-bas
 
 ### Configuration of Telemetry Streaming in F5
 
-For Downloading and installing Telemetry Streaming, refer to the link [here](https://clouddocs.f5.com/products/extensions/f5-telemetry-streaming/latest/installation.html).
+For downloading and installing Telemetry Streaming, refer to the link [here](https://clouddocs.f5.com/products/extensions/f5-telemetry-streaming/latest/installation.html).
 
-Telemetry Streaming will send logs in the JSON format to the destination. Telemetry Streaming is compatible with BIG-IP versions 13.0 and later. Users have to prepare F5 servers for it and set up the Telemetry Streaming Consumer.
+Telemetry Streaming will send logs in the JSON format to the destination. Telemetry Streaming is compatible with **BIG-IP versions 13.0 and later**. Users have to prepare F5 servers for it and set up the Telemetry Streaming Consumer.
 
 To use telemetry streaming, user have to send **POST** request on `https://<BIG-IP>/mgmt/shared/telemetry/declare` for declaration.
 
