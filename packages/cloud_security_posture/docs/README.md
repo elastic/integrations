@@ -2,13 +2,7 @@
 
 The Kubernetes Security Posture Management (KSPM) integration allows you to identify and remediate configuration risks in the various components that make up your Kubernetes cluster. It does this by evaluating the various components of your cluster against secure configuration guidelines, as defined by the Center for Internet Security (CIS), in order to identify configuration risks. When configuration risks are discovered, [findings](https://ela.st/findings-8-5) are generated that tell you exactly what is misconfigured and how you can remediate it. Please read through the [KSPM documentation](https://ela.st/kspm) for an overview of KSPM. 
 
-We recommend reading through this entire readme before getting started with KSPM. You can also jump to the section you're specifically interested in using the quick links below: 
-
-* [Getting Started Guide](#getting-started-guide)
-* [Using KSPM](#using-kspm)
-* [Compatibility](#compatibility)
-* [Integration Requirments](#integration-requirments)
-* [Leader election](#leader-election)
+We recommend reading through this entire readme before getting started with KSPM. 
 
 
 ## Getting started guide
@@ -51,8 +45,8 @@ The KSPM integration requires access to node files, node processes, and the Kube
 
 If deploying this integration on an [Amazon EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html), you will additionally need:
 
-* [**AWS Credentials**](#aws-credentials) to connect with your AWS account.
-* [**AWS Permissions**](#aws-permissions) to make sure the user you're using to connect has permission to share the relevant data.
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
 
 ### AWS Credentials
 
@@ -61,10 +55,10 @@ AWS credentials are required for running the KSPM integration in your EKS cluste
 
 There are a few ways to provide AWS credentials:
 
-* [Use access keys directly](#use-access-keys-directly)
-* [Use temporary security credentials](#use-temporary-security-credentials)
-* [Use a shared credentials file](#shared-credentials-file)
-* [Use an IAM role Amazon Resource Name (ARN)](#use-an-iam-role-amazon-resource-name-arn)
+* Use access keys directly
+* Use temporary security credentials
+* Use a shared credentials file 
+* Use an IAM role Amazon Resource Name (ARN)]
 
 #### Use access keys directly
 
@@ -129,8 +123,8 @@ Instead, when you assume a role, it provides you with temporary security credent
 An IAM role's ARN can be used to specify which AWS IAM role to use to generate temporary credentials..
 For more details refer to [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html).
 
-To use an IAM role's ARN, you need to provide either a [credential profile](#use-a-shared-credentials-file) or
-[access keys](#use-access-keys-directly) along with the `ARN Role` option.
+To use an IAM role's ARN, you need to provide either a credential profile or
+access keys along with the `ARN Role` option.
 `ARN Role` is used to specify which AWS IAM role to assume for generating temporary credentials.
 
 Note: If `ARN Role` is given, the integration will check if access keys are given.
@@ -164,10 +158,8 @@ make sure to grant the following permissions:
 * `elasticloadbalancing:DescribeInstanceHealth`
 * `ecr:GetRepositoryPolicy`
 
-<details>
-<summary>IAM Policy JSON object</summary>
 
-```js
+JSON object of an IAM Policy with the permissions above: 
 
 {
     "Version": "2012-10-17",
@@ -199,10 +191,6 @@ make sure to grant the following permissions:
         }
     ]
 }
-
-```
-
-</details>
 
 
 ## Leader election
