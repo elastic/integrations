@@ -1,0 +1,23 @@
+host: "{{syslog_host}}:{{syslog_port}}"
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- rename:
+    fields:
+      - {from: "message", to: "event.original"}
+- decode_cef:
+    field: event.original
+{{#if decode_cef_timezone}}
+    timezone: {{ decode_cef_timezone }}
+{{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}

@@ -1,0 +1,147 @@
+---
+description: Pipeline for trendmicro deep security logs.
+
+processors:
+  - set:
+      field: event.ingested
+      value: "{{{_ingest.timestamp}}}"
+  - set:
+      field: ecs.version
+      value: "8.4.0"
+  - set:
+      field: trendmicro.event.signature_id
+      value: "{{{event.code}}}"
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+  - rename:
+      field: message
+      target_field: trendmicro.event.message
+      ignore_missing: true
+  - rename:
+      field: cef.name
+      target_field: trendmicro.event.name
+      ignore_missing: true
+  - convert:
+      field: trendmicro.event.signature_id
+      type: integer
+      ignore_missing: true
+      # ignore_failure: true
+
+  # pipeline per signature id
+  - pipeline:
+      name: '{{ IngestPipeline "application-control-event" }}'
+      if: "ctx.trendmicro?.event.signature_id >= 6000000 && ctx.trendmicro?.event.signature_id <= 6999999"
+  - pipeline:
+      name: '{{ IngestPipeline "firewall-event" }}'
+      if: "ctx.trendmicro?.event.signature_id == 20 || ctx.trendmicro?.event.signature_id == 21"
+  - pipeline:
+      name: '{{ IngestPipeline "intrusion-prevention-event" }}'
+      if: "ctx.trendmicro?.event.signature_id == 10 || (ctx.trendmicro?.event.signature_id >= 1000000 && ctx.trendmicro?.event.signature_id <= 1999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "integrity-monitoring-event" }}'
+      if: "ctx.trendmicro?.event.signature_id == 30 || (ctx.trendmicro?.event.signature_id >= 2000000 && ctx.trendmicro?.event.signature_id <= 2999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "malware-event" }}'
+      if: "ctx.trendmicro?.event.signature_id >= 4000000 && ctx.trendmicro?.event.signature_id <= 4999999"
+  - pipeline:
+      name: '{{ IngestPipeline "system-event" }}'
+      if: "ctx.trendmicro?.event.signature_id >= 100 && ctx.trendmicro?.event.signature_id <= 7499"
+  - pipeline:
+      name: '{{ IngestPipeline "log-inspection" }}'
+      if: "ctx.trendmicro?.event.signature_id == 40 || (ctx.trendmicro?.event.signature_id >= 3000000 && ctx.trendmicro?.event.signature_id <= 3999999)"
+  - pipeline:
+      name: '{{ IngestPipeline "web-reputation" }}'
+      if: "ctx.trendmicro?.event.signature_id >= 5000000 && ctx.trendmicro?.event.signature_id <= 5999999"
+
+  - convert:
+      field: file.size
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+
+  - remove:
+      field:
+        - cef
+  #
+  # Timestamp parsing.
+  #
+  - grok:
+      # decode_cef sets @timestamp when deviceReceiptTime is provided.
+      description: Extract timestamp from log header when deviceReceiptTime not given.
+      if: ctx?.cef?.extensions?.deviceReceiptTime == null
+      field: event.original
+      patterns:
+        - "^%{SYSLOG_TIMESTAMP} "
+        - "^%{ECS_SYSLOG_PRI}%{SYSLOG_TIMESTAMP} " # RFC3164
+        - "^%{ECS_SYSLOG_PRI}%{NONNEGINT} %{SYSLOG_TIMESTAMP} " # RFC5224
+      pattern_definitions:
+        ECS_SYSLOG_PRI: "<%{NONNEGINT:log.syslog.priority:long}>"
+        SYSLOG_TIMESTAMP: "(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})"
+      ignore_failure: true
+  - date:
+      if: ctx?._tmp?.timestamp8601 != null
+      field: _tmp.timestamp8601
+      formats:
+        - ISO8601
+  - date:
+      if: ctx?._tmp?.timestamp != null
+      field: _tmp.timestamp
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+  - remove:
+      field:
+        - _tmp
+      ignore_failure: true
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
