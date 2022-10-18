@@ -2,13 +2,7 @@
 
 The Kubernetes Security Posture Management (KSPM) integration allows you to identify and remediate configuration risks in the various components that make up your Kubernetes cluster. It does this by evaluating the various components of your cluster against secure configuration guidelines, as defined by the Center for Internet Security (CIS), in order to identify configuration risks. When configuration risks are discovered, [findings](https://ela.st/findings-8-5) are generated that tell you exactly what is misconfigured and how you can remediate it. Please read through the [KSPM documentation](https://ela.st/kspm) for an overview of KSPM. 
 
-We recommend reading through this entire readme before getting started with KSPM. You can also jump to the section you're specifically interested in using the quick links below: 
-
-* Getting Started Guide
-* Using KSPM
-* Compatibility
-* Integration Requirments
-* Leader election
+We recommend reading through this entire readme before getting started with KSPM. 
 
 
 ## Getting started guide
