@@ -238,6 +238,7 @@ To access the `events` endpoint, the user making the API call will need to have 
 | input.type | Type of Filebeat input. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | related.description | Array of `description` derived from `threat[.enrichments].indicator.description` | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.indicator_type | Array of `indicator_type` derived from `threat[.enrichments].indicator.type` | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | related.location | Array of `location` derived from `related.ip` | geo_point |
