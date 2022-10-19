@@ -278,6 +278,7 @@ To access the `events` endpoint, the user making the API call will need to have 
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
+| threat.indicator.sightings | Number of times this indicator was observed conducting threat activity. | long |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
 | user.effective.email | User email address. | keyword |
 | user.effective.id | Unique identifier of the user. | keyword |
