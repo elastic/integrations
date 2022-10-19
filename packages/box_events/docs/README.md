@@ -34,7 +34,7 @@ By default this returns events for the authenticated user.
 
 #### Elastic Integration for Box Events Settings
 
-To retrieve events for the entire enterprise, set the `stream_type` in the Elastic Integration Settings page to `admin_logs_streaming` for live monitoring of new events, or `admin_logs` for querying across historical events. 
+To retrieve events for the entire enterprise, set the `stream_type` in the Elastic Integration Settings page to `admin_logs_streaming` for live monitoring of new events, or `admin_logs` for querying across historical events. In this case the authentication credentials must correspond to a user with admin permissions to `Run new reports and access existing reports`.
 
 Events will be returned in batches of up to 100, with successive calls on expiry of the configured `interval` so you may wish to specify a lower interval when a substantial number of events are expected.
 
