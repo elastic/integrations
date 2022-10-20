@@ -9,7 +9,7 @@ datasets for receiving logs over syslog or read from a file:
 
 Logs are either gathered via the rest API or via a logfile.
 
-Sample Powershell script to get the logs and put them into a JSON file:
+The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be consumed by the logfile input:
 
 ```powershell
 # Install-Module -Name ExchangeOnlineManagement
