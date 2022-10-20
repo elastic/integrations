@@ -3,11 +3,8 @@ description: Pipeline for parsing HAProxy http, tcp and default logs. Requires t
   geoip plugin.
 processors:
   - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
-  - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -25,7 +22,7 @@ processors:
         %{NOTSPACE:haproxy.http.response.captured_cookie} %{NOTSPACE:haproxy.termination_state}
         %{NUMBER:haproxy.connections.active:long}/%{NUMBER:haproxy.connections.frontend:long}/%{NUMBER:haproxy.connections.backend:long}/%{NUMBER:haproxy.connections.server:long}/%{NUMBER:haproxy.connections.retries:long}
         %{NUMBER:haproxy.server_queue:long}/%{NUMBER:haproxy.backend_queue:long} (\{%{DATA:haproxy.http.request.captured_headers}\}
-        \{%{DATA:haproxy.http.response.captured_headers}\} |\{%{DATA}\} )?"%{GREEDYDATA:haproxy.http.request.raw_request_line}"'
+        \{%{DATA:haproxy.http.response.captured_headers}\} |\{%{DATA}\} )?"%{GREEDYDATA:haproxy.http.request.raw_request_line}"( %{HTTPS_DATA})?'
       - '(%{NOTSPACE:process.name}\[%{NUMBER:process.pid:long}\]: )?(%{IP:source.address}|-):%{NUMBER:source.port:long}
         \[%{NOTSPACE:haproxy.request_date}\] %{NOTSPACE:haproxy.frontend_name}/%{NOTSPACE:haproxy.bind_name}
         %{GREEDYDATA:haproxy.error_message}'
@@ -38,6 +35,9 @@ processors:
       ignore_missing: false
       pattern_definitions:
         HAPROXY_DATE: (%{MONTHDAY}[/-]%{MONTH}[/-]%{YEAR}:%{HOUR}:%{MINUTE}:%{SECOND})|%{SYSLOGTIMESTAMP}
+        HTTPS_DATA: >-
+          %{NUMBER:haproxy.connections.fc_err:long}/%{NUMBER:haproxy.connections.ssl_fc_err:long}/%{NUMBER:haproxy.connections.ssl_c_err:long}/%{NUMBER:haproxy.connections.ssl_c_ca_err:long}/%{NUMBER:temp.ssl_fc_is_resumed:long}
+          %{HOSTNAME:tls.client.server_name}/%{DATA:tls.version_protocol}v%{NUMBER:tls.version}/%{NOTSPACE:tls.cipher}
   - date:
       if: ctx.event.timezone == null
       field: haproxy.request_date
@@ -61,8 +61,6 @@ processors:
       - append:
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
-  - remove:
-      field: haproxy.request_date
   - grok:
       field: haproxy.http.request.raw_request_line
       patterns:
@@ -73,6 +71,21 @@ processors:
       field: url.original
       ignore_failure: true
       if: ctx?.url?.original != null
+  - lowercase:
+      field: tls.version_protocol
+      ignore_missing: true
+  - set:
+      field: destination.domain
+      copy_from: tls.client.server_name
+      ignore_empty_value: true
+  - set:
+      field: url.domain
+      copy_from: tls.client.server_name
+      ignore_empty_value: true
+  - set:
+      field: tls.resumed
+      value: true
+      if: ctx.temp?.ssl_fc_is_resumed == 1
   - convert:
       field: source.address
       target_field: source.ip
@@ -117,9 +130,6 @@ processors:
       params:
         scale: 1000000
       if: ctx.temp?.duration != null
-  - remove:
-      field: temp.duration
-      ignore_missing: true
   - convert:
       field: haproxy.bytes_read
       target_field: http.response.bytes
@@ -160,6 +170,11 @@ processors:
       field: event.outcome
       value: failure
       if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
+  - remove:
+      field: 
+        - temp
+        - haproxy.request_date
+      ignore_missing: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
