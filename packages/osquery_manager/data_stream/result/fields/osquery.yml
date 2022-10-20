@@ -137,6 +137,14 @@
           type: text
           norms: false
           default_field: false
+    - name: activity
+      description: unified_log.activity - the activity ID associate with the entry
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: actual
       description: fan_speed_sensors.actual - Actual speed
       type: keyword
@@ -199,7 +207,7 @@
           norms: false
           default_field: false
     - name: algorithm
-      description: authorized_keys.algorithm - algorithm of key
+      description: authorized_keys.algorithm - Key type
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1251,6 +1259,7 @@
         ntfs_journal_events.category - The category that the event originated from
         power_sensors.category - The sensor category: currents, voltage, wattage
         system_extensions.category - System extension category
+        unified_log.category - the category of the os_log_t used
         yara_events.category - The category of the file
       type: keyword
       ignore_above: 1024
@@ -1300,6 +1309,15 @@
       description: |-
         docker_containers.cgroup_namespace - cgroup namespace
         process_namespaces.cgroup_namespace - cgroup namespace inode
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+    - name: cgroup_path
+      description: processes.cgroup_path - The full hierarchical path of the process's control group
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1688,6 +1706,7 @@
     - name: comment
       description: |-
         authorizations.comment - Label top-level key
+        authorized_keys.comment - Optional comment
         docker_image_history.comment - Instruction comment
         etc_protocols.comment - Comment with protocol description
         etc_services.comment - Optional comment for a service.
@@ -3876,6 +3895,15 @@
         - name: number
           type: long
           default_field: false
+    - name: firmware_type
+      description: platform_info.firmware_type - The type of firmware (Uefi, Bios, Unknown).
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: firmware_version
       description: ibridge_info.firmware_version - The build version of the firmware
       type: keyword
@@ -4457,7 +4485,7 @@
           default_field: false
     - name: hostname
       description: |-
-        curl_certificate.hostname - Hostname (domain[:port]) to CURL
+        curl_certificate.hostname - Hostname to CURL (domain[:port], e.g. osquery.io)
         system_info.hostname - Network hostname including domain
         ycloud_instance_metadata.hostname - Hostname of the VM
       type: keyword
@@ -5346,7 +5374,7 @@
           default_field: false
     - name: key
       description: |-
-        authorized_keys.key - parsed authorized keys line
+        authorized_keys.key - Key encoded as base64
         azure_instance_tags.key - The tag key
         chrome_extensions.key - The extension key, from the manifest file
         docker_container_envs.key - Environment variable name
@@ -5670,14 +5698,11 @@
     - name: level
       description: |-
         asl.level - Log level number.  See levels in asl.h.
+        unified_log.level - the severity level of the entry
         windows_eventlog.level - Severity level associated with the event
         windows_events.level - The severity level associated with the event
       type: keyword
       ignore_above: 1024
-      multi_fields:
-        - name: number
-          type: long
-          default_field: false
     - name: license
       description: |-
         atom_packages.license - License for package
@@ -6155,6 +6180,14 @@
         - name: number
           type: long
           default_field: false
+    - name: max_rows
+      description: unified_log.max_rows - the max number of rows returned (defaults to 100)
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: max_speed
       description: memory_devices.max_speed - Max speed of memory device in megatransfers per second (MT/s)
       type: keyword
@@ -6418,6 +6451,7 @@
         lxd_cluster_members.message - Message from the node (Online/Offline)
         selinux_events.message - Message
         syslog_events.message - The syslog message
+        unified_log.message - composed message
         user_events.message - Message from the event
       type: keyword
       ignore_above: 1024
@@ -7215,10 +7249,16 @@
           default_field: false
     - name: options
       description: |-
+        authorized_keys.options - Optional list of login options
         dns_resolvers.options - Resolver options
         nfs_shares.options - Options string set on the export share
       type: keyword
       ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: organization
       description: curl_certificate.organization - Organization issued to
       type: keyword
@@ -7974,6 +8014,7 @@
         services.pid - the Process ID of the service
         shared_memory.pid - Process ID to last use the segment
         socket_events.pid - Process (or thread) ID
+        unified_log.pid - the pid of the process that made the entry
         user_events.pid - Process (or thread) ID
         windows_crashes.pid - Process ID of the crashed process
         windows_eventlog.pid - Process ID which emitted the event record
@@ -8320,7 +8361,9 @@
           type: long
           default_field: false
     - name: process
-      description: alf_explicit_auths.process - Process name explicitly allowed
+      description: |-
+        alf_explicit_auths.process - Process name explicitly allowed
+        unified_log.process - the name of the process that made the entry
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9470,7 +9513,9 @@
           type: long
           default_field: false
     - name: sender
-      description: asl.sender - Sender's identification string.  Default is process name.
+      description: |-
+        asl.sender - Sender's identification string.  Default is process name.
+        unified_log.sender - the name of the binary image that made the entry
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10349,6 +10394,14 @@
         - name: number
           type: long
           default_field: false
+    - name: storage
+      description: unified_log.storage - the storage category for the entry
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: storage_driver
       description: docker_info.storage_driver - Storage driver
       type: keyword
@@ -10515,7 +10568,9 @@
           type: long
           default_field: false
     - name: subsystem
-      description: system_controls.subsystem - Subsystem ID, control type
+      description: |-
+        system_controls.subsystem - Subsystem ID, control type
+        unified_log.subsystem - the subsystem of the os_log_t used
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10857,6 +10912,7 @@
       description: |-
         bpf_process_events.tid - Thread ID
         bpf_socket_events.tid - Thread ID
+        unified_log.tid - the tid of the thread that made the entry
         windows_crashes.tid - Thread ID of the crashed thread
         windows_eventlog.tid - Thread ID which emitted the event record
       type: keyword
@@ -10929,6 +10985,7 @@
     - name: timestamp
       description: |-
         time.timestamp - Current timestamp (log format) in UTC
+        unified_log.timestamp - unix timestamp associated with the entry
         windows_eventlog.timestamp - Timestamp to selectively filter the events
       type: keyword
       ignore_above: 1024
@@ -11055,7 +11112,7 @@
           type: long
           default_field: false
     - name: type
-      description: "apparmor_events.type - Event type\nappcompat_shims.type - Type of the SDB database.\nblock_devices.type - Block device type string\nbpf_socket_events.type - The socket type\ncrashes.type - Type of crash log\ndevice_file.type - File status\ndevice_firmware.type - Type of device\ndevice_partitions.type - \ndisk_encryption.type - Description of cipher type and mode if available\ndisk_info.type - The interface type of the disk.\ndns_cache.type - DNS record type\ndns_resolvers.type - Address type: sortlist, nameserver, search\ndocker_container_mounts.type - Type of mount (bind, volume)\ndocker_container_ports.type - Protocol (tcp, udp)\ndocker_volumes.type - Volume type\nfile.type - File status\nfirefox_addons.type - Extension, addon, webapp\nhardware_events.type - Type of hardware and hardware event\ninterface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown\ninterface_details.type - Interface type (includes virtual)\nkeychain_items.type - Keychain item type (class)\nlast.type - Entry type, according to ut_type types (utmp.h)\nlogged_in_users.type - Login type\nlogical_drives.type - Deprecated (always 'Unknown').\nlxd_certificates.type - Type of the certificate\nlxd_networks.type - Type of network\nmounts.type - Mounted device type\nntfs_acl_permissions.type - Type of access mode for the access control entry.\nnvram.type - Data type (CFData, CFString, etc)\nosquery_events.type - Either publisher or subscriber\nosquery_extensions.type - SDK extension type: extension or module\nosquery_flags.type - Flag type\nprocess_open_pipes.type - Pipe Type: named vs unnamed/anonymous\nregistry.type - Type of the registry value, or 'subkey' if item is a subkey\nroutes.type - Type of route\nselinux_events.type - Event type\nshared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.\nsmbios_tables.type - Table entry type\nsmc_keys.type - SMC-reported type literal type\nstartup_items.type - Startup Item or Login Item\nsystem_controls.type - Data type\nulimit_info.type - System resource to be limited\nuser_events.type - The file description for the process socket\nusers.type - Whether the account is roaming (domain), local, or a system profile\nwindows_crashes.type - Type of crash log\nwindows_security_products.type - Type of security product\nxprotect_meta.type - Either plugin or extension"
+      description: "apparmor_events.type - Event type\nappcompat_shims.type - Type of the SDB database.\nblock_devices.type - Block device type string\nbpf_socket_events.type - The socket type\ncrashes.type - Type of crash log\ndevice_file.type - File status\ndevice_firmware.type - Type of device\ndevice_partitions.type - \ndisk_encryption.type - Description of cipher type and mode if available\ndisk_info.type - The interface type of the disk.\ndns_cache.type - DNS record type\ndns_resolvers.type - Address type: sortlist, nameserver, search\ndocker_container_mounts.type - Type of mount (bind, volume)\ndocker_container_ports.type - Protocol (tcp, udp)\ndocker_volumes.type - Volume type\nfile.type - File status\nfirefox_addons.type - Extension, addon, webapp\nhardware_events.type - Type of hardware and hardware event\ninterface_addresses.type - Type of address. One of dhcp, manual, auto, other, unknown\ninterface_details.type - Interface type (includes virtual)\nkeychain_items.type - Keychain item type (class)\nlast.type - Entry type, according to ut_type types (utmp.h)\nlogged_in_users.type - Login type\nlogical_drives.type - Deprecated (always 'Unknown').\nlxd_certificates.type - Type of the certificate\nlxd_networks.type - Type of network\nmounts.type - Mounted device type\nntfs_acl_permissions.type - Type of access mode for the access control entry.\nnvram.type - Data type (CFData, CFString, etc)\nosquery_events.type - Either publisher or subscriber\nosquery_extensions.type - SDK extension type: core, extension, or module\nosquery_flags.type - Flag type\nprocess_open_pipes.type - Pipe Type: named vs unnamed/anonymous\nregistry.type - Type of the registry value, or 'subkey' if item is a subkey\nroutes.type - Type of route\nselinux_events.type - Event type\nshared_resources.type - Type of resource being shared. Types include: disk drives, print queues, interprocess communications (IPC), and general devices.\nsmbios_tables.type - Table entry type\nsmc_keys.type - SMC-reported type literal type\nstartup_items.type - Startup Item or Login Item\nsystem_controls.type - Data type\nulimit_info.type - System resource to be limited\nuser_events.type - The file description for the process socket\nusers.type - Whether the account is roaming (domain), local, or a system profile\nwindows_crashes.type - Type of crash log\nwindows_security_products.type - Type of security product\nxprotect_meta.type - Either plugin or extension"
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -11096,7 +11153,7 @@
         known_hosts.uid - The local user that owns the known_hosts file
         launchd_overrides.uid - User ID applied to the override, 0 applies to all
         package_bom.uid - Expected user of file or directory
-        password_policy.uid - User ID for the policy if available
+        password_policy.uid - User ID for the policy, -1 for policies that are global
         process_events.uid - User ID at process start
         process_file_events.uid - The uid of the process performing the action
         processes.uid - Unsigned user ID
