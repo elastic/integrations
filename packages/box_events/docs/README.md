@@ -78,20 +78,22 @@ The Elastic Integration for Box Events connects using OAuth 2.0 to interact with
 
 ### Authorize the Application from the [Box Admin Console](https://app.box.com/master)
 If you are the `admin` user you can do this yourself, otherwise reach out to the admin to confirm your motives and request that they authorize your request, since there may be some delay before they are aware of your request.
-  1. To authorize the App ensure you are logged in to the [Admin Console](https://app.box.com/master) and follow these steps:
-  2. In the left side bar click on [Apps](https://app.box.com/master/settings/apps)
-  3. Click on the [Custom Apps Manager](https://app.box.com/master/custom-apps) tab, you should see your App under `Server Authentication Apps` and the Àuthorisation Status` should be `Pending Reauth`
-  4. Click on your App, it should have the following `App Details`:
+
+To authorize the App ensure you are logged in to the [Admin Console](https://app.box.com/master) and follow these steps:
+
+  1. In the left side bar click on [Apps](https://app.box.com/master/settings/apps)
+  2. Click on the [Custom Apps Manager](https://app.box.com/master/custom-apps) tab, you should see your App under `Server Authentication Apps` and the `Authorisation Status` should be `Pending Reauth`
+  3. Click on your App, it should have the following `App Details`:
     - Last Activity
-      - `\<date\>`
+      - `<date>`
     - Developer Email
-      - `\<your email\>`
+      - `<your email>`
     - Authorization Status
       - `Pending Reauthorization`
     - Enablement Status
       - `Enabled`
     - Client ID
-      - `\<alphanumeric id\>`
+      - `<alphanumeric id>`
     - App Access
       - `All Users`
     - App Scopes
@@ -102,8 +104,8 @@ If you are the `admin` user you can do this yourself, otherwise reach out to the
       - `Generate user access tokens`
     - Authentication Type
       - `OAuth 2.0 with Client Credentials Grant`
-  5. Click on `Authorize` - a pop up will reconfirm these details
-  6. Click on `Authorize` - the Authorization Status should update to 
+  4. Click on `Authorize` - a pop up will reconfirm these details
+  5. Click on `Authorize` - the Authorization Status should update to 
     - Authorized
 
 ### Locate the Elastic Integration for Box Events Settings
