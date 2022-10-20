@@ -139,7 +139,9 @@ pipeline {
       }
       post {
         always {
-          gitHubCommentWithBenchmarkReport()
+          catchError(message: 'gitHubCommentWithBenchmarkReport failed', buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+            gitHubCommentWithBenchmarkReport()
+          }
         }
       }
     }
@@ -169,6 +171,7 @@ def gitHubCommentWithBenchmarkReport() {
     dir("${BASE_DIR}") {
       // download artifacts for this PR
       def bucketUri = getBenchmarkBucketURI() + "*.xml"
+      log(level: 'INFO', text: "googleStorageDownload(bucketUri: ${bucketUri}, localDirectory: ${currentBenchmarkResults}, pathPrefix: ${getBenchmarkPathPrefix()})")
       googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: currentBenchmarkResults, pathPrefix: getBenchmarkPathPrefix())
 
       // download artifacts from the target branch if any
