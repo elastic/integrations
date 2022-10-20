@@ -4,9 +4,6 @@ processors:
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
-  - set:
-      copy_from: "@timestamp"
-      field: event.created
   - grok:
       field: message
       patterns:
@@ -17,11 +14,14 @@ processors:
       if: ctx.first_char != '{'
   - pipeline:
       if: ctx.first_char == '{'
-      name: '{< IngestPipeline "pipeline-json" >}'
+      name: '{{ IngestPipeline "pipeline-json" }}'
+  - set:
+      copy_from: "@timestamp"
+      field: event.created
   - script:
       lang: painless
       source: >-
-        if (ctx.elasticsearch.server.gc != null && ctx.elasticsearch.server.gc.observation_duration != null) {
+        if (ctx.elasticsearch.server != null && ctx.elasticsearch.server.gc != null && ctx.elasticsearch.server.gc.observation_duration != null) {
           if (ctx.elasticsearch.server.gc.observation_duration.unit == params.seconds_unit) {
             ctx.elasticsearch.server.gc.observation_duration.ms = ctx.elasticsearch.server.gc.observation_duration.time * params.ms_in_one_s;
           }
@@ -32,7 +32,7 @@ processors:
             ctx.elasticsearch.server.gc.observation_duration.ms = ctx.elasticsearch.server.gc.observation_duration.time * params.ms_in_one_m;
           }
         }
-        if (ctx.elasticsearch.server.gc != null && ctx.elasticsearch.server.gc.collection_duration != null) {
+        if (ctx.elasticsearch.server != null && ctx.elasticsearch.server.gc != null && ctx.elasticsearch.server.gc.collection_duration != null) {
           if (ctx.elasticsearch.server.gc.collection_duration.unit == params.seconds_unit) {
             ctx.elasticsearch.server.gc.collection_duration.ms = ctx.elasticsearch.server.gc.collection_duration.time * params.ms_in_one_s;
           }
@@ -75,17 +75,16 @@ processors:
       field: host.id
       value: "{{elasticsearch.node.id}}"
       ignore_empty_value: true
+  - rename:
+      field: tags
+      target_field: elasticsearch.server.tags
+      ignore_missing: true
   - remove:
       field:
         - elasticsearch.server.gc.collection_duration.time
         - elasticsearch.server.gc.collection_duration.unit
         - elasticsearch.server.gc.observation_duration.time
         - elasticsearch.server.gc.observation_duration.unit
-      ignore_missing: true
-  - remove:
-      field:
-        - elasticsearch.server.timestamp
-        - elasticsearch.server.@timestamp
       ignore_missing: true
   - remove:
       field:

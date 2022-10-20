@@ -30,7 +30,7 @@ To use this integration, you will also need to:
 ### Enable the integration in Elastic
 
 For step-by-step instructions on how to set up an new integration in Elastic, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+{{ url "getting-started-observability" "Getting started" }} guide.
 When setting up the integration, you will choose to collect logs either via TLS or HTTP Endpoint.
 
 ### Configure Jamf Compliance Reporter

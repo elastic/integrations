@@ -18,6 +18,23 @@ Sections include:
 * (Optional) [Troubleshooting](#troubleshooting)
 * [Reference](#reference)
 
+Some considerations when these documentation files are written at `_dev/build/docs/*.md`:
+- These files follow the Markdown syntax and leverage the use of templates ([documentation templates info](https://github.com/elastic/elastic-package/blob/main/docs/howto/add_package_readme.md)
+- There are some available functions or placeholders (`fields`, `event`, `url`) that can be used to help writing these docs:
+    - More info at [placeholders section](https://github.com/elastic/elastic-package/blob/main/docs/howto/add_package_readme.md#placeholders)
+- Regarding `url` placeholder, this placeholder should be used to add links to Elastic documentation guides (https://www.elastic.co/guide/*) in your documentation:
+    - File containing all the links defined is in the root of the directory: [`links_table.yml`](../links_table.yml)
+    - If needed, more links to Elastic documentation guides can be added into that file.
+    - Example of usage:
+        - In documentation files (`_dev/build/docs/*.md`):
+          ```
+          {{ url "getting-started-observability" "Elastic guide" }}
+          ```
+        - It generates the following link
+          ```
+          [Elastic guide](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html)
+          ```
+
 ## Overview
 
 The overview section explains what the integration is, defines the third-party product that is providing data,
@@ -162,7 +179,7 @@ Use this template language as a starting point, including any other setup instru
 <!-- Any prerequisite instructions -->
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+{{ url "getting-started-observability" "Getting started" }} guide.
 
 <!-- Additional set up instructions -->
 ```
@@ -174,7 +191,7 @@ For step-by-step instructions on how to set up an integration, see the
 >
 >After you've configured your device, you can set up the Elastic integration.
 >For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+{{ url "getting-started-observability" "Getting started" }} guide.
 
 ## Troubleshooting
 

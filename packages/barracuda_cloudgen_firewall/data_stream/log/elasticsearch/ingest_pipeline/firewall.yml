@@ -1,0 +1,208 @@
+---
+description: Pipeline for Barracuda CloudGen Firewall Activity Messages logs
+processors:
+  - date:
+      field: json.timestamp
+      target_field: '_tmp.timestamp'
+      formats:
+        - UNIX
+  - rename:
+      field: json.src_ip
+      target_field: source.address
+      ignore_missing: true
+      if: ctx.json?.src_ip != '-'
+  - convert:
+      field: source.address
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.src_port
+      target_field: source.port
+      type: long
+      ignore_missing: true
+  - rename:
+      field: json.src_iface
+      target_field: observer.ingress.interface.name
+      ignore_missing: true
+  - gsub:
+      field: json.src_mac
+      target_field: source.mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.json?.src_mac != '00:00:00:00:00:00'
+  - convert:
+      field: json.src_ip_nat
+      target_field: source.nat.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.src_ip_nat != '0.0.0.0'
+  - convert:
+      field: json.fwd_bytes
+      target_field: source.bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      field: json.fwd_packets
+      target_field: source.packets
+      type: long
+      ignore_missing: true
+  - rename:
+      field: json.dst_ip
+      target_field: destination.address
+      ignore_missing: true
+      if: ctx.json?.dst_ip != '-'
+  - convert:
+      field: destination.address
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+  - convert:
+      field: json.dst_port
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+  - rename:
+      field: json.dst_iface
+      target_field: observer.egress.interface.name
+      ignore_missing: true
+  - gsub:
+      field: json.dst_mac
+      target_field: destination.mac
+      pattern: '[-:.]'
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.json?.dst_mac != '00:00:00:00:00:00'
+  - convert:
+      field: json.dst_ip_nat
+      target_field: destination.nat.ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.dst_ip_nat != '0.0.0.0'
+  - uppercase:
+      field: destination.mac
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
+      ignore_missing: true
+  - gsub:
+      field: destination.mac
+      pattern: '[.:]'
+      replacement: '-'
+      ignore_missing: true
+  - gsub:
+      field: source.mac
+      pattern: '[.:]'
+      replacement: '-'
+      ignore_missing: true
+  - convert:
+      field: json.rev_bytes
+      target_field: destination.bytes
+      type: long
+      ignore_missing: true
+  - convert:
+      field: json.rev_packets
+      target_field: destination.packets
+      type: long
+      ignore_missing: true
+  - rename:
+      field: json.fw_rule
+      target_field: rule.name
+      ignore_missing: true
+  - rename:
+      field: json.app_rule
+      target_field: barracuda_cloudgen_firewall.log.app_rule
+      ignore_missing: true
+  - rename:
+      field: json.fw_info
+      target_field: barracuda_cloudgen_firewall.log.fw_info
+      ignore_missing: true
+      if: ctx.json?.fw_info != '-'
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+  - script:
+      description: Convert duration of the session in milliseconds to nanoseconds.
+      tag: duration-ms-to-ns
+      lang: painless
+      if: ctx.json?.duration != null
+      source: >-
+        ctx.event.duration = (long)ctx.json.duration * 1000000;
+  - script:
+      description: Compute network.bytes sum.
+      tag: sum-network-bytes
+      lang: painless
+      source: "ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes"
+      if: ctx.source?.bytes != null && ctx.destination?.bytes != null && ctx.network?.bytes == null
+      ignore_failure: true
+  - script:
+      description: Compute network.packets sum.
+      tag: sum-network-packets
+      lang: painless
+      source: "ctx.network.packets = ctx.source.packets + ctx.destination.packets"
+      if: ctx.source?.packets != null && ctx.destination?.packets != null && ctx.network?.packets == null
+      ignore_failure: true
+  - convert:
+      field: json.ip_proto
+      target_field: network.iana_number
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.user
+      target_field: user.name
+      ignore_missing: true
+  - script:
+      description: Enrich with network.transport based on IANA number.
+      tag: enrich-network-transport-name
+      lang: painless
+      ignore_failure: true
+      if: ctx.network?.iana_number != null
+      source: |
+        def iana_number = ctx.network.iana_number;
+        if (iana_number == '0') {
+            ctx.network.transport = 'hopopt';
+        } else if (iana_number == '1') {
+            ctx.network.transport = 'icmp';
+        } else if (iana_number == '2') {
+            ctx.network.transport = 'igmp';
+        } else if (iana_number == '6') {
+            ctx.network.transport = 'tcp';
+        } else if (iana_number == '8') {
+            ctx.network.transport = 'egp';
+        } else if (iana_number == '17') {
+            ctx.network.transport = 'udp';
+        } else if (iana_number == '47') {
+            ctx.network.transport = 'gre';
+        } else if (iana_number == '50') {
+            ctx.network.transport = 'esp';
+        } else if (iana_number == '58') {
+            ctx.network.transport = 'ipv6-icmp';
+        } else if (iana_number == '112') {
+            ctx.network.transport = 'vrrp';
+        } else if (iana_number == '132') {
+            ctx.network.transport = 'sctp';
+        }
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: network
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: denied
+      allow_duplicates: false
+      if: ctx.event.action == 'AppBlock'
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx.event.action == 'End'
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
