@@ -47,11 +47,11 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-30T05:45:04.513Z",
+    "@timestamp": "2022-10-20T11:23:04.602Z",
     "agent": {
-        "ephemeral_id": "d79631d7-f47d-4305-84e0-966867772449",
+        "ephemeral_id": "3ec02007-5c86-4a8d-920a-6b1dafdf6f08",
         "hostname": "docker-fleet-agent",
-        "id": "d0af73b1-68c5-4a9b-900e-b1ab4bfc4f08",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.14.0"
@@ -65,7 +65,7 @@ An example event for `log` looks as following:
         "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "d0af73b1-68c5-4a9b-900e-b1ab4bfc4f08",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
         "snapshot": false,
         "version": "7.14.0"
     },
@@ -74,9 +74,9 @@ An example event for `log` looks as following:
         "category": [
             "database"
         ],
-        "created": "2022-09-30T05:45:19.328Z",
+        "created": "2022-10-20T11:23:20.331Z",
         "dataset": "mongodb.log",
-        "ingested": "2022-09-30T05:45:22.874882467Z",
+        "ingested": "2022-10-20T11:23:23.874455717Z",
         "kind": "event",
         "type": [
             "info"
@@ -88,10 +88,10 @@ An example event for `log` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "2347a1bd8a3945949da8ab5c29f60774",
         "ip": [
-            "172.19.0.7"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -120,6 +120,11 @@ An example event for `log` looks as following:
             "component": "CONTROL",
             "context": "main"
         }
+    },
+    "related": {
+        "hosts": [
+            "docker-fleet-agent"
+        ]
     },
     "tags": [
         "mongodb-logs"
@@ -181,9 +186,19 @@ The fields reported are:
 | mongodb.log.component | Functional categorization of message | keyword |
 | mongodb.log.context | Context of message | keyword |
 | mongodb.log.id | Integer representing the unique identifier of the log statement | long |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| user.effective.name | Short name or login of the user. | keyword |
+| user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ## Metrics
@@ -203,11 +218,11 @@ An example event for `collstats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-30T05:43:41.148Z",
+    "@timestamp": "2022-10-20T10:51:51.648Z",
     "agent": {
-        "ephemeral_id": "004e7564-1a48-40eb-8099-b51ddbd903dc",
+        "ephemeral_id": "069895c3-402a-45ff-9ddd-a50c62446502",
         "hostname": "docker-fleet-agent",
-        "id": "d0af73b1-68c5-4a9b-900e-b1ab4bfc4f08",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "7.14.0"
@@ -221,15 +236,15 @@ An example event for `collstats` looks as following:
         "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "d0af73b1-68c5-4a9b-900e-b1ab4bfc4f08",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
         "snapshot": false,
         "version": "7.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "mongodb.collstats",
-        "duration": 2032209,
-        "ingested": "2022-09-30T05:43:44.696723467Z",
+        "duration": 4040208,
+        "ingested": "2022-10-20T10:51:55.190132092Z",
         "module": "mongodb"
     },
     "host": {
@@ -238,10 +253,10 @@ An example event for `collstats` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "2347a1bd8a3945949da8ab5c29f60774",
         "ip": [
-            "172.19.0.7"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -260,14 +275,14 @@ An example event for `collstats` looks as following:
     },
     "mongodb": {
         "collstats": {
-            "collection": "oplog.rs",
+            "collection": "system.roles",
             "commands": {
                 "count": 0,
                 "time": {
                     "us": 0
                 }
             },
-            "db": "local",
+            "db": "admin",
             "getmore": {
                 "count": 0,
                 "time": {
@@ -282,9 +297,9 @@ An example event for `collstats` looks as following:
             },
             "lock": {
                 "read": {
-                    "count": 16,
+                    "count": 1,
                     "time": {
-                        "us": 121
+                        "us": 19
                     }
                 },
                 "write": {
@@ -294,11 +309,11 @@ An example event for `collstats` looks as following:
                     }
                 }
             },
-            "name": "local.oplog.rs",
+            "name": "admin.system.roles",
             "queries": {
-                "count": 0,
+                "count": 1,
                 "time": {
-                    "us": 0
+                    "us": 19
                 }
             },
             "remove": {
@@ -308,9 +323,9 @@ An example event for `collstats` looks as following:
                 }
             },
             "total": {
-                "count": 16,
+                "count": 1,
                 "time": {
-                    "us": 121
+                    "us": 19
                 }
             },
             "update": {
@@ -412,11 +427,11 @@ An example event for `dbstats` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-30T05:44:25.115Z",
+    "@timestamp": "2022-10-20T10:52:35.564Z",
     "agent": {
-        "ephemeral_id": "b94c8fab-16af-4c9c-8f7f-a52c16f70dae",
+        "ephemeral_id": "cdd73778-56aa-4cc4-b9dd-f2e2202cfef6",
         "hostname": "docker-fleet-agent",
-        "id": "d0af73b1-68c5-4a9b-900e-b1ab4bfc4f08",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "7.14.0"
@@ -430,15 +445,15 @@ An example event for `dbstats` looks as following:
         "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "d0af73b1-68c5-4a9b-900e-b1ab4bfc4f08",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
         "snapshot": false,
         "version": "7.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "mongodb.dbstats",
-        "duration": 2733125,
-        "ingested": "2022-09-30T05:44:28.693023626Z",
+        "duration": 3442416,
+        "ingested": "2022-10-20T10:52:39.124852460Z",
         "module": "mongodb"
     },
     "host": {
@@ -447,10 +462,10 @@ An example event for `dbstats` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "2347a1bd8a3945949da8ab5c29f60774",
         "ip": [
-            "172.19.0.7"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -570,11 +585,11 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-30T05:46:05.475Z",
+    "@timestamp": "2022-10-20T10:54:12.592Z",
     "agent": {
-        "ephemeral_id": "a80c2528-263a-4e2a-b44c-f4f9df75c7a5",
+        "ephemeral_id": "79bbe613-f914-4617-8ef0-345562558b05",
         "hostname": "docker-fleet-agent",
-        "id": "d0af73b1-68c5-4a9b-900e-b1ab4bfc4f08",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "7.14.0"
@@ -588,15 +603,15 @@ An example event for `metrics` looks as following:
         "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "d0af73b1-68c5-4a9b-900e-b1ab4bfc4f08",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
         "snapshot": false,
         "version": "7.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "mongodb.metrics",
-        "duration": 3150375,
-        "ingested": "2022-09-30T05:46:09.023273503Z",
+        "duration": 2745875,
+        "ingested": "2022-10-20T10:54:16.129970088Z",
         "module": "mongodb"
     },
     "host": {
@@ -605,10 +620,10 @@ An example event for `metrics` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "2347a1bd8a3945949da8ab5c29f60774",
         "ip": [
-            "172.19.0.7"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -634,7 +649,7 @@ An example event for `metrics` looks as following:
                 },
                 "build_info": {
                     "failed": 0,
-                    "total": 28
+                    "total": 24
                 },
                 "coll_stats": {
                     "failed": 0,
@@ -690,7 +705,7 @@ An example event for `metrics` looks as following:
                 },
                 "is_master": {
                     "failed": 0,
-                    "total": 44
+                    "total": 38
                 },
                 "is_self": {
                     "failed": 0,
@@ -725,8 +740,8 @@ An example event for `metrics` looks as following:
                     "total": 0
                 },
                 "replset_get_status": {
-                    "failed": 14,
-                    "total": 14
+                    "failed": 12,
+                    "total": 12
                 },
                 "replset_heartbeat": {
                     "failed": 0,
@@ -738,7 +753,7 @@ An example event for `metrics` looks as following:
                 },
                 "server_status": {
                     "failed": 0,
-                    "total": 16
+                    "total": 14
                 },
                 "update": {
                     "failed": 0,
@@ -746,7 +761,7 @@ An example event for `metrics` looks as following:
                 },
                 "whatsmyuri": {
                     "failed": 0,
-                    "total": 14
+                    "total": 12
                 }
             },
             "cursor": {
@@ -1065,128 +1080,83 @@ An example event for `replstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-21T14:39:38.568Z",
-    "agent": {
-        "ephemeral_id": "83e49bca-2845-4919-b064-e235fe36d0ff",
-        "id": "5912bcc1-2372-4d61-b9db-29a677c0278f",
-        "name": "docker-fleet-agent",
-        "type": "metricbeat",
-        "version": "8.4.0"
+    "@timestamp": "2020-06-29T21:20:51.457Z",
+    "service": {
+        "address": "localhost:27017",
+        "type": "mongodb"
     },
-    "data_stream": {
-        "dataset": "mongodb.replstatus",
-        "namespace": "ep",
-        "type": "metrics"
+    "mongodb": {
+        "replstatus": {
+            "members": {
+                "arbiter": {
+                    "count": 0
+                },
+                "down": {
+                    "count": 0
+                },
+                "primary": {
+                    "host": "22b4e1fb8197:27017",
+                    "optime": 1550700559
+                },
+                "recovering": {
+                    "count": 0
+                },
+                "rollback": {
+                    "count": 0
+                },
+                "secondary": {
+                    "count": 0
+                },
+                "startup2": {
+                    "count": 0
+                },
+                "unhealthy": {
+                    "count": 0
+                },
+                "unknown": {
+                    "count": 0
+                }
+            },
+            "oplog": {
+                "first": {
+                    "timestamp": 1550700557
+                },
+                "last": {
+                    "timestamp": 1550700559
+                },
+                "size": {
+                    "allocated": 40572728934,
+                    "used": 180
+                },
+                "window": 2
+            },
+            "optimes": {
+                "applied": 1550700559,
+                "durable": 1550700559,
+                "last_committed": 1550700559
+            },
+            "server_date": "2019-02-20T23:09:23.733+01:00",
+            "set_name": "beats"
+        }
     },
     "ecs": {
-        "version": "8.0.0"
-    },
-    "elastic_agent": {
-        "id": "5912bcc1-2372-4d61-b9db-29a677c0278f",
-        "snapshot": false,
-        "version": "8.4.0"
+        "version": "1.5.0"
     },
     "event": {
-        "agent_id_status": "verified",
         "dataset": "mongodb.replstatus",
-        "duration": 9661958671,
-        "ingested": "2022-09-21T14:40:02Z",
-        "module": "mongodb"
-    },
-    "host": {
-        "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "5016511f0829451ea244f458eebf2212",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02:42:ac:12:00:07"
-        ],
-        "name": "docker-fleet-agent",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.124-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
-        }
+        "module": "mongodb",
+        "duration": 1962467
     },
     "metricset": {
         "name": "replstatus",
         "period": 10000
     },
-    "mongodb": {
-        "replstatus": {
-            "headroom": {},
-            "lag": {},
-            "members": {
-                "arbiter": {
-                    "count": 0,
-                    "hosts": []
-                },
-                "down": {
-                    "count": 0,
-                    "hosts": []
-                },
-                "primary": {
-                    "host": "127.0.0.1:27017",
-                    "optime": 1663771187
-                },
-                "recovering": {
-                    "count": 0,
-                    "hosts": []
-                },
-                "rollback": {
-                    "count": 0,
-                    "hosts": []
-                },
-                "secondary": {
-                    "count": 0,
-                    "hosts": [],
-                    "optimes": []
-                },
-                "startup2": {
-                    "count": 0,
-                    "hosts": []
-                },
-                "unhealthy": {
-                    "count": 0,
-                    "hosts": []
-                },
-                "unknown": {
-                    "count": 0,
-                    "hosts": []
-                }
-            },
-            "oplog": {
-                "first": {
-                    "timestamp": 1663771125
-                },
-                "last": {
-                    "timestamp": 1663771125
-                },
-                "size": {
-                    "allocated": 2036425728,
-                    "used": 4510
-                },
-                "window": 0
-            },
-            "optimes": {
-                "applied": 1663771187,
-                "durable": 1663771187,
-                "last_committed": 1663771187
-            },
-            "server_date": "2022-09-21T14:39:48.226Z",
-            "set_name": "beats"
-        }
-    },
-    "service": {
-        "address": "mongodb://elastic-package-service-mongodb-1",
-        "type": "mongodb"
+    "agent": {
+        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
+        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
+        "name": "KaiyanMacBookPro",
+        "type": "metricbeat",
+        "version": "8.0.0"
     }
 }
 ```
@@ -1282,11 +1252,11 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-30T05:46:56.312Z",
+    "@timestamp": "2022-10-20T10:55:04.336Z",
     "agent": {
-        "ephemeral_id": "dfcb0d66-6463-4416-a92c-ba2412e615de",
+        "ephemeral_id": "65facf45-207f-436e-a597-e3dc3c1fcb39",
         "hostname": "docker-fleet-agent",
-        "id": "d0af73b1-68c5-4a9b-900e-b1ab4bfc4f08",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "7.14.0"
@@ -1300,15 +1270,15 @@ An example event for `status` looks as following:
         "version": "1.10.0"
     },
     "elastic_agent": {
-        "id": "d0af73b1-68c5-4a9b-900e-b1ab4bfc4f08",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
         "snapshot": false,
         "version": "7.14.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "mongodb.status",
-        "duration": 3136250,
-        "ingested": "2022-09-30T05:46:59.865043763Z",
+        "duration": 3357750,
+        "ingested": "2022-10-20T10:55:07.900758542Z",
         "module": "mongodb"
     },
     "host": {
@@ -1317,10 +1287,10 @@ An example event for `status` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "2347a1bd8a3945949da8ab5c29f60774",
         "ip": [
-            "172.19.0.7"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -1349,7 +1319,7 @@ An example event for `status` looks as following:
             "connections": {
                 "available": 838859,
                 "current": 1,
-                "total_created": 16
+                "total_created": 15
             },
             "extra_info": {
                 "heap_usage": {},
@@ -1367,10 +1337,10 @@ An example event for `status` looks as following:
                     "writers": 0
                 },
                 "total_time": {
-                    "us": 15257000
+                    "us": 14210000
                 }
             },
-            "local_time": "2022-09-30T05:46:56.315Z",
+            "local_time": "2022-10-20T10:55:04.338Z",
             "locks": {
                 "collection": {
                     "acquire": {
@@ -1387,7 +1357,7 @@ An example event for `status` looks as following:
                         "count": {
                             "R": 1,
                             "W": 8,
-                            "r": 35
+                            "r": 34
                         }
                     },
                     "deadlock": {},
@@ -1397,7 +1367,7 @@ An example event for `status` looks as following:
                     "acquire": {
                         "count": {
                             "W": 2,
-                            "r": 112,
+                            "r": 108,
                             "w": 8
                         }
                     },
@@ -1416,7 +1386,7 @@ An example event for `status` looks as following:
                 "oplog": {
                     "acquire": {
                         "count": {
-                            "r": 15
+                            "r": 14
                         }
                     },
                     "deadlock": {},
@@ -1440,16 +1410,16 @@ An example event for `status` looks as following:
             },
             "network": {
                 "in": {
-                    "bytes": 11076
+                    "bytes": 10318
                 },
                 "out": {
-                    "bytes": 407574
+                    "bytes": 380215
                 },
-                "requests": 239
+                "requests": 223
             },
             "ops": {
                 "counters": {
-                    "command": 120,
+                    "command": 112,
                     "delete": 0,
                     "getmore": 0,
                     "insert": 0,
@@ -1458,8 +1428,8 @@ An example event for `status` looks as following:
                 },
                 "latencies": {
                     "commands": {
-                        "count": 119,
-                        "latency": 5782
+                        "count": 111,
+                        "latency": 5089
                     },
                     "reads": {
                         "count": 0,
@@ -1483,7 +1453,7 @@ An example event for `status` looks as following:
                 "name": "wiredTiger"
             },
             "uptime": {
-                "ms": 15258
+                "ms": 14204
             },
             "wired_tiger": {
                 "cache": {
@@ -1515,7 +1485,7 @@ An example event for `status` looks as following:
                     }
                 },
                 "log": {
-                    "flushes": 152,
+                    "flushes": 142,
                     "max_file_size": {
                         "bytes": 104857600
                     },
