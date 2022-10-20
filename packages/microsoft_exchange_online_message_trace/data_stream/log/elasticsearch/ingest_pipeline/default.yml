@@ -74,7 +74,7 @@ processors:
       target_field: "event.end"
       formats:
         - "ISO8601"
-  # TODO: Check if it's intelligent to have delivery timestamp ast @timestamp
+  # TODO: Check if it's intelligent to have delivery timestamp as @timestamp
   - set:
       field: "@timestamp"
       copy_from: "email.delivery_timestamp"
@@ -122,6 +122,26 @@ processors:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
+
+  # Extraction of domain
+  - grok:
+      field: email.from.address
+      patterns:
+        - "^%{DATA}@%{DATA:source.domain}$"
+      ignore_failure: false
+      ignore_missing: true
+  - grok:
+      field: email.to.address
+      patterns:
+        - "^%{DATA}@%{DATA:destination.domain}$"
+      ignore_failure: false
+      ignore_missing: true
+  - registered_domain:
+      field: "destination.domain"
+      target_field: "destination"
+  - registered_domain:
+      field: "source.domain"
+      target_field: "source"
 
   # Cleanup fields
   - remove:
