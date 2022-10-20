@@ -15,13 +15,13 @@ The Salesforce integration collects log events using REST and Streaming API of S
 **Logs** help you keep a record of events happening in Salesforce.
 Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm) (using REST and Streaming API), [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm) (using REST and Streaming API), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
 
-Data stream names:
-- `login_rest`
-- `logout_rest`
-- `apex`
-- `setupaudittrail`
-- `login_stream`
-- `logout_stream`
+Data streams:
+- `login_rest`: Tracks login activity of users who log in to Salesforce.
+- `logout_rest`: Tracks user UI logout. A logout event records a successful user logout from your organization’s UI.
+- `apex`: Represents information about various Apex events like Callout, Execution, REST API, SOAP API, Trigger, etc.
+- `setupaudittrail`: Represents changes you or other admins made in your organization's Setup area for at least the last 180 days.
+- `login_stream`: Tracks live login activity of users who log in to Salesforce.
+- `logout_stream`: Tracks live user UI logout. A logout event records a successful user logout from your organization’s UI.
 
 ## Compatibility
 
@@ -31,6 +31,16 @@ This integration has been tested against Salesforce `Spring '22 (v54.0) release`
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+### Steps to find out the Salesforce instance URL
+
+The instance your Salesforce Organization uses is indicated in the URL of your browser's address bar in Salesforce Classic. The value till 'salesforce.com' is your Salesforce Instance.
+
+Example:
+
+Address Bar Content: https://elastic1234-dev-ed.my.salesforce.com/home/home.jsp?source=lex
+
+Salesforce Instance URL: https://elastic1234-dev-ed.my.salesforce.com
 
 ### Steps to find out the version of Salesforce
 
@@ -232,7 +242,7 @@ An example event for `login_rest` looks as following:
 | salesforce.login.api.type | The type of API request. | keyword |  |  |
 | salesforce.login.api.version | The version of the API that's being used. | keyword |  |  |
 | salesforce.login.auth.service_id | The authentication method used by a third-party identification provider for an OpenID Connect single sign-on protocol. | keyword |  |  |
-| salesforce.login.client_ip | The IP address of the client that's using Salesforce services. A Salesforce internal IP (such as a login from Salesforce Workbench or AppExchange) is shown as “Salesforce.com IP”. | keyword |  |  |
+| salesforce.login.client_ip | The IP address of the client that's using Salesforce services. | keyword |  |  |
 | salesforce.login.cpu_time | The CPU time in milliseconds used to complete the request. This field indicates the amount of activity taking place in the app server layer. | float | ms | gauge |
 | salesforce.login.db_time.total | The time in nanoseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and DB_CPU_TIME. Compare this field to CPU_TIME to determine whether performance issues are occurring in the database layer or in your own code. | float | nanos | gauge |
 | salesforce.login.event_type | The type of event. The value is always Login. | keyword |  |  |
