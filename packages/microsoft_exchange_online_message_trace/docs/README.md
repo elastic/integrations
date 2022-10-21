@@ -74,9 +74,9 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-20T20:01:59.064Z",
+    "@timestamp": "2022-10-21T07:12:07.463Z",
     "agent": {
-        "ephemeral_id": "907d6df8-a2ec-4278-bc77-ce99b3dc422e",
+        "ephemeral_id": "e16f2187-d7e7-4104-882a-ffb13f3b0ed2",
         "id": "41af0c30-fcc2-4d5f-ad8c-d078d1499774",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -98,7 +98,7 @@ An example event for `log` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "ingested": "2022-10-20T20:02:00Z",
+        "ingested": "2022-10-21T07:12:08Z",
         "original": "{\"odata.metadata\":\"https://reports.office365.com/ecp/ReportingWebService/Reporting.svc/$metadata#MessageTrace\",\"value\":[{\"Organization\":\"wildsecurity.onmicrosoft.com\",\"MessageId\":\"\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e\",\"Received\":\"2022-09-05T18:10:13.4907658\",\"SenderAddress\":\"azure-noreply@microsoft.com\",\"RecipientAddress\":\"linus@wildsecurity.onmicrosoft.com\",\"Subject\":\"PIM: A privileged directory role was assigned outside of PIM\",\"Status\":\"Delivered\",\"ToIP\":\"216.160.83.56\",\"FromIP\":\"81.2.69.144\",\"Size\":87891,\"MessageTraceId\":\"cf7a249a-5edd-4350-130a-08da8f69e0f6\",\"StartDate\":\"2022-09-04T09:01:46.0369423Z\",\"EndDate\":\"2022-09-06T09:01:46.0369423Z\",\"Index\":0}]}"
     },
     "input": {
