@@ -60,8 +60,15 @@ while ($paginate -eq 1)
         $output = $output + $messageTrace
     }
 }
-$output = $output | ConvertTo-Json -Compress
-$output | Out-File -FilePath $output_location -Encoding UTF8
+if (Test-Path $output_location)
+{
+    Remove-Item $output_location
+}
+foreach ($event in $output)
+{
+    $event = $event | ConvertTo-Json -Compress
+    Add-Content $output_location $event -Encoding UTF8
+}
 ```
 
 ### Microsoft Exchange Online Message Trace
@@ -74,10 +81,10 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-21T09:15:43.168Z",
+    "@timestamp": "2022-09-05T18:10:13.4907658",
     "agent": {
-        "ephemeral_id": "a2385376-0dbb-4455-bed8-c43f2bfc9b3d",
-        "id": "41af0c30-fcc2-4d5f-ad8c-d078d1499774",
+        "ephemeral_id": "9eeb8f19-3eaa-4618-8e4d-54c931a3efd5",
+        "id": "56904fd7-8393-401a-9a21-3a952bc5646f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -87,35 +94,86 @@ An example event for `log` looks as following:
         "namespace": "ep",
         "type": "logs"
     },
+    "destination": {
+        "as": {
+            "number": 209
+        },
+        "domain": "wildsecurity.onmicrosoft.com",
+        "geo": {
+            "city_name": "Milton",
+            "continent_name": "North America",
+            "country_iso_code": "US",
+            "country_name": "United States",
+            "location": {
+                "lat": 47.2513,
+                "lon": -122.3149
+            },
+            "region_iso_code": "US-WA",
+            "region_name": "Washington"
+        },
+        "ip": "216.160.83.56",
+        "registered_domain": "onmicrosoft.com",
+        "subdomain": "wildsecurity",
+        "top_level_domain": "com"
+    },
     "ecs": {
         "version": "8.3.1"
     },
     "elastic_agent": {
-        "id": "41af0c30-fcc2-4d5f-ad8c-d078d1499774",
+        "id": "56904fd7-8393-401a-9a21-3a952bc5646f",
         "snapshot": false,
         "version": "8.4.1"
     },
     "email": {
-        "direction": "external"
+        "attachments": {
+            "file": {
+                "size": 87891
+            }
+        },
+        "delivery_timestamp": "2022-09-05T18:10:13.4907658",
+        "direction": "external",
+        "from": {
+            "address": "azure-noreply@microsoft.com"
+        },
+        "local_id": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
+        "message_id": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
+        "subject": "PIM: A privileged directory role was assigned outside of PIM",
+        "to": {
+            "address": "linus@wildsecurity.onmicrosoft.com"
+        }
     },
     "event": {
         "agent_id_status": "verified",
+        "created": "2022-10-21T17:07:02.727Z",
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "ingested": "2022-10-21T09:15:44Z",
-        "original": "{\"odata.metadata\":\"https://reports.office365.com/ecp/ReportingWebService/Reporting.svc/$metadata#MessageTrace\",\"value\":[{\"Organization\":\"wildsecurity.onmicrosoft.com\",\"MessageId\":\"\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e\",\"Received\":\"2022-09-05T18:10:13.4907658\",\"SenderAddress\":\"azure-noreply@microsoft.com\",\"RecipientAddress\":\"linus@wildsecurity.onmicrosoft.com\",\"Subject\":\"PIM: A privileged directory role was assigned outside of PIM\",\"Status\":\"Delivered\",\"ToIP\":\"216.160.83.56\",\"FromIP\":\"81.2.69.144\",\"Size\":87891,\"MessageTraceId\":\"cf7a249a-5edd-4350-130a-08da8f69e0f6\",\"StartDate\":\"2022-09-04T09:01:46.0369423Z\",\"EndDate\":\"2022-09-06T09:01:46.0369423Z\",\"Index\":0}]}"
+        "end": "2022-09-06T09:01:46.036Z",
+        "ingested": "2022-10-21T17:07:03Z",
+        "original": "{\"EndDate\":\"2022-09-06T09:01:46.0369423Z\",\"FromIP\":\"81.2.69.144\",\"Index\":0,\"MessageId\":\"\\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\\u003e\",\"MessageTraceId\":\"cf7a249a-5edd-4350-130a-08da8f69e0f6\",\"Organization\":\"wildsecurity.onmicrosoft.com\",\"Received\":\"2022-09-05T18:10:13.4907658\",\"RecipientAddress\":\"linus@wildsecurity.onmicrosoft.com\",\"SenderAddress\":\"azure-noreply@microsoft.com\",\"Size\":87891,\"StartDate\":\"2022-09-04T09:01:46.0369423Z\",\"Status\":\"Delivered\",\"Subject\":\"PIM: A privileged directory role was assigned outside of PIM\",\"ToIP\":\"216.160.83.56\"}",
+        "outcome": "Delivered"
     },
     "input": {
-        "type": "log"
+        "type": "httpjson"
     },
-    "log": {
-        "file": {
-            "path": "/tmp/service_logs/defender_atp-test.json.log"
+    "source": {
+        "domain": "microsoft.com",
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
         },
-        "offset": 0
+        "ip": "81.2.69.144",
+        "registered_domain": "microsoft.com",
+        "top_level_domain": "com"
     },
     "tags": [
         "preserve_original_event",
-        "microsoft-defender-endpoint",
         "forwarded"
     ]
 }
