@@ -74,9 +74,9 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-21T07:12:07.463Z",
+    "@timestamp": "2022-10-21T09:15:43.168Z",
     "agent": {
-        "ephemeral_id": "e16f2187-d7e7-4104-882a-ffb13f3b0ed2",
+        "ephemeral_id": "a2385376-0dbb-4455-bed8-c43f2bfc9b3d",
         "id": "41af0c30-fcc2-4d5f-ad8c-d078d1499774",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -95,10 +95,13 @@ An example event for `log` looks as following:
         "snapshot": false,
         "version": "8.4.1"
     },
+    "email": {
+        "direction": "external"
+    },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "ingested": "2022-10-21T07:12:08Z",
+        "ingested": "2022-10-21T09:15:44Z",
         "original": "{\"odata.metadata\":\"https://reports.office365.com/ecp/ReportingWebService/Reporting.svc/$metadata#MessageTrace\",\"value\":[{\"Organization\":\"wildsecurity.onmicrosoft.com\",\"MessageId\":\"\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e\",\"Received\":\"2022-09-05T18:10:13.4907658\",\"SenderAddress\":\"azure-noreply@microsoft.com\",\"RecipientAddress\":\"linus@wildsecurity.onmicrosoft.com\",\"Subject\":\"PIM: A privileged directory role was assigned outside of PIM\",\"Status\":\"Delivered\",\"ToIP\":\"216.160.83.56\",\"FromIP\":\"81.2.69.144\",\"Size\":87891,\"MessageTraceId\":\"cf7a249a-5edd-4350-130a-08da8f69e0f6\",\"StartDate\":\"2022-09-04T09:01:46.0369423Z\",\"EndDate\":\"2022-09-06T09:01:46.0369423Z\",\"Index\":0}]}"
     },
     "input": {
@@ -171,3 +174,6 @@ An example event for `log` looks as following:
 | source.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | source.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
