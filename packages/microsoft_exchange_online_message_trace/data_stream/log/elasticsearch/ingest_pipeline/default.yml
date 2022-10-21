@@ -59,45 +59,6 @@ processors:
       field: _temp_.MessageId
       target_field: email.message_id
       ignore_missing: true
-  # Calculation of mail Direction
-  - set:
-      field: _conf.local_domains
-      value: contoso.com
-      override: false
-  - set:
-      field: "email.direction"
-      value: "outbound"
-      ignore_empty_value: true
-      if: ctx.source?.domain == '{{{_conf.local_domains}}}' && ctx.destination?.domain != '{{{_conf.local_domains}}}'
-  - set:
-      field: "email.direction"
-      value: "inbound"
-      ignore_empty_value: true
-      if: ctx.source?.domain != '{{{_conf.local_domains}}}' && ctx.destination?.domain == '{{{_conf.local_domains}}}'
-  - set:
-      field: "email.direction"
-      value: "internal"
-      ignore_empty_value: true
-      if: ctx.source?.domain == '{{{_conf.local_domains}}}' && ctx.destination?.domain == '{{{_conf.local_domains}}}'
-  - set:
-      field: "email.direction"
-      value: "external"
-      ignore_empty_value: true
-      if: ctx.source?.domain != '{{{_conf.local_domains}}}' && ctx.destination?.domain != '{{{_conf.local_domains}}}'
-  # Extract Username from mail
-  - grok:
-      field: "email.to.address"
-      ignore_missing: true
-      if: ctx.destination?.domain == '{{{_conf.local_domains}}}'
-      patterns:
-        - ^%{DATA:user.name}@%{DATA:user.domain}$
-  - grok:
-      field: "email.from.address"
-      ignore_missing: true
-      if: ctx.source?.domain == '{{{_conf.local_domains}}}'
-      patterns:
-        - ^%{DATA:user.name}@%{DATA:user.domain}$
-
   # Parse the date included in logs
   - date:
       if: "ctx._temp_?.raw_date != null"
@@ -173,6 +134,45 @@ processors:
   - registered_domain:
       field: "source.domain"
       target_field: "source"
+  # Calculation of mail Direction
+  - set:
+      field: _conf.local_domains
+      value: "contoso.com"
+      override: false
+  - set:
+      field: "email.direction"
+      value: "outbound"
+      ignore_empty_value: true
+      if: ctx.source?.domain == ctx._conf.local_domains && ctx.destination?.domain != ctx._conf.local_domains
+  - set:
+      field: "email.direction"
+      value: "inbound"
+      ignore_empty_value: true
+      if: ctx.source?.domain != ctx._conf.local_domains && ctx.destination?.domain == ctx._conf.local_domains
+  - set:
+      field: "email.direction"
+      value: "internal"
+      ignore_empty_value: true
+      if: ctx.source?.domain == ctx._conf.local_domains && ctx.destination?.domain == ctx._conf.local_domains
+  - set:
+      field: "email.direction"
+      value: "external"
+      ignore_empty_value: true
+      if: ctx.source?.domain != ctx._conf.local_domains && ctx.destination?.domain != ctx._conf.local_domains
+  # Extract Username from mail
+  - grok:
+      field: "email.to.address"
+      ignore_missing: true
+      if: ctx.destination?.domain == ctx._conf.local_domains
+      patterns:
+        - ^%{DATA:user.name}@%{DATA:user.domain}$
+  - grok:
+      field: "email.from.address"
+      ignore_missing: true
+      if: ctx.source?.domain == ctx._conf.local_domains
+      patterns:
+        - ^%{DATA:user.name}@%{DATA:user.domain}$
+
   # Add unique fingerprint for deduplication
   - fingerprint:
       fields:
