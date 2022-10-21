@@ -142,7 +142,16 @@ processors:
   - registered_domain:
       field: "source.domain"
       target_field: "source"
-
+  # Add unique fingerprint for deduplication
+  - fingerprint:
+      fields:
+        - email.from.address
+        - email.to.address
+        - email.message_id
+        - email.local_id
+        - email.subject
+      ignore_missing: true
+      target_field: "_id"
   # Cleanup fields
   - remove:
       field: _temp_
