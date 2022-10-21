@@ -60,8 +60,15 @@ while ($paginate -eq 1)
         $output = $output + $messageTrace
     }
 }
-$output = $output | ConvertTo-Json -Compress
-$output | Out-File -FilePath $output_location -Encoding UTF8
+if (Test-Path $output_location)
+{
+    Remove-Item $output_location
+}
+foreach ($event in $output)
+{
+    $event = $event | ConvertTo-Json -Compress
+    Add-Content $output_location $event -Encoding UTF8
+}
 ```
 
 ### Microsoft Exchange Online Message Trace
