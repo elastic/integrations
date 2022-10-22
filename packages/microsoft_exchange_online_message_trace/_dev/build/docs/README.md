@@ -66,6 +66,9 @@ if (Test-Path $output_location)
 }
 foreach ($event in $output)
 {
+    $event.StartDate = [Xml.XmlConvert]::ToString(($event.StartDate),[Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.EndDate = [Xml.XmlConvert]::ToString(($event.EndDate),[Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.Received = [Xml.XmlConvert]::ToString(($event.Received),[Xml.XmlDateTimeSerializationMode]::Utc)
     $event = $event | ConvertTo-Json -Compress
     Add-Content $output_location $event -Encoding UTF8
 }

@@ -66,6 +66,9 @@ if (Test-Path $output_location)
 }
 foreach ($event in $output)
 {
+    $event.StartDate = [Xml.XmlConvert]::ToString(($event.StartDate),[Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.EndDate = [Xml.XmlConvert]::ToString(($event.EndDate),[Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.Received = [Xml.XmlConvert]::ToString(($event.Received),[Xml.XmlDateTimeSerializationMode]::Utc)
     $event = $event | ConvertTo-Json -Compress
     Add-Content $output_location $event -Encoding UTF8
 }
@@ -81,9 +84,9 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-05T18:10:13.4907658",
+    "@timestamp": "2022-10-21T17:25:36.969376Z",
     "agent": {
-        "ephemeral_id": "d6e84abc-aeac-408e-b8c0-4f632cc39889",
+        "ephemeral_id": "f63b831f-34aa-4078-914e-6e6b50810671",
         "id": "9a0ea091-050e-4b1b-a368-ee14a010b339",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -95,23 +98,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "destination": {
-        "as": {
-            "number": 209
-        },
         "domain": "contoso.com",
-        "geo": {
-            "city_name": "Milton",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
-            "location": {
-                "lat": 47.2513,
-                "lon": -122.3149
-            },
-            "region_iso_code": "US-WA",
-            "region_name": "Washington"
-        },
-        "ip": "216.160.83.56",
         "registered_domain": "contoso.com",
         "top_level_domain": "com"
     },
@@ -126,53 +113,48 @@ An example event for `log` looks as following:
     "email": {
         "attachments": {
             "file": {
-                "size": 87891
+                "size": 22761
             }
         },
-        "delivery_timestamp": "2022-09-05T18:10:13.4907658",
+        "delivery_timestamp": "2022-10-21T17:25:36.969376Z",
         "direction": "inbound",
         "from": {
-            "address": "azure-noreply@microsoft.com"
+            "address": "noreply@azure.microsoft.com"
         },
-        "local_id": "cf7a249a-5edd-4350-130a-08da8f69e0f6",
-        "message_id": "\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\u003e",
-        "subject": "PIM: A privileged directory role was assigned outside of PIM",
+        "local_id": "a5e6dc0f-23df-4b20-d240-08dab38944a1",
+        "message_id": "\u003cGVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\u003e",
+        "subject": "testmail 2",
         "to": {
             "address": "linus@contoso.com"
         }
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-10-21T19:25:51.382Z",
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "end": "2022-09-06T09:01:46.036Z",
-        "ingested": "2022-10-21T19:25:52Z",
-        "original": "{\"EndDate\":\"2022-09-06T09:01:46.0369423Z\",\"FromIP\":\"81.2.69.144\",\"Index\":0,\"MessageId\":\"\\u003ca210cf91-4f2e-484c-8ada-3b27064ee5e3@az.uksouth.production.microsoft.com\\u003e\",\"MessageTraceId\":\"cf7a249a-5edd-4350-130a-08da8f69e0f6\",\"Organization\":\"contoso.com\",\"Received\":\"2022-09-05T18:10:13.4907658\",\"RecipientAddress\":\"linus@contoso.com\",\"SenderAddress\":\"azure-noreply@microsoft.com\",\"Size\":87891,\"StartDate\":\"2022-09-04T09:01:46.0369423Z\",\"Status\":\"Delivered\",\"Subject\":\"PIM: A privileged directory role was assigned outside of PIM\",\"ToIP\":\"216.160.83.56\"}",
+        "end": "2022-10-22T09:40:10.000Z",
+        "ingested": "2022-10-22T07:42:22Z",
+        "original": "{\"Organization\":\"contoso.com\",\"MessageId\":\"\\u003cGVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\\u003e\",\"Received\":\"2022-10-21T17:25:36.969376Z\",\"SenderAddress\":\"noreply@azure.microsoft.com\",\"RecipientAddress\":\"linus@contoso.com\",\"Subject\":\"testmail 2\",\"Status\":\"Delivered\",\"ToIP\":null,\"FromIP\":\"40.107.23.54\",\"Size\":22761,\"MessageTraceId\":\"a5e6dc0f-23df-4b20-d240-08dab38944a1\",\"StartDate\":\"2022-10-21T09:40:10Z\",\"EndDate\":\"2022-10-22T09:40:10Z\",\"Index\":0}",
         "outcome": "Delivered"
     },
     "input": {
-        "type": "httpjson"
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/microsoft_exchange_online_message_trace_test.ndjson.log"
+        },
+        "offset": 0
     },
     "source": {
-        "domain": "microsoft.com",
-        "geo": {
-            "city_name": "London",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "location": {
-                "lat": 51.5142,
-                "lon": -0.0931
-            },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
-        },
-        "ip": "81.2.69.144",
+        "domain": "azure.microsoft.com",
+        "ip": "40.107.23.54",
         "registered_domain": "microsoft.com",
+        "subdomain": "azure",
         "top_level_domain": "com"
     },
     "tags": [
         "preserve_original_event",
+        "microsoft-defender-endpoint",
         "forwarded"
     ],
     "user": {
