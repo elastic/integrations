@@ -1,5 +1,11 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
+            "panelsJSON": "{\"c60be1bd-9cdf-49eb-befd-2eac0ef66bb9\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"email.from.address\",\"title\":\"email.from.address\",\"id\":\"c60be1bd-9cdf-49eb-befd-2eac0ef66bb9\",\"enhancements\":{}}},\"0b1fa744-d8b1-4591-aedf-e93d055db3c5\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"email.to.address\",\"title\":\"email.to.address\",\"id\":\"0b1fa744-d8b1-4591-aedf-e93d055db3c5\",\"enhancements\":{}}}}"
+        },
         "description": "Microsoft Exchange Online Message Trace mail Flow Overview",
         "hits": 0,
         "kibanaSavedObjectMeta": {
@@ -143,7 +149,8 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {}
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -153,6 +160,7 @@
                     "y": 0
                 },
                 "panelIndex": "b40dd8e7-cde1-4b5b-a174-09c4390584b2",
+                "title": "Mails by Direction",
                 "type": "lens",
                 "version": "8.4.1"
             },
@@ -281,7 +289,8 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {}
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -291,12 +300,14 @@
                     "y": 15
                 },
                 "panelIndex": "063d8fed-8aee-4d2a-add7-5d32972bebf2",
+                "title": "Delivery Status",
                 "type": "lens",
                 "version": "8.4.1"
             },
             {
                 "embeddableConfig": {
                     "enhancements": {},
+                    "hidePanelTitles": false,
                     "savedVis": {
                         "data": {
                             "aggs": [],
@@ -326,6 +337,7 @@
                     "y": 0
                 },
                 "panelIndex": "1784a193-4649-4eb7-ad07-e7f0d9e9bd8f",
+                "title": "Mail Flow",
                 "type": "visualization",
                 "version": "8.4.1"
             },
@@ -437,7 +449,8 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {}
+                    "enhancements": {},
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
@@ -447,6 +460,7 @@
                     "y": 15
                 },
                 "panelIndex": "e7677f58-a178-4312-b409-de64ca217c5a",
+                "title": "Mail Traffic Size",
                 "type": "lens",
                 "version": "8.4.1"
             },
@@ -482,9 +496,10 @@
                                                     "sourceField": "___records___"
                                                 },
                                                 "cfd8a7c6-7446-4366-a785-f3429494d2c9": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of email.from.address",
+                                                    "label": "Top 10 Sender",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -497,7 +512,7 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "size": 10
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "email.from.address"
@@ -511,7 +526,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "event.dataset: \"microsoft_exchange_online_message_trace.log\" "
+                                "query": "event.dataset: \"microsoft_exchange_online_message_trace.log\" and (email.direction : \"outbound\" or email.direction : \"internal\" )"
                             },
                             "visualization": {
                                 "columns": [
@@ -577,9 +592,10 @@
                                                     "sourceField": "___records___"
                                                 },
                                                 "de94c07c-51df-4b1e-9265-c29f43e1cad8": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of email.to.address",
+                                                    "label": "Top 10 Recipients",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -592,7 +608,7 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "size": 10
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "email.to.address"
@@ -674,6 +690,16 @@
         {
             "id": "logs-*",
             "name": "94f4a85c-9bfc-489f-89cc-cffb7dd9938a:indexpattern-datasource-layer-81ab6971-39ae-40af-bcaa-9d3566832863",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_c60be1bd-9cdf-49eb-befd-2eac0ef66bb9:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_0b1fa744-d8b1-4591-aedf-e93d055db3c5:optionsListDataView",
             "type": "index-pattern"
         }
     ],
