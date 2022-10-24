@@ -40,6 +40,7 @@ processors:
       field: event.original
       patterns:
         - "%{GREEDYDATA:tmp_timestamp}\\nLENGTH : '%{GREEDYDATA:LENGTH}'\\nACTION :\\[\\d+\\] (?m)%{GREEDYDATA:action}(DATABASE USER):\\S+ '%{FIELD:db_user}'\\n(?m)%{GREEDYDATA:audit}"
+        - "%{GREEDYDATA:tmp_timestamp}\\nLENGTH : '%{GREEDYDATA:LENGTH}'\\nACTION :\\[\\d+\\] (?m)%{GREEDYDATA:action}"
         - "%{GREEDYDATA:tmp_timestamp}\\nLENGTH: \"%{GREEDYDATA:LENGTH}\"\\n%{GREEDYDATA:audit}"
       pattern_definitions:
           "FIELD": "[^']+"
@@ -50,14 +51,14 @@ processors:
       trim_value: " '"
       trim_key: " "
       prefix: oracle.database_audit.
-      if: ctx.oracle_event_type == "database"
+      if: ctx.oracle_event_type == "database" && ctx?.audit != null && ctx?.audit.length() != 0
   - kv:
       field: audit
       field_split: "\" "
       value_split: ":\\S\\d+\\S (?=\")"
       strip_brackets: true
       prefix: oracle.database_audit.
-      if: ctx.oracle_event_type == "object"
+      if: ctx.oracle_event_type == "object" && ctx?.audit != null && ctx?.audit.length() != 0
   - grok:
       field: log.file.path
       patterns:
