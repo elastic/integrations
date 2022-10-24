@@ -24,6 +24,22 @@ processors:
           (.|
           |	)*
       ignore_missing: true
+  - grok:
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      description: Extract Client Information
+      patterns:
+        - 'client:\s%{IP:client.ip}'
+        - 'client:\s%{HOSTNAME:client.domain}'
+  - grok:
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      description: Extract Server Information
+      patterns:
+        - 'server:\s%{IP:server.ip}'
+        - 'server:\s%{HOSTNAME:server.domain}'
   - remove:
       field: event.created
       ignore_missing: true
