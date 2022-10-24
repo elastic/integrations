@@ -33,10 +33,10 @@ The API Returns up to a year of past events for configurable to the `admin` user
 ### Elastic Integration for Box Events Settings
 
 The Elastic Integration for Box Events requires the following Authentication Settings in order to connect to the Target service:
-  - CLIENT ID
-  - CLIENT SECRET
-  - Box Subject ID endpoint parameter
-  - Box Subject Type endpoint parameter
+  - Client ID
+  - Client Secret
+  - Box Subject ID
+  - Box Subject Type
   - Grant Type
 
 The Elastic Integration for Box Events requires the following Data Stream Settings to configure the request to the Target API:
@@ -110,16 +110,16 @@ To authorize the App ensure you are logged in to the [Admin Console](https://app
 
 ### Locate the Elastic Integration for Box Events Settings
 
-#### CLIENT ID
+#### Client ID
 Click on your App in the [Box Developer Console](https://app.box.com/developers/console), under the `Configuration` tab, scroll down to `OAuth 2.0 Credentials` and copy the `Client ID`
 
-####  CLIENT SECRET
+####  Client Secret
 Have your 2FA device prepared and to hand. Click on your App in the [Box Developer Console](https://app.box.com/developers/console), under the `Configuration` tab, scroll down to `OAuth 2.0 Credentials` and click on `Fetch Client Secret`. Complete the 2FA challenge to copy the `Client Secret`
 
-####  Box Subject ID endpoint parameter
+####  Box Subject ID
 Click on your App in the [Box Developer Console](https://app.box.com/developers/console), under the `General Settings` tab, scroll down to `App Info`. If you intend to harvest events solely for the `admin` user copy the `User ID` otherwise copy the `Enterprise ID`
 
-####  Box Subject Type endpoint parameter
+####  Box Subject Type
 If you intend to harvest events solely for the `admin` user set this to `user` otherwise set to `enterprise`
 
 ####  Grant Type
