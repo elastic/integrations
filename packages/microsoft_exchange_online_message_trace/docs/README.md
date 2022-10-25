@@ -88,7 +88,7 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-10-21T17:25:36.969376Z",
     "agent": {
-        "ephemeral_id": "7c8258bc-53d8-45ac-bc2c-6a83f7bc1d6a",
+        "ephemeral_id": "0aafd77b-93b3-4a98-956d-6c46832e4789",
         "id": "cd07ec79-0ae7-42e1-8b75-c2d503c19ff3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -119,7 +119,6 @@ An example event for `log` looks as following:
             }
         },
         "delivery_timestamp": "2022-10-21T17:25:36.969376Z",
-        "direction": "inbound",
         "from": {
             "address": "noreply@azure.microsoft.com"
         },
@@ -134,7 +133,7 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "dataset": "microsoft_exchange_online_message_trace.log",
         "end": "2022-10-22T09:40:10.000Z",
-        "ingested": "2022-10-25T07:18:19Z",
+        "ingested": "2022-10-25T07:26:09Z",
         "original": "{\"Organization\":\"contoso.com\",\"MessageId\":\"\\u003cGVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\\u003e\",\"Received\":\"2022-10-21T17:25:36.969376Z\",\"SenderAddress\":\"noreply@azure.microsoft.com\",\"RecipientAddress\":\"linus@contoso.com\",\"Subject\":\"testmail 2\",\"Status\":\"Delivered\",\"ToIP\":null,\"FromIP\":\"40.107.23.54\",\"Size\":22761,\"MessageTraceId\":\"a5e6dc0f-23df-4b20-d240-08dab38944a1\",\"StartDate\":\"2022-10-21T09:40:10Z\",\"EndDate\":\"2022-10-22T09:40:10Z\",\"Index\":0}",
         "outcome": "Delivered"
     },
@@ -176,11 +175,7 @@ An example event for `log` looks as following:
         "preserve_original_event",
         "microsoft-defender-endpoint",
         "forwarded"
-    ],
-    "user": {
-        "domain": "contoso.com",
-        "name": "linus"
-    }
+    ]
 }
 ```
 
