@@ -1,7 +1,15 @@
 version: '2.3'
 services:
   docker-custom-agent:
-    image: docker.elastic.co/employees/agithomas/elastic-agent-oracle-client:0.3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: elastic-agent-oracle-client-1
+    depends_on:
+       oracle:
+         condition: service_healthy
+    links:
+      - oracle
     healthcheck:
       test: ["CMD", "bash", "-c", "echo 'select 1 from dual;' | ORACLE_HOME=/opt/oracle/instantclient_21_4 /opt/oracle/instantclient_21_4/sqlplus -s sys/Oradoc_db1@oracle:1521/ORCLCDB.localdomain?sysdba=1"]
       interval: 10s
@@ -13,3 +21,6 @@ services:
     ports:
       - 1521:1521
       - 5500:5500
+networks:
+   elastic-package-service_default:
+     external: true
