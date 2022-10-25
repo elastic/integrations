@@ -1,0 +1,804 @@
+{
+    "attributes": {
+        "description": "Microsoft Exchange Online Message Trace mail Flow Overview",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true,\"lightModeDefault\":\"road_map_desaturated\"},\"id\":\"2da95b9e-c6fa-4bdc-8e4b-96148f9c3fbc\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"VECTOR_TILE\"},{\"sourceDescriptor\":{\"indexPatternId\":\"logs-*\",\"sourceGeoField\":\"source.geo.location\",\"destGeoField\":\"destination.geo.location\",\"id\":\"33b8b5b0-6447-4411-9e81-796637474352\",\"type\":\"ES_PEW_PEW\",\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"applyForceRefresh\":true,\"metrics\":[{\"type\":\"count\"}]},\"style\":{\"type\":\"VECTOR\",\"properties\":{\"icon\":{\"type\":\"STATIC\",\"options\":{\"value\":\"marker\"}},\"fillColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#54B399\"}},\"lineColor\":{\"type\":\"DYNAMIC\",\"options\":{\"color\":\"Green to Red\",\"colorCategory\":\"palette_0\",\"field\":{\"name\":\"doc_count\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":true,\"sigma\":3},\"type\":\"ORDINAL\",\"useCustomColorRamp\":false}},\"lineWidth\":{\"type\":\"DYNAMIC\",\"options\":{\"minSize\":1,\"maxSize\":10,\"field\":{\"name\":\"doc_count\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":true,\"sigma\":3}}},\"iconSize\":{\"type\":\"STATIC\",\"options\":{\"size\":6}},\"iconOrientation\":{\"type\":\"STATIC\",\"options\":{\"orientation\":0}},\"labelText\":{\"type\":\"STATIC\",\"options\":{\"value\":\"\"}},\"labelColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#000000\"}},\"labelSize\":{\"type\":\"STATIC\",\"options\":{\"size\":14}},\"labelBorderColor\":{\"type\":\"STATIC\",\"options\":{\"color\":\"#FFFFFF\"}},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}}},\"isTimeAware\":true},\"id\":\"61f1cadf-2a81-4d19-92fb-229fb19524fa\",\"label\":\"Mail Flow\",\"minZoom\":0,\"maxZoom\":24,\"alpha\":0.75,\"visible\":true,\"includeInFitToBounds\":true,\"type\":\"VECTOR\",\"joins\":[],\"query\":{\"query\":\"event.dataset : \\\"microsoft_exchange_online_message_trace.log\\\" \",\"language\":\"kuery\"}}]",
+                        "mapStateJSON": "{\"zoom\":1.48,\"center\":{\"lon\":-33.77637,\"lat\":39.09637},\"timeFilters\":{\"from\":\"2022-10-24T06:59:59.985Z\",\"to\":\"2022-10-24T07:25:10.451Z\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
+                        "title": "",
+                        "uiStateJSON": "{\"isLayerTOCOpen\":true,\"openTOCDetails\":[]}"
+                    },
+                    "enhancements": {},
+                    "hiddenLayers": [],
+                    "isLayerTOCOpen": false,
+                    "mapBuffer": {
+                        "maxLat": 85.05113,
+                        "maxLon": 90,
+                        "minLat": -66.51326,
+                        "minLon": -180
+                    },
+                    "mapCenter": {
+                        "lat": 39.09637,
+                        "lon": -33.77637,
+                        "zoom": 1.48
+                    },
+                    "openTOCDetails": []
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "962d6720-eb53-431a-9a39-fce05507ce4e",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "962d6720-eb53-431a-9a39-fce05507ce4e",
+                "type": "map",
+                "version": "8.0.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "spec": "{\n  $schema: https://vega.github.io/schema/vega/v5.0.json\n  data: [\n    {\n      // query ES based on the currently selected time range and filter string\n      name: rawData\n      url: {\n        %context%: true\n        %timefield%: @timestamp\n        index: logs-microsoft_exchange_online_message_trace.log-*\n        body: {\n          size: 0\n          aggs: {\n            table: {\n              composite: {\n                size: 10000\n                sources: [\n                  {\n                    stk1: {\n                      terms: {field: \"source.geo.country_iso_code\"}\n                    }\n                  }\n                  {\n                    stk2: {\n                      terms: {field: \"destination.geo.country_iso_code\"}\n                    }\n                  }\n                ]\n              }\n            }\n          }\n        }\n      }\n      // From the result, take just the data we are interested in\n      format: {property: \"aggregations.table.buckets\"}\n      // Convert key.stk1 -\u003e stk1 for simpler access below\n      transform: [\n        {type: \"formula\", expr: \"datum.key.stk1\", as: \"stk1\"}\n        {type: \"formula\", expr: \"datum.key.stk2\", as: \"stk2\"}\n        {type: \"formula\", expr: \"datum.doc_count\", as: \"size\"}\n      ]\n    }\n    {\n      name: nodes\n      source: rawData\n      transform: [\n        // when a country is selected, filter out unrelated data\n        {\n          type: filter\n          expr: !groupSelector || groupSelector.stk1 == datum.stk1 || groupSelector.stk2 == datum.stk2\n        }\n        // Set new key for later lookups - identifies each node\n        {type: \"formula\", expr: \"datum.stk1+datum.stk2\", as: \"key\"}\n        // instead of each table row, create two new rows,\n        // one for the source (stack=stk1) and one for destination node (stack=stk2).\n        // The country code stored in stk1 and stk2 fields is placed into grpId field.\n        {\n          type: fold\n          fields: [\"stk1\", \"stk2\"]\n          as: [\"stack\", \"grpId\"]\n        }\n        // Create a sortkey, different for stk1 and stk2 stacks.\n        // Space separator ensures proper sort order in some corner cases.\n        {\n          type: formula\n          expr: datum.stack == 'stk1' ? datum.stk1+' '+datum.stk2 : datum.stk2+' '+datum.stk1\n          as: sortField\n        }\n        // Calculate y0 and y1 positions for stacking nodes one on top of the other,\n        // independently for each stack, and ensuring they are in the proper order,\n        // alphabetical from the top (reversed on the y axis)\n        {\n          type: stack\n          groupby: [\"stack\"]\n          sort: {field: \"sortField\", order: \"descending\"}\n          field: size\n        }\n        // calculate vertical center point for each node, used to draw edges\n        {type: \"formula\", expr: \"(datum.y0+datum.y1)/2\", as: \"yc\"}\n      ]\n    }\n    {\n      name: groups\n      source: nodes\n      transform: [\n        // combine all nodes into country groups, summing up the doc counts\n        {\n          type: aggregate\n          groupby: [\"stack\", \"grpId\"]\n          fields: [\"size\"]\n          ops: [\"sum\"]\n          as: [\"total\"]\n        }\n        // re-calculate the stacking y0,y1 values\n        {\n          type: stack\n          groupby: [\"stack\"]\n          sort: {field: \"grpId\", order: \"descending\"}\n          field: total\n        }\n        // project y0 and y1 values to screen coordinates\n        // doing it once here instead of doing it several times in marks\n        {type: \"formula\", expr: \"scale('y', datum.y0)\", as: \"scaledY0\"}\n        {type: \"formula\", expr: \"scale('y', datum.y1)\", as: \"scaledY1\"}\n        // boolean flag if the label should be on the right of the stack\n        {type: \"formula\", expr: \"datum.stack == 'stk1'\", as: \"rightLabel\"}\n        // Calculate traffic percentage for this country using \"y\" scale\n        // domain upper bound, which represents the total traffic\n        {\n          type: formula\n          expr: datum.total/domain('y')[1]\n          as: percentage\n        }\n      ]\n    }\n    {\n      // This is a temp lookup table with all the 'stk2' stack nodes\n      name: destinationNodes\n      source: nodes\n      transform: [\n        {type: \"filter\", expr: \"datum.stack == 'stk2'\"}\n      ]\n    }\n    {\n      name: edges\n      source: nodes\n      transform: [\n        // we only want nodes from the left stack\n        {type: \"filter\", expr: \"datum.stack == 'stk1'\"}\n        // find corresponding node from the right stack, keep it as \"target\"\n        {\n          type: lookup\n          from: destinationNodes\n          key: key\n          fields: [\"key\"]\n          as: [\"target\"]\n        }\n        // calculate SVG link path between stk1 and stk2 stacks for the node pair\n        {\n          type: linkpath\n          orient: horizontal\n          shape: diagonal\n          sourceY: {expr: \"scale('y', datum.yc)\"}\n          sourceX: {expr: \"scale('x', 'stk1') + bandwidth('x')\"}\n          targetY: {expr: \"scale('y', datum.target.yc)\"}\n          targetX: {expr: \"scale('x', 'stk2')\"}\n        }\n        // A little trick to calculate the thickness of the line.\n        // The value needs to be the same as the hight of the node, but scaling\n        // size to screen's height gives inversed value because screen's Y\n        // coordinate goes from the top to the bottom, whereas the graph's Y=0\n        // is at the bottom. So subtracting scaled doc count from screen height\n        // (which is the \"lower\" bound of the \"y\" scale) gives us the right value\n        {\n          type: formula\n          expr: range('y')[0]-scale('y', datum.size)\n          as: strokeWidth\n        }\n        // Tooltip needs individual link's percentage of all traffic\n        {\n          type: formula\n          expr: datum.size/domain('y')[1]\n          as: percentage\n        }\n      ]\n    }\n  ]\n  scales: [\n    {\n      // calculates horizontal stack positioning\n      name: x\n      type: band\n      range: width\n      domain: [\"stk1\", \"stk2\"]\n      paddingOuter: 0.05\n      paddingInner: 0.95\n    }\n    {\n      // this scale goes up as high as the highest y1 value of all nodes\n      name: y\n      type: linear\n      range: height\n      domain: {data: \"nodes\", field: \"y1\"}\n    }\n    {\n      // use rawData to ensure the colors stay the same when clicking.\n      name: color\n      type: ordinal\n      range: category\n      domain: {data: \"rawData\", fields: [\"stk1\", \"stk2\"]}\n    }\n    {\n      // this scale is used to map internal ids (stk1, stk2) to stack names\n      name: stackNames\n      type: ordinal\n      range: [\"Source\", \"Destination\"]\n      domain: [\"stk1\", \"stk2\"]\n    }\n  ]\n  axes: [\n    {\n      // x axis should use custom label formatting to print proper stack names\n      orient: bottom\n      scale: x\n      encode: {\n        labels: {\n          update: {\n            text: {scale: \"stackNames\", field: \"value\"}\n          }\n        }\n      }\n    }\n    {orient: \"left\", scale: \"y\"}\n  ]\n  marks: [\n    {\n      // draw the connecting line between stacks\n      type: path\n      name: edgeMark\n      from: {data: \"edges\"}\n      // this prevents some autosizing issues with large strokeWidth for paths\n      clip: true\n      encode: {\n        update: {\n          // By default use color of the left node, except when showing traffic\n          // from just one country, in which case use destination color.\n          stroke: [\n            {\n              test: groupSelector \u0026\u0026 groupSelector.stack=='stk1'\n              scale: color\n              field: stk2\n            }\n            {scale: \"color\", field: \"stk1\"}\n          ]\n          strokeWidth: {field: \"strokeWidth\"}\n          path: {field: \"path\"}\n          // when showing all traffic, and hovering over a country,\n          // highlight the traffic from that country.\n          strokeOpacity: {\n            signal: !groupSelector \u0026\u0026 (groupHover.stk1 == datum.stk1 || groupHover.stk2 == datum.stk2) ? 0.9 : 0.3\n          }\n          // Ensure that the hover-selected edges show on top\n          zindex: {\n            signal: !groupSelector \u0026\u0026 (groupHover.stk1 == datum.stk1 || groupHover.stk2 == datum.stk2) ? 1 : 0\n          }\n          // format tooltip string\n          tooltip: {\n            signal: datum.stk1 + ' → ' + datum.stk2 + '    ' + format(datum.size, ',.0f') + '   (' + format(datum.percentage, '.1%') + ')'\n          }\n        }\n        // Simple mouseover highlighting of a single line\n        hover: {\n          strokeOpacity: {value: 1}\n        }\n      }\n    }\n    {\n      // draw stack groups (countries)\n      type: rect\n      name: groupMark\n      from: {data: \"groups\"}\n      encode: {\n        enter: {\n          fill: {scale: \"color\", field: \"grpId\"}\n          width: {scale: \"x\", band: 1}\n        }\n        update: {\n          x: {scale: \"x\", field: \"stack\"}\n          y: {field: \"scaledY0\"}\n          y2: {field: \"scaledY1\"}\n          fillOpacity: {value: 0.6}\n          tooltip: {\n            signal: datum.grpId + '   ' + format(datum.total, ',.0f') + '   (' + format(datum.percentage, '.1%') + ')'\n          }\n        }\n        hover: {\n          fillOpacity: {value: 1}\n        }\n      }\n    }\n    {\n      // draw country code labels on the inner side of the stack\n      type: text\n      from: {data: \"groups\"}\n      // don't process events for the labels - otherwise line mouseover is unclean\n      interactive: false\n      encode: {\n        update: {\n          // depending on which stack it is, position x with some padding\n          x: {\n            signal: scale('x', datum.stack) + (datum.rightLabel ? bandwidth('x') + 8 : -8)\n          }\n          // middle of the group\n          yc: {signal: \"(datum.scaledY0 + datum.scaledY1)/2\"}\n          align: {signal: \"datum.rightLabel ? 'left' : 'right'\"}\n          baseline: {value: \"middle\"}\n          fontWeight: {value: \"bold\"}\n          // only show text label if the group's height is large enough\n          text: {signal: \"abs(datum.scaledY0-datum.scaledY1) \u003e 13 ? datum.grpId : ''\"}\n        }\n      }\n    }\n    {\n      // Create a \"show all\" button. Shown only when a country is selected.\n      type: group\n      data: [\n        // We need to make the button show only when groupSelector signal is true.\n        // Each mark is drawn as many times as there are elements in the backing data.\n        // Which means that if values list is empty, it will not be drawn.\n        // Here I create a data source with one empty object, and filter that list\n        // based on the signal value. This can only be done in a group.\n        {\n          name: dataForShowAll\n          values: [{}]\n          transform: [{type: \"filter\", expr: \"groupSelector\"}]\n        }\n      ]\n      // Set button size and positioning\n      encode: {\n        enter: {\n          xc: {signal: \"width/2\"}\n          y: {value: 30}\n          width: {value: 80}\n          height: {value: 30}\n        }\n      }\n      marks: [\n        {\n          // This group is shown as a button with rounded corners.\n          type: group\n          // mark name allows signal capturing\n          name: groupReset\n          // Only shows button if dataForShowAll has values.\n          from: {data: \"dataForShowAll\"}\n          encode: {\n            enter: {\n              cornerRadius: {value: 6}\n              fill: {value: \"#f5f5f5\"}\n              stroke: {value: \"#c1c1c1\"}\n              strokeWidth: {value: 2}\n              // use parent group's size\n              height: {\n                field: {group: \"height\"}\n              }\n              width: {\n                field: {group: \"width\"}\n              }\n            }\n            update: {\n              // groups are transparent by default\n              opacity: {value: 1}\n            }\n            hover: {\n              opacity: {value: 0.7}\n            }\n          }\n          marks: [\n            {\n              type: text\n              // if true, it will prevent clicking on the button when over text.\n              interactive: false\n              encode: {\n                enter: {\n                  // center text in the paren group\n                  xc: {\n                    field: {group: \"width\"}\n                    mult: 0.5\n                  }\n                  yc: {\n                    field: {group: \"height\"}\n                    mult: 0.5\n                    offset: 2\n                  }\n                  align: {value: \"center\"}\n                  baseline: {value: \"middle\"}\n                  fontWeight: {value: \"bold\"}\n                  text: {value: \"Show All\"}\n                }\n              }\n            }\n          ]\n        }\n      ]\n    }\n  ]\n  signals: [\n    {\n      // used to highlight traffic to/from the same country\n      name: groupHover\n      value: {}\n      on: [\n        {\n          events: @groupMark:mouseover\n          update: \"{stk1:datum.stack=='stk1' \u0026\u0026 datum.grpId, stk2:datum.stack=='stk2' \u0026\u0026 datum.grpId}\"\n        }\n        {events: \"mouseout\", update: \"{}\"}\n      ]\n    }\n    // used to filter only the data related to the selected country\n    {\n      name: groupSelector\n      value: false\n      on: [\n        {\n          // Clicking groupMark sets this signal to the filter values\n          events: @groupMark:click!\n          update: \"{stack:datum.stack, stk1:datum.stack=='stk1' \u0026\u0026 datum.grpId, stk2:datum.stack=='stk2' \u0026\u0026 datum.grpId}\"\n        }\n        {\n          // Clicking \"show all\" button, or double-clicking anywhere resets it\n          events: [\n            {type: \"click\", markname: \"groupReset\"}\n            {type: \"dblclick\"}\n          ]\n          update: \"false\"\n        }\n      ]\n    }\n  ]\n}"
+                        },
+                        "title": "",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "5f4dbbba-5840-492f-ab48-69721dbbba51",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "5f4dbbba-5840-492f-ab48-69721dbbba51",
+                "title": "Mail Flow (Country)",
+                "type": "visualization",
+                "version": "8.0.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-cb547632-31dc-42a1-bfbe-b9bf17637acb",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "cb547632-31dc-42a1-bfbe-b9bf17637acb": {
+                                            "columnOrder": [
+                                                "0bbb3f8c-8cc2-4ca8-84e5-2b19bcbf6cc1",
+                                                "dba3f121-8647-497e-a127-1370cdc363e4",
+                                                "e0f4fa4b-a79c-4128-b81e-575347b704a6"
+                                            ],
+                                            "columns": {
+                                                "0bbb3f8c-8cc2-4ca8-84e5-2b19bcbf6cc1": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of email.direction",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "e0f4fa4b-a79c-4128-b81e-575347b704a6",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "email.direction"
+                                                },
+                                                "dba3f121-8647-497e-a127-1370cdc363e4": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e0f4fa4b-a79c-4128-b81e-575347b704a6": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "event.dataset : \"microsoft_exchange_online_message_trace.log\" "
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "e0f4fa4b-a79c-4128-b81e-575347b704a6"
+                                        ],
+                                        "layerId": "cb547632-31dc-42a1-bfbe-b9bf17637acb",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area_percentage_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "0bbb3f8c-8cc2-4ca8-84e5-2b19bcbf6cc1",
+                                        "xAccessor": "dba3f121-8647-497e-a127-1370cdc363e4"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area_percentage_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "71c01d75-9955-4120-9fd7-ebf99b4319f0",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "71c01d75-9955-4120-9fd7-ebf99b4319f0",
+                "title": "Mail Direction",
+                "type": "lens",
+                "version": "8.0.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "spec": "{\n  $schema: https://vega.github.io/schema/vega/v5.0.json\n  data: [\n    {\n      // query ES based on the currently selected time range and filter string\n      name: rawData\n      url: {\n        %context%: true\n        %timefield%: @timestamp\n        index: logs-microsoft_exchange_online_message_trace.log-*\n        body: {\n          size: 0\n          aggs: {\n            table: {\n              composite: {\n                size: 10000\n                sources: [\n                  {\n                    stk1: {\n                      terms: {field: \"source.as.organization.name\"}\n                    }\n                  }\n                  {\n                    stk2: {\n                      terms: {field: \"destination.as.organization.name\"}\n                    }\n                  }\n                ]\n              }\n            }\n          }\n        }\n      }\n      // From the result, take just the data we are interested in\n      format: {property: \"aggregations.table.buckets\"}\n      // Convert key.stk1 -\u003e stk1 for simpler access below\n      transform: [\n        {type: \"formula\", expr: \"datum.key.stk1\", as: \"stk1\"}\n        {type: \"formula\", expr: \"datum.key.stk2\", as: \"stk2\"}\n        {type: \"formula\", expr: \"datum.doc_count\", as: \"size\"}\n      ]\n    }\n    {\n      name: nodes\n      source: rawData\n      transform: [\n        // when a country is selected, filter out unrelated data\n        {\n          type: filter\n          expr: !groupSelector || groupSelector.stk1 == datum.stk1 || groupSelector.stk2 == datum.stk2\n        }\n        // Set new key for later lookups - identifies each node\n        {type: \"formula\", expr: \"datum.stk1+datum.stk2\", as: \"key\"}\n        // instead of each table row, create two new rows,\n        // one for the source (stack=stk1) and one for destination node (stack=stk2).\n        // The country code stored in stk1 and stk2 fields is placed into grpId field.\n        {\n          type: fold\n          fields: [\"stk1\", \"stk2\"]\n          as: [\"stack\", \"grpId\"]\n        }\n        // Create a sortkey, different for stk1 and stk2 stacks.\n        // Space separator ensures proper sort order in some corner cases.\n        {\n          type: formula\n          expr: datum.stack == 'stk1' ? datum.stk1+' '+datum.stk2 : datum.stk2+' '+datum.stk1\n          as: sortField\n        }\n        // Calculate y0 and y1 positions for stacking nodes one on top of the other,\n        // independently for each stack, and ensuring they are in the proper order,\n        // alphabetical from the top (reversed on the y axis)\n        {\n          type: stack\n          groupby: [\"stack\"]\n          sort: {field: \"sortField\", order: \"descending\"}\n          field: size\n        }\n        // calculate vertical center point for each node, used to draw edges\n        {type: \"formula\", expr: \"(datum.y0+datum.y1)/2\", as: \"yc\"}\n      ]\n    }\n    {\n      name: groups\n      source: nodes\n      transform: [\n        // combine all nodes into country groups, summing up the doc counts\n        {\n          type: aggregate\n          groupby: [\"stack\", \"grpId\"]\n          fields: [\"size\"]\n          ops: [\"sum\"]\n          as: [\"total\"]\n        }\n        // re-calculate the stacking y0,y1 values\n        {\n          type: stack\n          groupby: [\"stack\"]\n          sort: {field: \"grpId\", order: \"descending\"}\n          field: total\n        }\n        // project y0 and y1 values to screen coordinates\n        // doing it once here instead of doing it several times in marks\n        {type: \"formula\", expr: \"scale('y', datum.y0)\", as: \"scaledY0\"}\n        {type: \"formula\", expr: \"scale('y', datum.y1)\", as: \"scaledY1\"}\n        // boolean flag if the label should be on the right of the stack\n        {type: \"formula\", expr: \"datum.stack == 'stk1'\", as: \"rightLabel\"}\n        // Calculate traffic percentage for this country using \"y\" scale\n        // domain upper bound, which represents the total traffic\n        {\n          type: formula\n          expr: datum.total/domain('y')[1]\n          as: percentage\n        }\n      ]\n    }\n    {\n      // This is a temp lookup table with all the 'stk2' stack nodes\n      name: destinationNodes\n      source: nodes\n      transform: [\n        {type: \"filter\", expr: \"datum.stack == 'stk2'\"}\n      ]\n    }\n    {\n      name: edges\n      source: nodes\n      transform: [\n        // we only want nodes from the left stack\n        {type: \"filter\", expr: \"datum.stack == 'stk1'\"}\n        // find corresponding node from the right stack, keep it as \"target\"\n        {\n          type: lookup\n          from: destinationNodes\n          key: key\n          fields: [\"key\"]\n          as: [\"target\"]\n        }\n        // calculate SVG link path between stk1 and stk2 stacks for the node pair\n        {\n          type: linkpath\n          orient: horizontal\n          shape: diagonal\n          sourceY: {expr: \"scale('y', datum.yc)\"}\n          sourceX: {expr: \"scale('x', 'stk1') + bandwidth('x')\"}\n          targetY: {expr: \"scale('y', datum.target.yc)\"}\n          targetX: {expr: \"scale('x', 'stk2')\"}\n        }\n        // A little trick to calculate the thickness of the line.\n        // The value needs to be the same as the hight of the node, but scaling\n        // size to screen's height gives inversed value because screen's Y\n        // coordinate goes from the top to the bottom, whereas the graph's Y=0\n        // is at the bottom. So subtracting scaled doc count from screen height\n        // (which is the \"lower\" bound of the \"y\" scale) gives us the right value\n        {\n          type: formula\n          expr: range('y')[0]-scale('y', datum.size)\n          as: strokeWidth\n        }\n        // Tooltip needs individual link's percentage of all traffic\n        {\n          type: formula\n          expr: datum.size/domain('y')[1]\n          as: percentage\n        }\n      ]\n    }\n  ]\n  scales: [\n    {\n      // calculates horizontal stack positioning\n      name: x\n      type: band\n      range: width\n      domain: [\"stk1\", \"stk2\"]\n      paddingOuter: 0.05\n      paddingInner: 0.95\n    }\n    {\n      // this scale goes up as high as the highest y1 value of all nodes\n      name: y\n      type: linear\n      range: height\n      domain: {data: \"nodes\", field: \"y1\"}\n    }\n    {\n      // use rawData to ensure the colors stay the same when clicking.\n      name: color\n      type: ordinal\n      range: category\n      domain: {data: \"rawData\", fields: [\"stk1\", \"stk2\"]}\n    }\n    {\n      // this scale is used to map internal ids (stk1, stk2) to stack names\n      name: stackNames\n      type: ordinal\n      range: [\"Source\", \"Destination\"]\n      domain: [\"stk1\", \"stk2\"]\n    }\n  ]\n  axes: [\n    {\n      // x axis should use custom label formatting to print proper stack names\n      orient: bottom\n      scale: x\n      encode: {\n        labels: {\n          update: {\n            text: {scale: \"stackNames\", field: \"value\"}\n          }\n        }\n      }\n    }\n    {orient: \"left\", scale: \"y\"}\n  ]\n  marks: [\n    {\n      // draw the connecting line between stacks\n      type: path\n      name: edgeMark\n      from: {data: \"edges\"}\n      // this prevents some autosizing issues with large strokeWidth for paths\n      clip: true\n      encode: {\n        update: {\n          // By default use color of the left node, except when showing traffic\n          // from just one country, in which case use destination color.\n          stroke: [\n            {\n              test: groupSelector \u0026\u0026 groupSelector.stack=='stk1'\n              scale: color\n              field: stk2\n            }\n            {scale: \"color\", field: \"stk1\"}\n          ]\n          strokeWidth: {field: \"strokeWidth\"}\n          path: {field: \"path\"}\n          // when showing all traffic, and hovering over a country,\n          // highlight the traffic from that country.\n          strokeOpacity: {\n            signal: !groupSelector \u0026\u0026 (groupHover.stk1 == datum.stk1 || groupHover.stk2 == datum.stk2) ? 0.9 : 0.3\n          }\n          // Ensure that the hover-selected edges show on top\n          zindex: {\n            signal: !groupSelector \u0026\u0026 (groupHover.stk1 == datum.stk1 || groupHover.stk2 == datum.stk2) ? 1 : 0\n          }\n          // format tooltip string\n          tooltip: {\n            signal: datum.stk1 + ' → ' + datum.stk2 + '    ' + format(datum.size, ',.0f') + '   (' + format(datum.percentage, '.1%') + ')'\n          }\n        }\n        // Simple mouseover highlighting of a single line\n        hover: {\n          strokeOpacity: {value: 1}\n        }\n      }\n    }\n    {\n      // draw stack groups (countries)\n      type: rect\n      name: groupMark\n      from: {data: \"groups\"}\n      encode: {\n        enter: {\n          fill: {scale: \"color\", field: \"grpId\"}\n          width: {scale: \"x\", band: 1}\n        }\n        update: {\n          x: {scale: \"x\", field: \"stack\"}\n          y: {field: \"scaledY0\"}\n          y2: {field: \"scaledY1\"}\n          fillOpacity: {value: 0.6}\n          tooltip: {\n            signal: datum.grpId + '   ' + format(datum.total, ',.0f') + '   (' + format(datum.percentage, '.1%') + ')'\n          }\n        }\n        hover: {\n          fillOpacity: {value: 1}\n        }\n      }\n    }\n    {\n      // draw country code labels on the inner side of the stack\n      type: text\n      from: {data: \"groups\"}\n      // don't process events for the labels - otherwise line mouseover is unclean\n      interactive: false\n      encode: {\n        update: {\n          // depending on which stack it is, position x with some padding\n          x: {\n            signal: scale('x', datum.stack) + (datum.rightLabel ? bandwidth('x') + 8 : -8)\n          }\n          // middle of the group\n          yc: {signal: \"(datum.scaledY0 + datum.scaledY1)/2\"}\n          align: {signal: \"datum.rightLabel ? 'left' : 'right'\"}\n          baseline: {value: \"middle\"}\n          fontWeight: {value: \"bold\"}\n          // only show text label if the group's height is large enough\n          text: {signal: \"abs(datum.scaledY0-datum.scaledY1) \u003e 13 ? datum.grpId : ''\"}\n        }\n      }\n    }\n    {\n      // Create a \"show all\" button. Shown only when a country is selected.\n      type: group\n      data: [\n        // We need to make the button show only when groupSelector signal is true.\n        // Each mark is drawn as many times as there are elements in the backing data.\n        // Which means that if values list is empty, it will not be drawn.\n        // Here I create a data source with one empty object, and filter that list\n        // based on the signal value. This can only be done in a group.\n        {\n          name: dataForShowAll\n          values: [{}]\n          transform: [{type: \"filter\", expr: \"groupSelector\"}]\n        }\n      ]\n      // Set button size and positioning\n      encode: {\n        enter: {\n          xc: {signal: \"width/2\"}\n          y: {value: 30}\n          width: {value: 80}\n          height: {value: 30}\n        }\n      }\n      marks: [\n        {\n          // This group is shown as a button with rounded corners.\n          type: group\n          // mark name allows signal capturing\n          name: groupReset\n          // Only shows button if dataForShowAll has values.\n          from: {data: \"dataForShowAll\"}\n          encode: {\n            enter: {\n              cornerRadius: {value: 6}\n              fill: {value: \"#f5f5f5\"}\n              stroke: {value: \"#c1c1c1\"}\n              strokeWidth: {value: 2}\n              // use parent group's size\n              height: {\n                field: {group: \"height\"}\n              }\n              width: {\n                field: {group: \"width\"}\n              }\n            }\n            update: {\n              // groups are transparent by default\n              opacity: {value: 1}\n            }\n            hover: {\n              opacity: {value: 0.7}\n            }\n          }\n          marks: [\n            {\n              type: text\n              // if true, it will prevent clicking on the button when over text.\n              interactive: false\n              encode: {\n                enter: {\n                  // center text in the paren group\n                  xc: {\n                    field: {group: \"width\"}\n                    mult: 0.5\n                  }\n                  yc: {\n                    field: {group: \"height\"}\n                    mult: 0.5\n                    offset: 2\n                  }\n                  align: {value: \"center\"}\n                  baseline: {value: \"middle\"}\n                  fontWeight: {value: \"bold\"}\n                  text: {value: \"Show All\"}\n                }\n              }\n            }\n          ]\n        }\n      ]\n    }\n  ]\n  signals: [\n    {\n      // used to highlight traffic to/from the same country\n      name: groupHover\n      value: {}\n      on: [\n        {\n          events: @groupMark:mouseover\n          update: \"{stk1:datum.stack=='stk1' \u0026\u0026 datum.grpId, stk2:datum.stack=='stk2' \u0026\u0026 datum.grpId}\"\n        }\n        {events: \"mouseout\", update: \"{}\"}\n      ]\n    }\n    // used to filter only the data related to the selected country\n    {\n      name: groupSelector\n      value: false\n      on: [\n        {\n          // Clicking groupMark sets this signal to the filter values\n          events: @groupMark:click!\n          update: \"{stack:datum.stack, stk1:datum.stack=='stk1' \u0026\u0026 datum.grpId, stk2:datum.stack=='stk2' \u0026\u0026 datum.grpId}\"\n        }\n        {\n          // Clicking \"show all\" button, or double-clicking anywhere resets it\n          events: [\n            {type: \"click\", markname: \"groupReset\"}\n            {type: \"dblclick\"}\n          ]\n          update: \"false\"\n        }\n      ]\n    }\n  ]\n}"
+                        },
+                        "title": "",
+                        "type": "vega",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "974f08f7-b0ab-423a-ac99-cbf755b99c17",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "974f08f7-b0ab-423a-ac99-cbf755b99c17",
+                "title": "Mail Flow (AS)",
+                "type": "visualization",
+                "version": "8.0.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-70bcbbe4-f13c-4195-8ba1-1677a2361c81",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "70bcbbe4-f13c-4195-8ba1-1677a2361c81": {
+                                            "columnOrder": [
+                                                "96fc5a5c-f9a7-44be-87b1-cdbfe58e4397",
+                                                "ce1d1fba-55af-4c8b-ab7c-34968710c9bb",
+                                                "d863a9e2-141e-4e6a-81d1-106274aa75c8"
+                                            ],
+                                            "columns": {
+                                                "96fc5a5c-f9a7-44be-87b1-cdbfe58e4397": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of event.outcome",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d863a9e2-141e-4e6a-81d1-106274aa75c8",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.outcome"
+                                                },
+                                                "ce1d1fba-55af-4c8b-ab7c-34968710c9bb": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d863a9e2-141e-4e6a-81d1-106274aa75c8": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "event.dataset : \"microsoft_exchange_online_message_trace.log\" and (event.outcome : \"Delivered\" or event.outcome: \"FilteredAsSpam\" or event.outcome : \"Quarantined\" )"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d863a9e2-141e-4e6a-81d1-106274aa75c8"
+                                        ],
+                                        "layerId": "70bcbbe4-f13c-4195-8ba1-1677a2361c81",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "96fc5a5c-f9a7-44be-87b1-cdbfe58e4397",
+                                        "xAccessor": "ce1d1fba-55af-4c8b-ab7c-34968710c9bb"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "7b8f5d22-68a8-4e10-bbb7-16858e68749d",
+                    "w": 24,
+                    "x": 0,
+                    "y": 30
+                },
+                "panelIndex": "7b8f5d22-68a8-4e10-bbb7-16858e68749d",
+                "title": "Mail Status",
+                "type": "lens",
+                "version": "8.0.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-25ce29dc-65f6-4560-b323-17e3d58b17fb",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "25ce29dc-65f6-4560-b323-17e3d58b17fb": {
+                                            "columnOrder": [
+                                                "0d47ea7c-952d-4034-ba07-9c1d79d296b7",
+                                                "a9ebe8c9-d762-49e0-9494-95ded076529d"
+                                            ],
+                                            "columns": {
+                                                "0d47ea7c-952d-4034-ba07-9c1d79d296b7": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top Recipients",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a9ebe8c9-d762-49e0-9494-95ded076529d",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "email.to.address"
+                                                },
+                                                "a9ebe8c9-d762-49e0-9494-95ded076529d": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "event.dataset : \"microsoft_exchange_online_message_trace.log\" "
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "0d47ea7c-952d-4034-ba07-9c1d79d296b7"
+                                    },
+                                    {
+                                        "columnId": "a9ebe8c9-d762-49e0-9494-95ded076529d"
+                                    }
+                                ],
+                                "layerId": "25ce29dc-65f6-4560-b323-17e3d58b17fb",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "952624da-7dad-45b7-a8a3-98853634f7b2",
+                    "w": 24,
+                    "x": 24,
+                    "y": 45
+                },
+                "panelIndex": "952624da-7dad-45b7-a8a3-98853634f7b2",
+                "title": "Top Recipients",
+                "type": "lens",
+                "version": "8.0.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7415119f-c228-4398-8e06-0a5a45c19e24",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "7415119f-c228-4398-8e06-0a5a45c19e24": {
+                                            "columnOrder": [
+                                                "a06423a3-b607-4e14-9bdc-b97b6f28fad6",
+                                                "48e6e8f0-1f07-46d1-9cd7-d3bbe2f8d615"
+                                            ],
+                                            "columns": {
+                                                "48e6e8f0-1f07-46d1-9cd7-d3bbe2f8d615": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "a06423a3-b607-4e14-9bdc-b97b6f28fad6": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top Senders",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "48e6e8f0-1f07-46d1-9cd7-d3bbe2f8d615",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "email.from.address"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "event.dataset : \"microsoft_exchange_online_message_trace.log\" and (email.direction : \"outbound\" or email.direction : \"internal\" )"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "a06423a3-b607-4e14-9bdc-b97b6f28fad6"
+                                    },
+                                    {
+                                        "columnId": "48e6e8f0-1f07-46d1-9cd7-d3bbe2f8d615"
+                                    }
+                                ],
+                                "layerId": "7415119f-c228-4398-8e06-0a5a45c19e24",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "a81446a8-8849-4877-95bb-a6a51ecbaf87",
+                    "w": 24,
+                    "x": 0,
+                    "y": 45
+                },
+                "panelIndex": "a81446a8-8849-4877-95bb-a6a51ecbaf87",
+                "title": "Top Senders",
+                "type": "lens",
+                "version": "8.0.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-b1566818-56fb-406d-a235-9b62ecc90a03",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "b1566818-56fb-406d-a235-9b62ecc90a03": {
+                                            "columnOrder": [
+                                                "0a09f8ad-9e04-41de-8ae8-29560c3bb2fa",
+                                                "d7263df5-c94b-43be-b984-0f1086278be3"
+                                            ],
+                                            "columns": {
+                                                "0a09f8ad-9e04-41de-8ae8-29560c3bb2fa": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d7263df5-c94b-43be-b984-0f1086278be3": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Sum of email.attachments.file.size",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "email.attachments.file.size"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": "event.dataset : \"microsoft_exchange_online_message_trace.log\" "
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "d7263df5-c94b-43be-b984-0f1086278be3"
+                                        ],
+                                        "layerId": "b1566818-56fb-406d-a235-9b62ecc90a03",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "showGridlines": false,
+                                        "xAccessor": "0a09f8ad-9e04-41de-8ae8-29560c3bb2fa"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "area",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "fa345782-8bdd-4bbb-a2aa-b76378acaf7c",
+                    "w": 24,
+                    "x": 24,
+                    "y": 30
+                },
+                "panelIndex": "fa345782-8bdd-4bbb-a2aa-b76378acaf7c",
+                "title": "Traffic",
+                "type": "lens",
+                "version": "8.0.0"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Microsoft Exchange Online Message Trace] Overview",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.0.0",
+    "id": "microsoft_exchange_online_message_trace-10b79960-536a-11ed-869d-9d6d140defa1",
+    "migrationVersion": {
+        "dashboard": "8.0.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "962d6720-eb53-431a-9a39-fce05507ce4e:layer_1_source_index_pattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "71c01d75-9955-4120-9fd7-ebf99b4319f0:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "71c01d75-9955-4120-9fd7-ebf99b4319f0:indexpattern-datasource-layer-cb547632-31dc-42a1-bfbe-b9bf17637acb",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7b8f5d22-68a8-4e10-bbb7-16858e68749d:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7b8f5d22-68a8-4e10-bbb7-16858e68749d:indexpattern-datasource-layer-70bcbbe4-f13c-4195-8ba1-1677a2361c81",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "952624da-7dad-45b7-a8a3-98853634f7b2:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "952624da-7dad-45b7-a8a3-98853634f7b2:indexpattern-datasource-layer-25ce29dc-65f6-4560-b323-17e3d58b17fb",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a81446a8-8849-4877-95bb-a6a51ecbaf87:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a81446a8-8849-4877-95bb-a6a51ecbaf87:indexpattern-datasource-layer-7415119f-c228-4398-8e06-0a5a45c19e24",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "fa345782-8bdd-4bbb-a2aa-b76378acaf7c:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "fa345782-8bdd-4bbb-a2aa-b76378acaf7c:indexpattern-datasource-layer-b1566818-56fb-406d-a235-9b62ecc90a03",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}
