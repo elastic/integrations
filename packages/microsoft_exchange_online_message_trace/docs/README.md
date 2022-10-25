@@ -9,6 +9,8 @@ datasets for receiving logs over the Microsoft Exchange Online Message Trace API
 
 Logs are either gathered via the rest API or via a logfile.
 
+### Logfile collection
+
 The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be
 consumed by the logfile input:
 
@@ -23,7 +25,7 @@ In this example script the look back would be 24 hours, so the interval would ne
 According to the
 [documentation](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetrace?view=exchange-ps)
 it is only possible to get up to 1k pages.
-If this should be an issue, try reducing the "$looback" or increasing "$pageSize"
+If this should be an issue, try reducing the `$looback` or increasing `$pageSize`.
 
 ```powershell
 # Username and Password
@@ -74,7 +76,7 @@ foreach ($event in $output)
 }
 ```
 
-### Microsoft Exchange Online Message Trace
+### Microsoft Exchange Online Message Trace API
 
 The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
 
