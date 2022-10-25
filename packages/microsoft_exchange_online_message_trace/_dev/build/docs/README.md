@@ -74,7 +74,7 @@ foreach ($event in $output)
 }
 ```
 
-### Microsoft Exchange Online Message Trace
+### Microsoft Exchange Online Message Trace API
 
 The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
 
