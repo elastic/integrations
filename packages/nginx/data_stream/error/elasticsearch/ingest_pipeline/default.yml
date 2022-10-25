@@ -40,6 +40,20 @@ processors:
       patterns:
         - 'server:\s%{IP:server.ip}'
         - 'server:\s%{HOSTNAME:server.domain}'
+  - grok:
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      description: Extract Referral Information
+      patterns:
+        - 'referrer:\s\"%{DATA:http.request.referrer}\"'
+  - grok:
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+      description: Extract URL Path Information
+      patterns:
+        - 'request:\s\"%{DATA:http.request.method}\s%{DATA:url.path}\"'
   - remove:
       field: event.created
       ignore_missing: true
