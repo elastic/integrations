@@ -1,0 +1,64 @@
+config_version: 2
+interval: {{interval}}
+request.method: GET
+request.url: {{url}}
+request.transforms:
+  - set:
+      target: url.params.$filter
+      value: StartDate eq datetime'[[.cursor.last_execution_datetime]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
+      default: StartDate eq datetime'[[(formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
+  - set:
+      target: url.params.$skiptoken
+      value: 0
+request.timeout: 60s
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+{{#if username}}
+{{#if password}}
+auth.basic.user: {{username}}
+auth.basic.password: {{password}}
+{{/if}}
+{{/if}}
+fields_under_root: true
+fields:
+  _conf:
+    local_domains:
+    {{#each local_domains as |local_domain i|}}
+      - {{local_domain}}
+    {{/each}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+response.split:
+  target: body.value
+response.pagination:
+  - set:
+      target: url.value
+      value: {{url}}
+  - set:
+      fail_on_template_error: true
+      target: url.params.$skiptoken
+      value: '[[ (add (toInt (index .last_response.url.params "$skiptoken")) 2000) ]]'
+  - set:
+      fail_on_template_error: true
+      target: url.params.test
+      value: '[[ (add (toInt (index .last_response.url.params "$skiptoken")) 2000) ]]'
+cursor:
+  last_execution_datetime:
+    value: '[[(formatDate (now (parseDuration)) "RFC3339")]]'
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
