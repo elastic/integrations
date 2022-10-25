@@ -26,14 +26,14 @@ Detect data exfiltration activity in your network data.
 
 | Job | Description |
 |---|---|
-| high-sent-bytes-destination-geo-city_name | Explain what it does here! | 
-| high-sent-bytes-destination-geo-continent_name | Explain what it does here! |
-| high-sent-bytes-destination-geo-country_iso_code | Explain what it does here! |
-| high-sent-bytes-destination-geo-country_name | Explain what it does here! |
-| high-sent-bytes-destination-ip | Explain what it does here! |
-| high-sent-bytes-destination-port | Explain what it does here! |
-| high-sent-bytes-destination-region_name | Explain what it does here! |
-| high-sent-bytes-destination-timezone | Explain what it does here! |
+| high-sent-bytes-destination-geo-city_name | A machine learning job to detect data exfiltration to a particular geo-location (by city name) | 
+| high-sent-bytes-destination-geo-continent_name | A machine learning job to detect data exfiltration to a particular geo-location (by continent name) |
+| high-sent-bytes-destination-geo-country_iso_code | A machine learning job to detect data exfiltration to a particular geo-location (by country iso code) |
+| high-sent-bytes-destination-geo-country_name | A machine learning job to detect data exfiltration to a particular geo-location (by country name) |
+| high-sent-bytes-destination-ip | A machine learning job to detect data exfiltration to a particular geo-location (by IP address) |
+| high-sent-bytes-destination-port | A machine learning job to detect data exfiltration via a specific port |
+| high-sent-bytes-destination-region_name | A machine learning job to detect data exfiltration to a particular geo-location (by region name) |
+| high-sent-bytes-destination-timezone | A machine learning job to detect data exfiltration to a particular geo-location (by timezone) |
 
 ## Licensing
 Usage in production requires that you have a license key that permits use of machine learning features.
