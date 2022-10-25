@@ -9,6 +9,8 @@ datasets for receiving logs over the Microsoft Exchange Online Message Trace API
 
 Logs are either gathered via the rest API or via a logfile.
 
+### Logfile collection
+
 The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be
 consumed by the logfile input:
 
