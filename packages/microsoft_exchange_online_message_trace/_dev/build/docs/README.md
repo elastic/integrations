@@ -9,6 +9,12 @@ datasets for receiving logs over the Microsoft Exchange Online Message Trace API
 
 Logs are either gathered via the rest API or via a logfile.
 
+### Microsoft Exchange Online Message Trace API
+
+The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
+
+[Log Documentation](https://docs.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15))
+
 ### Logfile collection
 
 The following sample Powershell script may be used to get the logs and put them into a JSON file that can then be
@@ -68,19 +74,13 @@ if (Test-Path $output_location)
 }
 foreach ($event in $output)
 {
-    $event.StartDate = [Xml.XmlConvert]::ToString(($event.StartDate),[Xml.XmlDateTimeSerializationMode]::Utc)
-    $event.EndDate = [Xml.XmlConvert]::ToString(($event.EndDate),[Xml.XmlDateTimeSerializationMode]::Utc)
-    $event.Received = [Xml.XmlConvert]::ToString(($event.Received),[Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.StartDate = [Xml.XmlConvert]::ToString(($event.StartDate), [Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.EndDate = [Xml.XmlConvert]::ToString(($event.EndDate), [Xml.XmlDateTimeSerializationMode]::Utc)
+    $event.Received = [Xml.XmlConvert]::ToString(($event.Received), [Xml.XmlDateTimeSerializationMode]::Utc)
     $event = $event | ConvertTo-Json -Compress
     Add-Content $output_location $event -Encoding UTF8
 }
 ```
-
-### Microsoft Exchange Online Message Trace API
-
-The `log` dataset collects the Microsoft Exchange Online Message Trace logs.
-
-[Log Documentation](https://docs.microsoft.com/en-us/previous-versions/office/developer/o365-enterprise-developers/jj984335(v=office.15))
 
 {{event "log"}}
 
