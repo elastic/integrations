@@ -23,7 +23,7 @@ In this example script the look back would be 24 hours, so the interval would ne
 According to the
 [documentation](https://learn.microsoft.com/en-us/powershell/module/exchange/get-messagetrace?view=exchange-ps)
 it is only possible to get up to 1k pages.
-If this should be an issue, try reducing the "$looback" or increasing "$pageSize"
+If this should be an issue, try reducing the `$looback` or increasing `$pageSize`.
 
 ```powershell
 # Username and Password
