@@ -2,15 +2,10 @@
 description: Pipeline for Lyve Cloud audit logs
 
 processors:
-  - set:
-      field: ecs.version
-      value: '8.5.0'
   - json:
-      field: message
+      field: event.original
       target_field: lyve_cloud.audit
-  - rename:
-      field: "message"
-      target_field: "event.original"
+
   - rename:
       field: lyve_cloud.audit.serviceAccountName
       target_field: user.name
@@ -59,46 +54,102 @@ processors:
   - convert: 
       field: lyve_cloud.audit.auditEntry.api.timeToFirstByte      
       type: long
-      ignore_missing: True
   - convert: 
       field: lyve_cloud.audit.auditEntry.api.timeToResponse    
       type: long
+      
   - remove:
       field: lyve_cloud.audit.auditEntry.deploymentid
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.requestHeader.Authorization
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.requestHeader.X-Amz-Content-Sha256
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.requestHeader.X-Amz-Date
-  - remove:
-      field: lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-For
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-Proto
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.requestID
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.requestQuery
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.responseHeader.Content-Security-Policy
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.responseHeader.ETag
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.responseHeader.X-Amz-Request-Id            
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.responseHeader.X-Xss-Protection
+      ignore_missing: True
   - remove:
       field: lyve_cloud.audit.auditEntry.responseHeader.Vary
+      ignore_missing: True
   - convert: 
       field: lyve_cloud.audit.auditEntry.responseHeader.Content-Length      
       type: long
+      ignore_missing: True
+  - convert: 
+      field: lyve_cloud.audit.auditEntry.requestHeader.Content-Length      
+      type: long
+      ignore_missing: True
+  - rename:
+      field: lyve_cloud.audit.auditEntry.requestHeader.Content-Length
+      target_field: http.request.body.bytes
+      ignore_missing: True
+
   - rename:
       field: lyve_cloud.audit.auditEntry.responseHeader.Content-Length
-      target_field: http.request.body.bytes
+      target_field: http.response.body.bytes
+      ignore_missing: True
 
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.Content-Length    
+      ignore_missing: True
+
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.Content-Length    
+      ignore_missing: True
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.Accept-Encoding   
+      ignore_missing: True
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.Amz-Sdk-Request   
+      ignore_missing: True
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.Amz-Sdk-Invocation-Id   
+      ignore_missing: True
   - rename: 
       field: lyve_cloud.audit.auditEntry.responseHeader.Content-Type 
       target_field: http.response.mime_type
+      ignore_missing: True
+  - remove:
+      field: lyve_cloud.audit.auditEntry.responseHeader.Date   
+      ignore_missing: True
+  - remove:
+      field: lyve_cloud.audit.auditEntry.requestHeader.Content-Md5   
+      ignore_missing: True    
+  - rename: 
+      field: user_agent.os.name 
+      target_field: os.name
+      ignore_missing: True 
+     
+  - remove:
+      field: user_agent.os.name   
+      ignore_missing: True
+  - remove:
+      field: user_agent.os   
+      ignore_missing: True      
+
       
 on_failure:
     - set:
