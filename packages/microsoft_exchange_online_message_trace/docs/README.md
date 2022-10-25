@@ -88,8 +88,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-10-21T17:25:36.969376Z",
     "agent": {
-        "ephemeral_id": "eabac51a-5868-445a-9c7a-0be7392189ff",
-        "id": "9d6cfd22-6b12-4f14-85ea-15a76c1ce643",
+        "ephemeral_id": "7c8258bc-53d8-45ac-bc2c-6a83f7bc1d6a",
+        "id": "cd07ec79-0ae7-42e1-8b75-c2d503c19ff3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.0.0"
@@ -105,10 +105,10 @@ An example event for `log` looks as following:
         "top_level_domain": "com"
     },
     "ecs": {
-        "version": "8.3.1"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "9d6cfd22-6b12-4f14-85ea-15a76c1ce643",
+        "id": "cd07ec79-0ae7-42e1-8b75-c2d503c19ff3",
         "snapshot": false,
         "version": "8.0.0"
     },
@@ -134,7 +134,7 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "dataset": "microsoft_exchange_online_message_trace.log",
         "end": "2022-10-22T09:40:10.000Z",
-        "ingested": "2022-10-24T07:40:30Z",
+        "ingested": "2022-10-25T07:18:19Z",
         "original": "{\"Organization\":\"contoso.com\",\"MessageId\":\"\\u003cGVAP278MB037586A65EF1FB2F844B0258DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\\u003e\",\"Received\":\"2022-10-21T17:25:36.969376Z\",\"SenderAddress\":\"noreply@azure.microsoft.com\",\"RecipientAddress\":\"linus@contoso.com\",\"Subject\":\"testmail 2\",\"Status\":\"Delivered\",\"ToIP\":null,\"FromIP\":\"40.107.23.54\",\"Size\":22761,\"MessageTraceId\":\"a5e6dc0f-23df-4b20-d240-08dab38944a1\",\"StartDate\":\"2022-10-21T09:40:10Z\",\"EndDate\":\"2022-10-22T09:40:10Z\",\"Index\":0}",
         "outcome": "Delivered"
     },
