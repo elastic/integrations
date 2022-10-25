@@ -134,13 +134,10 @@ processors:
       field: "source.domain"
       target_field: "source"
   # Calculation of mail Direction
-  - set:
-      field: _conf.local_domains
-      value: "contoso.com"
-      override: false
   - script:
       lang: painless
       description: Script to extract the direction of a mailflow
+      if: ctx._conf?.local_domains != null
       source: |
         if (!(ctx._conf.local_domains instanceof List)) {ctx._conf.local_domains = [ctx._conf.local_domains]}
         def destination_internal = 0;
