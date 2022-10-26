@@ -62,10 +62,10 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-26T17:25:57.000Z",
+    "@timestamp": "2022-10-26T18:39:01.000Z",
     "_tmp": {},
     "agent": {
-        "ephemeral_id": "2b425061-bc95-4135-8ceb-28ba14b0b37d",
+        "ephemeral_id": "d4e18027-e562-4c93-8b53-bf85c4e8540c",
         "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -89,9 +89,9 @@ An example event for `access` looks as following:
         "category": [
             "web"
         ],
-        "created": "2022-10-26T17:26:15.831Z",
+        "created": "2022-10-26T18:39:21.041Z",
         "dataset": "nginx.access",
-        "ingested": "2022-10-26T17:26:16Z",
+        "ingested": "2022-10-26T18:39:22Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "+00:00",
@@ -276,9 +276,9 @@ An example event for `error` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-26T17:26:40.000Z",
+    "@timestamp": "2022-10-26T18:39:46.000Z",
     "agent": {
-        "ephemeral_id": "29a00e96-2167-471e-ab9f-a0b019ddc2db",
+        "ephemeral_id": "480e8970-2778-4baf-8733-e1a0ab46e925",
         "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -302,9 +302,9 @@ An example event for `error` looks as following:
         "category": [
             "web"
         ],
-        "created": "2022-10-26T17:26:58.434Z",
+        "created": "2022-10-26T18:40:04.154Z",
         "dataset": "nginx.error",
-        "ingested": "2022-10-26T17:27:04Z",
+        "ingested": "2022-10-26T18:40:10Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": [
@@ -403,6 +403,7 @@ An example event for `error` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
 | http.request.referrer | Referrer for this HTTP request. | keyword |
+| http.version | HTTP version. | keyword |
 | input.type | Input type | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
@@ -442,9 +443,9 @@ An example event for `stubstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-26T17:27:47.155Z",
+    "@timestamp": "2022-10-26T18:40:48.688Z",
     "agent": {
-        "ephemeral_id": "e795a830-6593-4632-aaf3-42d438af43c3",
+        "ephemeral_id": "836e732d-ecba-4731-bd55-25950725174b",
         "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -466,8 +467,8 @@ An example event for `stubstatus` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "nginx.stubstatus",
-        "duration": 1642982,
-        "ingested": "2022-10-26T17:27:48Z",
+        "duration": 1023546,
+        "ingested": "2022-10-26T18:40:49Z",
         "module": "nginx"
     },
     "host": {
@@ -497,14 +498,14 @@ An example event for `stubstatus` looks as following:
     },
     "nginx": {
         "stubstatus": {
-            "accepts": 18,
+            "accepts": 16,
             "active": 1,
-            "current": 18,
+            "current": 16,
             "dropped": 0,
-            "handled": 18,
+            "handled": 16,
             "hostname": "elastic-package-service-nginx-1:80",
             "reading": 0,
-            "requests": 18,
+            "requests": 16,
             "waiting": 0,
             "writing": 1
         }
