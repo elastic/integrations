@@ -62,14 +62,14 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:18:38.000Z",
+    "@timestamp": "2022-10-26T17:25:57.000Z",
     "_tmp": {},
     "agent": {
-        "ephemeral_id": "4056dd2e-500d-40c2-8e0d-353f6c75d828",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "2b425061-bc95-4135-8ceb-28ba14b0b37d",
+        "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "nginx.access",
@@ -80,18 +80,18 @@ An example event for `access` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-01-12T03:19:08.403Z",
+        "created": "2022-10-26T17:26:15.831Z",
         "dataset": "nginx.access",
-        "ingested": "2022-01-12T03:19:09Z",
+        "ingested": "2022-10-26T17:26:16Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "+00:00",
@@ -103,22 +103,21 @@ An example event for `access` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.4"
+            "172.28.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02:42:ac:1c:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.102.1-microsoft-standard-WSL2",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "http": {
@@ -277,13 +276,13 @@ An example event for `error` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:19:41.000Z",
+    "@timestamp": "2022-10-26T17:26:40.000Z",
     "agent": {
-        "ephemeral_id": "49a8eb72-7a5e-4584-821f-b26b95b52624",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "29a00e96-2167-471e-ab9f-a0b019ddc2db",
+        "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "nginx.error",
@@ -294,18 +293,18 @@ An example event for `error` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "web"
         ],
-        "created": "2022-01-12T03:20:00.439Z",
+        "created": "2022-10-26T17:26:58.434Z",
         "dataset": "nginx.error",
-        "ingested": "2022-01-12T03:20:06Z",
+        "ingested": "2022-10-26T17:27:04Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": [
@@ -316,22 +315,21 @@ An example event for `error` looks as following:
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.4"
+            "172.28.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02:42:ac:1c:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.102.1-microsoft-standard-WSL2",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -365,6 +363,7 @@ An example event for `error` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -402,6 +401,8 @@ An example event for `error` looks as following:
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| http.request.method | HTTP request method. The value should retain its casing from the original event. For example, `GET`, `get`, and `GeT` are all considered valid values for this field. | keyword |
+| http.request.referrer | Referrer for this HTTP request. | keyword |
 | input.type | Input type | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
@@ -410,7 +411,9 @@ An example event for `error` looks as following:
 | nginx.error.connection_id | Connection identifier. | long |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
+| server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| url.path | Path of the request, such as "/search". | wildcard |
 
 
 ## Metrics reference
@@ -439,13 +442,13 @@ An example event for `stubstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-12T03:20:44.909Z",
+    "@timestamp": "2022-10-26T17:27:47.155Z",
     "agent": {
-        "ephemeral_id": "8f176291-ce69-4319-bca2-af6b2dde74c5",
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "ephemeral_id": "e795a830-6593-4632-aaf3-42d438af43c3",
+        "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "nginx.stubstatus",
@@ -453,40 +456,39 @@ An example event for `stubstatus` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "1.12.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "9878d192-22ad-49b6-a6c2-9959b0815d04",
+        "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nginx.stubstatus",
-        "duration": 1633671,
-        "ingested": "2022-01-12T03:20:46Z",
+        "duration": 1642982,
+        "ingested": "2022-10-26T17:27:48Z",
         "module": "nginx"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
         "ip": [
-            "172.18.0.4"
+            "172.28.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02:42:ac:1c:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-44-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.102.1-microsoft-standard-WSL2",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "metricset": {
