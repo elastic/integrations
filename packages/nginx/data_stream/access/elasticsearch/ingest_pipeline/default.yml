@@ -18,10 +18,10 @@ processors:
   - grok:
       field: event.original
       patterns:
-      - (%{NGINX_HOST} )?"?(?:%{NGINX_ADDRESS_LIST:nginx.access.remote_ip_list}|%{NOTSPACE:source.address})
-        - (-|%{DATA:user.name}) \[%{HTTPDATE:nginx.access.time}\] "%{DATA:nginx.access.info}"
-        %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.bytes:long}
-        "(-|%{DATA:http.request.referrer})" "(-|%{DATA:user_agent.original})"
+        - (%{NGINX_HOST} )?"?(?:%{NGINX_ADDRESS_LIST:nginx.access.remote_ip_list}|%{NOTSPACE:source.address})
+          - (-|%{DATA:user.name}) \[%{HTTPDATE:nginx.access.time}\] "%{DATA:nginx.access.info}"
+          %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.bytes:long}
+          "(-|%{DATA:http.request.referrer})" "(-|%{DATA:user_agent.original})"
       pattern_definitions:
         NGINX_HOST: (?:%{IP:destination.ip}|%{NGINX_NOTSEPARATOR:destination.domain})(:%{NUMBER:destination.port})?
         NGINX_NOTSEPARATOR: "[^\t ,:]+"
@@ -30,8 +30,8 @@ processors:
   - grok:
       field: nginx.access.info
       patterns:
-      - '%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}'
-      - ""
+        - "(to: %{IP}:%{INT}:\"\\s\")?%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}"
+        - ""
       ignore_missing: true
   - uri_parts:
       field: _tmp.url_orig
@@ -40,11 +40,11 @@ processors:
       field: url.domain
       value: "{{destination.domain}}"
       if: ctx.url?.domain == null && ctx.destination?.domain != null
-  - remove:
-      field:
-        - nginx.access.info
-        - _tmp.url_orig
-      ignore_missing: true
+  #- remove:
+  #    field:
+  #      - nginx.access.info
+  #      - _tmp.url_orig
+  #    ignore_missing: true
   - split:
       field: nginx.access.remote_ip_list
       separator: '"?,?\s+'
@@ -112,7 +112,7 @@ processors:
   - grok:
       field: source.address
       patterns:
-      - ^%{IP:source.ip}$
+        - ^%{IP:source.ip}$
       ignore_failure: true
   - remove:
       field: event.created
@@ -129,11 +129,11 @@ processors:
       field: nginx.access.time
       target_field: '@timestamp'
       formats:
-      - dd/MMM/yyyy:H:m:s Z
+        - dd/MMM/yyyy:H:m:s Z
       on_failure:
-      - append:
-          field: error.message
-          value: '{{ _ingest.on_failure_message }}'
+        - append:
+            field: error.message
+            value: '{{ _ingest.on_failure_message }}'
   - remove:
       field: nginx.access.time
   - user_agent:
@@ -148,8 +148,8 @@ processors:
       field: source.ip
       target_field: source.as
       properties:
-      - asn
-      - organization_name
+        - asn
+        - organization_name
       ignore_missing: true
   - rename:
       field: source.as.asn
@@ -175,7 +175,7 @@ processors:
   - set:
       field: event.outcome
       value: failure
-      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"      
+      if: "ctx?.http?.response?.status_code != null && ctx.http.response.status_code >= 400"
   - append:
       field: related.ip
       value: "{{source.ip}}"
