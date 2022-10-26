@@ -1,17 +1,17 @@
 ---
 description: Pipeline for parsing Infoblox NIOS Audit logs.
 processors:
-  - grok: 
+  - grok:
       field: message
-      if: ctx.message.contains("Created") || ctx.message.contains("Modified") || ctx.message.contains("Deleted")
-      patterns: 
+      if: ctx.message.contains('Created') || ctx.message.contains('Modified') || ctx.message.contains('Deleted')
+      patterns:
         - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{DATA:infoblox_nios.log.audit.object.name} %{DATA:infoblox_nios.log.audit.object.value}:? %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.audit.message}$"
-  - grok: 
+  - grok:
       field: message
-      if: ctx.message.contains("Called") 
-      patterns: 
+      if: ctx.message.contains('Called')
+      patterns:
         - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - %{WORD:infoblox_nios.log.audit.object.name}:? %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:timestamp} \\[%{DATA:user.name}\\]: %{DATA:event.action} - %{GREEDYDATA:infoblox_nios.log.audit.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.audit.message}$"
@@ -25,11 +25,17 @@ processors:
         - "^%{GREEDYDATA:infoblox_nios.log.audit.message}$"
   - date:
       field: timestamp
-      target_field: '@timestamp'
+      if: ctx.timestamp != null
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSS'Z'
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - kv:
       field: details
       target_field: audit
@@ -42,37 +48,37 @@ processors:
       ignore_failure: true
   - set:
       field: event.outcome
-      if: ctx.event?.action == "login_allowed"
+      if: ctx.event?.action == 'login_allowed'
       value: 'success'
       ignore_failure: true
   - append:
       field: event.type
-      if: ctx.event?.action == "login_allowed"
+      if: ctx.event?.action == 'login_allowed'
       value: 'start'
       ignore_failure: true
   - append:
       field: event.category
-      if: ctx.event?.action == "login_allowed"
+      if: ctx.event?.action == 'login_allowed'
       value: 'authentication'
       ignore_failure: true
   - set:
       field: event.outcome
-      if: ctx.event?.action == "login_denied"
+      if: ctx.event?.action == 'login_denied'
       value: 'failure'
       ignore_failure: true
   - append:
       field: event.category
-      if: ctx.event?.action == "login_denied"
+      if: ctx.event?.action == 'login_denied'
       value: 'authentication'
       ignore_failure: true
   - append:
       field: event.type
-      if: ctx.event?.action == "logout"
+      if: ctx.event?.action == 'logout'
       value: 'end'
       ignore_failure: true
   - append:
       field: event.category
-      if: ctx.event?.action == "logout"
+      if: ctx.event?.action == 'logout'
       value: 'authentication'
       ignore_failure: true
   - script:
@@ -81,21 +87,33 @@ processors:
       if: ctx.audit != null
       source: |
         if (ctx.infoblox_nios == null) {
-          ctx["infoblox_nios"] = new HashMap();
+          ctx['infoblox_nios'] = new HashMap();
         }
         if (ctx.infoblox_nios?.log == null) {
-          ctx.infoblox_nios["log"] = new HashMap();
+          ctx.infoblox_nios['log'] = new HashMap();
         }
         if (ctx.infoblox_nios?.log?.audit == null) {
-          ctx.infoblox_nios.log["audit"] = new HashMap();
+          ctx.infoblox_nios.log['audit'] = new HashMap();
         }
         for (Map.Entry m : ctx.audit.entrySet()) {
           def value = m.getValue();
           if (value instanceof String) {
-            value = value.replace("\\040", " ")
+            value = value.replace('\\040', ' ')
           }
           ctx.infoblox_nios.log.audit[m.getKey()] = value;
         }
+  - convert:
+      field: infoblox_nios.log.audit.ip
+      if: ctx.infoblox_nios?.log?.audit?.ip != null && ctx.infoblox_nios.log.audit.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: infoblox_nios.log.audit.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{infoblox_nios.log.audit.ip}}}'

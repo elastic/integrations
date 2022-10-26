@@ -17,51 +17,75 @@ processors:
   - rename:
       field: _conf.tz_offset
       target_field: event.timezone
-      if: "ctx?._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'"
+      if: ctx?._conf?.tz_offset != null && ctx._conf.tz_offset != 'local'
       ignore_missing: true
       ignore_failure: true
   - date:
       field: event.created
+      timezone: '{{{event.timezone}}}'
+      if: ctx.event?.timezone != null
       target_field: event.created
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
         - MMM d HH:mm:ss
         - dd-MMM-yyyy HH:mm:ss.SSS
-      ignore_failure: true
-      timezone: "{{{event.timezone}}}"
-      if: ctx.event?.timezone != null   
+      on_failure:
+        - remove:
+            field: event.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: event.created
+      if: ctx.event?.timezone == null
       target_field: event.created
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
         - MMM d HH:mm:ss
         - dd-MMM-yyyy HH:mm:ss.SSS
-      ignore_failure: true
-      if: ctx.event?.timezone == null
+      on_failure:
+        - remove:
+            field: event.created
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: infoblox_nios.log.type
       value: 'DHCP'
-      if: ctx.infoblox_nios?.log?.service_name == "dhcpd" || ctx.infoblox_nios?.log?.service_name == "dhcpdv6"
+      if: ctx.infoblox_nios?.log?.service_name == 'dhcpd' || ctx.infoblox_nios?.log?.service_name == 'dhcpdv6'
   - set:
       field: infoblox_nios.log.type
       value: 'DNS'
-      if: ctx.infoblox_nios?.log?.service_name == "named"
+      if: ctx.infoblox_nios?.log?.service_name == 'named'
   - set:
       field: infoblox_nios.log.type
       value: 'AUDIT'
-      if: ctx.infoblox_nios?.log?.service_name == "httpd"
+      if: ctx.infoblox_nios?.log?.service_name == 'httpd'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_audit" }}'
-      if: ctx.infoblox_nios?.log?.type == "AUDIT"
+      if: ctx.infoblox_nios?.log?.type == 'AUDIT'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dhcp" }}'
-      if: ctx.infoblox_nios?.log?.type == "DHCP"
+      if: ctx.infoblox_nios?.log?.type == 'DHCP'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_dns" }}'
-      if: ctx.infoblox_nios?.log?.type == "DNS"
+      if: ctx.infoblox_nios?.log?.type == 'DNS'
+  - convert:
+      field: host.ip
+      if: ctx.host?.ip != null && ctx.host.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: host.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
@@ -89,7 +113,7 @@ processors:
       lang: painless
       source: |
         boolean drop(Object o) {
-          if (o == null || o == "") {
+          if (o == null || o == '') {
             return true;
           } else if (o instanceof Map) {
             ((Map) o).values().removeIf(v -> drop(v));
@@ -103,7 +127,7 @@ processors:
         drop(ctx);
   - remove:
       field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
   - remove:
@@ -111,6 +135,6 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
-      field: error.message
-      value: '{{{_ingest.on_failure_message}}}'
+- append:
+    field: error.message
+    value: '{{{_ingest.on_failure_message}}}'
