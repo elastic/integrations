@@ -8,7 +8,7 @@ If the Kibana instance is using a basepath in its URL, you must set the `basepat
 
 ## Compatibility
 
-The `kibana` package works with Kibana 6.7.0 and later.
+The `kibana` package works with Kibana 8.5.0 and later.
 
 ## Usage for Stack Monitoring
 

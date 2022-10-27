@@ -149,9 +149,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2011-10-19T12:43:47.375Z",
     "agent": {
-        "ephemeral_id": "5181186c-7367-49da-8ad7-8120c441b527",
+        "ephemeral_id": "61822d4c-36b4-4e1d-bd4e-afeb755b0eb1",
         "hostname": "docker-fleet-agent",
-        "id": "9f26844a-9c52-4403-b9e6-9312b9761765",
+        "id": "04f35ceb-6ead-42c2-b472-fc88900de7db",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -165,7 +165,7 @@ An example event for `log` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "9f26844a-9c52-4403-b9e6-9312b9761765",
+        "id": "04f35ceb-6ead-42c2-b472-fc88900de7db",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -174,7 +174,8 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "created": "2022-03-22T14:26:54.000Z",
         "dataset": "infoblox_nios.log",
-        "ingested": "2022-08-08T11:02:32Z"
+        "ingested": "2022-10-21T10:14:01Z",
+        "original": "\u003c29\u003eMar 22 14:26:54 10.0.0.1 httpd: 2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login"
     },
     "host": {
         "ip": "10.0.0.1"
@@ -193,11 +194,11 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "tcp"
+        "type": "udp"
     },
     "log": {
         "source": {
-            "address": "192.168.192.7:57184"
+            "address": "192.168.64.5:58709"
         },
         "syslog": {
             "priority": 29
@@ -214,6 +215,7 @@ An example event for `log` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "infoblox_nios-log"
     ],
