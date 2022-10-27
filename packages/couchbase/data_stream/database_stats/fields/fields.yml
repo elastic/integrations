@@ -1,0 +1,43 @@
+- name: couchbase
+  type: group
+  fields:
+    - name: database_stats
+      type: group
+      fields:
+        - name: database.name
+          type: keyword
+          description: The database for which the data is being extracted.
+        - name: dcp.received.time
+          type: long
+          description: The time between a document write and that document being received by Sync Gateway over DCP.
+          metric_type: gauge
+          unit: s
+        - name: document
+          type: group
+          fields:
+            - name: reads
+              type: group
+              fields:
+                - name: blip
+                  type: long
+                  description: The total number of documents read via Couchbase Lite 2.x replication since Sync Gateway node startup.
+                  metric_type: counter
+                - name: rest
+                  type: long
+                  description: The total number of documents read via the REST API since Sync Gateway node startup.
+                  metric_type: counter
+            - name: writes
+              type: long
+              description: The total number of documents written by any means (replication, rest API interaction or imports) since Sync Gateway node startup.
+              metric_type: counter
+        - name: replications
+          type: group
+          fields:
+            - name: active
+              type: long
+              description: The total number of active replications.
+              metric_type: gauge
+            - name: total
+              type: long
+              description: The total number of replications created since Sync Gateway node startup.
+              metric_type: counter
