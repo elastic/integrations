@@ -62,10 +62,10 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-26T18:39:01.000Z",
+    "@timestamp": "2022-10-27T14:57:20.000Z",
     "_tmp": {},
     "agent": {
-        "ephemeral_id": "d4e18027-e562-4c93-8b53-bf85c4e8540c",
+        "ephemeral_id": "efedba9e-50d0-44f6-b6c1-207c4f47edf1",
         "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -89,9 +89,9 @@ An example event for `access` looks as following:
         "category": [
             "web"
         ],
-        "created": "2022-10-26T18:39:21.041Z",
+        "created": "2022-10-27T14:57:36.574Z",
         "dataset": "nginx.access",
-        "ingested": "2022-10-26T18:39:22Z",
+        "ingested": "2022-10-27T14:57:37Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "+00:00",
@@ -276,9 +276,9 @@ An example event for `error` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-26T18:39:46.000Z",
+    "@timestamp": "2022-10-27T14:58:03.000Z",
     "agent": {
-        "ephemeral_id": "480e8970-2778-4baf-8733-e1a0ab46e925",
+        "ephemeral_id": "5627b3aa-5e0c-4216-9aeb-8e2f47b6d460",
         "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -302,9 +302,9 @@ An example event for `error` looks as following:
         "category": [
             "web"
         ],
-        "created": "2022-10-26T18:40:04.154Z",
+        "created": "2022-10-27T14:58:20.831Z",
         "dataset": "nginx.error",
-        "ingested": "2022-10-26T18:40:10Z",
+        "ingested": "2022-10-27T14:58:26Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": [
@@ -380,6 +380,9 @@ An example event for `error` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
+| destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.created | Date/time when the event was first read by an agent, or by your pipeline. | date |
 | event.dataset | Event dataset | constant_keyword |
@@ -443,9 +446,9 @@ An example event for `stubstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-26T18:40:48.688Z",
+    "@timestamp": "2022-10-27T14:59:07.419Z",
     "agent": {
-        "ephemeral_id": "836e732d-ecba-4731-bd55-25950725174b",
+        "ephemeral_id": "4117bae5-cf67-43ba-abff-c4b9f53fbcbb",
         "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -467,8 +470,8 @@ An example event for `stubstatus` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "nginx.stubstatus",
-        "duration": 1023546,
-        "ingested": "2022-10-26T18:40:49Z",
+        "duration": 1078191,
+        "ingested": "2022-10-27T14:59:08Z",
         "module": "nginx"
     },
     "host": {
@@ -498,14 +501,14 @@ An example event for `stubstatus` looks as following:
     },
     "nginx": {
         "stubstatus": {
-            "accepts": 16,
+            "accepts": 17,
             "active": 1,
-            "current": 16,
+            "current": 17,
             "dropped": 0,
-            "handled": 16,
+            "handled": 17,
             "hostname": "elastic-package-service-nginx-1:80",
             "reading": 0,
-            "requests": 16,
+            "requests": 17,
             "waiting": 0,
             "writing": 1
         }
