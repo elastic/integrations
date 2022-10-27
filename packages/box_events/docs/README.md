@@ -61,7 +61,7 @@ The Elastic Integration for Box Events connects using OAuth 2.0 to interact with
   2. Click on `Create new App`
   3. Click on `Custom App`
   4. Select `Server Authentication (Client Credentials Grant)`
-  5. Provide a App name, for example `elastic-box-integration`
+  5. Provide an App name, for example `elastic-box-integration`
   6. Click on `Create App` 
   7. When your App has been created, scroll down and under `App Access Level` select `App + Enterprise Access`
   8. Scroll down to `Application Scopes` and under `Administrative Actions` select 
