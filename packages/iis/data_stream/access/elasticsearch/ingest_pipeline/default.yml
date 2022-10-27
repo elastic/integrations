@@ -77,10 +77,6 @@ processors:
       field: url.domain
       value: "{{destination.domain}}"
       if: ctx.url?.domain == null && ctx.destination?.domain != null
-  - remove:
-      field:
-        - _temp_
-      ignore_missing: true
   - rename:
       field: '@timestamp'
       target_field: event.created
@@ -97,9 +93,10 @@ processors:
       source: ctx.event.duration = Math.round(ctx._temp_.duration * params.scale)
       params:
           scale: 1000000
-      if: ctx.temp?.duration != null
+      if: ctx._temp_?.duration != null
   - remove:
-      field: _temp_.duration
+      field:
+        - _temp_
       ignore_missing: true
   - urldecode:
       field: user_agent.original
