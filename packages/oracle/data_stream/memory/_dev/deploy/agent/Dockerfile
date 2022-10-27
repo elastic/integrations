@@ -11,4 +11,5 @@ RUN echo /opt/oracle/instantclient_21_4 > /etc/ld.so.conf.d/oracle-instantclient
 RUN cp /opt/oracle/instantclient_21_7/glogin.sql /opt/oracle/instantclient_21_7/libsqlplus.so /opt/oracle/instantclient_21_7/libsqlplusic.so /opt/oracle/instantclient_21_7/sqlplus /opt/oracle/instantclient_21_4/
 RUN export LD_LIBRARY_PATH=/opt/oracle/instantclient_21_4:$LD_LIBRARY_PATH  && export PATH=/opt/oracle/instantclient_21_7:$PATH
 ENV LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:/opt/oracle/instantclient_21_4"
-ENV PATH "${PATH}:/opt/oracle/instantclient_21_7"
+ENV PATH "${PATH}:/opt/oracle/instantclient_21_4"
+WORKDIR /opt/oracle/instantclient_21_4
