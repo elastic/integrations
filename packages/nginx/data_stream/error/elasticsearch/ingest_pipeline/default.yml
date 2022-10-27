@@ -32,9 +32,10 @@ processors:
       description: Extract Client Information
       patterns:
         - '(?<_temp_.kv>client.*)'
+  # Remove unnecessary stuff from the kv field
   - gsub:
         field: "_temp_.kv"
-        pattern: "\""
+        pattern: "\"|\\[|\\]"
         replacement: ""
         ignore_missing: true
         if: ctx._temp_?.kv != null
@@ -71,7 +72,16 @@ processors:
           field: "_temp_.referrer"
           target_field: "http.request.referrer"
           ignore_missing: true
-
+  - grok:
+      field: "_temp_.host"
+      ignore_missing: true
+      ignore_failure: true
+      description: Extract destination Server Information
+      patterns:
+        - "%{IP:destination.ip}:%{NUMBER:destination.port:long}"
+        - "%{HOSTNAME:destination.domain}:%{NUMBER:destination.port:long}"
+        - "%{IP:destination.ip}"
+        - "%{HOSTNAME:destination.domain}"
   - remove:
       field: event.created
       ignore_missing: true

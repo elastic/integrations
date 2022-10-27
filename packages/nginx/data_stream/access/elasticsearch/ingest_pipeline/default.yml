@@ -30,7 +30,8 @@ processors:
   - grok:
       field: nginx.access.info
       patterns:
-        - "(to: %{IP}:%{INT}:\"\\s\")?%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}"
+        - "(to: %{IP:destination.ip}:%{INT:destination.port}:\"\\s\")?%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}"
+        - "(to: %{HOSTNAME:destination.domain}:%{INT:destination.port}:\"\\s\")?%{WORD:http.request.method} %{DATA:_tmp.url_orig} HTTP/%{NUMBER:http.version}"
         - ""
       ignore_missing: true
   - uri_parts:
