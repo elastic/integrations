@@ -11,8 +11,7 @@ See: [SQL Server Audit page](https://docs.microsoft.com/en-us/sql/relational-dat
 
 ## Named Instance
 
-Microsoft SQL Server has a feature that allows running multiple databases on the same host (or clustered hosts) with separate settings. Edit the instance port and provide the named instance port to connect to the named instance and collect metrics.
-See: [Instruction on how to configure server to listen Named Instance port](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/configure-a-server-to-listen-on-a-specific-tcp-port?view=sql-server-ver15)
+Microsoft SQL Server has a feature that allows running multiple databases on the same host (or clustered hosts) with separate settings. Establish named instance connection by using the instance name along with the host name (Ex: `host/instance_name` or `host:named_instance_port`) to collect metrics.
 
 ## Compatibility
 
