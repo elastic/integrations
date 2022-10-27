@@ -4,7 +4,13 @@ This integration periodically fetches logs and metrics from [HAProxy](https://ww
 
 ## Compatibility
 
-The `log` dataset was tested with logs from HAProxy 1.8, 1.9 and 2.0 running on a Debian. It is not available on Windows.
+The `log` dataset was tested with logs from HAProxy 1.8, 1.9 and 2.0, 2.6 running on a Debian. It is not available on Windows. 
+The integration supports the default log patterns below:
+* [Default log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.1)
+* [TCP log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.2)
+* [HTTP log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.3)
+* [HTTPS log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.4)
+* [Error log format](https://cbonte.github.io/haproxy-dconv/2.6/configuration.html#8.2.5)
 
 The `info` and `stat` datasets were tested with tested with HAProxy versions from 1.6, 1.7, 1.8 to 2.0. 
 
