@@ -161,6 +161,7 @@ make sure to grant the following permissions:
 
 JSON object of an IAM Policy with the permissions above: 
 
+```json
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -191,7 +192,7 @@ JSON object of an IAM Policy with the permissions above:
         }
     ]
 }
-
+```
 
 ## Leader election
 
