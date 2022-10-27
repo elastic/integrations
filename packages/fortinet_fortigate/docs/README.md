@@ -266,6 +266,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.attackcontextid | Attack context id / total | keyword |
 | fortinet.firewall.attackid | Attack ID | integer |
 | fortinet.firewall.auditid | Audit ID | long |
+| fortinet.firewall.auditreporttype | The audit report type | keyword |
 | fortinet.firewall.auditscore | The Audit Score | keyword |
 | fortinet.firewall.audittime | The time of the audit | long |
 | fortinet.firewall.authgrp | Authorization Group | keyword |
