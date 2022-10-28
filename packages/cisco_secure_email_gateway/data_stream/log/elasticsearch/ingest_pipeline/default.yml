@@ -4,15 +4,15 @@ processors:
   - set:
       field: ecs.version
       value: '8.4.0'
-  - set:
-      field: _tmp.filepath
-      value: "{{{log.file.path}}}"
-      if: ctx?.log?.file?.path != null
   - grok:
-      field: _tmp.filepath
-      if: ctx?.log?.file?.path != null
+      field: log.file.path
+      if: ctx.log?.file?.path != null
       patterns:
-        - "^%{DATA}/%{WORD:cisco_secure_email_gateway.log.category.name}.@%{GREEDYDATA}.s"
+        - "^%{DATA}/%{WORD:cisco_secure_email_gateway.log.category.name}\\.@%{GREEDYDATA}\\.s"
+      on_failure:
+        - append:
+            field: error.message
+            value: "log filepath does not match required glob pattern '<category>.@*.s': '{{{log.file.path}}}'"
   - rename:
       field: message
       target_field: event.original
@@ -97,7 +97,7 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-- set:
+- append:
     field: error.message
     value: "{{{ _ingest.on_failure_message }}}"
     
