@@ -62,10 +62,10 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-27T14:57:20.000Z",
+    "@timestamp": "2022-10-28T10:52:42.000Z",
     "_tmp": {},
     "agent": {
-        "ephemeral_id": "efedba9e-50d0-44f6-b6c1-207c4f47edf1",
+        "ephemeral_id": "2c2a64a7-15a2-4c90-b73a-b43620909457",
         "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -89,9 +89,9 @@ An example event for `access` looks as following:
         "category": [
             "web"
         ],
-        "created": "2022-10-27T14:57:36.574Z",
+        "created": "2022-10-28T10:53:01.772Z",
         "dataset": "nginx.access",
-        "ingested": "2022-10-27T14:57:37Z",
+        "ingested": "2022-10-28T10:53:02Z",
         "kind": "event",
         "outcome": "success",
         "timezone": "+00:00",
@@ -276,9 +276,9 @@ An example event for `error` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-27T14:58:03.000Z",
+    "@timestamp": "2022-10-28T10:53:22.000Z",
     "agent": {
-        "ephemeral_id": "5627b3aa-5e0c-4216-9aeb-8e2f47b6d460",
+        "ephemeral_id": "825090cb-e101-4cd3-b291-ba141acbd22b",
         "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -302,9 +302,9 @@ An example event for `error` looks as following:
         "category": [
             "web"
         ],
-        "created": "2022-10-27T14:58:20.831Z",
+        "created": "2022-10-28T10:53:41.493Z",
         "dataset": "nginx.error",
-        "ingested": "2022-10-27T14:58:26Z",
+        "ingested": "2022-10-28T10:53:47Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": [
@@ -446,9 +446,9 @@ An example event for `stubstatus` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-27T14:59:07.419Z",
+    "@timestamp": "2022-10-28T10:54:31.845Z",
     "agent": {
-        "ephemeral_id": "4117bae5-cf67-43ba-abff-c4b9f53fbcbb",
+        "ephemeral_id": "99267615-aa40-46b3-93a4-95b5052b2184",
         "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
@@ -470,8 +470,8 @@ An example event for `stubstatus` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "nginx.stubstatus",
-        "duration": 1078191,
-        "ingested": "2022-10-27T14:59:08Z",
+        "duration": 1061383,
+        "ingested": "2022-10-28T10:54:32Z",
         "module": "nginx"
     },
     "host": {
@@ -501,14 +501,14 @@ An example event for `stubstatus` looks as following:
     },
     "nginx": {
         "stubstatus": {
-            "accepts": 17,
+            "accepts": 19,
             "active": 1,
-            "current": 17,
+            "current": 19,
             "dropped": 0,
-            "handled": 17,
+            "handled": 19,
             "hostname": "elastic-package-service-nginx-1:80",
             "reading": 0,
-            "requests": 17,
+            "requests": 19,
             "waiting": 0,
             "writing": 1
         }
