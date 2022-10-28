@@ -1,10 +1,5 @@
 # Developer workflow: release a bug fix for supporting older version of the stack?
 
----
-**NOTE:**
-The method documented here is only valid with Package Storage v1.
----
-
 In some cases, when we drop the support for an older version of the stack and later on find
 out needing to add a bug fix to the old stack version, we have to make some manual changes
 to release the bug fix to users. For example: currently the latest AWS package version is
