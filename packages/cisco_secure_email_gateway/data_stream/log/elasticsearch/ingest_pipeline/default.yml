@@ -10,7 +10,7 @@ processors:
       patterns:
         - "^%{DATA}/%{WORD:cisco_secure_email_gateway.log.category.name}\\.@%{GREEDYDATA}\\.s"
       on_failure:
-        - set:
+        - append:
             field: error.message
             value: "log filepath does not match required glob pattern '<category>.@*.s': '{{{log.file.path}}}'"
   - rename:
@@ -97,7 +97,7 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-- set:
+- append:
     field: error.message
     value: "{{{ _ingest.on_failure_message }}}"
     
