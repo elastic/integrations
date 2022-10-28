@@ -688,37 +688,26 @@ processors:
       description: Prepare intervening objects for subsequent scripts
       lang: painless
       source: |
-        if (ctx.box?.additional_details != null) {
-            if (ctx?.threat == null) {
-                ctx.threat = new HashMap();
-            }
-            // Event _should_ already have been populated by SHIELD_ALERT mapping
-            if (ctx?.event == null) {
-                ctx.event = new HashMap();
-            }
-            if (ctx.event.category == null) {
-                ctx.event.category = new ArrayList();
-            }
-            ctx.event.category.add("threat");
-            if (ctx.event.type == null) {
-                ctx.event.type = new ArrayList();
-            }
-            ctx.event.type.add("indicator");
-            if (ctx.related == null) {
-                ctx.related = new HashMap();
-            }
-            if (ctx.related.ip == null) {
-                ctx.related.ip = new ArrayList();
-            }
-            if (ctx.related.description == null) {
-                ctx.related.description = new ArrayList();
-            }
-            if (ctx.related.location == null) {
-                ctx.related.location = new ArrayList();
-            }
-            if (ctx.related.indicator_type == null) {
-                ctx.related.indicator_type = new ArrayList();
-            }
+        // event.[category|type] _should_ already have been populated by SHIELD_ALERT mapping
+        if (ctx.event?.action.equals("SHIELD_ALERT")) {
+          if (ctx.threat == null) {
+            ctx.threat = new HashMap();
+          }
+          if (ctx.related == null) {
+            ctx.related = new HashMap();
+          }
+          if (ctx.related.ip == null) {
+            ctx.related.ip = new ArrayList();
+          }
+          if (ctx.related.description == null) {
+            ctx.related.description = new ArrayList();
+          }
+          if (ctx.related.location == null) {
+            ctx.related.location = new ArrayList();
+          }
+          if (ctx.related.indicator_type == null) {
+            ctx.related.indicator_type = new ArrayList();
+          }
         }
 #
   - script:
@@ -726,31 +715,31 @@ processors:
       lang: painless
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Suspicious Sessions")) {
-            ctx.event.category.add("network");
-            ctx.event.type.add("access");
-            ctx.event.type.add("connection");
-            if (ctx.threat.enrichments == null) {
-                ctx.threat.enrichments = new ArrayList();
-            }
-            for (session in ctx.box.additional_details?.shield_alert?.alert_summary?.sessions) {
-                if (session.session_type.equals("suspicious")) {
-                    for (activity in session.activities) {
-                        if (ctx.shield_date == null) {
-                            ctx.shield_date = activity.occurred_at;
-                        }
-                        Map indicator = new HashMap();
-                        indicator.indicator = new HashMap();
-                        Map location = new HashMap();
-                        location.put("lon",activity.ip_info.longitude);
-                        location.put("lat",activity.ip_info.latitude);
-                        Map geo = new HashMap();
-                        geo.put("ip",activity.ip_info.ip);
-                        geo.put("location",location);
-                        indicator.indicator.put("geo",geo);
-                        indicator.indicator.put("description",
-                            "IP " + activity.ip_info.ip + " was observed to " +
-                            activity.event_type + " " + activity.item_type + " " +
-                            activity.item_path + "/" + activity.item_name + " by " +
+          ctx.event.category.add("network");
+          ctx.event.type.add("access");
+          ctx.event.type.add("connection");
+          if (ctx.threat.enrichments == null) {
+            ctx.threat.enrichments = new ArrayList();
+          }
+          for (session in ctx.box.additional_details?.shield_alert?.alert_summary?.sessions) {
+            if (session.session_type.equals("suspicious")) {
+              for (activity in session.activities) {
+                if (ctx.shield_date == null) {
+                  ctx.shield_date = activity.occurred_at;
+                }
+                Map indicator = new HashMap();
+                indicator.indicator = new HashMap();
+                Map location = new HashMap();
+                location.put("lon",activity.ip_info.longitude);
+                location.put("lat",activity.ip_info.latitude);
+                Map geo = new HashMap();
+                geo.put("ip",activity.ip_info.ip);
+                geo.put("location",location);
+                indicator.indicator.put("geo",geo);
+                indicator.indicator.put("description",
+                  "IP " + activity.ip_info.ip + " was observed to " +
+                  activity.event_type + " " + activity.item_type + " " +
+                  activity.item_path + "/" + activity.item_name + " by " +
                             activity.service_name);
                         indicator.indicator.put("provider",activity.service_name);
                         indicator.indicator.put("type","user-account");    
