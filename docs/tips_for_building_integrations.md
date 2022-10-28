@@ -29,7 +29,7 @@ $ ./elastic-package help
 
 2. Select one or two categories for the integration.
 
-   The list of available categories is present in the Package Registry source: https://github.com/elastic/package-registry/blob/79e456c86a7a83b1da1f3f5b15d0ca59fdb48337/packages/package.go#L29-L54
+   The list of available categories is present in the Package Registry source: https://github.com/elastic/package-registry/blob/1dd3e7c4956f7e34809bb87acae50b2a63cd7ad0/packages/package.go#L29-L55
 
 3. Make sure that the version condition for Kibana is set to `^7.10.0` and not `>=7.10.0`. Otherwise the package is also in 8.0.0 but we do not know today if it will actually be compatible with >= 8.0.0.
 
