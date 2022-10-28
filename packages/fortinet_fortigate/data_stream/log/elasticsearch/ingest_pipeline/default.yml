@@ -23,6 +23,10 @@ processors:
           facility['code'] = ctx.log.syslog.priority>>3;
           ctx.log.syslog['facility'] = facility;
         }
+  - gsub:
+      field: syslog5424_sd
+      pattern: "\u0000"
+      replacement: ""
   - kv:
       field: syslog5424_sd
       field_split: " (?=[a-z\\_\\-]+=)"
@@ -233,6 +237,14 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "utm" }}'
       if: "ctx.fortinet?.firewall?.type == 'utm' || ctx.fortinet?.firewall?.type == 'dns'"
+  - convert:
+      field: fortinet.firewall.auditid
+      type: long
+      ignore_missing: true
+  - convert:
+      field: fortinet.firewall.audittime
+      type: long
+      ignore_missing: true
   - convert:
       field: fortinet.firewall.quotamax
       type: long
