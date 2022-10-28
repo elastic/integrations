@@ -740,17 +740,17 @@ processors:
                   "IP " + activity.ip_info.ip + " was observed to " +
                   activity.event_type + " " + activity.item_type + " " +
                   activity.item_path + "/" + activity.item_name + " by " +
-                            activity.service_name);
-                        indicator.indicator.put("provider",activity.service_name);
-                        indicator.indicator.put("type","user-account");    
-                        ctx.threat.enrichments.add(indicator);
-                        ctx.related.ip.add(geo.ip);
-                        ctx.related.location.add(geo.location);
-                        ctx.related.description.add(indicator.indicator.description);
-                        ctx.related.indicator_type.add(indicator.indicator.type);
-                    }
-                }
+                activity.service_name);
+                indicator.indicator.put("provider",activity.service_name);
+                indicator.indicator.put("type","user-account");    
+                ctx.threat.enrichments.add(indicator);
+                ctx.related.ip.add(geo.ip);
+                ctx.related.location.add(geo.location);
+                ctx.related.description.add(indicator.indicator.description);
+                ctx.related.indicator_type.add(indicator.indicator.type);
+              }
             }
+          }
         }
 #
   - script:
@@ -758,106 +758,106 @@ processors:
       lang: painless
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Suspicious Locations")) {
-            ctx.event.category.add("network");
-            ctx.event.type.add("access");
-            ctx.event.type.add("connection");
-            if (ctx?.threat?.enrichments == null) {
-                ctx.threat.enrichments = new ArrayList();
+          ctx.event.category.add("network");
+          ctx.event.type.add("access");
+          ctx.event.type.add("connection");
+          if (ctx?.threat?.enrichments == null) {
+            ctx.threat.enrichments = new ArrayList();
+          }
+          for (alert_activity in ctx.box.additional_details?.shield_alert?.alert_summary?.alert_activities) {
+            if (ctx.shield_date == null) {
+              ctx.shield_date = alert_activity.occurred_at;
             }
-            for (alert_activity in ctx.box.additional_details?.shield_alert?.alert_summary?.alert_activities) {
-                if (ctx.shield_date == null) {
-                    ctx.shield_date = alert_activity.occurred_at;
-                }
-                Map indicator = new HashMap();
-                indicator.indicator = new HashMap();
-                Map location = new HashMap();
-                location.put("lon",alert_activity.ip_info?.longitude);
-                location.put("lat",alert_activity.ip_info?.latitude);
-                Map geo = new HashMap();
-                geo.put("ip",alert_activity.ip_info.ip);
-                geo.put("location",location);
-                indicator.indicator.put("geo",geo);
-                indicator.indicator.put("description",
-                    "IP " + alert_activity.ip_info.ip + " was observed to " +
-                    alert_activity.event_type + " " + alert_activity.item_type + " " +
-                    alert_activity.item_path + "/" + alert_activity.item_name + " by " +
-                    alert_activity.service_name);
-                indicator.indicator.put("provider",alert_activity.service_name);
-                if (alert_activity.ip_info.ip.indexOf(":") != -1) {
-                    indicator.indicator.put("type","ipv6-addr");    
-                } else { 
-                    indicator.indicator.put("type","ipv4-addr");   
-                }  
-                ctx.threat.enrichments.add(indicator);
-                ctx.related.ip.add(geo.ip);
-                ctx.related.location.add(geo.location);
-                ctx.related.description.add(indicator.indicator.description);
-                ctx.related.indicator_type.add(indicator.indicator.type);
-            }
+            Map indicator = new HashMap();
+            indicator.indicator = new HashMap();
+            Map location = new HashMap();
+            location.put("lon",alert_activity.ip_info?.longitude);
+            location.put("lat",alert_activity.ip_info?.latitude);
+            Map geo = new HashMap();
+            geo.put("ip",alert_activity.ip_info.ip);
+            geo.put("location",location);
+            indicator.indicator.put("geo",geo);
+            indicator.indicator.put("description",
+              "IP " + alert_activity.ip_info.ip + " was observed to " +
+              alert_activity.event_type + " " + alert_activity.item_type + " " +
+              alert_activity.item_path + "/" + alert_activity.item_name + " by " +
+              alert_activity.service_name);
+            indicator.indicator.put("provider",alert_activity.service_name);
+            if (alert_activity.ip_info.ip.indexOf(":") != -1) {
+              indicator.indicator.put("type","ipv6-addr");    
+            } else { 
+              indicator.indicator.put("type","ipv4-addr");   
+            }  
+            ctx.threat.enrichments.add(indicator);
+            ctx.related.ip.add(geo.ip);
+            ctx.related.location.add(geo.location);
+            ctx.related.description.add(indicator.indicator.description);
+            ctx.related.indicator_type.add(indicator.indicator.type);
+          }
         }
   - script:
       description: Unpack Anomalous Download properties
       lang: painless
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Anomalous Download")) {
-            ctx.event.category.add("file");
-            ctx.event.type.add("access");
-            if (ctx?.threat?.enrichments == null) {
-                ctx.threat.enrichments = new ArrayList();
+          ctx.event.category.add("file");
+          ctx.event.type.add("access");
+          if (ctx?.threat?.enrichments == null) {
+            ctx.threat.enrichments = new ArrayList();
+          }
+          List l = new ArrayList();
+          if (ctx.box.additional_details?.shield_alert?.alert_summary != null) {
+            if (ctx.shield_date == null) {
+              ctx.shield_date = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range?.start_date;
             }
-            List l = new ArrayList();
-            if (ctx.box.additional_details?.shield_alert?.alert_summary != null) {
-                if (ctx.shield_date == null) {
-                    ctx.shield_date = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range?.start_date;
-                }
-                for (ip in ctx.box.additional_details.shield_alert.alert_summary.download_ips) {
-                    l.add(ip.ip);
-                    Map indicator = new HashMap();
-                    indicator.indicator = new HashMap();
-                    indicator.indicator.ip = ip.ip;
-                    indicator.indicator.description = ctx.box.additional_details.shield_alert.alert_summary.description;
-                    indicator.indicator.first_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date;
-                    indicator.indicator.last_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date;
-                    indicator.indicator.sightings = ctx.box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count;
-                    indicator.indicator.type = "file";
-                    ctx.threat.enrichments.add(indicator);
-                    ctx.related.ip.add(ip.ip);
-                    ctx.related.description.add(indicator.indicator.description);
-                    ctx.related.indicator_type.add(indicator.indicator.type);
-                }
+            for (ip in ctx.box.additional_details.shield_alert.alert_summary.download_ips) {
+              l.add(ip.ip);
+              Map indicator = new HashMap();
+              indicator.indicator = new HashMap();
+              indicator.indicator.ip = ip.ip;
+              indicator.indicator.description = ctx.box.additional_details.shield_alert.alert_summary.description;
+              indicator.indicator.first_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.start_date;
+              indicator.indicator.last_seen = ctx.box.additional_details.shield_alert.alert_summary.anomaly_period.date_range.end_date;
+              indicator.indicator.sightings = ctx.box.additional_details.shield_alert.alert_summary.historical_period.downloaded_files_count;
+              indicator.indicator.type = "file";
+              ctx.threat.enrichments.add(indicator);
+              ctx.related.ip.add(ip.ip);
+              ctx.related.description.add(indicator.indicator.description);
+              ctx.related.indicator_type.add(indicator.indicator.type);
             }
+          }
         }
   - script:
       description: Unpack Malicious Content properties
       lang: painless
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Malicious Content")) {
-            ctx.event.category.add("malware");
-            if (ctx?.threat?.indicator == null) {
-                ctx.threat.indicator = new HashMap();
+          ctx.event.category.add("malware");
+          if (ctx?.threat?.indicator == null) {
+            ctx.threat.indicator = new HashMap();
+          }
+          if (ctx.box?.additional_details?.shield_alert?.alert_summary?.upload_activity != null &&
+            ctx.box.additional_details.shield_alert.malware_info != null) {
+            if (ctx.shield_date == null) {
+              ctx.shield_date = ctx.box?.additional_details?.shield_alert?.alert_summary?.upload_activity?.occurred_at;
             }
-            if (ctx.box?.additional_details?.shield_alert?.alert_summary?.upload_activity != null &&
-                ctx.box.additional_details.shield_alert.malware_info != null) {
-                if (ctx.shield_date == null) {
-                  ctx.shield_date = ctx.box?.additional_details?.shield_alert?.alert_summary?.upload_activity?.occurred_at;
-                }
-                ctx.threat.indicator.description = 
-                        ctx.box.additional_details.shield_alert.malware_info.malware_name +
-                        ", " + ctx.box.additional_details.shield_alert.malware_info.family +
-                        ", " + ctx.box.additional_details.shield_alert.malware_info.file_name +
-                        " Detected by Box Shield from IP " + ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip +
-                        ". " + ctx.box.additional_details.shield_alert.malware_info.description +
-                        " see " + ctx.box.additional_details.shield_alert.malware_info.detail_link;
-                ctx.threat.indicator.ip = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip;
-                ctx.threat.indicator.provider = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.service_name;
-                ctx.threat.indicator.first_seen = ctx.box.additional_details.shield_alert.malware_info.first_seen;
-                ctx.threat.indicator.last_seen = ctx.box.additional_details.shield_alert.malware_info.last_seen;
-                ctx.threat.indicator.reference = ctx.box.additional_details.shield_alert.malware_info.detail_link;
-                ctx.related.ip.add(ctx.threat.indicator.ip);
-                ctx.related.description.add(ctx.threat.indicator.description);
-            }
-            ctx.threat.indicator.type = "software";
-            ctx.related.indicator_type.add(ctx.threat.indicator.type);
+            ctx.threat.indicator.description =
+              ctx.box.additional_details.shield_alert.malware_info.malware_name +
+              ", " + ctx.box.additional_details.shield_alert.malware_info.family +
+              ", " + ctx.box.additional_details.shield_alert.malware_info.file_name +
+              " Detected by Box Shield from IP " + ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip +
+              ". " + ctx.box.additional_details.shield_alert.malware_info.description +
+              " see " + ctx.box.additional_details.shield_alert.malware_info.detail_link;
+            ctx.threat.indicator.ip = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.ip_info.ip;
+            ctx.threat.indicator.provider = ctx.box.additional_details.shield_alert.alert_summary.upload_activity.service_name;
+            ctx.threat.indicator.first_seen = ctx.box.additional_details.shield_alert.malware_info.first_seen;
+            ctx.threat.indicator.last_seen = ctx.box.additional_details.shield_alert.malware_info.last_seen;
+            ctx.threat.indicator.reference = ctx.box.additional_details.shield_alert.malware_info.detail_link;
+            ctx.related.ip.add(ctx.threat.indicator.ip);
+            ctx.related.description.add(ctx.threat.indicator.description);
+          }
+          ctx.threat.indicator.type = "software";
+          ctx.related.indicator_type.add(ctx.threat.indicator.type);
         }
 # Deduplicate Arrays 
   - script:
@@ -865,36 +865,36 @@ processors:
       lang: painless
       source: |
         if (ctx.event.category != null) {
-            ctx.event.category = ctx.event.category.stream()
-              .distinct()
-              .collect(Collectors.toList());
+          ctx.event.category = ctx.event.category.stream()
+            .distinct()
+            .collect(Collectors.toList());
         }
         if (ctx.event.type != null) {
-            ctx.event.type = ctx.event.type.stream()
-              .distinct()
-              .collect(Collectors.toList());
+          ctx.event.type = ctx.event.type.stream()
+            .distinct()
+            .collect(Collectors.toList());
         }
         if (ctx.related != null) {
-            if (ctx.related.description != null) {
-                ctx.related.description = ctx.related.description.stream()
-                    .distinct()
-                    .collect(Collectors.toList());
-            }
+          if (ctx.related.description != null) {
+            ctx.related.description = ctx.related.description.stream()
+              .distinct()
+              .collect(Collectors.toList());
+          }
             if (ctx.related.indicator_type != null) {
-                ctx.related.indicator_type = ctx.related.indicator_type.stream()
-                    .distinct()
-                    .collect(Collectors.toList());
-            }
+              ctx.related.indicator_type = ctx.related.indicator_type.stream()
+                .distinct()
+                .collect(Collectors.toList());
+          }
             if (ctx.related.ip != null) {
-                ctx.related.ip = ctx.related.ip.stream()
-                    .distinct()
-                    .collect(Collectors.toList());
-            }
+              ctx.related.ip = ctx.related.ip.stream()
+                .distinct()
+                .collect(Collectors.toList());
+          }
             if (ctx.related.location != null) {
-                ctx.related.location = ctx.related.location.stream()
-                    .distinct()
-                    .collect(Collectors.toList());
-            }
+              ctx.related.location = ctx.related.location.stream()
+                .distinct()
+                .collect(Collectors.toList());
+          }
         }
 # post-script processors dependent on outcome of scripts, or append to fields
 # created by scripts - prefer allow_duplicates = false to assuming scripts always terminated
@@ -1025,9 +1025,9 @@ processors:
       lang: painless
       source: |
         if (ctx.box?.additional_details?.shield_alert?.priority != null) {
-            ctx.threat.indicator.confidence = 
-                ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() + 
-                ctx.box.additional_details.shield_alert.priority.substring(1);
+          ctx.threat.indicator.confidence = 
+            ctx.box.additional_details.shield_alert.priority.substring(0, 1).toUpperCase() + 
+            ctx.box.additional_details.shield_alert.priority.substring(1);
         }
 # geo
   - foreach:
@@ -1047,13 +1047,13 @@ processors:
       lang: painless
       source: |
         if (ctx.related?.ip != null) {
-              ctx.related.geo = new ArrayList();
-              for (ip in ctx.related.ip) {
-                Map geo = new HashMap();
-                geo.put("ip",ip);
-                ctx.related.geo.add(geo);
-              }
-            }
+          ctx.related.geo = new ArrayList();
+          for (ip in ctx.related.ip) {
+            Map geo = new HashMap();
+            geo.put("ip",ip);
+            ctx.related.geo.add(geo);
+          }
+        }
   - foreach:
       field: related.geo
       ignore_missing: true
@@ -1378,7 +1378,7 @@ processors:
           }
           return false;
         }
-        dropEmptyFields(ctx);
+         dropEmptyFields(ctx);
 on_failure:
   - set:
       field: error.message
