@@ -1,0 +1,240 @@
+---
+description: Pipeline for Fortinet FortiEDR Endpoint Detection and Response
+processors:
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - set:
+      field: observer.vendor
+      value: Fortinet
+  - set:
+      field: observer.product
+      value: FortiEDR
+  - set:
+      field: observer.type
+      value: edr
+  - set:
+      field: event.category
+      value: malware
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+
+  # Parse the syslog header
+  #
+  # This populates the host.hostname, process.name, timestamp and other fields
+  # from the header and stores the message contents in _temp_.full_message.
+  - grok:
+      field: event.original
+      patterns:
+        - "(?:%{SYSLOG_HEADER})?\\s*%{GREEDYDATA:_temp_.full_message}"
+      pattern_definitions:
+        SYSLOG_HEADER: "(?:%{SYSLOGPRIORITY}%{NONNEGINT:log.syslog.version}?\\s*)?(?:%{DATE:_temp_.raw_date}:?\\s+)?%{HOST_PROCESS_MSG} - (?:{DATA})?%{SYSLOG_END}?"
+        SYSLOGPRIORITY: "<%{NONNEGINT:log.syslog.priority:int}>"
+        DATE: "(?:%{TIMESTAMP_ISO8601})"
+        TIMESTAMP_ISO8601: "%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND}(?:\\.%{NUMBER})?)?%{ISO8601_TIMEZONE}?"
+        SYSLOG_END: "(?:(:|\\s)\\s+)"
+        HOST_PROCESS_MSG: "(?:-|%{SYSLOGHOST:log.syslog.hostname}) (?:-|%{PROCESS:log.syslog.appname}) (?:-|%{POSINT:log.syslog.procid}) (?:-|%{NOTSPACE:log.syslog.msgid})"
+        PROCESS: "(?:[^%\\s:\\[]+)"
+  - date:
+      if: ctx._temp_?.raw_date != null
+      field: _temp_.raw_date
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+  - script:
+      lang: painless
+      source: |
+        if (ctx.log?.syslog?.priority != null) {
+          def severity = new HashMap();
+          severity['code'] = ctx.log.syslog.priority&0x7;
+          ctx.log.syslog['severity'] = severity;
+          def facility = new HashMap();
+          facility['code'] = ctx.log.syslog.priority>>3;
+          ctx.log.syslog['facility'] = facility;
+        }
+
+  # Get FortiEDR fields
+  - kv:
+      field: _temp_.full_message
+      target_field: fortinet.edr
+      field_split: ";"
+      value_split: ": "
+      trim_key: " "
+      trim_value: " "
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: "fortinet.edr.Action"
+      target_field: fortinet.edr.action
+  - rename:
+      field: "fortinet.edr.Autonomous System"
+      target_field: fortinet.edr.autonomous_system
+  - rename:
+      field: "fortinet.edr.Certificate"
+      target_field: fortinet.edr.certificate
+  - rename:
+      field: "fortinet.edr.Classification"
+      target_field: fortinet.edr.classification
+  - rename:
+      field: "fortinet.edr.Count"
+      target_field: fortinet.edr.count
+  - rename:
+      field: "fortinet.edr.Country"
+      target_field: fortinet.edr.country
+  - rename:
+      field: "fortinet.edr.Destination"
+      target_field: fortinet.edr.destination
+  - rename:
+      field: "fortinet.edr.Device Name"
+      target_field: fortinet.edr.device_name
+  - rename:
+      field: "fortinet.edr.Event ID"
+      target_field: fortinet.edr.event_id
+  - rename:
+      field: "fortinet.edr.First Seen"
+      target_field: fortinet.edr.first_seen
+  - rename:
+      field: "fortinet.edr.Last Seen"
+      target_field: fortinet.edr.last_seen
+  - rename:
+      field: "fortinet.edr.MAC Address"
+      target_field: fortinet.edr.mac_address
+  - rename:
+      field: "fortinet.edr.Operating System"
+      target_field: fortinet.edr.operating_system
+  - rename:
+      field: "fortinet.edr.Organization"
+      target_field: fortinet.edr.organization
+  - rename:
+      field: "fortinet.edr.Organization ID"
+      target_field: fortinet.edr.organization_id
+  - rename:
+      field: "fortinet.edr.Process Name"
+      target_field: fortinet.edr.process_name
+  - rename:
+      field: "fortinet.edr.Process Path"
+      target_field: fortinet.edr.process_path
+  - rename:
+      field: "fortinet.edr.Process Type"
+      target_field: fortinet.edr.process_type
+  - rename:
+      field: "fortinet.edr.Raw Data ID"
+      target_field: fortinet.edr.raw_data_id
+  - rename:
+      field: "fortinet.edr.Rules List"
+      target_field: fortinet.edr.rules_list
+  - rename:
+      field: "fortinet.edr.Script"
+      target_field: fortinet.edr.script
+  - rename:
+      field: "fortinet.edr.Script Path"
+      target_field: fortinet.edr.script_path
+  - rename:
+      field: "fortinet.edr.Severity"
+      target_field: fortinet.edr.severity
+  - rename:
+      field: "fortinet.edr.Users"
+      target_field: fortinet.edr.users
+
+  # Map to ECS fields
+  - set:
+      field: event.id
+      copy_from: fortinet.edr.event_id
+      if: ctx.fortinet?.edr?.event_id != null
+  - set:
+      field: event.action
+      copy_from: fortinet.edr.action
+      if: ctx.fortinet?.edr?.action != null
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      copy_from: fortinet.edr.device_name
+      if: ctx.fortinet?.edr?.device_name != null && ctx.fortinet.edr.device_name != "N/A"
+  - set:
+      field: host.os.full
+      copy_from: fortinet.edr.operating_system
+      if: ctx.fortinet?.edr?.operating_system != null && ctx.fortinet.edr.operating_system != "N/A"
+  - append:
+      field: related.hosts
+      value:
+        - '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+  - append:
+      field: related.hosts
+      value:
+        - '{{{log.syslog.hostname}}}'
+      if: ctx.log?.syslog?.hostname != null
+  - append:
+      field: host.mac
+      value: '{{{fortinet.edr.mac_address}}}'
+      if: ctx.fortinet?.edr?.mac_address != null && ctx.fortinet.edr.mac_address != "N/A"
+  - set:
+      field: user.id
+      copy_from: fortinet.edr.users
+      if: ctx.fortinet?.edr?.users != null && ctx.fortinet.edr.users != "N/A"
+  - set:
+      field: process.name
+      copy_from: fortinet.edr.process_name
+      if: ctx.fortinet?.edr?.process_name != null && ctx.fortinet.edr.process_name != "N/A"
+  - set:
+      field: process.executable
+      copy_from: fortinet.edr.process_path
+      if: ctx.fortinet?.edr?.process_path != null && ctx.fortinet.edr.process_path != "N/A"
+  - append:
+      field: related.user
+      value:
+        - '{{{user.id}}}'
+      if: ctx.user?.id != null
+  - append:
+      field: related.hosts
+      value: '{{host.name}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null && ctx.host?.name != ''
+  - date:
+      if: ctx.fortinet?.edr?.first_seen != null
+      field: fortinet.edr.first_seen
+      target_field: fortinet.edr.first_seen
+      formats:
+        - ISO8601
+        - "d-MMM-yyyy, HH:mm:ss"
+        - "MMM d yyyy HH:mm:ss.SSS z"
+        - "MMM d yyyy HH:mm:ss.SSS"
+        - "MMM d yyyy HH:mm:ss z"
+        - "MMM d yyyy HH:mm:ss"
+  - set:
+      field: event.start
+      copy_from: fortinet.edr.first_seen
+      if: ctx.fortinet?.edr?.first_seen != null
+  - date:
+      if: ctx.fortinet?.edr?.last_seen != null
+      field: fortinet.edr.last_seen
+      target_field: fortinet.edr.last_seen
+      formats:
+        - ISO8601
+        - "d-MMM-yyyy, HH:mm:ss"
+        - "MMM d yyyy HH:mm:ss.SSS z"
+        - "MMM d yyyy HH:mm:ss.SSS"
+        - "MMM d yyyy HH:mm:ss z"
+        - "MMM d yyyy HH:mm:ss"
+  - set:
+      field: event.end
+      copy_from: fortinet.edr.last_seen
+      if: ctx.fortinet?.edr?.last_seen != null
+
+  - remove:
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field:
+        - _temp_
+      ignore_failure: true
+on_failure:
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
