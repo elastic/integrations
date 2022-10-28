@@ -30,17 +30,8 @@ For example: `backport-aws-7.15.0`.
 ![alt text](./images/create_branch.png)
 
 ### Step3: Create a PR for the bug fix
-Apply bugfixes and open a PR against the `<package_name>-<stack_version>` branch.
+Apply bugfixes and open a PR against the `backport-<package_name>-<stack_version>` branch.
 For example: I created this [PR](https://github.com/elastic/integrations/pull/4162) to fix
 the EC2 dashboard for Kibana 7.x.
 
-Note: run `elastic-package build` first, copy the "built" package from the `build/` directory
-instead of the integration source into the PR.
-
-### Step4: Manually create a PR in package-storage snapshot
-Instead of automatically getting added into package storage snapshot, we have to manually create
-a [PR](https://github.com/elastic/package-storage/pull/5489) to update the package version.
-
-### Step5: Run elastic-package promote
-After the PR for adding the new version into snapshot is merged, we can run
-`elastic-package promote` to promote this new version into production.
+Once this PR is merged, this new version of the package is going to be published automatically.
