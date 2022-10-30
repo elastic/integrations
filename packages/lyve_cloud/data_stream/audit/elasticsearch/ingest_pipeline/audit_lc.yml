@@ -154,8 +154,28 @@ processors:
       field: lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-Port
       type: long
       ignore_missing: True 
-      
 
+  - rename:
+      field: lyve_cloud.audit.auditEntry.responseHeader.X-Amz-Object-Lock-Retain-Until-Date
+      target_field: lyve_cloud.audit.auditEntry.responseHeader.ObjectLockRetainUntilDate
+      ignore_missing: True
+
+
+  - date:
+      if: ctx?.lyve_cloud?.audit?.auditEntry?.responseHeader?.ObjectLockRetainUntilDate != null && ctx.lyve_cloud.audit.auditEntry.responseHeader.ObjectLockRetainUntilDate!="" 
+      field: lyve_cloud.audit.auditEntry.responseHeader.ObjectLockRetainUntilDate
+      formats:
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.SS'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss.S'Z'"
+        - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+      target_field: lyve_cloud.audit.auditEntry.responseHeader.ObjectLockRetainUntilDate
       
 on_failure:
     - set:
