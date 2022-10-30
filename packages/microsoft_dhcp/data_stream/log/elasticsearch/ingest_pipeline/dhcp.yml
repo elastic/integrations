@@ -325,7 +325,7 @@ processors:
           type:
             - connection
       source: |-
-        if (ctx?.event?.code == null || params.get(ctx.event.code) == null) {
+        if (ctx.event?.code == null || params.get(ctx.event.code) == null) {
           return;
         }
         def hm = new HashMap(params[ctx.event.code]);
@@ -333,17 +333,21 @@ processors:
   - set:
       field: event.outcome
       value: success
-      if: ctx?.event?.outcome == null
+      if: ctx.event?.outcome == null
+  - uppercase:
+      field: _tmp_.mac
+      ignore_missing: true
+  - set:
+      if: ctx._tmp_?.mac != null
+      field: host.id
+      copy_from: _tmp_.mac
   - gsub:
       field: _tmp_.mac
       pattern: '(..)(?!$)'
       replacement: '$1-'
       ignore_missing: true
-  - uppercase:
-      field: _tmp_.mac
-      ignore_missing: true
   - append:
-      if: ctx?._tmp_?.mac != null
+      if: 'ctx.host?.id != null && ctx.host?.id.length() == 12'
       field: host.mac
       value: '{{{_tmp_.mac}}}'
 on_failure:
