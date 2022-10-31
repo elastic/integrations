@@ -49,7 +49,8 @@ Here is a brief guide to help you generate these settings
 ### Target Repository Authentication Settings Prerequisites
 The Elastic Integration for Box Events connects using OAuth 2.0 to interact with a Box Custom App. As prerequisites you will need to:
   - Enable `MFA/2FA` on your admin account by following the instructions in [MFA Setup on Box Support](https://support.box.com/hc/en-us/articles/360043697154-Multi-Factor-Authentication-Set-Up-for-Your-Account)
-  - Configure a `Box Custom Application using Server Authentication (with Client Credentials Grant)`. A suggested workflow is provided below, see [Setup with OAuth 2.0](https://developer.box.com/guides/authentication/oauth2/oauth2-setup/) for additional information.
+  - Configure a `Box Custom Application using Server Authentication `    
+  `(with Client Credentials Grant)`. A suggested workflow is provided below, see [Setup with OAuth 2.0](https://developer.box.com/guides/authentication/oauth2/oauth2-setup/) for additional information.
 
 ### Authorized User
 It is important to login to the [Box Developer Console](https://app.box.com/developers/console) as an `admin` and not `co-admin`.
