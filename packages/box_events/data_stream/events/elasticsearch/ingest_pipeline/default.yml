@@ -36,6 +36,12 @@ processors:
       value: "alert"
       if: "ctx.box?.additional_details?.shield_alert != null"
       ignore_failure: true
+  - set:
+      field: event.category
+      value: []
+  - set:
+      field: event.type
+      value: []
   - script:
       description: Set event.category + event.type
       lang: painless
@@ -563,8 +569,12 @@ processors:
       source: |
         def eventType = params.getOrDefault(ctx.box.event_type, null);
         if (eventType != null) {
-          ctx.event.category = eventType.map.get('category');
-          ctx.event.type = eventType.map.get('type');
+          for (category in eventType.map.get('category')) {
+            ctx.event.category.add(category);
+          }
+          for ( type in eventType.map.get('type')) {
+            ctx.event.type.add(type);
+          }
         }   
   - rename:
       field: box.event_type
@@ -800,7 +810,6 @@ processors:
       lang: painless
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Anomalous Download")) {
-          ctx.event.category.add("file");
           ctx.event.type.add("access");
           if (ctx?.threat?.enrichments == null) {
             ctx.threat.enrichments = new ArrayList();
@@ -832,7 +841,9 @@ processors:
       lang: painless
       source: |
         if (ctx.rule?.category != null && ctx.rule.category.equals("Malicious Content")) {
+          ctx.event.category.add("file");
           ctx.event.category.add("malware");
+          ctx.event.type.add("info");
           if (ctx?.threat?.indicator == null) {
             ctx.threat.indicator = new HashMap();
           }
