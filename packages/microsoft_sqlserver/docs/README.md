@@ -13,6 +13,23 @@ See: [SQL Server Audit page](https://docs.microsoft.com/en-us/sql/relational-dat
 
 Microsoft SQL Server has a feature that allows running multiple databases on the same host (or clustered hosts) with separate settings. Establish named instance connection by using the instance name along with the host name (Ex: `host/instance_name` or `host:named_instance_port`) to collect metrics.
 
+## Host Configuration
+
+As of now the integration supports collecting metrics from single host. For multi host, each host needs to run a new integration.
+
+User has to provide the user name, password and the host name,
+Syntax for the host based on default and named instance is listed below,
+
+### Connecting to Default Instance (host)
+
+* `host`    ex: `localhost` (Instance name is not needed when connecting to default instance)
+* `host:port ` ex: `localhost:1433`
+
+### Connecting to Named Instance (host)
+
+* `host/instance_name`  ex: `localhost/namedinstance_01`
+* `host:named_instance_port`  ex: `localhost:60873`
+
 ## Compatibility
 
 The package collects `performance` and `transaction_log` metrics, and `audit` events from the event log. Other log sources such as file are not supported.
