@@ -22,11 +22,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-08-16T09:39:03.000Z",
     "agent": {
-        "ephemeral_id": "173348ff-0df7-4c59-b0b0-f4aad4a82751",
-        "id": "b9045ecb-c8cf-4d1a-8b37-757e202e9ea1",
+        "ephemeral_id": "cf085b8c-2652-446c-93ab-0426f7cb54d1",
+        "id": "c46e592b-7ede-4f31-9714-c3e0bc5c3213",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.4.1"
     },
     "cisco": {
         "ftd": {
@@ -81,12 +81,12 @@ An example event for `log` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "b9045ecb-c8cf-4d1a-8b37-757e202e9ea1",
+        "id": "c46e592b-7ede-4f31-9714-c3e0bc5c3213",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.4.1"
     },
     "event": {
         "action": "malware-detected",
@@ -97,8 +97,8 @@ An example event for `log` looks as following:
         ],
         "code": "430005",
         "dataset": "cisco_ftd.log",
-        "ingested": "2022-06-22T01:38:18Z",
-        "kind": "event",
+        "ingested": "2022-10-05T00:03:15Z",
+        "kind": "alert",
         "original": "2019-08-16T09:39:03Z firepower  %FTD-1-430005: SrcIP: 10.0.1.20, DstIP: 81.2.69.144, SrcPort: 46004, DstPort: 80, Protocol: tcp, FileDirection: Download, FileAction: Malware Cloud Lookup, FileSHA256: 2546dcffc5ad854d4ddc64fbf056871cd5a00f2471cb7a5bfd4ac23b6e9eedad, SHA_Disposition: Unavailable, SperoDisposition: Spero detection not performed on file, ThreatName: Win.Ransomware.Eicar::95.sbx.tg, FileName: eicar_com.zip, FileType: ZIP, FileSize: 184, ApplicationProtocol: HTTP, Client: cURL, User: No Authentication Required, FirstPacketSecond: 2019-08-16T09:39:02Z, FilePolicy: malware-and-file-policy, FileStorageStatus: Not Stored (Disposition Was Pending), FileSandboxStatus: File Size Is Too Small, URI: http://www.eicar.org/download/eicar_com.zip",
         "severity": 1,
         "start": "2019-08-16T09:39:02Z",
@@ -123,11 +123,12 @@ An example event for `log` looks as following:
     "log": {
         "level": "alert",
         "source": {
-            "address": "172.31.0.6:55524"
+            "address": "192.168.240.4:50316"
         }
     },
     "network": {
         "application": "curl",
+        "community_id": "1:jk2uwniJ2oCG0t73HeZ9w8gtA8E=",
         "iana_number": "6",
         "protocol": "http",
         "transport": "tcp"
@@ -215,6 +216,7 @@ An example event for `log` looks as following:
 | cisco.ftd.termination_user | AAA name of user requesting termination | keyword |
 | cisco.ftd.threat_category | Category for the malware / botnet traffic. For example: virus, botnet, trojan, etc. | keyword |
 | cisco.ftd.threat_level | Threat level for malware / botnet traffic. One of very-low, low, moderate, high or very-high. | keyword |
+| cisco.ftd.tunnel_type | SA type (remote access or L2L) | keyword |
 | cisco.ftd.username |  | keyword |
 | cisco.ftd.webvpn.group_name | The WebVPN group name the user belongs to | keyword |
 | client.address | Some event client addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -318,6 +320,7 @@ An example event for `log` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
+| network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
 | network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.inner | Network.inner fields are added in addition to network.vlan fields to describe the innermost VLAN when q-in-q VLAN tagging is present. Allowed fields include vlan.id and vlan.name. Inner vlan fields are typically used when sending traffic with multiple 802.1q encapsulations to a network sensor (e.g. Zeek, Wireshark.) | object |
