@@ -1,23 +1,23 @@
 # Infoblox NIOS
 
-The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP.
+The Infoblox NIOS integration collects and parses DNS, DHCP, and Audit data collected from [Infoblox NIOS](https://www.infoblox.com/products/nios8/) via TCP/UDP or logfile.
 
 ## Setup steps
 1. Enable the integration with TCP/UDP input.
 2. Log in to the NIOS appliance.
 3. Configure the NIOS appliance to send messages to a Syslog server using the following steps. For further information, refer to [Using a Syslog Server](https://docs.infoblox.com/display/NAG8/Using+a+Syslog+Server#UsingaSyslogServer-SpecifyingSyslogServers).
-    1. From the Grid tab, select the Grid Manager tab -> Members tab, and then navigate to Grid Properties -> Edit -> Monitoring from the Toolbar.
-    2. Select **Log to External Syslog Servers** to send messages to a specified Syslog server.
-    3. Click the **Add** icon to define a new Syslog server.
-    4. Enter the IP **Address** of the Elastic Agent that is running the integration.
-    5. Select **Transport** to connect to the external Syslog server.
+    1. From the Grid tab, select the Grid Manager tab -> Members tab, and then navigate to Grid Properties -> Edit -> Monitoring from the Toolbar.
+    2. Select **Log to External Syslog Servers** to send messages to a specified Syslog server.
+    3. Click the **Add** icon to define a new Syslog server.
+    4. Enter the IP **Address** of the Elastic Agent that is running the integration.
+    5. Select **Transport** to connect to the external Syslog server.
     6. If you are using Secure TCP transport, upload a self-signed or a CA-signed **Server Certificate**.
-    7. From the drop-down list select the **Interface** through which the appliance sends Syslog messages to the Syslog server.
-    8. Select **Source** as **Any** so that the appliance sends both internal and external Syslog messages.
-    9. From the drop-down list, select **Node ID** i.e. the host or node identification string that identifies the appliance from which Syslog messages are originated.
-    10. Enter the **Port** of the Elastic Agent that is running the integration.
+    7. From the drop-down list select the **Interface** through which the appliance sends Syslog messages to the Syslog server.
+    8. Select **Source** as **Any** so that the appliance sends both internal and external Syslog messages.
+    9. From the drop-down list, select **Node ID** i.e. the host or node identification string that identifies the appliance from which Syslog messages are originated.
+    10. Enter the **Port** of the Elastic Agent that is running the integration.
     11. Select **Debug** **Severity** so that the appliance sends all Syslog messages to the server.
-    12. Select the following **Logging categories** : 
+    12. Select the following **Logging categories**:
         - Common Authentication
         - DHCP Process
         - DNS Client
@@ -71,8 +71,8 @@ Below are the samples logs of the respective category:
 <30>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: a2.foo.com IN A response: NOERROR +AED a2.foo.com 28800 IN A 192.168.0.3;
 <30>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: non-exist.foo.com IN A response: NXDOMAIN +ED
 <45>Mar 11 23:51:31 infoblox.localdomain named[17742]: 07-Apr-2022 08:08:10.043 client 192.168.0.1#57398 UDP: query: a1.foo.com IN A response: NOERROR +ED a1.foo.com 28800 IN A 192.168.0.2; a1.foo.com 28800 IN A 192.168.0.3;
-<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query failed (REFUSED) for config.nos-avg.cz/IN/TXT at query.c:10288
-<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query: config.nos-avg.cz IN TXT + (192.168.0.1)
+<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query failed (REFUSED) for config.nos-avg.cz/IN/TXT at query.c:10288
+<30>Mar  9 23:59:59 infoblox.localdomain named[17742]: client @0x7f1dd4114af0 192.168.0.1#59735 (config.nos-avg.cz): query: config.nos-avg.cz IN TXT + (192.168.0.1)
 <30>Mar 11 23:51:31 infoblox.localdomain named[27014]: rpz: rpz1.com: reload start
 <30>Mar 11 23:51:31 infoblox.localdomain named[29914]: client @0x7ff42c168b50 192.168.0.1#50460 (test.com): rewriting query name 'test.com' to 'query123-10-120-20-93.test.com', type A
 <30>Mar 11 23:51:31 infoblox.localdomain named[19204]: client @0x7fec7c11dab0 192.168.0.1#36483: updating zone 'test1.com/IN': adding an RR at 'a6.test1.com' A 192.168.0.2
@@ -149,9 +149,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2011-10-19T12:43:47.375Z",
     "agent": {
-        "ephemeral_id": "5181186c-7367-49da-8ad7-8120c441b527",
+        "ephemeral_id": "61822d4c-36b4-4e1d-bd4e-afeb755b0eb1",
         "hostname": "docker-fleet-agent",
-        "id": "9f26844a-9c52-4403-b9e6-9312b9761765",
+        "id": "04f35ceb-6ead-42c2-b472-fc88900de7db",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -165,7 +165,7 @@ An example event for `log` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "9f26844a-9c52-4403-b9e6-9312b9761765",
+        "id": "04f35ceb-6ead-42c2-b472-fc88900de7db",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -174,7 +174,8 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "created": "2022-03-22T14:26:54.000Z",
         "dataset": "infoblox_nios.log",
-        "ingested": "2022-08-08T11:02:32Z"
+        "ingested": "2022-10-21T10:14:01Z",
+        "original": "\u003c29\u003eMar 22 14:26:54 10.0.0.1 httpd: 2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login"
     },
     "host": {
         "ip": "10.0.0.1"
@@ -193,11 +194,11 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "tcp"
+        "type": "udp"
     },
     "log": {
         "source": {
-            "address": "192.168.192.7:57184"
+            "address": "192.168.64.5:58709"
         },
         "syslog": {
             "priority": 29
@@ -214,6 +215,7 @@ An example event for `log` looks as following:
         ]
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "infoblox_nios-log"
     ],
@@ -328,6 +330,7 @@ An example event for `log` looks as following:
 | infoblox_nios.log.type |  | keyword |
 | input.type | Input type | keyword |
 | interface.name | Interface name as reported by the system. | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Log source address | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |

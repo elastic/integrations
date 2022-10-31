@@ -1,6 +1,6 @@
 # Kibana
 
-The Kibana integration collects events from your [Kibana](https://www.elastic.co/guide/en/kibana/current/introduction.html) instance.
+The Kibana integration collects events from your {{ url "kibana-introduction" "Kibana" }} instance.
 
 ## Configuration parameters
 
@@ -8,7 +8,7 @@ If the Kibana instance is using a basepath in its URL, you must set the `basepat
 
 ## Compatibility
 
-The `kibana` package works with Kibana 6.7.0 and later.
+The `kibana` package works with Kibana 8.5.0 and later.
 
 ## Usage for Stack Monitoring
 
