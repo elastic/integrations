@@ -196,7 +196,7 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | box.additional_details.shield_alert.user.id | User ID | long |
 | box.additional_details.shield_alert.user.name | User name | keyword |
 | box.created_at | When the event object was created | date |
-| box.created_by.id | The unique identifier for the connection user. The Box Shield documentation example uses `string`, not `long`, however, box `Events` API documentation uses long | keyword |
+| box.created_by.id | The unique identifier for the connection user. | keyword |
 | box.created_by.login | The primary email address of the connection user. Maps from \*\*.login |  |
 | box.created_by.name | The display name of the connection user. Maps from \*\*.name | keyword |
 | box.created_by.type | E.g. `user` |  |
