@@ -1,0 +1,200 @@
+---
+description: Pipeline for processing Message Trace Logs
+processors:
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  # Parsing of payload json
+  - json:
+      field: event.original
+      target_field: _temp_
+  - rename:
+      field: _temp_.Status
+      target_field: event.outcome
+      ignore_missing: true
+  - rename:
+      field: _temp_.SenderAddress
+      target_field: email.from.address
+      ignore_missing: true
+  - rename:
+      field: _temp_.MessageTraceId
+      target_field: email.local_id
+      ignore_missing: true
+  - rename:
+      field: _temp_.ToIP
+      if: ctx._temp_?.ToIP != null
+      target_field: destination.ip
+      ignore_missing: true
+  - rename:
+      field: _temp_.Size
+      target_field: email.attachments.file.size
+      ignore_missing: true
+  - rename:
+      field: _temp_.Received
+      target_field: email.delivery_timestamp
+      ignore_missing: true
+  - rename:
+      field: _temp_.EndDate
+      target_field: _temp_.raw_date
+      ignore_missing: true
+  - rename:
+      field: _temp_.Subject
+      target_field: email.subject
+      ignore_missing: true
+  - rename:
+      field: _temp_.RecipientAddress
+      target_field: email.to.address
+      ignore_missing: true
+  - rename:
+      field: _temp_.FromIP
+      if: ctx._temp_?.FromIP != null
+      target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: _temp_.MessageId
+      target_field: email.message_id
+      ignore_missing: true
+  # Parse the date included in logs
+  - date:
+      if: "ctx._temp_?.raw_date != null"
+      field: "_temp_.raw_date"
+      target_field: "event.end"
+      formats:
+        - "ISO8601"
+  - set:
+      field: "@timestamp"
+      copy_from: "email.delivery_timestamp"
+      ignore_empty_value: true
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
+  # Extraction of domain
+  - grok:
+      field: email.from.address
+      patterns:
+        - "^%{DATA}@%{DATA:source.domain}$"
+      ignore_failure: false
+      ignore_missing: true
+  - grok:
+      field: email.to.address
+      patterns:
+        - "^%{DATA}@%{DATA:destination.domain}$"
+      ignore_failure: false
+      ignore_missing: true
+  - registered_domain:
+      field: "destination.domain"
+      target_field: "destination"
+  - registered_domain:
+      field: "source.domain"
+      target_field: "source"
+  # Calculation of mail Direction
+  - script:
+      lang: painless
+      description: Script to extract the direction of a mailflow
+      if: ctx._conf?.local_domains != null
+      source: |
+        if (!(ctx._conf.local_domains instanceof List)) {ctx._conf.local_domains = [ctx._conf.local_domains]}
+        def destination_internal = 0;
+        def source_internal = 0;
+        for (local_domain in ctx._conf.local_domains) {
+          if (ctx.destination?.domain == local_domain){
+            destination_internal = 1;
+          }
+          if (ctx.source?.domain == local_domain){
+            source_internal = 1;
+          }
+        }
+        if (source_internal == 1 && destination_internal == 1){ctx.email.direction = "internal";}
+        else if (source_internal == 0 && destination_internal == 0){ctx.email.direction = "external";}
+        else if (source_internal == 1 && destination_internal == 0){ctx.email.direction = "outbound";}
+        else if (source_internal == 0 && destination_internal == 1){ctx.email.direction = "inbound";}
+        else {ctx.email.direction = "unknown";}
+  # Extract Username from mail
+  - grok:
+      field: "email.to.address"
+      ignore_missing: true
+      if: ctx.email?.direction == "inbound"
+      patterns:
+        - ^%{DATA:user.name}@%{DATA:user.domain}$
+  - grok:
+      field: "email.from.address"
+      ignore_missing: true
+      if: ctx.email?.direction == "outbound" || ctx.email?.direction == "internal"
+      patterns:
+        - ^%{DATA:user.name}@%{DATA:user.domain}$
+  # Add unique fingerprint for deduplication
+  - fingerprint:
+      fields:
+        - email.from.address
+        - email.to.address
+        - email.message_id
+        - email.local_id
+        - email.subject
+        - event.outcome
+        - email.attachments.file.size
+      ignore_missing: true
+      target_field: "_id"
+  # Cleanup fields
+  - remove:
+      field: _temp_
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: _conf
+      ignore_failure: true
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

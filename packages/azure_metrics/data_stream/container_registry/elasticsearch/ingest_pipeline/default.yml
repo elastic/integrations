@@ -1,0 +1,14 @@
+---
+description: Pipeline for parsing azure container_registry metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: "8.0.0"
+  - rename:
+      field: azure.metrics
+      target_field: azure.container_registry
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

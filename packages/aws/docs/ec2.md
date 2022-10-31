@@ -1,11 +1,50 @@
-# ec2
+# Amazon EC2
 
-## Logs
+The Amazon EC2 integration allows you to monitor [Amazon Elastic Compute Cloud (Amazon EC2)](https://aws.amazon.com/ec2/)—a cloud compute platform.
 
-The `ec2` dataset is specifically for EC2 logs stored in AWS CloudWatch. Export logs
-from log groups to Amazon S3 bucket which has SQS notification setup already.
-With this dataset, EC2 logs will be parsed into fields like  `ip_address`
-and `process.name`. For logs from other services, please use `cloudwatch` dataset.
+Use the Amazon EC2 integration to collect logs and metrics related to your EC2 instances. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference the logs and metrics when troubleshooting an issue.
+
+For example, you could use this data to track Amazon EC2 CPU utilization. Then you can alert when utilization for an instance crosses a predefined threshold.
+
+## Data streams
+
+The Amazon EC2 integration collects two types of data: logs and metrics.
+
+**Logs** help you keep a record of events happening in Amazon EC2.
+Logs collected by the Amazon EC2 integration include the region in which an instance is running, the operating system architecture, container information, and more. See more details in the [Logs reference](#logs-reference).
+
+**Metrics** give you insight into the state of your Amazon EC2 instances.
+Metrics collected by the Amazon EC2 integration include the Amazon EC2 instance ID, the number of earned CPU credits that an instance has accrued since it was launched or started, and more. See more details in the [Metrics reference](#metrics-reference).
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any AWS integration you will need:
+
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, see the **AWS** integration documentation.
+
+## Setup
+
+Use this integration if you only need to collect data from the Amazon EC2 service.
+
+If you want to collect data from two or more AWS services, consider using the **AWS** integration.
+When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+## Logs reference
+
+The `ec2` data stream supports both EC2 logs stored in AWS CloudWatch and EC2 logs stored in Amazon S3.
+For logs stored in S3, you must export logs from log groups to an Amazon S3 bucket which has SQS notification setup already.
+
+With this data stream, EC2 logs will be parsed into fields like  `ip_address`
+and `process.name`. For logs from other services, please use the **AWS CloudWatch** integration.
 
 **Exported fields**
 
@@ -87,123 +126,54 @@ An example event for `ec2` looks as following:
 }
 ```
 
-## Metrics
+## Metrics reference
 
 An example event for `ec2` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-10T00:27:00.000Z",
+    "@timestamp": "2022-05-26T12:40:00.000Z",
     "agent": {
-        "ephemeral_id": "3fe9a7bb-b963-43fc-b42d-4469899cff56",
-        "id": "243f8454-f7b2-4517-915e-d7b5044da34e",
         "name": "docker-fleet-agent",
+        "id": "24d50340-a9d0-4d5d-9f42-fe9cb4b8c95d",
         "type": "metricbeat",
-        "version": "8.0.0-beta1"
+        "ephemeral_id": "f8282deb-ebc7-4d1f-9386-207f56657244",
+        "version": "8.2.0"
     },
-    "aws": {
-        "cloudwatch": {
-            "namespace": "AWS/EC2"
-        },
-        "dimensions": {
-            "InstanceId": "i-0fed3d32593de60a2"
-        },
-        "ec2": {
-            "cpu": {
-                "credit_balance": 15.466493,
-                "credit_usage": 0.02978
-            },
-            "diskio": {
-                "read": {
-                    "bytes_per_sec": 0,
-                    "count_per_sec": 0
-                },
-                "write": {
-                    "bytes_per_sec": 0,
-                    "count_per_sec": 0
-                }
-            },
-            "instance": {
-                "core": {
-                    "count": 1
-                },
-                "image": {
-                    "id": "ami-041e2461f66f7190f"
-                },
-                "monitoring": {
-                    "state": "enabled"
-                },
-                "private": {
-                    "dns_name": "ip-172-31-94-158.ec2.internal",
-                    "ip": "172.31.94.158"
-                },
-                "public": {
-                    "dns_name": "ec2-3-87-48-88.compute-1.amazonaws.com",
-                    "ip": "3.87.48.88"
-                },
-                "state": {
-                    "code": 16,
-                    "name": "running"
-                },
-                "threads_per_core": 1
-            },
-            "network": {
-                "in": {
-                    "bytes_per_sec": 1088550.3,
-                    "packets_per_sec": 750.1166666666667
-                },
-                "out": {
-                    "bytes_per_sec": 7878.933333333333,
-                    "packets_per_sec": 181.11666666666667
-                }
-            }
-        },
-        "tags": {
-            "Name": "elastic-package-test-60186"
-        }
+    "elastic_agent": {
+        "id": "24d50340-a9d0-4d5d-9f42-fe9cb4b8c95d",
+        "version": "8.2.0",
+        "snapshot": false
     },
     "cloud": {
-        "account": {
-            "id": "144492464627",
-            "name": "elastic-siem"
-        },
-        "availability_zone": "us-east-1a",
+        "availability_zone": "us-east-1c",
         "instance": {
-            "id": "i-0fed3d32593de60a2",
-            "name": "elastic-package-test-60186"
+            "name": "elastic-package-test-33138",
+            "id": "i-0de58890d94dda2e3"
         },
+        "provider": "aws",
         "machine": {
             "type": "t1.micro"
         },
-        "provider": "aws",
-        "region": "us-east-1"
-    },
-    "data_stream": {
-        "dataset": "aws.ec2_metrics",
-        "namespace": "ep",
-        "type": "metrics"
+        "region": "us-east-1",
+        "account": {
+            "name": "elastic-beats",
+            "id": "428152502467"
+        }
     },
     "ecs": {
         "version": "8.0.0"
     },
-    "elastic_agent": {
-        "id": "243f8454-f7b2-4517-915e-d7b5044da34e",
-        "snapshot": false,
-        "version": "8.0.0-beta1"
+    "service": {
+        "type": "aws"
     },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "aws.ec2_metrics",
-        "duration": 20742211587,
-        "ingested": "2022-01-10T00:42:24Z",
-        "module": "aws"
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.ec2_metrics"
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "cpu": {
-            "usage": 13.6065573770492
-        },
+        "hostname": "docker-fleet-agent",
         "disk": {
             "read": {
                 "bytes": 0
@@ -212,41 +182,111 @@ An example event for `ec2` looks as following:
                 "bytes": 0
             }
         },
-        "hostname": "docker-fleet-agent",
-        "id": "4ccba669f0df47fa3f57a9e4169ae7f1",
-        "ip": [
-            "172.18.0.7"
-        ],
-        "mac": [
-            "02:42:ac:12:00:07"
-        ],
-        "name": "elastic-package-test-60186",
-        "network": {
-            "egress": {
-                "bytes": 472736,
-                "packets": 10867
-            },
-            "ingress": {
-                "bytes": 65313018,
-                "packets": 45007
-            }
-        },
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-43-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "kernel": "5.10.47-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "family": "debian",
+            "version": "20.04.4 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": true,
+        "ip": [
+            "192.168.80.7"
+        ],
+        "name": "elastic-package-test-33138",
+        "cpu": {
+            "usage": 0.08265027322397175
+        },
+        "id": "i-0de58890d94dda2e3",
+        "mac": [
+            "02:42:c0:a8:50:07"
+        ],
+        "architecture": "x86_64",
+        "network": {
+            "ingress": {
+                "bytes": 1992
+            },
+            "egress": {
+                "bytes": 1800
+            }
         }
     },
     "metricset": {
-        "name": "ec2",
-        "period": 300000
+        "period": 300000,
+        "name": "cloudwatch"
     },
-    "service": {
-        "type": "aws"
+    "event": {
+        "duration": 15936070000,
+        "agent_id_status": "verified",
+        "ingested": "2022-05-26T12:44:52Z",
+        "module": "aws",
+        "dataset": "aws.ec2_metrics"
+    },
+    "aws": {
+        "ec2": {
+            "diskio": {
+                "read": {
+                    "count_per_sec": 0,
+                    "bytes_per_sec": 0
+                },
+                "write": {
+                    "count_per_sec": 0,
+                    "bytes_per_sec": 0
+                }
+            },
+            "instance": {
+                "image": {
+                    "id": "ami-0ff900168d0231cd3"
+                },
+                "core": {
+                    "count": 1
+                },
+                "private": {
+                    "ip": "172.31.16.45",
+                    "dns_name": "ip-172-31-16-45.ec2.internal"
+                },
+                "threads_per_core": 1,
+                "public": {
+                    "ip": "54.90.153.147",
+                    "dns_name": "ec2-54-90-153-147.compute-1.amazonaws.com"
+                },
+                "state": {
+                    "code": 16,
+                    "name": "running"
+                },
+                "monitoring": {
+                    "state": "enabled"
+                }
+            },
+            "cpu": {
+                "credit_balance": 144,
+                "credit_usage": 0.004121
+            },
+            "status": {
+                "check_failed": 0,
+                "check_failed_instance": 0,
+                "check_failed_system": 0
+            },
+            "network": {
+                "in": {
+                    "bytes_per_sec": 33.2
+                },
+                "out": {
+                    "bytes_per_sec": 30
+                }
+            }
+        },
+        "cloudwatch": {
+            "namespace": "AWS/EC2"
+        },
+        "dimensions": {
+            "InstanceId": "i-0de58890d94dda2e3"
+        },
+        "tags": {
+            "Name": "elastic-package-test-33138"
+        }
     }
 }
 ```
@@ -325,6 +365,7 @@ An example event for `ec2` looks as following:
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.cpu.pct | Percent CPU used. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |
+| host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |
 | host.disk.read.bytes | The total number of bytes read successfully in a given period of time. | long |
 | host.disk.write.bytes | The total number of bytes write successfully in a given period of time. | long |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
@@ -333,8 +374,12 @@ An example event for `ec2` looks as following:
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.network.egress.bytes | The number of bytes (gauge) sent out on all network interfaces by the host since the last metric collection. | long |
+| host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |
 | host.network.in.bytes | The number of bytes received on all network interfaces by the host in a given period of time. | long |
 | host.network.in.packets | The number of packets received on all network interfaces by the host in a given period of time. | long |
+| host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |
+| host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |
 | host.network.out.bytes | The number of bytes sent out on all network interfaces by the host in a given period of time. | long |
 | host.network.out.packets | The number of packets sent out on all network interfaces by the host in a given period of time. | long |
 | host.os.build | OS build information. | keyword |

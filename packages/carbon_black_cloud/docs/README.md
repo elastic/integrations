@@ -11,7 +11,25 @@ This module has been tested against `Alerts API (v6)`, `Audit Log Events (v3)` a
 ### In order to ingest data from the AWS S3 bucket you must:
 1. Configure the [Data Forwarder](https://docs.vmware.com/en/VMware-Carbon-Black-Cloud/services/carbon-black-cloud-user-guide/GUID-F68F63DD-2271-4088-82C9-71D675CD0535.html) to ingest data into an AWS S3 bucket.
 2. Create an [AWS Access Keys and Secret Access Keys](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
+3. The default value of the "Bucket List Prefix" is listed below. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
 
+  | Data Stream Name  | Bucket List Prefix     |
+  | ----------------- | ---------------------- |
+  | Alert             | alert_logs             |
+  | Endpoint Event    | endpoint_event_logs    |
+  | Watchlist Hit     | watchlist_hit_logs     |
+
+### To collect data from AWS SQS, follow the below steps:
+1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
+2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+  - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
+3. Setup event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+  - The user has to perform Step 3 for all the data-streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `alert_logs/` for alert data stream.)
+  - For all the event notifications that have been created, select the event type as s3:ObjectCreated:*, select the destination type SQS Queue, and select the queue that has been created in Step 2.
+
+**Note**:
+  - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
+  - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 
 ### In order to ingest data from the APIs you must generate API keys and API Secret Keys:
 1. In Carbon Black Cloud, On the left navigation pane, click **Settings > API Access**.
@@ -50,12 +68,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-10T16:04:30.263Z",
     "agent": {
-        "ephemeral_id": "6472e86c-fc7c-478a-a6fd-12ed19fe05c9",
-        "hostname": "docker-fleet-agent",
-        "id": "4f53bc01-9d14-4e27-b716-9b41958e11e0",
+        "ephemeral_id": "a332765e-1e1f-4ec7-b24e-ae2d0dd5d74f",
+        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.4.1"
     },
     "carbon_black_cloud": {
         "audit": {
@@ -75,19 +92,19 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "4f53bc01-9d14-4e27-b716-9b41958e11e0",
+        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-04-14T11:48:30.094Z",
+        "created": "2022-09-26T01:59:24.724Z",
         "dataset": "carbon_black_cloud.audit",
         "id": "2122f8ce8xxxxxxxxxxxxx",
-        "ingested": "2022-04-14T11:48:31Z",
+        "ingested": "2022-09-26T01:59:25Z",
         "kind": "event",
         "original": "{\"clientIp\":\"10.10.10.10\",\"description\":\"Logged in successfully\",\"eventId\":\"2122f8ce8xxxxxxxxxxxxx\",\"eventTime\":1644509070263,\"flagged\":false,\"loginName\":\"abc@demo.com\",\"orgName\":\"cb-xxxx-xxxx.com\",\"requestUrl\":null,\"verbose\":false}",
         "outcome": "success",
@@ -138,6 +155,7 @@ An example event for `audit` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.module | Event module. | constant_keyword |
@@ -181,12 +199,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2020-11-17T22:05:13.000Z",
     "agent": {
-        "ephemeral_id": "56053d91-103c-4c77-8f15-0a1006a80102",
-        "hostname": "docker-fleet-agent",
-        "id": "4f53bc01-9d14-4e27-b716-9b41958e11e0",
+        "ephemeral_id": "cc329655-90f8-4dc9-8014-e152f2b949da",
+        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.4.1"
     },
     "carbon_black_cloud": {
         "alert": {
@@ -234,20 +251,20 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "4f53bc01-9d14-4e27-b716-9b41958e11e0",
+        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-04-14T11:46:13.154Z",
+        "created": "2022-09-26T01:58:04.610Z",
         "dataset": "carbon_black_cloud.alert",
         "end": "2020-11-17T22:02:16Z",
         "id": "test1",
-        "ingested": "2022-04-14T11:46:14Z",
+        "ingested": "2022-09-26T01:58:05Z",
         "kind": "alert",
         "original": "{\"alert_url\":\"https://defense-eap01.conferdeploy.net/alerts?orgId=1889976\",\"category\":\"WARNING\",\"create_time\":\"2020-11-17T22:05:13Z\",\"device_external_ip\":\"81.2.69.143\",\"device_id\":2,\"device_internal_ip\":\"81.2.69.144\",\"device_location\":\"UNKNOWN\",\"device_name\":\"DESKTOP-002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_username\":\"test34@demo.com\",\"first_event_time\":\"2020-11-17T22:02:16Z\",\"id\":\"test1\",\"last_event_time\":\"2020-11-17T22:02:16Z\",\"last_update_time\":\"2020-11-17T22:05:13Z\",\"legacy_alert_id\":\"C8EB7306-AF26-4A9A-B677-814B3AF69720\",\"org_key\":\"ABCD6X3T\",\"policy_applied\":\"APPLIED\",\"policy_id\":6997287,\"policy_name\":\"Standard\",\"product_id\":\"0x5406\",\"product_name\":\"U3 Cruzer Micro\",\"reason\":\"Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.\",\"reason_code\":\"6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC\",\"run_state\":\"DID_NOT_RUN\",\"sensor_action\":\"DENY\",\"serial_number\":\"0875920EF7C2A304\",\"severity\":3,\"target_value\":\"MEDIUM\",\"threat_cause_cause_event_id\":\"FCEE2AF0-D832-4C9F-B988-F11B46028C9E\",\"threat_cause_threat_category\":\"NON_MALWARE\",\"threat_cause_vector\":\"REMOVABLE_MEDIA\",\"threat_id\":\"t5678\",\"type\":\"DEVICE_CONTROL\",\"vendor_id\":\"0x0781\",\"vendor_name\":\"SanDisk\",\"workflow\":{\"changed_by\":\"Carbon Black\",\"comment\":\"\",\"last_update_time\":\"2020-11-17T22:02:16Z\",\"remediation\":\"\",\"state\":\"OPEN\"}}",
         "reason": "Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.",
@@ -375,6 +392,7 @@ An example event for `alert` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
@@ -400,7 +418,7 @@ An example event for `alert` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
@@ -449,7 +467,7 @@ An example event for `endpoint_event` looks as following:
         }
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "carbon_black_cloud": {
         "endpoint_event": {
@@ -610,6 +628,7 @@ An example event for `endpoint_event` looks as following:
 | dll.path | Full file path of the library. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
 | event.module | Event module. | constant_keyword |
@@ -632,13 +651,13 @@ An example event for `endpoint_event` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
 | process.command_line.text | Multi-field of `process.command_line`. | match_only_text |
@@ -695,7 +714,7 @@ An example event for `watchlist_hit` looks as following:
         "version": "8.0.0"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.3.0"
     },
     "process": {
         "parent": {
@@ -849,6 +868,7 @@ An example event for `watchlist_hit` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
@@ -869,7 +889,7 @@ An example event for `watchlist_hit` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
@@ -906,14 +926,13 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-04-14T11:47:25.371Z",
+    "@timestamp": "2022-09-26T01:58:41.710Z",
     "agent": {
-        "ephemeral_id": "377d9292-c7d0-4c30-bbee-faf4848d30d8",
-        "hostname": "docker-fleet-agent",
-        "id": "4f53bc01-9d14-4e27-b716-9b41958e11e0",
+        "ephemeral_id": "818ffeea-8e73-497b-bc16-b13e6bb3010c",
+        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.4.1"
     },
     "carbon_black_cloud": {
         "asset_vulnerability_summary": {
@@ -937,18 +956,18 @@ An example event for `asset_vulnerability_summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "4f53bc01-9d14-4e27-b716-9b41958e11e0",
+        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-04-14T11:47:25.371Z",
+        "created": "2022-09-26T01:58:41.710Z",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2022-04-14T11:47:26Z",
+        "ingested": "2022-09-26T01:58:45Z",
         "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64-bit\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },
     "host": {
@@ -1013,6 +1032,7 @@ An example event for `asset_vulnerability_summary` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
@@ -1029,9 +1049,9 @@ An example event for `asset_vulnerability_summary` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. One of these following values should be used (lowercase): linux, macos, unix, windows. If the OS you're dealing with is not in the list, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
+| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |

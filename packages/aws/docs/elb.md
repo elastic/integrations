@@ -1,18 +1,53 @@
-# elb
+# Amazon ELB
 
-## Logs
+The Amazon ELB integration allows you to monitor [Amazon Elastic Load Balancing (ELB)](https://aws.amazon.com/elasticloadbalancing/)—a tool that distributes application traffic to multiple targets.
 
-The `elb` dataset collects logs from AWS ELBs. Elastic Load Balancing provides 
-access logs that capture detailed information about requests sent to the load 
-balancer. Each log contains information such as the time the request was 
-received, the client's IP address, latencies, request paths, and server 
-responses. Users can use these access logs to analyze traffic patterns and to 
-troubleshoot issues.
+Use the Amazon ELB integration to collect logs and metrics with detailed information about requests sent to the load
+balancer. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference those logs and metrics when troubleshooting an issue.
 
-Please follow [enable access logs for classic load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html)
-for sending Classic ELB access logs to S3 bucket.
-For application load balancer, please follow [enable access log for application load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html#enable-access-logging).
-For network load balancer, please follow [enable access log for network load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest//network/load-balancer-access-logs.html).
+For example, you could use this data to analyze traffic patterns, view healthy and unhealthy hosts, and track connection and backend errors.
+
+## Data streams
+
+The Amazon ELB integration collects two types of data: logs and metrics.
+
+**Logs** help you keep a record of events happening in Amazon ELB.
+Logs collected by the Amazon ELB integration include the time a request was received, the client's IP address, latencies, request paths, server responses, and more. See more details in the [Logs reference](#logs-reference).
+
+**Metrics** give you insight into the state of Amazon ELB.
+Metrics collected by the Amazon ELB integration include the host name, IP address, average latency, and more. See more details in the [Metrics reference](#metrics-reference).
+
+## Requirements
+
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+
+Before using any AWS integration you will need:
+
+* **AWS Credentials** to connect with your AWS account.
+* **AWS Permissions** to make sure the user you're using to connect has permission to share the relevant data.
+
+For more details about these requirements, see the **AWS** integration documentation.
+
+## Setup
+
+Use this integration if you only need to collect data from the Amazon ELB service.
+
+If you want to collect data from two or more AWS services, consider using the **AWS** integration.
+When you configure the AWS integration, you can collect data from as many AWS services as you'd like.
+
+For step-by-step instructions on how to set up an integration, see the
+[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+
+To send classic ELB access logs to an S3 bucket, see [enable access logs for classic load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html).
+
+For an application load balancer, see [enable access log for application load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html#enable-access-logging).
+
+For a network load balancer, see [enable access log for network load balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest//network/load-balancer-access-logs.html).
+
+## Logs reference
+
+The `elb` dataset collects logs from AWS ELBs.
 
 **Exported fields**
 
@@ -104,6 +139,7 @@ For network load balancer, please follow [enable access log for network load bal
 | source.geo.city_name | City name. | keyword |
 | source.geo.continent_name | Name of the continent. | keyword |
 | source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
 | source.geo.location | Longitude and latitude. | geo_point |
 | source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
@@ -115,6 +151,7 @@ For network load balancer, please follow [enable access log for network load bal
 | url.original.text | Multi-field of `url.original`. | match_only_text |
 | url.path | Path of the request, such as "/search". | wildcard |
 | url.port | Port of the request, such as 443. | long |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
@@ -224,74 +261,104 @@ An example event for `elb` looks as following:
         "version": "7.46.0"
     }
 }
-``` 
+```
 
-## Metrics
+## Metrics reference
 
 An example event for `elb` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-05-28T17:58:30.211Z",
+    "@timestamp": "2022-06-08T18:19:00.000Z",
     "agent": {
-        "id": "12f376ef-5186-4e8b-a175-70f1140a8f30",
-        "name": "MacBook-Elastic.local",
+        "name": "docker-fleet-agent",
+        "id": "90bfb41e-b925-420f-973e-9c1115297278",
         "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "17803f33-b617-4ce9-a9ac-e218c02aeb4b"
+        "ephemeral_id": "8c94e850-82e2-42ae-bd41-44ce7bbbb50c",
+        "version": "8.2.0"
     },
-    "ecs": {
-        "version": "1.5.0"
+    "elastic_agent": {
+        "id": "90bfb41e-b925-420f-973e-9c1115297278",
+        "version": "8.2.0",
+        "snapshot": false
     },
     "cloud": {
         "provider": "aws",
         "region": "eu-central-1",
         "account": {
-            "id": "428152502467",
-            "name": "elastic-beats"
+            "name": "elastic-beats",
+            "id": "123456789"
         }
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "aws.elb_metrics"
+    },
+    "service": {
+        "type": "aws"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.47-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": true,
+        "ip": [
+            "192.168.96.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02:42:c0:a8:60:07"
+        ],
+        "architecture": "x86_64"
+    },
+    "metricset": {
+        "period": 60000,
+        "name": "cloudwatch"
     },
     "aws": {
         "elb": {
             "metrics": {
-                "EstimatedALBNewConnectionCount": {
-                    "avg": 32
-                },
-                "EstimatedALBConsumedLCUs": {
-                    "avg": 0.00035000000000000005
-                },
-                "EstimatedProcessedBytes": {
-                    "avg": 967
-                },
-                "EstimatedALBActiveConnectionCount": {
-                    "avg": 5
-                },
                 "HealthyHostCount": {
                     "max": 2
                 },
                 "UnHealthyHostCount": {
                     "max": 0
+                },
+                "HTTPCode_Backend_4XX": {
+                    "sum": 2
+                },
+                "HTTPCode_Backend_2XX": {
+                    "sum": 31
+                },
+                "RequestCount": {
+                    "sum": 33
+                },
+                "Latency": {
+                    "avg": 0.0010771534659645772
                 }
             }
         },
         "cloudwatch": {
             "namespace": "AWS/ELB"
-        },
-        "dimensions": {
-            "LoadBalancerName": "filebeat-aws-elb-test-elb"
         }
     },
-    "metricset": {
-        "name": "elb",
-        "period": 60000
-    },
     "event": {
-        "dataset": "aws.elb_metrics",
+        "duration": 15866718200,
+        "agent_id_status": "verified",
+        "ingested": "2022-06-08T18:20:24Z",
         "module": "aws",
-        "duration": 15044430616
-    },
-    "service": {
-        "type": "aws"
+        "dataset": "aws.elb_metrics"
     }
 }
 ```
@@ -301,7 +368,6 @@ An example event for `elb` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | object |
 | aws.applicationelb.metrics.ActiveConnectionCount.sum | The total number of concurrent TCP connections active from clients to the load balancer and from the load balancer to targets. | long |
 | aws.applicationelb.metrics.ClientTLSNegotiationErrorCount.sum | The number of TLS connections initiated by the client that did not establish a session with the load balancer due to a TLS error. | long |
 | aws.applicationelb.metrics.ConsumedLCUs.avg | The number of load balancer capacity units (LCU) used by your load balancer. | double |
@@ -366,14 +432,14 @@ An example event for `elb` looks as following:
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -404,4 +470,3 @@ An example event for `elb` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
-

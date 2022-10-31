@@ -3,7 +3,7 @@ description: Pipeline for parsing cisco_duo telephony logs
 processors:
   - set:
       field: ecs.version
-      value: '8.2.0'
+      value: '8.4.0'
   - set:
       field: event.kind
       value: event
@@ -15,6 +15,8 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - drop:
+      if: ctx.json?.response instanceof List && ctx.json.response.length == 0
   - fingerprint:
       fields:
         - json.timestamp
@@ -26,9 +28,13 @@ processors:
   - date:
       field: json.timestamp
       target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.timestamp != null
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - rename:
       field: json.context
       target_field: cisco_duo.telephony.event_type
@@ -54,6 +60,6 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{{_ingest.on_failure_message}}}"

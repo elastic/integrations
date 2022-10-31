@@ -1,0 +1,31 @@
+paths:
+{{#each paths as |path i|}}
+ - {{path}}
+{{/each}}
+{{#if condition}}
+condition: {{ condition }}
+{{/if}}
+{{#if symlinks}}
+prospector.scanner.symlinks: {{ symlinks }}
+{{/if}}
+{{#if cri_parser}}
+parsers:
+- container:
+    stream: stdout
+    format: cri
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+prospector.scanner.exclude_files:: [".gz$"]
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

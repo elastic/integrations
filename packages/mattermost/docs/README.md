@@ -1,6 +1,8 @@
 # Mattermost Integration
 
-The Mattermost integration collects logs from Mattermost servers.  This integration has been tested with Mattermost version 5.31.9 but is expected to work with other versions.
+The Mattermost integration collects logs from [Mattermost](
+https://docs.mattermost.com/) servers.  This integration has been tested with
+Mattermost version 5.31.9 but is expected to work with other versions.
 
 ## Logs
 
@@ -136,7 +138,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",

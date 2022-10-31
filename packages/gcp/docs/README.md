@@ -1,6 +1,4 @@
-# Google Cloud Integration
-
-## Overview
+# Google Cloud Platform Integration
 
 The Google Cloud integration collects and parses Google Cloud [Audit Logs](https://cloud.google.com/logging/docs/audit), [VPC Flow Logs](https://cloud.google.com/vpc/docs/using-flow-logs), [Firewall Rules Logs](https://cloud.google.com/vpc/docs/firewall-rules-logging) and [Cloud DNS Logs](https://cloud.google.com/dns/docs/monitoring) that have been exported from Cloud Logging to a Google Pub/Sub topic sink.
 
@@ -112,19 +110,16 @@ More example filters for different log types:
 resource.type="gce_subnetwork" AND
 log_id("compute.googleapis.com/vpc_flows") AND
 resource.labels.subnetwork_name"=[SUBNET_NAME]"
-
 #
 # Audit: Google Compute Engine firewall rule deletion
 #
 resource.type="gce_firewall_rule" AND
 log_id("cloudaudit.googleapis.com/activity") AND
 protoPayload.methodName:"firewalls.delete"
-
 #
 # DNS: all DNS queries
 #
 resource.type="dns_query"
-
 #
 # Firewall: logs for a given country
 #
@@ -187,6 +182,8 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| client.user.email | User email address. | keyword |
+| client.user.id | Unique identifier of the user. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -205,6 +202,8 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.code | Error code describing the error. | keyword |
+| error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
@@ -216,30 +215,27 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | gcp.audit.authentication_info.authority_selector | The authority selector specified by the requestor, if any. It is not guaranteed  that the principal was allowed to use this authority. | keyword |
 | gcp.audit.authentication_info.principal_email | The email address of the authenticated user making the request. | keyword |
+| gcp.audit.authentication_info.principal_subject | String representation of identity of requesting party. Populated for both first and third party identities. Only present for APIs that support third-party identities. | keyword |
 | gcp.audit.authorization_info.granted | Whether or not authorization for resource and permission was granted. | boolean |
 | gcp.audit.authorization_info.permission | The required IAM permission. | keyword |
+| gcp.audit.authorization_info.resource | The resource being accessed, as a REST-style string. | keyword |
 | gcp.audit.authorization_info.resource_attributes.name | The name of the resource. | keyword |
 | gcp.audit.authorization_info.resource_attributes.service | The name of the service. | keyword |
 | gcp.audit.authorization_info.resource_attributes.type | The type of the resource. | keyword |
+| gcp.audit.labels | A map of key, value pairs that provides additional information about the log entry. The labels can be user-defined or system-defined. | flattened |
+| gcp.audit.logentry_operation.first | Optional. Set this to True if this is the first log entry in the operation. | boolean |
+| gcp.audit.logentry_operation.id | Optional. An arbitrary operation identifier. Log entries with the same identifier are assumed to be part of the same operation. | keyword |
+| gcp.audit.logentry_operation.last | Optional. Set this to True if this is the last log entry in the operation. | boolean |
+| gcp.audit.logentry_operation.producer | Optional. An arbitrary producer identifier. The combination of id and producer must be globally unique. | keyword |
 | gcp.audit.method_name | The name of the service method or operation. For API calls, this  should be the name of the API method.  For example, 'google.datastore.v1.Datastore.RunQuery'. | keyword |
 | gcp.audit.num_response_items | The number of items returned from a List or Query API method, if applicable. | long |
-| gcp.audit.request.filter | Filter of the request. | keyword |
-| gcp.audit.request.name | Name of the request. | keyword |
-| gcp.audit.request.proto_name | Type property of the request. | keyword |
-| gcp.audit.request.resource_name | Name of the request resource. | keyword |
+| gcp.audit.request |  | flattened |
 | gcp.audit.request_metadata.caller_ip | The IP address of the caller. | ip |
 | gcp.audit.request_metadata.caller_supplied_user_agent | The user agent of the caller. This information is not authenticated and  should be treated accordingly. | keyword |
 | gcp.audit.request_metadata.raw.caller_ip | The raw IP address of the caller. | keyword |
-| gcp.audit.resource_location.current_locations | Current locations of the resource. | keyword |
+| gcp.audit.resource_location.current_locations | Current locations of the resource. | array |
 | gcp.audit.resource_name | The resource or collection that is the target of the operation.  The name is a scheme-less URI, not including the API service name.  For example, 'shelves/SHELF_ID/books'. | keyword |
-| gcp.audit.response.details.group | The name of the group. | keyword |
-| gcp.audit.response.details.kind | The kind of the response details. | keyword |
-| gcp.audit.response.details.name | The name of the response details. | keyword |
-| gcp.audit.response.details.uid | The uid of the response details. | keyword |
-| gcp.audit.response.proto_name | Type property of the response. | keyword |
-| gcp.audit.response.status.allowed |  | boolean |
-| gcp.audit.response.status.reason |  | keyword |
-| gcp.audit.response.status.value |  | keyword |
+| gcp.audit.response |  | flattened |
 | gcp.audit.service_name | The name of the API service performing the operation.  For example, datastore.googleapis.com. | keyword |
 | gcp.audit.status.code | The status code, which should be an enum value of google.rpc.Code. | integer |
 | gcp.audit.status.message | A developer-facing error message, which should be in English. Any user-facing  error message should be localized and sent in the google.rpc.Status.details  field, or localized by the client. | keyword |
@@ -275,6 +271,7 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
@@ -288,6 +285,7 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 | orchestrator.resource.type | Type of resource being acted upon. | keyword |
 | orchestrator.type | Orchestrator cluster type (e.g. kubernetes, nomad or cloudfoundry). | keyword |
 | service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
@@ -322,16 +320,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
     "agent": {
-        "ephemeral_id": "0365945c-c25a-4f02-b62c-a94a0b661f02",
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "ephemeral_id": "9edf0b6c-05b7-451e-83ad-13b2a23bf4e5",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.3"
+    },
+    "client": {
+        "user": {
+            "email": "xxx@xxx.xxx"
+        }
     },
     "cloud": {
         "project": {
             "id": "elastic-beats"
-        }
+        },
+        "provider": "gcp"
     },
     "data_stream": {
         "dataset": "gcp.audit",
@@ -339,28 +343,34 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.3"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
         "agent_id_status": "verified",
-        "created": "2021-12-31T03:10:44.655Z",
+        "category": [
+            "network",
+            "configuration"
+        ],
+        "created": "2022-06-28T02:45:52.230Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2021-12-31T03:10:45Z",
+        "ingested": "2022-06-28T02:45:53Z",
         "kind": "event",
-        "outcome": "success"
+        "outcome": "success",
+        "provider": "data_access",
+        "type": [
+            "access",
+            "allowed"
+        ]
     },
     "gcp": {
         "audit": {
-            "authentication_info": {
-                "principal_email": "xxx@xxx.xxx"
-            },
             "authorization_info": [
                 {
                     "granted": true,
@@ -372,14 +382,9 @@ An example event for `audit` looks as following:
                     }
                 }
             ],
-            "method_name": "beta.compute.instances.aggregatedList",
             "num_response_items": 61,
             "request": {
-                "proto_name": "type.googleapis.com/compute.instances.aggregatedList"
-            },
-            "request_metadata": {
-                "caller_ip": "192.168.1.1",
-                "caller_supplied_user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:71.0) Gecko/20100101 Firefox/71.0,gzip(gfe),gzip(gfe)"
+                "@type": "type.googleapis.com/compute.instances.aggregatedList"
             },
             "resource_location": {
                 "current_locations": [
@@ -388,18 +393,17 @@ An example event for `audit` looks as following:
             },
             "resource_name": "projects/elastic-beats/global/instances",
             "response": {
+                "@type": "core.k8s.io/v1.Status",
+                "apiVersion": "v1",
                 "details": {
                     "group": "batch",
                     "kind": "jobs",
                     "name": "gsuite-exporter-1589294700",
                     "uid": "2beff34a-945f-11ea-bacf-42010a80007f"
                 },
-                "proto_name": "core.k8s.io/v1.Status",
-                "status": {
-                    "value": "Success"
-                }
+                "kind": "Status",
+                "status_value": "Success"
             },
-            "service_name": "compute.googleapis.com",
             "type": "type.googleapis.com/google.cloud.audit.AuditLog"
         }
     },
@@ -407,6 +411,7 @@ An example event for `audit` looks as following:
         "type": "gcp-pubsub"
     },
     "log": {
+        "level": "INFO",
         "logger": "projects/elastic-beats/logs/cloudaudit.googleapis.com%2Fdata_access"
     },
     "service": {
@@ -419,9 +424,6 @@ An example event for `audit` looks as following:
         "forwarded",
         "gcp-audit"
     ],
-    "user": {
-        "email": "xxx@xxx.xxx"
-    },
     "user_agent": {
         "device": {
             "name": "Mac"
@@ -537,7 +539,7 @@ The `firewall` dataset collects logs from Firewall Rules in your Virtual Private
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
@@ -571,17 +573,18 @@ An example event for `firewall` looks as following:
 {
     "@timestamp": "2019-10-30T13:52:42.191Z",
     "agent": {
-        "ephemeral_id": "4fed48b9-0848-4ceb-88b1-30fb7da99604",
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "ephemeral_id": "da5a2e43-d26c-4ee3-bbf3-ad9d9ab853ec",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.3"
     },
     "cloud": {
         "availability_zone": "us-east1-b",
         "project": {
             "id": "test-beats"
         },
+        "provider": "gcp",
         "region": "us-east1"
     },
     "data_stream": {
@@ -596,21 +599,21 @@ An example event for `firewall` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.3"
     },
     "event": {
         "action": "firewall-rule",
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2021-12-31T03:11:30.136Z",
+        "created": "2022-06-28T02:47:26.097Z",
         "dataset": "gcp.firewall",
         "id": "1f21ciqfpfssuo",
-        "ingested": "2021-12-31T03:11:31Z",
+        "ingested": "2022-06-28T02:47:27Z",
         "kind": "event",
         "type": "connection"
     },
@@ -781,7 +784,7 @@ The `vpcflow` dataset collects logs sent from and received by VM instances, incl
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -818,11 +821,19 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "e58d02a0-e7a0-45c0-aba6-a8c983782744",
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "ephemeral_id": "cb760ad9-6bf9-465b-9022-e5de8df2ba82",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.3"
+    },
+    "cloud": {
+        "availability_zone": "us-east1-b",
+        "project": {
+            "id": "my-sample-project"
+        },
+        "provider": "gcp",
+        "region": "us-east1"
     },
     "data_stream": {
         "dataset": "gcp.vpcflow",
@@ -830,43 +841,44 @@ An example event for `vpcflow` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "67.43.156.13",
-        "as": {
-            "number": 35908
-        },
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.13",
-        "port": 33478
+        "address": "10.139.99.242",
+        "domain": "elasticsearch",
+        "ip": "10.139.99.242",
+        "port": 9200
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2021-12-31T03:12:25.823Z",
+        "created": "2022-06-28T02:48:14.443Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:45:37.301953198Z",
-        "id": "ut8lbrffooxyw",
-        "ingested": "2021-12-31T03:12:26Z",
+        "end": "2019-06-14T03:49:51.821056075Z",
+        "id": "ut8lbrffooxz5",
+        "ingested": "2022-06-28T02:48:15Z",
         "kind": "event",
-        "start": "2019-06-14T03:45:37.186193305Z",
+        "start": "2019-06-14T03:40:20.510622432Z",
         "type": "connection"
     },
     "gcp": {
+        "destination": {
+            "instance": {
+                "project_id": "my-sample-project",
+                "region": "us-east1",
+                "zone": "us-east1-b"
+            },
+            "vpc": {
+                "project_id": "my-sample-project",
+                "subnetwork_name": "default",
+                "vpc_name": "default"
+            }
+        },
         "source": {
             "instance": {
                 "project_id": "my-sample-project",
@@ -880,9 +892,9 @@ An example event for `vpcflow` looks as following:
             }
         },
         "vpcflow": {
-            "reporter": "SRC",
+            "reporter": "DEST",
             "rtt": {
-                "ms": 36
+                "ms": 201
             }
         }
     },
@@ -893,27 +905,40 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 1776,
-        "community_id": "1:Wa+aonxAQZ59AWtNdQD0CH6FnsM=",
-        "direction": "outbound",
+        "bytes": 11773,
+        "community_id": "1:FYaJFSEAKLcBCMFoT6sR5TMHf/s=",
+        "direction": "internal",
         "iana_number": "6",
-        "packets": 7,
+        "name": "default",
+        "packets": 94,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "10.87.40.76",
-            "67.43.156.13"
+            "67.43.156.13",
+            "10.139.99.242"
         ]
     },
     "source": {
-        "address": "10.87.40.76",
-        "bytes": 1776,
+        "address": "67.43.156.13",
+        "as": {
+            "number": 35908
+        },
+        "bytes": 11773,
         "domain": "kibana",
-        "ip": "10.87.40.76",
-        "packets": 7,
-        "port": 5601
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "packets": 94,
+        "port": 33576
     },
     "tags": [
         "forwarded",
@@ -982,6 +1007,8 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | gcp.dns.server_latency | Server latency. | integer |
 | gcp.dns.source_ip | Source IP address of the query. | ip |
 | gcp.dns.source_network | Source network of the query. | keyword |
+| gcp.dns.source_type | Type of source generating the DNS query: private-zone, public-zone, forwarding-zone, forwarding-policy, peering-zone, internal, external, internet | keyword |
+| gcp.dns.target_type | Type of target resolving the DNS query: private-zone, public-zone, forwarding-zone, forwarding-policy, peering-zone, internal, external, internet | keyword |
 | gcp.dns.vm_instance_id | Compute Engine VM instance ID, only applicable to queries initiated by Compute Engine VMs. | keyword |
 | gcp.dns.vm_instance_name | Compute Engine VM instance name, only applicable to queries initiated by Compute Engine VMs. | keyword |
 | gcp.dns.vm_project_id | Google Cloud project ID, only applicable to queries initiated by Compute Engine VMs. | keyword |
@@ -1004,9 +1031,14 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
@@ -1016,77 +1048,495 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-23T09:16:05.341Z",
+    "@timestamp": "2021-12-12T15:59:40.446Z",
+    "agent": {
+        "ephemeral_id": "87190725-9632-41a5-ba26-ebffca397d74",
+        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.1"
+    },
     "cloud": {
-        "availability_zone": "europe-west2-a",
-        "instance": {
-            "id": "8340998530665147",
-            "name": "instance"
-        },
         "project": {
-            "id": "project"
+            "id": "key-reference-123456"
         },
-        "region": "europe-west2"
+        "provider": "gcp",
+        "region": "global"
+    },
+    "data_stream": {
+        "dataset": "gcp.dns",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "216.239.32.106",
+        "ip": "216.239.32.106"
     },
     "dns": {
         "answers": [
             {
                 "class": "IN",
-                "data": "127.0.0.1",
-                "name": "elastic.co",
-                "ttl": "300",
+                "data": "67.43.156.13",
+                "name": "asdf.gcp.example.com.",
+                "ttl": 300,
                 "type": "A"
             }
         ],
         "question": {
-            "name": "elastic.co",
-            "registered_domain": "elastic.co",
-            "top_level_domain": "co",
+            "name": "asdf.gcp.example.com",
+            "registered_domain": "example.com",
+            "subdomain": "asdf.gcp",
+            "top_level_domain": "com",
             "type": "A"
         },
         "resolved_ip": [
-            "127.0.0.1"
+            "67.43.156.13"
         ],
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.4.0"
+    },
+    "elastic_agent": {
+        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
+        "snapshot": false,
+        "version": "8.4.1"
     },
     "event": {
-        "id": "vwroyze8pg7y",
+        "action": "dns-query",
+        "agent_id_status": "verified",
+        "category": "network",
+        "created": "2022-10-03T22:33:56.157Z",
+        "dataset": "gcp.dns",
+        "id": "zir4wud11tm",
+        "ingested": "2022-10-03T22:33:57Z",
         "kind": "event",
-        "outcome": "success",
-        "original": "{\"insertId\":\"vwroyze8pg7y\",\"jsonPayload\":{\"authAnswer\":true,\"protocol\":\"UDP\",\"queryName\":\"elastic.co.\",\"queryType\":\"A\",\"rdata\":\"elastic.co.\\t300\\tIN\\ta\\t127.0.0.1\",\"responseCode\":\"NOERROR\",\"serverLatency\":14,\"sourceIP\":\"10.154.0.3\",\"sourceNetwork\":\"default\",\"vmInstanceId\":8340998530665147,\"vmInstanceIdString\":\"8340998530665147\",\"vmInstanceName\":\"694119234537.instance\",\"vmProjectId\":\"project\",\"vmZoneName\":\"europe-west2-a\"},\"logName\":\"projects/project/logs/dns.googleapis.com%2Fdns_queries\",\"receiveTimestamp\":\"2022-01-23T09:16:05.502805637Z\",\"resource\":{\"labels\":{\"location\":\"europe-west2\",\"project_id\":\"project\",\"source_type\":\"gce-vm\",\"target_name\":\"\",\"target_type\":\"external\"},\"type\":\"dns_query\"},\"severity\":\"INFO\",\"timestamp\":\"2022-01-23T09:16:05.341873447Z\"}"
+        "outcome": "success"
     },
     "gcp": {
         "dns": {
             "auth_answer": true,
+            "destination_ip": "216.239.32.106",
             "protocol": "UDP",
-            "query_name": "elastic.co.",
+            "query_name": "asdf.gcp.example.com.",
             "query_type": "A",
-            "rdata": "elastic.co.\t300\tIN\ta\t127.0.0.1",
             "response_code": "NOERROR",
-            "server_latency": 14,
-            "source_ip": "10.154.0.3",
-            "source_network": "default",
-            "vm_instance_id": "8340998530665147",
-            "vm_instance_name": "694119234537.instance",
-            "vm_project_id": "project",
-            "vm_zone_name": "europe-west2-a"
+            "server_latency": 0,
+            "source_type": "internet",
+            "target_type": "public-zone"
         }
     },
+    "input": {
+        "type": "gcp-pubsub"
+    },
     "log": {
-        "logger": "projects/project/logs/dns.googleapis.com%2Fdns_queries"
+        "level": "INFO",
+        "logger": "projects/key-reference-123456/logs/dns.googleapis.com%2Fdns_queries"
     },
     "network": {
+        "iana_number": "17",
+        "protocol": "dns",
         "transport": "udp"
     },
-    "source": {
-        "address": "10.154.0.3",
-        "ip": "10.154.0.3"
+    "related": {
+        "hosts": [
+            "asdf.gcp.example.com"
+        ],
+        "ip": [
+            "67.43.156.13",
+            "216.239.32.106"
+        ]
     },
     "tags": [
-        "preserve_original_event"
+        "forwarded",
+        "gcp-dns"
     ]
+}
+```
+
+## Metrics
+
+### Billing
+
+The `billing` dataset collects GCP Billing information from Google Cloud BigQuery daily cost detail table.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
+| error.message | Error message. | match_only_text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| gcp.billing.billing_account_id | Project Billing Account ID. | keyword |
+| gcp.billing.cost_type | Cost types include regular, tax, adjustment, and rounding_error. | keyword |
+| gcp.billing.invoice_month | Billing report month. | keyword |
+| gcp.billing.project_id | Project ID of the billing report belongs to. | keyword |
+| gcp.billing.project_name | Project Name of the billing report belongs to. | keyword |
+| gcp.billing.total | Total billing amount. | float |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+
+
+An example event for `billing` looks as following:
+
+```json
+{
+    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "cloud": {
+        "account": {
+            "id": "01475F-5B1080-1137E7"
+        },
+        "project": {
+            "id": "elastic-bi",
+            "name": "elastic-containerlib-prod"
+        },
+        "provider": "gcp"
+    },
+    "event": {
+        "dataset": "gcp.billing",
+        "duration": 115000,
+        "module": "gcp"
+    },
+    "gcp": {
+        "billing": {
+            "billing_account_id": "01475F-5B1080-1137E7",
+            "cost_type": "regular",
+            "invoice_month": "202106",
+            "project_id": "containerlib-prod-12763",
+            "project_name": "elastic-containerlib-prod",
+            "total": 4717.170681
+        }
+    },
+    "metricset": {
+        "name": "billing",
+        "period": 10000
+    },
+    "service": {
+        "type": "gcp"
+    }
+}
+```
+
+### Compute
+
+The `compute` dataset is designed to fetch metrics for [Compute Engine](https://cloud.google.com/compute/) Virtual Machines in Google Cloud Platform.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
+| error.message | Error message. | match_only_text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| gcp.compute.firewall.dropped.bytes | Incoming bytes dropped by the firewall | long |
+| gcp.compute.firewall.dropped_packets_count.value | Incoming packets dropped by the firewall | long |
+| gcp.compute.instance.cpu.reserved_cores.value | Number of cores reserved on the host of the instance | double |
+| gcp.compute.instance.cpu.usage.pct | The fraction of the allocated CPU that is currently in use on the instance | double |
+| gcp.compute.instance.cpu.usage_time.sec | Usage for all cores in seconds | double |
+| gcp.compute.instance.disk.read.bytes | Count of bytes read from disk | long |
+| gcp.compute.instance.disk.read_ops_count.value | Count of disk read IO operations | long |
+| gcp.compute.instance.disk.write.bytes | Count of bytes written to disk | long |
+| gcp.compute.instance.disk.write_ops_count.value | Count of disk write IO operations | long |
+| gcp.compute.instance.memory.balloon.ram_size.value | The total amount of memory in the VM. This metric is only available for VMs that belong to the e2 family. | long |
+| gcp.compute.instance.memory.balloon.ram_used.value | Memory currently used in the VM. This metric is only available for VMs that belong to the e2 family. | long |
+| gcp.compute.instance.memory.balloon.swap_in.bytes | The amount of memory read into the guest from its own swap space. This metric is only available for VMs that belong to the e2 family. | long |
+| gcp.compute.instance.memory.balloon.swap_out.bytes | The amount of memory written from the guest to its own swap space. This metric is only available for VMs that belong to the e2 family. | long |
+| gcp.compute.instance.network.egress.bytes | Count of bytes sent over the network | long |
+| gcp.compute.instance.network.egress.packets.count | Count of packets sent over the network | long |
+| gcp.compute.instance.network.ingress.bytes | Count of bytes received from the network | long |
+| gcp.compute.instance.network.ingress.packets.count | Count of packets received from the network | long |
+| gcp.compute.instance.uptime.sec | Number of seconds the VM has been running. | long |
+| gcp.compute.instance.uptime_total.sec | Elapsed time since the VM was started, in seconds. Sampled every 60 seconds. After sampling, data is not visible for up to 120 seconds. | long |
+| gcp.labels.metadata.\* |  | object |
+| gcp.labels.metrics.\* |  | object |
+| gcp.labels.resource.\* |  | object |
+| gcp.labels.system.\* |  | object |
+| gcp.labels.user.\* |  | object |
+| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+
+
+An example event for `compute` looks as following:
+
+```json
+{
+    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev",
+            "name": "elastic-obs-integrations-dev"
+        },
+        "instance": {
+            "id": "4751091017865185079",
+            "name": "gke-cluster-1-default-pool-6617a8aa-5clh"
+        },
+        "machine": {
+            "type": "e2-medium"
+        },
+        "provider": "gcp",
+        "availability_zone": "us-central1-c",
+        "region": "us-central1"
+    },
+    "event": {
+        "dataset": "gcp.compute",
+        "duration": 115000,
+        "module": "gcp"
+    },
+    "gcp": {
+        "compute": {
+            "firewall": {
+                "dropped": {
+                    "bytes": 421
+                },
+                "dropped_packets_count": {
+                    "value": 4
+                }
+            },
+            "instance": {
+                "cpu": {
+                    "reserved_cores": {
+                        "value": 1
+                    },
+                    "usage": {
+                        "pct": 0.07259952346383708
+                    },
+                    "usage_time": {
+                        "sec": 4.355971407830225
+                    }
+                },
+                "memory": {
+                    "balloon": {
+                        "ram_size": {
+                            "value": 4128378880
+                        },
+                        "ram_used": {
+                            "value": 2190848000
+                        },
+                        "swap_in": {
+                            "bytes": 0
+                        },
+                        "swap_out": {
+                            "bytes": 0
+                        }
+                    }
+                },
+                "uptime": {
+                    "sec": 60.00000000000091
+                }
+            }
+        },
+        "labels": {
+            "user": {
+                "goog-gke-node": ""
+            }
+        }
+    },
+    "host": {
+        "id": "4751091017865185079",
+        "name": "gke-cluster-1-default-pool-6617a8aa-5clh"
+    },
+    "metricset": {
+        "name": "compute",
+        "period": 10000
+    },
+    "service": {
+        "type": "gcp"
+    }
+}
+```
+
+### Firestore
+
+The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.com/firestore/) in Google Cloud Platform.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error | These fields can represent errors of any kind. Use them for errors that happen while fetching events or in cases where the event itself contains an error. | group |
+| error.message | Error message. | match_only_text |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| gcp.firestore.document.delete.count | The number of successful document deletes. | long |
+| gcp.firestore.document.read.count | The number of successful document reads from queries or lookups. | long |
+| gcp.firestore.document.write.count | The number of successful document writes. | long |
+| gcp.labels.metadata.\* |  | object |
+| gcp.labels.metrics.\* |  | object |
+| gcp.labels.resource.\* |  | object |
+| gcp.labels.system.\* |  | object |
+| gcp.labels.user.\* |  | object |
+| gcp.metrics.\*.\*.\*.\* | Metrics that returned from Google Cloud API query. | object |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+
+
+An example event for `firestore` looks as following:
+
+```json
+{
+    "@timestamp": "2017-10-12T08:05:34.853Z",
+    "cloud": {
+        "account": {
+            "id": "elastic-obs-integrations-dev",
+            "name": "elastic-obs-integrations-dev"
+        },
+        "instance": {
+            "id": "4751091017865185079",
+            "name": "gke-cluster-1-default-pool-6617a8aa-5clh"
+        },
+        "machine": {
+            "type": "e2-medium"
+        },
+        "provider": "gcp",
+        "availability_zone": "us-central1-c",
+        "region": "us-central1"
+    },
+    "event": {
+        "dataset": "gcp.firestore",
+        "duration": 115000,
+        "module": "gcp"
+    },
+    "gcp": {
+        "firestore": {
+            "document": {
+                "delete": {
+                    "count": 3
+                },
+                "read": {
+                    "count": 10
+                },
+                "write": {
+                    "count": 1
+                }
+            }
+        },
+        "labels": {
+            "user": {
+                "goog-gke-node": ""
+            }
+        }
+    },
+    "host": {
+        "id": "4751091017865185079",
+        "name": "gke-cluster-1-default-pool-6617a8aa-5clh"
+    },
+    "metricset": {
+        "name": "firestore",
+        "period": 10000
+    },
+    "service": {
+        "type": "gcp"
+    }
 }
 ```

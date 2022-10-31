@@ -4,17 +4,11 @@ The `elasticsearch` package collects metrics and logs of Elasticsearch.
 
 ## Compatibility
 
-The `elasticsearch` package can monitor Elasticsearch 6.7.0 and later.
+The `elasticsearch` package can monitor Elasticsearch 8.5.0 and later.
 
 ## Logs
 
-NOTE: If you're running against Elasticsearch >= 7.0.0, configure the
-`var.paths` setting to point to JSON logs. Otherwise, configure it
-to point to plain text logs.
-
-### Compatibility
-
-The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and newer.
+NOTE: Configure the `var.paths` setting to point to JSON logs.
 
 ### Audit
 
@@ -26,13 +20,16 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.audit.action | The name of the action that was executed | keyword |
+| elasticsearch.audit.authentication.type |  | keyword |
 | elasticsearch.audit.component |  | keyword |
 | elasticsearch.audit.event_type | The type of event that occurred: anonymous_access_denied, authentication_failed, access_denied, access_granted, connection_granted, connection_denied, tampered_request, run_as_granted, run_as_denied | keyword |
 | elasticsearch.audit.indices | Indices accessed by action | keyword |
 | elasticsearch.audit.invalidate.apikeys.owned_by_authenticated_user |  | boolean |
 | elasticsearch.audit.layer | The layer from which this event originated: rest, transport or ip_filter | keyword |
 | elasticsearch.audit.message |  | text |
+| elasticsearch.audit.opaque_id |  | keyword |
 | elasticsearch.audit.origin.type | Where the request originated: rest (request originated from a REST API request), transport (request was received on the transport channel), local_node (the local node issued the request) | keyword |
 | elasticsearch.audit.realm | The authentication realm the authentication was validated against | keyword |
 | elasticsearch.audit.request.id | Unique ID of request | keyword |
@@ -53,8 +50,20 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | http | Fields related to HTTP activity. Use the `url` field set to store the url of the request. | group |
 | http.request.body.content | The full HTTP request body. | wildcard |
 | http.request.body.content.text | Multi-field of `http.request.body.content`. | match_only_text |
+| http.request.id | A unique identifier for each HTTP request to correlate logs between clients and servers in transactions. The id may be contained in a non-standard HTTP header, such as `X-Request-ID` or `X-Correlation-ID`. | keyword |
+| http.request.method | HTTP request method. Prior to ECS 1.6.0 the following guidance was provided: "The field value must be normalized to lowercase for querying." As of ECS 1.6.0, the guidance is deprecated because the original case of the method may be useful in anomaly detection.  Original case will be mandated in ECS 2.0.0 | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| related.user |  | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 | source | Source fields capture details about the sender of a network exchange/packet. These fields are populated from a network event, packet, or other event containing details of a network transaction. Source fields are usually populated in conjunction with destination fields. The source and destination fields are considered the baseline and should always be filled if an event contains source and destination details from a network transaction. If the event also contains identification of the client and server roles, then the client and server fields should also be populated. | group |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.port | Port of the source. | long |
+| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 | url | URL fields provide support for complete or partial URLs, and supports the breaking down into scheme, domain, path, and so on. | group |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
@@ -73,14 +82,28 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.name | Name of the cluster | keyword |
 | elasticsearch.cluster.uuid | UUID of the cluster | keyword |
 | elasticsearch.component | Elasticsearch component from where the log event originated | keyword |
+| elasticsearch.elastic_product_origin |  | keyword |
+| elasticsearch.event.category |  | keyword |
+| elasticsearch.http.request.x_opaque_id |  | keyword |
 | elasticsearch.index.id | Index id | keyword |
 | elasticsearch.index.name | Index name | keyword |
 | elasticsearch.node.id | ID of the node | keyword |
 | elasticsearch.node.name | Name of the node | keyword |
 | elasticsearch.shard.id | Id of the shard | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.thread.name | Thread name. | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 
 
 ### Garbage collection
@@ -93,6 +116,7 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.name | Name of the cluster | keyword |
 | elasticsearch.cluster.uuid | UUID of the cluster | keyword |
 | elasticsearch.component | Elasticsearch component from where the log event originated | keyword |
@@ -121,6 +145,12 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | elasticsearch.node.id | ID of the node | keyword |
 | elasticsearch.node.name | Name of the node | keyword |
 | elasticsearch.shard.id | Id of the shard | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.pid | Process id. | long |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 ### Server
@@ -133,6 +163,7 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.name | Name of the cluster | keyword |
 | elasticsearch.cluster.uuid | UUID of the cluster | keyword |
 | elasticsearch.component | Elasticsearch component from where the log event originated | keyword |
@@ -146,7 +177,20 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | elasticsearch.server.gc.young.one |  | long |
 | elasticsearch.server.gc.young.two |  | long |
 | elasticsearch.server.stacktrace |  | keyword |
+| elasticsearch.server.tags |  | nested |
 | elasticsearch.shard.id | Id of the shard | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.thread.name | Thread name. | keyword |
+| server.name |  | keyword |
+| server.type |  | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 
 
 ### Slowlog
@@ -159,6 +203,7 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.name | Name of the cluster | keyword |
 | elasticsearch.cluster.uuid | UUID of the cluster | keyword |
 | elasticsearch.component | Elasticsearch component from where the log event originated | keyword |
@@ -177,9 +222,19 @@ The Elasticsearch package is compatible with logs from Elasticsearch 6.2 and new
 | elasticsearch.slowlog.stats | Stats groups | keyword |
 | elasticsearch.slowlog.took | Time it took to execute the query | keyword |
 | elasticsearch.slowlog.total_hits | Total hits | keyword |
-| elasticsearch.slowlog.total_shards | Total queried shards | keyword |
+| elasticsearch.slowlog.total_shards | Total queried shards | long |
 | elasticsearch.slowlog.type | Type | keyword |
 | elasticsearch.slowlog.types | Types | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.thread.name | Thread name. | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 
 
 ## Metrics
@@ -214,9 +269,41 @@ will not collect metrics. A DEBUG log message about this will be emitted in the 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| ccr_auto_follow_stats.follower.failed_read_requests |  | alias |
+| ccr_auto_follow_stats.number_of_failed_follow_indices |  | alias |
+| ccr_auto_follow_stats.number_of_failed_remote_cluster_state_requests |  | alias |
+| ccr_auto_follow_stats.number_of_successful_follow_indices |  | alias |
+| ccr_stats.bytes_read |  | alias |
+| ccr_stats.failed_read_requests |  | alias |
+| ccr_stats.failed_write_requests |  | alias |
+| ccr_stats.follower_aliases_version |  | alias |
+| ccr_stats.follower_global_checkpoint |  | alias |
+| ccr_stats.follower_index |  | alias |
+| ccr_stats.follower_mapping_version |  | alias |
+| ccr_stats.follower_max_seq_no |  | alias |
+| ccr_stats.follower_settings_version |  | alias |
+| ccr_stats.last_requested_seq_no |  | alias |
+| ccr_stats.leader_global_checkpoint |  | alias |
+| ccr_stats.leader_index |  | alias |
+| ccr_stats.leader_max_seq_no |  | alias |
+| ccr_stats.operations_read |  | alias |
+| ccr_stats.operations_written |  | alias |
+| ccr_stats.outstanding_read_requests |  | alias |
+| ccr_stats.outstanding_write_requests |  | alias |
+| ccr_stats.remote_cluster |  | alias |
+| ccr_stats.shard_id |  | alias |
+| ccr_stats.successful_read_requests |  | alias |
+| ccr_stats.successful_write_requests |  | alias |
+| ccr_stats.total_read_remote_exec_time_millis |  | alias |
+| ccr_stats.total_read_time_millis |  | alias |
+| ccr_stats.total_write_time_millis |  | alias |
+| ccr_stats.write_buffer_operation_count |  | alias |
+| ccr_stats.write_buffer_size_in_bytes |  | alias |
+| cluster_uuid |  | alias |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.ccr.auto_follow.failed.follow_indices.count |  | long |
 | elasticsearch.ccr.auto_follow.failed.remote_cluster_state_requests.count |  | long |
 | elasticsearch.ccr.auto_follow.success.follow_indices.count |  | long |
@@ -256,6 +343,18 @@ will not collect metrics. A DEBUG log message about this will be emitted in the 
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| timestamp |  | alias |
+
 
 ### Cluster Stats
 
@@ -361,9 +460,22 @@ An example event for `cluster_stats` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cluster_state.master_node |  | alias |
+| cluster_state.nodes_hash |  | alias |
+| cluster_state.state_uuid |  | alias |
+| cluster_state.status |  | alias |
+| cluster_state.version |  | alias |
+| cluster_stats.indices.count |  | alias |
+| cluster_stats.indices.shards.total |  | alias |
+| cluster_stats.nodes.count.total |  | alias |
+| cluster_stats.nodes.jvm.max_uptime_in_millis |  | alias |
+| cluster_stats.nodes.jvm.mem.heap_max_in_bytes |  | alias |
+| cluster_stats.nodes.jvm.mem.heap_used_in_bytes |  | alias |
+| cluster_uuid |  | alias |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
@@ -399,10 +511,27 @@ An example event for `cluster_stats` looks as following:
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
 | elasticsearch.version |  | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| license.status |  | alias |
+| license.type |  | alias |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| stack_stats.apm.found |  | alias |
+| stack_stats.xpack.ccr.available |  | alias |
+| stack_stats.xpack.ccr.enabled |  | alias |
+| timestamp |  | alias |
+
 
 ### Enrich
 
-Enrch interrogates the [Enrich Stats API](https://www.elastic.co/guide/en/elasticsearch/reference/current/enrich-apis.html) 
+Enrch interrogates the [Enrich Stats API](https://www.elastic.co/guide/en/elasticsearch/reference/current/enrich-apis.html)
 endpoint to fetch information about Enrich coordinator nodesin the Elasticsearch cluster that are participating in 
 ingest-time enrichment.
 
@@ -499,9 +628,11 @@ An example event for `enrich` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cluster_uuid |  | alias |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
@@ -521,6 +652,18 @@ An example event for `enrich` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| timestamp |  | alias |
+
 
 ### Index
 
@@ -528,91 +671,146 @@ An example event for `index` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-02T14:06:12.353Z",
     "agent": {
-        "hostname": "docker-fleet-agent",
+        "ephemeral_id": "5c8415cd-4402-4ddf-b627-b13790bc3197",
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
         "name": "docker-fleet-agent",
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
         "type": "metricbeat",
-        "ephemeral_id": "2b6da727-313f-41fc-84af-3cd928f265c1",
-        "version": "7.14.0"
+        "version": "8.3.2"
+    },
+    "data_stream": {
+        "dataset": "elasticsearch.index",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "version": "7.14.0",
-        "snapshot": true
-    },
-    "@timestamp": "2021-07-30T14:46:47.831Z",
-    "ecs": {
-        "version": "1.10.0"
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
+        "snapshot": false,
+        "version": "8.3.2"
     },
     "elasticsearch": {
         "cluster": {
-            "name": "docker-cluster",
-            "id": "bvF4SoDLQU-sdM3YY8JI8Q"
+            "id": "zv3a1lJUQoK10VDNC6J0qA",
+            "name": "elasticsearch"
         },
         "index": {
-            "total": {
+            "hidden": false,
+            "name": "testindex2",
+            "primaries": {
                 "docs": {
-                    "deleted": 0,
-                    "count": 13267
+                    "count": 0
                 },
-                "store": {
-                    "size": {
-                        "bytes": 1490775
-                    }
+                "indexing": {
+                    "index_time_in_millis": 0,
+                    "index_total": 0,
+                    "throttle_time_in_millis": 0
+                },
+                "merges": {
+                    "total_size_in_bytes": 0
+                },
+                "refresh": {
+                    "total_time_in_millis": 0
                 },
                 "segments": {
-                    "memory": {
-                        "bytes": 50388
-                    },
-                    "count": 5
+                    "count": 0
+                },
+                "store": {
+                    "size_in_bytes": 675
                 }
             },
-            "name": ".ds-metrics-elasticsearch.shard-default-2021.07.30-000001"
+            "shards": {
+                "primaries": 3,
+                "total": 6
+            },
+            "status": "yellow",
+            "total": {
+                "bulk": {
+                    "avg_size_in_bytes": 0,
+                    "avg_time_in_millis": 0,
+                    "total_operations": 0,
+                    "total_size_in_bytes": 0,
+                    "total_time_in_millis": 0
+                },
+                "docs": {
+                    "count": 0
+                },
+                "fielddata": {
+                    "memory_size_in_bytes": 0
+                },
+                "indexing": {
+                    "index_time_in_millis": 0,
+                    "index_total": 0,
+                    "throttle_time_in_millis": 0
+                },
+                "merges": {
+                    "total_size_in_bytes": 0
+                },
+                "refresh": {
+                    "total_time_in_millis": 0
+                },
+                "search": {
+                    "query_time_in_millis": 0,
+                    "query_total": 0
+                },
+                "segments": {
+                    "count": 0,
+                    "doc_values_memory_in_bytes": 0,
+                    "fixed_bit_set_memory_in_bytes": 0,
+                    "index_writer_memory_in_bytes": 0,
+                    "memory_in_bytes": 0,
+                    "norms_memory_in_bytes": 0,
+                    "points_memory_in_bytes": 0,
+                    "stored_fields_memory_in_bytes": 0,
+                    "term_vectors_memory_in_bytes": 0,
+                    "terms_memory_in_bytes": 0,
+                    "version_map_memory_in_bytes": 0
+                },
+                "store": {
+                    "size_in_bytes": 675
+                }
+            },
+            "uuid": "lH2NeM70TlKGEB11uUxiuA"
         }
     },
-    "service": {
-        "address": "http://elasticsearch:9200",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "elasticsearch.index"
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "elasticsearch.index",
+        "duration": 34210900,
+        "ingested": "2022-09-02T14:06:13Z",
+        "module": "elasticsearch"
     },
     "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.11.10-arch1-1",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
+        "architecture": "x86_64",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
         "ip": [
             "172.18.0.7"
         ],
-        "name": "docker-fleet-agent",
-        "id": "8979eb4aa312c3dccea3823dd92f92f5",
         "mac": [
             "02:42:ac:12:00:07"
         ],
-        "architecture": "x86_64"
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
-        "period": 10000,
-        "name": "index"
+        "name": "index",
+        "period": 10000
     },
-    "event": {
-        "duration": 14394992,
-        "agent_id_status": "verified",
-        "ingested": "2021-07-30T14:46:48.854674866Z",
-        "module": "elasticsearch",
-        "dataset": "elasticsearch.index"
+    "service": {
+        "address": "http://elastic-package-service_elasticsearch_1:9200",
+        "type": "elasticsearch"
     }
 }
 ```
@@ -621,10 +819,12 @@ An example event for `index` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cluster_uuid |  | alias |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
@@ -660,8 +860,14 @@ An example event for `index` looks as following:
 | elasticsearch.index.primaries.segments.terms_memory_in_bytes |  | long |
 | elasticsearch.index.primaries.segments.version_map_memory_in_bytes |  | long |
 | elasticsearch.index.primaries.store.size_in_bytes |  | long |
+| elasticsearch.index.shards.primaries |  | long |
 | elasticsearch.index.shards.total |  | long |
 | elasticsearch.index.status |  | keyword |
+| elasticsearch.index.total.bulk.avg_size_in_bytes |  | long |
+| elasticsearch.index.total.bulk.avg_time_in_millis |  | long |
+| elasticsearch.index.total.bulk.total_operations |  | long |
+| elasticsearch.index.total.bulk.total_size_in_bytes |  | long |
+| elasticsearch.index.total.bulk.total_time_in_millis |  | long |
 | elasticsearch.index.total.docs.count | Total number of documents in the index. | long |
 | elasticsearch.index.total.docs.deleted | Total number of deleted documents in the index. | long |
 | elasticsearch.index.total.fielddata.evictions |  | long |
@@ -686,6 +892,7 @@ An example event for `index` looks as following:
 | elasticsearch.index.total.segments.doc_values_memory_in_bytes |  | long |
 | elasticsearch.index.total.segments.fixed_bit_set_memory_in_bytes |  | long |
 | elasticsearch.index.total.segments.index_writer_memory_in_bytes |  | long |
+| elasticsearch.index.total.segments.memory.bytes | Total number of memory used by the segments in bytes. | long |
 | elasticsearch.index.total.segments.memory_in_bytes | Total number of memory used by the segments in bytes. | long |
 | elasticsearch.index.total.segments.norms_memory_in_bytes |  | long |
 | elasticsearch.index.total.segments.points_memory_in_bytes |  | long |
@@ -693,12 +900,63 @@ An example event for `index` looks as following:
 | elasticsearch.index.total.segments.term_vectors_memory_in_bytes |  | long |
 | elasticsearch.index.total.segments.terms_memory_in_bytes |  | long |
 | elasticsearch.index.total.segments.version_map_memory_in_bytes |  | long |
+| elasticsearch.index.total.store.size.bytes |  | long |
 | elasticsearch.index.total.store.size_in_bytes | Total size of the index in bytes. | long |
 | elasticsearch.index.uuid |  | keyword |
 | elasticsearch.node.id | Node ID | keyword |
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| index_recovery.shards.start_time_in_millis |  | alias |
+| index_recovery.shards.stop_time_in_millis |  | alias |
+| index_stats.index |  | alias |
+| index_stats.primaries.docs.count |  | alias |
+| index_stats.primaries.indexing.index_time_in_millis |  | alias |
+| index_stats.primaries.indexing.index_total |  | alias |
+| index_stats.primaries.indexing.throttle_time_in_millis |  | alias |
+| index_stats.primaries.merges.total_size_in_bytes |  | alias |
+| index_stats.primaries.refresh.total_time_in_millis |  | alias |
+| index_stats.primaries.segments.count |  | alias |
+| index_stats.primaries.store.size_in_bytes |  | alias |
+| index_stats.total.fielddata.memory_size_in_bytes |  | alias |
+| index_stats.total.indexing.index_time_in_millis |  | alias |
+| index_stats.total.indexing.index_total |  | alias |
+| index_stats.total.indexing.throttle_time_in_millis |  | alias |
+| index_stats.total.merges.total_size_in_bytes |  | alias |
+| index_stats.total.query_cache.memory_size_in_bytes |  | alias |
+| index_stats.total.refresh.total_time_in_millis |  | alias |
+| index_stats.total.request_cache.memory_size_in_bytes |  | alias |
+| index_stats.total.search.query_time_in_millis |  | alias |
+| index_stats.total.search.query_total |  | alias |
+| index_stats.total.segments.count |  | alias |
+| index_stats.total.segments.doc_values_memory_in_bytes |  | alias |
+| index_stats.total.segments.fixed_bit_set_memory_in_bytes |  | alias |
+| index_stats.total.segments.index_writer_memory_in_bytes |  | alias |
+| index_stats.total.segments.memory_in_bytes |  | alias |
+| index_stats.total.segments.norms_memory_in_bytes |  | alias |
+| index_stats.total.segments.points_memory_in_bytes |  | alias |
+| index_stats.total.segments.stored_fields_memory_in_bytes |  | alias |
+| index_stats.total.segments.term_vectors_memory_in_bytes |  | alias |
+| index_stats.total.segments.terms_memory_in_bytes |  | alias |
+| index_stats.total.segments.version_map_memory_in_bytes |  | alias |
+| index_stats.total.store.size_in_bytes |  | alias |
+| indices_stats._all.primaries.indexing.index_time_in_millis |  | alias |
+| indices_stats._all.primaries.indexing.index_total |  | alias |
+| indices_stats._all.total.indexing.index_total |  | alias |
+| indices_stats._all.total.search.query_time_in_millis |  | alias |
+| indices_stats._all.total.search.query_total |  | alias |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| timestamp |  | alias |
+
 
 ### Index recovery
 
@@ -823,9 +1081,11 @@ An example event for `index_recovery` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cluster_uuid |  | alias |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
@@ -862,7 +1122,21 @@ An example event for `index_recovery` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
-| version |  | long |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| index_recovery.shards.start_time_in_millis |  | alias |
+| index_recovery.shards.stop_time_in_millis |  | alias |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| timestamp |  | alias |
+
+
 
 ### Index summary
 
@@ -870,109 +1144,165 @@ An example event for `index_summary` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-02T14:23:38.078Z",
     "agent": {
-        "hostname": "docker-fleet-agent",
+        "ephemeral_id": "5dcbe5f9-d61d-4931-b4f3-a334e8e999b2",
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
         "name": "docker-fleet-agent",
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "ephemeral_id": "2b6da727-313f-41fc-84af-3cd928f265c1",
         "type": "metricbeat",
-        "version": "7.14.0"
+        "version": "8.3.2"
+    },
+    "data_stream": {
+        "dataset": "elasticsearch.index_summary",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "version": "7.14.0",
-        "snapshot": true
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
+        "snapshot": false,
+        "version": "8.3.2"
     },
-    "@timestamp": "2021-07-30T14:47:15.391Z",
     "elasticsearch": {
         "cluster": {
-            "name": "docker-cluster",
-            "id": "bvF4SoDLQU-sdM3YY8JI8Q"
+            "id": "zZUl__19TuWgxPiewmnJ3Q",
+            "name": "elasticsearch"
         },
         "index": {
             "summary": {
                 "primaries": {
-                    "docs": {
-                        "deleted": 7226,
-                        "count": 50723
-                    },
-                    "store": {
+                    "bulk": {
+                        "operations": {
+                            "count": 3
+                        },
                         "size": {
-                            "bytes": 36769186
+                            "bytes": 45
+                        },
+                        "time": {
+                            "avg": {
+                                "bytes": 4
+                            }
+                        }
+                    },
+                    "docs": {
+                        "count": 3,
+                        "deleted": 0
+                    },
+                    "indexing": {
+                        "index": {
+                            "count": 3,
+                            "time": {
+                                "ms": 14
+                            }
+                        }
+                    },
+                    "search": {
+                        "query": {
+                            "count": 9,
+                            "time": {
+                                "ms": 20
+                            }
                         }
                     },
                     "segments": {
+                        "count": 3,
                         "memory": {
-                            "bytes": 1790592
-                        },
-                        "count": 222
+                            "bytes": 0
+                        }
+                    },
+                    "store": {
+                        "size": {
+                            "bytes": 8466
+                        }
                     }
                 },
                 "total": {
-                    "docs": {
-                        "deleted": 7226,
-                        "count": 50723
-                    },
-                    "store": {
+                    "bulk": {
+                        "operations": {
+                            "count": 3
+                        },
                         "size": {
-                            "bytes": 36769186
+                            "bytes": 45
+                        },
+                        "time": {
+                            "avg": {
+                                "bytes": 4
+                            }
+                        }
+                    },
+                    "docs": {
+                        "count": 3,
+                        "deleted": 0
+                    },
+                    "indexing": {
+                        "index": {
+                            "count": 3,
+                            "time": {
+                                "ms": 14
+                            }
+                        }
+                    },
+                    "search": {
+                        "query": {
+                            "count": 9,
+                            "time": {
+                                "ms": 20
+                            }
                         }
                     },
                     "segments": {
+                        "count": 3,
                         "memory": {
-                            "bytes": 1790592
-                        },
-                        "count": 222
+                            "bytes": 0
+                        }
+                    },
+                    "store": {
+                        "size": {
+                            "bytes": 8466
+                        }
                     }
                 }
             }
         }
     },
-    "ecs": {
-        "version": "1.10.0"
-    },
-    "service": {
-        "address": "http://elasticsearch:9200",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "elasticsearch.index_summary"
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "elasticsearch.index_summary",
+        "duration": 32732300,
+        "ingested": "2022-09-02T14:23:39Z",
+        "module": "elasticsearch"
     },
     "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.11.10-arch1-1",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
+        "architecture": "x86_64",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
         "ip": [
             "172.18.0.7"
         ],
-        "name": "docker-fleet-agent",
-        "id": "8979eb4aa312c3dccea3823dd92f92f5",
         "mac": [
             "02:42:ac:12:00:07"
         ],
-        "architecture": "x86_64"
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
-        "period": 10000,
-        "name": "index_summary"
+        "name": "index_summary",
+        "period": 10000
     },
-    "event": {
-        "duration": 12151260,
-        "agent_id_status": "verified",
-        "ingested": "2021-07-30T14:47:16.373343461Z",
-        "module": "elasticsearch",
-        "dataset": "elasticsearch.index_summary"
+    "service": {
+        "address": "http://elastic-package-service_elasticsearch_1:9200",
+        "name": "elasticsearch",
+        "type": "elasticsearch"
     }
 }
 ```
@@ -982,9 +1312,11 @@ An example event for `index_summary` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cluster_uuid |  | alias |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
@@ -1021,6 +1353,23 @@ An example event for `index_summary` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| indices_stats._all.primaries.indexing.index_time_in_millis |  | alias |
+| indices_stats._all.primaries.indexing.index_total |  | alias |
+| indices_stats._all.total.indexing.index_total |  | alias |
+| indices_stats._all.total.search.query_time_in_millis |  | alias |
+| indices_stats._all.total.search.query_total |  | alias |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| timestamp |  | alias |
+
 
 ### Machine Learning Jobs
 
@@ -1075,9 +1424,11 @@ An example event for `ml_job` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cluster_uuid |  | alias |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
@@ -1092,11 +1443,25 @@ An example event for `ml_job` looks as following:
 | elasticsearch.node.master | Is the node the master node? | boolean |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
 | elasticsearch.node.name | Node name. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| job_stats.forecasts_stats.total |  | alias |
+| job_stats.job_id |  | alias |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| timestamp |  | alias |
+
 
 ### Node
 
 `node` interrogates the
-https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-info.html[Cluster API endpoint] of
+[Cluster API endpoint](https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-info.html) of
 Elasticsearch to get cluster nodes information. It only fetches the data from the `_local` node so it must
 run on each Elasticsearch node.
 
@@ -1104,26 +1469,34 @@ An example event for `node` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-02T14:13:34.927Z",
     "agent": {
-        "hostname": "docker-fleet-agent",
+        "ephemeral_id": "47946444-4c3a-4915-91dd-bf515aba9740",
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
         "name": "docker-fleet-agent",
-        "id": "27d29977-878e-4309-81ed-8788662503ad",
-        "ephemeral_id": "f8f510e7-9503-4e3d-af7f-da2992648d31",
         "type": "metricbeat",
-        "version": "7.15.0"
+        "version": "8.3.2"
+    },
+    "data_stream": {
+        "dataset": "elasticsearch.node",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "27d29977-878e-4309-81ed-8788662503ad",
-        "version": "7.15.0",
-        "snapshot": true
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
+        "snapshot": false,
+        "version": "8.3.2"
     },
-    "@timestamp": "2021-08-03T12:27:26.083Z",
     "elasticsearch": {
         "cluster": {
-            "name": "docker-cluster",
-            "id": "icut8oAwR--oCfUTlFaPMg"
+            "id": "ziL93dUTRmGy5hsfhhq3Ww",
+            "name": "elasticsearch"
         },
         "node": {
+            "id": "3nCEJ8F6SCuBH_c_YJNQSA",
             "jvm": {
                 "memory": {
                     "heap": {
@@ -1143,61 +1516,51 @@ An example event for `node` looks as following:
                         }
                     }
                 },
-                "version": "16.0.1"
+                "version": "18.0.2"
             },
+            "name": "1a6b5d803000",
             "process": {
                 "mlockall": false
             },
-            "name": "2b8824139b92",
-            "id": "saWHxJSZQF6VqGZvEb45Uw",
-            "version": "7.15.0"
+            "version": "8.5.0"
         }
     },
-    "ecs": {
-        "version": "1.10.0"
-    },
-    "service": {
-        "address": "http://elasticsearch:9200",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "elasticsearch.node"
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "elasticsearch.node",
+        "duration": 18259400,
+        "ingested": "2022-09-02T14:13:35Z",
+        "module": "elasticsearch"
     },
     "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.11.10-arch1-1",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
+        "architecture": "x86_64",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
         "ip": [
-            "172.24.0.7"
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
         ],
         "name": "docker-fleet-agent",
-        "id": "1292624d19b2cee1a317ad634c9a8358",
-        "mac": [
-            "02:42:ac:18:00:07"
-        ],
-        "architecture": "x86_64"
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
-        "period": 10000,
-        "name": "node"
+        "name": "node",
+        "period": 10000
     },
-    "event": {
-        "duration": 9853150,
-        "agent_id_status": "verified",
-        "ingested": "2021-08-03T12:27:27.080460943Z",
-        "module": "elasticsearch",
-        "dataset": "elasticsearch.node"
+    "service": {
+        "address": "http://elastic-package-service_elasticsearch_1:9200",
+        "name": "elasticsearch",
+        "type": "elasticsearch"
     }
 }
 ```
@@ -1207,9 +1570,11 @@ An example event for `node` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cluster_uuid |  | alias |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
@@ -1224,11 +1589,23 @@ An example event for `node` looks as following:
 | elasticsearch.node.name | Node name. | keyword |
 | elasticsearch.node.process.mlockall | If process locked in memory. | boolean |
 | elasticsearch.node.version | Node version. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| timestamp |  | alias |
+
 
 ### Node stats
 
 `node_stats` interrogates the
-https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-stats.html[Cluster API endpoint] of
+[Cluster API endpoint](https://www.elastic.co/guide/en/elasticsearch/reference/master/cluster-nodes-stats.html) of
 Elasticsearch to get the cluster nodes statistics. The data received is only for the local node so the Agent has
 to be run on each Elasticsearch node.
 
@@ -1238,171 +1615,308 @@ An example event for `node_stats` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-09-02T14:32:24.121Z",
     "agent": {
-        "hostname": "docker-fleet-agent",
+        "ephemeral_id": "5d429743-0cf8-44a9-afb4-7523cf960d76",
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
         "name": "docker-fleet-agent",
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
         "type": "metricbeat",
-        "ephemeral_id": "2b6da727-313f-41fc-84af-3cd928f265c1",
-        "version": "7.14.0"
+        "version": "8.3.2"
+    },
+    "data_stream": {
+        "dataset": "elasticsearch.node_stats",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "version": "7.14.0",
-        "snapshot": true
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
+        "snapshot": false,
+        "version": "8.3.2"
     },
-    "@timestamp": "2021-07-30T14:47:15.407Z",
     "elasticsearch": {
+        "cluster": {
+            "id": "PdQA6zKZQaK1LAvajgbnug",
+            "name": "elasticsearch"
+        },
         "node": {
+            "id": "vnPGsgkoQ5-kwzmE6DOjOQ",
+            "master": true,
+            "mlockall": false,
+            "name": "be467614bdb0",
             "stats": {
-                "jvm": {
-                    "mem": {
-                        "pools": {
-                            "young": {
-                                "max": {
-                                    "bytes": 0
-                                },
-                                "used": {
-                                    "bytes": 33554432
-                                },
-                                "peak": {
-                                    "bytes": 633339904
-                                },
-                                "peak_max": {
-                                    "bytes": 0
-                                }
-                            },
-                            "old": {
-                                "max": {
-                                    "bytes": 1073741824
-                                },
-                                "used": {
-                                    "bytes": 248498176
-                                },
-                                "peak": {
-                                    "bytes": 371192832
-                                },
-                                "peak_max": {
-                                    "bytes": 1073741824
-                                }
-                            },
-                            "survivor": {
-                                "max": {
-                                    "bytes": 0
-                                },
-                                "peak": {
-                                    "bytes": 67829936
-                                },
-                                "peak_max": {
-                                    "bytes": 0
-                                },
-                                "used": {
-                                    "bytes": 3283184
-                                }
-                            }
+                "fs": {
+                    "io_stats": {},
+                    "summary": {
+                        "available": {
+                            "bytes": 36166852608
+                        },
+                        "free": {
+                            "bytes": 46061998080
+                        },
+                        "total": {
+                            "bytes": 193393164288
                         }
                     },
-                    "gc": {
-                        "collectors": {
-                            "young": {
-                                "collection": {
-                                    "ms": 6100,
-                                    "count": 425
-                                }
-                            },
-                            "old": {
-                                "collection": {
-                                    "ms": 0,
-                                    "count": 0
-                                }
-                            }
-                        }
+                    "total": {
+                        "available_in_bytes": 36166852608,
+                        "total_in_bytes": 193393164288
                     }
                 },
                 "indices": {
-                    "docs": {
-                        "deleted": 7226,
-                        "count": 50805
+                    "bulk": {
+                        "avg_size": {
+                            "bytes": 139
+                        },
+                        "avg_time": {
+                            "ms": 4
+                        },
+                        "operations": {
+                            "total": {
+                                "count": 6
+                            }
+                        },
+                        "total_size": {
+                            "bytes": 5303
+                        },
+                        "total_time": {
+                            "ms": 175
+                        }
                     },
-                    "store": {
-                        "size": {
-                            "bytes": 37101213
+                    "docs": {
+                        "count": 11,
+                        "deleted": 0
+                    },
+                    "fielddata": {
+                        "memory": {
+                            "bytes": 0
+                        }
+                    },
+                    "indexing": {
+                        "index_time": {
+                            "ms": 31
+                        },
+                        "index_total": {
+                            "count": 11
+                        },
+                        "throttle_time": {
+                            "ms": 0
+                        }
+                    },
+                    "query_cache": {
+                        "memory": {
+                            "bytes": 0
+                        }
+                    },
+                    "request_cache": {
+                        "memory": {
+                            "bytes": 0
+                        }
+                    },
+                    "search": {
+                        "query_time": {
+                            "ms": 19
+                        },
+                        "query_total": {
+                            "count": 9
                         }
                     },
                     "segments": {
-                        "memory": {
-                            "bytes": 1805548
+                        "count": 6,
+                        "doc_values": {
+                            "memory": {
+                                "bytes": 0
+                            }
                         },
-                        "count": 227
+                        "fixed_bit_set": {
+                            "memory": {
+                                "bytes": 0
+                            }
+                        },
+                        "index_writer": {
+                            "memory": {
+                                "bytes": 0
+                            }
+                        },
+                        "memory": {
+                            "bytes": 0
+                        },
+                        "norms": {
+                            "memory": {
+                                "bytes": 0
+                            }
+                        },
+                        "points": {
+                            "memory": {
+                                "bytes": 0
+                            }
+                        },
+                        "stored_fields": {
+                            "memory": {
+                                "bytes": 0
+                            }
+                        },
+                        "term_vectors": {
+                            "memory": {
+                                "bytes": 0
+                            }
+                        },
+                        "terms": {
+                            "memory": {
+                                "bytes": 0
+                            }
+                        },
+                        "version_map": {
+                            "memory": {
+                                "bytes": 0
+                            }
+                        }
+                    },
+                    "store": {
+                        "size": {
+                            "bytes": 40643
+                        }
                     }
                 },
-                "fs": {
-                    "summary": {
-                        "total": {
-                            "bytes": 958613114880
+                "jvm": {
+                    "gc": {
+                        "collectors": {
+                            "old": {
+                                "collection": {
+                                    "count": 0,
+                                    "ms": 0
+                                }
+                            },
+                            "young": {
+                                "collection": {
+                                    "count": 9,
+                                    "ms": 217
+                                }
+                            }
+                        }
+                    },
+                    "mem": {
+                        "heap": {
+                            "max": {
+                                "bytes": 1073741824
+                            },
+                            "used": {
+                                "bytes": 400155760,
+                                "pct": 37
+                            }
+                        }
+                    }
+                },
+                "os": {
+                    "cgroup": {
+                        "cpu": {
+                            "cfs": {
+                                "quota": {
+                                    "us": -1
+                                }
+                            },
+                            "stat": {
+                                "elapsed_periods": {
+                                    "count": 0
+                                },
+                                "times_throttled": {
+                                    "count": 0
+                                }
+                            }
                         },
-                        "available": {
-                            "bytes": 261931741184
+                        "cpuacct": {
+                            "usage": {
+                                "ns": 56233628308
+                            }
                         },
-                        "free": {
-                            "bytes": 310698074112
+                        "memory": {
+                            "control_group": "/",
+                            "limit": {
+                                "bytes": "9223372036854771712"
+                            },
+                            "usage": {
+                                "bytes": "1536434176"
+                            }
+                        }
+                    },
+                    "cpu": {
+                        "load_avg": {
+                            "1m": 1.53
+                        }
+                    }
+                },
+                "process": {
+                    "cpu": {
+                        "pct": 1
+                    }
+                },
+                "thread_pool": {
+                    "get": {
+                        "queue": {
+                            "count": 0
+                        },
+                        "rejected": {
+                            "count": 0
+                        }
+                    },
+                    "search": {
+                        "queue": {
+                            "count": 0
+                        },
+                        "rejected": {
+                            "count": 0
+                        }
+                    },
+                    "write": {
+                        "queue": {
+                            "count": 0
+                        },
+                        "rejected": {
+                            "count": 0
                         }
                     }
                 }
-            },
-            "name": "e7e895f7c41e",
-            "id": "6XuAxHXaRbeX6LUrxIfAxg"
-        },
-        "cluster": {
-            "name": "docker-cluster",
-            "id": "bvF4SoDLQU-sdM3YY8JI8Q"
+            }
         }
     },
-    "ecs": {
-        "version": "1.10.0"
-    },
-    "service": {
-        "address": "http://elasticsearch:9200",
-        "name": "elasticsearch",
-        "type": "elasticsearch"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "elasticsearch.node_stats"
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "elasticsearch.node_stats",
+        "duration": 34932600,
+        "ingested": "2022-09-02T14:32:25Z",
+        "module": "elasticsearch"
     },
     "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.11.10-arch1-1",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "type": "linux",
-            "family": "redhat",
-            "version": "7 (Core)",
-            "platform": "centos"
-        },
+        "architecture": "x86_64",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
         "ip": [
             "172.18.0.7"
         ],
-        "name": "docker-fleet-agent",
-        "id": "8979eb4aa312c3dccea3823dd92f92f5",
         "mac": [
             "02:42:ac:12:00:07"
         ],
-        "architecture": "x86_64"
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
-        "period": 10000,
-        "name": "node_stats"
+        "name": "node_stats",
+        "period": 10000
     },
-    "event": {
-        "duration": 32401229,
-        "agent_id_status": "verified",
-        "ingested": "2021-07-30T14:47:16.373437564Z",
-        "module": "elasticsearch",
-        "dataset": "elasticsearch.node_stats"
+    "service": {
+        "address": "http://elastic-package-service_elasticsearch_1:9200",
+        "name": "elasticsearch",
+        "type": "elasticsearch"
     }
 }
 ```
@@ -1412,9 +1926,11 @@ An example event for `node_stats` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cluster_uuid |  | alias |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
@@ -1430,6 +1946,11 @@ An example event for `node_stats` looks as following:
 | elasticsearch.node.stats.fs.summary.total.bytes |  | long |
 | elasticsearch.node.stats.fs.total.available_in_bytes |  | long |
 | elasticsearch.node.stats.fs.total.total_in_bytes |  | long |
+| elasticsearch.node.stats.indices.bulk.avg_size.bytes |  | long |
+| elasticsearch.node.stats.indices.bulk.avg_time.ms |  | long |
+| elasticsearch.node.stats.indices.bulk.operations.total.count |  | long |
+| elasticsearch.node.stats.indices.bulk.total_size.bytes |  | long |
+| elasticsearch.node.stats.indices.bulk.total_time.ms |  | long |
 | elasticsearch.node.stats.indices.docs.count | Total number of existing documents. | long |
 | elasticsearch.node.stats.indices.docs.deleted | Total number of deleted documents. | long |
 | elasticsearch.node.stats.indices.fielddata.memory.bytes |  | long |
@@ -1477,8 +1998,8 @@ An example event for `node_stats` looks as following:
 | elasticsearch.node.stats.os.cgroup.cpu.stat.times_throttled.count |  | long |
 | elasticsearch.node.stats.os.cgroup.cpuacct.usage.ns |  | long |
 | elasticsearch.node.stats.os.cgroup.memory.control_group |  | keyword |
-| elasticsearch.node.stats.os.cgroup.memory.limit.bytes |  | long |
-| elasticsearch.node.stats.os.cgroup.memory.usage.bytes |  | long |
+| elasticsearch.node.stats.os.cgroup.memory.limit.bytes |  | keyword |
+| elasticsearch.node.stats.os.cgroup.memory.usage.bytes |  | keyword |
 | elasticsearch.node.stats.os.cpu.load_avg.1m |  | half_float |
 | elasticsearch.node.stats.process.cpu.pct |  | double |
 | elasticsearch.node.stats.thread_pool.bulk.queue.count |  | long |
@@ -1491,119 +2012,152 @@ An example event for `node_stats` looks as following:
 | elasticsearch.node.stats.thread_pool.search.rejected.count |  | long |
 | elasticsearch.node.stats.thread_pool.write.queue.count |  | long |
 | elasticsearch.node.stats.thread_pool.write.rejected.count |  | long |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| node_stats.fs.io_stats.total.operations |  | alias |
+| node_stats.fs.io_stats.total.read_operations |  | alias |
+| node_stats.fs.io_stats.total.write_operations |  | alias |
+| node_stats.fs.summary.available.bytes |  | alias |
+| node_stats.fs.summary.total.bytes |  | alias |
+| node_stats.fs.total.available_in_bytes |  | alias |
+| node_stats.fs.total.total_in_bytes |  | alias |
+| node_stats.indices.docs.count |  | alias |
+| node_stats.indices.fielddata.memory_size_in_bytes |  | alias |
+| node_stats.indices.indexing.index_time_in_millis |  | alias |
+| node_stats.indices.indexing.index_total |  | alias |
+| node_stats.indices.indexing.throttle_time_in_millis |  | alias |
+| node_stats.indices.query_cache.memory_size_in_bytes |  | alias |
+| node_stats.indices.request_cache.memory_size_in_bytes |  | alias |
+| node_stats.indices.search.query_time_in_millis |  | alias |
+| node_stats.indices.search.query_total |  | alias |
+| node_stats.indices.segments.count |  | alias |
+| node_stats.indices.segments.doc_values_memory_in_bytes |  | alias |
+| node_stats.indices.segments.fixed_bit_set_memory_in_bytes |  | alias |
+| node_stats.indices.segments.index_writer_memory_in_bytes |  | alias |
+| node_stats.indices.segments.memory_in_bytes |  | alias |
+| node_stats.indices.segments.norms_memory_in_bytes |  | alias |
+| node_stats.indices.segments.points_memory_in_bytes |  | alias |
+| node_stats.indices.segments.stored_fields_memory_in_bytes |  | alias |
+| node_stats.indices.segments.term_vectors_memory_in_bytes |  | alias |
+| node_stats.indices.segments.terms_memory_in_bytes |  | alias |
+| node_stats.indices.segments.version_map_memory_in_bytes |  | alias |
+| node_stats.indices.store.size.bytes |  | alias |
+| node_stats.indices.store.size_in_bytes |  | alias |
+| node_stats.jvm.gc.collectors.old.collection_count |  | alias |
+| node_stats.jvm.gc.collectors.old.collection_time_in_millis |  | alias |
+| node_stats.jvm.gc.collectors.young.collection_count |  | alias |
+| node_stats.jvm.gc.collectors.young.collection_time_in_millis |  | alias |
+| node_stats.jvm.mem.heap_max_in_bytes |  | alias |
+| node_stats.jvm.mem.heap_used_in_bytes |  | alias |
+| node_stats.jvm.mem.heap_used_percent |  | alias |
+| node_stats.node_id |  | alias |
+| node_stats.os.cgroup.cpu.cfs_quota_micros |  | alias |
+| node_stats.os.cgroup.cpu.stat.number_of_elapsed_periods |  | alias |
+| node_stats.os.cgroup.cpu.stat.number_of_times_throttled |  | alias |
+| node_stats.os.cgroup.cpu.stat.time_throttled_nanos |  | alias |
+| node_stats.os.cgroup.cpuacct.usage_nanos |  | alias |
+| node_stats.os.cgroup.memory.control_group |  | alias |
+| node_stats.os.cgroup.memory.limit_in_bytes |  | alias |
+| node_stats.os.cgroup.memory.usage_in_bytes |  | alias |
+| node_stats.os.cpu.load_average.1m |  | alias |
+| node_stats.process.cpu.percent |  | alias |
+| node_stats.thread_pool.bulk.queue |  | alias |
+| node_stats.thread_pool.bulk.rejected |  | alias |
+| node_stats.thread_pool.get.queue |  | alias |
+| node_stats.thread_pool.get.rejected |  | alias |
+| node_stats.thread_pool.index.queue |  | alias |
+| node_stats.thread_pool.index.rejected |  | alias |
+| node_stats.thread_pool.search.queue |  | alias |
+| node_stats.thread_pool.search.rejected |  | alias |
+| node_stats.thread_pool.write.queue |  | alias |
+| node_stats.thread_pool.write.rejected |  | alias |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| timestamp |  | alias |
+
 
 ### Pending tasks
 
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
-| elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
-| elasticsearch.cluster.pending_task.insert_order | Insert order | long |
-| elasticsearch.cluster.pending_task.priority | Priority | keyword |
-| elasticsearch.cluster.pending_task.source | Source. For example: put-mapping | keyword |
-| elasticsearch.cluster.pending_task.time_in_queue.ms | Time in queue | long |
-| elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
-| elasticsearch.node.id | Node ID | keyword |
-| elasticsearch.node.master | Is the node the master node? | boolean |
-| elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
-| elasticsearch.node.name | Node name. | keyword |
-
-# Shard
-
-`shard` interrogates the
-https://www.elastic.co/guide/en/elasticsearch/reference/6.2/cluster-state.html[Cluster State API endpoint] to fetch 
-information about all shards.
-
-An example event for `shard` looks as following:
+An example event for `pending_tasks` looks as following:
 
 ```json
 {
     "agent": {
-        "hostname": "docker-fleet-agent",
         "name": "docker-fleet-agent",
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
+        "id": "f11de143-c31c-49a2-8756-83697dbabe0f",
+        "ephemeral_id": "3469da57-3138-4702-abc6-8b95e081fc12",
         "type": "metricbeat",
-        "ephemeral_id": "2b6da727-313f-41fc-84af-3cd928f265c1",
-        "version": "7.14.0"
+        "version": "8.5.0"
     },
-    "elastic_agent": {
-        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
-        "version": "7.14.0",
-        "snapshot": true
-    },
-    "@timestamp": "2021-07-30T14:41:17.832Z",
-    "ecs": {
-        "version": "1.10.0"
-    },
+    "@timestamp": "2022-09-21T16:00:34.116Z",
     "elasticsearch": {
-        "node": {
-            "name": "6XuAxHXaRbeX6LUrxIfAxg"
-        },
         "cluster": {
-            "name": "docker-cluster",
-            "id": "bvF4SoDLQU-sdM3YY8JI8Q",
-            "state": {
-                "id": "mOYQ8E-ORnGSnnp9sB4BCw"
-            }
+            "name": "elasticsearch",
+            "id": "N9ZLPL5RQHS67eZBrujPYg"
         },
-        "index": {
-            "name": ".async-search"
-        },
-        "shard": {
-            "number": 0,
-            "relocating_node": {},
-            "state": "STARTED",
-            "primary": true
+        "pending_tasks": {
+            "time_in_queue.ms": 50,
+            "source": "create-index [foo-bar-1663776034], cause [api]",
+            "priority": "URGENT",
+            "insert_order": 3272
         }
     },
+    "ecs": {
+        "version": "8.0.0"
+    },
     "service": {
-        "address": "http://elasticsearch:9200",
+        "address": "https://elasticsearch:9200",
         "name": "elasticsearch",
         "type": "elasticsearch"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "elasticsearch.shard"
+        "dataset": "elasticsearch.stack_monitoring.pending_tasks"
+    },
+    "elastic_agent": {
+        "id": "f11de143-c31c-49a2-8756-83697dbabe0f",
+        "version": "8.5.0",
+        "snapshot": true
     },
     "host": {
         "hostname": "docker-fleet-agent",
         "os": {
-            "kernel": "5.11.10-arch1-1",
-            "codename": "Core",
-            "name": "CentOS Linux",
-            "family": "redhat",
+            "kernel": "5.10.47-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "family": "debian",
             "type": "linux",
-            "version": "7 (Core)",
-            "platform": "centos"
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
         },
         "containerized": true,
         "ip": [
-            "172.18.0.7"
+            "172.28.0.7"
         ],
         "name": "docker-fleet-agent",
-        "id": "8979eb4aa312c3dccea3823dd92f92f5",
+        "id": "f1eefc91053740c399ff6f1cd52c37bb",
         "mac": [
-            "02:42:ac:12:00:07"
+            "02-42-AC-1C-00-07"
         ],
         "architecture": "x86_64"
     },
     "metricset": {
         "period": 10000,
-        "name": "shard"
+        "name": "pending_tasks"
     },
     "event": {
-        "duration": 4139652,
+        "duration": 4546300,
         "agent_id_status": "verified",
-        "ingested": "2021-07-30T14:41:18.844042490Z",
+        "ingested": "2022-09-21T16:00:35Z",
         "module": "elasticsearch",
-        "dataset": "elasticsearch.shard"
+        "dataset": "elasticsearch.stack_monitoring.pending_tasks"
     }
 }
 ```
@@ -1613,12 +2167,150 @@ An example event for `shard` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cluster_uuid |  | alias |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
+| elasticsearch.node.id | Node ID | keyword |
+| elasticsearch.node.master | Is the node the master node? | boolean |
+| elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |
+| elasticsearch.node.name | Node name. | keyword |
+| elasticsearch.pending_tasks.insert_order | Insert order | long |
+| elasticsearch.pending_tasks.priority | Priority | keyword |
+| elasticsearch.pending_tasks.source | Source. For example: put-mapping | keyword |
+| elasticsearch.pending_tasks.time_in_queue.ms | Time in queue | long |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| timestamp |  | alias |
+
+
+### Shard
+
+`shard` interrogates the
+[Cluster State API endpoint](https://www.elastic.co/guide/en/elasticsearch/reference/6.2/cluster-state.html) to fetch
+information about all shards.
+
+An example event for `shard` looks as following:
+
+```json
+{
+    "@timestamp": "2022-09-02T14:19:48.613Z",
+    "agent": {
+        "ephemeral_id": "7533d718-43c3-4106-aa29-37168d6a2769",
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.3.2"
+    },
+    "data_stream": {
+        "dataset": "elasticsearch.shard",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "1ead23a7-d3be-410c-b5c7-c48d297f4939",
+        "snapshot": false,
+        "version": "8.3.2"
+    },
+    "elasticsearch": {
+        "cluster": {
+            "id": "hBVXsE1NTkqWp6cdjr-yWw",
+            "name": "elasticsearch",
+            "state": {
+                "id": "V7ASeCFmSXWm7W-tuSl_bA"
+            },
+            "stats": {
+                "state": {
+                    "state_uuid": "V7ASeCFmSXWm7W-tuSl_bA"
+                }
+            }
+        },
+        "index": {
+            "name": ".ds-.logs-deprecation.elasticsearch-default-2022.09.02-000001"
+        },
+        "node": {
+            "id": "JGcyPUWaTiOW2Ri0hDUC-A",
+            "name": "32a9c755b09e"
+        },
+        "shard": {
+            "number": 0,
+            "primary": true,
+            "relocating_node": {},
+            "source_node": {
+                "name": "32a9c755b09e",
+                "uuid": "JGcyPUWaTiOW2Ri0hDUC-A"
+            },
+            "state": "STARTED"
+        }
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "elasticsearch.shard",
+        "duration": 17200300,
+        "ingested": "2022-09-02T14:19:49Z",
+        "module": "elasticsearch"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.4 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "shard",
+        "period": 10000
+    },
+    "service": {
+        "address": "http://elastic-package-service_elasticsearch_1:9200",
+        "type": "elasticsearch"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| cluster_uuid |  | alias |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |
+| elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |
+| elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |
+| elasticsearch.cluster.stats.state.state_uuid |  | keyword |
 | elasticsearch.index.name |  | keyword |
 | elasticsearch.node.id | Node ID | keyword |
 | elasticsearch.node.master | Is the node the master node? | boolean |
@@ -1631,3 +2323,20 @@ An example event for `shard` looks as following:
 | elasticsearch.shard.source_node.name |  | keyword |
 | elasticsearch.shard.source_node.uuid |  | keyword |
 | elasticsearch.shard.state | The state of this shard. | keyword |
+| error.message | Error message. | match_only_text |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| service.address | Service address | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| shard.index |  | alias |
+| shard.node |  | alias |
+| shard.primary |  | alias |
+| shard.shard |  | alias |
+| shard.state |  | alias |
+| source_node.name |  | alias |
+| source_node.uuid |  | alias |
+| timestamp |  | alias |
+

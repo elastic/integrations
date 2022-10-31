@@ -38,7 +38,7 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "ba9ee39d-37f1-433a-8800-9d424cb9dd11",
@@ -115,6 +115,7 @@ An example event for `firewall` looks as following:
 | checkpoint.attack_status | In case of a malicious event on an endpoint computer, the status of the attack. | keyword |
 | checkpoint.audit_status | Audit Status. Can be Success or Failure. | keyword |
 | checkpoint.auth_method | Password authentication protocol used (PAP or EAP). | keyword |
+| checkpoint.auth_status | The authentication status for an event. | keyword |
 | checkpoint.authority_rdata | List of authoritative servers. | keyword |
 | checkpoint.authorization | Authorization HTTP header value. | keyword |
 | checkpoint.bcc | List of BCC addresses. | keyword |
@@ -273,6 +274,8 @@ An example event for `firewall` looks as following:
 | checkpoint.icmp_code | In case a connection is ICMP, code info will be added to the log. | long |
 | checkpoint.icmp_type | In case a connection is ICMP, type info will be added to the log. | long |
 | checkpoint.id | Override application ID. | integer |
+| checkpoint.identity_src | The source for authentication identity information. | keyword |
+| checkpoint.identity_type | The type of identity used for authentication. | keyword |
 | checkpoint.ike | IKEMode (PHASE1, PHASE2, etc..). | keyword |
 | checkpoint.ike_ids | All QM ids. | keyword |
 | checkpoint.impacted_files | In case of an infection on an endpoint computer, the list of files that the malware impacted. | keyword |
@@ -394,6 +397,7 @@ An example event for `firewall` looks as following:
 | checkpoint.remediated_files | In case of an infection and a successful cleaning of that infection, this is a list of remediated files on the computer. | keyword |
 | checkpoint.reply_status | ICAP reply status code, e.g. 200 or 204. | integer |
 | checkpoint.risk | Risk level we got from the engine. | keyword |
+| checkpoint.roles | The role of identity. | keyword |
 | checkpoint.rpc_prog | Log for new RPC state - prog values. | integer |
 | checkpoint.rule | Matched rule number. | integer |
 | checkpoint.rule_action | Action of the matched rule in the access policy. | keyword |
@@ -427,6 +431,7 @@ An example event for `firewall` looks as following:
 | checkpoint.similiar_iocs | Other IoCs similar to the ones found, related to the malicious file. | keyword |
 | checkpoint.sip_reason | Explains why 'source_ip' isn't allowed to redirect (handover). | keyword |
 | checkpoint.site_name | Site name. | keyword |
+| checkpoint.snid | The Check Point session ID. | keyword |
 | checkpoint.source_interface | External Interface name for source interface or Null if not found. | keyword |
 | checkpoint.source_object | Matched object name on source column. | keyword |
 | checkpoint.source_os | OS which generated the attack. | keyword |
@@ -592,7 +597,7 @@ An example event for `firewall` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -606,7 +611,7 @@ An example event for `firewall` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -616,6 +621,7 @@ An example event for `firewall` looks as following:
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ingress.zone | Network zone of incoming traffic as reported by the observer to categorize the source area of ingress traffic. e.g. internal, External, DMZ, HR, Legal, etc. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
+| observer.mac | MAC addresses of the observer. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | observer.name | Custom name of the observer. This is a name that can be given to an observer. This can be helpful for example if multiple firewalls of the same model are used in an organization. If no custom name is needed, the field can be left empty. | keyword |
 | observer.product | The product name of the observer. | keyword |
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |

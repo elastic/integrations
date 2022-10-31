@@ -19,8 +19,10 @@ Access logs collects the Apache access logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| apache.access.ssl.cipher | SSL cipher name. | keyword |
+| apache.access.remote_addresses | An array of remote addresses. It is a list because it is common to include, besides the client IP address, IP addresses from headers like `X-Forwarded-For`. | keyword |
+| apache.access.ssl.cipher | SSL cipher name. - name: nginx.access | keyword |
 | apache.access.ssl.protocol | SSL protocol version. | keyword |
+| client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
@@ -75,6 +77,7 @@ Access logs collects the Apache access logs.
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | process.pid | Process id. | long |
 | process.thread.id | Thread ID. | long |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
@@ -114,6 +117,24 @@ Access logs collects the Apache access logs.
 | user_agent.version | Version of the user agent. | keyword |
 
 
+Supported format for the access logs are:
+
+- [Common Log Format](https://en.wikipedia.org/wiki/Common_Log_Format)
+  - Defined in apache `LogFormat` by : 
+    >```%h %l %u %t \"%r\" %>s %b```
+  - Example:
+    > `127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326`
+- Combined Log Format
+  - Defined in apache `LogFormat` by:
+    >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"```
+  - Example:
+    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)"```
+- Combined Log Format + X-Forwarded-For header
+  - Defined in apache `LogFormat` by:
+    >```%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" X-Forwarded-For=\"%{X-Forwarded-For}i\"```
+  - Example:
+    >```127.0.0.1 user-identifier frank [10/Oct/2000:13:55:36 -0700] "GET /apache_pb.gif HTTP/1.0" 200 2326 "http://datawarehouse.us.oracle.com/datamining/contents.htm" "Mozilla/4.7 [en] (WinNT; I)" X-Forwarded-For="10.225.192.17, 10.2.2.121"```
+
 ### Error Logs
 
 Error logs collects the Apache error logs.
@@ -143,6 +164,7 @@ Error logs collects the Apache error logs.
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
 | event.dataset | Event dataset | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |

@@ -60,6 +60,8 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | gcp.dns.server_latency | Server latency. | integer |
 | gcp.dns.source_ip | Source IP address of the query. | ip |
 | gcp.dns.source_network | Source network of the query. | keyword |
+| gcp.dns.source_type | Type of source generating the DNS query: private-zone, public-zone, forwarding-zone, forwarding-policy, peering-zone, internal, external, internet | keyword |
+| gcp.dns.target_type | Type of target resolving the DNS query: private-zone, public-zone, forwarding-zone, forwarding-policy, peering-zone, internal, external, internet | keyword |
 | gcp.dns.vm_instance_id | Compute Engine VM instance ID, only applicable to queries initiated by Compute Engine VMs. | keyword |
 | gcp.dns.vm_instance_name | Compute Engine VM instance name, only applicable to queries initiated by Compute Engine VMs. | keyword |
 | gcp.dns.vm_project_id | Google Cloud project ID, only applicable to queries initiated by Compute Engine VMs. | keyword |
@@ -82,9 +84,14 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
@@ -94,77 +101,108 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-23T09:16:05.341Z",
+    "@timestamp": "2021-12-12T15:59:40.446Z",
+    "agent": {
+        "ephemeral_id": "87190725-9632-41a5-ba26-ebffca397d74",
+        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.1"
+    },
     "cloud": {
-        "availability_zone": "europe-west2-a",
-        "instance": {
-            "id": "8340998530665147",
-            "name": "instance"
-        },
         "project": {
-            "id": "project"
+            "id": "key-reference-123456"
         },
-        "region": "europe-west2"
+        "provider": "gcp",
+        "region": "global"
+    },
+    "data_stream": {
+        "dataset": "gcp.dns",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "destination": {
+        "address": "216.239.32.106",
+        "ip": "216.239.32.106"
     },
     "dns": {
         "answers": [
             {
                 "class": "IN",
-                "data": "127.0.0.1",
-                "name": "elastic.co",
-                "ttl": "300",
+                "data": "67.43.156.13",
+                "name": "asdf.gcp.example.com.",
+                "ttl": 300,
                 "type": "A"
             }
         ],
         "question": {
-            "name": "elastic.co",
-            "registered_domain": "elastic.co",
-            "top_level_domain": "co",
+            "name": "asdf.gcp.example.com",
+            "registered_domain": "example.com",
+            "subdomain": "asdf.gcp",
+            "top_level_domain": "com",
             "type": "A"
         },
         "resolved_ip": [
-            "127.0.0.1"
+            "67.43.156.13"
         ],
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.4.0"
+    },
+    "elastic_agent": {
+        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
+        "snapshot": false,
+        "version": "8.4.1"
     },
     "event": {
-        "id": "vwroyze8pg7y",
+        "action": "dns-query",
+        "agent_id_status": "verified",
+        "category": "network",
+        "created": "2022-10-03T22:33:56.157Z",
+        "dataset": "gcp.dns",
+        "id": "zir4wud11tm",
+        "ingested": "2022-10-03T22:33:57Z",
         "kind": "event",
-        "outcome": "success",
-        "original": "{\"insertId\":\"vwroyze8pg7y\",\"jsonPayload\":{\"authAnswer\":true,\"protocol\":\"UDP\",\"queryName\":\"elastic.co.\",\"queryType\":\"A\",\"rdata\":\"elastic.co.\\t300\\tIN\\ta\\t127.0.0.1\",\"responseCode\":\"NOERROR\",\"serverLatency\":14,\"sourceIP\":\"10.154.0.3\",\"sourceNetwork\":\"default\",\"vmInstanceId\":8340998530665147,\"vmInstanceIdString\":\"8340998530665147\",\"vmInstanceName\":\"694119234537.instance\",\"vmProjectId\":\"project\",\"vmZoneName\":\"europe-west2-a\"},\"logName\":\"projects/project/logs/dns.googleapis.com%2Fdns_queries\",\"receiveTimestamp\":\"2022-01-23T09:16:05.502805637Z\",\"resource\":{\"labels\":{\"location\":\"europe-west2\",\"project_id\":\"project\",\"source_type\":\"gce-vm\",\"target_name\":\"\",\"target_type\":\"external\"},\"type\":\"dns_query\"},\"severity\":\"INFO\",\"timestamp\":\"2022-01-23T09:16:05.341873447Z\"}"
+        "outcome": "success"
     },
     "gcp": {
         "dns": {
             "auth_answer": true,
+            "destination_ip": "216.239.32.106",
             "protocol": "UDP",
-            "query_name": "elastic.co.",
+            "query_name": "asdf.gcp.example.com.",
             "query_type": "A",
-            "rdata": "elastic.co.\t300\tIN\ta\t127.0.0.1",
             "response_code": "NOERROR",
-            "server_latency": 14,
-            "source_ip": "10.154.0.3",
-            "source_network": "default",
-            "vm_instance_id": "8340998530665147",
-            "vm_instance_name": "694119234537.instance",
-            "vm_project_id": "project",
-            "vm_zone_name": "europe-west2-a"
+            "server_latency": 0,
+            "source_type": "internet",
+            "target_type": "public-zone"
         }
     },
+    "input": {
+        "type": "gcp-pubsub"
+    },
     "log": {
-        "logger": "projects/project/logs/dns.googleapis.com%2Fdns_queries"
+        "level": "INFO",
+        "logger": "projects/key-reference-123456/logs/dns.googleapis.com%2Fdns_queries"
     },
     "network": {
+        "iana_number": "17",
+        "protocol": "dns",
         "transport": "udp"
     },
-    "source": {
-        "address": "10.154.0.3",
-        "ip": "10.154.0.3"
+    "related": {
+        "hosts": [
+            "asdf.gcp.example.com"
+        ],
+        "ip": [
+            "67.43.156.13",
+            "216.239.32.106"
+        ]
     },
     "tags": [
-        "preserve_original_event"
+        "forwarded",
+        "gcp-dns"
     ]
 }
 ```

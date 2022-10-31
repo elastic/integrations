@@ -21,11 +21,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-03-12T14:10:18.000Z",
     "agent": {
-        "ephemeral_id": "6458f441-1385-4115-994d-b082e5735c2a",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "fe763653-ca99-4a13-b01e-f49e33946306",
+        "id": "660f37cf-e109-4766-b85b-8150ca4cd173",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.4.1"
     },
     "data_stream": {
         "dataset": "iptables.log",
@@ -34,16 +34,16 @@ An example event for `log` looks as following:
     },
     "destination": {
         "ip": "10.4.0.5",
-        "mac": "90:10:20:76:8d:20",
+        "mac": "90-10-20-76-8D-20",
         "port": 443
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "660f37cf-e109-4766-b85b-8150ca4cd173",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.4.1"
     },
     "event": {
         "action": "drop",
@@ -51,8 +51,9 @@ An example event for `log` looks as following:
         "category": [
             "network"
         ],
+        "created": "2022-10-20T04:11:20.974Z",
         "dataset": "iptables.log",
-        "ingested": "2022-01-01T21:48:16Z",
+        "ingested": "2022-10-20T04:11:22Z",
         "kind": "event",
         "timezone": "+00:00",
         "type": [
@@ -91,7 +92,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.18.0.7:38816"
+            "address": "172.18.0.4:54943"
         },
         "syslog": {
             "priority": 6
@@ -136,7 +137,7 @@ An example event for `log` looks as following:
             }
         },
         "ip": "67.43.156.15",
-        "mac": "90:10:65:29:b6:2a",
+        "mac": "90-10-65-29-B6-2A",
         "port": 38842
     },
     "tags": [

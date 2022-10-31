@@ -1,0 +1,38 @@
+{
+    "id": "26dba6c5-6823-56ac-8ea2-40a977bc6a5e",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "26dba6c5-6823-56ac-8ea2-40a977bc6a5e",
+            "name": "Minimize the admission of containers with capabilities assigned (Manual)",
+            "profile_applicability": "* Level 2\n",
+            "description": "Do not generally permit containers with capabilities\n",
+            "rationale": "Containers run with a default set of capabilities as assigned by the Container Runtime. Capabilities are parts of the rights generally granted on a Linux system to the root user. In many cases applications running in containers do not require any capabilities to operate, so from the perspective of the principal of least privilege use of capabilities should be minimized.\n",
+            "audit": "Get the set of PSPs with the following command:\n```\nkubectl get psp\n```\nFor each PSP, check whether capabilities have been forbidden:\n```\nkubectl get psp \u003cname\u003e -o=jsonpath='{.spec.requiredDropCapabilities}'\n```\n",
+            "remediation": "Review the use of capabilities in applications running on your cluster. Where a namespace contains applications which do not require any Linux capabilities to operate consider adding a PSP which forbids the admission of containers which do not drop all capabilities.\n",
+            "impact": "Pods with containers require capabilities to operate will not be permitted.\n",
+            "default_value": "By default, PodSecurityPolicies are not defined.\n",
+            "references": "1. https://kubernetes.io/docs/concepts/policy/pod-security-policy/#enabling-pod-security-policies\n2. https://www.nccgroup.trust/uk/our-research/abusing-privileged-and-unprivileged-linux-containers/\n",
+            "section": "Pod Security Policies",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 4.2.9",
+                "Pod Security Policies"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_4_2_9"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}

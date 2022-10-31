@@ -1,6 +1,6 @@
 # Juniper integration
 
-This is an integration for ingesting logs from Juniper NetScreen.
+This is an integration for ingesting logs from [Juniper NetScreen](https://www.juniper.net/documentation/en_US/release-independent/screenos/information-products/pathway-pages/netscreen-series/product/).
 
 ### Log
 
@@ -12,11 +12,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2016-01-29T06:09:59.000Z",
     "agent": {
-        "ephemeral_id": "1d0b19ed-8fb1-4e91-873a-19f2949ff20e",
-        "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
+        "ephemeral_id": "c439baa6-c1f5-4533-bb61-3a020bd4e4f9",
+        "id": "11de7269-3d5a-4523-8b1f-e40ea1e2be97",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0"
+        "version": "8.4.1"
     },
     "data_stream": {
         "dataset": "juniper_netscreen.log",
@@ -24,18 +24,18 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "4e3f135a-d5f9-40b6-ae01-2c834ecbead0",
-        "snapshot": true,
-        "version": "8.0.0"
+        "id": "11de7269-3d5a-4523-8b1f-e40ea1e2be97",
+        "snapshot": false,
+        "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
         "code": "00628",
         "dataset": "juniper_netscreen.log",
-        "ingested": "2022-01-25T12:47:59Z",
+        "ingested": "2022-09-28T06:19:48Z",
         "timezone": "+00:00"
     },
     "input": {
@@ -44,7 +44,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "low",
         "source": {
-            "address": "172.30.0.4:59406"
+            "address": "192.168.176.4:38747"
         }
     },
     "observer": {
@@ -175,7 +175,7 @@ An example event for `log` looks as following:
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.interface.name |  | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |

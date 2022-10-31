@@ -93,7 +93,7 @@ The `vpcflow` dataset collects logs sent from and received by VM instances, incl
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -130,11 +130,19 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2019-06-14T03:50:10.845Z",
     "agent": {
-        "ephemeral_id": "e58d02a0-e7a0-45c0-aba6-a8c983782744",
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "ephemeral_id": "cb760ad9-6bf9-465b-9022-e5de8df2ba82",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.2.3"
+    },
+    "cloud": {
+        "availability_zone": "us-east1-b",
+        "project": {
+            "id": "my-sample-project"
+        },
+        "provider": "gcp",
+        "region": "us-east1"
     },
     "data_stream": {
         "dataset": "gcp.vpcflow",
@@ -142,43 +150,44 @@ An example event for `vpcflow` looks as following:
         "type": "logs"
     },
     "destination": {
-        "address": "67.43.156.13",
-        "as": {
-            "number": 35908
-        },
-        "geo": {
-            "continent_name": "Asia",
-            "country_iso_code": "BT",
-            "country_name": "Bhutan",
-            "location": {
-                "lat": 27.5,
-                "lon": 90.5
-            }
-        },
-        "ip": "67.43.156.13",
-        "port": 33478
+        "address": "10.139.99.242",
+        "domain": "elasticsearch",
+        "ip": "10.139.99.242",
+        "port": 9200
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
-        "id": "c53ddea2-61ac-4643-8676-0c70ebf51c91",
+        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.2.3"
     },
     "event": {
         "agent_id_status": "verified",
         "category": "network",
-        "created": "2021-12-31T03:12:25.823Z",
+        "created": "2022-06-28T02:48:14.443Z",
         "dataset": "gcp.vpcflow",
-        "end": "2019-06-14T03:45:37.301953198Z",
-        "id": "ut8lbrffooxyw",
-        "ingested": "2021-12-31T03:12:26Z",
+        "end": "2019-06-14T03:49:51.821056075Z",
+        "id": "ut8lbrffooxz5",
+        "ingested": "2022-06-28T02:48:15Z",
         "kind": "event",
-        "start": "2019-06-14T03:45:37.186193305Z",
+        "start": "2019-06-14T03:40:20.510622432Z",
         "type": "connection"
     },
     "gcp": {
+        "destination": {
+            "instance": {
+                "project_id": "my-sample-project",
+                "region": "us-east1",
+                "zone": "us-east1-b"
+            },
+            "vpc": {
+                "project_id": "my-sample-project",
+                "subnetwork_name": "default",
+                "vpc_name": "default"
+            }
+        },
         "source": {
             "instance": {
                 "project_id": "my-sample-project",
@@ -192,9 +201,9 @@ An example event for `vpcflow` looks as following:
             }
         },
         "vpcflow": {
-            "reporter": "SRC",
+            "reporter": "DEST",
             "rtt": {
-                "ms": 36
+                "ms": 201
             }
         }
     },
@@ -205,27 +214,40 @@ An example event for `vpcflow` looks as following:
         "logger": "projects/my-sample-project/logs/compute.googleapis.com%2Fvpc_flows"
     },
     "network": {
-        "bytes": 1776,
-        "community_id": "1:Wa+aonxAQZ59AWtNdQD0CH6FnsM=",
-        "direction": "outbound",
+        "bytes": 11773,
+        "community_id": "1:FYaJFSEAKLcBCMFoT6sR5TMHf/s=",
+        "direction": "internal",
         "iana_number": "6",
-        "packets": 7,
+        "name": "default",
+        "packets": 94,
         "transport": "tcp",
         "type": "ipv4"
     },
     "related": {
         "ip": [
-            "10.87.40.76",
-            "67.43.156.13"
+            "67.43.156.13",
+            "10.139.99.242"
         ]
     },
     "source": {
-        "address": "10.87.40.76",
-        "bytes": 1776,
+        "address": "67.43.156.13",
+        "as": {
+            "number": 35908
+        },
+        "bytes": 11773,
         "domain": "kibana",
-        "ip": "10.87.40.76",
-        "packets": 7,
-        "port": 5601
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "packets": 94,
+        "port": 33576
     },
     "tags": [
         "forwarded",

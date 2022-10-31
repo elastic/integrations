@@ -275,7 +275,6 @@ An example event for `host` looks as following:
 | nagios_xi.host.output |  | keyword |
 | nagios_xi.host.passive_checks_enabled | This is used to determine whether or not passive checks are enabled for this host. Values=\> 0 = disable passive host checks, 1 = enable passive host checks (default). | keyword |
 | nagios_xi.host.percent_state_change |  | keyword |
-| nagios_xi.host.perfdata | This is used to show exact outcome of check command. | keyword |
 | nagios_xi.host.performance_data.pl | This shows Packet Loss for current host. | double |
 | nagios_xi.host.performance_data.rta | This shows Round Trip Around for current host. | double |
 | nagios_xi.host.performance_data.size | This shows Request Size for current host. | double |
@@ -330,7 +329,7 @@ An example event for `service` looks as following:
         "created": "2022-05-09T07:15:37.790Z",
         "dataset": "nagios_xi.custom",
         "ingested": "2022-05-09T07:15:38Z",
-        "kind": "metrics",
+        "kind": "metric",
         "module": "nagios_xi",
         "original": "{\"acknowledgement_type\":\"0\",\"action_url\":\"\",\"active_checks_enabled\":\"0\",\"check_command\":\"check_dummy!0!\\\"No data received yet.\\\"\",\"check_options\":\"0\",\"check_timeperiod_object_id\":\"71\",\"check_type\":\"1\",\"current_check_attempt\":\"1\",\"current_notification_number\":\"0\",\"current_state\":\"0\",\"display_name\":\"Bandwidth Spike\",\"event_handler\":\"\",\"event_handler_enabled\":\"1\",\"execution_time\":\"0\",\"failure_prediction_enabled\":\"0\",\"flap_detection_enabled\":\"0\",\"has_been_checked\":\"1\",\"host_address\":\"www.nagios.org\",\"host_alias\":\"www.nagios.org\",\"host_name\":\"www.nagios.org\",\"host_object_id\":\"423\",\"icon_image\":\"\",\"icon_image_alt\":\"\",\"instance_id\":\"1\",\"is_flapping\":\"0\",\"last_check\":\"2020-06-17 07:12:02\",\"last_hard_state\":\"0\",\"last_hard_state_change\":\"2020-06-08 12:04:54\",\"last_notification\":\"2020-06-08 12:04:55\",\"last_state_change\":\"2020-06-08 12:04:54\",\"last_time_critical\":\"2020-06-08 12:04:54\",\"last_time_ok\":\"2020-06-17 07:12:02\",\"last_time_unknown\":\"1969-12-31 18:00:00\",\"last_time_warning\":\"2019-04-02 11:23:34\",\"latency\":\"0\",\"long_output\":\"\",\"max_check_attempts\":\"1\",\"modified_service_attributes\":\"0\",\"next_check\":\"1969-12-31 18:00:00\",\"next_notification\":\"1969-12-31 18:00:00\",\"no_more_notifications\":\"0\",\"normal_check_interval\":\"1\",\"notes\":\"\",\"notes_url\":\"\",\"notifications_enabled\":\"1\",\"obsess_over_service\":\"1\",\"output\":\"OK: 21 MB/s reported\",\"passive_checks_enabled\":\"1\",\"percent_state_change\":\"11.58\",\"perfdata\":\"bandwidth=21;80;90\",\"problem_has_been_acknowledged\":\"0\",\"process_performance_data\":\"1\",\"retry_check_interval\":\"1\",\"scheduled_downtime_depth\":\"0\",\"service_description\":\"Bandwidth Spike\",\"service_object_id\":\"999\",\"servicestatus_id\":\"996\",\"should_be_scheduled\":\"0\",\"state_type\":\"1\",\"status_update_time\":\"2022-03-17 00:02:42\"}",
         "type": "info"
@@ -440,7 +439,6 @@ An example event for `service` looks as following:
 | nagios_xi.service.current_users.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.current_users.users | Current Users in host. | double |
 | nagios_xi.service.custom.performance_data | Exact output of check_command. | keyword |
-| nagios_xi.service.display_name | This is used to define an alternate name that should be displayed in the web interface for this host. If not specified, this defaults to the value you specify for the host_name directive. | keyword |
 | nagios_xi.service.event_handler | This is used to specify the short name of the command that should be run whenever a change in the state of the host is detected (i.e. whenever it goes down or recovers). Read the documentation on event handlers for a more detailed explanation of how to write scripts for handling events. The maximum amount of time that the event handler command can run is controlled by the event_handler_timeout option. | keyword |
 | nagios_xi.service.event_handler_enabled | This is used to determine whether or not the event handler for this host is enabled. Values=\> 0 = disable host event handler, 1 = enable host event handler. | keyword |
 | nagios_xi.service.execution_time |  | double |
@@ -482,7 +480,6 @@ An example event for `service` looks as following:
 | nagios_xi.service.output |  | keyword |
 | nagios_xi.service.passive_checks_enabled | This is used to determine whether or not passive checks are enabled for this host. Values=\> 0 = disable passive host checks, 1 = enable passive host checks (default). | keyword |
 | nagios_xi.service.percent_state_change |  | keyword |
-| nagios_xi.service.perfdata | This is used to determine whether or not the processing of performance data is enabled for this host. Values=\> 0 = disable performance data processing, 1 = enable performance data processing. | keyword |
 | nagios_xi.service.ping.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.ping.pl | Packet Loss while ping to host. | double |
 | nagios_xi.service.ping.rta | Round Trip Around while ping to host. | double |
@@ -503,7 +500,6 @@ An example event for `service` looks as following:
 | nagios_xi.service.ssh.performance_data | Exact output of check_command. | keyword |
 | nagios_xi.service.ssh.time | SSH time taken for host. | double |
 | nagios_xi.service.state_type |  | keyword |
-| nagios_xi.service.status_text |  | keyword |
 | nagios_xi.service.status_update_time |  | date |
 | nagios_xi.service.swap_usage.free_swap | Free swap usage for host. | double |
 | nagios_xi.service.swap_usage.performance_data | Exact output of check_command. | keyword |

@@ -3,7 +3,7 @@ description: Pipeline for parsing cisco_duo authentication logs
 processors:
   - set:
       field: ecs.version
-      value: '8.2.0'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -12,6 +12,8 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - drop:
+      if: ctx.json?.response?.authlogs instanceof List && ctx.json.response.authlogs.length == 0
   - fingerprint:
       fields:
         - json.timestamp
@@ -21,9 +23,13 @@ processors:
   - date:
       field: json.timestamp
       target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.timestamp != null
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - set:
       field: event.category
       value: authentication
@@ -64,10 +70,22 @@ processors:
       field: json.access_device.ip
       type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.access_device.ip
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - convert:
       field: json.access_device.port
       type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.access_device.port
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - set: 
       field: source.ip
       copy_from: json.access_device.ip
@@ -93,10 +111,22 @@ processors:
       field: json.auth_device.ip
       type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.auth_device.ip
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - convert:
       field: json.auth_device.port
       type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.auth_device.port
+        - append:
+            field: error.message
+            value: "{{{_ingest.on_failure_message}}}"
   - set: 
       field: source.address
       copy_from: json.access_device.hostname
@@ -273,6 +303,14 @@ processors:
       field: json.access_device.location.state
       target_field: cisco_duo.auth.access_device.location.state
       ignore_missing: true
+  - remove:
+      field: json.access_device.security_agents
+      if: |-
+        ctx.json?.access_device?.security_agents != null && (
+          !(ctx.json.access_device.security_agents instanceof List) ||
+          ctx.json.access_device.security_agents.length == 0 ||
+          !(ctx.json.access_device.security_agents[0] instanceof Object)
+        )
   - rename:
       field: json.access_device.security_agents
       target_field: cisco_duo.auth.access_device.security_agents
@@ -351,6 +389,6 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{{_ingest.on_failure_message}}}"

@@ -53,7 +53,7 @@ https://login.microsoftonline.de for azure USGovernmentCloud
 
 `Resources`:: (_string_) Contains following options:
 
-`resource_id`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format /subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}.
+`resource_id`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format `/subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}`.
   Should return a list of resources.
 
 Users might have large number of resources they would like to gather metrics from. In order to reduce verbosity, they will have

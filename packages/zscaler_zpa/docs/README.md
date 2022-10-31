@@ -166,7 +166,7 @@ Sample Response:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | observer.egress.interface.name | Interface name as reported by the system. | keyword |
 | observer.geo.country_iso_code | Country ISO code. | keyword |
-| observer.geo.location | Longitude and latitude | geo_point |
+| observer.geo.location | Longitude and latitude. | geo_point |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
@@ -228,7 +228,7 @@ An example event for `app_connector_status` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -444,7 +444,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -530,7 +530,7 @@ An example event for `audit` looks as following:
 | client.geo.continent_name | Name of the continent. | keyword |
 | client.geo.country_iso_code | Country ISO code. | keyword |
 | client.geo.country_name | Country name. | keyword |
-| client.geo.location | Longitude and latitude | geo_point |
+| client.geo.location | Longitude and latitude. | geo_point |
 | client.geo.region_iso_code | Region ISO code. | keyword |
 | client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
@@ -661,7 +661,7 @@ An example event for `browser_access` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "acf7dca8-817d-4681-bad3-1cc9bfefc49c",
@@ -925,7 +925,7 @@ An example event for `user_activity` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
@@ -1168,7 +1168,7 @@ An example event for `user_status` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.3.0"
     },
     "elastic_agent": {
         "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",

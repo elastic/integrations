@@ -1,14 +1,15 @@
 ---
-description: Pipeline for PanOS HIP Match Logs
+description: Pipeline for PanOS HIP Match Logs.
+# API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/hip-match-log-fields
 processors:
   - csv:
       field: message
       target_fields:
         - _temp_.srcuser
         - panw.panos.virtual_sys
-        - host.name
-        - host.os.full
-        - source.ip
+        - panw.panos.machine.name
+        - panw.panos.machine.os
+        - panw.panos.source.ip
         - panw.panos.matchname
         - panw.panos.repeat_count
         - panw.panos.matchtype
@@ -21,34 +22,22 @@ processors:
         - panw.panos.device_group_hierarchy3
         - panw.panos.device_group_hierarchy4
         - panw.panos.vsys_name
-        - observer.hostname
+        - panw.panos.device_name
         - panw.panos.vsys_id
         - _temp_.source_ipv6
-        - host.id
+        - panw.panos.host.id
         - panw.panos.serial_number
-        - host.mac
+        - panw.panos.machine.mac_address
+        - _temp_.high_res_timestamp
 
-  - grok:
-      field: _temp_.srcuser
-      ignore_missing: true
+  - set:
+      field: source.ip
+      copy_from: panw.panos.source.ip
       ignore_failure: true
-      patterns:
-        - '%{HOSTNAME:source.user.domain}\\%{USERNAME:source.user.name}'
-        - '%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}'
-        - '%{USERNAME:source.user.name}'
-      if: ctx?._temp_?.srcuser != null
   - set:
       field: source.ip
       value: "{{_temp_.source_ipv6}}"
       if: ctx?._temp_?.source_ipv6 != null && ctx?._temp_?.source_ipv6 != "" && ctx?._temp_?.source_ipv6 != "0.0.0.0"
-  - set:
-      field: network.type
-      value: 'ipv4'
-      if: 'ctx?.network?.type == null && ctx?.source?.ip.contains(".")'
-  - set:
-      field: network.type
-      value: 'ipv6'
-      if: 'ctx?.network?.type == null && ctx?.source?.ip.contains(":")'
 
 # Set event.category.
   - set:
@@ -58,6 +47,36 @@ processors:
       field: event.category
       value:
         - network
+
+# Set custom fields to ECS fields
+  - set:
+      field: host.id
+      copy_from: panw.panos.host.id
+      ignore_failure: true
+  - set:
+      field: host.mac
+      copy_from: panw.panos.machine.mac_address
+      ignore_failure: true
+  - set:
+      field: host.name
+      copy_from: panw.panos.machine.name
+      ignore_failure: true
+  - set:
+      field: host.os.full
+      copy_from: panw.panos.machine.os
+      ignore_failure: true
+  - set:
+      field: observer.hostname
+      copy_from: panw.panos.device_name
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.ipv6
+      copy_from: _temp_.source_ipv6
+      ignore_failure: true
+  - set:
+      field: panw.panos.source.user
+      copy_from: _temp_.srcuser
+      ignore_failure: true
 
 on_failure:
   - append:
