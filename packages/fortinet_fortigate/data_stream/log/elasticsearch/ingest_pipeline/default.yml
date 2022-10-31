@@ -9,8 +9,24 @@ processors:
       target_field: event.original
   - grok:
       field: event.original
+      ecs_compatibility: v1
       patterns:
         - "%{SYSLOG5424PRI}%{GREEDYDATA:syslog5424_sd}$"
+  - script:
+      lang: painless
+      source: |
+        if (ctx.log?.syslog?.priority != null) {
+          def severity = new HashMap();
+          severity['code'] = ctx.log.syslog.priority&0x7;
+          ctx.log.syslog['severity'] = severity;
+          def facility = new HashMap();
+          facility['code'] = ctx.log.syslog.priority>>3;
+          ctx.log.syslog['facility'] = facility;
+        }
+  - gsub:
+      field: syslog5424_sd
+      pattern: "\u0000"
+      replacement: ""
   - kv:
       field: syslog5424_sd
       field_split: " (?=[a-z\\_\\-]+=)"
@@ -204,7 +220,6 @@ processors:
         - _temp.time
         - _temp
         - syslog5424_sd
-        - syslog5424_pri
         - fortinet.firewall.tz
         - fortinet.firewall.date
         - fortinet.firewall.devid
@@ -222,6 +237,14 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "utm" }}'
       if: "ctx.fortinet?.firewall?.type == 'utm' || ctx.fortinet?.firewall?.type == 'dns'"
+  - convert:
+      field: fortinet.firewall.auditid
+      type: long
+      ignore_missing: true
+  - convert:
+      field: fortinet.firewall.audittime
+      type: long
+      ignore_missing: true
   - convert:
       field: fortinet.firewall.quotamax
       type: long
@@ -406,6 +429,13 @@ processors:
       value: "{{dns.question.name}}"
       if: "ctx.dns?.question?.name != null"
       allow_duplicates: false
+
+  # Fix up network direction field to match ECS-allowable values.
+  - set:
+      field: network.direction
+      value: unknown
+      if: "ctx.network?.direction != null && !(['ingress', 'egress', 'inbound', 'outbound', 'internal', 'external'].contains(ctx.network.direction))"
+
   - script:
       lang: painless
       source: |

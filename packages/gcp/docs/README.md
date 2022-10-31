@@ -1,4 +1,4 @@
-# Google Cloud Integration
+# Google Cloud Platform Integration
 
 The Google Cloud integration collects and parses Google Cloud [Audit Logs](https://cloud.google.com/logging/docs/audit), [VPC Flow Logs](https://cloud.google.com/vpc/docs/using-flow-logs), [Firewall Rules Logs](https://cloud.google.com/vpc/docs/firewall-rules-logging) and [Cloud DNS Logs](https://cloud.google.com/dns/docs/monitoring) that have been exported from Cloud Logging to a Google Pub/Sub topic sink.
 
@@ -110,19 +110,16 @@ More example filters for different log types:
 resource.type="gce_subnetwork" AND
 log_id("compute.googleapis.com/vpc_flows") AND
 resource.labels.subnetwork_name"=[SUBNET_NAME]"
-
 #
 # Audit: Google Compute Engine firewall rule deletion
 #
 resource.type="gce_firewall_rule" AND
 log_id("cloudaudit.googleapis.com/activity") AND
 protoPayload.methodName:"firewalls.delete"
-
 #
 # DNS: all DNS queries
 #
 resource.type="dns_query"
-
 #
 # Firewall: logs for a given country
 #
@@ -542,7 +539,7 @@ The `firewall` dataset collects logs from Firewall Rules in your Virtual Private
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
@@ -787,7 +784,7 @@ The `vpcflow` dataset collects logs sent from and received by VM instances, incl
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
 | network.name | Name given by operators to sections of their network. | keyword |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
@@ -1010,6 +1007,8 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | gcp.dns.server_latency | Server latency. | integer |
 | gcp.dns.source_ip | Source IP address of the query. | ip |
 | gcp.dns.source_network | Source network of the query. | keyword |
+| gcp.dns.source_type | Type of source generating the DNS query: private-zone, public-zone, forwarding-zone, forwarding-policy, peering-zone, internal, external, internet | keyword |
+| gcp.dns.target_type | Type of target resolving the DNS query: private-zone, public-zone, forwarding-zone, forwarding-policy, peering-zone, internal, external, internet | keyword |
 | gcp.dns.vm_instance_id | Compute Engine VM instance ID, only applicable to queries initiated by Compute Engine VMs. | keyword |
 | gcp.dns.vm_instance_name | Compute Engine VM instance name, only applicable to queries initiated by Compute Engine VMs. | keyword |
 | gcp.dns.vm_project_id | Google Cloud project ID, only applicable to queries initiated by Compute Engine VMs. | keyword |
@@ -1032,9 +1031,14 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
 | log.offset | Log offset | long |
+| network.iana_number | IANA Protocol Number (https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml). Standardized list of protocols. This aligns well with NetFlow and sFlow related logs which use the IANA Protocol Number. | keyword |
+| network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
@@ -1044,98 +1048,104 @@ An example event for `dns` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-01-23T09:16:05.341Z",
+    "@timestamp": "2021-12-12T15:59:40.446Z",
     "agent": {
-        "ephemeral_id": "0b86920e-9dac-4b22-91c8-e594b22a00b4",
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "ephemeral_id": "87190725-9632-41a5-ba26-ebffca397d74",
+        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.3"
+        "version": "8.4.1"
     },
     "cloud": {
-        "availability_zone": "europe-west2-a",
-        "instance": {
-            "id": "8340998530665147",
-            "name": "instance"
-        },
         "project": {
-            "id": "project"
+            "id": "key-reference-123456"
         },
         "provider": "gcp",
-        "region": "europe-west2"
+        "region": "global"
     },
     "data_stream": {
         "dataset": "gcp.dns",
         "namespace": "ep",
         "type": "logs"
     },
+    "destination": {
+        "address": "216.239.32.106",
+        "ip": "216.239.32.106"
+    },
     "dns": {
         "answers": [
             {
                 "class": "IN",
-                "data": "127.0.0.1",
-                "name": "elastic.co",
-                "ttl": "300",
+                "data": "67.43.156.13",
+                "name": "asdf.gcp.example.com.",
+                "ttl": 300,
                 "type": "A"
             }
         ],
         "question": {
-            "name": "elastic.co",
-            "registered_domain": "elastic.co",
-            "top_level_domain": "co",
+            "name": "asdf.gcp.example.com",
+            "registered_domain": "example.com",
+            "subdomain": "asdf.gcp",
+            "top_level_domain": "com",
             "type": "A"
         },
         "resolved_ip": [
-            "127.0.0.1"
+            "67.43.156.13"
         ],
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
+        "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",
         "snapshot": false,
-        "version": "8.2.3"
+        "version": "8.4.1"
     },
     "event": {
+        "action": "dns-query",
         "agent_id_status": "verified",
-        "created": "2022-06-28T02:46:41.230Z",
+        "category": "network",
+        "created": "2022-10-03T22:33:56.157Z",
         "dataset": "gcp.dns",
-        "id": "vwroyze8pg7y",
-        "ingested": "2022-06-28T02:46:42Z",
+        "id": "zir4wud11tm",
+        "ingested": "2022-10-03T22:33:57Z",
         "kind": "event",
         "outcome": "success"
     },
     "gcp": {
         "dns": {
             "auth_answer": true,
+            "destination_ip": "216.239.32.106",
             "protocol": "UDP",
-            "query_name": "elastic.co.",
+            "query_name": "asdf.gcp.example.com.",
             "query_type": "A",
-            "rdata": "elastic.co.\t300\tIN\ta\t127.0.0.1",
             "response_code": "NOERROR",
-            "server_latency": 14,
-            "source_ip": "10.154.0.3",
-            "source_network": "default",
-            "vm_instance_id": "8340998530665147",
-            "vm_instance_name": "694119234537.instance",
-            "vm_project_id": "project",
-            "vm_zone_name": "europe-west2-a"
+            "server_latency": 0,
+            "source_type": "internet",
+            "target_type": "public-zone"
         }
     },
     "input": {
         "type": "gcp-pubsub"
     },
     "log": {
-        "logger": "projects/project/logs/dns.googleapis.com%2Fdns_queries"
+        "level": "INFO",
+        "logger": "projects/key-reference-123456/logs/dns.googleapis.com%2Fdns_queries"
     },
     "network": {
+        "iana_number": "17",
+        "protocol": "dns",
         "transport": "udp"
     },
-    "source": {
-        "address": "10.154.0.3",
-        "ip": "10.154.0.3"
+    "related": {
+        "hosts": [
+            "asdf.gcp.example.com"
+        ],
+        "ip": [
+            "67.43.156.13",
+            "216.239.32.106"
+        ]
     },
     "tags": [
         "forwarded",
@@ -1158,14 +1168,14 @@ The `billing` dataset collects GCP Billing information from Google Cloud BigQuer
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -1256,14 +1266,14 @@ The `compute` dataset is designed to fetch metrics for [Compute Engine](https://
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.project.id | Name of the project in Google Cloud. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -1422,7 +1432,7 @@ The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.co
 | cloud | Fields related to the cloud or infrastructure the events are coming from. | group |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |

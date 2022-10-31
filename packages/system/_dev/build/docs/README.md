@@ -41,7 +41,7 @@ Details on the permissions needed for each data stream are available in the [Met
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+{{ url "getting-started-observability" "Getting started" }} guide.
 
 ## Troubleshooting
 

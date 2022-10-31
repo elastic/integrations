@@ -32,11 +32,11 @@ An example event for `panos` looks as following:
 {
     "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "7020cf01-7612-4194-9da0-390244968573",
-        "id": "9cfce01d-2b4b-49d1-8777-572f0a4da3bc",
+        "ephemeral_id": "c6ec5509-7ac3-414d-93ac-638efeaf799f",
+        "id": "19fc4a39-4777-4ea9-8980-3fd25ad3216f",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.1"
+        "version": "8.4.1"
     },
     "data_stream": {
         "dataset": "panw.panos",
@@ -61,12 +61,12 @@ An example event for `panos` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "9cfce01d-2b4b-49d1-8777-572f0a4da3bc",
+        "id": "19fc4a39-4777-4ea9-8980-3fd25ad3216f",
         "snapshot": false,
-        "version": "8.2.1"
+        "version": "8.4.1"
     },
     "event": {
         "action": "url_filtering",
@@ -78,8 +78,9 @@ An example event for `panos` looks as following:
         ],
         "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2022-07-11T14:27:45Z",
+        "ingested": "2022-10-27T05:10:33Z",
         "kind": "alert",
+        "original": "\u003c14\u003eNov 30 16:09:08 PA-220 1,2012/10/30 09:46:12,01606001116,THREAT,url,1,2012/04/10 04:39:56,192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
         "outcome": "success",
         "severity": 5,
         "timezone": "+00:00",
@@ -88,7 +89,7 @@ An example event for `panos` looks as following:
         ]
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "labels": {
         "captive_portal": true,
@@ -97,7 +98,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.208.7:36957"
+            "address": "192.168.128.4:36614"
         },
         "syslog": {
             "facility": {
@@ -185,6 +186,7 @@ An example event for `panos` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "panw-panos",
         "forwarded"
     ],
@@ -326,7 +328,7 @@ An example event for `panos` looks as following:
 | network.application | When a specific application or service is identified from network connection details (source/dest IPs, ports, certificates, or wire format), this field captures the application's or service's name. For example, the original event identifies the network connection being from a specific web service in a `https` network connection, like `facebook` or `twitter`. The field value must be normalized to lowercase for querying. | keyword |
 | network.bytes | Total bytes transferred in both directions. If `source.bytes` and `destination.bytes` are known, `network.bytes` is their sum. | long |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.forwarded_ip | Host IP address when the source IP address is the proxy. | ip |
 | network.packets | Total packets transferred in both directions. If `source.packets` and `destination.packets` are known, `network.packets` is their sum. | long |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |

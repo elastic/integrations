@@ -1,12 +1,12 @@
-# Custom HTTPJSON input integration
+# Custom API input integration
 
-The custom HTTPJSON input integration is used to ingest data from custom RESTful API's that do not currently have an existing integration.
+The custom API input integration is used to ingest data from custom RESTful API's that do not currently have an existing integration.
 
 The input itself supports sending both GET and POST requests, transform requests and responses during runtime, paginate and keep a running state on information from the last collected events.
 
 ## Configuration
 
-The extensive documentation for the input are currently available [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html).
+The extensive documentation for the input are currently available {{ url "filebeat-input-httpjson" "here" }}.
 
 The most commonly used configuration options are available on the main integration page, while more advanced and customizable options currently resides under the "Advanced options" part of the integration settings page.
 
