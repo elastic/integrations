@@ -3,11 +3,8 @@ description: Pipeline for parsing Nginx Ingress Controller access logs. Requires
   geoip and user_agent plugins.
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -46,8 +43,6 @@ processors:
       field: url.domain
       value: "{{destination.domain}}"
       if: ctx.url?.domain == null && ctx.destination?.domain != null
-  - remove:
-      field: nginx_ingress_controller.access.info
   - split:
       field: nginx_ingress_controller.access.remote_ip_list
       separator: '"?,?\s+'
@@ -81,6 +76,11 @@ processors:
       value: '{{{nginx_ingress_controller.access.http.request.id}}}'
       ignore_empty_value: true
       ignore_failure: true
+  - convert:
+      field: nginx_ingress_controller.access.http.request.length
+      target_field: http.request.bytes
+      type: long
+      ignore_missing: true
   - script:
       if: ctx.nginx_ingress_controller?.access?.upstream?.response?.length_list != null && ctx.nginx_ingress_controller.access.upstream.response.length_list.length > 0
       lang: painless
@@ -177,9 +177,6 @@ processors:
       on_failure:
       - remove:
           field: nginx_ingress_controller.access.upstream.port
-  - remove:
-      field: nginx_ingress_controller.access.upstream.address
-      ignore_failure: true
   - script:
       if: ctx.nginx_ingress_controller?.access?.remote_ip_list != null && ctx.nginx_ingress_controller.access.remote_ip_list.length > 0
       lang: painless
@@ -229,13 +226,11 @@ processors:
         }
       params:
         dot: .
-  - remove:
+  - convert:
       field: source.address
-      if: ctx.source.address == null
-  - grok:
-      field: source.address
-      patterns:
-      - ^%{IP:source.ip}$
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
       ignore_failure: true
   - set:
       copy_from: "@timestamp"
@@ -249,8 +244,6 @@ processors:
       - append:
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
-  - remove:
-      field: nginx_ingress_controller.access.time
   - user_agent:
       field: user_agent.original
       ignore_missing: true
@@ -295,14 +288,28 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{nginx_ingress_controller.access.upstream.ip}}"
+      if: "ctx?.nginx_ingress_controller?.access.upstream?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.user
       value: "{{user.name}}"
       if: "ctx?.user?.name != null"
+      allow_duplicates: false
+  - remove:
+      field:
+        - nginx_ingress_controller.access.time
+        - nginx_ingress_controller.access.info
+        - nginx_ingress_controller.access.upstream.address
+      ignore_missing: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
