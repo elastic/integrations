@@ -8,11 +8,15 @@ processors:
   - date:
       field: _temps.date
       formats:
-         - d/MMM/yyyy:HH:mm:ss Z
-# rename ecs
+        - d/MMM/yyyy:HH:mm:ss Z
+  # rename ecs
   - rename:
       field: json.transaction.remote_address
       target_field: source.ip
+      ignore_missing: true
+  - rename:
+      field: json.transaction.local_address
+      target_field: destination.ip
       ignore_missing: true
   - rename:
       field: json.transaction.remote_port
@@ -40,8 +44,16 @@ processors:
       target_field: http.response.status_code
       ignore_missing: true
   - rename:
+      field: json.transaction.transaction_id
+      target_field: transaction.id
+      ignore_missing: true
+  - rename:
       field: json.response.headers.Content-Type
       target_field: http.response.mime_type
+      ignore_missing: true
+  - rename:
+      field: json.request.headers.Content-Type
+      target_field: http.request.mime_type
       ignore_missing: true
   - rename:
       field: json.response.headers.Content-Length
@@ -49,7 +61,32 @@ processors:
       ignore_missing: true
   - convert:
       field: http.response.bytes
+      ignore_missing: true
       type: long
+  - rename:
+      field: json.request.headers.Content-Length
+      target_field: http.request.bytes
+      ignore_missing: true
+  - convert:
+      field: http.request.bytes
+      ignore_missing: true
+      type: long
+  - rename:
+      field: json.request.body
+      target_field: http.request.body.content
+      ignore_missing: true
+  - rename:
+      field: json.response.body
+      target_field: http.response.body.content
+      ignore_missing: true
+  - rename:
+      field: json.request.headers.REMOTE_USER
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: json.request.headers.Referer
+      target_field: http.request.referrer
+      ignore_missing: true
   - rename:
       field: json.audit_data.messages
       target_field: modsec.audit.details
@@ -72,7 +109,7 @@ processors:
         }
         ctx.modsec.audit.messages = messages
 
-# user agent and geoip enrich
+  # user agent and geoip enrich
   - user_agent:
       field: json.request.headers.User-Agent
       ignore_missing: true
@@ -85,8 +122,20 @@ processors:
       field: source.ip
       target_field: source.as
       properties:
-      - asn
-      - organization_name
+        - asn
+        - organization_name
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
       ignore_missing: true
   - rename:
       field: source.as.asn
