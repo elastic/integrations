@@ -1,9 +1,9 @@
-- name: cluster_uuid
+- name: logstash.cluster.id
   type: alias
   path: logstash.elasticsearch.cluster.id
 - name: timestamp
   type: alias
-  path: '@timestamp'
+  path: "@timestamp"
 - name: logstash_stats
   type: group
   fields:
@@ -11,7 +11,7 @@
       type: nested
     - name: timestamp
       type: alias
-      path: '@timestamp'
+      path: "@timestamp"
     - name: jvm
       type: group
       fields:
@@ -55,7 +55,7 @@
           type: group
           fields:
             - name: stat
-              type: group
+              type: object
               fields:
                 - name: number_of_elapsed_periods
                   type: alias
@@ -81,21 +81,15 @@
         - name: cgroup
           type: group
           fields:
-            - name: cpuacct.usage_nanos
-              type: alias
-              path: logstash.node.stats.os.cgroup.cpuacct.usage_nanos
+            - name: cpuacct
+              type: object
+              fields:
+                - name: usage_nanos
+                  type: alias
+                  path: logstash.node.stats.os.cgroup.cpuacct.usage_nanos
     - name: process.cpu.percent
       type: alias
       path: logstash.node.stats.process.cpu.percent
     - name: queue.events_count
       type: alias
       path: logstash.node.stats.queue.events_count
-- name: logstash_state
-  type: group
-  fields:
-    - name: pipeline.id
-      type: alias
-      path: logstash.node.state.pipeline.id
-    - name: pipeline.hash
-      type: alias
-      path: logstash.node.state.pipeline.hash
