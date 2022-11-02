@@ -10,8 +10,6 @@ Then use these detection rules and anomaly detection jobs for data exfiltration 
 
 ### Add preconfigured anomaly detection jobs
 
-Create a data view for the indices that are enriched by the pipeline.
-
 In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Data Exfiltration Detection (DED). When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment.
 
 ### (Optional) Enable Security rules
@@ -39,14 +37,14 @@ Detect data exfiltration activity in your network data.
 
 | Rule | Description |
 |---|---|
-| DED activity detection to an unusal city | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual city.|
-| DED activity detection to an unusal country | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual country.|
-| DED activity detection to an unusal country by its iso code | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual country by its iso code.|
-| DED activity detection to an unusal region name | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual region name.|
-| DED activity detection to an unusal continent | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual continent.|
-| DED activity detection to an unusal timezone | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual timezone.|
-| DED activity detection to an unusal IP address | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual IP address.|
-| DED activity detection to an unusal destination port | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual destination port.|
+| Potential Data Exfiltration Activity to an Unusual City | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual city.|
+| Potential Data Exfiltration Activity to an Unusual Country | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual country.|
+| Potential Data Exfiltration Activity to an Unusual ISO Code | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual country by its iso code.|
+| Potential Data Exfiltration Activity to an Unusual Region | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual region name.|
+| Potential Data Exfiltration Activity to an Unusual Continent | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual continent.|
+| Potential Data Exfiltration Activity to an Unusual Timezone | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual timezone.|
+| Potential Data Exfiltration Activity to an Unusual IP Address | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual IP address.|
+| Potential Data Exfiltration Activity to an Unusual Destination Port | An anomaly detection job has detected an abnormal volume of bytes being sent to an unusual destination port.|
 
 ## Licensing
 Usage in production requires that you have a license key that permits use of machine learning features.
