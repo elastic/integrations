@@ -6,27 +6,41 @@ processors:
   - set:
       field: ecs.version
       value: '8.5.0'
-  - grok:
-      field: event.original
-      patterns:
-        - '%{SYSLOGTIMESTAMP:sysmon.log.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYDATA:sysmon.log.message}'
-        - '%{TIMESTAMP_ISO8601:sysmon.log.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYDATA:sysmon.log.message}'
-      ignore_missing: true
-  - decode_xml_wineventlog:
-      field: sysmon.log.message
-      target_field: linux
-      ignore_missing: true
+  # - grok:
+  #     field: event.original
+  #     patterns:
+  #       - '%{SYSLOGTIMESTAMP:sysmon.log.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYDATA:sysmon.log.message}'
+  #       - '%{TIMESTAMP_ISO8601:sysmon.log.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYDATA:sysmon.log.message}'
+  #     ignore_missing: true
+  # - decode_xml_wineventlog:
+  #     field: sysmon.log.message
+  #     target_field: linux
+  #     ignore_missing: true
+  #     ignore_failure: true
+  #     map_ecs_fields: true
+  - set:
+      field: sysmon.log.timestamp
+      value: '{{sysmon.log.date.month}} {{sysmon.log.date.day}} {{sysmon.log.date.time}}'
+  - date:
+      field: sysmon.log.timestamp
+      target_field: '@timestamp'
+      formats:
+        - 'MMM dd HH:mm:ss'
       ignore_failure: true
-      map_ecs_fields: true
+      if: ctx?.sysmon?.log?.timestamp != null
   - remove:
-      description: Remove unparsed xml.
+      description: Remove original date field
+      field: sysmon.log.date
+      ignore_missing: true
+  - remove:
+      description: Remove original unparsed xml field.
       field: sysmon.log.message
       ignore_missing: true
       ignore_failure: true
   - script:
       description: Remove all empty values from event_data.
       lang: painless
-      source: ctx.linux?.event_data?.entrySet().removeIf(entry -> [null, "", "-", "{00000000-0000-0000-0000-000000000000}"].contains(entry.getValue()))
+      source: ctx.linux?.event_data?.entrySet()?.removeIf(entry -> [null, "", "-", "{00000000-0000-0000-0000-000000000000}"].contains(entry.getValue()))
   - rename:
       field: linux.level
       target_field: log.level

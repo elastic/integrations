@@ -15,12 +15,12 @@ processors:
     ignore_missing: true
     fail_on_error: false
 - dissect:
-    tokenizer: '"%{sysmon.log.timestamp|integer} - %{service.name} - %{service.status}"'
-    field: "message"
+    tokenizer: '"%{sysmon.log.date.month} %{sysmon.log.date.day} %{sysmon.log.date.time} %{host.hostname} %{process.name} [%{process.pid|long}]: %{sysmon.log.message}"'
+    field: "event.original"
     target_prefix: ""
 - decode_xml_wineventlog:
-    field: event.original
-    target_field: winlog
+    field: sysmon.log.message
+    target_field: linux
     ignore_missing: true
     ignore_failure: true
     map_ecs_fields: true
