@@ -32,6 +32,19 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: timestamp
+      if: ctx.timestamp != null && ctx.event?.timezone == null
+      formats:
+        - dd-MMM-yyyy HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSS'Z'
+      on_failure:
+        - remove:
+            field: timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - split:
       field: repeat_message
       if: ctx.repeat_message != null
