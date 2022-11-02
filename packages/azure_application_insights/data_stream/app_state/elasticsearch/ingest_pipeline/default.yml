@@ -1,0 +1,25 @@
+---
+description: Pipeline for parsing Azure App State metrics.
+processors:
+  - rename:
+      field: azure.metrics
+      target_field: azure.app_state
+      ignore_missing: true
+  - rename:
+      field: azure.app_insights.end_date
+      target_field: azure.app_state.end_date
+      ignore_missing: true
+  - rename:
+      field: azure.app_insights.start_date
+      target_field: azure.app_state.start_date
+      ignore_missing: true
+  - remove:
+      ignore_missing: true
+      field:
+        - azure.metrics
+        - azure.app_insights
+    
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
