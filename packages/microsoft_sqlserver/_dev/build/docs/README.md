@@ -18,7 +18,7 @@ Microsoft SQL Server has a feature that allows running multiple databases on the
 As of now the integration supports collecting metrics from single host. For multi host, each host needs to run a new integration.
 
 User has to provide the user name, password and the host name,
-Syntax for the host based on default and named instance is listed below,
+The host configuration also contains both named instance or port details, as per the syntax below,
 
 ### Connecting to Default Instance (host)
 
