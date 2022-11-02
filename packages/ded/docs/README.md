@@ -14,7 +14,7 @@ In **Machine Learning > Anomaly Detection**, when you create a job, you should s
 
 ### (Optional) Enable Security rules
 
-In order to maximize the benefit of the DED detection framework, you might consider activating detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied.
+In order to maximize the benefit of the DED detection framework, you might consider activating detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
 ## ML Modules
 
