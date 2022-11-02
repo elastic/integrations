@@ -149,7 +149,7 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2011-10-19T12:43:47.375Z",
     "agent": {
-        "ephemeral_id": "138372de-4ae1-4c83-b04a-cecc8dfee01e",
+        "ephemeral_id": "146389d5-9c40-4c74-8e3b-b967e4e783c4",
         "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -173,8 +173,9 @@ An example event for `log` looks as following:
         "agent_id_status": "verified",
         "created": "2022-03-22T14:26:54.000Z",
         "dataset": "infoblox_nios.log",
-        "ingested": "2022-11-02T20:28:57Z",
-        "original": "\u003c29\u003eMar 22 14:26:54 10.0.0.1 httpd: 2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login"
+        "ingested": "2022-11-02T20:50:43Z",
+        "original": "\u003c29\u003eMar 22 14:26:54 10.0.0.1 httpd: 2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login",
+        "timezone": "+00:00"
     },
     "host": {
         "ip": "10.0.0.1"
@@ -193,12 +194,13 @@ An example event for `log` looks as following:
         }
     },
     "input": {
-        "type": "udp"
+        "type": "log"
     },
     "log": {
-        "source": {
-            "address": "172.28.0.4:52100"
+        "file": {
+            "path": "/tmp/service_logs/log.log"
         },
+        "offset": 535,
         "syslog": {
             "priority": 29
         }
