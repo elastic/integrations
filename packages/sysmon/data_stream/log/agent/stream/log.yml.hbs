@@ -1,0 +1,38 @@
+paths:
+{{#each paths as |path i|}}
+ - {{path}}
+{{/each}}
+exclude_files: [".gz$"]
+multiline:
+  pattern: "^\\s"
+  match: after
+processors:
+- add_locale: ~
+- rename:
+    fields:
+      - from: message
+        to: event.original
+    ignore_missing: true
+    fail_on_error: false
+- dissect:
+    tokenizer: '"%{sysmon.log.timestamp|integer} - %{service.name} - %{service.status}"'
+    field: "message"
+    target_prefix: ""
+- decode_xml_wineventlog:
+    field: event.original
+    target_field: winlog
+    ignore_missing: true
+    ignore_failure: true
+    map_ecs_fields: true
+{{#if processors.length}}
+{{processors}}
+{{/if}}
+{{#if tags.length}}
+tags:
+{{#each tags as |tag i|}}
+- {{tag}}
+{{/each}}
+{{/if}}
+{{#if ignore_older}}
+ignore_older: {{ignore_older}}
+{{/if}}
