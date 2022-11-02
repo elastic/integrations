@@ -149,12 +149,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2011-10-19T12:43:47.375Z",
     "agent": {
-        "ephemeral_id": "61822d4c-36b4-4e1d-bd4e-afeb755b0eb1",
-        "hostname": "docker-fleet-agent",
-        "id": "04f35ceb-6ead-42c2-b472-fc88900de7db",
+        "ephemeral_id": "0f5bc86a-d98d-43ac-a92d-08a7ade790de",
+        "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.0.0"
     },
     "data_stream": {
         "dataset": "infoblox_nios.log",
@@ -165,16 +164,16 @@ An example event for `log` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "04f35ceb-6ead-42c2-b472-fc88900de7db",
+        "id": "4d88038c-4b3b-4bb4-95f4-cc5789c88852",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.0.0"
     },
     "event": {
         "action": "first_login",
         "agent_id_status": "verified",
         "created": "2022-03-22T14:26:54.000Z",
         "dataset": "infoblox_nios.log",
-        "ingested": "2022-10-21T10:14:01Z",
+        "ingested": "2022-11-02T21:01:59Z",
         "original": "\u003c29\u003eMar 22 14:26:54 10.0.0.1 httpd: 2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login"
     },
     "host": {
@@ -198,7 +197,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:58709"
+            "address": "172.28.0.4:33440"
         },
         "syslog": {
             "priority": 29
