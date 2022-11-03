@@ -11,22 +11,22 @@ See: [SQL Server Audit page](https://docs.microsoft.com/en-us/sql/relational-dat
 
 ## Named Instance
 
-Microsoft SQL Server has a feature that allows running multiple databases on the same host (or clustered hosts) with separate settings. Establish named instance connection by using the instance name along with the host name (Ex: `host/instance_name` or `host:named_instance_port`) to collect metrics.
+Microsoft SQL Server has a feature that allows running multiple databases on the same host (or clustered hosts) with separate settings. Establish named instance connection by using the instance name along with the host name (Ex: `host/instance_name` or `host:named_instance_port`) to collect metrics. Details of the host configuration is provided below.
 
 ## Host Configuration
 
-As of now the integration supports collecting metrics from single host. For multi host, each host needs to run a new integration.
+Integration supports collecting metrics from single host. For multi host metrics, each host can be run as a new integration.
 
-User has to provide the user name, password and the host name. The host configuration also contains both named instance or port details, as per the syntax below,
+As part of the input configuration, need to provide the user name, password and the host details. The host configuration supports both named instance or default(no-name) instance, as per the syntax below.
 
 ### Connecting to Default Instance (host)
 
-* `host`    ex: `localhost` (Instance name is not needed when connecting to default instance)
+* `host`    ex: `localhost` (Instance name is not needed when connecting to default instance) or
 * `host:port ` ex: `localhost:1433`
 
 ### Connecting to Named Instance (host)
 
-* `host/instance_name`  ex: `localhost/namedinstance_01`
+* `host/instance_name`  ex: `localhost/namedinstance_01` or
 * `host:named_instance_port`  ex: `localhost:60873`
 
 ## Compatibility
