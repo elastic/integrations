@@ -16,12 +16,12 @@ The Prometheus integration `collector` dataset connects to the Prometheus server
 To scrape metrics from a Prometheus exporter, configure the `hosts` setting to it. The path
 to retrieve the metrics from (`/metrics` by default) can be configured with Metrics Path.
 
-#### Histograms and types [x-pack]
+#### Histograms and types
 
-`Use Types` paramater (default: false) enables a different layout for metrics storage, leveraging Elasticsearch
+`Use Types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
 types, including {{ url "elasticsearch-histograms" "histograms" }}.
 
-`Rate Counters` paramater (default: false) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
+`Rate Counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `Use Types`.
 
@@ -197,12 +197,12 @@ The fields reported are:
 
 {{fields "remote_write"}}
 
-#### Histograms and types [x-pack]
+#### Histograms and types
 
-`use_types` parameter (default: false) enables a different layout for metrics storage, leveraging Elasticsearch
+`use_types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
 types, including {{ url "elasticsearch-histograms" "histograms" }}.
 
-`rate_counters` parameter (default: false) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
+`rate_counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `use_types`.
 
