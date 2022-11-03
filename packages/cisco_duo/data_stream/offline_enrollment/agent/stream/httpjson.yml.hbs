@@ -15,6 +15,7 @@ request.transforms:
       value: '[[sprintf "Basic %s" (base64Encode (sprintf "%s:%s" "{{integration_key}}" (hmac "sha1" "{{secret_key}}" (formatDate (now) "Mon, 02 Jan 2006 15:04:05 -0700") "\n" "GET" "\n" .url.Host "\n" "/admin/v1/logs/offline_enrollment" "\n" .url.RawQuery)))]]'
 response.split:
   target: body.response
+  ignore_empty_value: true
 cursor:
   last_published:
     value: '[[toInt .last_event.timestamp]]'
