@@ -38,7 +38,7 @@ This integration does not currently support the security posture assessment of t
 3. Red Hat Openshift 
 4. Amazon EKS with AWS Fargate nodes
 
-This integration currently supported for **elastic agent** version 8.5 and above.
+The integration supports **elastic agent** version 8.5 and above.
 
 ## Integration Requirments 
 
