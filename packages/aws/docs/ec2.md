@@ -307,14 +307,9 @@ An example event for `ec2` looks as following:
 | aws.ec2.cpu.credit_usage | The number of CPU credits spent by the instance for CPU utilization. | long |
 | aws.ec2.cpu.surplus_credit_balance | The number of surplus credits that have been spent by an unlimited instance when its CPUCreditBalance value is zero. | long |
 | aws.ec2.cpu.surplus_credits_charged | The number of spent surplus credits that are not paid down by earned CPU credits, and which thus incur an additional charge. | long |
-| aws.ec2.cpu.total.pct | The percentage of allocated EC2 compute units that are currently in use on the instance. | scaled_float |
-| aws.ec2.diskio.read.bytes | Bytes read from all instance store volumes available to the instance. | long |
 | aws.ec2.diskio.read.bytes_per_sec | Bytes read per second from all instance store volumes available to the instance. | long |
-| aws.ec2.diskio.read.count | Completed read operations from all instance store volumes available to the instance in a specified period of time. | long |
 | aws.ec2.diskio.read.count_per_sec | Completed read operations per second from all instance store volumes available to the instance in a specified period of time. | long |
-| aws.ec2.diskio.write.bytes | Bytes written to all instance store volumes available to the instance. | long |
 | aws.ec2.diskio.write.bytes_per_sec | Bytes written per second to all instance store volumes available to the instance. | long |
-| aws.ec2.diskio.write.count | Completed write operations to all instance store volumes available to the instance in a specified period of time. | long |
 | aws.ec2.diskio.write.count_per_sec | Completed write operations per second to all instance store volumes available to the instance in a specified period of time. | long |
 | aws.ec2.instance.core.count | The number of CPU cores for the instance. | integer |
 | aws.ec2.instance.image.id | The ID of the image used to launch the instance. | keyword |
@@ -326,13 +321,9 @@ An example event for `ec2` looks as following:
 | aws.ec2.instance.state.code | The state of the instance, as a 16-bit unsigned integer. | integer |
 | aws.ec2.instance.state.name | The state of the instance (pending | running | shutting-down | terminated | stopping | stopped). | keyword |
 | aws.ec2.instance.threads_per_core | The number of threads per CPU core. | integer |
-| aws.ec2.network.in.bytes | The number of bytes received on all network interfaces by the instance. | long |
 | aws.ec2.network.in.bytes_per_sec | The number of bytes per second received on all network interfaces by the instance. | long |
-| aws.ec2.network.in.packets | The number of packets received on all network interfaces by the instance. | long |
 | aws.ec2.network.in.packets_per_sec | The number of packets per second sent out on all network interfaces by the instance. | long |
-| aws.ec2.network.out.bytes | The number of bytes sent out on all network interfaces by the instance. | long |
 | aws.ec2.network.out.bytes_per_sec | The number of bytes per second sent out on all network interfaces by the instance. | long |
-| aws.ec2.network.out.packets | The number of packets sent out on all network interfaces by the instance. | long |
 | aws.ec2.network.out.packets_per_sec | The number of packets per second sent out on all network interfaces by the instance. | long |
 | aws.ec2.status.check_failed | Reports whether the instance has passed both the instance status check and the system status check in the last minute. | long |
 | aws.ec2.status.check_failed_instance | Reports whether the instance has passed the instance status check in the last minute. | long |
