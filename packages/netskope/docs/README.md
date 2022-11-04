@@ -612,7 +612,7 @@ An example event for `alerts` looks as following:
         "ip": "81.2.69.143"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "f7312ae3-c50a-4d65-87ee-aaceab8de66a",
@@ -1196,7 +1196,7 @@ An example event for `events` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "f7312ae3-c50a-4d65-87ee-aaceab8de66a",
