@@ -202,7 +202,7 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | box.created_by.type | E.g. `user` |  |
 | box.ip_address | IP Address | keyword |
 | box.recorded_at | The date and time at which this event occurred | date |
-| box.session.id | The session of the user that performed the action. Not all events will populate this attribute | keyword |
+| box.session.id | Box `session_id` field | keyword |
 | box.source.address | Physical Address associated with the event | keyword |
 | box.source.avatar_url | URL for user avatar | boolean |
 | box.source.created_at | The date and time at which this folder was originally created | date |
