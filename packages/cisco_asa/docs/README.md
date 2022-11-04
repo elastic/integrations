@@ -17,11 +17,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2018-10-10T12:34:56.000Z",
     "agent": {
-        "ephemeral_id": "90753735-64f6-4611-b88a-892365f67be0",
-        "id": "c077f5c5-ca69-4197-9db5-7963794bdac3",
+        "ephemeral_id": "a1278daa-4204-4bbc-b571-409aabfe929f",
+        "id": "83a2d5e3-611b-422a-9c50-d7a6c4139cb6",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "8.0.0"
     },
     "cisco": {
         "asa": {
@@ -43,9 +43,9 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "c077f5c5-ca69-4197-9db5-7963794bdac3",
+        "id": "83a2d5e3-611b-422a-9c50-d7a6c4139cb6",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.0.0"
     },
     "event": {
         "action": "firewall-rule",
@@ -55,7 +55,7 @@ An example event for `log` looks as following:
         ],
         "code": "305011",
         "dataset": "cisco_asa.log",
-        "ingested": "2022-06-21T10:34:19Z",
+        "ingested": "2022-11-04T12:28:52Z",
         "kind": "event",
         "original": "Oct 10 2018 12:34:56 localhost CiscoASA[999]: %ASA-6-305011: Built dynamic TCP translation from inside:172.31.98.44/1772 to outside:192.168.98.44/8256",
         "severity": 6,
@@ -68,12 +68,12 @@ An example event for `log` looks as following:
         "hostname": "localhost"
     },
     "input": {
-        "type": "tcp"
+        "type": "udp"
     },
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.208.4:52674"
+            "address": "172.18.0.4:33397"
         }
     },
     "network": {
