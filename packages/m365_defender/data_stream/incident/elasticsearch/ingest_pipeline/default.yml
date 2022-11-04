@@ -27,15 +27,15 @@ processors:
   - append:
       field: event.category
       value: malware
-      if: (['malware','malicioususeractivity'].contains(ctx.json?.determination?.toLowerCase()))
+      if: ctx.json?.determination != null && ['malware','malicioususeractivity'].contains(ctx.json.determination.toLowerCase())
   - append:
       field: event.category
       value: email
-      if: ctx.json?.determination?.toLowerCase() == 'phishing'
+      if: ctx.json?.determination != null && ctx.json.determination.toLowerCase() == 'phishing'
   - append:
       field: event.category
       value: threat
-      if: ctx.json?.determination?.toLowerCase() == 'apt'
+      if: ctx.json?.determination != null && ctx.json.determination.toLowerCase() == 'apt'
   - append:
       field: event.type
       value: indicator
@@ -220,68 +220,11 @@ processors:
       if: ctx.json?.alerts?.comments instanceof List
       ignore_failure: true
       processor:
-        rename:
-          field: _ingest._value.createdByDisplayName
-          target_field: _ingest._value.created_by_display_name
-          ignore_missing: true
-  - foreach:
-      field: json.alerts.comments
-      if: ctx.json?.alerts?.comments instanceof List
-      ignore_failure: true
-      processor:
         append:
           field: related.user
-          value: '{{{_ingest._value.created_by_display_name}}}'
+          value: '{{{_ingest._value.createdByDisplayName}}}'
           allow_duplicates: false
           ignore_failure: true
-  - foreach:
-      field: json.alerts.comments
-      if: ctx.json?.alerts?.comments instanceof List
-      ignore_failure: true
-      processor:
-        rename:
-          field: _ingest._value.comment
-          target_field: _ingest._value.message
-          ignore_missing: true
-  - foreach:
-      field: json.alerts.comments
-      if: ctx.json?.alerts?.comments instanceof List
-      ignore_failure: true
-      processor:
-        date:
-          field: _ingest._value.createdDateTime
-          target_field: _ingest._value.created_datetime
-          formats:
-            - ISO8601
-          ignore_failure: true
-  - foreach:
-      field: json.alerts.comments
-      if: ctx.json?.alerts?.comments instanceof List
-      processor:
-        dot_expander:
-          field: '@odata.type'
-          path: _ingest._value
-          ignore_failure: true
-          override: true
-  - foreach:
-      field: json.alerts.comments
-      if: ctx.json?.alerts?.comments instanceof List
-      processor:
-        rename:
-          field: _ingest._value.@odata.type
-          target_field: _ingest._value.odata_type
-          ignore_missing: true
-  - foreach:
-      field: json.alerts.comments
-      if: ctx.json?.alerts?.comments instanceof List
-      ignore_failure: true
-      processor:
-        remove:
-          field:
-            - _ingest._value.createdDateTime
-            - _ingest._value.createdByDisplayName
-            - _ingest._value.comment
-          ignore_missing: true
   - rename:
       field: json.alerts.comments
       target_field: m365_defender.incident.alert.comments
@@ -452,27 +395,9 @@ processors:
       if: ctx.json?.comments instanceof List
       ignore_failure: true
       processor:
-        rename:
-          field: _ingest._value.createdByDisplayName
-          target_field: _ingest._value.created_by_display_name
-          ignore_missing: true
-  - foreach:
-      field: json.comments
-      if: ctx.json?.comments instanceof List
-      ignore_failure: true
-      processor:
-        rename:
-          field: _ingest._value.createdBy
-          target_field: _ingest._value.created_by
-          ignore_missing: true
-  - foreach:
-      field: json.comments
-      if: ctx.json?.comments instanceof List
-      ignore_failure: true
-      processor:
         append:
           field: related.user
-          value: '{{{_ingest._value.created_by_display_name}}}'
+          value: '{{{_ingest._value.createdByDisplayName}}}'
           allow_duplicates: false
           ignore_failure: true
   - foreach:
@@ -482,70 +407,9 @@ processors:
       processor:
         append:
           field: related.user
-          value: '{{{_ingest._value.created_by}}}'
+          value: '{{{_ingest._value.createdBy}}}'
           allow_duplicates: false
           ignore_failure: true
-  - foreach:
-      field: json.comments
-      if: ctx.json?.comments instanceof List
-      ignore_failure: true
-      processor:
-        rename:
-          field: _ingest._value.comment
-          target_field: _ingest._value.message
-          ignore_missing: true
-  - foreach:
-      field: json.comments
-      if: ctx.json?.comments instanceof List
-      ignore_failure: true
-      processor:
-        date:
-          field: _ingest._value.createdDateTime
-          target_field: _ingest._value.created_datetime
-          formats:
-            - ISO8601
-          ignore_failure: true
-  - foreach:
-      field: json.comments
-      if: ctx.json?.comments instanceof List
-      ignore_failure: true
-      processor:
-        date:
-          field: _ingest._value.createdTime
-          target_field: _ingest._value.created_time
-          formats:
-            - ISO8601
-          ignore_failure: true
-  - foreach:
-      field: json.comments
-      if: ctx.json?.comments instanceof List
-      processor:
-        dot_expander:
-          field: '@odata.type'
-          path: _ingest._value
-          ignore_failure: true
-          override: true
-  - foreach:
-      field: json.comments
-      if: ctx.json?.comments instanceof List
-      processor:
-        rename:
-          field: _ingest._value.@odata.type
-          target_field: _ingest._value.odata_type
-          ignore_missing: true
-  - foreach:
-      field: json.comments
-      if: ctx.json?.comments instanceof List
-      ignore_failure: true
-      processor:
-        remove:
-          field:
-            - _ingest._value.createdDateTime
-            - _ingest._value.createdByDisplayName
-            - _ingest._value.comment
-            - _ingest._value.createdTime
-            - _ingest._value.createdBy
-          ignore_missing: true
   - rename:
       field: json.comments
       target_field: m365_defender.incident.comments
@@ -2214,39 +2078,41 @@ processors:
         def processUserId = new HashSet();
         def processUserName = new HashSet();
         for (evidence in ctx.json.alerts.evidence) {
-          if (['#microsoft.graph.security.securityGroupEvidence'].contains(evidence.odata_type)) {
-            if (evidence?.display_name != null) {
-              groupName.add(evidence.display_name);
+          if (evidence?.odata_type != null) {
+            if (evidence.odata_type == '#microsoft.graph.security.securityGroupEvidence') {
+              if (evidence?.display_name != null) {
+                groupName.add(evidence.display_name);
+              }
+            }
+            if (evidence.odata_type == '#microsoft.graph.security.deviceEvidence') {
+              if (evidence?.mde_device_id != null) {
+                hostId.add(evidence.mde_device_id);
+              }
+            }
+            if (['#microsoft.graph.security.mailboxEvidence', '#microsoft.graph.security.userEvidence'].contains(evidence.odata_type)) {
+              if (evidence?.user_account?.domain_name != null) {
+                userDomain.add(evidence.user_account.domain_name);
+              }
+              if (evidence?.user_account?.azure_ad_user_id != null) {
+                userId.add(evidence.user_account.azure_ad_user_id);
+              }
+              if (evidence?.user_account?.user_principal_name != null) {
+                userEmail.add(evidence.user_account.user_principal_name);
+              }
+              if (evidence?.user_account?.account_name != null) {
+                userName.add(evidence.user_account.account_name);
+              }
+            }
+            if (evidence.odata_type == '#microsoft.graph.security.processEvidence') {
+              if (evidence?.user_account?.azure_ad_user_id != null) {
+                processUserId.add(evidence.user_account.azure_ad_user_id);
+              }
+              if (evidence?.user_account?.account_name != null) {
+                processUserName.add(evidence.user_account.account_name);
+              }
             }
           }
-          if (['#microsoft.graph.security.deviceEvidence'].contains(evidence.odata_type)) {
-            if (evidence?.mde_device_id != null) {
-              hostId.add(evidence.mde_device_id);
-            }
-          }
-          if (['#microsoft.graph.security.mailboxEvidence', '#microsoft.graph.security.userEvidence'].contains(evidence.odata_type)) {
-            if (evidence?.user_account?.domain_name != null) {
-              userDomain.add(evidence.user_account.domain_name);
-            }
-            if (evidence?.user_account?.azure_ad_user_id != null) {
-              userId.add(evidence.user_account.azure_ad_user_id);
-            }
-            if (evidence?.user_account?.user_principal_name != null) {
-              userEmail.add(evidence.user_account.user_principal_name);
-            }
-            if (evidence?.user_account?.account_name != null) {
-              userName.add(evidence.user_account.account_name);
-            }
-          }
-          if (['#microsoft.graph.security.processEvidence'].contains(evidence.odata_type)) {
-            if (evidence?.user_account?.azure_ad_user_id != null) {
-              processUserId.add(evidence.user_account.azure_ad_user_id);
-            }
-            if (evidence?.user_account?.account_name != null) {
-              processUserName.add(evidence.user_account.account_name);
-            }
-          }
-          if (['azure'].contains(evidence?.vm_metadata?.cloud_provider?.toLowerCase())) {
+          if (evidence?.vm_metadata?.cloud_provider != null && evidence.vm_metadata.cloud_provider.toLowerCase() == 'azure') {
             cloudProvider.add('azure');
           }
         }
@@ -2303,16 +2169,18 @@ processors:
         def processPid = new HashSet();
         def processParentPid = new HashSet();
         for (evidence in ctx.json.alerts.evidence) {
-          if (['#microsoft.graph.security.fileEvidence'].contains(evidence.odata_type)) {
-            if (evidence?.file_details?.size != null) {
-              fileSize.add(evidence.file_details.size);
-            }
-          } else if (['#microsoft.graph.security.processEvidence'].contains(evidence.odata_type)) {
-            if (evidence?.process?.id != null) {
-              processPid.add(evidence.process.id);
-            }
-            if (evidence?.parent_process?.id != null) {
-              processParentPid.add(evidence.parent_process.id);
+          if (evidence?.odata_type != null) {
+            if (evidence.odata_type == '#microsoft.graph.security.fileEvidence') {
+              if (evidence?.file_details?.size != null) {
+                fileSize.add(evidence.file_details.size);
+              }
+            } else if (evidence.odata_type == '#microsoft.graph.security.processEvidence') {
+              if (evidence?.process?.id != null) {
+                processPid.add(evidence.process.id);
+              }
+              if (evidence?.parent_process?.id != null) {
+                processParentPid.add(evidence.parent_process.id);
+              }
             }
           }
         }
@@ -2353,7 +2221,6 @@ processors:
             - _ingest._value.imageFile.fileSize
             - _ingest._value.parentProcessImageFile.fileSize
           ignore_missing: true
-          ignore_failure: true
   - rename:
       field: json.alerts.evidence
       target_field: m365_defender.incident.alert.evidence
@@ -2365,7 +2232,6 @@ processors:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - m365_defender.incident.last_update_datetime
-        - m365_defender.incident.display_name
         - m365_defender.incident.tenant_id
         - m365_defender.incident.created_datetime
         - m365_defender.incident.id
@@ -2375,7 +2241,6 @@ processors:
         - m365_defender.incident.alert.threat_family_name
         - m365_defender.incident.alert.category
         - m365_defender.incident.alert.mitre_techniques
-      ignore_failure: true
       ignore_missing: true
   - foreach:
       field: m365_defender.incident.alert.evidence
@@ -2415,11 +2280,9 @@ processors:
             - _ingest._value.registry_value
             - _ingest._value.security_group_id
           ignore_missing: true
-          ignore_failure: true
   - remove:
       field: event.original
       if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively.

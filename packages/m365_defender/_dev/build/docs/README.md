@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Alert and Incident Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
+The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Incident Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
 
 Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Graph Security Beta REST API and Microsoft 365 Defender API. Then visualise that data in Kibana.
 
@@ -10,9 +10,7 @@ For example, you could use the data from this integration to consolidate and cor
 
 ## Data streams
 
-The Microsoft 365 Defender integration collects logs for three types of events: Alert, Incident and Log.
-
-**Alert** resource corresponds to the latest generation of alerts in the Microsoft Graph security API, representing potential security issues within a customer's tenant that Microsoft 365 Defender, or a security provider integrated with Microsoft 365 Defender, has identified. It uses the Microsoft Graph Security Beta REST API to collect data. See Example Schema [here](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-beta#properties).
+The Microsoft 365 Defender integration collects logs for two types of events: Incident and Log.
 
 **Incident** in Microsoft 365 Defender is a collection of correlated alert instances and associated metadata that reflects the story of an attack in a tenant. It uses the Microsoft Graph Security Beta REST API to collect data. See Example Schema [here](https://learn.microsoft.com/en-us/graph/api/resources/security-incident?view=graph-rest-beta#properties).
 
@@ -29,7 +27,7 @@ This module has used **Microsoft Graph Security Beta REST API** and **Microsoft 
 ### To collect data from Microsoft Graph Security Beta REST API, follow the below steps:
 
 1. [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-beta).
-2. Permission required for accessing Alert and Incident API would be **SecurityAlert.Read.All** and **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-beta)
+2. Permission required for accessing Incident API would be **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-beta)
 3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for alert and incident data collection.
 
 ### To collect data from Microsoft 365 Defender REST API, follow the below steps:
@@ -39,16 +37,6 @@ This module has used **Microsoft Graph Security Beta REST API** and **Microsoft 
 3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for log data collection.
 
 ## Logs reference
-
-### alert
-
-This is the `alert` dataset.
-
-#### Example
-
-{{event "alert"}}
-
-{{fields "alert"}}
 
 ### incident
 
