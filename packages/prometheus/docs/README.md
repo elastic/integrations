@@ -16,12 +16,12 @@ The Prometheus integration `collector` dataset connects to the Prometheus server
 To scrape metrics from a Prometheus exporter, configure the `hosts` setting to it. The path
 to retrieve the metrics from (`/metrics` by default) can be configured with Metrics Path.
 
-#### Histograms and types [x-pack]
+#### Histograms and types
 
-`Use Types` paramater (default: false) enables a different layout for metrics storage, leveraging Elasticsearch
+`Use Types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
 types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html).
 
-`Rate Counters` paramater (default: false) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
+`Rate Counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `Use Types`.
 
@@ -405,12 +405,12 @@ The fields reported are:
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
-#### Histograms and types [x-pack]
+#### Histograms and types
 
-`use_types` parameter (default: false) enables a different layout for metrics storage, leveraging Elasticsearch
+`use_types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
 types, including [histograms](https://www.elastic.co/guide/en/elasticsearch/reference/current/histogram.html).
 
-`rate_counters` parameter (default: false) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
+`rate_counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `use_types`.
 
