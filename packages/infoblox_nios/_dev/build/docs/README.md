@@ -137,6 +137,12 @@ Below are the samples logs of the respective category:
 <30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Relay-forward message from 2a02:cf40:: port 547, link address 2a02:cf40::1, peer address 2a02:cf40::2
 <30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Encapsulating Advertise message to send to 2a02:cf40:: port 547
 <30>Jul 12 15:55:55 67.43.156.0 dhcpdv6[12271]: Sending Relay-reply message to 2a02:cf40:: port 547
+<30>Sep 28 09:25:49 infoblox.localdomain 10.0.0.1 dhcpd[25691]: DHCPACK on 192.168.0.4 to 00:50:56:83:96:03 via eth2 relay 192.168.0.4 lease-duration 3600 uid 01:9a:df:6e:f6:1f:23
+<30>Sep 30 11:27:26 anudhcp.anu.edu.au 10.0.0.1 dhcpd[11411]: RELEASE on 192.168.0.4 to ce:93:30:8e:db:ac
+<30>Sep 30 11:30:55 anudhcp.anu.edu.au 10.0.0.1 dhcpd[11411]: DHCPACK to 192.168.0.4 (9c:ad:97:7a:fd:33) via eth2
+<30>Sep 30 11:33:03 anudhcp.anu.edu.au 10.0.0.1 dhcpd[11411]: DHCPACK on 192.168.0.4 to 4a:34:bf:d2:78:24 (my-iPhone) via eth2 relay 67.43.156.0 lease-duration 900 offered-duration 3600 (RENEW) uid 01:4a:34:bf:d2:78:24
+<30>Sep 30 11:33:03 anudhcp.anu.edu.au 10.0.0.1 dhcpd[11411]: DHCPACK on 192.168.0.4 to 4a:34:bf:d2:78:24 via eth2 relay 67.43.156.0 lease-duration 900 offered-duration 3600 (RENEW) uid 01:4a:34:bf:d2:78:24
+<30>Sep 30 11:33:03 anudhcp.anu.edu.au 10.0.0.1 dhcpd[11411]: DHCPACK on 192.168.0.4 to 4a:34:bf:d2:78:24 (my-iPhone) via eth2 relay 67.43.156.0 lease-duration 900 offered-duration 3600 (RENEW)
 ```
 
 ## Logs
