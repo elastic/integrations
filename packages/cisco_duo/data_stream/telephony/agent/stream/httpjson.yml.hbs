@@ -3,14 +3,14 @@ interval: {{interval}}
 request.method: GET
 request.url: {{hostname}}/admin/v1/logs/telephony
 request.transforms:
-  - set: 
+  - set:
       target: url.params.mintime
       value: '[[.cursor.last_published]]'
       default: '[[(now (parseDuration "-{{interval}}")).Unix]]'
   - set:
       target: header.Date
       value: '[[formatDate (now) "Mon, 02 Jan 2006 15:04:05 -0700"]]'
-  - set: 
+  - set:
       target: header.Authorization
       value: '[[sprintf "Basic %s" (base64Encode (sprintf "%s:%s" "{{integration_key}}" (hmac "sha1" "{{secret_key}}" (formatDate (now) "Mon, 02 Jan 2006 15:04:05 -0700") "\n" "GET" "\n" .url.Host "\n" "/admin/v1/logs/telephony" "\n" .url.RawQuery)))]]'
 response.split:

@@ -34,11 +34,12 @@ An example event for `admin` looks as following:
 {
     "@timestamp": "2021-07-20T11:41:31.000Z",
     "agent": {
-        "ephemeral_id": "7c7523b2-666f-4792-812c-a5697a8929b9",
-        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "ephemeral_id": "658cd97f-5818-4789-9184-4ccf1b69103c",
+        "hostname": "docker-fleet-agent",
+        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "7.17.2"
     },
     "cisco_duo": {
         "admin": {
@@ -54,19 +55,19 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "7.17.2"
     },
     "event": {
         "action": "activation_begin",
         "agent_id_status": "verified",
-        "created": "2022-07-14T12:20:01.540Z",
+        "created": "2022-11-03T09:06:11.410Z",
         "dataset": "cisco_duo.admin",
-        "ingested": "2022-07-14T12:20:02Z",
+        "ingested": "2022-11-03T09:06:12Z",
         "kind": "event",
         "original": "{\"action\":\"activation_begin\",\"description\":\"Starting activation process\",\"isotimestamp\":\"2021-07-20T11: 41: 31+00: 00\",\"object\":null,\"timestamp\":1626781291,\"username\":\"narroway\"}",
         "outcome": "success",
@@ -76,6 +77,11 @@ An example event for `admin` looks as following:
         "type": "httpjson"
     },
     "message": "Starting activation process",
+    "related": {
+        "user": [
+            "narroway"
+        ]
+    },
     "tags": [
         "preserve_original_event",
         "forwarded",
@@ -144,6 +150,7 @@ An example event for `admin` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
 | source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
@@ -168,11 +175,12 @@ An example event for `auth` looks as following:
 {
     "@timestamp": "2020-02-13T18:56:20.000Z",
     "agent": {
-        "ephemeral_id": "ba2543c1-a84f-4f56-ae2f-cfecef7ef0e4",
-        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "ephemeral_id": "16a76fb0-9d35-4d43-a3f5-463eca0faf5f",
+        "hostname": "docker-fleet-agent",
+        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "7.17.2"
     },
     "cisco_duo": {
         "auth": {
@@ -217,32 +225,42 @@ An example event for `auth` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "7.17.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "authentication",
-        "created": "2022-07-14T12:20:57.028Z",
+        "category": [
+            "authentication"
+        ],
+        "created": "2022-11-03T09:06:53.608Z",
         "dataset": "cisco_duo.auth",
-        "ingested": "2022-07-14T12:20:58Z",
+        "ingested": "2022-11-03T09:06:55Z",
         "kind": "event",
         "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"67.0.3396.99\",\"flash_version\":\"uninstalled\",\"hostname\":null,\"ip\":\"89.160.20.156\",\"is_encryption_enabled\":true,\"is_firewall_enabled\":true,\"is_password_set\":true,\"java_version\":\"uninstalled\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.14.1\",\"security_agents\":null},\"alias\":\"\",\"application\":{\"key\":\"DIY231J8BR23QK4UKBY8\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":\"192.168.225.254\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"name\":\"My iPhone X (734-555-2342)\"},\"email\":\"narroway@example.com\",\"event_type\":\"authentication\",\"factor\":\"duo_push\",\"isotimestamp\":\"2020-02-13T18:56:20.351346+00:00\",\"ood_software\":null,\"reason\":\"user_approved\",\"result\":\"success\",\"timestamp\":1581620180,\"trusted_endpoint_status\":\"not trusted\",\"txid\":\"340a23e3-23f3-23c1-87dc-1491a23dfdbb\",\"user\":{\"groups\":[\"Duo Users\",\"CorpHQ Users\"],\"key\":\"DU3KC77WJ06Y5HIV7XKQ\",\"name\":\"narroway@example.com\"}}",
         "outcome": "success",
         "reason": "user_approved",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "httpjson"
     },
     "related": {
+        "hosts": [
+            "89.160.20.156"
+        ],
         "ip": [
             "89.160.20.156",
             "192.168.225.254"
+        ],
+        "user": [
+            "narroway@example.com"
         ]
     },
     "source": {
@@ -388,7 +406,9 @@ An example event for `auth` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |
@@ -429,11 +449,12 @@ An example event for `offline_enrollment` looks as following:
 {
     "@timestamp": "2019-08-30T16:10:05.000Z",
     "agent": {
-        "ephemeral_id": "0d45b27c-6405-44fa-beda-22c49ad27853",
-        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "ephemeral_id": "cc0d6426-95d1-4cdb-9302-eb4079663430",
+        "hostname": "docker-fleet-agent",
+        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "7.17.2"
     },
     "cisco_duo": {
         "offline_enrollment": {
@@ -455,22 +476,30 @@ An example event for `offline_enrollment` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "7.17.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-07-14T12:21:49.801Z",
+        "created": "2022-11-03T09:07:34.217Z",
         "dataset": "cisco_duo.offline_enrollment",
-        "ingested": "2022-07-14T12:21:53Z",
+        "ingested": "2022-11-03T09:07:37Z",
         "original": "{\"action\":\"o2fa_user_provisioned\",\"description\":\"{\\\"user_agent\\\": \\\"DuoCredProv/4.0.6.413 (Windows NT 6.3.9600; x64; Server)\\\", \\\"hostname\\\": \\\"WKSW10x64\\\", \\\"factor\\\": \\\"duo_otp\\\"}\",\"isotimestamp\":\"2019-08-30T16:10:05+00:00\",\"object\":\"Acme Laptop Windows Logon\",\"timestamp\":1567181405,\"username\":\"narroway\"}"
     },
     "input": {
         "type": "httpjson"
+    },
+    "related": {
+        "hosts": [
+            "WKSW10x64"
+        ],
+        "user": [
+            "narroway"
+        ]
     },
     "tags": [
         "preserve_original_event",
@@ -534,6 +563,8 @@ An example event for `offline_enrollment` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | user.name | Short name or login of the user. | keyword |
 | user.name.text | Multi-field of `user.name`. | match_only_text |
@@ -547,13 +578,14 @@ An example event for `summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-07-14T12:22:46.223536172Z",
+    "@timestamp": "2022-11-03T09:08:52.172696880Z",
     "agent": {
-        "ephemeral_id": "3cdfc076-fea6-4cfc-af6d-57f48e0517be",
-        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "ephemeral_id": "a0a0c517-7191-4805-a95d-9d103b488aad",
+        "hostname": "docker-fleet-agent",
+        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "7.17.2"
     },
     "cisco_duo": {
         "summary": {
@@ -569,18 +601,18 @@ An example event for `summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "7.17.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-07-14T12:22:42.739Z",
+        "created": "2022-11-03T09:08:48.618Z",
         "dataset": "cisco_duo.summary",
-        "ingested": "2022-07-14T12:22:46Z",
+        "ingested": "2022-11-03T09:08:52Z",
         "original": "{\"response\":{\"admin_count\":3,\"integration_count\":9,\"telephony_credits_remaining\":960,\"user_count\":8},\"stat\":\"OK\"}"
     },
     "input": {
@@ -656,11 +688,12 @@ An example event for `telephony` looks as following:
 {
     "@timestamp": "2020-03-20T15:38:12.000Z",
     "agent": {
-        "ephemeral_id": "ff6dad5e-0d55-49ac-ad4f-a438160da9af",
-        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "ephemeral_id": "ca7a9b64-9bb3-4651-8c9d-de8d37481d7d",
+        "hostname": "docker-fleet-agent",
+        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.2.0"
+        "version": "7.17.2"
     },
     "cisco_duo": {
         "telephony": {
@@ -676,18 +709,18 @@ An example event for `telephony` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "c934978b-c8c9-4484-8fbe-007cc0ace376",
+        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "7.17.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-07-14T12:23:38.029Z",
+        "created": "2022-11-03T09:10:09.948Z",
         "dataset": "cisco_duo.telephony",
-        "ingested": "2022-07-14T12:23:39Z",
+        "ingested": "2022-11-03T09:10:11Z",
         "kind": "event",
         "original": "{\"context\":\"authentication\",\"credits\":1,\"isotimestamp\":\"2020-03-20T15:38:12+00:00\",\"phone\":\"+121234512345\",\"timestamp\":1584718692,\"type\":\"sms\"}"
     },
