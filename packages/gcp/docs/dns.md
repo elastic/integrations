@@ -148,7 +148,7 @@ An example event for `dns` looks as following:
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "0168f0f0-b64d-4a7a-ba00-c309f9e7f0ca",

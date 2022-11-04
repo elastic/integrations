@@ -34,7 +34,7 @@ An example event for `eve` looks as following:
         "port": 22
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "543eeec2-6585-484f-9f7b-34db47abcd9c",

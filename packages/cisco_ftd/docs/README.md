@@ -81,7 +81,7 @@ An example event for `log` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "c46e592b-7ede-4f31-9714-c3e0bc5c3213",

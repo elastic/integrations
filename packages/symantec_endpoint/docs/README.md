@@ -367,7 +367,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "33b93e16-9d01-4487-9b09-99db9e860912",

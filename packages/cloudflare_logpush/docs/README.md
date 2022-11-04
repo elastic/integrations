@@ -156,7 +156,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -337,7 +337,7 @@ An example event for `dns` looks as following:
         }
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -530,7 +530,7 @@ An example event for `firewall_event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -911,7 +911,7 @@ An example event for `http_request` looks as following:
         "ip": "67.43.156.0"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -1210,7 +1210,7 @@ An example event for `nel_report` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -1495,7 +1495,7 @@ An example event for `network_analytics` looks as following:
         "port": 0
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",
@@ -1686,7 +1686,7 @@ An example event for `network_analytics` looks as following:
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
@@ -1779,7 +1779,7 @@ An example event for `spectrum_event` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "8539930e-8f7a-48ac-af3e-7f098b7d6ea2",

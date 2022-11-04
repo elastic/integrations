@@ -67,7 +67,7 @@ An example event for `detailed_shared_folder` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "c8a45af4-c8db-4a9e-bad1-f0fd8ef21467",
@@ -211,7 +211,7 @@ An example event for `event_report` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "c8a45af4-c8db-4a9e-bad1-f0fd8ef21467",
@@ -372,7 +372,7 @@ An example event for `user` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "c8a45af4-c8db-4a9e-bad1-f0fd8ef21467",
