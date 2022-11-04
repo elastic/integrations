@@ -39,6 +39,8 @@ pipeline {
     PACKAGE_STORAGE_UPLOADER_CREDENTIALS = 'upload-package-to-package-storage'
     PACKAGE_STORAGE_UPLOADER_GCP_SERVICE_ACCOUNT = 'secret/gce/elastic-bekitzur/service-account/package-storage-uploader'
     PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH = "gs://elastic-bekitzur-package-storage-internal/queue-publishing/${env.REPO_BUILD_TAG}"
+
+    PACKAGES_TESTED = "0"
   }
   options {
     timeout(time: 4, unit: 'HOURS')
@@ -91,6 +93,7 @@ pipeline {
                       useElasticPackage()
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
+                          setEnvVar(PACKAGES_TESTED, "1")
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           prepareStack()
                           withKubernetes() {
@@ -158,6 +161,10 @@ pipeline {
 }
 
 def gitHubCommentWithBenchmarkReport() {
+  if ("${env.PACKAGES_TESTED}" == 0) {
+    log(level: 'INFO', text: 'gitHubCommentWithBenchmarkReport: no benchmark report since no packages tested')
+    return
+  }
   // report only on a PR basis for obvious reasons (github comments)
   if (isPR()) {
     def benchmarkGitHubFile = 'report.md'
@@ -368,6 +375,10 @@ def stashCoverageReport() {
 
 def publishCoverageReports() {
   stage('Publish coverage reports') {
+    if ("${env.PACKAGES_TESTED}" == 0) {
+      log(level: 'INFO', text: 'publichCoverageReports: no coverage report since no packages tested')
+      return
+    }
     dir("${BASE_DIR}") {
       def bucketUri = getCoverageBucketURI() + "*.xml"
       googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
