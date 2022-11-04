@@ -34,12 +34,11 @@ An example event for `admin` looks as following:
 {
     "@timestamp": "2021-07-20T11:41:31.000Z",
     "agent": {
-        "ephemeral_id": "658cd97f-5818-4789-9184-4ccf1b69103c",
-        "hostname": "docker-fleet-agent",
-        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
+        "ephemeral_id": "dc9e356a-ee74-44b2-beaa-d27fe316aa90",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.2"
+        "version": "8.4.0"
     },
     "cisco_duo": {
         "admin": {
@@ -58,16 +57,16 @@ An example event for `admin` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "snapshot": false,
-        "version": "7.17.2"
+        "version": "8.4.0"
     },
     "event": {
         "action": "activation_begin",
         "agent_id_status": "verified",
-        "created": "2022-11-03T09:06:11.410Z",
+        "created": "2022-11-04T13:07:07.288Z",
         "dataset": "cisco_duo.admin",
-        "ingested": "2022-11-03T09:06:12Z",
+        "ingested": "2022-11-04T13:07:08Z",
         "kind": "event",
         "original": "{\"action\":\"activation_begin\",\"description\":\"Starting activation process\",\"isotimestamp\":\"2021-07-20T11: 41: 31+00: 00\",\"object\":null,\"timestamp\":1626781291,\"username\":\"narroway\"}",
         "outcome": "success",
@@ -175,12 +174,11 @@ An example event for `auth` looks as following:
 {
     "@timestamp": "2020-02-13T18:56:20.000Z",
     "agent": {
-        "ephemeral_id": "16a76fb0-9d35-4d43-a3f5-463eca0faf5f",
-        "hostname": "docker-fleet-agent",
-        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
+        "ephemeral_id": "b61a4e7c-6c62-498a-8524-2ea7ed7c5383",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.2"
+        "version": "8.4.0"
     },
     "cisco_duo": {
         "auth": {
@@ -228,18 +226,18 @@ An example event for `auth` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "snapshot": false,
-        "version": "7.17.2"
+        "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "authentication"
         ],
-        "created": "2022-11-03T09:06:53.608Z",
+        "created": "2022-11-04T13:08:27.833Z",
         "dataset": "cisco_duo.auth",
-        "ingested": "2022-11-03T09:06:55Z",
+        "ingested": "2022-11-04T13:08:28Z",
         "kind": "event",
         "original": "{\"access_device\":{\"browser\":\"Chrome\",\"browser_version\":\"67.0.3396.99\",\"flash_version\":\"uninstalled\",\"hostname\":null,\"ip\":\"89.160.20.156\",\"is_encryption_enabled\":true,\"is_firewall_enabled\":true,\"is_password_set\":true,\"java_version\":\"uninstalled\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"os\":\"Mac OS X\",\"os_version\":\"10.14.1\",\"security_agents\":null},\"alias\":\"\",\"application\":{\"key\":\"DIY231J8BR23QK4UKBY8\",\"name\":\"Microsoft Azure Active Directory\"},\"auth_device\":{\"ip\":\"192.168.225.254\",\"location\":{\"city\":\"Ann Arbor\",\"country\":\"United States\",\"state\":\"Michigan\"},\"name\":\"My iPhone X (734-555-2342)\"},\"email\":\"narroway@example.com\",\"event_type\":\"authentication\",\"factor\":\"duo_push\",\"isotimestamp\":\"2020-02-13T18:56:20.351346+00:00\",\"ood_software\":null,\"reason\":\"user_approved\",\"result\":\"success\",\"timestamp\":1581620180,\"trusted_endpoint_status\":\"not trusted\",\"txid\":\"340a23e3-23f3-23c1-87dc-1491a23dfdbb\",\"user\":{\"groups\":[\"Duo Users\",\"CorpHQ Users\"],\"key\":\"DU3KC77WJ06Y5HIV7XKQ\",\"name\":\"narroway@example.com\"}}",
         "outcome": "success",
@@ -449,12 +447,11 @@ An example event for `offline_enrollment` looks as following:
 {
     "@timestamp": "2019-08-30T16:10:05.000Z",
     "agent": {
-        "ephemeral_id": "cc0d6426-95d1-4cdb-9302-eb4079663430",
-        "hostname": "docker-fleet-agent",
-        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
+        "ephemeral_id": "73e4e8ac-924c-483e-89d2-599c0164d813",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.2"
+        "version": "8.4.0"
     },
     "cisco_duo": {
         "offline_enrollment": {
@@ -479,15 +476,15 @@ An example event for `offline_enrollment` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "snapshot": false,
-        "version": "7.17.2"
+        "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-11-03T09:07:34.217Z",
+        "created": "2022-11-04T13:09:44.580Z",
         "dataset": "cisco_duo.offline_enrollment",
-        "ingested": "2022-11-03T09:07:37Z",
+        "ingested": "2022-11-04T13:09:48Z",
         "original": "{\"action\":\"o2fa_user_provisioned\",\"description\":\"{\\\"user_agent\\\": \\\"DuoCredProv/4.0.6.413 (Windows NT 6.3.9600; x64; Server)\\\", \\\"hostname\\\": \\\"WKSW10x64\\\", \\\"factor\\\": \\\"duo_otp\\\"}\",\"isotimestamp\":\"2019-08-30T16:10:05+00:00\",\"object\":\"Acme Laptop Windows Logon\",\"timestamp\":1567181405,\"username\":\"narroway\"}"
     },
     "input": {
@@ -578,14 +575,13 @@ An example event for `summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-03T09:08:52.172696880Z",
+    "@timestamp": "2022-11-04T13:11:02.928175222Z",
     "agent": {
-        "ephemeral_id": "a0a0c517-7191-4805-a95d-9d103b488aad",
-        "hostname": "docker-fleet-agent",
-        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
+        "ephemeral_id": "96e61d79-2e30-408c-affa-212631404148",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.2"
+        "version": "8.4.0"
     },
     "cisco_duo": {
         "summary": {
@@ -604,15 +600,15 @@ An example event for `summary` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "snapshot": false,
-        "version": "7.17.2"
+        "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-11-03T09:08:48.618Z",
+        "created": "2022-11-04T13:10:59.460Z",
         "dataset": "cisco_duo.summary",
-        "ingested": "2022-11-03T09:08:52Z",
+        "ingested": "2022-11-04T13:11:02Z",
         "original": "{\"response\":{\"admin_count\":3,\"integration_count\":9,\"telephony_credits_remaining\":960,\"user_count\":8},\"stat\":\"OK\"}"
     },
     "input": {
@@ -688,12 +684,11 @@ An example event for `telephony` looks as following:
 {
     "@timestamp": "2020-03-20T15:38:12.000Z",
     "agent": {
-        "ephemeral_id": "ca7a9b64-9bb3-4651-8c9d-de8d37481d7d",
-        "hostname": "docker-fleet-agent",
-        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
+        "ephemeral_id": "1ea4c41d-23e9-4b97-9a27-aa91bc5ca3f9",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.2"
+        "version": "8.4.0"
     },
     "cisco_duo": {
         "telephony": {
@@ -712,15 +707,15 @@ An example event for `telephony` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "675a251d-fb1d-4b87-a5c6-e4ccd57eba03",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "snapshot": false,
-        "version": "7.17.2"
+        "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-11-03T09:10:09.948Z",
+        "created": "2022-11-04T13:12:22.492Z",
         "dataset": "cisco_duo.telephony",
-        "ingested": "2022-11-03T09:10:11Z",
+        "ingested": "2022-11-04T13:12:23Z",
         "kind": "event",
         "original": "{\"context\":\"authentication\",\"credits\":1,\"isotimestamp\":\"2020-03-20T15:38:12+00:00\",\"phone\":\"+121234512345\",\"timestamp\":1584718692,\"type\":\"sms\"}"
     },
