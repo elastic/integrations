@@ -28,7 +28,7 @@ An example event for `alerts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "9b07c8ea-8c8f-49b4-8b57-ac69cd4071f0",
