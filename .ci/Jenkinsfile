@@ -40,7 +40,7 @@ pipeline {
     PACKAGE_STORAGE_UPLOADER_GCP_SERVICE_ACCOUNT = 'secret/gce/elastic-bekitzur/service-account/package-storage-uploader'
     PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH = "gs://elastic-bekitzur-package-storage-internal/queue-publishing/${env.REPO_BUILD_TAG}"
 
-    PACKAGES_TESTED = "0"
+    INTEGRATIONS_TESTED = "0"
   }
   options {
     timeout(time: 4, unit: 'HOURS')
@@ -95,9 +95,8 @@ pipeline {
                         dir("${BASE_DIR}/packages/${it}") {
                           // https://stackoverflow.com/questions/53541489/updating-environment-global-variable-in-jenkins-pipeline-from-the-stage-level
                           script {
-                            PACKAGES_TESTED = '1'
+                            INTEGRATIONS_TESTED = '1'
                           }
-                          echo("Packages tested updated to ${PACKAGES_TESTED}")
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           prepareStack()
                           withKubernetes() {
@@ -165,9 +164,8 @@ pipeline {
 }
 
 def gitHubCommentWithBenchmarkReport() {
-  echo "Number Packages tested ${PACKAGES_TESTED}"
-  if ("${PACKAGES_TESTED}" == "0") {
-    log(level: 'INFO', text: 'gitHubCommentWithBenchmarkReport: no benchmark report since no packages tested')
+  if ("${INTEGRATIONS_TESTED}" == "0") {
+    log(level: 'INFO', text: 'gitHubCommentWithBenchmarkReport: no integration has been tested')
     return
   }
   // report only on a PR basis for obvious reasons (github comments)
@@ -380,9 +378,8 @@ def stashCoverageReport() {
 
 def publishCoverageReports() {
   stage('Publish coverage reports') {
-    echo "Number Packages tested ${PACKAGES_TESTED}"
-    if ("${PACKAGES_TESTED}" == "0") {
-      log(level: 'INFO', text: 'publichCoverageReports: no coverage report since no packages tested')
+    if ("${INTEGRATIONS_TESTED}" == "0") {
+      log(level: 'INFO', text: 'publichCoverageReports: no integration has been tested')
       return
     }
     dir("${BASE_DIR}") {
