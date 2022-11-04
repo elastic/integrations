@@ -1243,6 +1243,8 @@ The fields reported are:
 
 ### status
 
+The `status` returns a document that provides an overview of the database's state.
+
 It requires the following privileges, which is covered by the [clusterMonitor](https://docs.mongodb.com/manual/reference/built-in-roles/#clusterMonitor) role:
 
 * [serverStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#serverStatus) 
