@@ -94,6 +94,7 @@ pipeline {
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
                           setEnvVar(PACKAGES_TESTED, "1")
+                          echo("Packages Tested updated to ${env.PACKAGES_TESTED}")
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           prepareStack()
                           withKubernetes() {
@@ -375,6 +376,7 @@ def stashCoverageReport() {
 
 def publishCoverageReports() {
   stage('Publish coverage reports') {
+    echo "Number Packages tested ${env.PACKAGES_TESTED}"
     if ("${env.PACKAGES_TESTED}" == 0) {
       log(level: 'INFO', text: 'publichCoverageReports: no coverage report since no packages tested')
       return
