@@ -583,12 +583,11 @@ An example event for `alerts` looks as following:
 {
     "@timestamp": "2021-12-23T16:27:09.000Z",
     "agent": {
-        "ephemeral_id": "ab599995-454e-4d89-b9db-703416f860e7",
-        "hostname": "docker-fleet-agent",
-        "id": "f7312ae3-c50a-4d65-87ee-aaceab8de66a",
+        "ephemeral_id": "9574aad5-5325-431f-b252-84fc439b63c5",
+        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "netskope.alerts",
@@ -615,14 +614,14 @@ An example event for `alerts` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "f7312ae3-c50a-4d65-87ee-aaceab8de66a",
+        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "id": "f621f259f5fbde850ad5593a",
-        "ingested": "2022-10-21T12:33:04Z"
+        "ingested": "2022-11-04T13:39:35Z"
     },
     "file": {
         "hash": {
@@ -639,7 +638,7 @@ An example event for `alerts` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.23.0.1:34288"
+            "address": "192.168.0.6:52200"
         }
     },
     "netskope": {
@@ -1183,12 +1182,11 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2021-12-24T00:29:56.000Z",
     "agent": {
-        "ephemeral_id": "4f47f310-989a-41c7-9a66-bb5f037e1d2f",
-        "hostname": "docker-fleet-agent",
-        "id": "f7312ae3-c50a-4d65-87ee-aaceab8de66a",
+        "ephemeral_id": "a31c2d61-519a-4322-ab78-f49af3a1f010",
+        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "netskope.events",
@@ -1199,14 +1197,14 @@ An example event for `events` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "f7312ae3-c50a-4d65-87ee-aaceab8de66a",
+        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "netskope.events",
-        "ingested": "2022-10-21T12:34:21Z"
+        "ingested": "2022-11-04T13:41:21Z"
     },
     "event.id": "613ee55ec9d868fc47654a73",
     "input": {
@@ -1214,7 +1212,7 @@ An example event for `events` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.23.0.1:59848"
+            "address": "192.168.0.6:33808"
         }
     },
     "netskope": {
