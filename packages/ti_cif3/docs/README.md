@@ -93,8 +93,6 @@ CIFv3 `confidence` field values (0..10) are converted to ECS confidence (None, L
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
 | threat.indicator.geo.location | Longitude and latitude. | geo_point |
-| threat.indicator.geo.location.lat | Longitude and latitude. | geo_point |
-| threat.indicator.geo.location.lon | Longitude and latitude. | geo_point |
 | threat.indicator.geo.region_name | Region name. | keyword |
 | threat.indicator.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
