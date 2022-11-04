@@ -197,8 +197,7 @@ An example event for `threat` looks as following:
 | threat.indicator.file.hash.sha512 | SHA512 hash. | keyword |
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
-| threat.indicator.geo.location.lat | Longitude and latitude. | geo_point |
-| threat.indicator.geo.location.lon | Longitude and latitude. | geo_point |
+| threat.indicator.geo.location | Longitude and latitude. | geo_point |
 | threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.marking.tlp | Traffic Light Protocol sharing markings. | keyword |
