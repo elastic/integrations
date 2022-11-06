@@ -63,6 +63,17 @@ processors:
           }
         }
         handleMap(ctx);
+  - pipeline:
+      name: '{{ IngestPipeline "esx" }}'
+      if: ctx.event?.module == "ESXI"
+  - set:
+      field: event.dataset
+      value: "vsphere.log"
+      if: ctx.event?.module != "ESXI"
+  - set:
+      field: event.module
+      value: "vsphere"
+      if: ctx.event?.module != "ESXI"
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
