@@ -1,0 +1,41 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  - set:
+      field: event.dataset
+      value: 'esxi.log'
+  - set:
+      field: event.module
+      value: 'esxi'
+  - kv:
+      if: 'ctx._temp_?.kv != null'
+      field: "_temp_.kv"
+      field_split: "\" "
+      value_split: "=\""
+      target_field: "_temp_"
+      trim_value: "\""
+      ignore_failure: true
+  - rename:
+      field: _temp_.command
+      target_field: process.command_line
+      if: 'ctx._temp_?.command != null'
+  - rename:
+      field: _temp_.result
+      target_field: event.outcome
+      if: 'ctx._temp_?.result != null'
+  - rename:
+      field: _temp_.subject
+      target_field: user.name
+      if: 'ctx._temp_?.subject != null'
+  - remove:
+      field: _temp_
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - remove:
+      field:
+        - _tmp
+      ignore_failure: true
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
