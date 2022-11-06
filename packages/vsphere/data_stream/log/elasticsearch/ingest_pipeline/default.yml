@@ -11,9 +11,10 @@ processors:
       description: Parse syslog header
       field: event.original
       patterns:
-        - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name} (%{POSINT:process.pid:long}|-) - -%{SPACE}%{GREEDYDATA:message}'
+        - '^(%{ECS_SYSLOG_PRI}\d )?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name} (%{POSINT:process.pid:long}|-) - -%{SPACE}%{GREEDYDATA:message}'
+        - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{NOTSPACE:event.module}\s%{NOTSPACE}:\s%{NOTSPACE:log.level}\s%{DATA:process.name}\[%{POSINT:process.pid:long}\]\s\[%{DATA:additional.data}\]\sEvent\s%{INT:event.code:long}\s:\s%{GREEDYDATA:message}'
       pattern_definitions:
-        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>(\d )?'
+        ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
         TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         HOST: '(?:%{IP:host.ip}|%{HOSTNAME:host.name})'
       on_failure:
