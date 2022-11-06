@@ -12,8 +12,7 @@ processors:
       field: event.original
       patterns:
         - '^(%{ECS_SYSLOG_PRI}\d )?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{HOST}%{SPACE}%{NOTSPACE:process.name} (%{POSINT:process.pid:long}|-) - -%{SPACE}%{GREEDYDATA:message}'
-        - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{NOTSPACE:event.module}\s%{NOTSPACE}:\s%{NOTSPACE:log.level}\s%{DATA:process.name}\[%{POSINT:process.pid:long}\]\s\[%{DATA:_temp_.data}\]\sEvent\s%{INT:event.code:long}\s:\s%{GREEDYDATA:message}'
-        - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{NOTSPACE:event.module}\s%{NOTSPACE}:\s%{NOTSPACE:log.level}\s%{DATA:process.name}\[%{POSINT:process.pid:long}\]\s\[%{DATA:_temp_.data}\]\s%{GREEDYDATA:message}'
+        - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{NOTSPACE:event.module}\s%{NOTSPACE}:\s%{NOTSPACE:log.level}\s%{DATA:process.name}\[%{POSINT:process.pid:long}\]\s\[%{DATA:_temp_.data}\]\s((Event\s%{INT:event.code:long}\s:\s)|(%{DATA:event.action}:\s))%{GREEDYDATA:message}'
         - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP_ISO8601:_tmp.timestamp}%{SPACE}%{NOTSPACE:event.module}\s%{DATA:process.name}\[%{POSINT:process.pid:long}\]:\s\[%{NOTSPACE}\s%{DATA:_temp_.kv}\]'
       pattern_definitions:
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>'
