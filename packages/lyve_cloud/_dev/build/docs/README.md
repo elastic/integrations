@@ -2,7 +2,7 @@
 
 The Lyve Cloud Log Integration offers users a way to collect logs from Lyve Cloud's [audit log bucket](https://www.seagate.com/gb/en/services/cloud/storage/)
 
-When setting up the Lyve Cloud Integration you will need the target bucket name and the secret credentails to access the bucket. You can then visualize that data in Kibana and reference data when troubleshooting an issue.
+When setting up the Lyve Cloud Integration you will need the target bucket name and the secret credentials to access the bucket. You can then visualize that data in Kibana and reference data when troubleshooting an issue.
 
 Using the s3 API audit log information you can identify which events have occurred, when they have occurred and the user who performed the actions. 
 
