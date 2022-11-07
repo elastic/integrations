@@ -16,6 +16,12 @@ processors:
       copy_from: user.id
       field: user.email
 
+  - set:
+      if: ctx?.log?.file?.path != null && ctx.log.file.path.contains("seagate.com")
+      field: cloud.provider
+      value: "Seagate's Lyve Cloud"
+
+
   - date:
       field: lyve_cloud.audit.auditEntry.time
       formats:
@@ -157,7 +163,7 @@ processors:
 
   - rename:
       field: lyve_cloud.audit.auditEntry.responseHeader.X-Amz-Object-Lock-Retain-Until-Date
-      target_field: lyve_cloud.audit.auditEntry.responseHeader.ObjectLockRetainUntilDate
+      target_field: lyve_cloud.audit.auditEntry.responseHeader.object_lock_retain_until_date
       ignore_missing: True
 
 
