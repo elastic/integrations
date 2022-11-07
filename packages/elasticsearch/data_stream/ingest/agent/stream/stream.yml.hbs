@@ -1,0 +1,21 @@
+config_version: "2"
+interval: 30s
+
+{{#if username}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+{{/if}}
+
+request:
+  method: "GET"
+  url: {{hosts.[0]}}/_nodes/stats/ingest?filter_path=nodes.*.ingest
+  # timeout:
+
+response:
+  split:
+    target: body.nodes
+    type: map
+    split:
+      target: body.nodes.*.ingest.pipelines
+      type: map
