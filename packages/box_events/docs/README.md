@@ -73,7 +73,7 @@ It is important to login to the [Box Developer Console](https://app.box.com/deve
   10. Click on `Save Changes`
 
 ### Submit the application for Authorization from the [Box Developer Console](https://app.box.com/developers/console)
-  1. In the left side bar, at the bottom, click on `<\> Dev Console`
+  1. In the left side bar, at the bottom, click on `</> Dev Console`
   2. Click on your application, which should now have an extra `Authorization` tab, so click on this
   3. Click on `Review and Submit`, add a comment to explain your changes then click on `Submit`.
 
