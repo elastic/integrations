@@ -254,7 +254,7 @@ An example event for `ai_analyst_alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "95d2bc73-8bc8-47d9-b36e-a21b58255eec",
@@ -979,7 +979,7 @@ An example event for `model_breach_alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "95d2bc73-8bc8-47d9-b36e-a21b58255eec",
@@ -1308,7 +1308,7 @@ An example event for `system_status_alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.5.0"
+        "version": "8.6.0"
     },
     "elastic_agent": {
         "id": "95d2bc73-8bc8-47d9-b36e-a21b58255eec",
