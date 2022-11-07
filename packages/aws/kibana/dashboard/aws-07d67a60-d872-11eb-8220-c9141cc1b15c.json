@@ -67,7 +67,9 @@
                             "visualization": {
                                 "accessor": "d4bfc6f7-1652-44a3-8ebc-614ce412a7bd",
                                 "layerId": "e90bdb01-c733-4cf6-b3ca-7f727eec5d0e",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "l",
+                                "textAlign": "center"
                             }
                         },
                         "title": "",
@@ -97,6 +99,11 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-85000cbe-652e-4337-81c6-6abb10541e21",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "c2983c5b-02c3-4f54-9c89-9bfa1ca0efe8",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -112,7 +119,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Average Incoming Bytes",
+                                                    "label": "Average Incoming Bytes (in selected time range)",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -132,7 +139,27 @@
                                     }
                                 }
                             },
-                            "filters": [],
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "c2983c5b-02c3-4f54-9c89-9bfa1ca0efe8",
+                                        "key": "aws.kinesis.metrics.IncomingBytes.avg",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "aws.kinesis.metrics.IncomingBytes.avg"
+                                        }
+                                    }
+                                }
+                            ],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -140,7 +167,10 @@
                             "visualization": {
                                 "accessor": "6902038d-7bb1-4339-9b9f-07ea69d05480",
                                 "layerId": "85000cbe-652e-4337-81c6-6abb10541e21",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "l",
+                                "textAlign": "center",
+                                "titlePosition": "top"
                             }
                         },
                         "title": "",
@@ -185,7 +215,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Average Get Records Bytes",
+                                                    "label": "Average Get Records Bytes (in selected time range)",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -213,7 +243,9 @@
                             "visualization": {
                                 "accessor": "f198a9d8-490f-4385-98c1-455a7a0ee030",
                                 "layerId": "fea14ee9-35c1-47b8-b245-010f56ed252e",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "l",
+                                "textAlign": "center"
                             }
                         },
                         "title": "",
@@ -254,7 +286,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 24,
-                            "markdown": "Incoming Records",
+                            "markdown": "Incoming Data",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -270,7 +302,7 @@
                     "y": 6
                 },
                 "panelIndex": "bcb7cf5d-0f3e-42e4-a85b-fcf8aaf0272f",
-                "title": "Incoming Records Label",
+                "title": "Incoming Data Label",
                 "type": "visualization",
                 "version": "8.3.2"
             },
@@ -361,15 +393,17 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
+                                "curveType": "LINEAR",
                                 "fittingFunction": "None",
                                 "gridlinesVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
                                     "yRight": true
                                 },
+                                "hideEndzones": false,
                                 "labelsOrientation": {
                                     "x": 0,
                                     "yLeft": 0,
@@ -390,8 +424,10 @@
                                     }
                                 ],
                                 "legend": {
+                                    "isInside": true,
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "right",
+                                    "showSingleSeries": false
                                 },
                                 "preferredSeriesType": "line",
                                 "tickLabelsVisibilitySettings": {
@@ -399,7 +435,13 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide"
+                                "valueLabels": "hide",
+                                "valuesInLegend": false,
+                                "xTitle": "timestamp",
+                                "yLeftExtent": {
+                                    "mode": "dataBounds"
+                                },
+                                "yTitle": ""
                             }
                         },
                         "title": "",
@@ -407,7 +449,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 11,
@@ -456,10 +498,10 @@
                                                     "sourceField": "@timestamp"
                                                 },
                                                 "6c6de2f7-4864-46c6-916d-5bf11169f90a": {
-                                                    "customLabel": true,
+                                                    "customLabel": false,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Incoming Records per Stream",
+                                                    "label": "Average of aws.kinesis.metrics.IncomingRecords.avg",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -502,7 +544,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -531,8 +573,10 @@
                                     }
                                 ],
                                 "legend": {
+                                    "isInside": true,
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "right",
+                                    "showSingleSeries": false
                                 },
                                 "preferredSeriesType": "line",
                                 "tickLabelsVisibilitySettings": {
@@ -540,7 +584,12 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide"
+                                "valueLabels": "hide",
+                                "xTitle": "timestamp",
+                                "yLeftExtent": {
+                                    "mode": "dataBounds"
+                                },
+                                "yTitle": ""
                             }
                         },
                         "title": "",
@@ -548,7 +597,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 11,
@@ -581,7 +630,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 24,
-                            "markdown": "Outgoing Records",
+                            "markdown": "Outgoing Data",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -597,7 +646,7 @@
                     "y": 17
                 },
                 "panelIndex": "ca087394-b593-4315-96fc-91d001763436",
-                "title": "Outgoing Records Label",
+                "title": "Outgoing Data Label",
                 "type": "visualization",
                 "version": "8.3.2"
             },
@@ -688,7 +737,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -717,6 +766,7 @@
                                     }
                                 ],
                                 "legend": {
+                                    "isInside": true,
                                     "isVisible": true,
                                     "position": "right"
                                 },
@@ -726,7 +776,12 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide"
+                                "valueLabels": "hide",
+                                "xTitle": "timestamp",
+                                "yLeftExtent": {
+                                    "mode": "dataBounds"
+                                },
+                                "yTitle": ""
                             }
                         },
                         "title": "",
@@ -734,7 +789,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 11,
@@ -829,7 +884,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -858,6 +913,7 @@
                                     }
                                 ],
                                 "legend": {
+                                    "isInside": true,
                                     "isVisible": true,
                                     "position": "right"
                                 },
@@ -867,7 +923,12 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide"
+                                "valueLabels": "hide",
+                                "xTitle": "timestamp",
+                                "yLeftExtent": {
+                                    "mode": "dataBounds"
+                                },
+                                "yTitle": ""
                             }
                         },
                         "title": "",
@@ -875,7 +936,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 11,
@@ -973,7 +1034,9 @@
                             "visualization": {
                                 "accessor": "db6866f3-2c0a-412b-bfda-daabae270aad",
                                 "layerId": "9b4f8256-163e-4ab3-8a3a-9537e7f6bf6f",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "l",
+                                "textAlign": "center"
                             }
                         },
                         "title": "",
@@ -1040,7 +1103,9 @@
                             "visualization": {
                                 "accessor": "60129565-3cbe-4dae-8e0c-2dcd8cf28cbb",
                                 "layerId": "2f27b831-82a8-41b7-a5f7-78e55e47c621",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "size": "l",
+                                "textAlign": "center"
                             }
                         },
                         "title": "",
@@ -1143,7 +1208,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -1172,6 +1237,7 @@
                                     }
                                 ],
                                 "legend": {
+                                    "isInside": true,
                                     "isVisible": true,
                                     "position": "right"
                                 },
@@ -1181,7 +1247,12 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide"
+                                "valueLabels": "hide",
+                                "xTitle": "timestamp",
+                                "yLeftExtent": {
+                                    "mode": "dataBounds"
+                                },
+                                "yTitle": ""
                             }
                         },
                         "title": "",
@@ -1189,7 +1260,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 11,
@@ -1199,7 +1270,7 @@
                     "y": 34
                 },
                 "panelIndex": "0bc876e8-94df-413b-8297-a6059a876e2c",
-                "title": "PutRecords Latency",
+                "title": "Put Records Latency",
                 "type": "lens",
                 "version": "8.3.2"
             },
@@ -1284,7 +1355,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -1313,6 +1384,7 @@
                                     }
                                 ],
                                 "legend": {
+                                    "isInside": true,
                                     "isVisible": true,
                                     "position": "right"
                                 },
@@ -1322,7 +1394,12 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide"
+                                "valueLabels": "hide",
+                                "xTitle": "timestamp",
+                                "yLeftExtent": {
+                                    "mode": "dataBounds"
+                                },
+                                "yTitle": ""
                             }
                         },
                         "title": "",
@@ -1330,7 +1407,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 11,
@@ -1425,7 +1502,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": true,
+                                    "yLeft": false,
                                     "yRight": true
                                 },
                                 "fittingFunction": "None",
@@ -1454,6 +1531,7 @@
                                     }
                                 ],
                                 "legend": {
+                                    "isInside": true,
                                     "isVisible": true,
                                     "position": "right"
                                 },
@@ -1463,7 +1541,12 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide"
+                                "valueLabels": "hide",
+                                "xTitle": "timestamp",
+                                "yLeftExtent": {
+                                    "mode": "dataBounds"
+                                },
+                                "yTitle": ""
                             }
                         },
                         "title": "",
@@ -1471,7 +1554,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 11,
@@ -1481,7 +1564,7 @@
                     "y": 45
                 },
                 "panelIndex": "e4a85e33-bbc8-4476-a845-27b2ac3347ac",
-                "title": "Get Records Iterator Age",
+                "title": "Get Records Iterator Age (ms)",
                 "type": "lens",
                 "version": "8.3.2"
             },
@@ -1543,6 +1626,11 @@
         {
             "id": "metrics-*",
             "name": "d2561e5f-82df-4c7e-940d-e443263a5761:indexpattern-datasource-layer-85000cbe-652e-4337-81c6-6abb10541e21",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "d2561e5f-82df-4c7e-940d-e443263a5761:c2983c5b-02c3-4f54-9c89-9bfa1ca0efe8",
             "type": "index-pattern"
         },
         {
