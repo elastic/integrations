@@ -8,16 +8,22 @@ processors:
       field: json._event_score
       target_field: jamf_compliance_reporter.log.event_score
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.header.event_id
       target_field: event.code
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.header.event_modifier
       target_field: jamf_compliance_reporter.log.header.event_modifier
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.header.event_name
@@ -33,13 +39,18 @@ processors:
         ctx.json.time_milliseconds = (long)ctx.json?.header?.time_seconds_epoch * 1000 + (long)ctx.json?.header?.time_milliseconds_offset;
   - date:
       field: json.time_milliseconds
-      ignore_failure: true
+      if: ctx.json?.time_milliseconds != 0
       formats:
         - UNIX_MS
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.header.version
       target_field: jamf_compliance_reporter.log.header.version
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.host_info.host_name
@@ -85,6 +96,7 @@ processors:
       field: json.return.error
       target_field: error.code
       type: string
+      ignore_missing: true
       ignore_failure: true
   - set:
       field: event.outcome
@@ -98,11 +110,16 @@ processors:
       field: json.return.return_value
       target_field: process.exit_code
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.subject.audit_id
       target_field: process.real_user.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.subject.audit_user_name
@@ -124,6 +141,7 @@ processors:
       field: json.subject.effective_group_id
       target_field: jamf_compliance_reporter.log.subject.effective.group.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.subject.effective_group_name
@@ -133,6 +151,7 @@ processors:
       field: json.subject.effective_user_id
       target_field: process.user.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - append:
       field: user.name
@@ -154,6 +173,7 @@ processors:
       field: json.subject.group_id
       target_field: process.real_group.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.subject.group_name
@@ -173,7 +193,11 @@ processors:
       field: json.subject.process_id
       target_field: jamf_compliance_reporter.log.subject.process.pid
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.subject.process_name
       target_field: jamf_compliance_reporter.log.subject.process.name
@@ -182,16 +206,25 @@ processors:
       field: json.subject.session_id
       target_field: jamf_compliance_reporter.log.subject.session.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.subject.terminal_id.addr
       target_field: jamf_compliance_reporter.log.subject.terminal_id.addr
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.subject.terminal_id.ip_address
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.subject.terminal_id.ip_address
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: host.ip
       value: '{{{json.subject.terminal_id.ip_address}}}'
@@ -208,16 +241,22 @@ processors:
       field: json.subject.terminal_id.port
       target_field: jamf_compliance_reporter.log.subject.terminal_id.port
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.subject.terminal_id.type
       target_field: jamf_compliance_reporter.log.subject.terminal_id.type
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.subject.user_id
       target_field: user.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - append:
       field: user.name
@@ -231,15 +270,15 @@ processors:
       if: ctx.json?.subject?.user_name != null
       allow_duplicates: false
       ignore_failure: true
-  - set:
+  - append:
       field: event.type
-      value: [info]
+      value: info
   - set:
       field: event.kind
       value: event
-  - set:
+  - append:
       field: event.category
-      value: [authentication]
+      value: authentication
   - pipeline:
       name: '{{ IngestPipeline "pipeline_aue_accept" }}'
       if: ctx.event?.action == 'aue_accept'

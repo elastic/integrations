@@ -5,12 +5,20 @@ processors:
       field: json.event_attributes.assessments_enabled
       target_field: jamf_compliance_reporter.log.event_attributes.assessments_enabled
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.event_attributes.dev_id_enabled
       target_field: jamf_compliance_reporter.log.event_attributes.dev_id_enabled
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.opaque_version
       target_field: jamf_compliance_reporter.log.event_attributes.opaque_version

@@ -1,13 +1,56 @@
 {
     "attributes": {
-        "description": "",
+        "description": "This dashboard shows app metrics logs collected by the Jamf Compliance Reporter integration.",
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "jamf_compliance_reporter.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "jamf_compliance_reporter.log"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "jamf_compliance_reporter.log.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "app_metrics"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "jamf_compliance_reporter.log.dataset": "app_metrics"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"jamf_compliance_reporter.log\" and jamf_compliance_reporter.log.dataset : \"app_metrics\""
+                    "query": ""
                 }
             }
         },
@@ -27,7 +70,7 @@
                                 "filter": [],
                                 "query": {
                                     "language": "kuery",
-                                    "query": "data_stream.dataset : \"jamf_compliance_reporter.log\" and jamf_compliance_reporter.log.dataset : \"app_metrics\""
+                                    "query": ""
                                 }
                             }
                         },
@@ -160,7 +203,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"jamf_compliance_reporter.log\" and jamf_compliance_reporter.log.dataset : \"app_metrics\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -261,7 +304,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"jamf_compliance_reporter.log\" and jamf_compliance_reporter.log.dataset : \"app_metrics\""
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -360,7 +403,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"jamf_compliance_reporter.log\" and jamf_compliance_reporter.log.dataset : \"app_metrics\""
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -407,6 +450,16 @@
         "dashboard": "7.17.0"
     },
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "4a142331-39c2-428e-af3c-b693e89e68eb:indexpattern-datasource-current-indexpattern",

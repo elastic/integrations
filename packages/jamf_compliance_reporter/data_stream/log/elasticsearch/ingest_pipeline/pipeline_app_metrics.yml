@@ -20,37 +20,65 @@ processors:
       field: json._event_score
       type: long
       target_field: jamf_compliance_reporter.log.event_score
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.app_metric_info.cpu_percentage
       type: double
       target_field: jamf_compliance_reporter.log.app_metric_info.cpu_percentage
-      ignore_failure: true 
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.app_metric_info.cpu_time_seconds
       type: double
       target_field: jamf_compliance_reporter.log.app_metric_info.cpu_time_seconds
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.app_metric_info.interrupt_wakeups
       type: long
       target_field: jamf_compliance_reporter.log.app_metric_info.interrupt_wakeups
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.app_metric_info.platform_idle_wakeups
       type: long
       target_field: jamf_compliance_reporter.log.app_metric_info.platform_idle_wakeups
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.app_metric_info.resident_memory_size_mb
       type: double
       target_field: jamf_compliance_reporter.log.app_metric_info.resident_memory_size.mb
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.app_metric_info.virtual_memory_size_mb
       type: double
       target_field: jamf_compliance_reporter.log.app_metric_info.virtual_memory_size.mb
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.header.event_name
       target_field: event.action
@@ -61,9 +89,12 @@ processors:
   - date:
       field: json.header.time_seconds_epoch
       if: ctx.json?.header?.time_seconds_epoch != 0
-      ignore_failure: true
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.host_info.host_name
       target_field: host.hostname
@@ -107,6 +138,6 @@ processors:
         ctx.host.cpu = new HashMap();
         ctx.host.cpu.usage = Math.round(ctx.json?.app_metric_info?.cpu_percentage *10) / 1000.0;
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: '{{ _ingest.on_failure_message }}'

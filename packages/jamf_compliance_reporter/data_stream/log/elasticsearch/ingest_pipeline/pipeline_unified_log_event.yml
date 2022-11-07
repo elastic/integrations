@@ -5,23 +5,33 @@ processors:
       field: json.event_attributes.activityIdentifier
       target_field: jamf_compliance_reporter.log.event_attributes.activity_identifier
       type: string
+      ignore_missing: true
       ignore_failure: true
   - foreach:
       field: json.event_attributes.backtrace.frames
+      if: ctx.json?.event_attributes?.backtrace?.frames instanceof List
       processor:
         convert:
           field: _ingest._value.imageOffset
           target_field: _ingest._value.image_offset
           type: long
-          ignore_failure: true
+          on_failure:
+            - remove:
+                field: _ingest._value.imageOffset
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.event_attributes.backtrace.frames
+      if: ctx.json?.event_attributes?.backtrace?.frames instanceof List
       processor:
         remove:
           field: _ingest._value.imageOffset
           ignore_failure: true
   - foreach:
       field: json.event_attributes.backtrace.frames
+      if: ctx.json?.event_attributes?.backtrace?.frames instanceof List
       processor:
         rename:
           field: _ingest._value.imageUUID
@@ -51,6 +61,7 @@ processors:
       field: json.event_attributes.machTimestamp
       target_field: jamf_compliance_reporter.log.event_attributes.mach_timestamp
       type: string
+      ignore_missing: true
       ignore_failure: true
   - append:
       field: event.type
@@ -65,12 +76,17 @@ processors:
       field: json.event_attributes.parentActivityIdentifier
       target_field: jamf_compliance_reporter.log.event_attributes.parent_activity_identifier
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.event_attributes.processID
       target_field: jamf_compliance_reporter.log.event_attributes.process.id
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.processImagePath
       target_field: jamf_compliance_reporter.log.event_attributes.process.image.path
@@ -91,7 +107,11 @@ processors:
       field: json.event_attributes.senderProgramCounter
       target_field: jamf_compliance_reporter.log.event_attributes.sender.program_counter
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.source
       target_field: jamf_compliance_reporter.log.event_attributes.source
@@ -104,14 +124,18 @@ processors:
       field: json.event_attributes.threadID
       target_field: jamf_compliance_reporter.log.event_attributes.thread_id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - date:
       field: json.event_attributes.timestamp
       target_field: jamf_compliance_reporter.log.event_attributes.timestamp
       if: ctx.json?.event_attributes?.timestamp != 0
-      ignore_failure: true
       formats:
         - yyyy-MM-dd HH:mm:ss.SSSSSSZ
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.timezoneName
       target_field: jamf_compliance_reporter.log.event_attributes.timezone_name
@@ -120,4 +144,5 @@ processors:
       field: json.event_attributes.traceID
       target_field: jamf_compliance_reporter.log.event_attributes.trace_id
       type: string
+      ignore_missing: true
       ignore_failure: true

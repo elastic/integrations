@@ -69,12 +69,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2019-10-02T16:17:08.000Z",
     "agent": {
-        "ephemeral_id": "248e5163-7fd7-4ec4-b24f-4fecc38a54e8",
-        "hostname": "docker-fleet-agent",
-        "id": "985a5119-d47f-4fe6-82fb-657252e78af0",
+        "ephemeral_id": "d5ffc842-05cf-43da-96fe-905f95ab2e41",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "jamf_compliance_reporter.log",
@@ -85,9 +84,9 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "985a5119-d47f-4fe6-82fb-657252e78af0",
+        "id": "4f9748a6-cc5b-4160-bfdb-b533f9ba576a",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.4.0"
     },
     "event": {
         "action": "preference_list_event",
@@ -96,7 +95,7 @@ An example event for `log` looks as following:
             "process"
         ],
         "dataset": "jamf_compliance_reporter.log",
-        "ingested": "2022-07-05T06:48:27Z",
+        "ingested": "2022-11-04T11:01:45Z",
         "kind": "event",
         "type": [
             "info"
@@ -180,7 +179,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.27.0.5:39166"
+            "address": "192.168.224.7:58764"
         }
     },
     "related": {
@@ -193,7 +192,7 @@ An example event for `log` looks as following:
     },
     "tags": [
         "forwarded",
-        "jamf_compliance_reporter_log"
+        "jamf_compliance_reporter-log"
     ],
     "user": {
         "email": "dan@email.com"
