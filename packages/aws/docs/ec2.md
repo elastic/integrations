@@ -334,6 +334,7 @@ An example event for `ec2` looks as following:
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
 | cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
@@ -346,6 +347,7 @@ An example event for `ec2` looks as following:
 | error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
 | host.cpu.usage | Percent CPU used which is normalized by the number of CPU cores and it ranges from 0 to 1. Scaling factor: 1000. For example: For a two core host, this value should be the average of the two cores, between 0 and 1. | scaled_float |
 | host.disk.read.bytes | The total number of bytes (gauge) read successfully (aggregated from all disks) since the last metric collection. | long |
 | host.disk.write.bytes | The total number of bytes (gauge) written successfully (aggregated from all disks) since the last metric collection. | long |
@@ -353,4 +355,6 @@ An example event for `ec2` looks as following:
 | host.network.egress.packets | The number of packets (gauge) sent out on all network interfaces by the host since the last metric collection. | long |
 | host.network.ingress.bytes | The number of bytes received (gauge) on all network interfaces by the host since the last metric collection. | long |
 | host.network.ingress.packets | The number of packets (gauge) received on all network interfaces by the host since the last metric collection. | long |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
