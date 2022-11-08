@@ -11,6 +11,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [SAML](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/saml) [help](https://support.google.com/a/answer/7007375?hl=en&ref_topic=9027054) | View users’ successful and failed sign-ins to SAML applications. |
 | [User Accounts](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/user-accounts) [help](https://support.google.com/a/answer/9022875?hl=en&ref_topic=9027054) | Audit actions carried out by users on their own accounts including password changes, account recovery details and 2-Step Verification enrollment. |
 | [Login](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/login) [help](https://support.google.com/a/answer/4580120?hl=en&ref_topic=9027054) | Track user sign-in activity to your domain. |
+| [Rules](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules) [help](https://support.google.com/a/answer/9656783?hl=en&ref_topic=9027054) | View a record of actions to review your user’s attempts to share sensitive data. |
 | [Admin](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/admin-application-settings) [help](https://support.google.com/a/answer/4579579?hl=en&ref_topic=9027054) | View administrator activity performed within the Google Admin console. |
 | [Drive](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/drive) [help](https://support.google.com/a/answer/4579696?hl=en&ref_topic=9027054) | Record user activity within Google Drive including content creation in such as Google Docs, as well as content created elsewhere that your users upload to Drive such as PDFs and Microsoft Word files. |
 | [Groups](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/groups) [help](https://support.google.com/a/answer/6270454?hl=en&ref_topic=9027054) | Track changes to groups, group memberships and group messages. |
@@ -24,7 +25,7 @@ In order to ingest data from the Google Reports API you must:
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for your ServiceAccount.
 
-This module will make use of the following *oauth2 scope*:
+This integration will make use of the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 
@@ -55,13 +56,13 @@ An example event for `saml` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-02T12:27:23.000Z",
+    "@timestamp": "2022-11-07T12:10:22.000Z",
     "agent": {
-        "ephemeral_id": "4ffa592e-b9c1-4a7e-8c91-78817747d073",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "83ed1759-6938-4e99-ac13-2b87bf1500d1",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "google_workspace.saml",
@@ -72,9 +73,9 @@ An example event for `saml` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "event": {
         "action": "login_failure",
@@ -83,10 +84,11 @@ An example event for `saml` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2022-02-03T12:27:23.007Z",
+        "created": "2022-11-08T12:10:22.763Z",
         "dataset": "google_workspace.saml",
         "id": "1",
-        "ingested": "2022-02-03T12:27:24Z",
+        "ingested": "2022-11-08T12:10:26Z",
+        "kind": "event",
         "outcome": "failure",
         "provider": "saml",
         "type": [
@@ -148,6 +150,7 @@ An example event for `saml` looks as following:
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo"
     }
@@ -185,6 +188,7 @@ An example event for `saml` looks as following:
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -272,13 +276,13 @@ An example event for `user_accounts` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-02T12:28:15.000Z",
+    "@timestamp": "2022-11-07T12:13:31.000Z",
     "agent": {
-        "ephemeral_id": "3242bd5f-5862-4205-97eb-6aaac7d3f3d5",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "e4182108-3a8e-4cc6-b66e-3c0dc6759eb7",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "google_workspace.user_accounts",
@@ -289,9 +293,9 @@ An example event for `user_accounts` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "event": {
         "action": "2sv_disable",
@@ -299,10 +303,11 @@ An example event for `user_accounts` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2022-02-03T12:28:15.402Z",
+        "created": "2022-11-08T12:13:31.547Z",
         "dataset": "google_workspace.user_accounts",
         "id": "1",
-        "ingested": "2022-02-03T12:28:16Z",
+        "ingested": "2022-11-08T12:13:35Z",
+        "kind": "event",
         "provider": "user_accounts",
         "type": [
             "change",
@@ -356,6 +361,7 @@ An example event for `user_accounts` looks as following:
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo"
     }
@@ -393,6 +399,7 @@ An example event for `user_accounts` looks as following:
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -475,13 +482,13 @@ An example event for `login` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-02T12:26:31.000Z",
+    "@timestamp": "2022-11-07T12:04:12.000Z",
     "agent": {
-        "ephemeral_id": "0b8db1d7-2f2e-4e9d-84d8-f3b4409101ef",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "d0d8f072-70e8-4935-9e1a-343e42564dfd",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "google_workspace.login",
@@ -492,9 +499,9 @@ An example event for `login` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "event": {
         "action": "account_disabled_password_leak",
@@ -502,10 +509,11 @@ An example event for `login` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-02-03T12:26:31.037Z",
+        "created": "2022-11-08T12:04:12.254Z",
         "dataset": "google_workspace.login",
         "id": "1",
-        "ingested": "2022-02-03T12:26:32Z",
+        "ingested": "2022-11-08T12:04:16Z",
+        "kind": "event",
         "provider": "login",
         "type": [
             "user",
@@ -563,6 +571,7 @@ An example event for `login` looks as following:
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo",
         "target": {
@@ -604,6 +613,7 @@ An example event for `login` looks as following:
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -685,6 +695,278 @@ An example event for `login` looks as following:
 | user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 
 
+### Rules
+
+This is the `rules` dataset.
+
+An example event for `rules` looks as following:
+
+```json
+{
+    "@timestamp": "2022-11-08T12:07:08.647Z",
+    "agent": {
+        "ephemeral_id": "b27b69a4-a371-4555-99b1-8ea0dee05e98",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.rules",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.0"
+    },
+    "elastic_agent": {
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
+        "snapshot": false,
+        "version": "8.4.0"
+    },
+    "event": {
+        "action": "rule_match",
+        "agent_id_status": "verified",
+        "created": "2022-11-08T12:07:08.647Z",
+        "dataset": "google_workspace.rules",
+        "id": "1",
+        "ingested": "2022-11-08T12:07:12Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"rule_match\",\"parameters\":[{\"boolValue\":\"true\",\"name\":\"has_alert\"},{\"name\":\"actor_ip_address\",\"value\":\"127.0.0.0\"},{\"intValue\":\"1234\",\"name\":\"resource_recipients_omitted_count\"},{\"multiValue\":[\"managers\"],\"name\":\"rule_name\"},{\"multiIntValue\":[\"12\"],\"name\":\"rule_id\"}],\"type\":\"rule_match_type\"},\"id\":{\"applicationName\":\"rules\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
+        "provider": "rules"
+    },
+    "google_workspace": {
+        "actor": {
+            "email": "foo@bar.com",
+            "profile": {
+                "id": "1"
+            },
+            "type": "USER"
+        },
+        "event": {
+            "name": "rule_match",
+            "type": "rule_match_type"
+        },
+        "id": {
+            "application_name": "rules",
+            "customer": {
+                "id": "1"
+            },
+            "time": "2020-10-02T15:00:00.000Z",
+            "unique_qualifier": "1"
+        },
+        "ip_address": "67.43.156.13",
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "elastic.com"
+        },
+        "rules": {
+            "actor_ip_address": "127.0.0.0",
+            "has_alert": true,
+            "id": [
+                "12"
+            ],
+            "name": [
+                "managers"
+            ],
+            "resource": {
+                "recipients_omitted_count": 1234
+            }
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "hosts": [
+            "bar.com",
+            "elastic.com"
+        ],
+        "ip": [
+            "67.43.156.13",
+            "127.0.0.0"
+        ],
+        "user": [
+            "foo"
+        ]
+    },
+    "rule": {
+        "id": [
+            "12"
+        ],
+        "name": [
+            "managers"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-rules"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container id. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset | constant_keyword |
+| event.id | Unique ID to describe the event. | keyword |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile.id | The unique Google Workspace profile ID of the actor. This value might be absent if the actor is not a Google Workspace user, or may be the number 105250506097979753968 which acts as a placeholder ID. | keyword |
+| google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.event.name | Name of the event. This is the specific name of the activity reported by the API. And each eventName is related to a specific Google Workspace service or feature which the API organizes into types of events. For eventName request parameters in general:   If no eventName is given, the report returns all possible instances of an eventName.   When you request an eventName, the API's response returns all activities which contain that eventName. It is possible that the returned activities will have other eventName properties in addition to the one requested. For more information about eventName properties, see the list of event names for various applications above in applicationName. | keyword |
+| google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer.id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| google_workspace.rules.actions | List of actions taken. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.actor_ip_address | IP of the entity who was responsible for the original event which triggered the rule. | ip |
+| google_workspace.rules.application | Name of the application to which the flagged item belongs. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.conference_id | The unique identifier of a Google Meet conference. | keyword |
+| google_workspace.rules.data_source | Source of the data. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.device.id | ID of the device on which the action was triggered. | keyword |
+| google_workspace.rules.device.type | Type of device referred to by device ID. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.drive_shared_drive_id | Shared drive Id to which the drive item belongs, if applicable. | keyword |
+| google_workspace.rules.evaluation_context | Evaluation metadata, such as contextual messages used in a rule evaluation. | flattened |
+| google_workspace.rules.has_alert | Whether or not the triggered rule has alert enabled. | boolean |
+| google_workspace.rules.has_content_match | Whether the resource has content which matches the criteria in the rule. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | boolean |
+| google_workspace.rules.id | Unique identifier for a rule. Rules are created by admins in Google Workspace. | keyword |
+| google_workspace.rules.matched.detectors | A list of detectors that matched against the resource. | flattened |
+| google_workspace.rules.matched.templates | List of content detector templates that matched. | keyword |
+| google_workspace.rules.matched.threshold | Threshold that matched in the rule. | keyword |
+| google_workspace.rules.matched.trigger | Trigger of the rule evaluation: email sent or received, document shared. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.mobile_device_type | Type of device on which rule was applied. | keyword |
+| google_workspace.rules.mobile_ios_vendor_id | iOS Vendor Id of device on which rule was applied, if applicable. | keyword |
+| google_workspace.rules.name | Name of the rule. | keyword |
+| google_workspace.rules.resource.id | Identifier of the resource which matched the rule. | keyword |
+| google_workspace.rules.resource.name | Resource name that uniquely identifies a rule. | keyword |
+| google_workspace.rules.resource.owner_email | Email address of the owner of the resource. | keyword |
+| google_workspace.rules.resource.recipients | A list of users that a Drive document or an email message was shared with when the rule was triggered. | keyword |
+| google_workspace.rules.resource.recipients_omitted_count | The number of resource recipients omitted due to exceeding the size limit. | long |
+| google_workspace.rules.resource.title | Title of the resource which matched the rule: email subject, or document title. | keyword |
+| google_workspace.rules.resource.type | Type of the rule. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.resource_name | Name of the resource which matched the rule. | keyword |
+| google_workspace.rules.scan_type | Scan mode for the rule evaluation. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.severity | Severity of violating a rule. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.space.id | ID of the space where the rule was triggered. | keyword |
+| google_workspace.rules.space.type | Type of space referred to by the space ID. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.suppressed_actions | A list of actions that were not taken due to other actions with higher priority. | flattened |
+| google_workspace.rules.triggered_actions | A list of actions that were taken as a consequence of the rule being triggered. | flattened |
+| google_workspace.rules.type | Type of the rule. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.update_time_usec | Update time (microseconds since epoch) indicating the version of rule which is used. | date |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| organization.id | Unique identifier for the organization. | keyword |
+| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.id | A rule ID that is unique within the scope of an agent, observer, or other entity using the rule for detection of this event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| source.user.email | User email address. | keyword |
+| source.user.id | Unique identifier of the user. | keyword |
+| source.user.name | Short name or login of the user. | keyword |
+| source.user.name.text | Multi-field of `source.user.name`. | match_only_text |
+| tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+
+
 ### Admin
 
 This is the `admin` dataset.
@@ -693,13 +975,13 @@ An example event for `admin` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-02T12:23:57.000Z",
+    "@timestamp": "2022-11-07T11:55:09.000Z",
     "agent": {
-        "ephemeral_id": "68cf8bd1-0ff1-4c77-a4e7-64ab24882a9c",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "1b08895d-22ec-4bb3-a812-0f05b56597b3",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "google_workspace.admin",
@@ -710,9 +992,9 @@ An example event for `admin` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "event": {
         "action": "CHANGE_APPLICATION_SETTING",
@@ -721,10 +1003,11 @@ An example event for `admin` looks as following:
             "iam",
             "configuration"
         ],
-        "created": "2022-02-03T12:23:57.797Z",
+        "created": "2022-11-08T11:55:10.000Z",
         "dataset": "google_workspace.admin",
         "id": "1",
-        "ingested": "2022-02-03T12:23:58Z",
+        "ingested": "2022-11-08T11:55:13Z",
+        "kind": "event",
         "provider": "admin",
         "type": [
             "change"
@@ -798,6 +1081,7 @@ An example event for `admin` looks as following:
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo",
         "target": {
@@ -841,6 +1125,7 @@ An example event for `admin` looks as following:
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -1021,13 +1306,13 @@ An example event for `drive` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-02T12:24:50.000Z",
+    "@timestamp": "2022-11-07T11:58:09.000Z",
     "agent": {
-        "ephemeral_id": "3160d231-025f-4e24-9581-72458c960fca",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "2efd345d-8614-433f-9322-e414e8affe84",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "google_workspace.drive",
@@ -1038,9 +1323,9 @@ An example event for `drive` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "event": {
         "action": "add_to_folder",
@@ -1048,10 +1333,11 @@ An example event for `drive` looks as following:
         "category": [
             "file"
         ],
-        "created": "2022-02-03T12:24:50.101Z",
+        "created": "2022-11-08T11:58:09.036Z",
         "dataset": "google_workspace.drive",
         "id": "1",
-        "ingested": "2022-02-03T12:24:51Z",
+        "ingested": "2022-11-08T11:58:12Z",
+        "kind": "event",
         "provider": "drive",
         "type": [
             "change"
@@ -1126,6 +1412,7 @@ An example event for `drive` looks as following:
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo"
     }
@@ -1163,6 +1450,7 @@ An example event for `drive` looks as following:
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
@@ -1274,13 +1562,13 @@ An example event for `groups` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-02-02T12:25:39.000Z",
+    "@timestamp": "2022-11-07T12:01:11.000Z",
     "agent": {
-        "ephemeral_id": "a9599f5d-49a5-4339-9e5e-484f19370712",
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "ephemeral_id": "000518fe-188d-4c99-85a8-d23b3b117579",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "data_stream": {
         "dataset": "google_workspace.groups",
@@ -1291,9 +1579,9 @@ An example event for `groups` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
+        "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.4.0"
     },
     "event": {
         "action": "change_acl_permission",
@@ -1301,10 +1589,11 @@ An example event for `groups` looks as following:
         "category": [
             "iam"
         ],
-        "created": "2022-02-03T12:25:39.375Z",
+        "created": "2022-11-08T12:01:11.213Z",
         "dataset": "google_workspace.groups",
         "id": "1",
-        "ingested": "2022-02-03T12:25:40Z",
+        "ingested": "2022-11-08T12:01:14Z",
+        "kind": "event",
         "provider": "groups",
         "type": [
             "group",
@@ -1373,6 +1662,7 @@ An example event for `groups` looks as following:
     ],
     "user": {
         "domain": "bar.com",
+        "email": "foo@bar.com",
         "id": "1",
         "name": "foo",
         "target": {
@@ -1416,6 +1706,7 @@ An example event for `groups` looks as following:
 | event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
 | event.id | Unique ID to describe the event. | keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
 | event.module | Event module | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
