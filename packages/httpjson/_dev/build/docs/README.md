@@ -1,6 +1,6 @@
-# Custom HTTPJSON input integration
+# Custom API input integration
 
-The custom HTTPJSON input integration is used to ingest data from custom RESTful API's that do not currently have an existing integration.
+The custom API input integration is used to ingest data from custom RESTful API's that do not currently have an existing integration.
 
 The input itself supports sending both GET and POST requests, transform requests and responses during runtime, paginate and keep a running state on information from the last collected events.
 

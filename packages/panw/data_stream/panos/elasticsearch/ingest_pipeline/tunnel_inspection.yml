@@ -92,6 +92,17 @@ processors:
       value:
         - network
 
+# Set event.outcome from panw.panos.action: allowable values:
+#  allow, deny, drop, drop ICMP, reset both, reset client, and reset server
+  - set:
+      if: ctx.panw?.panos?.action == "allow"
+      field: event.outcome
+      value: success
+  - set:
+      if: ctx.event?.outcome == null || ctx.event.outcome == ""
+      field: event.outcome
+      value: failure
+
 # Set custom fields to ECS fields
   - set:
       field: destination.bytes
