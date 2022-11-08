@@ -159,7 +159,7 @@ An example event for `firewall` looks as following:
         "port": 3389
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "08bce509-f1bf-4b71-8b6b-b8965e7a733b",
