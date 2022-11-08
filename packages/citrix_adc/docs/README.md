@@ -43,10 +43,10 @@ An example event for `system` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-10-07T12:48:57.300Z",
+    "@timestamp": "2022-11-03T11:58:48.678Z",
     "agent": {
-        "ephemeral_id": "9db98501-7504-4eca-8319-372763e31fd4",
-        "id": "47d605e9-8d81-42fa-ba0f-a2dc984cc420",
+        "ephemeral_id": "17888c67-ea5e-4c24-ad2d-6e1572930f9d",
+        "id": "f1fb7954-85ee-4fe3-971d-546763d1571b",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -89,10 +89,10 @@ An example event for `system` looks as following:
             },
             "memory": {
                 "size": {
-                    "mb": 0
+                    "value": 0
                 },
                 "usage": {
-                    "mb": 216
+                    "value": 226492416
                 },
                 "utilization": {
                     "pct": 21.114572
@@ -112,7 +112,7 @@ An example event for `system` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "47d605e9-8d81-42fa-ba0f-a2dc984cc420",
+        "id": "f1fb7954-85ee-4fe3-971d-546763d1571b",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -121,9 +121,9 @@ An example event for `system` looks as following:
         "category": [
             "web"
         ],
-        "created": "2022-10-07T12:48:57.300Z",
+        "created": "2022-11-03T11:58:48.678Z",
         "dataset": "citrix_adc.system",
-        "ingested": "2022-10-07T12:49:00Z",
+        "ingested": "2022-11-03T11:58:52Z",
         "kind": "event",
         "module": "citrix_adc",
         "original": "{\"errorcode\":0,\"message\":\"Done\",\"severity\":\"NONE\",\"system\":{\"addimgmtcpuusagepcnt\":0,\"auxtemp0\":0,\"auxtemp1\":0,\"auxtemp2\":0,\"auxtemp3\":0,\"auxvolt0\":0,\"auxvolt1\":0,\"auxvolt2\":0,\"auxvolt3\":0,\"auxvolt4\":0,\"auxvolt5\":0,\"auxvolt6\":0,\"auxvolt7\":0,\"cpu0temp\":0,\"cpu1temp\":0,\"cpufan0speed\":0,\"cpufan1speed\":0,\"cpuusage\":\"1\",\"cpuusagepcnt\":1.1,\"disk0avail\":1278,\"disk0perusage\":12,\"disk0size\":1585,\"disk0used\":180,\"disk1avail\":11441,\"disk1perusage\":12,\"disk1size\":14179,\"disk1used\":1603,\"fan0speed\":0,\"fan2speed\":0,\"fan3speed\":0,\"fan4speed\":0,\"fan5speed\":0,\"fanspeed\":0,\"internaltemp\":0,\"mastercpuusage\":\"4294967295\",\"memsizemb\":\"0\",\"memusagepcnt\":21.114572,\"memuseinmb\":\"216\",\"mgmtcpu0usagepcnt\":0.8,\"mgmtcpuusagepcnt\":0.8,\"numcpus\":\"1\",\"pktcpuusagepcnt\":1.1,\"powersupply1status\":\"NOT SUPPORTED\",\"powersupply2status\":\"NOT SUPPORTED\",\"powersupply3status\":\"NOT SUPPORTED\",\"powersupply4status\":\"NOT SUPPORTED\",\"rescpuusage\":\"4294967295\",\"rescpuusagepcnt\":4294967295,\"slavecpuusage\":\"4294967295\",\"starttime\":\"Thu Sep 22 03:50:13 2022\",\"starttimelocal\":\"Thu Sep 22 09:20:13 2022\",\"systemfanspeed\":0,\"timesincestart\":\"00:00:00\",\"voltagev12n\":0,\"voltagev12p\":0,\"voltagev33main\":0,\"voltagev33stby\":0,\"voltagev5n\":0,\"voltagev5p\":0,\"voltagev5sb\":0,\"voltagevbat\":0,\"voltagevcc0\":0,\"voltagevcc1\":0,\"voltagevsen2\":0,\"voltagevtt\":0}}",
@@ -157,8 +157,8 @@ An example event for `system` looks as following:
 | citrix_adc.system.cpu.utilization.slave.pct | CPU 1 (currently the slave CPU) utilization, as percentage of capacity. | float | percent | gauge |
 | citrix_adc.system.disk.usage.flash_partition.pct | Used space in /flash partition of the disk, as a percentage. | float | percent | gauge |
 | citrix_adc.system.disk.usage.var_partition.pct | Used space in /var partition of the disk, as a percentage. | float | percent | gauge |
-| citrix_adc.system.memory.size.mb | Total amount of system memory, in megabytes. | float | byte | gauge |
-| citrix_adc.system.memory.usage.mb | Main memory currently in use, in megabytes. | float | byte | gauge |
+| citrix_adc.system.memory.size.value | Total amount of system memory, in bytes. | float | byte | gauge |
+| citrix_adc.system.memory.usage.value | Main memory currently in use, in bytes. | float | byte | gauge |
 | citrix_adc.system.memory.utilization.pct | Percentage of memory utilization on NetScaler. | float | percent | gauge |
 | citrix_adc.system.start.time | Time when the NetScaler appliance was last started. | date |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |

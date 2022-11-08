@@ -97,13 +97,13 @@ processors:
       ignore_failure: true
   - convert:
       field: json.system.memsizemb
-      target_field: citrix_adc.system.memory.size.mb
+      target_field: citrix_adc.system.memory.size.value
       type: float
       ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.system.memuseinmb
-      target_field: citrix_adc.system.memory.usage.mb
+      target_field: citrix_adc.system.memory.usage.value
       type: float
       ignore_missing: true
       ignore_failure: true
@@ -114,6 +114,22 @@ processors:
       formats:
       - EEE MMM dd HH:mm:ss yyyy
       - EEE MMM dd HH:mm:ss.SSSSSS yyyy
+      - EEE MMM  d HH:mm:ss yyyy
+      - EEE MMM  d HH:mm:ss.SSSSSS yyyy
+  - script:
+      description: Convert megabyte to byte.
+      lang: painless
+      source: |
+        def convert(def megabytes){
+            def bytes = (megabytes*1024*1024);
+            return bytes;
+        }
+        if(ctx.citrix_adc?.system?.memory?.size?.value!=null || ctx.citrix_adc?.system?.memory?.size?.value!=""){
+            ctx.citrix_adc.system.memory.size.value = convert(ctx.citrix_adc.system.memory.size.value);
+        }
+        if(ctx.citrix_adc?.system?.memory?.usage?.value!=null || ctx.citrix_adc?.system?.memory?.usage?.value!=""){
+            ctx.citrix_adc.system.memory.usage.value = convert(ctx.citrix_adc.system.memory.usage.value);
+        }
   - script:
       description: Drops null/empty values recursively.
       lang: painless
