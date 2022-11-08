@@ -77,6 +77,20 @@ processors:
       copy_from: panw.panos.device_name
       ignore_failure: true
 
+# Set event.outcome from panw.panos.result: documented allowed values are Submitted, Succeeded, Failed, and Unauthorized
+  - set:
+      if: ctx.panw?.panos?.result == "Succeeded"
+      field: event.outcome
+      value: success
+  - set:
+      if: ctx.panw?.panos?.result == "Failed"
+      field: event.outcome
+      value: failure
+  - set:
+      if: ctx.event?.outcome == null || ctx.event.outcome == ""
+      field: event.outcome
+      value: unknown
+
 on_failure:
   - append:
       field: error.message

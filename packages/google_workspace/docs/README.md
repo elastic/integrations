@@ -146,7 +146,7 @@ An example event for `saml` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -363,7 +363,7 @@ An example event for `user_accounts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -481,6 +481,7 @@ An example event for `user_accounts` looks as following:
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| google_workspace.user_accounts.email_forwarding_destination_address | Out of domain email the actor has forwarded to. | keyword |
 | group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
@@ -565,7 +566,7 @@ An example event for `login` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -783,7 +784,7 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -1111,7 +1112,7 @@ An example event for `drive` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -1364,7 +1365,7 @@ An example event for `groups` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -1586,8 +1587,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2022-07-01T10:49:29.436Z",
     "agent": {
-        "ephemeral_id": "fa7f13eb-6cd6-4989-9736-e515011e16bb",
-        "id": "10cdbf79-2e36-4e5b-9916-f5113ef54b41",
+        "ephemeral_id": "b9cea70b-4beb-4d6f-8df8-f4bc6bfefc8a",
+        "id": "c365aab8-f383-4f35-971f-0e22b72992a0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -1598,10 +1599,10 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "10cdbf79-2e36-4e5b-9916-f5113ef54b41",
+        "id": "c365aab8-f383-4f35-971f-0e22b72992a0",
         "snapshot": false,
         "version": "8.4.0"
     },
@@ -1642,11 +1643,11 @@ An example event for `alert` looks as following:
             "threat",
             "malware"
         ],
-        "created": "2022-10-03T07:34:47.443Z",
+        "created": "2022-11-07T09:26:33.088Z",
         "dataset": "google_workspace.alert",
         "end": "2022-07-01T10:47:04.530Z",
         "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7",
-        "ingested": "2022-10-03T07:34:50Z",
+        "ingested": "2022-11-07T09:26:36Z",
         "kind": "alert",
         "original": "{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"createTime\":\"2022-07-01T10:49:29.436394Z\",\"customerId\":\"02umwv6u\",\"data\":{\"@type\":\"type.googleapis.com/google.apps.alertcenter.type.MailPhishing\",\"domainId\":{\"customerPrimaryDomain\":\"example.com\"},\"isInternal\":true,\"maliciousEntity\":{\"displayName\":\"string\",\"entity\":{\"displayName\":\"example\",\"emailAddress\":\"example@example.com\"},\"fromHeader\":\"header@example.com\"},\"messages\":[{\"attachmentsSha256Hash\":[\"50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c\",\"228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2\"],\"date\":\"2022-07-01T10:38:13.194711Z\",\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings from sales \",\"messageId\":\"decedih843@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"Sales\"},{\"attachmentsSha256Hash\":[\"5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56\"],\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings \",\"messageId\":\"decedih@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"RE: Example salesorderspca JSON request\"}],\"systemActionType\":\"NO_OPERATION\"},\"deleted\":false,\"endTime\":\"2022-07-01T10:47:04.530834Z\",\"etag\":\"wF2Ix2DWDv8=\",\"metadata\":{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"assignee\":\"example@example.com\",\"customerId\":\"02umwv6u\",\"etag\":\"wF2Ix2DWDv8=\",\"severity\":\"HIGH\",\"status\":\"NOT_STARTED\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"},\"securityInvestigationToolLink\":\"string\",\"source\":\"Gmail phishing\",\"startTime\":\"2022-07-01T10:38:13.194711Z\",\"type\":\"User reported phishing\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"}",
         "start": "2022-07-01T10:38:13.194Z",
