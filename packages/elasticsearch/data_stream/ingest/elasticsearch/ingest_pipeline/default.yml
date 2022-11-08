@@ -1,0 +1,29 @@
+---
+description: Pipeline for parsing pipeline ingest stats
+processors:
+    - set: 
+        field: "message"
+        ignore_empty_value: true
+        copy_from: "event.original"
+    - json: 
+        field: "message"
+    - set: 
+        field: "elasticsearch.ingest.pipeline.name"
+        copy_from: "message.ingest.pipelines.pipeline_id"
+    - set: 
+        field: "elasticsearch.node.id"
+        copy_from: "message.node_id"
+    - set: 
+        field: "elasticsearch.ingest.pipeline.total.count"
+        copy_from: "message.ingest.pipelines.count"
+    - set: 
+        field: "elasticsearch.ingest.pipeline.total.current"
+        copy_from: "message.ingest.pipelines.current"
+    - set: 
+        field: "elasticsearch.ingest.pipeline.total.failed"
+        copy_from: "message.ingest.pipelines.failed"
+    - set: 
+        field: "elasticsearch.ingest.pipeline.total.cpu_time"
+        copy_from: "message.ingest.pipelines.time_in_millis"
+    - remove: 
+        field: "message"
