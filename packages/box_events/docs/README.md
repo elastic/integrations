@@ -4,9 +4,9 @@ The Box Events integration allows you to monitor [Box](https://app.box.com/). Bo
 
 Use the Box Events integration to ingest the activity logs which are generated each time files are uploaded, accessed, or modified in Box, enabling you to monitor data movement to the cloud. If you have [opted-in to receive additional events](https://developer.box.com/guides/events/event-triggers/shield-alert-events/), the Box Events integration will ingest context-rich alerts on potential threats, such as compromised accounts and data theft, based on anomalous user behavior. Combining this data with other events can lead to the detection of data exfiltration attacks.
 
-Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference `box_events.events` when troubleshooting an issue.
+Then visualize that data in {kib}, create alerts to notify you if something goes wrong, and reference `box_events.events` when troubleshooting an issue.
 
-For example, if you wanted to set up notifications for incoming Box Shield alerts you could verify that this data is being ingested from the `Box Shield Alerts` Dashboard. Then, go to `Alerts and Insights / Rules and Connectors` in the sidebar and set up a Rule using an Elasticsearch Query against index `*box*alert*` with time field `@timestamp` and DSL 
+For example, if you wanted to set up notifications for incoming Box Shield alerts you could verify that this data is being ingested from the `Box Shield Alerts` Dashboard. Then, go to `Alerts and Insights / Rules and Connectors` in the sidebar and set up a Rule using an {es} Query against index `*box*alert*` with time field `@timestamp` and DSL 
 
 ```
 {
@@ -18,7 +18,7 @@ For example, if you wanted to set up notifications for incoming Box Shield alert
 }
 ```
 
-to match incoming box alerts during your desired timeframe and notify you using your preferred connector.
+to match incoming box alerts during your desired time-frame and notify you using your preferred connector.
 
 ## Compatibility
 
