@@ -1,4 +1,5 @@
-FROM docker.elastic.co/elastic-agent/elastic-agent-complete:8.3.0
+ARG ES_AGENT_IMAGE=docker.elastic.co/elastic-agent/elastic-agent-complete:8.3.0
+FROM $ES_AGENT_IMAGE
 USER root
 RUN apt-get update && apt-get -y install \
     libaio1 \
