@@ -284,6 +284,7 @@
             {
                 "embeddableConfig": {
                     "enhancements": {},
+                    "hidePanelTitles": false,
                     "savedVis": {
                         "data": {
                             "aggs": [
@@ -391,26 +392,207 @@
                     "y": 15
                 },
                 "panelIndex": "14104c32-ddff-40b4-a924-5ca274327cc1",
-                "title": "Activity segmentation by browser/client [Logs Salesforce]",
+                "title": "Activity by browser/client [Logs Salesforce]",
                 "type": "visualization",
                 "version": "8.4.1"
             },
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-26b85139-d8f7-4158-829c-eed584dc6310",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "aa158245-9081-4c2a-a1d0-aca41a26b288",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "26b85139-d8f7-4158-829c-eed584dc6310": {
+                                            "columnOrder": [
+                                                "65546aa1-5590-4703-b806-3b7ca0db4ba0",
+                                                "747231b5-9a00-4095-ba5c-61753b1aa507",
+                                                "ca71c67d-8417-46d4-834d-3d73268f202d",
+                                                "3515b14c-c836-46d3-b3e3-1b27b0eca9d8",
+                                                "5fc80d7b-efe9-4629-8702-584a6dde58d3"
+                                            ],
+                                            "columns": {
+                                                "3515b14c-c836-46d3-b3e3-1b27b0eca9d8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "salesforce.login.request_status: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Request status",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "salesforce.login.request_status"
+                                                },
+                                                "5fc80d7b-efe9-4629-8702-584a6dde58d3": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "salesforce.login.run_time: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Run time (ms)",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "salesforce.login.run_time"
+                                                },
+                                                "65546aa1-5590-4703-b806-3b7ca0db4ba0": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10000 values of _id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "747231b5-9a00-4095-ba5c-61753b1aa507",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10000
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "_id"
+                                                },
+                                                "747231b5-9a00-4095-ba5c-61753b1aa507": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "@timestamp: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Timestamp",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "ca71c67d-8417-46d4-834d-3d73268f202d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "salesforce.login.db_time.total: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "DB total time (ns)",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "salesforce.login.db_time.total"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "aa158245-9081-4c2a-a1d0-aca41a26b288",
+                                        "key": "event.action",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "login-attempt"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.action": "login-attempt"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": "event.dataset: salesforce.login*"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "65546aa1-5590-4703-b806-3b7ca0db4ba0",
+                                        "hidden": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "747231b5-9a00-4095-ba5c-61753b1aa507",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "ca71c67d-8417-46d4-834d-3d73268f202d",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "3515b14c-c836-46d3-b3e3-1b27b0eca9d8",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "5fc80d7b-efe9-4629-8702-584a6dde58d3",
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "26b85139-d8f7-4158-829c-eed584dc6310",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
                     "enhancements": {},
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 28,
-                    "i": "8b648987-21fb-4b71-8d63-0e406180f168",
+                    "h": 24,
+                    "i": "b2b60887-159a-4a2f-a477-eece1cda9620",
                     "w": 48,
                     "x": 0,
                     "y": 30
                 },
-                "panelIndex": "8b648987-21fb-4b71-8d63-0e406180f168",
-                "panelRefName": "panel_8b648987-21fb-4b71-8d63-0e406180f168",
+                "panelIndex": "b2b60887-159a-4a2f-a477-eece1cda9620",
                 "title": "Login events table [Logs Salesforce]",
-                "type": "search",
+                "type": "lens",
                 "version": "8.4.1"
             },
             {
@@ -567,7 +749,7 @@
                     "i": "0e854818-b5d3-4758-b099-04d68167678a",
                     "w": 24,
                     "x": 0,
-                    "y": 58
+                    "y": 54
                 },
                 "panelIndex": "0e854818-b5d3-4758-b099-04d68167678a",
                 "title": "Login success rate [Logs Salesforce]",
@@ -686,7 +868,7 @@
                     "i": "55716712-7e9c-49d5-bbac-903567fa31f0",
                     "w": 24,
                     "x": 24,
-                    "y": 58
+                    "y": 54
                 },
                 "panelIndex": "55716712-7e9c-49d5-bbac-903567fa31f0",
                 "title": "Failed login attempts in past 24 hours [Logs Salesforce]",
@@ -811,7 +993,7 @@
                     "i": "27d96d74-bfe5-4676-84fc-0f7e24594b5a",
                     "w": 24,
                     "x": 0,
-                    "y": 73
+                    "y": 69
                 },
                 "panelIndex": "27d96d74-bfe5-4676-84fc-0f7e24594b5a",
                 "title": "Total Salesforce events over time [Logs Salesforce]",
@@ -829,7 +1011,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "772eaa9a-b4d9-4e96-bef6-d37024ac7090",
+                                "name": "aef9e94f-e863-4b02-9af2-7b1fec38873c",
                                 "type": "index-pattern"
                             }
                         ],
@@ -890,7 +1072,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "772eaa9a-b4d9-4e96-bef6-d37024ac7090",
+                                        "index": "aef9e94f-e863-4b02-9af2-7b1fec38873c",
                                         "key": "event.action",
                                         "negate": false,
                                         "params": {
@@ -939,7 +1121,7 @@
                     "i": "9ea2b92f-5fb6-4a83-b198-5275565a4bd6",
                     "w": 24,
                     "x": 24,
-                    "y": 73
+                    "y": 69
                 },
                 "panelIndex": "9ea2b92f-5fb6-4a83-b198-5275565a4bd6",
                 "title": "Distribution of type of users [Logs Salesforce]",
@@ -951,7 +1133,7 @@
             "pause": false,
             "value": 900000
         },
-        "timeFrom": "now-7d/d",
+        "timeFrom": "now-1d",
         "timeRestore": true,
         "timeTo": "now",
         "title": "[Logs Salesforce] Login Dashboard",
@@ -994,9 +1176,14 @@
             "type": "index-pattern"
         },
         {
-            "id": "salesforce-51d23250-5d8b-11ec-9523-d1b667ac64c0",
-            "name": "8b648987-21fb-4b71-8d63-0e406180f168:panel_8b648987-21fb-4b71-8d63-0e406180f168",
-            "type": "search"
+            "id": "logs-*",
+            "name": "b2b60887-159a-4a2f-a477-eece1cda9620:indexpattern-datasource-layer-26b85139-d8f7-4158-829c-eed584dc6310",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "b2b60887-159a-4a2f-a477-eece1cda9620:aa158245-9081-4c2a-a1d0-aca41a26b288",
+            "type": "index-pattern"
         },
         {
             "id": "logs-*",
@@ -1040,7 +1227,7 @@
         },
         {
             "id": "logs-*",
-            "name": "9ea2b92f-5fb6-4a83-b198-5275565a4bd6:772eaa9a-b4d9-4e96-bef6-d37024ac7090",
+            "name": "9ea2b92f-5fb6-4a83-b198-5275565a4bd6:aef9e94f-e863-4b02-9af2-7b1fec38873c",
             "type": "index-pattern"
         }
     ],
