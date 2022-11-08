@@ -11,7 +11,25 @@ This module has been tested against `Alerts API (v6)`, `Audit Log Events (v3)` a
 ### In order to ingest data from the AWS S3 bucket you must:
 1. Configure the [Data Forwarder](https://docs.vmware.com/en/VMware-Carbon-Black-Cloud/services/carbon-black-cloud-user-guide/GUID-F68F63DD-2271-4088-82C9-71D675CD0535.html) to ingest data into an AWS S3 bucket.
 2. Create an [AWS Access Keys and Secret Access Keys](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
+3. The default value of the "Bucket List Prefix" is listed below. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
 
+  | Data Stream Name  | Bucket List Prefix     |
+  | ----------------- | ---------------------- |
+  | Alert             | alert_logs             |
+  | Endpoint Event    | endpoint_event_logs    |
+  | Watchlist Hit     | watchlist_hit_logs     |
+
+### To collect data from AWS SQS, follow the below steps:
+1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
+2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+  - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
+3. Setup event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
+  - The user has to perform Step 3 for all the data-streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `alert_logs/` for alert data stream.)
+  - For all the event notifications that have been created, select the event type as s3:ObjectCreated:*, select the destination type SQS Queue, and select the queue that has been created in Step 2.
+
+**Note**:
+  - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
+  - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 
 ### In order to ingest data from the APIs you must generate API keys and API Secret Keys:
 1. In Carbon Black Cloud, On the left navigation pane, click **Settings > API Access**.
@@ -74,7 +92,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
@@ -233,7 +251,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
@@ -449,7 +467,7 @@ An example event for `endpoint_event` looks as following:
         }
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "carbon_black_cloud": {
         "endpoint_event": {
@@ -633,7 +651,7 @@ An example event for `endpoint_event` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -696,7 +714,7 @@ An example event for `watchlist_hit` looks as following:
         "version": "8.0.0"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "process": {
         "parent": {
@@ -938,7 +956,7 @@ An example event for `asset_vulnerability_summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
@@ -1031,7 +1049,7 @@ An example event for `asset_vulnerability_summary` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |

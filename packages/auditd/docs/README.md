@@ -35,7 +35,7 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "f386c08a-1dcf-444a-a259-9c33fa001606",
@@ -250,7 +250,7 @@ An example event for `log` looks as following:
 | user.audit.name | Short name or login of the user. | keyword |
 | user.effective.group.id | Unique identifier for the group on the system/platform. | keyword |
 | user.effective.group.name | Name of the group. | keyword |
-| user.effective.id | One or multiple unique identifiers of the user. | keyword |
+| user.effective.id | Unique identifier of the user. | keyword |
 | user.effective.name | Short name or login of the user. | keyword |
 | user.effective.name.text | Multi-field of `user.effective.name`. | match_only_text |
 | user.filesystem.group.id | Unique identifier for the group on the system/platform. | keyword |

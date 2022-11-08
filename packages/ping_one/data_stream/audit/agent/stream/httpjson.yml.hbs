@@ -1,0 +1,54 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url }}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: GET
+request.url: {{api_path}}/v1/environments/{{environment_id}}/activities
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  endpoint_params:
+    grant_type: client_credentials
+request.transforms:
+  - set:
+      target: url.params.limit
+      value: '500'
+  - set:
+      target: url.params.filter
+      value: '[[sprintf "recordedAt gt %q AND recordedAt lt %q" (formatDate (parseDate .cursor.last_recorded_at) "2006-01-02T15:04:05.999Z") (formatDate (now) "2006-01-02T15:04:05.999Z")]]'
+      default: '[[sprintf "recordedAt gt %q AND recordedAt lt %q" (formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02T15:04:05.999Z") (formatDate (now) "2006-01-02T15:04:05.999Z")]]'
+response.pagination:
+  - set:
+      target: url.value
+      value: '[[if index .last_response.body._links "next"]][[.last_response.body._links.next.href]][[else]][[.last_response.terminate_pagination]][[end]]'
+      fail_on_template_error: true
+cursor:
+  last_recorded_at:
+    value: '[[if (eq .last_response.page 1)]][[.first_event.recordedAt]][[end]]'
+response.split:
+  target: body._embedded.activities
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

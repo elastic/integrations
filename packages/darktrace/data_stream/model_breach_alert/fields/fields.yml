@@ -1,0 +1,428 @@
+- name: darktrace.model_breach_alert
+  type: group
+  fields:
+    - name: aianalyst_data
+      type: group
+      fields:
+        - name: related
+          type: long
+        - name: summariser
+          type: keyword
+        - name: uuid
+          type: keyword
+    - name: breach_url
+      type: group
+      description: A link to the specific model breach in the Darktrace Threat Visualizer - the configuration option FQDN must be set for this field to appear.
+      fields:
+        - name: domain
+          type: keyword
+        - name: extension
+          type: keyword
+        - name: fragment
+          type: keyword
+        - name: full
+          type: keyword
+        - name: original
+          type: keyword
+        - name: password
+          type: keyword
+        - name: path
+          type: keyword
+        - name: port
+          type: long
+        - name: query
+          type: keyword
+        - name: scheme
+          type: keyword
+        - name: username
+          type: keyword
+    - name: comment
+      type: group
+      fields:
+        - name: count
+          type: long
+          description: The number of comments made against this breach.
+    - name: creation_time
+      type: date
+      description: The timestamp that the record of the breach was created. This is distinct from the “time” field.
+    - name: device_score
+      type: double
+    - name: device
+      type: group
+      fields:
+        - name: credentials
+          type: keyword
+        - name: did
+          type: long
+          description: The “device id”, a unique identifier.
+        - name: first_seen
+          type: date
+          description: The first time the device was seen on the network.
+        - name: hostname
+          type: keyword
+          description: The current device hostname.
+        - name: ip
+          type: keyword
+          description: The current IP associated with the device.
+        - name: ip6
+          type: keyword
+          description: Current IPv6 address of this device if applicable, otherwise undefined.
+        - name: ips
+          type: group
+          fields:
+            - name: ip
+              type: keyword
+              description: A historic IP associated with the device.
+            - name: sid
+              type: long
+              description: The subnet id for the subnet the IP belongs to.
+            - name: time
+              type: date
+              description: The time the IP was last seen associated with that device in readable format.
+            - name: timems
+              type: date
+              description: The time the IP was last seen associated with that device in epoch time.
+        - name: last_seen
+          type: date
+          description: The last time the device was seen on the network.
+        - name: mac_address
+          type: keyword
+          description: The current MAC address associated with the device.
+        - name: sid
+          type: long
+          description: The subnet id for the subnet the device is currently located in.
+        - name: tags
+          type: group
+          fields:
+            - name: data
+              type: group
+              fields:
+                - name: auto
+                  type: boolean
+                - name: color
+                  type: long
+                - name: description
+                  type: keyword
+                - name: visibility
+                  type: keyword
+            - name: expiry
+              type: long
+            - name: is_referenced
+              type: boolean
+            - name: name
+              type: keyword
+            - name: restricted
+              type: boolean
+            - name: thid
+              type: long
+            - name: tid
+              type: long
+        - name: type_label
+          type: keyword
+          description: The device type in readable format.
+        - name: type_name
+          type: keyword
+          description: The device type in system format.
+        - name: vendor
+          type: keyword
+          description: The vendor of the device network card as derived by Darktrace from the MAC address.
+    - name: is_acknowledged
+      type: boolean
+    - name: mitre_techniques
+      type: group
+      description: Any mapped MITRE ATT&CK techniques the model corresponds to.
+      fields:
+        - name: name
+          type: keyword
+        - name: id
+          type: keyword
+    - name: model
+      type: group
+      fields:
+        - name: actions
+          type: group
+          fields:
+            - name: antigena
+              type: group
+              fields:
+                - name: action
+                  type: keyword
+                  description: The action to be performed.
+                - name: duration
+                  type: long
+                  description: The duration in seconds that the antigena action should last for.
+                - name: is_confirm_by_human_operator
+                  type: boolean
+                  description: Whether the action must be confirmed by a human operator, regardless of the global setting for Human Confirmation mode.
+                - name: threshold
+                  type: long
+                  description: The breach score threshold (out of 100) over which antigena will take an action.
+            - name: is_alerting
+              type: boolean
+              description: If true, an alert turned on will be pushed out to external systems if conditions for such alerting are met.
+            - name: is_breach
+              type: boolean
+              description: If true, an alert turned on will be pushed out to external systems if conditions for such alerting are met.
+            - name: is_priority_set
+              type: boolean
+              description: If the priority is to be changed on breach, the numeric value it should become. If no priority change action, a false boolean.
+            - name: is_tag_set
+              type: boolean
+              description: If a tag is to be applied on model breach, a single number or array of the system ID for the tag(s) to be applied. If no tag action, a false boolean.
+            - name: is_type_set
+              type: boolean
+              description: If a change device type action is to be applied on model breach, the numeric system ID for the label to be applied. If no change device type action is applied to the model, a false boolean.
+            - name: model
+              type: boolean
+              description: If true, creates an event in the device’s event log without creating an alert/ model breach in the threat tray.
+        - name: active_times
+          type: group
+          fields:
+            - name: devices
+              type: flattened
+              description: The device ids for devices on the list.
+            - name: tags
+              type: flattened
+              description: A system field.
+            - name: type
+              type: keyword
+              description: 'The type of list: “restrictions” indicates a blacklist, “exclusions” a whitelist.'
+            - name: version
+              type: long
+              description: A system field.
+        - name: behaviour
+          type: keyword
+          description: The score modulation function as set in the model editor.
+        - name: category
+          type: keyword
+          description: The behavior category of the model that was breached.
+        - name: created
+          type: group
+          fields:
+            - name: by
+              type: keyword
+              description: Username that created the model.
+        - name: defeats
+          type: group
+          fields:
+            - name: arguments
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: The value(s) that must match for the defeat to take effect.
+            - name: comparator
+              type: keyword
+              description: The comparator that the value is compared against the create the defeat.
+            - name: filtertype
+              type: keyword
+              description: The filter the defeat is made from.
+            - name: id
+              type: long
+              description: A unique ID for the defeat.
+        - name: delay
+          type: long
+          description: Minimum delay in seconds after a positive-scoring component has fired before the overall model score is calculated. Only applicable in target score models.
+        - name: description
+          type: keyword
+          description: The optional description of the model.
+        - name: edited
+          type: group
+          fields:
+            - name: by
+              type: keyword
+              description: Username that last edited the model.
+            - name: userid
+              type: long
+        - name: in_compliance_behavior_category
+          type: boolean
+          description: Whether the model is in the compliance behavior category.
+        - name: interval
+          type: long
+          description: Where a model contains multiple components, this interval represents the time window in seconds in which all the components should fire for this model to be breached.
+        - name: is_active
+          type: boolean
+          description: Whether the model is enabled or disabled.
+        - name: is_auto_suppress
+          type: boolean
+          description: Whether the model will automatically be suppressed in the case of over-breaching.
+        - name: is_auto_updatable
+          type: boolean
+          description: Whether the model is suitable for auto update.
+        - name: is_auto_update
+          type: boolean
+          description: Whether the model is enabled for auto update.
+        - name: is_sequenced
+          type: boolean
+          description: Whether the components are required to fire in the specified order for the model breach to occur.
+        - name: is_shared_endpoints
+          type: boolean
+          description: For models that contain multiple components that reference an endpoint, this value indicates whether all endpoints should be identical for the model to fire.
+        - name: logic
+          type: group
+          fields:
+            - name: data_component_list
+              type: long
+              description: This will be a list of component ID numbers.
+            - name: data_weighted_component_list
+              type: group
+              description: This model is a weighted type this will be a list of component ID, weight object pairs.
+              fields:
+                - name: cid
+                  type: long
+                - name: weight
+                  type: long
+            - name: target_score
+              type: long
+            - name: type
+              type: keyword
+              description: The type of model.
+            - name: version
+              type: long
+              description: A number representing the version of model logic.
+        - name: modified
+          type: date
+          description: Timestamp at which the model was last modified, in a readable format.
+        - name: name
+          type: keyword
+          description: Name of the model that was breached.
+        - name: phid
+          type: long
+          description: The model “policy history” id. Increments when the model is modified.
+        - name: pid
+          type: long
+          description: The “policy id” of the model that was breached.
+        - name: priority
+          type: long
+          description: The model’s priority affects the strength with which it breaches (0-5 scale).
+        - name: tags
+          type: keyword
+          description: A list of tags that have been applied to this model in the Threat Visualizer model editor.
+        - name: throttle
+          type: long
+          description: For an individual device, this is the value in seconds for which this model will not fire again.
+        - name: uuid
+          type: keyword
+          description: A unique ID that is generated on creation of the model.
+        - name: version
+          type: long
+          description: The version of the model. Increments on each edit.
+    - name: pb_score
+      type: double
+      description: The model breach score, represented by a value between 0 and 1.
+    - name: pbid
+      type: long
+      description: The “policy breach ID” of the model breach.
+    - name: score
+      type: double
+      description: The model breach score, represented by a value between 0 and 1.
+    - name: time
+      type: date
+      description: The timestamp when the record was created in epoch time.
+    - name: triggered_components
+      type: group
+      fields:
+        - name: cbid
+          type: long
+          description: The “component breach id”. A unique identifier for the component breach.
+        - name: chid
+          type: long
+          description: The “component history id”. Increments when the component is edited.
+        - name: cid
+          type: long
+          description: The “component id”. A unique identifier.
+        - name: interval
+          type: long
+          description: The timeframe in seconds within which the threshold must be satisfied.
+        - name: logic
+          type: group
+          fields:
+            - name: data
+              type: text
+              description: It representing the logical relationship between component filters. Each filter is given an alphabetical reference and the contents of this field describe the relationship between those filters.
+            - name: version
+              type: keyword
+              description: The version of the component logic.
+        - name: metric
+          type: group
+          fields:
+            - name: label
+              type: keyword
+              description: The metric which data is returned for in readable format.
+            - name: mlid
+              type: long
+              description: The “metric logic” id - unique identifier.
+            - name: name
+              type: keyword
+              description: The metric which data is returned for in system format.
+        - name: size
+          type: long
+          description: The size of the value that was compared in the component.
+        - name: threshold
+          type: long
+          description: The threshold value that the size must exceed for the component to breach.
+        - name: time
+          type: date
+          description: A timestamp in Epoch time at which the components were triggered.
+        - name: triggered_filters
+          type: group
+          fields:
+            - name: arguments
+              type: group
+              fields:
+                - name: value
+                  type: keyword
+                  description: The value the filtertype should be compared against (using the specified comparator) to create the filter.
+            - name: cfid
+              type: long
+              description: The ‘component filter id’. A unique identifier for the filter as part of a the component.
+            - name: comparator_type
+              type: keyword
+              description: The comparator. A full list of comparators available for each filtertype can be found on the /filtertypes endpoint.
+            - name: filter_type
+              type: keyword
+              description: The filtertype that is used in the filter. A full list of filtertypes can be found on the /filtertypes endpoint.
+            - name: id
+              type: keyword
+              description: A filter that is used in the component logic. All filters are given alphabetical identifiers. Display filters - those that appear in the breach notification - can be identified by a lowercase ‘d’ and a numeral.
+            - name: trigger
+              type: group
+              fields:
+                - name: tag
+                  type: group
+                  fields:
+                    - name: data
+                      type: group
+                      fields:
+                        - name: auto
+                          type: boolean
+                        - name: color
+                          type: long
+                        - name: description
+                          type: keyword
+                        - name: visibility
+                          type: keyword
+                    - name: expiry
+                      type: long
+                      description: nan
+                    - name: isReferenced
+                      type: boolean
+                      description: nan
+                    - name: name
+                      type: keyword
+                      description: nan
+                    - name: restricted
+                      type: boolean
+                      description: nan
+                    - name: thid
+                      type: long
+                      description: nan
+                    - name: tid
+                      type: long
+                      description: nan
+                - name: value
+                  type: keyword
+                  description: The actual value that triggered the filter.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.
