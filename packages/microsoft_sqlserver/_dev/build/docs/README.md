@@ -59,6 +59,8 @@ See: [View the SQL Server error log in SQL Server Management Studio](https://doc
 
 Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
 
+The feature `merge_results` has been introduced in 8.4 beats which create a single event by combining the metrics together in a single event. See [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event) for details.
+
 See: [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15)
 
 ### transaction_log metrics
