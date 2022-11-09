@@ -216,13 +216,8 @@ An example event for `consumergroup` looks as following:
     },
     "kafka": {
         "consumergroup": {
-            "topic": "messages",
             "error": {
                 "code": 0
-            },
-            "broker": {
-                "id": 0,
-                "address": "kafka-01:9092"
             },
             "id": "console-consumer-99447",
             "offset": -1,
@@ -232,7 +227,6 @@ An example event for `consumergroup` looks as following:
                 "id": "consumer-console-consumer-99447-1",
                 "host": "127.0.0.1"
             },
-            "partition": 0,
             "meta": ""
         },
         "broker": {
@@ -347,17 +341,9 @@ An example event for `partition` looks as following:
             "id": 0,
             "topic_id": "0-messages",
             "topic_broker_id": "0-messages-0",
-            "topic": {
-                "name": "messages"
-            },
-            "broker": {
-                "id": 0,
-                "address": "kafka-01:9092"
-            },
             "partition": {
                 "is_leader": true,
                 "insync_replica": true,
-                "id": 0,
                 "leader": 0,
                 "replica": 0
             }
