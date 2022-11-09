@@ -204,7 +204,7 @@ An example event for `database_audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "e9035b3c-b485-47ea-a7a7-f092698110a8",
