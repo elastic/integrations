@@ -9,20 +9,20 @@ streams:
       - name: interval
         type: text
         title: Interval
-        description: Duration between requests to the API.
+        description: This sets the interval between requests to the Target Service, for example `300s` will send a request every 300 seconds. Events will be returned in batches of up to 100, with successive calls on expiry of the configured `interval` so you may wish to specify a lower interval when a substantial number of events are expected, however, we suggest to consider bandwidth when using lower settings
         multi: false
         required: true
         show_user: true
         default: 300s
       - name: stream_type
-        type: text
-        title: Stream Type
-        description: >-
-          To retrieve events for the entire enterprise, set the stream_type to admin_logs_streaming for live monitoring of new events, or admin_logs for querying across historical events. The user making the API call will need to have admin privileges, and the application will need to have the scope manage enterprise properties checked.
-        multi: false
         required: true
         show_user: true
-        default: admin_logs
+        title: Stream Type
+        description: >-
+          To retrieve events for a single user, set stream type to `all` (default). To select only events that may cause file tree changes such as file updates or collaborations, use `changes`. To select a subset of `changes` for synced folders, use `sync`. To retrieve events for the entire enterprise, set the stream_type to `admin_logs_streaming` for live monitoring of new events, or `admin_logs` for querying across historical events.
+        type: text
+        multi: false
+        default: all
       - name: preserve_original_event
         required: true
         show_user: true
