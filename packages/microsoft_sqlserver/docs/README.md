@@ -59,6 +59,8 @@ See: [View the SQL Server error log in SQL Server Management Studio](https://doc
 
 Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
 
+The feature `merge_results` has been introduced in 8.4 beats which create a single event by combining the metrics together in a single event. See [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event) for details.
+
 See: [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15)
 
 ### transaction_log metrics
@@ -344,13 +346,13 @@ An example event for `performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-08T13:35:05.558Z",
+    "@timestamp": "2022-11-04T12:33:59.171Z",
     "agent": {
-        "ephemeral_id": "16ad2de8-8ba3-496f-98d1-cbe19441c168",
-        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
+        "ephemeral_id": "54815e19-bc14-40d2-b1e0-c16234963b52",
+        "id": "bd4366c7-33ba-4d56-8c63-fc6a15c98c17",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "cloud": {
         "account": {},
@@ -376,36 +378,37 @@ An example event for `performance` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
-        "snapshot": true,
-        "version": "8.3.0"
+        "id": "bd4366c7-33ba-4d56-8c63-fc6a15c98c17",
+        "snapshot": false,
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.performance",
-        "duration": 7151724,
-        "ingested": "2022-06-08T13:35:06Z",
+        "duration": 42729100,
+        "ingested": "2022-11-04T12:34:00Z",
         "module": "sql"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.18.0.4"
+            "172.18.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-AC-12-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.16.3-microsoft-standard-WSL2",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -414,11 +417,29 @@ An example event for `performance` looks as following:
     },
     "mssql": {
         "metrics": {
+            "active_temp_tables": 0,
+            "batch_requests_per_sec": 59,
+            "buffer_cache_hit_ratio": 990,
+            "buffer_checkpoint_pages_per_sec": 105,
+            "buffer_database_pages": 2215,
+            "buffer_page_life_expectancy": 18,
+            "buffer_target_pages": 2408448,
+            "compilations_per_sec": 81,
+            "dynamic_counter": {
+                "name": "Memory Grants Pending                                                                                                           ",
+                "value": 0
+            },
+            "lock_waits_per_sec": 6,
+            "logins_per_sec": 18,
+            "logouts_per_sec": 17,
+            "page_splits_per_sec": 9,
+            "re_compilations_per_sec": 0,
+            "transactions": 0,
             "user_connections": 1
         }
     },
     "service": {
-        "address": "elastic-package-service-microsoft_sqlserver-1:1433",
+        "address": "elastic-package-service_microsoft_sqlserver_1",
         "type": "sql"
     }
 }
