@@ -92,7 +92,7 @@ An example event for `audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
@@ -251,7 +251,7 @@ An example event for `alert` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
@@ -467,7 +467,7 @@ An example event for `endpoint_event` looks as following:
         }
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "carbon_black_cloud": {
         "endpoint_event": {
@@ -651,7 +651,7 @@ An example event for `endpoint_event` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -714,7 +714,7 @@ An example event for `watchlist_hit` looks as following:
         "version": "8.0.0"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "process": {
         "parent": {
@@ -956,7 +956,7 @@ An example event for `asset_vulnerability_summary` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
@@ -1049,7 +1049,7 @@ An example event for `asset_vulnerability_summary` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |

@@ -1,7 +1,5 @@
 # Infoblox BloxOne DDI
 
-## Overview
-
 The [Infoblox BloxOne DDI](https://www.infoblox.com/products/bloxone-ddi/) integration allows you to monitor DNS, DHCP and IP address management activity. DDI is the foundation of core network services that enables all communications over an IP-based network.
 
 Use the Infoblox BloxOne DDI integration to collects and parses data from the REST APIs and then visualize that data in Kibana.
@@ -27,7 +25,7 @@ This module has been tested against `Infoblox BloxOne DDI API (v1)`.
 ### To collect data from Infoblox BloxOne DDI APIs, the user must have API Key. To create an API key follow the below steps:
 
 1. Log on to the Cloud Services Portal.
-2. Go to **<User_Name> -> User Profile**.
+2. Go to **\<User_Name> -> User Profile**.
 3. Go to **User API Keys** page.
 4. Click **Create** to create a new API key. Specify the following:
     - **Name**: Specify the name of the key.
@@ -75,7 +73,7 @@ An example event for `dhcp_lease` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "40a09f39-a5b9-4b21-8605-6f6e9cd36138",
@@ -257,7 +255,7 @@ An example event for `dns_config` looks as following:
         }
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "40a09f39-a5b9-4b21-8605-6f6e9cd36138",
@@ -1285,7 +1283,7 @@ An example event for `dns_data` looks as following:
         }
     },
     "ecs": {
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "40a09f39-a5b9-4b21-8605-6f6e9cd36138",
