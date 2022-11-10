@@ -346,6 +346,7 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.esa.final_action_details |  | text |
 | cisco_secure_email_gateway.log.esa.friendly_from |  | keyword |
 | cisco_secure_email_gateway.log.esa.graymail_verdict |  | keyword |
+| cisco_secure_email_gateway.log.esa.helo.domain |  | keyword |
 | cisco_secure_email_gateway.log.esa.helo.ip |  | ip |
 | cisco_secure_email_gateway.log.esa.injection_connection_id |  | keyword |
 | cisco_secure_email_gateway.log.esa.mail_auto_remediation_action |  | text |
