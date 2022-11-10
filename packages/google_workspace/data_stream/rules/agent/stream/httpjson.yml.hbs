@@ -1,4 +1,4 @@
-config_version: '2'
+config_version: "2"
 interval: {{interval}}
 auth.oauth2.provider: google
 auth.oauth2.google.jwt_file: {{jwt_file}}
@@ -19,7 +19,7 @@ request.timeout: {{http_client_timeout}}
 request.transforms:
   - set:
       target: url.params.startTime
-      value: '[[if eq .last_response.page 0]][[.cursor.last_execution_datetime]][[end]]'
+      value: '[[.cursor.last_execution_datetime]]'
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
 response.split:
   target: body.items
@@ -33,11 +33,28 @@ response.pagination:
       fail_on_template_error: true
   - set:
       target: url.params.pageToken
-      value: '[[if index .last_response.body "nextPageToken"]][[.last_response.body.nextPageToken]][[end]]'
+      value: >-
+        [[- if index .last_response.body "nextPageToken" -]]
+          [[- .last_response.body.nextPageToken -]]
+        [[- end -]]
       fail_on_template_error: true
 cursor:
   last_execution_datetime:
-    value: '[[formatDate now]]'
+    value: >-
+      [[- $time := .last_event.id.time -]]
+      [[- if not (parseDate $time "RFC3339").IsZero -]]
+        [[- $time -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05") -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05Z").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05Z") -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05.999Z").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05.999Z") -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05 MST").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05 MST") -]]
+      [[- else -]]
+        [[- formatDate now -]]
+      [[- end -]]
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

@@ -703,9 +703,9 @@ An example event for `rules` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-08T12:07:08.647Z",
+    "@timestamp": "2022-11-09T20:20:24.760Z",
     "agent": {
-        "ephemeral_id": "b27b69a4-a371-4555-99b1-8ea0dee05e98",
+        "ephemeral_id": "3dc6d078-b3ef-4a6f-b157-653c84fc2200",
         "id": "028e4d41-c14a-49b1-90be-56ac7eeebf3c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
@@ -727,10 +727,10 @@ An example event for `rules` looks as following:
     "event": {
         "action": "rule_match",
         "agent_id_status": "verified",
-        "created": "2022-11-08T12:07:08.647Z",
+        "created": "2022-11-09T20:20:24.760Z",
         "dataset": "google_workspace.rules",
         "id": "1",
-        "ingested": "2022-11-08T12:07:12Z",
+        "ingested": "2022-11-09T20:20:28Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":1},\"events\":{\"name\":\"rule_match\",\"parameters\":[{\"boolValue\":\"true\",\"name\":\"has_alert\"},{\"name\":\"actor_ip_address\",\"value\":\"127.0.0.0\"},{\"intValue\":\"1234\",\"name\":\"resource_recipients_omitted_count\"},{\"multiValue\":[\"managers\"],\"name\":\"rule_name\"},{\"multiIntValue\":[\"12\"],\"name\":\"rule_id\"}],\"type\":\"rule_match_type\"},\"id\":{\"applicationName\":\"rules\",\"customerId\":\"1\",\"time\":\"2020-10-02T15:00:00Z\",\"uniqueQualifier\":1},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "rules"
@@ -874,30 +874,30 @@ An example event for `rules` looks as following:
 | google_workspace.actor.type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
 | google_workspace.etag | ETag of the entry. | keyword |
 | google_workspace.event.name | Name of the event. This is the specific name of the activity reported by the API. And each eventName is related to a specific Google Workspace service or feature which the API organizes into types of events. For eventName request parameters in general:   If no eventName is given, the report returns all possible instances of an eventName.   When you request an eventName, the API's response returns all activities which contain that eventName. It is possible that the returned activities will have other eventName properties in addition to the one requested. For more information about eventName properties, see the list of event names for various applications above in applicationName. | keyword |
-| google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list. | keyword |
+| google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
 | google_workspace.id.customer.id | The unique identifier for a Google Workspace account. | keyword |
 | google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
 | google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
 | google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
-| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
-| google_workspace.rules.actions | List of actions taken. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.actions | List of actions taken. For a list of possible values refer to `actions` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#rule_match). | keyword |
 | google_workspace.rules.actor_ip_address | IP of the entity who was responsible for the original event which triggered the rule. | ip |
-| google_workspace.rules.application | Name of the application to which the flagged item belongs. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.application | Name of the application to which the flagged item belongs. For a list of possible values refer to `application` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#rule_match). | keyword |
 | google_workspace.rules.conference_id | The unique identifier of a Google Meet conference. | keyword |
-| google_workspace.rules.data_source | Source of the data. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.data_source | Source of the data. For a list of possible values refer to `data_source` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#rule_trigger). | keyword |
 | google_workspace.rules.device.id | ID of the device on which the action was triggered. | keyword |
-| google_workspace.rules.device.type | Type of device referred to by device ID. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.device.type | Type of device referred to by device ID. For a list of possible values refer to `device_type` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
 | google_workspace.rules.drive_shared_drive_id | Shared drive Id to which the drive item belongs, if applicable. | keyword |
 | google_workspace.rules.evaluation_context | Evaluation metadata, such as contextual messages used in a rule evaluation. | flattened |
 | google_workspace.rules.has_alert | Whether or not the triggered rule has alert enabled. | boolean |
-| google_workspace.rules.has_content_match | Whether the resource has content which matches the criteria in the rule. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | boolean |
+| google_workspace.rules.has_content_match | Whether the resource has content which matches the criteria in the rule. For a list of possible values refer to `has_content_match` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#rule_match). | boolean |
 | google_workspace.rules.id | Unique identifier for a rule. Rules are created by admins in Google Workspace. | keyword |
 | google_workspace.rules.matched.detectors | A list of detectors that matched against the resource. | flattened |
 | google_workspace.rules.matched.templates | List of content detector templates that matched. | keyword |
 | google_workspace.rules.matched.threshold | Threshold that matched in the rule. | keyword |
-| google_workspace.rules.matched.trigger | Trigger of the rule evaluation: email sent or received, document shared. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.matched.trigger | Trigger of the rule evaluation: email sent or received, document shared. For a list of possible values refer to `matched_trigger` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#rule_trigger). | keyword |
 | google_workspace.rules.mobile_device_type | Type of device on which rule was applied. | keyword |
 | google_workspace.rules.mobile_ios_vendor_id | iOS Vendor Id of device on which rule was applied, if applicable. | keyword |
 | google_workspace.rules.name | Name of the rule. | keyword |
@@ -907,15 +907,15 @@ An example event for `rules` looks as following:
 | google_workspace.rules.resource.recipients | A list of users that a Drive document or an email message was shared with when the rule was triggered. | keyword |
 | google_workspace.rules.resource.recipients_omitted_count | The number of resource recipients omitted due to exceeding the size limit. | long |
 | google_workspace.rules.resource.title | Title of the resource which matched the rule: email subject, or document title. | keyword |
-| google_workspace.rules.resource.type | Type of the rule. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.resource.type | Type of the rule. For a list of possible values refer to `resource_type` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
 | google_workspace.rules.resource_name | Name of the resource which matched the rule. | keyword |
-| google_workspace.rules.scan_type | Scan mode for the rule evaluation. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
-| google_workspace.rules.severity | Severity of violating a rule. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.scan_type | Scan mode for the rule evaluation. For a list of possible values refer to `scan_type` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
+| google_workspace.rules.severity | Severity of violating a rule. For a list of possible values refer to to `severity` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
 | google_workspace.rules.space.id | ID of the space where the rule was triggered. | keyword |
-| google_workspace.rules.space.type | Type of space referred to by the space ID. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.space.type | Type of space referred to by the space ID. For a list of possible values refer to `space_type` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
 | google_workspace.rules.suppressed_actions | A list of actions that were not taken due to other actions with higher priority. | flattened |
 | google_workspace.rules.triggered_actions | A list of actions that were taken as a consequence of the rule being triggered. | flattened |
-| google_workspace.rules.type | Type of the rule. For a list of possible values refer to https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules. | keyword |
+| google_workspace.rules.type | Type of the rule. For a list of possible values refer to `rule_type` in the [event details table](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/rules#action_complete). | keyword |
 | google_workspace.rules.update_time_usec | Update time (microseconds since epoch) indicating the version of rule which is used. | date |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
