@@ -1161,6 +1161,38 @@ intelligence data matches.
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | tags | List of keywords used to tag each event. | keyword |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
+| threat.indicator.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| threat.indicator.as.organization.name | Organization name. | keyword |
+| threat.indicator.as.organization.name.text | Multi-field of `threat.indicator.as.organization.name`. | match_only_text |
+| threat.indicator.email.address | Identifies a threat indicator as an email address (irrespective of direction). | keyword |
+| threat.indicator.file.name | Name of the file including the extension, without the directory. | keyword |
+| threat.indicator.geo.city_name | City name. | keyword |
+| threat.indicator.geo.continent_name | Name of the continent. | keyword |
+| threat.indicator.geo.country_iso_code | Country ISO code. | keyword |
+| threat.indicator.geo.country_name | Country name. | keyword |
+| threat.indicator.geo.location | Longitude and latitude. | geo_point |
+| threat.indicator.geo.region_iso_code | Region ISO code. | keyword |
+| threat.indicator.geo.region_name | Region name. | keyword |
+| threat.indicator.geo.timezone | The time zone of the location, such as IANA time zone name. | keyword |
+| threat.indicator.ip | Identifies a threat indicator as an IP address (irrespective of direction). | ip |
+| threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
+| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
+| threat.indicator.url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
+| threat.indicator.url.fragment | Portion of the url after the `#`, such as "top". The `#` is not part of the fragment. | keyword |
+| threat.indicator.url.full | If full URLs are important to your use case, they should be stored in `url.full`, whether this field is reconstructed or present in the event source. | wildcard |
+| threat.indicator.url.full.text | Multi-field of `threat.indicator.url.full`. | match_only_text |
+| threat.indicator.url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
+| threat.indicator.url.original.text | Multi-field of `threat.indicator.url.original`. | match_only_text |
+| threat.indicator.url.password | Password of the request. | keyword |
+| threat.indicator.url.path | Path of the request, such as "/search". | wildcard |
+| threat.indicator.url.port | Port of the request, such as 443. | long |
+| threat.indicator.url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
+| threat.indicator.url.registered_domain | The highest registered url domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
+| threat.indicator.url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
+| threat.indicator.url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
+| threat.indicator.url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (http://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| threat.indicator.url.username | Username of the request. | keyword |
 | zeek.intel.file_desc | Frequently files can be described to give a bit more context. If the $f field is provided this field will be automatically filled out. | keyword |
 | zeek.intel.file_mime_type | A mime type if the intelligence hit is related to a file. If the $f field is provided this will be automatically filled out. | keyword |
 | zeek.intel.fuid | If a file was associated with this intelligence hit, this is the uid for the file. | keyword |

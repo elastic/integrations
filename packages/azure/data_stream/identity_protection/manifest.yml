@@ -1,0 +1,44 @@
+type: logs
+title: Azure AD Identity Protection Logs
+release: beta
+streams:
+  - input: "azure-eventhub"
+    enabled: false
+    template_path: "azure-eventhub.yml.hbs"
+    title: "Azure Identity Protection Logs"
+    description: "Collect Azure AD Identity Protection Logs using azure-eventhub input"
+    vars:
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: storage_account_container
+        type: text
+        title: Storage Account Container
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The storage account container where the integration stores the checkpoint data for the consumer group. It is an advanced option to use with extreme care. You MUST use a dedicated storage account container for each Azure log type (activity, sign-in, audit logs, and others). DO NOT REUSE the same container name for more than one Azure log type. See [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names) for details on naming rules from Microsoft. The integration generates a default container name if not specified.
+
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - azure-identity-protection-logs
+          - forwarded
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

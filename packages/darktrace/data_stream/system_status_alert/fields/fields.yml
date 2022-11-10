@@ -1,0 +1,70 @@
+- name: darktrace.system_status_alert
+  type: group
+  fields:
+    - name: acknowledge_timeout
+      type: keyword
+      description: When acknowledgement of the alert expires. As alerts are sent externally on creation before acknowledgement is possible, this will be null in almost all cases.
+    - name: alert_name
+      type: keyword
+      description: A human readable name of the alert type.
+    - name: child_id
+      type: long
+      description: For probes (physical or virtual), the unique ID associated with the probe.
+    - name: hostname
+      type: keyword
+      description: The hostname (if known) of the host experiencing the system alert. An exception exists for disconnection notices, where the hostname will be of the master from which the instance has disconnected.
+    - name: ip_address
+      type: keyword
+      description: The IP of the host experiencing the system alert. An exception exists for disconnection notices, where the IP will be of the master from which the instance has disconnected.
+    - name: last_updated
+      type: date
+      description: A timestamp in epoch time that the system alert itself was updated.
+    - name: last_updated_status
+      type: date
+      description: A timestamp in epoch time that the status of the system alert was last updated globally. A status update is distinct from a update to the alert itself.
+    - name: message
+      type: keyword
+      description: A textual description of the system event that has triggered the alert.
+    - name: name
+      type: keyword
+      description: A system name of the alert type.
+    - name: priority
+      type: double
+      description: The numeric criticality associated with the alert.
+    - name: priority_level
+      type: keyword
+      description: 'The criticality of the alert. This value is calculated from the priority value: 0 - 40 low, 41 - 60 medium, 61 - 80 high, 81 - 100 critical.'
+    - name: status
+      type: keyword
+      description: The current status of the alert. Active alerts are ongoing, acknowledged events are those acknowledged on the System Status page, resolved alerts are system alerts that are no longer ongoing. Alerts will only be sent when alert enters the “active” or “resolved” state.
+    - name: url
+      type: group
+      fields:
+        - name: domain
+          type: keyword
+        - name: extension
+          type: keyword
+        - name: fragment
+          type: keyword
+        - name: full
+          type: keyword
+        - name: original
+          type: keyword
+        - name: password
+          type: keyword
+        - name: path
+          type: keyword
+        - name: port
+          type: long
+        - name: query
+          type: keyword
+        - name: scheme
+          type: keyword
+        - name: username
+          type: keyword
+    - name: uuid
+      type: keyword
+      description: A consistent UUID that can be used to navigate to the specific alert in the Threat Visualizer (https://[instance]/sysstatus/[uuid]). Where an alert is reactivated after resolution due to the issue reoccurring, the UUId will remain consistent across alerts.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

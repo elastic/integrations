@@ -175,7 +175,7 @@ An example event for `log` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "69f5d3be-c31a-4be6-adb6-cb3ed3e50817",
@@ -288,7 +288,7 @@ An example event for `log` looks as following:
 | cef.extensions.aggregationType |  | keyword |
 | cef.extensions.applicationProtocol | Application level protocol, example values are HTTP, HTTPS, SSHv2, Telnet, POP, IMPA, IMAPS, and so on. | keyword |
 | cef.extensions.assetCriticality |  | keyword |
-| cef.extensions.baseEventCount | A count associated with this event. How many times was this same event observed? Count can be omitted if it is 1. | keyword |
+| cef.extensions.baseEventCount | A count associated with this event. How many times was this same event observed? Count can be omitted if it is 1. | long |
 | cef.extensions.bytesIn | Number of bytes transferred inbound, relative to the source to destination relationship, meaning that data was flowing from source to destination. | long |
 | cef.extensions.bytesOut | Number of bytes transferred outbound relative to the source to destination relationship. For example, the byte number of data flowing from the destination to the source. | long |
 | cef.extensions.categoryBehavior | Action or a behavior associated with an event. It's what is being done to the object (ArcSight). | keyword |

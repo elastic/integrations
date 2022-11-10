@@ -11,10 +11,10 @@ pipelines may be added by setting one up in
 ### Ingesting Windows Events via Splunk
 
 This integration offers the ability to seamlessly ingest data from a Splunk Enterprise instance.
-These integrations work by using the [httpjson input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
+These integrations work by using the {{ url "filebeat-input-httpjson" "httpjson input" }} in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
 The raw event is then processed via the Elastic Agent.
 The Splunk search is customizable and the interval between searches is customizable.
-See the [Splunk API integration documentation](https://www.elastic.co/guide/en/observability/current/ingest-splunk.html) for more information.
+See the {{ url "observability-ingest-splunk" "Splunk API integration documentation" }} for more information.
 
 This integration requires Windows Events from Splunk to be in XML format.
 To achieve this, `renderXml` needs to be set to `1` in your [inputs.conf](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.

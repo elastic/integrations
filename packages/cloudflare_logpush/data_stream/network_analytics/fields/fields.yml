@@ -1,0 +1,357 @@
+- name: cloudflare_logpush.network_analytics
+  type: group
+  fields:
+    - name: attack
+      type: group
+      fields:
+        - name: campaign
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Unique identifier of the attack campaign that this packet was a part of, if any.
+        - name: id
+          type: keyword
+          description: Unique identifier of the mitigation that matched the packet, if any.
+    - name: colo
+      type: group
+      fields:
+        - name: country
+          type: keyword
+          description: The country of colo that received the packet (ISO 3166-1 alpha-2).
+        - name: geo_hash
+          type: keyword
+          description: The Geo Hash where the colo that received the packet is located.
+        - name: geo_location
+          type: geo_point
+          description: The latitude and longitude where the colo that received the packet is located.
+        - name: id
+          type: long
+          description: The ID of the colo that received the DNS query.
+        - name: name
+          type: keyword
+          description: The name of the colo that received the DNS query.
+    - name: destination
+      type: group
+      fields:
+        - name: as
+          type: group
+          fields:
+            - name: number
+              type: group
+              fields:
+                - name: description
+                  type: text
+                  description: The ASN description associated with the destination IP of the packet.
+        - name: asn
+          type: long
+          description: The ASN associated with the destination IP of the packet.
+        - name: country
+          type: keyword
+          description: The country where the destination IP of the packet is located.
+        - name: geo_hash
+          type: keyword
+          description: The Geo Hash where the destination IP of the packet is located.
+        - name: geo_location
+          type: geo_point
+          description: The latitude and longitude where the destination IP of the packet is located.
+        - name: ip
+          type: ip
+          description: Value of the Destination Address header field in the IPv4 or IPv6 packet.
+        - name: port
+          type: long
+          description: Value of the Destination Port header field in the TCP or UDP packet.
+    - name: direction
+      type: keyword
+      description: The direction in relation to customer network.
+    - name: gre
+      type: group
+      fields:
+        - name: checksum
+          type: long
+          description: Value of the Checksum header field in the GRE packet.
+        - name: ether
+          type: group
+          fields:
+            - name: type
+              type: long
+              description: Value of the Ethertype header field in the GRE packet.
+        - name: header
+          type: group
+          fields:
+            - name: length
+              type: long
+              description: Length of the GRE packet header, in bytes.
+        - name: key
+          type: long
+          description: Value of the Key header field in the GRE packet.
+        - name: sequence
+          type: group
+          fields:
+            - name: number
+              type: long
+              description: Value of the Sequence Number header field in the GRE packet.
+        - name: version
+          type: long
+          description: Value of the Version header field in the GRE packet.
+    - name: icmp
+      type: group
+      fields:
+        - name: checksum
+          type: long
+          description: Value of the Checksum header field in the ICMP packet
+        - name: code
+          type: long
+          description: Value of the Code header field in the ICMP packet
+        - name: type
+          type: long
+          description: Value of the Type header field in the ICMP packet
+    - name: ip
+      type: group
+      fields:
+        - name: destination
+          type: group
+          fields:
+            - name: subnet
+              type: keyword
+              description: Computed subnet of the Destination Address header field in the IPv4 or IPv6 packet.
+        - name: fragment
+          type: group
+          fields:
+            - name: offset
+              type: long
+              description: Value of the Fragment Offset header field in the IPv4 or IPv6 packet.
+        - name: header
+          type: group
+          fields:
+            - name: length
+              type: long
+              description: Length of the IPv4 or IPv6 packet header, in bytes.
+        - name: more
+          type: group
+          fields:
+            - name: fragments
+              type: long
+              description: Value of the More Fragments header field in the IPv4 or IPv6 packet.
+        - name: protocol
+          type: group
+          fields:
+            - name: name
+              type: text
+              description: Name of the protocol specified by the Protocol header field in the IPv4 or IPv6 packet.
+            - name: value
+              type: long
+              description: Value of the Protocol header field in the IPv4 or IPv6 packet.
+        - name: source
+          type: group
+          fields:
+            - name: subnet
+              type: keyword
+              description: Computed subnet of the Source Address header field in the IPv4 or IPv6 packet.
+        - name: total
+          type: group
+          fields:
+            - name: length
+              type: group
+              fields:
+                - name: buckets
+                  type: long
+                  description: Total length of the IPv4 or IPv6 packet, in bytes, with the last two digits truncated.
+                - name: value
+                  type: long
+                  description: Total length of the IPv4 or IPv6 packet, in bytes.
+        - name: ttl
+          type: group
+          fields:
+            - name: buckets
+              type: long
+              description: Value of the TTL header field in the IPv4 packet or the Hop Limit header field in the IPv6 packet, with the last digit truncated.
+            - name: value
+              type: long
+              description: Value of the TTL header field in the IPv4 packet or the Hop Limit header field in the IPv6 packet.
+    - name: ipv4
+      type: group
+      fields:
+        - name: checksum
+          type: long
+          description: Value of the Checksum header field in the IPv4 packet.
+        - name: dont_fragment
+          type: long
+          description: Value of the Don’t Fragment header field in the IPv4 packet.
+        - name: dscp
+          type: long
+          description: Value of the Differentiated Services Code Point header field in the IPv4 packet.
+        - name: ecn
+          type: long
+          description: Value of the Explicit Congestion Notification header field in the IPv4 packet.
+        - name: identification
+          type: long
+          description: Value of the Identification header field in the IPv4 packet.
+        - name: options
+          type: long
+          description: List of Options numbers included in the IPv4 packet header.
+    - name: ipv6
+      type: group
+      fields:
+        - name: dscp
+          type: long
+          description: Value of the Differentiated Services Code Point header field in the IPv6 packet.
+        - name: ecn
+          type: long
+          description: Value of the Explicit Congestion Notification header field in the IPv6 packet.
+        - name: extension_headers
+          type: text
+          description: List of Extension Header numbers included in the IPv6 packet header.
+        - name: flow_label
+          type: long
+          description: Value of the Flow Label header field in the IPv6 packet.
+        - name: identification
+          type: long
+          description: Value of the Identification extension header field in the IPv6 packet.
+    - name: mitigation
+      type: group
+      fields:
+        - name: reason
+          type: keyword
+          description: Reason for applying a mitigation to the packet, if any.
+        - name: scope
+          type: keyword
+          description: Whether the packet matched a local or global mitigation, if any.
+        - name: system
+          type: keyword
+          description: Which Cloudflare system dropped the packet, if any.
+    - name: outcome
+      type: keyword
+      description: The action that Cloudflare systems took on the packet.
+    - name: protocol_state
+      type: keyword
+      description: State of the packet in the context of the protocol, if any.
+    - name: rule
+      type: group
+      fields:
+        - name: id
+          type: text
+          description: Unique identifier of the rule contained with the Cloudflare L3/4 managed ruleset that this packet matched, if any.
+        - name: set
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Unique identifier of the Cloudflare L3/4 managed ruleset containing the rule that this packet matched, if any.
+            - name: override
+              type: group
+              fields:
+                - name: id
+                  type: text
+                  description: Unique identifier of the rule within the accounts root ddos_l4 phase ruleset which resulted in an override of the default sensitivity or action being applied/evaluated, if any.
+    - name: sample_interval
+      type: long
+      description: The sample interval for this log.
+    - name: source
+      type: group
+      fields:
+        - name: as
+          type: group
+          fields:
+            - name: number
+              type: group
+              fields:
+                - name: description
+                  type: text
+                  description: The ASN description associated with the source IP of the packet.
+        - name: asn
+          type: long
+          description: The ASN associated with the source IP of the packet.
+        - name: country
+          type: keyword
+          description: The country where the source IP of the packet is located.
+        - name: geo_hash
+          type: keyword
+          description: The Geo Hash where the source IP of the packet is located.
+        - name: geo_location
+          type: geo_point
+          description: The latitude and longitude where the source IP of the packet is located.
+        - name: ip
+          type: ip
+          description: Value of the Source Address header field in the IPv4 or IPv6 packet.
+        - name: port
+          type: long
+          description: Value of the Source Port header field in the TCP or UDP packet.
+    - name: tcp
+      type: group
+      fields:
+        - name: acknowledgement_number
+          type: long
+          description: Value of the Acknowledgement Number header field in the TCP packet.
+        - name: checksum
+          type: long
+          description: Value of the Checksum header field in the TCP packet.
+        - name: dataoffset
+          type: long
+          description: Value of the Data Offset header field in the TCP packet.
+        - name: flags
+          type: group
+          fields:
+            - name: string
+              type: text
+              description: Human-readable string representation of the Flags header field in the TCP packet.
+            - name: value
+              type: long
+              description: Value of the Flags header field in the TCP packet.
+        - name: mss
+          type: long
+          description: Value of the MSS option header field in the TCP packet.
+        - name: options
+          type: text
+          description: List of Options numbers included in the TCP packet header.
+        - name: sack
+          type: group
+          fields:
+            - name: blocks
+              type: long
+              description: Value of the SACK Blocks option header in the TCP packet.
+            - name: permitted
+              type: long
+              description: Value of the SACK Permitted option header in the TCP packet.
+        - name: sequence_number
+          type: long
+          description: Value of the Sequence Number header field in the TCP packet.
+        - name: timestamp
+          type: group
+          fields:
+            - name: ecr
+              type: long
+              description: Value of the Timestamp Echo Reply option header in the TCP packet.
+            - name: value
+              type: long
+              description: Value of the Timestamp option header in the TCP packet.
+        - name: urgent_pointer
+          type: long
+          description: Value of the Urgent Pointer header field in the TCP packet.
+        - name: window
+          type: group
+          fields:
+            - name: scale
+              type: long
+              description: Value of the Window Scale option header in the TCP packet.
+            - name: size
+              type: long
+              description: Value of the Window Size header field in the TCP packet.
+    - name: timestamp
+      type: date
+      description: The date and time the event occurred at the edge.
+    - name: udp
+      type: group
+      fields:
+        - name: checksum
+          type: long
+          description: Value of the Checksum header field in the UDP packet.
+        - name: payload_length
+          type: long
+          description: Value of the Payload Length header field in the UDP packet.
+    - name: verdict
+      type: keyword
+      description: The action that Cloudflare systems think should be taken on the packet (pass | drop).
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

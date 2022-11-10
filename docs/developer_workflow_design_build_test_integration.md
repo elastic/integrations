@@ -133,8 +133,47 @@ When the PR is merged, the CI will kick off a build job for the main branch, whi
 the package-storage. It means that it will open a PR to the [Package Storage/snapshot](https://github.com/elastic/package-storage/tree/snapshot/packages) with
 the built integration if only the package version doesn't already exist in the storage (hasn't been released yet).
 
-When you are ready for your changes in the integration to be released, remember to bump up the package version.
+When you are ready for your changes in the integration to be released, remember to bump up the package version (changelog and manifest).
+
 It is up to you, as the package developer, to decide how many changes you want to release in a single version.
 For example, you could implement a change in a PR and bump up the package version in the same PR. Or you could
 implement several changes across multiple PRs and then bump up the package version in the last of these PRs
-or in a separate follow up PR.
+or in a separate follow up PR. As an example, it could be followed this procedure:
+
+1. Add a new version entry in the changelog with the prerelease tag `next`. Example: `2.6.0-next`
+   ```yaml
+   - version: "2.6.0-next"
+     changes:
+       - description: First PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/1
+   - version: "2.5.0"
+   ```
+2. Add the required Pull Requests under this entry:
+   ```yaml
+   - version: "2.6.0-next"
+     changes:
+       - description: First PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/1
+       - description: Second PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/2
+       - description: Third PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/3
+   ```
+3. Once everything is merged, another PR is required to bump up the manifest version and replace the changelog entry to be `2.6.0`:
+   ```yaml
+   - version: "2.6.0"
+     changes:
+       - description: First PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/1
+       - description: Second PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/2
+       - description: Third PR
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/3
+   ```

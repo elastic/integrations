@@ -3,11 +3,8 @@ description: Pipeline for parsing Nginx Ingress Controller access logs. Requires
   geoip and user_agent plugins.
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
-      value: '8.0.0'
+      value: '8.4.0'
   - rename:
       field: message
       target_field: event.original
@@ -20,14 +17,18 @@ processors:
         %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.bytes:long}
         "(-|%{DATA:http.request.referrer})" "(-|%{DATA:user_agent.original})" %{NUMBER:nginx_ingress_controller.access.http.request.length:long}
         %{NUMBER:nginx_ingress_controller.access.http.request.time:double} \[%{DATA:nginx_ingress_controller.access.upstream.name}\]
-        \[%{DATA:nginx_ingress_controller.access.upstream.alternative_name}\] (%{UPSTREAM_ADDRESS}|-)
-        (%{NUMBER:nginx_ingress_controller.access.upstream.response.length:long}|-) (%{NUMBER:nginx_ingress_controller.access.upstream.response.time:double}|-)
-        (%{NUMBER:nginx_ingress_controller.access.upstream.response.status_code:long}|-) %{GREEDYDATA:nginx_ingress_controller.access.http.request.id}
+        \[%{DATA:nginx_ingress_controller.access.upstream.alternative_name}\] (%{UPSTREAM_ADDRESS_LIST:nginx_ingress_controller.access.upstream_address_list}|-)
+        (%{UPSTREAM_RESPONSE_LENGTH_LIST:nginx_ingress_controller.access.upstream.response.length_list}|-) (%{UPSTREAM_RESPONSE_TIME_LIST:nginx_ingress_controller.access.upstream.response.time_list}|-)
+        (%{UPSTREAM_RESPONSE_STATUS_CODE_LIST:nginx_ingress_controller.access.upstream.response.status_code_list}|-) %{GREEDYDATA:nginx_ingress_controller.access.http.request.id}
       pattern_definitions:
         NGINX_HOST: (?:%{IP:destination.ip}|%{NGINX_NOTSEPARATOR:destination.domain})(:%{NUMBER:destination.port})?
         NGINX_NOTSEPARATOR: "[^\t ,:]+"
         NGINX_ADDRESS_LIST: (?:%{IP}|%{WORD})("?,?\s*(?:%{IP}|%{WORD}))*
-        UPSTREAM_ADDRESS: '%{IP:nginx_ingress_controller.access.upstream.ip}(:%{NUMBER:nginx_ingress_controller.access.upstream.port})?'
+        UPSTREAM_ADDRESS_LIST: (?:%{IP}(:%{NUMBER})?)("?,?\s*(?:%{IP}(:%{NUMBER})?))*
+        UPSTREAM_RESPONSE_LENGTH_LIST: (?:%{NUMBER})("?,?\s*(?:%{NUMBER}))*
+        UPSTREAM_RESPONSE_TIME_LIST: (?:%{NUMBER})("?,?\s*(?:%{NUMBER}))*
+        UPSTREAM_RESPONSE_STATUS_CODE_LIST: (?:%{NUMBER})("?,?\s*(?:%{NUMBER}))*
+        IP: (?:\[?%{IPV6}\]?|%{IPV4})
       ignore_missing: true
   - grok:
       field: nginx_ingress_controller.access.info
@@ -35,10 +36,31 @@ processors:
       - '%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}'
       - ""
       ignore_missing: true
-  - remove:
-      field: nginx_ingress_controller.access.info
+  - uri_parts:
+      field: url.original
+      ignore_failure: true
+  - set:
+      field: url.domain
+      value: "{{destination.domain}}"
+      if: ctx.url?.domain == null && ctx.destination?.domain != null
   - split:
       field: nginx_ingress_controller.access.remote_ip_list
+      separator: '"?,?\s+'
+      ignore_missing: true
+  - split:
+      field: nginx_ingress_controller.access.upstream_address_list
+      separator: '"?,?\s+'
+      ignore_missing: true
+  - split:
+      field: nginx_ingress_controller.access.upstream.response.length_list
+      separator: '"?,?\s+'
+      ignore_missing: true
+  - split:
+      field: nginx_ingress_controller.access.upstream.response.time_list
+      separator: '"?,?\s+'
+      ignore_missing: true
+  - split:
+      field: nginx_ingress_controller.access.upstream.response.status_code_list
       separator: '"?,?\s+'
       ignore_missing: true
   - split:
@@ -49,8 +71,114 @@ processors:
       field: source.address
       if: ctx.source?.address == null
       value: ""
+  - set:
+      field: http.request.id
+      value: '{{{nginx_ingress_controller.access.http.request.id}}}'
+      ignore_empty_value: true
+      ignore_failure: true
+  - convert:
+      field: nginx_ingress_controller.access.http.request.length
+      target_field: http.request.bytes
+      type: long
+      ignore_missing: true
   - script:
-      if: ctx.nginx_ingress_controller.access.remote_ip_list.length > 0
+      if: ctx.nginx_ingress_controller?.access?.upstream?.response?.length_list != null && ctx.nginx_ingress_controller.access.upstream.response.length_list.length > 0
+      lang: painless
+      source: >-
+        try {
+          if (ctx.nginx_ingress_controller.access.upstream.response.length_list.length == null) {
+            return;
+          }
+          int last_length = 0;
+          for (def item : ctx.nginx_ingress_controller.access.upstream.response.length_list) {
+            last_length =  Integer.parseInt(item);
+          }
+          ctx.nginx_ingress_controller.access.upstream.response.length = last_length;
+        }
+        catch (Exception e) {
+          ctx.nginx_ingress_controller.access.upstream.response.length = null;
+        }
+  - script:
+      if: ctx.nginx_ingress_controller?.access?.upstream?.response?.time_list != null && ctx.nginx_ingress_controller.access.upstream.response.time_list.length > 0
+      lang: painless
+      source: >-
+        try {
+          if (ctx.nginx_ingress_controller.access.upstream.response.time_list.length == null) {
+            return;
+          }
+          float res_time = 0;
+          for (def item : ctx.nginx_ingress_controller.access.upstream.response.time_list) {
+            res_time = res_time + Float.parseFloat(item);
+          }
+          ctx.nginx_ingress_controller.access.upstream.response.time = res_time;
+        }
+        catch (Exception e) {
+          ctx.nginx_ingress_controller.access.upstream.response.time = null;
+        }
+  - script:
+      if: ctx.nginx_ingress_controller?.access?.upstream?.response?.status_code_list != null && ctx.nginx_ingress_controller.access.upstream.response.status_code_list.length > 0
+      lang: painless
+      source: >-
+        try {
+          if (ctx.nginx_ingress_controller.access.upstream.response.status_code_list.length == null) {
+            return;
+          }
+          int last_status_code;
+          for (def item : ctx.nginx_ingress_controller.access.upstream.response.status_code_list) {
+            last_status_code = Integer.parseInt(item);
+          }
+          ctx.nginx_ingress_controller.access.upstream.response.status_code = last_status_code;
+        }
+        catch (Exception e) {
+          ctx.nginx_ingress_controller.access.upstream.response.status_code = null;
+        }
+  - script:
+      if: ctx.nginx_ingress_controller?.access?.upstream_address_list != null && ctx.nginx_ingress_controller.access.upstream_address_list.length > 0
+      lang: painless
+      source: >-
+        try {
+          if (ctx.nginx_ingress_controller.access.upstream_address_list.length == null) {
+            return;
+          }
+          def last_upstream = "";
+          for (def item : ctx.nginx_ingress_controller.access.upstream_address_list) {
+            last_upstream = item;
+          }
+          
+          ctx.nginx_ingress_controller.access.upstream.address = last_upstream;
+        }
+        catch (Exception e) {
+          ctx.nginx_ingress_controller.access.upstream.address = null;
+        }
+  - grok:
+      field: nginx_ingress_controller.access.upstream.address
+      patterns:
+        - "^%{IPV4:nginx_ingress_controller.access.upstream.ip}:%{NUMBER:nginx_ingress_controller.access.upstream.port}$"
+        - "^\\[%{IPV6:nginx_ingress_controller.access.upstream.ip}\\]:%{NUMBER:nginx_ingress_controller.access.upstream.port}$"
+        - "^%{IPV6NOCOMPRESS:nginx_ingress_controller.access.upstream.ip}:%{NUMBER:nginx_ingress_controller.access.upstream.port}$"
+        - "^%{IPV6:nginx_ingress_controller.access.upstream.ip}%{IPV6PORTSEP}%{NUMBER:nginx_ingress_controller.access.upstream.port}$"
+        - "^%{IPV6:nginx_ingress_controller.access.upstream.ip}%{IPV6PORTSEP}%{POSINT:nginx_ingress_controller.access.upstream.port}$"
+      pattern_definitions:
+        IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+        IPV6PORTSEP: '(?: port |[p#.])'
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: nginx_ingress_controller.access.upstream.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+      - remove:
+          field: nginx_ingress_controller.access.upstream.ip
+  - convert:
+      field: nginx_ingress_controller.access.upstream.port
+      type: long
+      ignore_missing: true
+      on_failure:
+      - remove:
+          field: nginx_ingress_controller.access.upstream.port
+  - script:
+      if: ctx.nginx_ingress_controller?.access?.remote_ip_list != null && ctx.nginx_ingress_controller.access.remote_ip_list.length > 0
       lang: painless
       source: >-
         boolean isPrivate(def dot, def ip) {
@@ -98,17 +226,15 @@ processors:
         }
       params:
         dot: .
-  - remove:
+  - convert:
       field: source.address
-      if: ctx.source.address == null
-  - grok:
-      field: source.address
-      patterns:
-      - ^%{IP:source.ip}$
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
       ignore_failure: true
-  - rename:
-      field: '@timestamp'
-      target_field: event.created
+  - set:
+      copy_from: "@timestamp"
+      field: event.created
   - date:
       field: nginx_ingress_controller.access.time
       target_field: '@timestamp'
@@ -118,8 +244,6 @@ processors:
       - append:
           field: error.message
           value: '{{ _ingest.on_failure_message }}'
-  - remove:
-      field: nginx_ingress_controller.access.time
   - user_agent:
       field: user_agent.original
       ignore_missing: true
@@ -164,14 +288,52 @@ processors:
       field: related.ip
       value: "{{source.ip}}"
       if: "ctx?.source?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.ip
       value: "{{destination.ip}}"
       if: "ctx?.destination?.ip != null"
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      value: "{{nginx_ingress_controller.access.upstream.ip}}"
+      if: "ctx?.nginx_ingress_controller?.access.upstream?.ip != null"
+      allow_duplicates: false
   - append:
       field: related.user
       value: "{{user.name}}"
       if: "ctx?.user?.name != null"
+      allow_duplicates: false
+  - remove:
+      field:
+        - nginx_ingress_controller.access.time
+        - nginx_ingress_controller.access.info
+        - nginx_ingress_controller.access.upstream.address
+      ignore_missing: true
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null);
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+        }
+        handleMap(ctx);
   - remove:
       field: event.original
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"

@@ -1,0 +1,38 @@
+title: Couchbase XDCR Metrics
+type: metrics
+streams:
+  - input: http/metrics
+    template_path: stream.yml.hbs
+    title: Couchbase XDCR metrics
+    description: Collect Couchbase XDCR metrics.
+    vars:
+      - name: buckets
+        type: text
+        title: Buckets
+        multi: true
+        required: true
+        show_user: true
+        description: "Bucket names to fetch metrics from (example: beer-sample)."
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - forwarded
+          - couchbase-xdcr
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

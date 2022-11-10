@@ -1,0 +1,14 @@
+metricsets: ["query"]
+period: {{period}}
+hosts:
+{{#each hosts}}
+  - {{this}}
+{{/each}}
+raw_data.enabled: true
+merge_results: true
+driver: "oracle"
+sql_queries: 
+  - query: select name, value from V$PGASTAT where name in ('aggregate PGA auto target','global memory bound', 'total PGA allocated', 'total PGA used for auto workareas', 'total PGA inuse', 'maximum PGA allocated', 'total freeable PGA memory', 'cache hit percentage', 'aggregate PGA target parameter')
+    response_format: variables
+  - query: select 'sga free memory' as NAME, sum(decode(name,'free memory',bytes)) as VALUE from v$sgastat where pool = 'shared pool' union select 'sga total memory' as NAME, sum(bytes) as VALUE from v$sgastat where pool = 'shared pool'
+    response_format: variables

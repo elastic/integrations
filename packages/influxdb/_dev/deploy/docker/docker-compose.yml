@@ -1,0 +1,12 @@
+version: '3'
+services:
+  influxdb:
+    container_name: elastic-package-service_influxdb_1
+    build: .
+    command: bash -c "influxd 2>&1 | tee -a /var/log/influxdb/influxdb.log"
+    env_file:
+      - 'env.influxdb'
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/var/log/influxdb/
+    ports:
+      - 8086

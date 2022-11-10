@@ -6,13 +6,13 @@ This package works with Kibana 8.3.0 and later.
 
 ## Kibana logs
 
-The Kibana integration collects logs from [Kibana](https://www.elastic.co/guide/en/kibana/current/introduction.html) instance.
+The Kibana integration collects logs from {{ url "kibana-introduction" "Kibana" }} instance.
 
 ### Logs
 
 #### Audit
 
-Audit logs collects the [Kibana audit logs](https://www.elastic.co/guide/en/kibana/current/security-settings-kb.html).
+Audit logs collects the {{ url "kibana-security-settings" "Kibana audit logs" }}.
 
 {{event "kibana_audit"}}
 
@@ -20,7 +20,7 @@ Audit logs collects the [Kibana audit logs](https://www.elastic.co/guide/en/kiba
 
 #### Log
 
-Log collects the [Kibana logs](https://www.elastic.co/guide/en/kibana/current/logging-configuration.html).
+Log collects the {{ url "kibana-logging-configuration" "Kibana logs" }}.
 
 {{event "kibana_log"}}
 

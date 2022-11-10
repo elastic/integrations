@@ -1,0 +1,39 @@
+title: "Istio access logs"
+type: logs
+release: experimental
+streams:
+  - input: filestream
+    title: Collect Istio access logs
+    description: Collect Istio access logs either in text or json format
+    vars:
+      - name: paths
+        type: text
+        required: true
+        show_user: true
+        title: Istio container log path
+        multi: true
+        default:
+          - /var/log/containers/*${kubernetes.container.id}.log
+      - name: symlinks
+        type: bool
+        title: Use Symlinks
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: preserve_original_event
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: condition
+        title: Condition
+        description: Condition to filter when to apply this datastream
+        type: text
+        multi: false
+        required: true
+        show_user: true
+        default: ${kubernetes.container.name} == 'istio-proxy'

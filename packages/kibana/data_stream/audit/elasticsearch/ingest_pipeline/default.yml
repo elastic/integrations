@@ -1,22 +1,24 @@
 ---
 description: Pipeline for parsing Kibana audit logs
 processors:
-- set:
-    field: event.ingested
-    value: '{{_ingest.timestamp}}'
-- rename:
-    field: '@timestamp'
-    target_field: event.created
-- pipeline:
-    name: '{{ IngestPipeline "pipeline-json" }}'
-- set:
-    field: event.kind
-    value: event
-- append:
-    field: related.user
-    value: "{{user.name}}"
-    if: "ctx?.user?.name != null"
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-json" }}'
+      if: |-
+        def message = ctx.message;
+        return message != null
+          && message.startsWith('{')
+          && message.endsWith('}')
+          && message.contains('"@timestamp"')
+  - set:
+      copy_from: "@timestamp"
+      field: event.created
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
+  - set:
+      field: event.kind
+      value: event
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
