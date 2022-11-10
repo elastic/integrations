@@ -27,8 +27,3 @@ Before adding the integration, you must complete the following tasks in the Lyve
 Filter out the Lyve Cloud logs using -
 ```data_stream.dataset:"lyve_cloud.audit" ```
 when using Lyve Cloud example dashboard or in other Analytics search fields inside the filter box.
-
-
-
-
-
