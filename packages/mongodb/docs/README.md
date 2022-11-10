@@ -43,6 +43,97 @@ db.grantRolesToUser("user", ["clusterMonitor"])
 
 The `log` dataset collects the MongoDB logs.
 
+An example event for `log` looks as following:
+
+```json
+{
+    "@timestamp": "2022-10-20T11:23:04.602Z",
+    "agent": {
+        "ephemeral_id": "3ec02007-5c86-4a8d-920a-6b1dafdf6f08",
+        "hostname": "docker-fleet-agent",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb.log",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "snapshot": false,
+        "version": "7.14.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "database"
+        ],
+        "created": "2022-10-20T11:23:20.331Z",
+        "dataset": "mongodb.log",
+        "ingested": "2022-10-20T11:23:23.874455717Z",
+        "kind": "event",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "2347a1bd8a3945949da8ab5c29f60774",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "AltArch",
+            "family": "redhat",
+            "kernel": "5.10.124-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (AltArch)"
+        }
+    },
+    "input": {
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/mongodb.log"
+        },
+        "level": "I",
+        "offset": 0
+    },
+    "message": "***** SERVER RESTARTED *****",
+    "mongodb": {
+        "log": {
+            "component": "CONTROL",
+            "context": "main"
+        }
+    },
+    "related": {
+        "hosts": [
+            "docker-fleet-agent"
+        ]
+    },
+    "tags": [
+        "mongodb-logs"
+    ]
+}
+```
+
+The fields reported are:
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -85,8 +176,11 @@ The `log` dataset collects the MongoDB logs.
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.flags | This field contains the flags of the event. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | mongodb.log.attr | Attributes related to the log message. | flattened |
 | mongodb.log.component | Functional categorization of message | keyword |
@@ -124,37 +218,71 @@ An example event for `collstats` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "@timestamp": "2022-10-20T10:51:51.648Z",
+    "agent": {
+        "ephemeral_id": "069895c3-402a-45ff-9ddd-a50c62446502",
+        "hostname": "docker-fleet-agent",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb.collstats",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "snapshot": false,
+        "version": "7.14.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "mongodb.collstats",
+        "duration": 4040208,
+        "ingested": "2022-10-20T10:51:55.190132092Z",
+        "module": "mongodb"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "2347a1bd8a3945949da8ab5c29f60774",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "AltArch",
+            "family": "redhat",
+            "kernel": "5.10.124-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (AltArch)"
+        }
+    },
     "metricset": {
         "name": "collstats",
         "period": 10000
     },
-    "service": {
-        "address": "localhost:27017",
-        "type": "mongodb"
-    },
-    "agent": {
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-        "name": "KaiyanMacBookPro"
-    },
-    "event": {
-        "dataset": "mongodb.collstats",
-        "module": "mongodb",
-        "duration": 3378520
-    },
     "mongodb": {
         "collstats": {
-            "collection": "startup_log",
+            "collection": "system.roles",
             "commands": {
                 "count": 0,
                 "time": {
                     "us": 0
                 }
             },
-            "db": "local",
+            "db": "admin",
             "getmore": {
                 "count": 0,
                 "time": {
@@ -169,23 +297,23 @@ An example event for `collstats` looks as following:
             },
             "lock": {
                 "read": {
-                    "count": 74,
+                    "count": 1,
                     "time": {
-                        "us": 443
+                        "us": 19
                     }
                 },
                 "write": {
-                    "count": 1,
+                    "count": 0,
                     "time": {
-                        "us": 8
+                        "us": 0
                     }
                 }
             },
-            "name": "local.startup_log",
+            "name": "admin.system.roles",
             "queries": {
-                "count": 0,
+                "count": 1,
                 "time": {
-                    "us": 0
+                    "us": 19
                 }
             },
             "remove": {
@@ -195,9 +323,9 @@ An example event for `collstats` looks as following:
                 }
             },
             "total": {
-                "count": 75,
+                "count": 1,
                 "time": {
-                    "us": 451
+                    "us": 19
                 }
             },
             "update": {
@@ -208,8 +336,9 @@ An example event for `collstats` looks as following:
             }
         }
     },
-    "ecs": {
-        "version": "1.5.0"
+    "service": {
+        "address": "mongodb://elastic-package-service-mongodb-1",
+        "type": "mongodb"
     }
 }
 ```
@@ -298,52 +427,87 @@ An example event for `dbstats` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "@timestamp": "2022-10-20T10:52:35.564Z",
+    "agent": {
+        "ephemeral_id": "cdd73778-56aa-4cc4-b9dd-f2e2202cfef6",
+        "hostname": "docker-fleet-agent",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb.dbstats",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "snapshot": false,
+        "version": "7.14.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "mongodb.dbstats",
+        "duration": 3442416,
+        "ingested": "2022-10-20T10:52:39.124852460Z",
+        "module": "mongodb"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "2347a1bd8a3945949da8ab5c29f60774",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "AltArch",
+            "family": "redhat",
+            "kernel": "5.10.124-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (AltArch)"
+        }
+    },
     "metricset": {
         "name": "dbstats",
         "period": 10000
     },
-    "service": {
-        "address": "localhost:27017",
-        "type": "mongodb"
-    },
-    "agent": {
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-        "name": "KaiyanMacBookPro"
-    },
-    "event": {
-        "dataset": "mongodb.dbstats",
-        "module": "mongodb",
-        "duration": 3378520
-    },
     "mongodb": {
         "dbstats": {
+            "avg_obj_size": {
+                "bytes": 522
+            },
+            "collections": 3,
+            "data_size": {
+                "bytes": 1566
+            },
+            "db": "local",
             "file_size": {},
             "index_size": {
-                "bytes": 20480
+                "bytes": 12288
             },
+            "indexes": 3,
             "ns_size_mb": {},
-            "storage_size": {
-                "bytes": 20480
-            },
             "num_extents": 0,
-            "collections": 1,
-            "objects": 1,
-            "db": "admin",
-            "data_size": {
-                "bytes": 59
-            },
-            "indexes": 1,
-            "avg_obj_size": {
-                "bytes": 59
+            "objects": 3,
+            "storage_size": {
+                "bytes": 12288
             }
         }
     },
-    "ecs": {
-        "version": "1.5.0"
+    "service": {
+        "address": "mongodb://elastic-package-service-mongodb-1",
+        "type": "mongodb"
     }
 }
 ```
@@ -421,32 +585,219 @@ An example event for `metrics` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T21:20:51.459Z",
+    "@timestamp": "2022-10-20T10:54:12.592Z",
+    "agent": {
+        "ephemeral_id": "79bbe613-f914-4617-8ef0-345562558b05",
+        "hostname": "docker-fleet-agent",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "7.14.0"
+    },
+    "data_stream": {
+        "dataset": "mongodb.metrics",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "snapshot": false,
+        "version": "7.14.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "mongodb.metrics",
+        "duration": 2745875,
+        "ingested": "2022-10-20T10:54:16.129970088Z",
+        "module": "mongodb"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "2347a1bd8a3945949da8ab5c29f60774",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "AltArch",
+            "family": "redhat",
+            "kernel": "5.10.124-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (AltArch)"
+        }
+    },
+    "metricset": {
+        "name": "metrics",
+        "period": 10000
+    },
     "mongodb": {
         "metrics": {
+            "commands": {
+                "aggregate": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "build_info": {
+                    "failed": 0,
+                    "total": 24
+                },
+                "coll_stats": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "connection_pool_stats": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "count": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "db_stats": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "distinct": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "find": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "get_cmd_line_opts": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "get_last_error": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "get_log": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "get_more": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "get_parameter": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "host_info": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "insert": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "is_master": {
+                    "failed": 0,
+                    "total": 38
+                },
+                "is_self": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "last_collections": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "last_commands": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "list_databased": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "list_indexes": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "ping": {
+                    "failed": 0,
+                    "total": 2
+                },
+                "profile": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "replset_get_rbid": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "replset_get_status": {
+                    "failed": 12,
+                    "total": 12
+                },
+                "replset_heartbeat": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "replset_update_position": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "server_status": {
+                    "failed": 0,
+                    "total": 14
+                },
+                "update": {
+                    "failed": 0,
+                    "total": 0
+                },
+                "whatsmyuri": {
+                    "failed": 0,
+                    "total": 12
+                }
+            },
+            "cursor": {
+                "open": {
+                    "no_timeout": 0,
+                    "pinned": 0,
+                    "total": 0
+                },
+                "timed_out": 0
+            },
+            "document": {
+                "deleted": 0,
+                "inserted": 0,
+                "returned": 0,
+                "updated": 0
+            },
+            "get_last_error": {
+                "write_timeouts": 0,
+                "write_wait": {
+                    "count": 0,
+                    "ms": 0
+                }
+            },
+            "operation": {
+                "scan_and_order": 0,
+                "write_conflicts": 0
+            },
+            "query_executor": {
+                "scanned_documents": {
+                    "count": 0
+                },
+                "scanned_indexes": {
+                    "count": 0
+                }
+            },
             "replication": {
-                "network": {
-                    "ops": 0,
-                    "reders_created": 0,
-                    "bytes": 0,
-                    "getmores": {
-                        "count": 0,
-                        "time": {
-                            "ms": 0
-                        }
-                    }
-                },
-                "executor": {
-                    "shutting_down": false,
-                    "network_interface": "DEPRECATED: getDiagnosticString is deprecated in NetworkInterfaceTL",
-                    "queues": {
-                        "in_progress": {
-                            "network": 0
-                        },
-                        "sleepers": 0
-                    },
-                    "unsignaled_events": 0
-                },
                 "apply": {
                     "attempts_to_become_secondary": 0,
                     "batches": {
@@ -458,207 +809,95 @@ An example event for `metrics` looks as following:
                     "ops": 0
                 },
                 "buffer": {
+                    "count": 0,
                     "max_size": {
                         "bytes": 0
                     },
                     "size": {
                         "bytes": 0
+                    }
+                },
+                "executor": {
+                    "counters": {
+                        "cancels": 0,
+                        "event_created": 0,
+                        "event_wait": 0,
+                        "scheduled": {
+                            "dbwork": 0,
+                            "exclusive": 0,
+                            "failures": 0,
+                            "netcmd": 0,
+                            "work": 0,
+                            "work_at": 0
+                        },
+                        "waits": 0
                     },
-                    "count": 0
+                    "event_waiters": 0,
+                    "network_interface": "\nNetworkInterfaceASIO Operations' Diagnostic:\nOperation:    Count:   \nConnecting    0        \nIn Progress   0        \nSucceeded     0        \nCanceled      0        \nFailed        0        \nTimed Out     0        \n\n",
+                    "queues": {
+                        "free": 0,
+                        "in_progress": {
+                            "dbwork": 0,
+                            "exclusive": 0,
+                            "network": 0
+                        },
+                        "ready": 0,
+                        "sleepers": 0
+                    },
+                    "shutting_down": false,
+                    "unsignaled_events": 0
                 },
                 "initial_sync": {
                     "completed": 0,
                     "failed_attempts": 0,
                     "failures": 0
+                },
+                "network": {
+                    "bytes": 0,
+                    "getmores": {
+                        "count": 0,
+                        "time": {
+                            "ms": 0
+                        }
+                    },
+                    "ops": 0,
+                    "reders_created": 0
+                },
+                "preload": {
+                    "docs": {
+                        "count": 0,
+                        "time": {
+                            "ms": 0
+                        }
+                    },
+                    "indexes": {
+                        "count": 0,
+                        "time": {
+                            "ms": 0
+                        }
+                    }
+                }
+            },
+            "storage": {
+                "search": {
+                    "bucket_exhausted": 0,
+                    "requests": 0,
+                    "scanned": 0
                 }
             },
             "ttl": {
-                "passes": {
-                    "count": 433
-                },
                 "deleted_documents": {
-                    "count": 3
-                }
-            },
-            "commands": {
-                "replset_heartbeat": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "connection_pool_stats": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "host_info": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "aggregate": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "replset_update_position": {
-                    "total": 0,
-                    "failed": 0
-                },
-                "last_collections": {
-                    "failed": 0,
-                    "total": 458
-                },
-                "list_databased": {
-                    "total": 466,
-                    "failed": 0
-                },
-                "whatsmyuri": {
-                    "total": 2,
-                    "failed": 0
-                },
-                "profile": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "insert": {
-                    "failed": 0,
-                    "total": 7
-                },
-                "count": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "is_master": {
-                    "failed": 0,
-                    "total": 2332
-                },
-                "distinct": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "replset_get_status": {
-                    "failed": 2,
-                    "total": 2
-                },
-                "find": {
-                    "failed": 0,
-                    "total": 94
-                },
-                "replset_get_rbid": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "get_parameter": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "coll_stats": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "build_info": {
-                    "total": 6,
-                    "failed": 0
-                },
-                "last_commands": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "update": {
-                    "failed": 0,
-                    "total": 5
-                },
-                "is_self": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "db_stats": {
-                    "failed": 0,
-                    "total": 2044
-                },
-                "get_cmd_line_opts": {
-                    "failed": 0,
-                    "total": 2
-                },
-                "ping": {
-                    "total": 2290,
-                    "failed": 0
-                },
-                "server_status": {
-                    "total": 916,
-                    "failed": 0
-                },
-                "get_last_error": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "get_more": {
-                    "failed": 0,
-                    "total": 0
-                },
-                "get_log": {
-                    "failed": 0,
-                    "total": 2
-                },
-                "list_indexes": {
-                    "failed": 0,
-                    "total": 174
-                }
-            },
-            "cursor": {
-                "timed_out": 0,
-                "open": {
-                    "pinned": 0,
-                    "total": 0,
-                    "no_timeout": 0
-                }
-            },
-            "get_last_error": {
-                "write_wait": {
-                    "ms": 0,
                     "count": 0
                 },
-                "write_timeouts": 0
-            },
-            "operation": {
-                "write_conflicts": 0,
-                "scan_and_order": 0
-            },
-            "document": {
-                "deleted": 15,
-                "inserted": 19,
-                "returned": 465,
-                "updated": 2
-            },
-            "query_executor": {
-                "scanned_indexes": {
-                    "count": 2
-                },
-                "scanned_documents": {
-                    "count": 24
+                "passes": {
+                    "count": 0
                 }
             }
         }
     },
-    "metricset": {
-        "period": 10000,
-        "name": "metrics"
-    },
-    "agent": {
-        "name": "KaiyanMacBookPro",
-        "type": "metricbeat",
-        "version": "8.0.0",
-        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a"
-    },
     "service": {
-        "address": "localhost:27017",
+        "address": "mongodb://elastic-package-service-mongodb-1",
         "type": "mongodb"
-    },
-    "event": {
-        "dataset": "mongodb.metrics",
-        "module": "mongodb",
-        "duration": 3039885
-    },
-    "ecs": {
-        "version": "1.5.0"
     }
 }
 ```
@@ -820,9 +1059,9 @@ The fields reported are:
 | mongodb.metrics.replication.preload.docs.time.ms |  | long |
 | mongodb.metrics.replication.preload.indexes.count | The total number of index entries loaded by members before updating documents as part of the pre-fetch stage of replication. | long |
 | mongodb.metrics.replication.preload.indexes.time.ms | The total amount of time, in milliseconds, spent loading index entries as part of the pre-fetch stage of replication. | long |
-| mongodb.metrics.storage.free_list.search.bucket_exhausted | The number of times that mongod has checked the free list without finding a suitably large record allocation. | long |
-| mongodb.metrics.storage.free_list.search.requests | The number of times mongod has searched for available record allocations. | long |
-| mongodb.metrics.storage.free_list.search.scanned | The number of available record allocations mongod has searched. | long |
+| mongodb.metrics.storage.search.bucket_exhausted | The number of times that mongod has checked the free list without finding a suitably large record allocation. | long |
+| mongodb.metrics.storage.search.requests | The number of times mongod has searched for available record allocations. | long |
+| mongodb.metrics.storage.search.scanned | The number of available record allocations mongod has searched. | long |
 | mongodb.metrics.ttl.deleted_documents.count | The total number of documents deleted from collections with a ttl index. | long |
 | mongodb.metrics.ttl.passes.count | The number of times the background process removes documents from collections with a ttl index. | long |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
@@ -1004,6 +1243,8 @@ The fields reported are:
 
 ### status
 
+The `status` returns a document that provides an overview of the database's state.
+
 It requires the following privileges, which is covered by the [clusterMonitor](https://docs.mongodb.com/manual/reference/built-in-roles/#clusterMonitor) role:
 
 * [serverStatus](https://docs.mongodb.com/manual/reference/privilege-actions/#serverStatus) 
@@ -1013,207 +1254,263 @@ An example event for `status` looks as following:
 
 ```json
 {
-    "@timestamp": "2020-06-29T21:20:01.455Z",
+    "@timestamp": "2022-10-20T10:55:04.336Z",
     "agent": {
-        "version": "8.0.0",
-        "ephemeral_id": "9f6fc260-82b5-4630-95d8-df64f1379b55",
-        "id": "2281e192-85d5-4d68-b90a-36a31df7b29a",
-        "name": "KaiyanMacBookPro",
-        "type": "metricbeat"
+        "ephemeral_id": "65facf45-207f-436e-a597-e3dc3c1fcb39",
+        "hostname": "docker-fleet-agent",
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "7.14.0"
     },
-    "process": {
-        "name": "mongod"
+    "data_stream": {
+        "dataset": "mongodb.status",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "1.10.0"
+    },
+    "elastic_agent": {
+        "id": "a326ccf1-3f91-4412-bc97-215ea856cd16",
+        "snapshot": false,
+        "version": "7.14.0"
     },
     "event": {
-        "duration": 3581045,
+        "agent_id_status": "verified",
         "dataset": "mongodb.status",
+        "duration": 3357750,
+        "ingested": "2022-10-20T10:55:07.900758542Z",
         "module": "mongodb"
     },
-    "mongodb": {
-        "status": {
-            "locks": {
-                "global": {
-                    "acquire": {
-                        "count": {
-                            "w": 458,
-                            "W": 4,
-                            "r": 56961
-                        }
-                    },
-                    "wait": {},
-                    "deadlock": {}
-                },
-                "database": {
-                    "deadlock": {},
-                    "acquire": {
-                        "count": {
-                            "w": 453,
-                            "W": 5,
-                            "r": 5238
-                        }
-                    },
-                    "wait": {}
-                },
-                "collection": {
-                    "wait": {},
-                    "deadlock": {},
-                    "acquire": {
-                        "count": {
-                            "W": 3,
-                            "r": 8221,
-                            "w": 450
-                        }
-                    }
-                }
-            },
-            "network": {
-                "in": {
-                    "bytes": 687306
-                },
-                "out": {
-                    "bytes": 32519464
-                },
-                "requests": 11607
-            },
-            "extra_info": {
-                "page_faults": 0,
-                "heap_usage": {}
-            },
-            "local_time": "2020-06-29T21:20:01.457Z",
-            "storage_engine": {
-                "name": "wiredTiger"
-            },
-            "asserts": {
-                "user": 9,
-                "rollovers": 0,
-                "regular": 0,
-                "warning": 0,
-                "msg": 0
-            },
-            "global_lock": {
-                "total_time": {
-                    "us": 26003338000
-                },
-                "current_queue": {
-                    "total": 0,
-                    "readers": 0,
-                    "writers": 0
-                },
-                "active_clients": {
-                    "total": 1,
-                    "readers": 1,
-                    "writers": 0
-                }
-            },
-            "wired_tiger": {
-                "log": {
-                    "syncs": 67,
-                    "size": {
-                        "bytes": 33554432
-                    },
-                    "write": {
-                        "bytes": 46976
-                    },
-                    "max_file_size": {
-                        "bytes": 104857600
-                    },
-                    "flushes": 152183,
-                    "writes": 140,
-                    "scans": 6
-                },
-                "concurrent_transactions": {
-                    "write": {
-                        "out": 0,
-                        "available": 128,
-                        "total_tickets": 128
-                    },
-                    "read": {
-                        "available": 128,
-                        "total_tickets": 128,
-                        "out": 0
-                    }
-                },
-                "cache": {
-                    "dirty": {
-                        "bytes": 0
-                    },
-                    "pages": {
-                        "evicted": 0,
-                        "read": 14,
-                        "write": 111
-                    },
-                    "maximum": {
-                        "bytes": 16642998272
-                    },
-                    "used": {
-                        "bytes": 89236
-                    }
-                }
-            },
-            "memory": {
-                "mapped_with_journal": {},
-                "bits": 64,
-                "resident": {
-                    "mb": 44
-                },
-                "virtual": {
-                    "mb": 6971
-                },
-                "mapped": {}
-            },
-            "connections": {
-                "total_created": 2266,
-                "current": 5,
-                "available": 3271
-            },
-            "ops": {
-                "counters": {
-                    "delete": 3,
-                    "getmore": 452,
-                    "command": 11314,
-                    "insert": 19,
-                    "query": 94,
-                    "update": 5
-                },
-                "replicated": {
-                    "delete": 0,
-                    "getmore": 0,
-                    "command": 0,
-                    "insert": 0,
-                    "query": 0,
-                    "update": 0
-                },
-                "latencies": {
-                    "writes": {
-                        "latency": 103455,
-                        "count": 9
-                    },
-                    "commands": {
-                        "latency": 2055949,
-                        "count": 11138
-                    },
-                    "reads": {
-                        "latency": 14259,
-                        "count": 458
-                    }
-                }
-            },
-            "uptime": {
-                "ms": 26003340
-            }
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "2347a1bd8a3945949da8ab5c29f60774",
+        "ip": [
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "AltArch",
+            "family": "redhat",
+            "kernel": "5.10.124-linuxkit",
+            "name": "CentOS Linux",
+            "platform": "centos",
+            "type": "linux",
+            "version": "7 (AltArch)"
         }
-    },
-    "service": {
-        "version": "4.2.0",
-        "address": "localhost:27017",
-        "type": "mongodb"
     },
     "metricset": {
         "name": "status",
         "period": 10000
     },
-    "ecs": {
-        "version": "1.5.0"
+    "mongodb": {
+        "status": {
+            "asserts": {
+                "msg": 0,
+                "regular": 0,
+                "rollovers": 0,
+                "user": 0,
+                "warning": 0
+            },
+            "connections": {
+                "available": 838859,
+                "current": 1,
+                "total_created": 15
+            },
+            "extra_info": {
+                "heap_usage": {},
+                "page_faults": 0
+            },
+            "global_lock": {
+                "active_clients": {
+                    "readers": 0,
+                    "total": 8,
+                    "writers": 0
+                },
+                "current_queue": {
+                    "readers": 0,
+                    "total": 0,
+                    "writers": 0
+                },
+                "total_time": {
+                    "us": 14210000
+                }
+            },
+            "local_time": "2022-10-20T10:55:04.338Z",
+            "locks": {
+                "collection": {
+                    "acquire": {
+                        "count": {
+                            "W": 1,
+                            "r": 20
+                        }
+                    },
+                    "deadlock": {},
+                    "wait": {}
+                },
+                "database": {
+                    "acquire": {
+                        "count": {
+                            "R": 1,
+                            "W": 8,
+                            "r": 34
+                        }
+                    },
+                    "deadlock": {},
+                    "wait": {}
+                },
+                "global": {
+                    "acquire": {
+                        "count": {
+                            "W": 2,
+                            "r": 108,
+                            "w": 8
+                        }
+                    },
+                    "deadlock": {},
+                    "wait": {}
+                },
+                "meta_data": {
+                    "acquire": {
+                        "count": {
+                            "w": 1
+                        }
+                    },
+                    "deadlock": {},
+                    "wait": {}
+                },
+                "oplog": {
+                    "acquire": {
+                        "count": {
+                            "r": 14
+                        }
+                    },
+                    "deadlock": {},
+                    "wait": {}
+                }
+            },
+            "memory": {
+                "bits": 64,
+                "mapped": {
+                    "mb": 0
+                },
+                "mapped_with_journal": {
+                    "mb": 0
+                },
+                "resident": {
+                    "mb": 62
+                },
+                "virtual": {
+                    "mb": 952
+                }
+            },
+            "network": {
+                "in": {
+                    "bytes": 10318
+                },
+                "out": {
+                    "bytes": 380215
+                },
+                "requests": 223
+            },
+            "ops": {
+                "counters": {
+                    "command": 112,
+                    "delete": 0,
+                    "getmore": 0,
+                    "insert": 0,
+                    "query": 1,
+                    "update": 0
+                },
+                "latencies": {
+                    "commands": {
+                        "count": 111,
+                        "latency": 5089
+                    },
+                    "reads": {
+                        "count": 0,
+                        "latency": 0
+                    },
+                    "writes": {
+                        "count": 0,
+                        "latency": 0
+                    }
+                },
+                "replicated": {
+                    "command": 0,
+                    "delete": 0,
+                    "getmore": 0,
+                    "insert": 0,
+                    "query": 0,
+                    "update": 0
+                }
+            },
+            "storage_engine": {
+                "name": "wiredTiger"
+            },
+            "uptime": {
+                "ms": 14204
+            },
+            "wired_tiger": {
+                "cache": {
+                    "dirty": {
+                        "bytes": 21104
+                    },
+                    "maximum": {
+                        "bytes": 3578789888
+                    },
+                    "pages": {
+                        "evicted": 0,
+                        "read": 0,
+                        "write": 0
+                    },
+                    "used": {
+                        "bytes": 22756
+                    }
+                },
+                "concurrent_transactions": {
+                    "read": {
+                        "available": 128,
+                        "out": 0,
+                        "total_tickets": 128
+                    },
+                    "write": {
+                        "available": 128,
+                        "out": 0,
+                        "total_tickets": 128
+                    }
+                },
+                "log": {
+                    "flushes": 142,
+                    "max_file_size": {
+                        "bytes": 104857600
+                    },
+                    "scans": 0,
+                    "size": {
+                        "bytes": 33554432
+                    },
+                    "syncs": 12,
+                    "write": {
+                        "bytes": 14336
+                    },
+                    "writes": 40
+                }
+            }
+        }
+    },
+    "process": {
+        "name": "mongod"
+    },
+    "service": {
+        "address": "mongodb://elastic-package-service-mongodb-1",
+        "type": "mongodb",
+        "version": "3.4.24"
     }
 }
 ```
