@@ -27,12 +27,16 @@ processors:
         - '^(%{ECS_SYSLOG_PRI})?%{TIMESTAMP} %{GREEDYDATA:message}'
       pattern_definitions:
         ECS_SYSLOG_PRI: '<%{NONNEGINT:log.syslog.priority:long}>(\d )?'
-        BSD_TIMESTAMP_FORMAT: '%{SYSLOGTIMESTAMP:_tmp.timestamp}(%{SPACE}%{OBSERVER})?%{SPACE}%{PROCESS}(\[%{POSINT:process.pid:long}\])?:'
-        SYSLOG_TIMESTAMP_FORMAT: '%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}%{OBSERVER}%{SPACE}%{PROCESS}%{SPACE}(%{POSINT:process.pid:long}|-) - (-|\[%{DATA}\])?'
-        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         TIMESTAMP: '(?:%{BSD_TIMESTAMP_FORMAT}|%{SYSLOG_TIMESTAMP_FORMAT})'
+        BSD_TIMESTAMP_FORMAT: '%{SYSLOGTIMESTAMP:_tmp.timestamp}(%{SPACE}%{BSD_PROCNAME}|%{SPACE}%{OBSERVER}%{SPACE}%{BSD_PROCNAME})(\[%{POSINT:process.pid:long}\])?:'
+        BSD_PROCNAME: '(?:\b%{NAME:process.name}|\(%{NAME:process.name}\))'
+        NAME: '[[[:alnum:]]_-]+'
+        SYSLOG_TIMESTAMP_FORMAT: '%{TIMESTAMP_ISO8601:_tmp.timestamp8601}%{SPACE}%{OBSERVER}%{SPACE}%{PROCESS}%{SPACE}(%{POSINT:process.pid:long}|-) - (-|%{META})'
+        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
         OBSERVER: '(?:%{IP:observer.ip}|%{HOSTNAME:observer.name})'
-        PROCESS: '(\(%{DATA:process.name}\)|(%{UNIXPATH}/)?%{WORD:process.name})'
+        PROCESS: '(\(%{DATA:process.name}\)|(?:%{UNIXPATH}*/)?%{BASEPATH:process.name})'
+        BASEPATH: '[[[:alnum:]]_%!$@:.,+~-]+'
+        META: '\[[^\]]*\]'
   - date:
       if: ctx._tmp.timestamp8601 != null
       field: _tmp.timestamp8601
@@ -52,7 +56,9 @@ processors:
       description: Set Event Provider
       field: process.name
       patterns:
-        - '^%{WORD:event.provider}'
+        - '^%{HYPHENATED_WORDS:event.provider}'
+      pattern_definitions:
+        HYPHENATED_WORDS: '\b[A-Za-z0-9_]+(-[A-Za-z_]+)*\b'
   - pipeline:
       name: '{{ IngestPipeline "firewall" }}'
       if: ctx.event.provider == 'filterlog'

@@ -1,11 +1,220 @@
 - name: box
   type: object
   fields:
+    - name: additional_details
+      type: object
+      fields:
+        - name: shield_alert
+          type: object
+          fields:
+            - name: alert_id
+              description: Box Shield alert ID
+              type: long
+            - name: alert_summary
+              type: object
+              fields:
+                - name: anomaly_period
+                  type: object
+                  fields:
+                    - name: date_range
+                      type: object
+                      fields:
+                        - name: end_date
+                          description: When the anomaly was last observed
+                          type: keyword
+                        - name: start_date
+                          description: When the anomaly was last observed
+                          type: keyword
+                    - name: download_size
+                      description: Volume of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content
+                      type: keyword
+                    - name: downloaded_files_count
+                      description: Number of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content
+                      type: long
+                - name: description
+                  description: Description of Alert
+                  type: keyword
+                - name: download_delta_percent
+                  description: Anomaly delta percentage relative to historical expectation
+                  type: long
+                - name: download_delta_size
+                  description: Anomaly delta size relative to historical expectation
+                  type: keyword
+                - name: download_ips
+                  type: object
+                  fields:
+                    - name: ip
+                      description: IP address
+                      type: ip
+                - name: historical_period
+                  type: object
+                  fields:
+                    - name: date_range
+                      type: object
+                      fields:
+                        - name: end_date
+                          description: End of historical period for calculation of historical expectation
+                          type: keyword
+                        - name: start_date
+                          description: Start of historical period for calculation of historical expectation
+                          type: keyword
+                    - name: download_size
+                      description: Volume of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content
+                      type: keyword
+                    - name: downloaded_files_count
+                      description: Number of Anomalous Downloads detected by Box Shield relating to an account holder who may be stealing sensitive content
+                      type: long
+                - name: upload_activity
+                  type: object
+                  fields:
+                    - name: event_type
+                      description: Type of event, e.g. `Upload`
+                      type: keyword
+                    - name: ip_info
+                      type: object
+                      fields:
+                        - name: ip
+                          description: IP address
+                          type: ip
+                        - name: registrant
+                          description: Registrant of IP
+                    - name: item_id
+                      description: ID of item
+                      type: keyword
+                    - name: item_name
+                      description: Name of item
+                      type: keyword
+                    - name: item_path
+                      description: Path to Item
+                      type: keyword
+                    - name: item_type
+                      description: Type of Item
+                      type: keyword
+                    - name: occurred_at
+                      description: Time of Upload
+                      type: keyword
+                    - name: service_name
+                      description: Service used to upload the suspected Malware
+                      type: keyword
+            - name: created_at
+              description: Time alert was created
+              type: date
+            - name: link
+              description: URL with information about this alert
+              type: keyword
+            - name: malware_info
+              type: object
+              fields:
+                - name: categories
+                  description: Array of Malware Categories e.g. `Adware`, `Spyware`
+                  type: keyword
+                - name: description
+                  description: Describes the Malware
+                  type: keyword
+                - name: detail_link
+                  description: URL with detail of Malware
+                  type: keyword
+                - name: family
+                  description: Malware Family
+                  type: keyword
+                - name: file_created
+                  description: Date of file creation
+                  type: date
+                - name: file_created_by
+                  type: object
+                  fields:
+                    - name: email
+                      description: Email of file creator
+                      type: keyword
+                    - name: id
+                      description: ID of file creator. The Box Shield documentation example uses `long`, not `string`
+                      type: long
+                    - name: name
+                      description: Display name of file creator
+                      type: keyword
+                - name: file_hash
+                  description: File hash
+                  type: keyword
+                - name: file_hash_type
+                  description: Hash type, e.g. `SHA-1`
+                  type: keyword
+                - name: file_id
+                  description: File ID
+                  type: long
+                - name: file_name
+                  description: File name
+                  type: keyword
+                - name: file_size_bytes
+                  description: File size in bytes
+                  type: long
+                - name: file_version
+                  description: File version
+                  type: long
+                - name: file_version_uploaded
+                  description: Date this version of file was uploaded
+                  type: date
+                - name: file_version_uploaded_by
+                  type: object
+                  fields:
+                    - name: email
+                      description: Email of file uploader
+                      type: keyword
+                    - name: id
+                      description: ID of file uploader
+                      type: long
+                    - name: name
+                      description: Display name of file uploader
+                      type: keyword
+                - name: first_seen
+                  description: Time Malware first observed
+                  type: date
+                - name: last_seen
+                  description: Time Malware last observed
+                  type: date
+                - name: malware_name
+                  description: Malware name
+                  type: keyword
+                - name: status
+                  description: Malware status e.g. `Malicious`
+                  type: keyword
+                - name: tags
+                  description: Array of Malware Tags e.g. `FILE_MALICIOUS_EXECUTION`
+                  type: keyword
+            - name: priority
+              description: Box Shield priority of alert
+              type: keyword
+            - name: risk_score
+              description: Risk score as calculated by Box Shield
+              type: long
+            - name: rule_category
+              description: Rule Category as allocated by Box Shield
+              type: keyword
+            - name: rule_id
+              description: Box Shield rule ID
+              type: long
+            - name: rule_name
+              description: Box Shield rule name
+              type: keyword
+            - name: user
+              type: object
+              fields:
+                - name: email
+                  description: User email
+                  type: keyword
+                - name: id
+                  description: User ID
+                  type: long
+                - name: name
+                  description: User name
+                  type: keyword
+    - name: created_at
+      description: When the event object was created
+      type: date
     - name: created_by
       type: object
       fields:
         - name: id
-          description: The unique identifier for the connection user
+          description: The unique identifier for the connection user.
           type: keyword
         - name: name
           description: The display name of the connection user. Maps from **.name
@@ -14,8 +223,8 @@
           description: The primary email address of the connection user. Maps from **.login
         - name: type
           description: E.g. `user`
-    - name: session.id
-      description: The session of the user that performed the action. Not all events will populate this attribute
+    - name: ip_address
+      description: IP Address
       type: keyword
     - name: recorded_at
       description: The date and time at which this event occurred
@@ -23,129 +232,205 @@
     - name: created_at
       description: When the event object was created
       type: date
-    - name: source
+    - name: created_at
+      description: When the event object was created
+      type: date
+    - name: session
+      description: Extend ECS related fields
       type: object
       fields:
         - name: id
-          description: The unique identifier that represent a folder
+          description: Box `session_id` field
           type: keyword
+    - name: source
+      type: object
+      fields:
+        - name: address
+          description: Physical Address associated with the event
+          type: keyword
+        - name: avatar_url
+          description: URL for user avatar
+          type: boolean
         - name: etag
           description: The HTTP etag of this folder
           type: keyword
+        - name: created_by
+          type: object
+          fields:
+            - name: type
+              description: Value is always `user`
+              type: keyword
+            - name: id
+              description: The unique identifier for this user
+              type: keyword
+            - name: name
+              description: The display name of this user. Maps from **.name
+              type: keyword
+            - name: login
+              description: The primary email address of this user. Maps from **.login
+              type: keyword
         - name: description
           description: The optional description of this folder
           type: text
-        - name: path_collection
-          description: The tree of folders that this folder is contained in, starting at the root
+        - name: file_version
+          description: The information about the current version of the file
           type: object
-        - name: path_collection.total_count
-          description: The number of folders in this list
-          type: long
-        - name: path_collection.entries
-          description: The parent folders for this item
+        - name: file_version
           type: object
-        - name: path_collection.entries.type
-          description: Value is always `folder`. This field is an array
-          type: array
-        - name: path_collection.entries.id
-          description: The unique identifier that represent a folder. This field is an array
-          type: array
-        - name: path_collection.entries.name
-          description: The name of the folder. This field is an array
-          type: array
-        - name: created_by
-          description: The user who created this folder
-          type: object
-        - name: created_by.type
-          description: Value is always `user`
+          fields:
+            - name: type
+              description: Value is always `file_version`
+              type: keyword
+            - name: id
+              description: The unique identifier that represent a file version
+              type: keyword
+        - name: id
+          description: The unique identifier that represent a folder
           type: keyword
-        - name: created_by.id
-          description: The unique identifier for this user
+        - name: item_status
+          description: Defines if this item has been deleted or not. active when the item has is not in the trash trashed when the item has been moved to the trash but not deleted deleted when the item has been permanently deleted. Value is one of `active`, `trashed`, `deleted`
           type: keyword
-        - name: created_by.name
-          description: The display name of this user. Maps from **.name
-          type: keyword
-        - name: created_by.login
-          description: The primary email address of this user. Maps from **.login
-          type: keyword
+        - name: job_title
+          description: User job title
+          type: boolean
+        - name: language
+          description: User preferred language
+          type: boolean
+        - name: login
+          description: User login
+          type: boolean
+        - name: max_upload_size
+          description: Max upload size
+          type: boolean
         - name: modified_by
           description: The user who last modified this folder
           type: object
         - name: modified_by.type
           description: Value is always `user`
           type: keyword
-        - name: modified_by.id
-          description: The unique identifier for this user
-          type: keyword
-        - name: modified_by.name
-          description: The display name of this user. Maps from **.name
-          type: keyword
-        - name: modified_by.login
-          description: The primary email address of this user. Maps from **.login
-          type: keyword
+        - name: modified_by
+          type: object
+          fields:
+            - name: id
+              description: The unique identifier for this user
+              type: keyword
+            - name: name
+              description: The display name of this user. Maps from **.name
+              type: keyword
+            - name: login
+              description: The primary email address of this user. Maps from **.login
+              type: keyword
         - name: created_at
           description: The date and time at which this folder was originally created
           type: date
         - name: modified_at
           description: The date and time at which this folder was last updated
           type: date
+        - name: notification_email
+          type: object
+          fields:
+            - name: email
+              description: Email to send notifications
+              type: boolean
+            - name: is_confirmed
+              description: True if `notification_email.email` has been confirmed else false
+              type: boolean
+        - name: phone
+          description: Phone number
+          type: boolean
         - name: owned_by
-          description: The user who owns this folder
-          type: keyword
-        - name: owned_by.type
-          description: Value is always `user`
-          type: keyword
-        - name: owned_by.id
-          description: The unique identifier for this user
-          type: keyword
-        - name: owned_by.name
-          description: The display name of this user. Maps from **.name
-          type: keyword
-        - name: owned_by.login
-          description: The primary email address of this user. Maps from **.login
-          type: keyword
+          type: object
+          fields:
+            - name: type
+              description: Value is always `user`
+              type: keyword
+            - name: id
+              description: The unique identifier for this user
+              type: keyword
+            - name: name
+              description: The display name of this user. Maps from **.name
+              type: keyword
+            - name: login
+              description: The primary email address of this user. Maps from **.login
+              type: keyword
+        - name: parent
+          description: The optional folder that this folder is located within. This value may be null for some folders such as the root folder or the trash folder
+          type: object
+          fields:
+            - name: type
+              description: Value is always `folder`
+              type: keyword
+            - name: id
+              description: The unique identifier that represent a folder
+              type: keyword
+            - name: name
+              description: The name of the folder
+              type: keyword
+            - name: etag
+              description: The HTTP etag of this folder
+              type: keyword
+            - name: sequence_id
+              description: A numeric identifier that represents the most recent user event that has been applied to this item (parent)
+              type: keyword
+        - name: path_collection
+          description: The tree of folders that this folder is contained in, starting at the root
+          type: object
+          fields:
+            - name: total_count
+              description: The number of folders in this list
+              type: long
+            - name: entries
+              description: The parent folders for this item
+              type: object
+            - name: entries
+              type: object
+              fields:
+                - name: type
+                  description: Value is always `folder`. This field is an array
+                  type: array
+                - name: id
+                  description: The unique identifier that represent a folder. This field is an array
+                  type: array
+                - name: name
+                  description: The name of the folder. This field is an array
+                  type: array
+        - name: purged_at
+          description: The time at which this file is expected to be purged from the trash
+          type: boolean
         - name: sequence_id
           description: A numeric identifier that represents the most recent user event that has been applied to this item
           type: keyword
         - name: sha1
           description: SHA1 hash of the item concerned
           type: keyword
-        - name: parent
-          description: The optional folder that this folder is located within. This value may be null for some folders such as the root folder or the trash folder
-          type: object
-        - name: parent.type
-          description: Value is always `folder`
-          type: keyword
-        - name: parent.id
-          description: The unique identifier that represent a folder
-          type: keyword
-        - name: parent.name
-          description: The name of the folder
-          type: keyword
-        - name: parent.etag
-          description: The HTTP etag of this folder
-          type: keyword
-        - name: parent.sequence_id
-          description: A numeric identifier that represents the most recent user event that has been applied to this item (parent)
-          type: keyword
-        - name: item_status
-          description: Defines if this item has been deleted or not. active when the item has is not in the trash trashed when the item has been moved to the trash but not deleted deleted when the item has been permanently deleted. Value is one of `active`, `trashed`, `deleted`
-          type: keyword
-        - name: file_version
-          description: The information about the current version of the file
-          type: object
-        - name: file_version.type
-          description: Value is always `file_version`
-          type: keyword
-        - name: file_version.id
-          description: The unique identifier that represent a file version
-          type: keyword
+        - name: space_amount
+          description: Space amount
+          type: boolean
+        - name: space_used
+          description: Space used
+          type: boolean
+        - name: status
+          description: 'For example: `active`'
+          type: boolean
         - name: synced
           description: Legacy property for compatibility with Box Desktop
           type: boolean
-        - name: purged_at
-          description: The time at which this file is expected to be purged from the trash
+        - name: timezone
+          description: Timezone
           type: boolean
         - name: trashed_at
           description: The time at which this file was put in the trash
           type: boolean
+- name: related
+  description: Extend ECS related fields
+  type: object
+  fields:
+    - name: location
+      description: Array of `location` derived from `related.ip`
+      type: geo_point
+    - name: description
+      description: Array of `description` derived from `threat[.enrichments].indicator.description`
+      type: keyword
+    - name: indicator_type
+      description: Array of `indicator_type` derived from `threat[.enrichments].indicator.type`
+      type: keyword
