@@ -1,12 +1,8 @@
-version: '2.3'
+version: "2.3"
 services:
-  splunk-mock:
-    image: docker.elastic.co/observability/stream:v0.5.0
-    ports:
-      - 8080
+  sysmon:
+    image: alpine
     volumes:
-      - ./files:/files:ro
-    command:
-      - http-server
-      - --addr=:8080
-      - --config=/files/config.yml
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "cp /sample_logs/* /var/log/"

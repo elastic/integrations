@@ -6,37 +6,16 @@ processors:
   - set:
       field: ecs.version
       value: '8.5.0'
-  # - grok:
-  #     field: event.original
-  #     patterns:
-  #       - '%{SYSLOGTIMESTAMP:sysmon.log.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYDATA:sysmon.log.message}'
-  #       - '%{TIMESTAMP_ISO8601:sysmon.log.timestamp} %{SYSLOGHOST:host.hostname} %{DATA:process.name}(?:\[%{POSINT:process.pid:long}\])?: %{GREEDYDATA:sysmon.log.message}'
-  #     ignore_missing: true
-  # - decode_xml_wineventlog:
-  #     field: sysmon.log.message
-  #     target_field: linux
-  #     ignore_missing: true
-  #     ignore_failure: true
-  #     map_ecs_fields: true
   - set:
       field: sysmon.log.timestamp
       value: '{{sysmon.log.date.month}} {{sysmon.log.date.day}} {{sysmon.log.date.time}}'
-  - date:
-      field: sysmon.log.timestamp
-      target_field: '@timestamp'
-      formats:
-        - 'MMM dd HH:mm:ss'
-      ignore_failure: true
-      if: ctx?.sysmon?.log?.timestamp != null
-  - remove:
-      description: Remove original date field
-      field: sysmon.log.date
-      ignore_missing: true
-  - remove:
-      description: Remove original unparsed xml field.
-      field: sysmon.log.message
-      ignore_missing: true
-      ignore_failure: true
+      if: ctx?.sysmon?.log?.date?.month != null && ctx?.sysmon?.log?.date?.day != null && ctx?.sysmon?.log?.date?.time != null
+  - set:
+      field: _temp.linux
+      value: '{{linux}}'
+  - set:
+      field: _temp.date
+      value: '{{sysmon.log.date}}'    
   - script:
       description: Remove all empty values from event_data.
       lang: painless
@@ -56,11 +35,31 @@ processors:
       if: ctx?.linux?.time_created != null
   - date:
       field: linux.event_data.UtcTime
+      target_field: '@timestamp'
       formats:
         - yyyy-MM-dd HH:mm:ss.SSS
       timezone: UTC
       ignore_failure: true
       if: ctx?.linux?.event_data?.UtcTime != null
+  - date:
+      field: sysmon.log.timestamp
+      target_field: '@timestamp'
+      formats:
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+        - ISO8601
+      ignore_failure: true
+      if: ctx?.linux?.event_data?.UtcTime == null && ctx?.sysmon?.log?.timestamp != null
+  - remove:
+      description: Remove original date field
+      field: sysmon.log.date
+      ignore_missing: true
+  - remove:
+      description: Remove original unparsed xml field.
+      field: sysmon.log.message
+      ignore_missing: true
+      ignore_failure: true
 
   - set:
       field: event.kind
@@ -1253,73 +1252,73 @@ processors:
 
 ## Cleanup
 
-  - remove:
-      field:
-        - _temp
-        - linux.event_data.ProcessId
-        - linux.event_data.ParentProcessId
-        - linux.event_data.SourceProcessId
-        - linux.event_data.SourceThreadId
-        - linux.event_data.SourceIp
-        - linux.event_data.SourcePort
-        - linux.event_data.SourcePortName
-        - linux.event_data.DestinationIp
-        - linux.event_data.DestinationPort
-        - linux.event_data.DestinationPortName
-        - linux.event_data.RuleName
-        - linux.event_data.User
-        - linux.event_data.Initiated
-        - linux.event_data.SourceIsIpv6
-        - linux.event_data.DestinationIsIpv6
-        - linux.event_data.QueryStatus
-        - linux.event_data.Archived
-        - linux.event_data.IsExecutable
-        - linux.event_data.QueryResults
-        - linux.event_data.UtcTime
-        - linux.event_data.Hash
-        - linux.event_data.Hashes
-        - linux.event_data.TargetObject
-        - linux.event_data.Details
-        - linux.time_created
-        - linux.level
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
-      description: Remove empty event data.
-      field: linux.event_data
-      ignore_missing: true
-      ignore_failure: true
-      if: ctx?.linux?.event_data != null && ctx.linux.event_data.size() == 0
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
-  - script:
-      lang: painless
-      description: This script processor iterates over the whole document to remove fields with null values.
-      source: |
-        void handleMap(Map map) {
-          for (def x : map.values()) {
-            if (x instanceof Map) {
-                handleMap(x);
-            } else if (x instanceof List) {
-                handleList(x);
-            }
-          }
-          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-        }
-        void handleList(List list) {
-          for (def x : list) {
-              if (x instanceof Map) {
-                  handleMap(x);
-              } else if (x instanceof List) {
-                  handleList(x);
-              }
-          }
-          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-        }
-        handleMap(ctx);
+  # - remove:
+  #     field:
+  #       - _temp
+  #       - linux.event_data.ProcessId
+  #       - linux.event_data.ParentProcessId
+  #       - linux.event_data.SourceProcessId
+  #       - linux.event_data.SourceThreadId
+  #       - linux.event_data.SourceIp
+  #       - linux.event_data.SourcePort
+  #       - linux.event_data.SourcePortName
+  #       - linux.event_data.DestinationIp
+  #       - linux.event_data.DestinationPort
+  #       - linux.event_data.DestinationPortName
+  #       - linux.event_data.RuleName
+  #       - linux.event_data.User
+  #       - linux.event_data.Initiated
+  #       - linux.event_data.SourceIsIpv6
+  #       - linux.event_data.DestinationIsIpv6
+  #       - linux.event_data.QueryStatus
+  #       - linux.event_data.Archived
+  #       - linux.event_data.IsExecutable
+  #       - linux.event_data.QueryResults
+  #       - linux.event_data.UtcTime
+  #       - linux.event_data.Hash
+  #       - linux.event_data.Hashes
+  #       - linux.event_data.TargetObject
+  #       - linux.event_data.Details
+  #       - linux.time_created
+  #       - linux.level
+  #     ignore_failure: true
+  #     ignore_missing: true
+  # - remove:
+  #     description: Remove empty event data.
+  #     field: linux.event_data
+  #     ignore_missing: true
+  #     ignore_failure: true
+  #     if: ctx?.linux?.event_data != null && ctx.linux.event_data.size() == 0
+  # - remove:
+  #     field: event.original
+  #     if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+  #     ignore_failure: true
+  #     ignore_missing: true
+  # - script:
+  #     lang: painless
+  #     description: This script processor iterates over the whole document to remove fields with null values.
+  #     source: |
+  #       void handleMap(Map map) {
+  #         for (def x : map.values()) {
+  #           if (x instanceof Map) {
+  #               handleMap(x);
+  #           } else if (x instanceof List) {
+  #               handleList(x);
+  #           }
+  #         }
+  #         map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+  #       }
+  #       void handleList(List list) {
+  #         for (def x : list) {
+  #             if (x instanceof Map) {
+  #                 handleMap(x);
+  #             } else if (x instanceof List) {
+  #                 handleList(x);
+  #             }
+  #         }
+  #         list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+  #       }
+  #       handleMap(ctx);
 
 on_failure:
   - set:

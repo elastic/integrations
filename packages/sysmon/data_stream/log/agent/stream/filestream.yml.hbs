@@ -1,0 +1,51 @@
+paths:
+{{#each paths as |path i|}}
+ - {{path}}
+{{/each}}
+prospector.scanner.exclude_files: [".gz$"]
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_locale: ~
+- rename:
+    fields:
+      - from: message
+        to: event.original
+    ignore_missing: true
+    fail_on_error: false
+- dissect:
+    tokenizer: '%{sysmon.log.date.month} %{sysmon.log.date.day} %{sysmon.log.date.time} %{host.hostname} %{process.name}[%{process.pid|long}]: %{sysmon.log.message}'
+    field: "event.original"
+    target_prefix: ""
+- if:
+    and:
+      - has_fields: ['log.flags']
+      - contains:
+          log.flags: "dissect_parsing_error"
+  then:
+    - dissect:
+        tokenizer: '%{sysmon.log.date.month} %{sysmon.log.date.day} %{sysmon.log.date.time} %{host.hostname} %{process.name}: %{sysmon.log.message}'
+        field: "event.original"
+        target_prefix: ""
+    - drop_fields: 
+        fields: ["log.flags"]
+- decode_xml_wineventlog:
+    field: sysmon.log.message
+    target_field: linux
+    ignore_missing: true
+    ignore_failure: true
+    map_ecs_fields: true
+{{#if processors.length}}
+{{processors}}
+{{/if}}
+{{#if ignore_older}}
+ignore_older: {{ignore_older}}
+{{/if}}
