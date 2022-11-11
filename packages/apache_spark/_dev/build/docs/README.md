@@ -10,6 +10,8 @@ This integration has been tested against `Apache Spark version 3.2.0`
 
 In order to ingest data from Apache Spark, you must know the full hosts for the Main and Worker nodes.
 
+To proceed with the Jolokia setup, Apache Spark should be installed as a standalone setup. Make sure that the spark folder is installed in the `/usr/local` path. If not, then specify the path of spark folder in the further steps. You can install the standalone setup from the official download page of [Apache Spark](https://spark.apache.org/downloads.html).
+
 In order to gather Spark statistics, we need to download and enable Jolokia JVM Agent.
 
 ```
