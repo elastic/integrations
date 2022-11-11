@@ -31,12 +31,14 @@ This integration has not been tested on
 
 1. Amazon EKS on AWS Outposts
 
-This Integration does not currently support the security posture assessment of the managed kubernetes services below:
+This integration does not currently support the security posture assessment of the managed kubernetes services below:
 
 1. Google GKE
 2. Azure AKS 
 3. Red Hat Openshift 
 4. Amazon EKS with AWS Fargate nodes
+
+The integration supports **elastic agent** version 8.5 and above.
 
 ## Integration Requirments 
 

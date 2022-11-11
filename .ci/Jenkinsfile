@@ -12,8 +12,6 @@ pipeline {
     REPO_BUILD_TAG = "${env.REPO}/${env.BUILD_TAG}"
     BASE_DIR = "src/github.com/elastic/${REPO}"
     GITHUB_TOKEN_CREDENTIALS = "2a9602aa-ab9f-4e52-baf3-b71ca88469c7"
-    JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
-    PACKAGE_STORAGE_BASE_DIR = "src/github.com/elastic/package-storage"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
     KIND_VERSION = "v0.14.0"
@@ -39,6 +37,8 @@ pipeline {
     PACKAGE_STORAGE_UPLOADER_CREDENTIALS = 'upload-package-to-package-storage'
     PACKAGE_STORAGE_UPLOADER_GCP_SERVICE_ACCOUNT = 'secret/gce/elastic-bekitzur/service-account/package-storage-uploader'
     PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH = "gs://elastic-bekitzur-package-storage-internal/queue-publishing/${env.REPO_BUILD_TAG}"
+
+    INTEGRATIONS_TESTED = "0"
   }
   options {
     timeout(time: 4, unit: 'HOURS')
@@ -91,6 +91,10 @@ pipeline {
                       useElasticPackage()
                       try {
                         dir("${BASE_DIR}/packages/${it}") {
+                          // https://stackoverflow.com/questions/53541489/updating-environment-global-variable-in-jenkins-pipeline-from-the-stage-level
+                          script {
+                            INTEGRATIONS_TESTED = '1'
+                          }
                           sh(label: "Check integration: ${it}", script: '../../build/elastic-package check -v')
                           prepareStack()
                           withKubernetes() {
@@ -158,6 +162,10 @@ pipeline {
 }
 
 def gitHubCommentWithBenchmarkReport() {
+  if ("${INTEGRATIONS_TESTED}" == "0") {
+    log(level: 'INFO', text: 'gitHubCommentWithBenchmarkReport: no integration has been tested')
+    return
+  }
   // report only on a PR basis for obvious reasons (github comments)
   if (isPR()) {
     def benchmarkGitHubFile = 'report.md'
@@ -363,6 +371,10 @@ def stashCoverageReport() {
 
 def publishCoverageReports() {
   stage('Publish coverage reports') {
+    if ("${INTEGRATIONS_TESTED}" == "0") {
+      log(level: 'INFO', text: 'publichCoverageReports: no integration has been tested')
+      return
+    }
     dir("${BASE_DIR}") {
       def bucketUri = getCoverageBucketURI() + "*.xml"
       googleStorageDownload(bucketUri: bucketUri, credentialsId: "${JOB_GCS_CREDENTIALS}", localDirectory: 'build/test-coverage', pathPrefix: getCoveragePathPrefix())
