@@ -26,11 +26,12 @@ An example event for `result` looks as following:
 {
     "@timestamp": "2018-01-08T14:51:55.000Z",
     "agent": {
-        "ephemeral_id": "b33539a4-b177-41fd-9c97-5664d8bd5120",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "a893e713-eedc-4ae1-8951-0a0ca7f783de",
+        "hostname": "docker-fleet-agent",
+        "id": "5e42424f-8ff5-4c7b-8a60-617548fd6b6a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "data_stream": {
         "dataset": "osquery.result",
@@ -41,39 +42,39 @@ An example event for `result` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "5e42424f-8ff5-4c7b-8a60-617548fd6b6a",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "7.17.0"
     },
     "event": {
         "action": "added",
         "agent_id_status": "verified",
-        "created": "2022-01-02T05:31:42.889Z",
+        "created": "2022-11-14T15:11:13.595Z",
         "dataset": "osquery.result",
-        "ingested": "2022-01-02T05:31:43Z",
+        "ingested": "2022-11-14T15:11:17Z",
         "kind": "event",
         "type": "info"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "ubuntu-xenial",
         "id": "72E1287B-D1BC-4FC6-B9D8-64F4352776A9",
         "ip": [
-            "172.18.0.5"
+            "192.168.128.7"
         ],
         "mac": [
-            "02:42:ac:12:00:05"
+            "02:42:c0:a8:80:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.11.0-43-generic",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "input": {
