@@ -3,7 +3,7 @@ description: Pipeline for parsing Infoblox NIOS DHCP logs.
 processors:
   - grok:
       field: message
-      if: ctx.message.contains("DHCPDISCOVER")
+      if: ctx.message.contains('DHCPDISCOVER')
       patterns:
         - "^%{WORD:event.action} from %{MAC:client.mac} via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) TransID %{DATA:infoblox_nios.log.dhcp.trans_id} uid %{GREEDYDATA:infoblox_nios.log.dhcp.uid}$"
         - "^%{WORD:event.action} from %{MAC:client.mac} via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) TransID %{DATA:infoblox_nios.log.dhcp.trans_id}: network %{DATA:infoblox_nios.log.dhcp.network}: %{GREEDYDATA:infoblox_nios.log.dhcp.discover.message}$"
@@ -13,7 +13,7 @@ processors:
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("DHCPOFFER")
+      if: ctx.message.contains('DHCPOFFER')
       patterns:
         - "^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} \\(%{DATA:infoblox_nios.log.dhcp.client_hostname}\\) via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) relay (%{IP:infoblox_nios.log.dhcp.relay.interface.ip}|%{WORD:infoblox_nios.log.dhcp.relay.interface.name}) lease-duration %{NUMBER:infoblox_nios.log.dhcp.lease.duration:long} offered-duration %{NUMBER:infoblox_nios.log.dhcp.offered_duration:long} uid %{GREEDYDATA:infoblox_nios.log.dhcp.uid}$"
         - "^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} \\(%{DATA:infoblox_nios.log.dhcp.client_hostname}\\) via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) relay (%{IP:infoblox_nios.log.dhcp.relay.interface.ip}|%{WORD:infoblox_nios.log.dhcp.relay.interface.name}) lease-duration %{NUMBER:infoblox_nios.log.dhcp.lease.duration:long} offered-duration %{GREEDYDATA:infoblox_nios.log.dhcp.offered_duration:long}$"
@@ -24,7 +24,7 @@ processors:
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("DHCPREQUEST")
+      if: ctx.message.contains('DHCPREQUEST')
       patterns:
         - "^%{WORD:event.action} for %{IP:client.ip} \\(%{IP:infoblox_nios.log.dhcp.router.ip}\\) from %{MAC:client.mac} \\(%{DATA:infoblox_nios.log.dhcp.client_hostname}\\) via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) TransID %{DATA:infoblox_nios.log.dhcp.trans_id} uid %{DATA:infoblox_nios.log.dhcp.uid} \\(%{GREEDYDATA:infoblox_nios.log.dhcp.lease.message}\\)$"
         - "^%{WORD:event.action} for %{IP:client.ip} from %{MAC:client.mac} \\(%{DATA:infoblox_nios.log.dhcp.client_hostname}\\) via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) TransID %{DATA:infoblox_nios.log.dhcp.trans_id} uid %{DATA:infoblox_nios.log.dhcp.uid} \\(%{GREEDYDATA:infoblox_nios.log.dhcp.lease.message}\\)$"
@@ -41,7 +41,7 @@ processors:
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("DHCPACK")
+      if: ctx.message.contains('DHCPACK')
       patterns:
         - "^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} \\(%{DATA:infoblox_nios.log.dhcp.client_hostname}\\) via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) relay (%{IP:infoblox_nios.log.dhcp.relay.interface.ip}|%{WORD:infoblox_nios.log.dhcp.relay.interface.name}) lease-duration %{NUMBER:infoblox_nios.log.dhcp.lease.duration:long} \\(%{DATA:infoblox_nios.log.dhcp.lease.message}\\) uid %{GREEDYDATA:infoblox_nios.log.dhcp.uid}$"
         - "^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) relay (%{IP:infoblox_nios.log.dhcp.relay.interface.ip}|%{WORD:infoblox_nios.log.dhcp.relay.interface.name}) lease-duration %{NUMBER:infoblox_nios.log.dhcp.lease.duration:long} \\(%{DATA:infoblox_nios.log.dhcp.lease.message}\\) uid %{GREEDYDATA:infoblox_nios.log.dhcp.uid}$"
@@ -53,70 +53,70 @@ processors:
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("DHCPRELEASE")
+      if: ctx.message.contains('DHCPRELEASE')
       patterns:
         - "^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} \\(%{DATA:infoblox_nios.log.dhcp.client_hostname}\\) via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) \\(%{DATA:infoblox_nios.log.dhcp.release.info}\\) TransID %{DATA:infoblox_nios.log.dhcp.trans_id} uid %{GREEDYDATA:infoblox_nios.log.dhcp.uid}$"
         - "^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) \\(%{DATA:infoblox_nios.log.dhcp.release.info}\\) TransID %{GREEDYDATA:infoblox_nios.log.dhcp.trans_id}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("DHCPEXPIRE")
+      if: ctx.message.contains('DHCPEXPIRE')
       patterns:
         - "^%{WORD:event.action} on %{IP:client.ip} to %{GREEDYDATA:client.mac}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("DHCPINFORM")
+      if: ctx.message.contains('DHCPINFORM')
       patterns:
         - "^%{WORD:event.action} from %{IP:client.ip} via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) TransID %{DATA:infoblox_nios.log.dhcp.trans_id}: %{GREEDYDATA:infoblox_nios.log.dhcp.inform.message}$"
         - "^%{WORD:event.action} from %{IP:client.ip} via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) TransID %{GREEDYDATA:infoblox_nios.log.dhcp.trans_id}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("DHCPDECLINE")
+      if: ctx.message.contains('DHCPDECLINE')
       patterns:
         - "^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}) TransID %{DATA:infoblox_nios.log.dhcp.trans_id}: %{GREEDYDATA:infoblox_nios.log.dhcp.decline.message}$"
         - "^%{WORD:event.action} of %{IP:client.ip} from %{MAC:client.mac} via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name}): %{GREEDYDATA:infoblox_nios.log.dhcp.decline.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("DHCPNAK")
+      if: ctx.message.contains('DHCPNAK')
       patterns:
         - "^%{WORD:event.action} on %{IP:client.ip} to %{MAC:client.mac} via (%{IP:infoblox_nios.log.dhcp.interface.ip}|%{WORD:interface.name})$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("DHCPLEASEQUERY")
+      if: ctx.message.contains('DHCPLEASEQUERY')
       patterns:
         - "^%{WORD:event.action} from %{IP:client.ip}: %{GREEDYDATA:infoblox_nios.log.dhcp.lease_query.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("Encapsulated Solicit")
+      if: ctx.message.contains('Encapsulated Solicit')
       patterns:
         - "^%{DATA:event.action} message from %{IP:client.ip} port %{NUMBER:client.port:long} from client DUID %{GREEDYDATA:infoblox_nios.log.dhcp.duid}, transaction ID %{GREEDYDATA:infoblox_nios.log.dhcp.trans_id}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("Advertise NA")
+      if: ctx.message.contains('Advertise NA')
       patterns:
         - "^%{DATA:event.action}: address %{IP:client.ip} to client with duid %{GREEDYDATA:infoblox_nios.log.dhcp.duid} iaid = -%{GREEDYDATA:infoblox_nios.log.dhcp.iaid} valid for %{NUMBER:infoblox_nios.log.dhcp.validation_second:long} seconds$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("Relay-forward")
+      if: ctx.message.contains('Relay-forward')
       patterns:
         - "^%{DATA:event.action} message from %{IP:client.ip} port %{NUMBER:client.port:long}, link address %{IP:infoblox_nios.log.dhcp.link_address}, peer address %{IP:infoblox_nios.log.dhcp.peer_address}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("Encapsulating Advertise")
+      if: ctx.message.contains('Encapsulating Advertise')
       patterns:
         - "^%{DATA:event.action} message to send to %{IP:client.ip} port %{NUMBER:client.port:long}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
   - grok:
       field: message
-      if: ctx.message.contains("Sending Relay-reply")
+      if: ctx.message.contains('Sending Relay-reply')
       patterns:
         - "^%{DATA:event.action} message to %{IP:client.ip} port %{NUMBER:client.port:long}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dhcp.message}$"
@@ -141,36 +141,108 @@ processors:
   - uppercase:
       field: client.mac
       ignore_missing: true
+  - convert:
+      field: client.ip
+      if: ctx.client?.ip != null && ctx.client.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: client.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
+  - convert:
+      field: infoblox_nios.log.dhcp.link_address
+      if: ctx.infoblox_nios?.log?.dhcp?.link_address != null && ctx.infoblox_nios.log.dhcp.link_address != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: infoblox_nios.log.dhcp.link_address
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{infoblox_nios.log.dhcp.link_address}}}'
       if: ctx.infoblox_nios?.log?.dhcp?.link_address != null
       allow_duplicates: false
       ignore_failure: true
+  - convert:
+      field: infoblox_nios.log.dhcp.peer_address
+      if: ctx.infoblox_nios?.log?.dhcp?.peer_address != null && ctx.infoblox_nios.log.dhcp.peer_address != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: infoblox_nios.log.dhcp.peer_address
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{infoblox_nios.log.dhcp.peer_address}}}'
       if: ctx.infoblox_nios?.log?.dhcp?.peer_address != null
       allow_duplicates: false
       ignore_failure: true
+  - convert:
+      field: infoblox_nios.log.dhcp.router.ip
+      if: ctx.infoblox_nios?.log?.dhcp?.router?.ip != null && ctx.infoblox_nios.log.dhcp.router.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: infoblox_nios.log.dhcp.router.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{infoblox_nios.log.dhcp.router.ip}}}'
       if: ctx.infoblox_nios?.log?.dhcp?.router?.ip != null
       allow_duplicates: false
       ignore_failure: true
+  - convert:
+      field: infoblox_nios.log.dhcp.interface.ip
+      if: ctx.infoblox_nios?.log?.dhcp?.interface?.ip != null && ctx.infoblox_nios.log.dhcp.interface.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: infoblox_nios.log.dhcp.interface.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{infoblox_nios.log.dhcp.interface.ip}}}'
       if: ctx.infoblox_nios?.log?.dhcp?.interface?.ip != null
       allow_duplicates: false
       ignore_failure: true
+  - convert:
+      field: infoblox_nios.log.dhcp.relay.interface.ip
+      if: ctx.infoblox_nios?.log?.dhcp?.relay?.interface?.ip != null && ctx.infoblox_nios.log.dhcp.relay.interface.ip != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: infoblox_nios.log.dhcp.relay.interface.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{infoblox_nios.log.dhcp.relay.interface.ip}}}'

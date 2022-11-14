@@ -155,6 +155,16 @@ processors:
       value:
         - network
 
+# Set event.outcome from panw.panos.error_message: a non-empty error would indicate a failure.
+  - set:
+      if: ctx.panw?.panos?.error_message == null || ctx.panw.panos.error_message == ""
+      field: event.outcome
+      value: success
+  - set:
+      if: ctx.panw?.panos?.error_message != ""
+      field: event.outcome
+      value: failure
+
 # Set custom fields to ECS fields
   - set:
       field: panw.panos.hash
