@@ -38,7 +38,7 @@ An example event for `loadbalancing` looks as following:
         "port": 8080
     },
     "ecs": {
-        "version": "8.2.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "df142714-8028-4ef0-a80c-4eb03051c084",
