@@ -69,7 +69,7 @@ An example event for `saml` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -286,7 +286,7 @@ An example event for `user_accounts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -404,6 +404,7 @@ An example event for `user_accounts` looks as following:
 | google_workspace.event.type | The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload. More details can be found at https://developers.google.com/admin-sdk/reports/v1/reference/activities/list | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| google_workspace.user_accounts.email_forwarding_destination_address | Out of domain email the actor has forwarded to. | keyword |
 | group.domain | Name of the directory the group is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | group.id | Unique identifier for the group on the system/platform. | keyword |
 | group.name | Name of the group. | keyword |
@@ -488,7 +489,7 @@ An example event for `login` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -706,7 +707,7 @@ An example event for `admin` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -1034,7 +1035,7 @@ An example event for `drive` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
@@ -1287,7 +1288,7 @@ An example event for `groups` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
         "id": "584f3aea-648c-4e58-aba4-32b8f88d4396",
