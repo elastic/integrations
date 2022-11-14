@@ -5,14 +5,6 @@ The Sysmon integration allows you to monitor the [Sysmon for Linux](https://gith
 Use the Sysmon integration to collect logs from linux machine which has sysmon tool running.
 Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference data when troubleshooting an issue.
 
-## Data streams
-
-The Sysmon integration collects logs data.
-
-**Logs** help you keep a record of events that happen on your machine.
-Log data streams collected by the Sysmon integration include security events collected by sysmon monitor tool on machines running macOS or Linux.
-See more details in the [Logs reference](#logs-reference).
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
@@ -23,137 +15,113 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 For step-by-step instructions on how to set up an integration,
 see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-### Sysmon/Operational
+## Data streams
 
-The Sysmon `log` data stream provides events from the Sysmon `Linux Syslog` log.
+The Sysmon `log` data stream provides events from logs produced by Sysmon tool running on Linux machine.
 
 An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2019-07-18T03:34:01.261Z",
+    "@timestamp": "2021-10-24T16:42:56.564Z",
     "agent": {
-        "ephemeral_id": "0670a96e-1852-42bc-b667-66e022ab1c89",
-        "hostname": "docker-fleet-agent",
-        "id": "0d57cbc7-6410-455a-840c-08fd44507a26",
+        "ephemeral_id": "c096d2fe-9b6f-4fd9-9a8d-3d241321a20d",
+        "id": "a26b957d-91e3-4f71-8a80-e8a526a6d8a9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.5.0"
     },
     "data_stream": {
-        "dataset": "windows.sysmon_operational",
+        "dataset": "sysmon.log",
         "namespace": "ep",
         "type": "logs"
     },
-    "dns": {
-        "answers": [
-            {
-                "data": "www-msn-com.a-0003.a-msedge.net",
-                "type": "CNAME"
-            },
-            {
-                "data": "a-0003.a-msedge.net",
-                "type": "CNAME"
-            },
-            {
-                "data": "204.79.197.203",
-                "type": "A"
-            }
-        ],
-        "question": {
-            "name": "www.msn.com",
-            "registered_domain": "msn.com",
-            "subdomain": "www",
-            "top_level_domain": "com"
-        },
-        "resolved_ip": [
-            "204.79.197.203"
-        ]
-    },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "0d57cbc7-6410-455a-840c-08fd44507a26",
+        "id": "a26b957d-91e3-4f71-8a80-e8a526a6d8a9",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.5.0"
     },
     "event": {
+        "action": "log",
         "agent_id_status": "verified",
         "category": [
-            "network"
+            "process"
         ],
-        "code": "22",
-        "created": "2019-07-18T03:34:02.025Z",
-        "dataset": "windows.sysmon_operational",
-        "ingested": "2022-03-31T08:42:26Z",
+        "code": "1",
+        "created": "2021-10-24T17:05:46.710Z",
+        "dataset": "sysmon.log",
+        "ingested": "2022-11-14T06:53:37Z",
         "kind": "event",
-        "original": "\u003cEvent xmlns='http://schemas.microsoft.com/win/2004/08/events/event'\u003e\u003cSystem\u003e\u003cProvider Name='Microsoft-Windows-Sysmon' Guid='{5770385f-c22a-43e0-bf4c-06f5698ffbd9}'/\u003e\u003cEventID\u003e22\u003c/EventID\u003e\u003cVersion\u003e5\u003c/Version\u003e\u003cLevel\u003e4\u003c/Level\u003e\u003cTask\u003e22\u003c/Task\u003e\u003cOpcode\u003e0\u003c/Opcode\u003e\u003cKeywords\u003e0x8000000000000000\u003c/Keywords\u003e\u003cTimeCreated SystemTime='2019-07-18T03:34:02.025237700Z'/\u003e\u003cEventRecordID\u003e67\u003c/EventRecordID\u003e\u003cCorrelation/\u003e\u003cExecution ProcessID='2828' ThreadID='1684'/\u003e\u003cChannel\u003eMicrosoft-Windows-Sysmon/Operational\u003c/Channel\u003e\u003cComputer\u003evagrant-2016\u003c/Computer\u003e\u003cSecurity UserID='S-1-5-18'/\u003e\u003c/System\u003e\u003cEventData\u003e\u003cData Name='RuleName'\u003e\u003c/Data\u003e\u003cData Name='UtcTime'\u003e2019-07-18 03:34:01.261\u003c/Data\u003e\u003cData Name='ProcessGuid'\u003e{fa4a0de6-e8a9-5d2f-0000-001053699900}\u003c/Data\u003e\u003cData Name='ProcessId'\u003e2736\u003c/Data\u003e\u003cData Name='QueryName'\u003ewww.msn.com\u003c/Data\u003e\u003cData Name='QueryStatus'\u003e0\u003c/Data\u003e\u003cData Name='QueryResults'\u003etype:  5 www-msn-com.a-0003.a-msedge.net;type:  5 a-0003.a-msedge.net;::ffff:204.79.197.203;\u003c/Data\u003e\u003cData Name='Image'\u003eC:\\Program Files (x86)\\Internet Explorer\\iexplore.exe\u003c/Data\u003e\u003c/EventData\u003e\u003c/Event\u003e",
-        "provider": "Microsoft-Windows-Sysmon",
+        "provider": "Linux-Sysmon",
+        "timezone": "+00:00",
         "type": [
-            "connection",
-            "protocol",
-            "info"
+            "start"
         ]
     },
     "host": {
-        "name": "vagrant-2016"
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "log": {
-        "level": "information"
-    },
-    "network": {
-        "protocol": "dns"
-    },
-    "process": {
-        "entity_id": "{fa4a0de6-e8a9-5d2f-0000-001053699900}",
-        "executable": "C:\\Program Files (x86)\\Internet Explorer\\iexplore.exe",
-        "name": "iexplore.exe",
-        "pid": 2736
-    },
-    "related": {
-        "hosts": [
-            "www-msn-com.a-0003.a-msedge.net",
-            "a-0003.a-msedge.net",
-            "www.msn.com"
-        ],
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "204.79.197.203"
-        ]
-    },
-    "sysmon": {
-        "dns": {
-            "status": "SUCCESS"
+            "172.21.0.7"
+        ],
+        "mac": [
+            "02-42-AC-15-00-07"
+        ],
+        "name": "james-ubuntu-demo",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
-    "tags": [
-        "forwarded",
-        "preserve_original_event"
-    ],
-    "user": {
-        "id": "S-1-5-18"
+    "input": {
+        "type": "filestream"
     },
-    "winlog": {
-        "channel": "Microsoft-Windows-Sysmon/Operational",
-        "computer_name": "vagrant-2016",
-        "event_id": "22",
+    "linux": {
+        "channel": "Linux-Sysmon/Operational",
+        "computer_name": "james-ubuntu-demo",
+        "event_data": {
+            "IntegrityLevel": "no level",
+            "LogonGuid": "{d65774de-0000-0000-ffff-ffffffffffff}",
+            "LogonId": "65535",
+            "TerminalSessionId": "0"
+        },
+        "event_id": "1",
         "opcode": "Info",
         "process": {
-            "pid": 2828,
+            "pid": 3099,
             "thread": {
-                "id": 1684
+                "id": 3099
             }
         },
-        "provider_guid": "{5770385f-c22a-43e0-bf4c-06f5698ffbd9}",
-        "provider_name": "Microsoft-Windows-Sysmon",
-        "record_id": "67",
-        "user": {
-            "identifier": "S-1-5-18"
-        },
+        "provider_guid": "{ff032593-a8d3-4f13-b0d6-01fc615a0f97}",
+        "provider_name": "Linux-Sysmon",
+        "record_id": "7",
         "version": 5
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/sysmon.log"
+        },
+        "level": "information",
+        "offset": 6883
+    },
+    "process": {
+        "entity_id": "{d65774de-8d10-6175-0000-000000000000}",
+        "name": "sysmon",
+        "parent": {
+            "pid": 0
+        },
+        "pid": 3100
     }
 }
 ```
@@ -191,7 +159,7 @@ An example event for `log` looks as following:
 | dns.answers.name | The domain name to which this resource record pertains. If a chain of CNAME is being resolved, each answer's `name` should be the one that corresponds with the answer's `data`. It should not simply be the original `question.name` repeated. | keyword |
 | dns.answers.ttl | The time interval in seconds that this resource record may be cached before it should be discarded. Zero values mean that the data should not be cached. | long |
 | dns.answers.type | The type of data contained in this resource record. | keyword |
-| dns.header_flags | Array of 2 letter DNS header flags. Expected values are: AA, TC, RD, RA, AD, CD, DO. | keyword |
+| dns.header_flags | Array of 2 letter DNS header flags. | keyword |
 | dns.id | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | dns.op_code | The DNS operation code that specifies the kind of query in the message. This value is set by the originator of a query and copied into the response. | keyword |
 | dns.question.class | The class of records being queried. | keyword |
@@ -392,15 +360,17 @@ An example event for `log` looks as following:
 | linux.related_activity_id | A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier. | keyword |
 | linux.task | The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field. | keyword |
 | linux.user.domain | The domain that the account associated with this event is a member of. | keyword |
-| linux.user.identifier | The Windows security identifier (SID) of the account associated with this event. If Winlogbeat cannot resolve the SID to a name, then the `user.name`, `user.domain`, and `user.type` fields will be omitted from the event. If you discover Winlogbeat not resolving SIDs, review the log for clues as to what the problem may be. | keyword |
+| linux.user.identifier | The security identifier (SID) of the account associated with this event. | keyword |
 | linux.user.name | Name of the user associated with this event. | keyword |
 | linux.user.type | The type of account associated with this event. | keyword |
 | linux.user_data | The event specific data. This field is mutually exclusive with `event_data`. | object |
 | linux.version | The version number of the event's definition. | long |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | network.community_id | A hash of source and destination IPs and ports, as well as the protocol used in a communication. This is a tool-agnostic standard to identify flows. Learn more at https://github.com/corelight/community-id-spec. | keyword |
-| network.direction | Direction of the network traffic. Recommended values are:   \* ingress   \* egress   \* inbound   \* outbound   \* internal   \* external   \* unknown  When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
+| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |
 | network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
 | network.type | In the OSI Model this would be the Network Layer. ipv4, ipv6, ipsec, pim, etc The field value must be normalized to lowercase for querying. | keyword |
