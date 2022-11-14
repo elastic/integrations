@@ -68,8 +68,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-10T16:04:30.263Z",
     "agent": {
-        "ephemeral_id": "a332765e-1e1f-4ec7-b24e-ae2d0dd5d74f",
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "ephemeral_id": "81fc1f38-373a-47c1-a693-f296eea27a11",
+        "id": "d5069cb2-23e9-473b-8498-c5af8bc68e56",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -95,16 +95,16 @@ An example event for `audit` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "id": "d5069cb2-23e9-473b-8498-c5af8bc68e56",
         "snapshot": false,
         "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-09-26T01:59:24.724Z",
+        "created": "2022-11-11T13:10:13.087Z",
         "dataset": "carbon_black_cloud.audit",
         "id": "2122f8ce8xxxxxxxxxxxxx",
-        "ingested": "2022-09-26T01:59:25Z",
+        "ingested": "2022-11-11T13:10:16Z",
         "kind": "event",
         "original": "{\"clientIp\":\"10.10.10.10\",\"description\":\"Logged in successfully\",\"eventId\":\"2122f8ce8xxxxxxxxxxxxx\",\"eventTime\":1644509070263,\"flagged\":false,\"loginName\":\"abc@demo.com\",\"orgName\":\"cb-xxxx-xxxx.com\",\"requestUrl\":null,\"verbose\":false}",
         "outcome": "success",
@@ -199,8 +199,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2020-11-17T22:05:13.000Z",
     "agent": {
-        "ephemeral_id": "cc329655-90f8-4dc9-8014-e152f2b949da",
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "ephemeral_id": "8118eba7-5da9-4642-8746-8bc0166f870f",
+        "id": "d5069cb2-23e9-473b-8498-c5af8bc68e56",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -214,7 +214,7 @@ An example event for `alert` looks as following:
                 "location": "UNKNOWN",
                 "os": "WINDOWS"
             },
-            "last_update_time": "2020-11-17T22:05:13Z",
+            "last_update_time": "2020-11-17T22:05:13.000Z",
             "legacy_alert_id": "C8EB7306-AF26-4A9A-B677-814B3AF69720",
             "organization_key": "ABCD6X3T",
             "policy": {
@@ -240,7 +240,7 @@ An example event for `alert` looks as following:
             "vendor_name": "SanDisk",
             "workflow": {
                 "changed_by": "Carbon Black",
-                "last_update_time": "2020-11-17T22:02:16Z",
+                "last_update_time": "2020-11-17T22:02:16.000Z",
                 "state": "OPEN"
             }
         }
@@ -254,22 +254,22 @@ An example event for `alert` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "id": "d5069cb2-23e9-473b-8498-c5af8bc68e56",
         "snapshot": false,
         "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-09-26T01:58:04.610Z",
+        "created": "2022-11-11T13:08:42.923Z",
         "dataset": "carbon_black_cloud.alert",
-        "end": "2020-11-17T22:02:16Z",
+        "end": "2020-11-17T22:02:16.000Z",
         "id": "test1",
-        "ingested": "2022-09-26T01:58:05Z",
+        "ingested": "2022-11-11T13:08:46Z",
         "kind": "alert",
         "original": "{\"alert_url\":\"https://defense-eap01.conferdeploy.net/alerts?orgId=1889976\",\"category\":\"WARNING\",\"create_time\":\"2020-11-17T22:05:13Z\",\"device_external_ip\":\"81.2.69.143\",\"device_id\":2,\"device_internal_ip\":\"81.2.69.144\",\"device_location\":\"UNKNOWN\",\"device_name\":\"DESKTOP-002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_username\":\"test34@demo.com\",\"first_event_time\":\"2020-11-17T22:02:16Z\",\"id\":\"test1\",\"last_event_time\":\"2020-11-17T22:02:16Z\",\"last_update_time\":\"2020-11-17T22:05:13Z\",\"legacy_alert_id\":\"C8EB7306-AF26-4A9A-B677-814B3AF69720\",\"org_key\":\"ABCD6X3T\",\"policy_applied\":\"APPLIED\",\"policy_id\":6997287,\"policy_name\":\"Standard\",\"product_id\":\"0x5406\",\"product_name\":\"U3 Cruzer Micro\",\"reason\":\"Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.\",\"reason_code\":\"6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC\",\"run_state\":\"DID_NOT_RUN\",\"sensor_action\":\"DENY\",\"serial_number\":\"0875920EF7C2A304\",\"severity\":3,\"target_value\":\"MEDIUM\",\"threat_cause_cause_event_id\":\"FCEE2AF0-D832-4C9F-B988-F11B46028C9E\",\"threat_cause_threat_category\":\"NON_MALWARE\",\"threat_cause_vector\":\"REMOVABLE_MEDIA\",\"threat_id\":\"t5678\",\"type\":\"DEVICE_CONTROL\",\"vendor_id\":\"0x0781\",\"vendor_name\":\"SanDisk\",\"workflow\":{\"changed_by\":\"Carbon Black\",\"comment\":\"\",\"last_update_time\":\"2020-11-17T22:02:16Z\",\"remediation\":\"\",\"state\":\"OPEN\"}}",
         "reason": "Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.",
         "severity": 3,
-        "start": "2020-11-17T22:02:16Z",
+        "start": "2020-11-17T22:02:16.000Z",
         "url": "https://defense-eap01.conferdeploy.net/alerts?orgId=1889976"
     },
     "host": {
@@ -373,7 +373,7 @@ An example event for `alert` looks as following:
 | carbon_black_cloud.alert.workflow.changed_by | The name of user who changed the workflow. | keyword |
 | carbon_black_cloud.alert.workflow.comment | Comment associated with workflow. | keyword |
 | carbon_black_cloud.alert.workflow.last_update_time | The last update time of workflow. | date |
-| carbon_black_cloud.alert.workflow.remediation | N/A | keyword |
+| carbon_black_cloud.alert.workflow.remediation | N/A. | keyword |
 | carbon_black_cloud.alert.workflow.state | The state of workflow. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -583,7 +583,7 @@ An example event for `endpoint_event` looks as following:
 | carbon_black_cloud.endpoint_event.modload.publisher.name | The name of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.modload.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.netconn.proxy.domain | DNS name associated with the "proxy" end of this network connection; may be empty if the name cannot be inferred or the connection is made direct to/from a proxy IP address. | keyword |
-| carbon_black_cloud.endpoint_event.netconn.proxy.ip | IPv4 or IPv6 address in string format associated with the "proxy" end of this network connection. | keyword |
+| carbon_black_cloud.endpoint_event.netconn.proxy.ip | IPv4 or IPv6 address in string format associated with the "proxy" end of this network connection. | ip |
 | carbon_black_cloud.endpoint_event.netconn.proxy.port | UDP/TCP port number associated with the "proxy" end of this network connection. | keyword |
 | carbon_black_cloud.endpoint_event.organization_key | The organization key associated with the console instance. | keyword |
 | carbon_black_cloud.endpoint_event.process.duration | The time difference in seconds between the process start and process terminate event. | long |
@@ -651,7 +651,7 @@ An example event for `endpoint_event` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
@@ -926,10 +926,10 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-26T01:58:41.710Z",
+    "@timestamp": "2022-11-11T13:09:28.283Z",
     "agent": {
-        "ephemeral_id": "818ffeea-8e73-497b-bc16-b13e6bb3010c",
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "ephemeral_id": "33a3f0f8-27ca-4547-8af1-6c2f86b25051",
+        "id": "d5069cb2-23e9-473b-8498-c5af8bc68e56",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -959,15 +959,16 @@ An example event for `asset_vulnerability_summary` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "id": "d5069cb2-23e9-473b-8498-c5af8bc68e56",
         "snapshot": false,
         "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-09-26T01:58:41.710Z",
+        "created": "2022-11-11T13:09:28.283Z",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2022-09-26T01:58:45Z",
+        "ingested": "2022-11-11T13:09:31Z",
+        "kind": "state",
         "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64-bit\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },
     "host": {
@@ -991,7 +992,7 @@ An example event for `asset_vulnerability_summary` looks as following:
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "carbon_black_cloud-asset-vulnerability-summary"
+        "carbon_black_cloud-asset_vulnerability_summary"
     ],
     "vulnerability": {
         "score": {
@@ -1049,7 +1050,7 @@ An example event for `asset_vulnerability_summary` looks as following:
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
