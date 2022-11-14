@@ -3,6 +3,7 @@ paths:
  - {{path}}
 {{/each}}
 prospector.scanner.exclude_files: [".gz$"]
+prospector.scanner.resend_on_touch: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
@@ -21,24 +22,15 @@ processors:
         to: event.original
     ignore_missing: true
     fail_on_error: false
-- dissect:
-    tokenizer: '%{sysmon.log.date.month} %{sysmon.log.date.day} %{sysmon.log.date.time} %{host.hostname} %{process.name}[%{process.pid|long}]: %{sysmon.log.message}'
+- syslog:
     field: "event.original"
-    target_prefix: ""
-- if:
-    and:
-      - has_fields: ['log.flags']
-      - contains:
-          log.flags: "dissect_parsing_error"
-  then:
-    - dissect:
-        tokenizer: '%{sysmon.log.date.month} %{sysmon.log.date.day} %{sysmon.log.date.time} %{host.hostname} %{process.name}: %{sysmon.log.message}'
-        field: "event.original"
-        target_prefix: ""
-    - drop_fields: 
-        fields: ["log.flags"]
+    ignore_missing: true
+    ignore_failure: true
 - decode_xml_wineventlog:
-    field: sysmon.log.message
+    when:
+      regexp:
+        message: '^\<Event'
+    field: event.original
     target_field: linux
     ignore_missing: true
     ignore_failure: true

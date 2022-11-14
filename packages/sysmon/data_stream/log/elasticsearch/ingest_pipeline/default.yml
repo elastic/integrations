@@ -5,11 +5,7 @@ processors:
 
   - set:
       field: ecs.version
-      value: '8.5.0'
-  - set:
-      field: sysmon.log.timestamp
-      value: '{{sysmon.log.date.month}} {{sysmon.log.date.day}} {{sysmon.log.date.time}}'
-      if: ctx?.sysmon?.log?.date?.month != null && ctx?.sysmon?.log?.date?.day != null && ctx?.sysmon?.log?.date?.time != null   
+      value: '8.5.0'  
   - script:
       description: Remove all empty values from event_data.
       lang: painless
@@ -29,22 +25,40 @@ processors:
       if: ctx?.linux?.time_created != null
   - date:
       field: linux.event_data.UtcTime
-      target_field: '@timestamp'
+      target_field: 'linux.event_data.UtcTime'
       formats:
         - yyyy-MM-dd HH:mm:ss.SSS
       timezone: UTC
       ignore_failure: true
       if: ctx?.linux?.event_data?.UtcTime != null
-  - date:
-      field: sysmon.log.timestamp
-      target_field: '@timestamp'
-      formats:
-        - MMM  d HH:mm:ss
-        - MMM dd HH:mm:ss
-        - MMM d HH:mm:ss
-        - ISO8601
+  # - date:
+  #     field: sysmon.log.timestamp
+  #     target_field: '@timestamp'
+  #     formats:
+  #       - MMM  d HH:mm:ss
+  #       - MMM dd HH:mm:ss
+  #       - MMM d HH:mm:ss
+  #       - ISO8601
+  #     ignore_failure: true
+  #     if: ctx?.linux?.event_data?.UtcTime == null && ctx?.sysmon?.log?.timestamp != null
+  - rename:
+      field: log.syslog.appname
+      target_field: process.name
+      ignore_missing: true
       ignore_failure: true
-      if: ctx?.linux?.event_data?.UtcTime == null && ctx?.sysmon?.log?.timestamp != null
+      if: ctx?.log?.syslog?.appname != null
+  - rename:
+      field: log.syslog.hostname
+      target_field: host.hostname
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx?.log?.syslog?.hostname != null
+  - convert:
+      field: log.syslog.procid
+      target_field: process.pid
+      type: long
+      ignore_failure: true
+      ignore_missing: true
   - remove:
       description: Remove original date and unparsed message fields
       field: sysmon.log
@@ -1263,6 +1277,7 @@ processors:
   - remove:
       field:
         - _temp
+        - log.syslog
         - linux.event_data.ProcessId
         - linux.event_data.ParentProcessId
         - linux.event_data.SourceProcessId
