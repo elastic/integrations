@@ -167,6 +167,14 @@ processors:
         - panw_cortex.xdr.mac
       ignore_missing: true
       if: ctx.host?.mac != null
+  - gsub:
+      field: host.mac
+      ignore_missing: true
+      pattern: '[:.]'
+      replacement: '-'
+  - uppercase:
+      field: host.mac
+      ignore_missing: true
   - rename:
       field: panw_cortex.xdr.events.dns_query_name
       target_field: dns.question.name
