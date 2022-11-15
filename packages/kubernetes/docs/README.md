@@ -43,7 +43,7 @@ which is used in some configuration examples. But in general, and lately, this e
 
 #### state_* and event
 
-State_* datasets are  enabled by default.
+State_* datasets are enabled by default.
 
 All datasets with the `state_` prefix require `hosts` field pointing to `kube-state-metrics`
 service within the cluster. As the service provides cluster-wide metrics, there's no need to fetch them per node,
