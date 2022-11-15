@@ -74,6 +74,7 @@ pipeline {
         }
       }
     }
+    packageStoragePublish()
     stage('Check integrations') {
       steps {
         script {
@@ -153,7 +154,6 @@ pipeline {
   post {
     always {
       publishCoverageReports()
-      packageStoragePublish()
     }
     cleanup {
       notifyBuildResult(prComment: true)
@@ -437,7 +437,11 @@ def packageStoragePublish() {
           }
 
           withEnv(["PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}"]) {
-            sh(label: "Build integration as zip: ${it}", script: "elastic-package build --zip")
+            try {
+              sh(label: "Build integration as zip: ${it}", script: "elastic-package build --zip")
+            }catch(error){
+              echo("Build paackage for ${it} failed")
+            }
           }
           unpublishedPresent = true
         }
