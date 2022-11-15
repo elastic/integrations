@@ -57,7 +57,12 @@ See: [View the SQL Server error log in SQL Server Management Studio](https://doc
 
 ### performance metrics
 
-Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
+Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter as an input.
+This input can be a regular expression which will filter results based on pattern.
+For example, if %grant% is given as input, it will enable metrics collection for all of the counters with name like 'Memory Grants Pending', 'Active memory grants count' etc.
+MSSQL supports limited set of RegExp, See [here] (https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms187489(v=sql.105)?redirectedfrom=MSDN) for details.
+
+>Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lower case and remove special characters and these fields will not have any static field mappings.
 
 The feature `merge_results` has been introduced in 8.4 beats which create a single event by combining the metrics together in a single event. See [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event) for details.
 
