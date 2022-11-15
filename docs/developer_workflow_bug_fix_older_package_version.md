@@ -27,7 +27,7 @@ Here there wil be detailed the steps to follow to release a fix for a given pack
       ```bash
       cd packages/<package_name>
       git log --grep "#<pr_id>" .
-      git log -n 1 <merge_commit>^ . 
+      git log -n 1 <merge_commit>^ .
 
       # following the example
       $ cd packages/aws
@@ -63,6 +63,6 @@ Here there wil be detailed the steps to follow to release a fix for a given pack
 3. **Create a PR for the bug fix**
 
    Apply bugfixes and open a PR against the `backport-<package_name>-<package_major_version>.<package_minor_version>` branch created above.
-   
+
 
 Once this PR is merged, this new version of the package is going to be published automatically following the usual CI/CD jobs.
