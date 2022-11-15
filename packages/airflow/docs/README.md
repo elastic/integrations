@@ -9,7 +9,18 @@ The Airflow module is tested with Airflow 2.4.0. It should work with version
 2.0.0 and later.
 
 ### statsd
+statsd datastream retrieves the Airflow metrics using Statsd.
+The Airflow integration requires [Statsd](https://www.elastic.co/guide/en/beats/metricbeat/master/metricbeat-module-airflow.html) to receive Statsd metrics. Refer to the link for instructions about how to use Statsd.
 
+Add the following lines to your Airflow configuration file e.g. `airflow.cfg` ensuring `statsd_prefix` is left empty and replace `%HOST%` with the address agent is running:
+
+```
+[metrics]
+statsd_on = True
+statsd_host = %HOST%
+statsd_port = 8125
+statsd_prefix =
+```
 **Exported fields**
 
 | Field | Description | Type |
@@ -30,13 +41,6 @@ The Airflow module is tested with Airflow 2.4.0. It should work with version
 | airflow.\*.p99_9 | Airflow 99.9 percentile timers metric | object |
 | airflow.\*.stddev | Airflow standard deviation timers metric | object |
 | airflow.\*.value | Airflow gauges | object |
-| airflow.dag_file | Airflow dag file metadata | keyword |
-| airflow.dag_id | Airflow dag id metadata | keyword |
-| airflow.job_name | Airflow job name metadata | keyword |
-| airflow.operator_name | Airflow operator name metadata | keyword |
-| airflow.pool_name | Airflow pool name metadata | keyword |
-| airflow.status | Airflow status metadata | keyword |
-| airflow.task_id | Airflow task id metadata | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
