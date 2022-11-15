@@ -23,6 +23,7 @@ Here there wil be detailed the steps to follow to release a fix for a given pack
                - https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/
                  ![commits from package](./images/browse_package_commits.png)
        - Using the command line:
+
          ```bash
          cd packages/<package_name>
          git log --grep "#<pr_id>" .
