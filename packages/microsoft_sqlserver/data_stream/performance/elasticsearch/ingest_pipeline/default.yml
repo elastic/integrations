@@ -14,6 +14,66 @@ processors:
     target_field: mssql
     ignore_missing: true
     ignore_failure: true
+- foreach:
+    field: mssql.metrics
+    ignore_missing: true
+    processor:
+        trim:
+            field: "_ingest._key"
+            ignore_missing: true
+- foreach:
+    field: mssql.metrics
+    ignore_missing: true
+    processor:
+        gsub:
+            field: "_ingest._key"
+            pattern: " "
+            replacement: "_"
+- foreach:
+    field: mssql.metrics
+    ignore_missing: true
+    ignore_failure: true
+    processor:
+        gsub:
+            field: "_ingest._key"
+            pattern: "/"
+            replacement: "_"
+- foreach:
+    field: mssql.metrics
+    ignore_missing: true
+    ignore_failure: true
+    processor:
+        gsub:
+            field: "_ingest._key"
+            pattern: ">"
+            replacement: "_"
+- foreach:
+    field: mssql.metrics
+    ignore_missing: true
+    ignore_failure: true
+    processor:
+        gsub:
+            field: "_ingest._key"
+            pattern: "\\("
+            replacement: ""
+- foreach:
+    field: mssql.metrics
+    ignore_missing: true
+    ignore_failure: true
+    processor:
+        gsub:
+            field: "_ingest._key"
+            pattern: "%"
+            replacement: "pct"
+- foreach:
+    field: mssql.metrics
+    ignore_missing: true
+    ignore_failure: true
+    processor:
+        gsub:
+            field: "_ingest._key"
+            pattern: "\\)"
+            replacement: ""
 on_failure:
 - set:
     field: error.message

@@ -6,7 +6,7 @@ period: {{period}}
 raw_data.enabled: true
 merge_results: true
 # Below dynamic_counter_name handles the dynamic counter name passing it to SQL query
-dynamic_counter_name: {{dynamic_counter_name}}
+dynamic_counter_name: "{{dynamic_counter_name}}"
 driver: "mssql"
 sql_queries:
   - query: "SELECT cntr_value As 'user_connections' FROM sys.dm_os_performance_counters WHERE counter_name= 'User Connections'"
@@ -41,5 +41,5 @@ sql_queries:
     response_format: table
   - query: "SELECT cntr_value As 're_compilations_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'SQL Re-Compilations/sec'"
     response_format: table
-  - query: "SELECT counter_name As 'dynamic_counter.name', cntr_value As 'dynamic_counter.value' FROM sys.dm_os_performance_counters WHERE counter_name= '{{dynamic_counter_name}}'"
-    response_format: table
+  - query: "SELECT counter_name, cntr_value FROM sys.dm_os_performance_counters WHERE counter_name like '{{dynamic_counter_name}}'"
+    response_format: variables
