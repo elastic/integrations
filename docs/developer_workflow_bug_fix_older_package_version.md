@@ -14,46 +14,46 @@ Here there wil be detailed the steps to follow to release a fix for a given pack
 
    In the example above, the commit to be fixed is the one right before this
    [PR](https://github.com/elastic/integrations/pull/3688) updating package `aws`:
-       - Using the web:
-           - Look for the merge commit of the PR
-               - https://github.com/elastic/integrations/commit/aa63e1f6a61d2a017e1f88af2735db129cc68e0c
-               - It can be found as one of the last messages in the PR
-                 ![merged commit](./images/merge_commit_message.png)
-           - And then show the previous commits for that changeset inside the package folder (e.g. `packages/aws`):
-               - https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/
-                 ![commits from package](./images/browse_package_commits.png)
-       - Using the command line:
+    - Using the web:
+        - Look for the merge commit of the PR
+            - https://github.com/elastic/integrations/commit/aa63e1f6a61d2a017e1f88af2735db129cc68e0c
+            - It can be found as one of the last messages in the PR
+              ![merged commit](./images/merge_commit_message.png)
+        - And then show the previous commits for that changeset inside the package folder (e.g. `packages/aws`):
+            - https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/
+              ![commits from package](./images/browse_package_commits.png)
+    - Using the command line:
 
-         ```bash
-         cd packages/<package_name>
-         git log --grep "#<pr_id>" .
-         git log -n 1 <merge_commit>^ . 
+      ```bash
+      cd packages/<package_name>
+      git log --grep "#<pr_id>" .
+      git log -n 1 <merge_commit>^ . 
 
-         # following the example
-         $ cd packages/aws
-         $ git log --grep "#3688"
-         commit aa63e1f6a61d2a017e1f88af2735db129cc68e0c
-         Author: Joe Reuter <email@johannes-reuter.de>
-         Date:   Mon Aug 8 17:14:55 2022 +0200
-         
-             Inline all aws dashboards (#3688)
-             
-             * inline all aws dashboards
-             
-             * format
-             
-             * apply the right format
-             
-             * inline again
-             
-             * format
-         $ git log -n 1 aa63e1f6a61d2a017e1f88af2735db129cc68e0c^ .
-         commit 8cb321075afb9b77ea965e1373a03a603d9c9796
-         Author: Mario Castro <mariocaster@gmail.com>
-         Date:   Thu Aug 4 16:52:06 2022 +0200
-         
-             Move lightweight manifest to integration for EBS data stream (#3856)
-         ```
+      # following the example
+      $ cd packages/aws
+      $ git log --grep "#3688"
+      commit aa63e1f6a61d2a017e1f88af2735db129cc68e0c
+      Author: Joe Reuter <email@johannes-reuter.de>
+      Date:   Mon Aug 8 17:14:55 2022 +0200
+      
+          Inline all aws dashboards (#3688)
+          
+          * inline all aws dashboards
+          
+          * format
+          
+          * apply the right format
+          
+          * inline again
+          
+          * format
+      $ git log -n 1 aa63e1f6a61d2a017e1f88af2735db129cc68e0c^ .
+      commit 8cb321075afb9b77ea965e1373a03a603d9c9796
+      Author: Mario Castro <mariocaster@gmail.com>
+      Date:   Thu Aug 4 16:52:06 2022 +0200
+      
+          Move lightweight manifest to integration for EBS data stream (#3856)
+      ```
 
 2. **Create a branch**
 
