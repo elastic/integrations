@@ -2,9 +2,9 @@
 
 ForgeRock is a modern identity platform which helps organizations radically simplify identity and access management (IAM) and identity governance and administration (IGA). The ForgeRock integration collects audit logs from the [API](https://backstage.forgerock.com/knowledge/kb/article/a37739488).
 
-### Configuration
+### Authentication Set-Up
 
-TBD
+When setting up the ForgeRock Integration, you will need to use the "api_key_id" and "api_key_secret" in the integration configuration. To create these, review the [ForgeRock Authentication documentation](https://backstage.forgerock.com/docs/idcloud/latest/developer-docs/authenticate-to-rest-api-with-api-key-and-secret.html). This will allow connection to the [Identity Cloud audit log API](https://backstage.forgerock.com/docs/idcloud/latest/tenants/audit-debug-logs.html).
 
 ### Example event
 
