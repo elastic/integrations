@@ -752,24 +752,6 @@ processors:
         - append:
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
-#   - script:
-#       lang: painless
-#       if: 'ctx.panw?.panos?.certificate?.size != null'
-#       source: >
-#         String cert_size = ctx.panw.panos.certificate.size.toString();
-#         if (cert_size =~ /^\d+$/) {
-#             ctx.panw.panos.certificate.size = Long.parseLong(cert_size);
-#             ctx.tls.client.x509.public_key_size = ctx.panw.panos.certificate.size;
-#         }
-#         else {
-#             throw new Exception('Cannot convert field panw.panos.certificate.size to long')
-#         }
-#       on_failure:
-#         # - remove:
-#         #     field: panw.panos.certificate.size
-#         - append:
-#             field: error.message
-#             value: "{{{_ingest.on_failure_message}}}"
 
   - convert:
       if: 'ctx.panw?.panos?.certificate?.size != null && ctx.panw?.panos?.certificate?.size.toString() =~ /^\d+$/'
@@ -793,29 +775,6 @@ processors:
       if: 'ctx.panw?.panos?.certificate?.size != null && !(ctx.panw?.panos?.certificate?.size.toString() =~ /^\d+$/)'
       field: tls.client.x509.public_key_size
       ignore_missing: true
-
-#   - convert:
-#       if: 'ctx.panw?.panos?.certificate?.size != null && ctx.panw?.panos?.certificate?.size.toString() =~ /^\d+$/'
-#       field: panw.panos.certificate.size
-#       type: long
-#       ignore_missing: true
-#       on_failure:
-#         - remove:
-#             field: panw.panos.certificate.size
-#         - append:
-#             field: error.message
-#             value: "Cannot use {{{_ingest.on_failure_processor_type}}} on field panw.panos.certificate.size due to: {{{_ingest.on_failure_message}}} | {{{_ingest.on_failure_processor_tag}}} | {{{_ingest.on_failure_pipeline}}}"
-#   - convert:
-#       if: 'ctx.panw?.panos?.certificate?.size != null && ctx.panw?.panos?.certificate?.size.toString() =~ /^\d+$/'
-#       field: tls.client.x509.public_key_size
-#       type: long
-#       ignore_missing: true
-#       on_failure:
-#         - remove:
-#             field: tls.client.x509.public_key_size
-#         - append:
-#             field: error.message
-#             value: "{{{_ingest.on_failure_message}}}"
   - convert:
       field: panw.panos.issuer_common_name.length
       type: long
