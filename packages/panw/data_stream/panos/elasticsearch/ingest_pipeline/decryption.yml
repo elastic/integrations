@@ -270,20 +270,27 @@ processors:
       field: tls.client.server_name
       copy_from: panw.panos.server_name_indication.value
       ignore_failure: true
-  - script:
-      lang: painless
-      if: 'ctx.panw?.panos?.certificate?.size != null'
-      ignore_failure: true
-      source: >
-        String cert_size = ctx.panw.panos.certificate.size.toString();
-        if (cert_size =~ /^\d+$/) {
-            ctx.tls.client.x509.public_key_size = cert_size;
-        }
-#   - set:
-#       field: tls.client.x509.public_key_size
-#       copy_from: panw.panos.certificate.size
-#       if: 'ctx.panw?.panos?.certificate?.size != null && ctx.panw?.panos?.certificate?.size =~ /^\d+$/'
+#   - script:
+#       lang: painless
+#       if: 'ctx.panw?.panos?.certificate?.size != null'
 #       ignore_failure: true
+#       source: >
+#         String cert_size = ctx.panw.panos.certificate.size.toString();
+#         if (cert_size =~ /^\d+$/) {
+#             ctx.tls.client.x509.public_key_size = cert_size;
+#         }
+#         else {
+#             throw new Exception('Cannot assign field tls.client.x509.public_key_size as panw.panos.certificate.size is a String type')
+#         }
+#       on_failure:
+#         - append:
+#             field: error.message
+#             value: "{{{_ingest.on_failure_message}}}"
+  - set:
+      field: tls.client.x509.public_key_size
+      copy_from: panw.panos.certificate.size
+      if: 'ctx.panw?.panos?.certificate?.size != null && ctx.panw?.panos?.certificate?.size.toString() =~ /^\d+$/'
+      ignore_failure: true
   - set:
       field: tls.client.x509.serial_number
       copy_from: panw.panos.certificate.serial_number
