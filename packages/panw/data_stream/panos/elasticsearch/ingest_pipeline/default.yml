@@ -752,29 +752,13 @@ processors:
         - append:
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
-
   - convert:
-      if: 'ctx.panw?.panos?.certificate?.size != null && ctx.panw?.panos?.certificate?.size.toString() =~ /^\d+$/'
-      field: panw.panos.certificate.size
-      type: long
-      ignore_missing: true
-  - append:
-      if: 'ctx.panw?.panos?.certificate?.size != null && !(ctx.panw?.panos?.certificate?.size.toString() =~ /^\d+$/)'
-      field: error.message
-      value: "Cannot convert panw.panos.certificate.size and tls.client.x509.public_key_size from String to Long"
-  - remove:
-      if: 'ctx.panw?.panos?.certificate?.size != null && !(ctx.panw?.panos?.certificate?.size.toString() =~ /^\d+$/)'
-      field: panw.panos.certificate.size
-      ignore_missing: true
-  - convert:
-      if: 'ctx.panw?.panos?.certificate?.size != null && ctx.panw?.panos?.certificate?.size.toString() =~ /^\d+$/'
       field: tls.client.x509.public_key_size
       type: long
       ignore_missing: true
-  - remove:
-      if: 'ctx.panw?.panos?.certificate?.size != null && !(ctx.panw?.panos?.certificate?.size.toString() =~ /^\d+$/)'
-      field: tls.client.x509.public_key_size
-      ignore_missing: true
+      on_failure:
+        - remove:
+            field: tls.client.x509.public_key_size
   - convert:
       field: panw.panos.issuer_common_name.length
       type: long
@@ -1481,7 +1465,6 @@ processors:
         - panw.panos.certificate.not_after
         - panw.panos.certificate.not_before
         - panw.panos.certificate.serial_number
-        - panw.panos.certificate.size
         - panw.panos.certificate.version
         - panw.panos.client.os
         - panw.panos.client.os_version
