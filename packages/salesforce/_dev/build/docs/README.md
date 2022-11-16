@@ -10,18 +10,16 @@ For example, if you want to check the number of successful and failed login atte
 
 ## Data streams
 
-The Salesforce integration collects log events using REST and Streaming API of Salesforce.
+The Salesforce integration collects log events using REST API of Salesforce.
 
 **Logs** help you keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm) (using REST and Streaming API), [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm) (using REST and Streaming API), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
+Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
 
 Data streams:
 - `login_rest`: Tracks login activity of users who log in to Salesforce.
 - `logout_rest`: Tracks user UI logout. A logout event records a successful user logout from your organization’s UI.
 - `apex`: Represents information about various Apex events like Callout, Execution, REST API, SOAP API, Trigger, etc.
 - `setupaudittrail`: Represents changes you or other admins made in your organization's Setup area for at least the last 180 days.
-- `login_stream`: Tracks live login activity of users who log in to Salesforce.
-- `logout_stream`: Tracks live user UI logout. A logout event records a successful user logout from your organization’s UI.
 
 ## Compatibility
 
