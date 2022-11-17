@@ -3,7 +3,7 @@ description: Pipeline for parsing google_workspace logs
 processors:
   - set:
       field: ecs.version
-      value: '8.4.0'
+      value: '8.5.0'
   - append:
       field: event.type
       value: change
@@ -93,6 +93,30 @@ processors:
   - rename:
       field: json.events.type
       target_field: google_workspace.event.type
+      ignore_missing: true
+  - script:
+      description: |
+        Moves all objects from the 'parameters' array into their own keyed object under 'google_workspace.user_accounts.*'.
+      tag: script-parameters-processing
+      lang: painless
+      if: 'ctx.json?.events?.parameters != null && ctx?.json?.events?.parameters instanceof List'
+      source: >
+        if (ctx.google_workspace.user_accounts == null) {
+          ctx.google_workspace.user_accounts = new HashMap();
+        }
+        for (param in ctx.json.events.parameters) {
+          if (param["value"] != null) {
+            ctx.google_workspace.user_accounts[param["name"]] = param["value"];
+          }
+          if (param["intValue"] != null) {
+            ctx.google_workspace.user_accounts[param["name"]] = param["intValue"];
+          }
+          if (param["multiValue"] != null) {
+            ctx.google_workspace.user_accounts[param["name"]] = param["multiValue"];
+          }
+        }
+  - remove:
+      field: json.events.parameters
       ignore_missing: true
   - script:
       lang: painless
