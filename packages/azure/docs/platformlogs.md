@@ -146,6 +146,7 @@ An example event for `platformlogs` looks as following:
 | azure.platformlogs.category | Category | keyword |
 | azure.platformlogs.ccpNamespace | ccpNamespace | keyword |
 | azure.platformlogs.event_category | Event Category | keyword |
+| azure.platformlogs.identity_name | Identity name | keyword |
 | azure.platformlogs.operation_name | Operation name | keyword |
 | azure.platformlogs.properties | Event properties | flattened |
 | azure.platformlogs.result_description | Result description | keyword |
