@@ -108,7 +108,7 @@ processors:
       name: '{{ IngestPipeline "pipeline_identity_stores_diagnostics" }}'
       if: ctx?.cisco_ise?.log?.category?.name == "CISE_Identity_Stores_Diagnostics"
   - convert:
-      field: cisco_ise.log.log_details_object.ConfigVersionId
+      field: cisco_ise.log.log_details.ConfigVersionId
       target_field: cisco_ise.log.config_version.id
       type: long
       ignore_missing: true
@@ -116,9 +116,9 @@ processors:
         - append:
             field: error.message
             value: "{{ _ingest.on_failure_message }}"
-  - remove:
-      field: cisco_ise.log.log_details_object.ConfigVersionId
-      ignore_missing: true
+#  - remove:
+#      field: cisco_ise.log.log_details.ConfigVersionId
+#      ignore_missing: true
   - lowercase:
       field: log.syslog.severity.name
       ignore_failure: true
