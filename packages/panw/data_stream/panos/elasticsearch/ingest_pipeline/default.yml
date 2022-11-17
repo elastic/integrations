@@ -753,6 +753,14 @@ processors:
             field: error.message
             value: "{{{_ingest.on_failure_message}}}"
   - convert:
+      field: panw.panos.certificate.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: panw.panos.certificate.size
+            target_field: panw.panos.certificate.raw_size
+  - convert:
       field: tls.client.x509.public_key_size
       type: long
       ignore_missing: true
@@ -1465,6 +1473,7 @@ processors:
         - panw.panos.certificate.not_after
         - panw.panos.certificate.not_before
         - panw.panos.certificate.serial_number
+        - panw.panos.certificate.size
         - panw.panos.certificate.version
         - panw.panos.client.os
         - panw.panos.client.os_version
