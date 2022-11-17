@@ -7,12 +7,12 @@ processors:
       field: message
       if: ctx?.cisco_ise?.log?.segment?.number == 0
       patterns: 
-        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
       if: ctx?.cisco_ise?.log?.segment?.number > 0
       patterns: 
-        - "^%{GREEDYDATA:cisco_ise.log.log_details},"
+        - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
@@ -52,18 +52,18 @@ processors:
         ctx.event.category = eventCategory;
         ctx.event.type = eventType;
   - kv:
-      field: cisco_ise.log.log_details
+      field: cisco_ise.log.log_details_raw
       field_split: ', '
       value_split: =
       ignore_failure: true
-      target_field: cisco_ise.log.log_details_object
+      target_field: cisco_ise.log.log_details
   - dissect:
-      field: cisco_ise.log.log_details_object.Response
+      field: cisco_ise.log.log_details.Response
       pattern: "{%{_tmp.response}}"
       ignore_missing: true
       ignore_failure: true
   - remove:
-      field: cisco_ise.log.log_details_object.Response
+      field: cisco_ise.log.log_details.Response
       ignore_missing: true
   - kv:
       field: _tmp.response
@@ -72,8 +72,8 @@ processors:
       value_split: =
       ignore_failure: true
   - foreach:
-      if: "ctx?.cisco_ise?.log?.log_details_object['acme-av-pair'] != null && ctx?.cisco_ise?.log?.log_details_object['acme-av-pair'] instanceof List"
-      field: cisco_ise.log.log_details_object.acme-av-pair
+      if: "ctx?.cisco_ise?.log?.log_details['acme-av-pair'] != null && ctx?.cisco_ise?.log?.log_details['acme-av-pair'] instanceof List"
+      field: cisco_ise.log.log_details.acme-av-pair
       ignore_missing: true
       processor:
         kv:
@@ -86,8 +86,8 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
   - kv:
-      if: "ctx?.cisco_ise?.log?.log_details_object['acme-av-pair'] != null && !(ctx?.cisco_ise?.log?.log_details_object['acme-av-pair'] instanceof List)"
-      field: cisco_ise.log.log_details_object.acme-av-pair
+      if: "ctx?.cisco_ise?.log?.log_details['acme-av-pair'] != null && !(ctx?.cisco_ise?.log?.log_details['acme-av-pair'] instanceof List)"
+      field: cisco_ise.log.log_details.acme-av-pair
       target_field: cisco_ise.log.acme-av-pair
       field_split: ', '
       value_split: =
@@ -96,80 +96,80 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.acme-av-pair
+      field: cisco_ise.log.log_details.acme-av-pair
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.AcsSessionID
+      field: cisco_ise.log.log_details.AcsSessionID
       target_field: cisco_ise.log.acs.session.id
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.ADDomain
+      field: cisco_ise.log.log_details.ADDomain
       target_field: cisco_ise.log.ad.domain.name
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.AllowedProtocolMatchedRule
+      field: cisco_ise.log.log_details.AllowedProtocolMatchedRule
       target_field: cisco_ise.log.allowed_protocol.matched.rule
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.AuthenticationIdentityStore
+      field: cisco_ise.log.log_details.AuthenticationIdentityStore
       target_field: cisco_ise.log.authentication.identity_store
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.AuthenticationMethod
+      field: cisco_ise.log.log_details.AuthenticationMethod
       target_field: cisco_ise.log.authentication.method
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Called-Station-ID
+      field: cisco_ise.log.log_details.Called-Station-ID
       target_field: cisco_ise.log.called_station.id
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Calling-Station-ID
+      field: cisco_ise.log.log_details.Calling-Station-ID
       target_field: cisco_ise.log.calling_station.id
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.CPMSessionID
+      field: cisco_ise.log.log_details.CPMSessionID
       target_field: cisco_ise.log.cpm.session.id
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.DetailedInfo
+      field: cisco_ise.log.log_details.DetailedInfo
       target_field: cisco_ise.log.detailed_info
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Device Type
+      field: cisco_ise.log.log_details.Device Type
       target_field: cisco_ise.log.device.type
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.EAP-Key-Name
+      field: cisco_ise.log.log_details.EAP-Key-Name
       target_field: cisco_ise.log.eap_key.name
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.EapAuthentication
+      field: cisco_ise.log.log_details.EapAuthentication
       target_field: cisco_ise.log.eap.authentication
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.EapChainingResult
+      field: cisco_ise.log.log_details.EapChainingResult
       target_field: cisco_ise.log.eap.chaining_result
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.EapTunnel
+      field: cisco_ise.log.log_details.EapTunnel
       target_field: cisco_ise.log.eap.tunnel
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.EndPointMACAddress
+      field: cisco_ise.log.log_details.EndPointMACAddress
       target_field: cisco_ise.log.endpoint.mac.address
       ignore_failure: true
       ignore_missing: true
@@ -182,12 +182,12 @@ processors:
       field: cisco_ise.log.endpoint.mac.address
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.FailureReason
+      field: cisco_ise.log.log_details.FailureReason
       target_field: cisco_ise.log.failure.reason
       ignore_failure: true
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.Framed-IP-Address
+      field: cisco_ise.log.log_details.Framed-IP-Address
       target_field: cisco_ise.log.framed.ip
       type: ip
       ignore_missing: true
@@ -196,7 +196,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.Framed-IP-Address
+      field: cisco_ise.log.log_details.Framed-IP-Address
       ignore_missing: true
   - append:
       field: related.ip
@@ -205,7 +205,7 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - convert:
-      field: cisco_ise.log.log_details_object.Framed-MTU
+      field: cisco_ise.log.log_details.Framed-MTU
       target_field: cisco_ise.log.framed.mtu
       type: long
       ignore_missing: true
@@ -214,10 +214,10 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.Framed-MTU
+      field: cisco_ise.log.log_details.Framed-MTU
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.GroupsOrAttributesProcessFailure
+      field: cisco_ise.log.log_details.GroupsOrAttributesProcessFailure
       target_field: cisco_ise.log.groups.process_failure
       type: boolean
       ignore_missing: true
@@ -226,25 +226,25 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.GroupsOrAttributesProcessFailure
+      field: cisco_ise.log.log_details.GroupsOrAttributesProcessFailure
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.IdentitySelectionMatchedRule
+      field: cisco_ise.log.log_details.IdentitySelectionMatchedRule
       target_field: cisco_ise.log.identity.selection.matched.rule
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.ISEPolicySetName
+      field: cisco_ise.log.log_details.ISEPolicySetName
       target_field: cisco_ise.log.ise.policy.set_name
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Location
+      field: cisco_ise.log.log_details.Location
       target_field: cisco_ise.log.location
       ignore_failure: true
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.NAS-IP-Address
+      field: cisco_ise.log.log_details.NAS-IP-Address
       target_field: cisco_ise.log.nas.ip
       type: ip
       ignore_failure: true
@@ -254,7 +254,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.NAS-IP-Address
+      field: cisco_ise.log.log_details.NAS-IP-Address
       ignore_missing: true
   - append:
       field: related.ip
@@ -263,7 +263,7 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - convert:
-      field: cisco_ise.log.log_details_object.NAS-Port
+      field: cisco_ise.log.log_details.NAS-Port
       target_field: cisco_ise.log.nas.port.number
       type: long
       ignore_missing: true
@@ -272,35 +272,35 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.NAS-Port
+      field: cisco_ise.log.log_details.NAS-Port
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.NAS-Port-Id
+      field: cisco_ise.log.log_details.NAS-Port-Id
       target_field: cisco_ise.log.nas.port.id
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.NAS-Port-Type
+      field: cisco_ise.log.log_details.NAS-Port-Type
       target_field: cisco_ise.log.nas.port.type
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.NetworkDeviceGroups
+      field: cisco_ise.log.log_details.NetworkDeviceGroups
       target_field: cisco_ise.log.network.device.groups
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.NetworkDeviceName
+      field: cisco_ise.log.log_details.NetworkDeviceName
       target_field: cisco_ise.log.network.device.name
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.RadiusPacketType
+      field: cisco_ise.log.log_details.RadiusPacketType
       target_field: cisco_ise.log.radius_packet.type
       ignore_failure: true
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.RequestLatency
+      field: cisco_ise.log.log_details.RequestLatency
       target_field: cisco_ise.log.request.latency
       type: long
       ignore_missing: true
@@ -309,35 +309,35 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.RequestLatency
+      field: cisco_ise.log.log_details.RequestLatency
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.SelectedAccessService
+      field: cisco_ise.log.log_details.SelectedAccessService
       target_field: cisco_ise.log.selected.access.service
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.SelectedAuthenticationIdentityStores
+      field: cisco_ise.log.log_details.SelectedAuthenticationIdentityStores
       target_field: cisco_ise.log.selected.authentication.identity_stores
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Service-Type
+      field: cisco_ise.log.log_details.Service-Type
       target_field: cisco_ise.log.service.type
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.State
+      field: cisco_ise.log.log_details.State
       target_field: cisco_ise.log.state
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.UseCase
+      field: cisco_ise.log.log_details.UseCase
       target_field: cisco_ise.log.usecase
       ignore_failure: true
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.DestinationIPAddress
+      field: cisco_ise.log.log_details.DestinationIPAddress
       target_field: destination.ip
       type: ip
       ignore_missing: true
@@ -346,7 +346,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.DestinationIPAddress
+      field: cisco_ise.log.log_details.DestinationIPAddress
       ignore_missing: true
   - append:
       field: related.ip
@@ -355,7 +355,7 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - convert:
-      field: cisco_ise.log.log_details_object.DestinationPort
+      field: cisco_ise.log.log_details.DestinationPort
       target_field: destination.port
       type: long
       ignore_missing: true
@@ -364,10 +364,10 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.DestinationPort
+      field: cisco_ise.log.log_details.DestinationPort
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.Device IP Address
+      field: cisco_ise.log.log_details.Device IP Address
       target_field: client.ip
       type: ip
       ignore_missing: true
@@ -376,7 +376,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.Device IP Address
+      field: cisco_ise.log.log_details.Device IP Address
       ignore_missing: true
   - append:
       field: related.ip
@@ -385,7 +385,7 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - convert:
-      field: cisco_ise.log.log_details_object.Device Port
+      field: cisco_ise.log.log_details.Device Port
       target_field: client.port
       type: long
       ignore_missing: true
@@ -394,25 +394,25 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.Device Port
+      field: cisco_ise.log.log_details.Device Port
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Acct-Session-Id
+      field: cisco_ise.log.log_details.Acct-Session-Id
       target_field: cisco_ise.log.acct.session.id
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Acct-Status-Type
+      field: cisco_ise.log.log_details.Acct-Status-Type
       target_field: cisco_ise.log.acct.status.type
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.DTLSSupport
+      field: cisco_ise.log.log_details.DTLSSupport
       target_field: cisco_ise.log.dtls_support
       ignore_failure: true
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.IpAddress
+      field: cisco_ise.log.log_details.IpAddress
       target_field: source.ip
       type: ip
       ignore_missing: true
@@ -421,7 +421,7 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.IpAddress
+      field: cisco_ise.log.log_details.IpAddress
       ignore_missing: true
   - append:
       field: related.ip
@@ -430,47 +430,47 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: cisco_ise.log.log_details_object.IPSEC
+      field: cisco_ise.log.log_details.IPSEC
       target_field: cisco_ise.log.ipsec
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Model Name
+      field: cisco_ise.log.log_details.Model Name
       target_field: cisco_ise.log.model.name
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Network Device Profile
+      field: cisco_ise.log.log_details.Network Device Profile
       target_field: cisco_ise.log.network.device.profile
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.NetworkDeviceProfileId
+      field: cisco_ise.log.log_details.NetworkDeviceProfileId
       target_field: cisco_ise.log.network.device.profile_id
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.NetworkDeviceProfileName
+      field: cisco_ise.log.log_details.NetworkDeviceProfileName
       target_field: cisco_ise.log.network.device.profile_name
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.OpenSSLErrorMessage
+      field: cisco_ise.log.log_details.OpenSSLErrorMessage
       target_field: cisco_ise.log.openssl.error.message
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.OpenSSLErrorStack
+      field: cisco_ise.log.log_details.OpenSSLErrorStack
       target_field: cisco_ise.log.openssl.error.stack
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.PortalName
+      field: cisco_ise.log.log_details.PortalName
       target_field: cisco_ise.log.portal.name
       ignore_failure: true
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.ResponseTime
+      field: cisco_ise.log.log_details.ResponseTime
       target_field: cisco_ise.log.response.time
       type: long
       ignore_missing: true
@@ -479,10 +479,10 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.ResponseTime
+      field: cisco_ise.log.log_details.ResponseTime
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.Session-Timeout
+      field: cisco_ise.log.log_details.Session-Timeout
       target_field: cisco_ise.log.session.timeout
       type: long
       ignore_missing: true
@@ -491,30 +491,30 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.Session-Timeout
+      field: cisco_ise.log.log_details.Session-Timeout
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Step
+      field: cisco_ise.log.log_details.Step
       target_field: cisco_ise.log.step
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.StepLatency
+      field: cisco_ise.log.log_details.StepLatency
       target_field: cisco_ise.log.step_latency
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.TLSCipher
+      field: cisco_ise.log.log_details.TLSCipher
       target_field: cisco_ise.log.tls.cipher
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.TLSVersion
+      field: cisco_ise.log.log_details.TLSVersion
       target_field: cisco_ise.log.tls.version
       ignore_failure: true
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.TotalFailedAttempts
+      field: cisco_ise.log.log_details.TotalFailedAttempts
       target_field: cisco_ise.log.total.failed_attempts
       type: long
       ignore_missing: true
@@ -523,10 +523,10 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.TotalFailedAttempts
+      field: cisco_ise.log.log_details.TotalFailedAttempts
       ignore_missing: true
   - convert:
-      field: cisco_ise.log.log_details_object.TotalFailedTime
+      field: cisco_ise.log.log_details.TotalFailedTime
       target_field: cisco_ise.log.total.failed_time
       type: long
       ignore_missing: true
@@ -535,15 +535,15 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: cisco_ise.log.log_details_object.TotalFailedTime
+      field: cisco_ise.log.log_details.TotalFailedTime
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.UserType
+      field: cisco_ise.log.log_details.UserType
       target_field: cisco_ise.log.user.type
       ignore_failure: true
       ignore_missing: true
   - rename:
-      field: cisco_ise.log.log_details_object.Protocol
+      field: cisco_ise.log.log_details.Protocol
       target_field: network.protocol
       ignore_failure: true
       ignore_missing: true
@@ -552,8 +552,8 @@ processors:
       ignore_missing: true
   - append:
       field: user.name
-      value: '{{{cisco_ise.log.log_details_object.UserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details_object?.UserName != null
+      value: '{{{cisco_ise.log.log_details.UserName}}}'
+      if: ctx?.cisco_ise?.log?.log_details?.UserName != null
       allow_duplicates: false
       on_failure:
         - append:
@@ -562,8 +562,8 @@ processors:
 
   - append:
       field: related.user
-      value: '{{{cisco_ise.log.log_details_object.UserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details_object?.UserName != null
+      value: '{{{cisco_ise.log.log_details.UserName}}}'
+      if: ctx?.cisco_ise?.log?.log_details?.UserName != null
       allow_duplicates: false
       on_failure:
         - append:
@@ -571,13 +571,13 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
 
   - remove:
-      field: cisco_ise.log.log_details_object.UserName
+      field: cisco_ise.log.log_details.UserName
       ignore_missing: true
 
   - append:
       field: user.name
-      value: '{{{cisco_ise.log.log_details_object.User-Name}}}'
-      if: ctx?.cisco_ise?.log?.log_details_object['User-Name'] != null
+      value: '{{{cisco_ise.log.log_details.User-Name}}}'
+      if: ctx?.cisco_ise?.log?.log_details['User-Name'] != null
       allow_duplicates: false
       on_failure:
         - append:
@@ -586,8 +586,8 @@ processors:
 
   - append:
       field: related.user
-      value: '{{{cisco_ise.log.log_details_object.User-Name}}}'
-      if: ctx?.cisco_ise?.log?.log_details_object['User-Name'] != null
+      value: '{{{cisco_ise.log.log_details.User-Name}}}'
+      if: ctx?.cisco_ise?.log?.log_details['User-Name'] != null
       allow_duplicates: false
       on_failure:
         - append:
@@ -595,5 +595,5 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
 
   - remove:
-      field: cisco_ise.log.log_details_object.User-Name
+      field: cisco_ise.log.log_details.User-Name
       ignore_missing: true
