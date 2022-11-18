@@ -465,11 +465,13 @@ An example event for `performance` looks as following:
 | mssql.metrics.connection_reset_per_sec | Total number of logins started per second from the connection pool. | float | gauge |
 | mssql.metrics.dynamic_counter.name | Dynamic counter name is given by user. | keyword |  |
 | mssql.metrics.dynamic_counter.value | Dynamic counter value is fetched from performance table for the dynamic counter name which is provided by user. | long |  |
+| mssql.metrics.instance_name | Name of the mssql connected instance. | keyword |  |
 | mssql.metrics.lock_waits_per_sec | Number of lock requests per second that required the caller to wait. | float | gauge |
 | mssql.metrics.logins_per_sec | Total number of logins started per second. This does not include pooled connections. | float | gauge |
 | mssql.metrics.logouts_per_sec | Total number of logout operations started per second. | float | gauge |
 | mssql.metrics.page_splits_per_sec | Number of page splits per second that occur as the result of overflowing index pages. | float | gauge |
 | mssql.metrics.re_compilations_per_sec | Number of statement recompiles per second. Counts the number of times statement recompiles are triggered. Generally, you want the recompiles to be low. | float | gauge |
+| mssql.metrics.server_name | Name of the mssql server. | keyword |  |
 | mssql.metrics.transactions | Total number of transactions | long |  |
 | mssql.metrics.user_connections | Total number of user connections. | long |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
@@ -544,11 +546,13 @@ An example event for `transaction_log` looks as following:
 | mssql.metrics.active_log_size | Total active transaction log size in bytes. | long | byte | counter |
 | mssql.metrics.database_id | Unique ID of the database inside MSSQL. | long |  |  |
 | mssql.metrics.database_name | Name of the database. | keyword |  |  |
+| mssql.metrics.instance_name | Name of the mssql connected instance. | keyword |  |  |
 | mssql.metrics.log_backup_time | Last transaction log backup time. | date |  |  |
 | mssql.metrics.log_recovery_size | Log size in bytes since log recovery log sequence number (LSN). | long | byte | gauge |
 | mssql.metrics.log_since_last_checkpoint | Log size in bytes since last checkpoint log sequence number (LSN). | long | byte | gauge |
 | mssql.metrics.log_since_last_log_backup | Log file size since last backup in bytes. | long | byte | gauge |
 | mssql.metrics.log_space_in_bytes_since_last_backup | The amount of space used since the last log backup in bytes. | long | byte | gauge |
+| mssql.metrics.server_name | Name of the mssql server. | keyword |  |  |
 | mssql.metrics.total_log_size | Total log size. | long | byte | counter |
 | mssql.metrics.total_log_size_bytes | Total transaction log size in bytes. | long | byte | counter |
 | mssql.metrics.used_log_space_bytes | The occupied size of the log in bytes. | long | byte | gauge |
