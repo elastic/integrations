@@ -5,6 +5,7 @@ processors:
       field: json.attributes.device
       target_field: jamf_compliance_reporter.log.attributes.device
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.attributes.file_access_mode
@@ -14,16 +15,19 @@ processors:
       field: json.attributes.file_system_id
       target_field: jamf_compliance_reporter.log.attributes.file.system.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.attributes.node_id
       target_field: jamf_compliance_reporter.log.attributes.node.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.attributes.owner_group_id
       target_field: user.group.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.attributes.owner_group_name
@@ -32,6 +36,7 @@ processors:
   - convert:
       field: json.attributes.owner_user_id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - append:
       field: user.id
@@ -69,7 +74,7 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      if: ctx.json?.exec_env?.env?.ARCH != null && ctx.json.exec_env.env.ARCH != ""
+      if: ctx.json?.exec_env?.env?.ARCH != null && ctx.json.exec_env.env.ARCH != ''
       params:
         'allowed':
           - linux
@@ -83,7 +88,7 @@ processors:
       source: |
         for (entry in params.replacements.entrySet()) {
           if (ctx.json.exec_env.env.ARCH == entry.getKey()) {
-            ctx.json.exec_env.env.put("ARCH", entry.getValue());
+            ctx.json.exec_env.env.put('ARCH', entry.getValue());
           }
         }
         if (!params.allowed.contains(ctx.json.exec_env.env.ARCH)) {
@@ -91,15 +96,14 @@ processors:
         }
         if (ctx.host == null) {
           HashMap hm = new HashMap();
-          ctx.put("host", hm);
+          ctx.put('host', hm);
         }
         if (ctx.host.os == null) {
           HashMap hm = new HashMap();
-          ctx.host.put("os", hm);
+          ctx.host.put('os', hm);
         }
-        ctx.host.os.put("type", ctx.json.exec_env.env.ARCH);
-        ctx.json.exec_env.env.remove("ARCH");
-
+        ctx.host.os.put('type', ctx.json.exec_env.env.ARCH);
+        ctx.json.exec_env.env.remove('ARCH');
   - rename:
       field: json.exec_env.env.CPU
       target_field: host.architecture
