@@ -17,35 +17,36 @@ processors:
       ignore_failure: true
   - fingerprint:
       fields:
-        - json.threatInfo.createdAt  
-        - json.threatInfo.updatedAt 
-        - json.id 
+        - json.threatInfo.createdAt
+        - json.threatInfo.updatedAt
+        - json.id
       target_field: _id
       ignore_missing: true
-  - script:
-      description: Set the value of event.category and event.type.
-      lang: painless
-      source: >
-          def eventCategory = new ArrayList();
-          def eventType = new ArrayList();
-          if (ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '') {
-              def threat_classification = ctx.json?.threatInfo?.classification;
-              if (['Exploit','PUA'].contains(threat_classification)) {
-                  eventCategory.add('threat');
-                  eventType.add('indicator');
-              } else if (['Malware','Ransomware','Trojan','Downloader'].contains(threat_classification)) {
-                  eventCategory.add('malware');
-                  eventType.add('info');
-              }
-          }
-          ctx.event.type = eventType;
-          ctx.event.category = eventCategory;
-  - date: 
+  - set:
+      field: event.category
+      value: [threat]
+      if: ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '' && ['exploit','pua'].contains(ctx.json?.threatInfo?.classification?.toLowerCase())
+  - set:
+      field: event.category
+      value: [malware]
+      if: ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '' && ['malware','ransomware','trojan','downloader'].contains(ctx.json?.threatInfo?.classification?.toLowerCase())
+  - set:
+      field: event.type
+      value: [indicator]
+      if: ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '' && ['exploit','pua'].contains(ctx.json?.threatInfo?.classification?.toLowerCase())
+  - set:
+      field: event.type
+      value: [info]
+      if: ctx.json?.threatInfo?.threatId != null && ctx.json.threatInfo.threatId != '' && ['malware','ransomware','trojan','downloader'].contains(ctx.json?.threatInfo?.classification?.toLowerCase())
+  - date:
       field: json.threatInfo.updatedAt
-      target_field: '@timestamp'
+      if: ctx.json?.threatInfo?.updatedAt != null
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - join:
       field: json.threatInfo.engines
       target_field: event.action
@@ -56,11 +57,11 @@ processors:
       copy_from: json.threatInfo.originatorProcess
       ignore_empty_value: true
   - rename:
-      field: json.agentDetectionInfo.accountId 
+      field: json.agentDetectionInfo.accountId
       target_field: sentinel_one.threat.detection.account.id
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.accountName 
+      field: json.agentDetectionInfo.accountName
       target_field: sentinel_one.threat.detection.account.name
       ignore_missing: true
   - rename:
@@ -68,14 +69,21 @@ processors:
       target_field: sentinel_one.threat.detection.state
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.agentDomain  
+      field: json.agentDetectionInfo.agentDomain
       target_field: sentinel_one.threat.detection.agent.domain
       ignore_missing: true
   - convert:
-      field: json.agentDetectionInfo.agentIpV4 
+      field: json.agentDetectionInfo.agentIpV4
       target_field: sentinel_one.threat.detection.agent.ipv4
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentDetectionInfo.agentIpV4
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{sentinel_one.threat.detection.agent.ipv4}}}'
@@ -83,10 +91,17 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - convert:
-      field: json.agentDetectionInfo.agentIpV6  
+      field: json.agentDetectionInfo.agentIpV6
       target_field: sentinel_one.threat.detection.agent.ipv6
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentDetectionInfo.agentIpV6
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{sentinel_one.threat.detection.agent.ipv6}}}'
@@ -94,15 +109,15 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.agentDetectionInfo.agentLastLoggedInUpn  
+      field: json.agentDetectionInfo.agentLastLoggedInUpn
       target_field: sentinel_one.threat.detection.agent.last_logged_in.upn
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.agentLastLoggedInUserMail  
+      field: json.agentDetectionInfo.agentLastLoggedInUserMail
       target_field: user.email
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.agentLastLoggedInUserName   
+      field: json.agentDetectionInfo.agentLastLoggedInUserName
       target_field: user.name
       ignore_missing: true
   - set:
@@ -117,25 +132,29 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.agentDetectionInfo.agentMitigationMode   
+      field: json.agentDetectionInfo.agentMitigationMode
       target_field: sentinel_one.threat.detection.agent.mitigation_mode
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.agentOsName   
+      field: json.agentDetectionInfo.agentOsName
       target_field: sentinel_one.threat.detection.agent.os.name
       ignore_missing: true
   - rename:
       field: json.agentDetectionInfo.agentOsRevision
       target_field: sentinel_one.threat.detection.agent.os.version
       ignore_missing: true
-  - date: 
-      field: json.agentDetectionInfo.agentRegisteredAt 
+  - date:
+      field: json.agentDetectionInfo.agentRegisteredAt
+      if: ctx.json?.agentDetectionInfo?.agentRegisteredAt != null
       target_field: sentinel_one.threat.detection.agent.registered_at
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.agentDetectionInfo.agentUuid   
+      field: json.agentDetectionInfo.agentUuid
       target_field: sentinel_one.threat.detection.agent.uuid
       ignore_missing: true
   - rename:
@@ -147,15 +166,26 @@ processors:
       target_field: sentinel_one.threat.detection.cloud_providers
       ignore_missing: true
   - convert:
-      field: json.agentDetectionInfo.externalIp 
+      field: json.agentDetectionInfo.externalIp
       target_field: host.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentDetectionInfo.externalIp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - geoip:
       field: host.ip
       target_field: host.geo
       ignore_missing: true
-      if: ctx.host?.ip != null && ctx.host?.ip != ''
+      if: ctx.host?.ip != null && ctx.host.ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
@@ -163,36 +193,43 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.agentDetectionInfo.groupId   
+      field: json.agentDetectionInfo.groupId
       target_field: sentinel_one.threat.detection.agent.group.id
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.groupName  
+      field: json.agentDetectionInfo.groupName
       target_field: sentinel_one.threat.detection.agent.group.name
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.siteId    
+      field: json.agentDetectionInfo.siteId
       target_field: sentinel_one.threat.detection.agent.site.id
       ignore_missing: true
   - rename:
-      field: json.agentDetectionInfo.siteName   
+      field: json.agentDetectionInfo.siteName
       target_field: sentinel_one.threat.detection.agent.site.name
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.accountId    
+      field: json.agentRealtimeInfo.accountId
       target_field: sentinel_one.threat.agent.account.id
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.accountName   
+      field: json.agentRealtimeInfo.accountName
       target_field: sentinel_one.threat.agent.account.name
       ignore_missing: true
   - convert:
-      field: json.agentRealtimeInfo.activeThreats  
+      field: json.agentRealtimeInfo.activeThreats
       target_field: sentinel_one.threat.agent.active_threats
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentRealtimeInfo.activeThreats
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.agentRealtimeInfo.agentComputerName   
+      field: json.agentRealtimeInfo.agentComputerName
       target_field: host.name
       ignore_missing: true
   - append:
@@ -202,85 +239,123 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - convert:
-      field: json.agentRealtimeInfo.agentDecommissionedAt  
+      field: json.agentRealtimeInfo.agentDecommissionedAt
       target_field: sentinel_one.threat.agent.decommissioned_at
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentRealtimeInfo.agentDecommissionedAt
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.agentRealtimeInfo.agentDomain  
+      field: json.agentRealtimeInfo.agentDomain
       target_field: host.domain
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.agentId   
+      field: json.agentRealtimeInfo.agentId
       target_field: host.id
       ignore_missing: true
   - convert:
-      field: json.agentRealtimeInfo.agentInfected  
+      field: json.agentRealtimeInfo.agentInfected
       target_field: sentinel_one.threat.agent.infected
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentRealtimeInfo.agentInfected
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.agentRealtimeInfo.agentIsActive   
+      field: json.agentRealtimeInfo.agentIsActive
       target_field: sentinel_one.threat.agent.is_active
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentRealtimeInfo.agentIsActive
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.agentRealtimeInfo.agentIsDecommissioned   
+      field: json.agentRealtimeInfo.agentIsDecommissioned
       target_field: sentinel_one.threat.agent.is_decommissioned
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentRealtimeInfo.agentIsDecommissioned
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.agentRealtimeInfo.agentMachineType 
+      field: json.agentRealtimeInfo.agentMachineType
       target_field: sentinel_one.threat.agent.machine_type
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.agentMitigationMode  
+      field: json.agentRealtimeInfo.agentMitigationMode
       target_field: sentinel_one.threat.agent.mitigation_mode
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.agentNetworkStatus  
+      field: json.agentRealtimeInfo.agentNetworkStatus
       target_field: sentinel_one.threat.agent.network_status
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.agentOsName 
+      field: json.agentRealtimeInfo.agentOsName
       target_field: host.os.name
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.agentOsRevision   
+      field: json.agentRealtimeInfo.agentOsRevision
       target_field: sentinel_one.threat.agent.os.version
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.agentOsType  
+      field: json.agentRealtimeInfo.agentOsType
       target_field: host.os.type
       ignore_missing: true
   - lowercase:
       field: host.os.type
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.agentUuid  
+      field: json.agentRealtimeInfo.agentUuid
       target_field: sentinel_one.threat.agent.uuid
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.agentVersion   
+      field: json.agentRealtimeInfo.agentVersion
       target_field: observer.version
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.groupId  
+      field: json.agentRealtimeInfo.groupId
       target_field: sentinel_one.threat.agent.group.id
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.groupName  
+      field: json.agentRealtimeInfo.groupName
       target_field: sentinel_one.threat.agent.group.name
       ignore_missing: true
   - foreach:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
-        convert:
+        foreach:
           field: _ingest._value.inet
-          type: ip
+          processor:
+            convert:
+              field: _ingest._value
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json?.agentRealtimeInfo?.networkInterfaces instanceof List
+      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - foreach:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
@@ -294,16 +369,26 @@ processors:
               ignore_failure: true
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json?.agentRealtimeInfo?.networkInterfaces instanceof List
+      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - foreach:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
-        convert:
+        foreach:
           field: _ingest._value.inet6
-          type: ip
+          processor:
+            convert:
+              field: _ingest._value
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                - append:
+                    field: error.message
+                    value: '{{{_ingest.on_failure_message}}}'
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json?.agentRealtimeInfo?.networkInterfaces instanceof List
+      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - foreach:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
@@ -317,17 +402,17 @@ processors:
               ignore_failure: true
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json?.agentRealtimeInfo?.networkInterfaces instanceof List
+      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - foreach:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
         append:
           field: host.mac
-          value: "{{{_ingest._value.physical}}}"
+          value: '{{{_ingest._value.physical}}}'
           allow_duplicates: false
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json?.agentRealtimeInfo?.networkInterfaces instanceof List
+      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - foreach:
       field: json.agentRealtimeInfo.networkInterfaces
       processor:
@@ -336,7 +421,7 @@ processors:
             - _ingest._value.physical
           ignore_missing: true
       ignore_failure: true
-      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json?.agentRealtimeInfo?.networkInterfaces instanceof List
+      if: ctx.json?.agentRealtimeInfo?.networkInterfaces != null && ctx.json.agentRealtimeInfo.networkInterfaces instanceof List
   - rename:
       field: json.agentRealtimeInfo.networkInterfaces
       target_field: sentinel_one.threat.agent.network_interface
@@ -350,34 +435,53 @@ processors:
       field: host.mac
       ignore_missing: true
   - rename:
-      field: json.agentRealtimeInfo.operationalState  
+      field: json.agentRealtimeInfo.operationalState
       target_field: sentinel_one.threat.agent.operational_state
       ignore_missing: true
   - convert:
-      field: json.agentRealtimeInfo.rebootRequired  
+      field: json.agentRealtimeInfo.rebootRequired
       target_field: sentinel_one.threat.agent.reboot_required
       type: boolean
-      ignore_failure: true
-  - date: 
-      field: json.agentRealtimeInfo.scanAbortedAt 
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.agentRealtimeInfo.rebootRequired
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.agentRealtimeInfo.scanAbortedAt
+      if: ctx.json?.agentRealtimeInfo?.scanAbortedAt != null
       target_field: sentinel_one.threat.agent.scan.aborted_at
       formats:
           - ISO8601
-      ignore_failure: true
-  - date: 
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.agentRealtimeInfo.scanFinishedAt
+      if: ctx.json?.agentRealtimeInfo?.scanFinishedAt != null
       target_field: sentinel_one.threat.agent.scan.finished_at
       formats:
           - ISO8601
-      ignore_failure: true
-  - date: 
-      field: json.agentRealtimeInfo.scanStartedAt 
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.agentRealtimeInfo.scanStartedAt
+      if: ctx.json?.agentRealtimeInfo?.scanStartedAt != null
       target_field: sentinel_one.threat.agent.scan.started_at
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.agentRealtimeInfo.scanStatus 
+      field: json.agentRealtimeInfo.scanStatus
       target_field: sentinel_one.threat.agent.scan.status
       ignore_missing: true
   - rename:
@@ -405,7 +509,7 @@ processors:
       target_field: container.id
       ignore_missing: true
   - rename:
-      field: json.containerInfo.image 
+      field: json.containerInfo.image
       target_field: container.image.name
       ignore_missing: true
   - rename:
@@ -569,9 +673,13 @@ processors:
           field: _ingest._value.actionsCounters.failed
           target_field: _ingest._value.action_counters.failed
           type: long
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -579,9 +687,13 @@ processors:
           field: _ingest._value.actionsCounters.notFound
           target_field: _ingest._value.action_counters.not_found
           type: long
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -589,9 +701,13 @@ processors:
           field: _ingest._value.actionsCounters.pendingReboot
           target_field: _ingest._value.action_counters.pending_reboot
           type: long
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -599,9 +715,13 @@ processors:
           field: _ingest._value.actionsCounters.success
           target_field: _ingest._value.action_counters.success
           type: long
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -609,9 +729,13 @@ processors:
           field: _ingest._value.actionsCounters.total
           target_field: _ingest._value.action_counters.total
           type: long
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -619,9 +743,13 @@ processors:
           field: _ingest._value.agentSupportsReport
           target_field: _ingest._value.agent_supports_report
           type: boolean
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -629,9 +757,13 @@ processors:
           field: _ingest._value.groupNotFound
           target_field: _ingest._value.group_not_found
           type: boolean
-          ignore_failure: true
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -642,7 +774,7 @@ processors:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -651,29 +783,29 @@ processors:
           target_field: _ingest._value.latest_report
           ignore_missing: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
         date:
-          field: _ingest._value.mitigationEndedAt 
+          field: _ingest._value.mitigationEndedAt
           target_field: _ingest._value.mitigation_ended_at
           formats:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
         date:
-          field: _ingest._value.mitigationStartedAt 
+          field: _ingest._value.mitigationStartedAt
           target_field: _ingest._value.mitigation_started_at
           formats:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -687,7 +819,7 @@ processors:
             - _ingest._value.mitigationStartedAt
           ignore_missing: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json?.mitigationStatus instanceof List
+      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
   - rename:
       field: json.mitigationStatus
       target_field: sentinel_one.threat.mitigation_status
@@ -704,7 +836,14 @@ processors:
       field: json.threatInfo.automaticallyResolved
       target_field: sentinel_one.threat.automatically_resolved
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatInfo.automaticallyResolved
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.threatInfo.browserType
       target_field: sentinel_one.threat.browser_type
@@ -733,12 +872,16 @@ processors:
       field: json.threatInfo.confidenceLevel
       target_field: sentinel_one.threat.confidence_level
       ignore_missing: true
-  - date: 
-      field: json.threatInfo.createdAt 
+  - date:
+      field: json.threatInfo.createdAt
+      if: ctx.json?.threatInfo?.createdAt != null
       target_field: sentinel_one.threat.created_at
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.threatInfo.detectionEngines
       target_field: sentinel_one.threat.detection.engines
@@ -755,16 +898,30 @@ processors:
       field: json.threatInfo.externalTicketExists
       target_field: sentinel_one.threat.external_ticket.exist
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatInfo.externalTicketExists
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.threatInfo.externalTicketId
       target_field: sentinel_one.threat.external_ticket.id
       ignore_missing: true
   - convert:
-      field: json.threatInfo.failedActions 
+      field: json.threatInfo.failedActions
       target_field: sentinel_one.threat.failed_actions
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatInfo.failedActions
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.threatInfo.fileExtension
       target_field: threat.indicator.file.extension
@@ -781,23 +938,34 @@ processors:
       field: json.threatInfo.fileSize
       target_field: threat.indicator.file.size
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatInfo.fileSize
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.threatInfo.fileVerificationType 
+      field: json.threatInfo.fileVerificationType
       target_field: sentinel_one.threat.file.verification_type
       ignore_missing: true
-  - date: 
-      field: json.threatInfo.identifiedAt 
+  - date:
+      field: json.threatInfo.identifiedAt
+      if: ctx.json?.threatInfo?.identifiedAt != null
       target_field: sentinel_one.threat.file.identified_at
       formats:
           - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.threatInfo.incidentStatus 
+      field: json.threatInfo.incidentStatus
       target_field: sentinel_one.threat.incident.status
       ignore_missing: true
   - rename:
-      field: json.threatInfo.incidentStatusDescription 
+      field: json.threatInfo.incidentStatusDescription
       target_field: sentinel_one.threat.incident.status_description
       ignore_missing: true
   - rename:
@@ -826,12 +994,26 @@ processors:
       field: json.threatInfo.isFileless
       target_field: sentinel_one.threat.is_fileless
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatInfo.isFileless
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.threatInfo.isValidCertificate
       target_field: sentinel_one.threat.is_valid_certificate
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatInfo.isValidCertificate
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.threatInfo.maliciousProcessArguments
       target_field: sentinel_one.threat.malicious_process_arguments
@@ -844,7 +1026,14 @@ processors:
       field: json.threatInfo.mitigatedPreemptively
       target_field: sentinel_one.threat.mitigated_preemptively
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatInfo.mitigatedPreemptively
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.threatInfo.mitigationStatus
       target_field: sentinel_one.threat.mitigation.status
@@ -861,7 +1050,14 @@ processors:
       field: json.threatInfo.pendingActions
       target_field: sentinel_one.threat.pending_actions
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatInfo.pendingActions
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.threatInfo.processUser
       target_field: sentinel_one.threat.process_user
@@ -880,12 +1076,26 @@ processors:
       field: json.threatInfo.reachedEventsLimit
       target_field: sentinel_one.threat.reached_events_limit
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatInfo.reachedEventsLimit
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.threatInfo.rebootRequired
       target_field: sentinel_one.threat.reboot_required
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.threatInfo.rebootRequired
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.threatInfo.sha1
       target_field: threat.indicator.file.hash.sha1
@@ -897,7 +1107,7 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.threatInfo.sha256 
+      field: json.threatInfo.sha256
       target_field: threat.indicator.file.hash.sha256
       ignore_missing: true
   - append:
@@ -907,19 +1117,19 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: json.threatInfo.storyline 
+      field: json.threatInfo.storyline
       target_field: sentinel_one.threat.storyline
       ignore_missing: true
   - rename:
-      field: json.threatInfo.threatId 
+      field: json.threatInfo.threatId
       target_field: sentinel_one.threat.threat_id
       ignore_missing: true
   - rename:
-      field: json.threatInfo.threatName 
+      field: json.threatInfo.threatName
       target_field: sentinel_one.threat.name
       ignore_missing: true
   - rename:
-      field: json.whiteningOptions 
+      field: json.whiteningOptions
       target_field: sentinel_one.threat.whitening_option
       ignore_missing: true
   - remove:
@@ -933,9 +1143,9 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source: 
+      source:
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -948,6 +1158,6 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
