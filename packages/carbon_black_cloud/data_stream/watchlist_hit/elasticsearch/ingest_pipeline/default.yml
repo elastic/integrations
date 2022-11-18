@@ -17,31 +17,55 @@ processors:
       ignore_failure: true
   - date:
       field: json.create_time
-      target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.create_time != null && ctx.json.create_time != ''
       formats:
         - ISO8601
-  - rename:
+      on_failure:
+        - remove:
+           field: json.create_time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.severity
       target_field: event.severity
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.severity
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.device_id
       target_field: host.id
       type: string
       ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: json.schema
+      target_field: carbon_black_cloud.watchlist_hit.schema
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.schema
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: host.os.type
       value: windows
-      if: ctx?.json?.device_os == "WINDOWS"
+      if: ctx.json?.device_os == 'WINDOWS'
   - set:
       field: host.os.type
       value: linux
-      if: ctx?.json?.device_os == "LINUX"
+      if: ctx.json?.device_os == 'LINUX'
   - set:
       field: host.os.type
       value: macos
-      if: ctx?.json?.device_os == "MAC"
+      if: ctx.json?.device_os == 'MAC'
   - rename:
       field: json.device_os_version
       target_field: host.os.version
@@ -58,19 +82,7 @@ processors:
       ignore_failure: true
   - set:
       field: host.name
-      value: "{{{host.hostname}}}"
-      ignore_failure: true
-  - append:
-      field: host.ip
-      value: "{{{json.device_internal_ip}}}"
-      if: ctx?.json?.device_internal_ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: host.ip
-      value: "{{{json.device_external_ip}}}"
-      if: ctx?.json?.device_external_ip != null
-      allow_duplicates: false
+      value: '{{{host.hostname}}}'
       ignore_failure: true
   - rename:
       field: json.process_cmdline
@@ -84,10 +96,17 @@ processors:
       field: json.process_path
       target_field: process.executable
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.process_pid
       target_field: process.pid
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.process_pid
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.parent_cmdline
       target_field: process.parent.command_line
@@ -100,80 +119,153 @@ processors:
       field: json.parent_path
       target_field: process.parent.executable
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.parent_pid
       target_field: process.parent.pid
+      type: long
       ignore_missing: true
-  - append:
-      field: related.ip
-      value: 
-        - "{{{json.device_internal_ip}}}"
-        - "{{{json.device_external_ip}}}"
-      allow_duplicates: false
+      on_failure:
+        - remove:
+            field: json.parent_pid
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.user
-      value:
-        - "{{{json.parent_username}}}"
-        - "{{{json.process_username}}}"
+      value: '{{{json.parent_username}}}'
+      if: ctx.json?.parent_username != null
       allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{json.process_username}}}'
+      if: ctx.json?.process_username != null
+      allow_duplicates: false
+      ignore_failure: true
   - append:
       field: related.hosts
-      value: 
-        - "{{{host.hostname}}}"
-        - "{{{user.domain}}}"
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
       allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
   - script:
-      description: Dynamically map MD5 and SHA256 hash
+      description: Dynamically map MD5 and SHA256 hash.
       lang: painless
       source: |
         void mapHashField(def ctx, def hashes, def key) {
             for (hash in hashes) {
-                if (hash.length() == 32) {ctx["json"][key + "_md5"] = hash;}
-                if (hash.length() == 64) {ctx["json"][key + "_sha256"] = hash;}
+                if (hash.length() == 32) {ctx['json'][key + '_md5'] = hash;}
+                if (hash.length() == 64) {ctx['json'][key + '_sha256'] = hash;}
             }
         }
         if (ctx.json?.process_hash instanceof List) {
-            mapHashField(ctx, ctx.json?.process_hash, "process_hash");
+            mapHashField(ctx, ctx.json?.process_hash, 'process_hash');
         }
         if (ctx.json?.parent_hash instanceof List) {
-            mapHashField(ctx, ctx.json?.parent_hash, "parent_hash");
+            mapHashField(ctx, ctx.json?.parent_hash, 'parent_hash');
         }
   - rename:
       field: json.process_hash_md5
       target_field: process.hash.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{process.hash.md5}}}'
+      if: ctx.process?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.process_hash_sha256
       target_field: process.hash.sha256
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{process.hash.sha256}}}'
+      if: ctx.process?.hash?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.parent_hash_md5
       target_field: process.parent.hash.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{process.parent.hash.md5}}}'
+      if: ctx.process?.parent?.hash?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.parent_hash_sha256
       target_field: process.parent.hash.sha256
       ignore_missing: true
   - append:
       field: related.hash
-      value:
-        - "{{{process.hash.md5}}}"
-        - "{{{process.hash.sha256}}}"
-        - "{{{process.parent.hash.md5}}}"
-        - "{{{process.parent.hash.sha256}}}"
+      value: '{{{process.parent.hash.sha256}}}'
+      if: ctx.process?.parent?.hash?.sha256 != null
       allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.device_os
       target_field: carbon_black_cloud.watchlist_hit.device.os
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.device_internal_ip
       target_field: carbon_black_cloud.watchlist_hit.device.internal_ip
+      type: ip
       ignore_missing: true
-  - rename:
+      on_failure:
+        - remove:
+            field: json.device_internal_ip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.device_external_ip
       target_field: carbon_black_cloud.watchlist_hit.device.external_ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.device_external_ip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      value: '{{{carbon_black_cloud.watchlist_hit.device.internal_ip}}}'
+      if: ctx.carbon_black_cloud?.watchlist_hit?.device?.internal_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: host.ip
+      value: '{{{carbon_black_cloud.watchlist_hit.device.external_ip}}}'
+      if: ctx.carbon_black_cloud?.watchlist_hit?.device?.external_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{carbon_black_cloud.watchlist_hit.device.internal_ip}}}'
+      if: ctx.carbon_black_cloud?.watchlist_hit?.device?.internal_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{carbon_black_cloud.watchlist_hit.device.external_ip}}}'
+      if: ctx.carbon_black_cloud?.watchlist_hit?.device?.external_ip != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.ioc_hit
       target_field: carbon_black_cloud.watchlist_hit.ioc.hit
@@ -241,11 +333,11 @@ processors:
       target_field: carbon_black_cloud.watchlist_hit.report.tags
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively
+      description: Drops null/empty values recursively.
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -259,26 +351,34 @@ processors:
         dropEmptyFields(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
+  - remove:
+      field:
+        - json.process_pid
+        - json.parent_pid
+        - json.severity
+        - json.create_time
+        - json.device_id
+        - json.schema
+        - json.process_hash
+        - json.parent_hash
+        - json.device_external_ip
+        - json.device_internal_ip
+      ignore_missing: true
   - script:
-      description: Adds all the remaining fields in fields under carbon_black_cloud.watchlist_hit
+      description: Adds all the remaining fields in fields under carbon_black_cloud.watchlist_hit.
       lang: painless
-      if: ctx?.json != null
+      if: ctx.json != null
       source: |
         for (Map.Entry m : ctx.json.entrySet()) {
           ctx.carbon_black_cloud.watchlist_hit[m.getKey()] = m.getValue();
         }
   - remove:
-      field:
-        - json
-        - carbon_black_cloud.watchlist_hit.create_time
-        - carbon_black_cloud.watchlist_hit.device_id
-        - carbon_black_cloud.watchlist_hit.process_hash
-        - carbon_black_cloud.watchlist_hit.parent_hash
+      field: json
       ignore_missing: true
   - script:
-      description: Remove duplicate values
+      description: Remove duplicate values.
       lang: painless
       source: |
         if (ctx?.related?.user != null) {
@@ -294,6 +394,6 @@ processors:
           ctx.related.hash = hash;
         }
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: '{{{_ingest.on_failure_message}}}'

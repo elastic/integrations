@@ -68,8 +68,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-10T16:04:30.263Z",
     "agent": {
-        "ephemeral_id": "a332765e-1e1f-4ec7-b24e-ae2d0dd5d74f",
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "ephemeral_id": "6e44cfec-4990-4784-a5c5-5d5954dd12e3",
+        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -95,16 +95,16 @@ An example event for `audit` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
         "snapshot": false,
         "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-09-26T01:59:24.724Z",
+        "created": "2022-11-16T09:32:58.943Z",
         "dataset": "carbon_black_cloud.audit",
         "id": "2122f8ce8xxxxxxxxxxxxx",
-        "ingested": "2022-09-26T01:59:25Z",
+        "ingested": "2022-11-16T09:33:02Z",
         "kind": "event",
         "original": "{\"clientIp\":\"10.10.10.10\",\"description\":\"Logged in successfully\",\"eventId\":\"2122f8ce8xxxxxxxxxxxxx\",\"eventTime\":1644509070263,\"flagged\":false,\"loginName\":\"abc@demo.com\",\"orgName\":\"cb-xxxx-xxxx.com\",\"requestUrl\":null,\"verbose\":false}",
         "outcome": "success",
@@ -165,11 +165,7 @@ An example event for `audit` looks as following:
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -177,7 +173,6 @@ An example event for `audit` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
@@ -199,8 +194,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2020-11-17T22:05:13.000Z",
     "agent": {
-        "ephemeral_id": "cc329655-90f8-4dc9-8014-e152f2b949da",
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "ephemeral_id": "90a140fc-c5ff-4ffd-8c05-74a00423836b",
+        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -214,7 +209,7 @@ An example event for `alert` looks as following:
                 "location": "UNKNOWN",
                 "os": "WINDOWS"
             },
-            "last_update_time": "2020-11-17T22:05:13Z",
+            "last_update_time": "2020-11-17T22:05:13.000Z",
             "legacy_alert_id": "C8EB7306-AF26-4A9A-B677-814B3AF69720",
             "organization_key": "ABCD6X3T",
             "policy": {
@@ -240,7 +235,7 @@ An example event for `alert` looks as following:
             "vendor_name": "SanDisk",
             "workflow": {
                 "changed_by": "Carbon Black",
-                "last_update_time": "2020-11-17T22:02:16Z",
+                "last_update_time": "2020-11-17T22:02:16.000Z",
                 "state": "OPEN"
             }
         }
@@ -254,22 +249,22 @@ An example event for `alert` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
         "snapshot": false,
         "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-09-26T01:58:04.610Z",
+        "created": "2022-11-16T09:31:33.916Z",
         "dataset": "carbon_black_cloud.alert",
-        "end": "2020-11-17T22:02:16Z",
+        "end": "2020-11-17T22:02:16.000Z",
         "id": "test1",
-        "ingested": "2022-09-26T01:58:05Z",
+        "ingested": "2022-11-16T09:31:37Z",
         "kind": "alert",
         "original": "{\"alert_url\":\"https://defense-eap01.conferdeploy.net/alerts?orgId=1889976\",\"category\":\"WARNING\",\"create_time\":\"2020-11-17T22:05:13Z\",\"device_external_ip\":\"81.2.69.143\",\"device_id\":2,\"device_internal_ip\":\"81.2.69.144\",\"device_location\":\"UNKNOWN\",\"device_name\":\"DESKTOP-002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_username\":\"test34@demo.com\",\"first_event_time\":\"2020-11-17T22:02:16Z\",\"id\":\"test1\",\"last_event_time\":\"2020-11-17T22:02:16Z\",\"last_update_time\":\"2020-11-17T22:05:13Z\",\"legacy_alert_id\":\"C8EB7306-AF26-4A9A-B677-814B3AF69720\",\"org_key\":\"ABCD6X3T\",\"policy_applied\":\"APPLIED\",\"policy_id\":6997287,\"policy_name\":\"Standard\",\"product_id\":\"0x5406\",\"product_name\":\"U3 Cruzer Micro\",\"reason\":\"Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.\",\"reason_code\":\"6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC\",\"run_state\":\"DID_NOT_RUN\",\"sensor_action\":\"DENY\",\"serial_number\":\"0875920EF7C2A304\",\"severity\":3,\"target_value\":\"MEDIUM\",\"threat_cause_cause_event_id\":\"FCEE2AF0-D832-4C9F-B988-F11B46028C9E\",\"threat_cause_threat_category\":\"NON_MALWARE\",\"threat_cause_vector\":\"REMOVABLE_MEDIA\",\"threat_id\":\"t5678\",\"type\":\"DEVICE_CONTROL\",\"vendor_id\":\"0x0781\",\"vendor_name\":\"SanDisk\",\"workflow\":{\"changed_by\":\"Carbon Black\",\"comment\":\"\",\"last_update_time\":\"2020-11-17T22:02:16Z\",\"remediation\":\"\",\"state\":\"OPEN\"}}",
         "reason": "Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.",
         "severity": 3,
-        "start": "2020-11-17T22:02:16Z",
+        "start": "2020-11-17T22:02:16.000Z",
         "url": "https://defense-eap01.conferdeploy.net/alerts?orgId=1889976"
     },
     "host": {
@@ -373,7 +368,7 @@ An example event for `alert` looks as following:
 | carbon_black_cloud.alert.workflow.changed_by | The name of user who changed the workflow. | keyword |
 | carbon_black_cloud.alert.workflow.comment | Comment associated with workflow. | keyword |
 | carbon_black_cloud.alert.workflow.last_update_time | The last update time of workflow. | date |
-| carbon_black_cloud.alert.workflow.remediation | N/A | keyword |
+| carbon_black_cloud.alert.workflow.remediation | N/A. | keyword |
 | carbon_black_cloud.alert.workflow.state | The state of workflow. | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
@@ -406,11 +401,7 @@ An example event for `alert` looks as following:
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -418,8 +409,6 @@ An example event for `alert` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
@@ -583,7 +572,7 @@ An example event for `endpoint_event` looks as following:
 | carbon_black_cloud.endpoint_event.modload.publisher.name | The name of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.modload.publisher.state | The state of the publisher. | keyword |
 | carbon_black_cloud.endpoint_event.netconn.proxy.domain | DNS name associated with the "proxy" end of this network connection; may be empty if the name cannot be inferred or the connection is made direct to/from a proxy IP address. | keyword |
-| carbon_black_cloud.endpoint_event.netconn.proxy.ip | IPv4 or IPv6 address in string format associated with the "proxy" end of this network connection. | keyword |
+| carbon_black_cloud.endpoint_event.netconn.proxy.ip | IPv4 or IPv6 address in string format associated with the "proxy" end of this network connection. | ip |
 | carbon_black_cloud.endpoint_event.netconn.proxy.port | UDP/TCP port number associated with the "proxy" end of this network connection. | keyword |
 | carbon_black_cloud.endpoint_event.organization_key | The organization key associated with the console instance. | keyword |
 | carbon_black_cloud.endpoint_event.process.duration | The time difference in seconds between the process start and process terminate event. | long |
@@ -641,19 +630,14 @@ An example event for `endpoint_event` looks as following:
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
@@ -877,11 +861,7 @@ An example event for `watchlist_hit` looks as following:
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
@@ -889,8 +869,6 @@ An example event for `watchlist_hit` looks as following:
 | host.os.name | Operating system name, without the version. | keyword |
 | host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
@@ -926,10 +904,10 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-09-26T01:58:41.710Z",
+    "@timestamp": "2022-11-16T09:32:17.483Z",
     "agent": {
-        "ephemeral_id": "818ffeea-8e73-497b-bc16-b13e6bb3010c",
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "ephemeral_id": "cfa040bc-8da2-4ec1-a844-b4b2806e3c76",
+        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -959,15 +937,16 @@ An example event for `asset_vulnerability_summary` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "15b19080-249c-49a5-801a-edf25c28dcfe",
+        "id": "d25950db-7f14-44a1-8b37-581c2fe716ba",
         "snapshot": false,
         "version": "8.4.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-09-26T01:58:41.710Z",
+        "created": "2022-11-16T09:32:17.483Z",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2022-09-26T01:58:45Z",
+        "ingested": "2022-11-16T09:32:20Z",
+        "kind": "state",
         "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64-bit\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },
     "host": {
@@ -991,7 +970,7 @@ An example event for `asset_vulnerability_summary` looks as following:
     "tags": [
         "preserve_original_event",
         "forwarded",
-        "carbon_black_cloud-asset-vulnerability-summary"
+        "carbon_black_cloud-asset_vulnerability_summary"
     ],
     "vulnerability": {
         "score": {
@@ -1033,26 +1012,20 @@ An example event for `asset_vulnerability_summary` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
 | host.mac | Host mac addresses. | keyword |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.type | Use the `os.type` field to categorize the operating system into one of the broad commercial families. If the OS you're dealing with is not listed as an expected value, the field should not be populated. Please let us know by opening an issue with ECS, to propose its addition. | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
