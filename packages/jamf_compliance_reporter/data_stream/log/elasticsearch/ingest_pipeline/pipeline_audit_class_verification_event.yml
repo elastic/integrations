@@ -13,11 +13,16 @@ processors:
       field: json.audit_class_verification_info.restored_default
       target_field: jamf_compliance_reporter.log.audit_class_verification_info.restored_default
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.audit_class_verification_info.status
       target_field: jamf_compliance_reporter.log.audit_class_verification_info.status
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.audit_class_verification_info.status_str

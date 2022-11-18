@@ -15,9 +15,12 @@ processors:
       field: json.ComplianceReporter_license_info.expiration_date
       target_field: jamf_compliance_reporter.log.compliancereporter_license_info.expiration_date
       if: ctx.json?.compliancereporter_license_info?.expiration_date != 0
-      ignore_failure: true
       formats:
         - dd/MM/yyyy
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ComplianceReporter_license_info.status
       target_field: jamf_compliance_reporter.log.compliancereporter_license_info.status
@@ -26,9 +29,12 @@ processors:
       field: json.ComplianceReporter_license_info.time_seconds_epoch
       target_field: jamf_compliance_reporter.log.compliancereporter_license_info.time
       if: ctx.json?.compliancereporter_license_info?.time_seconds_epoch != '0'
-      ignore_failure: true
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ComplianceReporter_license_info.type
       target_field: jamf_compliance_reporter.log.compliancereporter_license_info.type
