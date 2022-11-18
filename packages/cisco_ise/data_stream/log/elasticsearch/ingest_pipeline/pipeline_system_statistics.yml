@@ -13,47 +13,57 @@ processors:
       field: message
       if: ctx?.cisco_ise?.log?.segment?.number == 0
       patterns: 
-        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details},"
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
       if: ctx?.cisco_ise?.log?.segment?.number > 0
       patterns: 
-        - "^%{GREEDYDATA:cisco_ise.log.log_details},"
+        - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
-      field: cisco_ise.log.log_details
+      field: cisco_ise.log.log_details_raw
       if: ctx?.cisco_ise?.log?.message?.code == "70001" 
       patterns: 
-        - "^ConfigVersionId=%{DATA:ConfigVersionId}, SysStatsAcsProcessHealth= %{GREEDYDATA:_tmp.SysStatsAcsProcessHealth}"
+        - "^ConfigVersionId=%{INT:cisco_ise.log.log_details.ConfigVersionId}, SysStatsAcsProcessHealth= %{GREEDYDATA:_tmp.SysStatsAcsProcessHealth}"
   - kv: 
       if: ctx?.cisco_ise?.log?.message?.code == "70001"
       field: _tmp.SysStatsAcsProcessHealth
-      target_field: SysStatsAcsProcessHealth
+      target_field: cisco_ise.log.log_details.SysStatsAcsProcessHealth
       field_split: '; '
       value_split: =
       ignore_failure: true
   - kv: 
       if: ctx?.cisco_ise?.log?.message?.code != "70001"
-      field: cisco_ise.log.log_details
+      field: cisco_ise.log.log_details_raw
+      target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
   - kv: 
-      field: OperationCounters
+      field: cisco_ise.log.log_details.OperationCounters
       target_field: _tmp
       field_split: ', '
       value_split: =
       if: ctx?.cisco_ise?.log?.message?.code == "70011"
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - kv: 
       if: ctx?.cisco_ise?.log?.message?.code == "70011"
       field: _tmp.Counter
-      target_field: Counters
+      target_field: cisco_ise.log.log_details.Counters
       field_split: ","
       value_split: ":"
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: OperationCounters
-      if: ctx?.Counters != null
+      field: cisco_ise.log.log_details.OperationCounters
+      if: ctx?.cisco_ise?.log?.log_details?.Counters != null
+      ignore_missing: true
   - date:
       field: _tmp.timestamp
       target_field: '@timestamp'
@@ -78,112 +88,174 @@ processors:
         }
         ctx.event.category = eventCategory.length > 0 ? eventCategory : null;
   - convert:
-      field: ActiveSessionCount
+      field: cisco_ise.log.log_details.ActiveSessionCount
       target_field: cisco_ise.log.active_session.count
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.ActiveSessionCount
+      ignore_missing: true
   - convert:
-      field: AverageRadiusRequestLatency
+      field: cisco_ise.log.log_details.AverageRadiusRequestLatency
       target_field: cisco_ise.log.average.radius.request.latency
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.AverageRadiusRequestLatency
+      ignore_missing: true
   - convert:
-      field: AverageTacacsRequestLatency
+      field: cisco_ise.log.log_details.AverageTacacsRequestLatency
       target_field: cisco_ise.log.average.tacacs.request.latency
       type: long
-      ignore_failure: true
-  - convert:
-      field: ConfigVersionId
-      target_field: cisco_ise.log.config_version.id
-      type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.AverageTacacsRequestLatency
+      ignore_missing: true
   - rename:
-      field: Counters
+      field: cisco_ise.log.log_details.Counters
       target_field: cisco_ise.log.operation_counters.counters
+      ignore_failure: true
       ignore_missing: true
   - convert:
-      field: DeltaRadiusRequestCount
+      field: cisco_ise.log.log_details.DeltaRadiusRequestCount
       target_field: cisco_ise.log.delta.radius.request.count
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.DeltaRadiusRequestCount
+      ignore_missing: true
   - convert:
-      field: DeltaTacacsRequestCount
+      field: cisco_ise.log.log_details.DeltaTacacsRequestCount
       target_field: cisco_ise.log.delta.tacacs.request.count
       type: long
-      ignore_failure: true
-  - rename:
-      field: OperationCounters
-      target_field: cisco_ise.log.operation_counters.original
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.DeltaTacacsRequestCount
       ignore_missing: true
   - rename:
-      field: SysStatsAcsProcessHealth
+      field: cisco_ise.log.log_details.OperationCounters
+      target_field: cisco_ise.log.operation_counters.original
+      ignore_failure: true
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.SysStatsAcsProcessHealth
       target_field: cisco_ise.log.sysstats.acs.process.health
+      ignore_failure: true
       ignore_missing: true
   - convert:
-      field: SysStatsCpuCount
+      field: cisco_ise.log.log_details.SysStatsCpuCount
       target_field: cisco_ise.log.sysstats.cpu.count
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.SysStatsCpuCount
+      ignore_missing: true
   - convert:
-      field: SysStatsProcessMemoryMB
+      field: cisco_ise.log.log_details.SysStatsProcessMemoryMB
       target_field: cisco_ise.log.sysstats.process_memory_mb
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.SysStatsProcessMemoryMB
+      ignore_missing: true
   - gsub:
-      field: SysStatsUtilizationCpu
+      field: cisco_ise.log.log_details.SysStatsUtilizationCpu
       pattern: '%'
       replacement: ''
       ignore_missing: true
   - convert:
-      field: SysStatsUtilizationCpu
+      field: cisco_ise.log.log_details.SysStatsUtilizationCpu
       target_field: cisco_ise.log.sysstats.utilization.cpu
       type: double
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.SysStatsUtilizationCpu
+      ignore_missing: true
   - gsub:
-      field: SysStatsUtilizationDiskIO
+      field: cisco_ise.log.log_details.SysStatsUtilizationDiskIO
       pattern: '%'
       replacement: ''
       ignore_missing: true
   - convert:
-      field: SysStatsUtilizationDiskIO
+      field: cisco_ise.log.log_details.SysStatsUtilizationDiskIO
       target_field: cisco_ise.log.sysstats.utilization.disk.io
       type: double
       ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.SysStatsUtilizationDiskIO
+      ignore_missing: true
   - rename:
-      field: SysStatsUtilizationDiskSpace
+      field: cisco_ise.log.log_details.SysStatsUtilizationDiskSpace
       target_field: cisco_ise.log.sysstats.utilization.disk.space
+      ignore_failure: true
       ignore_missing: true
   - convert:
-      field: SysStatsUtilizationLoadAvg
+      field: cisco_ise.log.log_details.SysStatsUtilizationLoadAvg
       target_field: cisco_ise.log.sysstats.utilization.load_avg
       type: double
       ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.SysStatsUtilizationLoadAvg
+      ignore_missing: true
   - gsub:
-      field: SysStatsUtilizationMemory
+      field: cisco_ise.log.log_details.SysStatsUtilizationMemory
       pattern: '%'
       replacement: ''
       ignore_missing: true
   - convert:
-      field: SysStatsUtilizationMemory
+      field: cisco_ise.log.log_details.SysStatsUtilizationMemory
       target_field: cisco_ise.log.sysstats.utilization.memory
       type: double
       ignore_failure: true
-  - rename:
-      field: SysStatsUtilizationNetwork
-      target_field: cisco_ise.log.sysstats.utilization.network
-      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field:
-        - ActiveSessionCount
-        - AverageRadiusRequestLatency
-        - AverageTacacsRequestLatency
-        - ConfigVersionId
-        - DeltaRadiusRequestCount
-        - DeltaTacacsRequestCount
-        - SysStatsCpuCount
-        - SysStatsProcessMemoryMB
-        - SysStatsUtilizationCpu
-        - SysStatsUtilizationDiskIO
-        - SysStatsUtilizationMemory
-        - SysStatsUtilizationLoadAvg
+      field: cisco_ise.log.log_details.SysStatsUtilizationMemory
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.SysStatsUtilizationNetwork
+      target_field: cisco_ise.log.sysstats.utilization.network
+      ignore_failure: true
       ignore_missing: true
