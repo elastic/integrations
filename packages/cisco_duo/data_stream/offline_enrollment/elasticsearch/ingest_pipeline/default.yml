@@ -25,19 +25,18 @@ processors:
       ignore_missing: true
   - date:
       field: json.timestamp
-      target_field: "@timestamp"
       if: ctx.json?.timestamp != null
       formats:
         - UNIX
       on_failure:
         - append:
             field: error.message
-            value: "{{{_ingest.on_failure_message}}}"
-  - json: 
+            value: '{{{_ingest.on_failure_message}}}'
+  - json:
       field: json.description
       target_field: json_description
       ignore_failure: true
-  - set: 
+  - set:
       field: user.name
       copy_from: json.username
       ignore_failure: true
@@ -45,37 +44,49 @@ processors:
       field: json.action
       target_field: cisco_duo.offline_enrollment.action
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json_description.hostname
       target_field: cisco_duo.offline_enrollment.description.hostname
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json_description.user_agent
       target_field: cisco_duo.offline_enrollment.description.user_agent
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json_description.factor
       target_field: cisco_duo.offline_enrollment.description.factor
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.object
       target_field: cisco_duo.offline_enrollment.object
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.username
       target_field: cisco_duo.offline_enrollment.user.name
       ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{cisco_duo.offline_enrollment.description.hostname}}}'
+      if: ctx.cisco_duo?.offline_enrollment?.description?.hostname != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
   - remove:
       field: json
   - remove:
         field: json_description
-        if: ctx?.json_description != null
+        if: ctx.json_description != null
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:
   - append:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: '{{{_ingest.on_failure_message}}}'
