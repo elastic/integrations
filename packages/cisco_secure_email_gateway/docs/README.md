@@ -200,20 +200,25 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-03-17T18:24:37.000Z",
+    "@timestamp": "2003-01-29T00:06:30.000Z",
     "agent": {
-        "ephemeral_id": "8b0e8c5d-f4eb-4a3f-9811-ea5241504b45",
-        "id": "f30e055b-b967-474e-ba00-65b6223f750d",
+        "ephemeral_id": "ab82be79-d8e4-4040-9682-84f0c4a8d908",
+        "id": "1e26c946-6d54-4898-8ba3-0b3ba2eba188",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.3"
     },
     "cisco_secure_email_gateway": {
         "log": {
+            "bounce_type": "Bounced",
             "category": {
-                "name": "amp"
+                "name": "bounces"
             },
-            "message": "File reputation query initiating. File Name = 'mod-6.exe', MID = 5, File Size = 1673216 bytes, File Type = application/x-dosexec"
+            "delivery_connection_id": "2",
+            "error_code": "5.1.0",
+            "message": "Bounced: DCID 2 MID 15232 From:\u003cexample.com\u003e To:\u003cexample.com\u003e RID 0 - 5.1.0 - Unknown address error ('550', ['5.1.1 The email account that you tried to reach does not exist. Please try', \"5.1.1 double-checking the recipient's email address for typos or\", '5.1.1 unnecessary spaces. Learn more at', '5.1.1  xxxxx ay44si12078156oib.94 - gsmtp'])",
+            "recipient_id": "0",
+            "response": "'550', ['5.1.1 The email account that you tried to reach does not exist. Please try', \"5.1.1 double-checking the recipient's email address for typos or\", '5.1.1 unnecessary spaces. Learn more at', '5.1.1  xxxxx ay44si12078156oib.94 - gsmtp']"
         }
     },
     "data_stream": {
@@ -225,37 +230,35 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "f30e055b-b967-474e-ba00-65b6223f750d",
+        "id": "1e26c946-6d54-4898-8ba3-0b3ba2eba188",
         "snapshot": false,
         "version": "8.4.3"
     },
     "email": {
-        "attachments": {
-            "file": {
-                "name": "mod-6.exe",
-                "size": 1673216
-            }
+        "from": {
+            "address": "example.com"
         },
-        "content_type": "application/x-dosexec",
-        "message_id": "5"
+        "message_id": "15232",
+        "to": {
+            "address": "example.com"
+        }
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_secure_email_gateway.log",
-        "ingested": "2022-10-28T08:45:05Z",
-        "kind": "event"
+        "ingested": "2022-11-07T09:35:24Z",
+        "kind": "event",
+        "reason": "Unknown address error"
     },
     "input": {
-        "type": "udp"
+        "type": "log"
     },
     "log": {
-        "level": "info",
-        "source": {
-            "address": "192.168.128.7:39512"
+        "file": {
+            "path": "/tmp/service_logs/bounces.@123456789.s"
         },
-        "syslog": {
-            "priority": 166
-        }
+        "level": "info",
+        "offset": 0
     },
     "tags": [
         "forwarded",
@@ -473,9 +476,9 @@ An example event for `log` looks as following:
 | email.subject | A brief summary of the topic of the message. | keyword |
 | email.subject.text | Multi-field of `email.subject`. | match_only_text |
 | email.to.address | The email address of recipient | keyword |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
 | event.id | Unique ID to describe the event. | keyword |
-| event.module | Event module | constant_keyword |
+| event.module | Event module. | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | filepath |  | keyword |
@@ -502,7 +505,7 @@ An example event for `log` looks as following:
 | input.type |  | keyword |
 | log.file.path | File path from which the log event was read / sent from. | keyword |
 | log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
-| log.offset | Log offset | long |
+| log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | network.protocol | In the OSI Model this would be the Application Layer protocol. For example, `http`, `dns`, or `ssh`. The field value must be normalized to lowercase for querying. | keyword |

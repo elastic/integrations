@@ -9,43 +9,43 @@ processors:
   - grok:
       field: cisco_secure_email_gateway.log.message
       patterns:
-        - "^GUI: User %{USERNAME:user.name} %{GREEDYDATA:cisco_secure_email_gateway.log.action} from session %{GREEDYDATA:cisco_secure_email_gateway.log.session} because of inactivity timeout"
-        - "^CLI: User %{USERNAME:user.name} %{GREEDYDATA:cisco_secure_email_gateway.log.action} from %{GREEDYDATA:cisco_secure_email_gateway.log.session} because of inactivity timeout"
-        - "^%{WORD:cisco_secure_email_gateway.log.action}:%{IP:host.ip} user:%{USERNAME:user.name} session:%{WORD:cisco_secure_email_gateway.log.session}"
-        - "^User %{USERNAME:user.name} %{GREEDYDATA:cisco_secure_email_gateway.log.action} of %{WORD:network.protocol} session %{IP:host.ip}"
-        - "^An authentication attempt by the user %{USERNAME:user.name} from %{IP:host.ip} %{WORD:cisco_secure_email_gateway.log.outcome} using an %{WORD:network.protocol} connection."
-        - "^The user %{USERNAME:user.name} %{WORD:cisco_secure_email_gateway.log.outcome} %{GREEDYDATA:cisco_secure_email_gateway.log.action} from %{IP:host.ip} with privilege %{DATA:cisco_secure_email_gateway.log.privilege} using an %{WORD:network.protocol} connection."
-        - "^User %{USERNAME:user.name} was %{WORD:cisco_secure_email_gateway.log.action} %{WORD:cisco_secure_email_gateway.log.outcome}."
-        - "^User %{USERNAME:user.name} %{WORD:cisco_secure_email_gateway.log.outcome} %{WORD:cisco_secure_email_gateway.log.action}"
-        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}"
+        - "^GUI: User %{USERNAME:user.name} %{GREEDYDATA:cisco_secure_email_gateway.log.action} from session %{GREEDYDATA:cisco_secure_email_gateway.log.session} because of inactivity timeout$"
+        - "^CLI: User %{USERNAME:user.name} %{GREEDYDATA:cisco_secure_email_gateway.log.action} from %{GREEDYDATA:cisco_secure_email_gateway.log.session} because of inactivity timeout$"
+        - "^%{WORD:cisco_secure_email_gateway.log.action}:%{IP:host.ip} user:%{USERNAME:user.name} session:%{WORD:cisco_secure_email_gateway.log.session}$"
+        - "^User %{USERNAME:user.name} %{GREEDYDATA:cisco_secure_email_gateway.log.action} of %{WORD:network.protocol} session %{IP:host.ip}$"
+        - "^An authentication attempt by the user %{USERNAME:user.name} from %{IP:host.ip} %{WORD:cisco_secure_email_gateway.log.outcome} using an %{WORD:network.protocol} connection.$"
+        - "^The user %{USERNAME:user.name} %{WORD:cisco_secure_email_gateway.log.outcome} %{GREEDYDATA:cisco_secure_email_gateway.log.action} from %{IP:host.ip} with privilege %{DATA:cisco_secure_email_gateway.log.privilege} using an %{WORD:network.protocol} connection.$"
+        - "^User %{USERNAME:user.name} was %{WORD:cisco_secure_email_gateway.log.action} %{WORD:cisco_secure_email_gateway.log.outcome}.$"
+        - "^User %{USERNAME:user.name} %{WORD:cisco_secure_email_gateway.log.outcome} %{WORD:cisco_secure_email_gateway.log.action}$"
+        - "^%{GREEDYDATA:cisco_secure_email_gateway.log.message}$"
   - lowercase:
       field: network.protocol
       ignore_failure: true
   - set:
       field: event.outcome
-      if: ctx?.cisco_secure_email_gateway?.log?.outcome == "failed"
-      value: failure 
+      if: ctx.cisco_secure_email_gateway?.log?.outcome == 'failed'
+      value: failure
   - set:
       field: event.outcome
-      if: ctx?.cisco_secure_email_gateway?.log?.outcome == "successfully"
-      value: success 
+      if: ctx.cisco_secure_email_gateway?.log?.outcome == 'successfully'
+      value: success
   - set:
       field: event.type
-      if: ctx?.cisco_secure_email_gateway?.log?.action == "logged on" || ctx?.cisco_secure_email_gateway?.log?.action == 'authenticated'
-      value: [start] 
+      if: ctx.cisco_secure_email_gateway?.log?.action == 'logged on' || ctx.cisco_secure_email_gateway?.log?.action == 'authenticated'
+      value: [start]
   - set:
       field: event.type
-      if: ctx?.cisco_secure_email_gateway?.log?.action == 'logged out' || ctx?.cisco_secure_email_gateway?.log?.action == 'logout'
-      value: [end]   
+      if: ctx.cisco_secure_email_gateway?.log?.action == 'logged out' || ctx.cisco_secure_email_gateway?.log?.action == 'logout'
+      value: [end]
   - append:
       field: related.user
-      value: "{{{user.name}}}"
-      if: ctx?.user?.name != null
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.ip
-      value: "{{{host.ip}}}"
-      if: ctx?.host?.ip != null
+      value: '{{{host.ip}}}'
+      if: ctx.host?.ip != null
       allow_duplicates: false
       ignore_failure: true
