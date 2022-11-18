@@ -3,22 +3,36 @@ description: Pipeline for Jamf Compliance Reporter gatekeeper manual overrides e
 processors:
   - foreach:
       field: json.event_attributes.attributes
+      if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         date:
           field: _ingest._value.ctime
           target_field: _ingest._value.ctime
-          ignore_failure: true
           formats:
             - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.ctime
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.event_attributes.attributes
+      if: ctx.json?.event_attributes?.attributes instanceof List
       processor:
         date:
           field: _ingest._value.mtime
           target_field: _ingest._value.mtime
-          ignore_failure: true
           formats:
             - UNIX
+          on_failure:
+            - remove:
+                field: _ingest._value.mtime
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.attributes
       target_field: jamf_compliance_reporter.log.event_attributes.attributes
