@@ -32,8 +32,8 @@ An example event for `inspector` looks as following:
 {
     "@timestamp": "2022-09-20T19:52:26.405Z",
     "agent": {
-        "ephemeral_id": "9665ff05-9bc3-47b5-822d-09f83d5f1b3b",
-        "id": "22812f4f-4283-4359-85bc-eccd9bd57c54",
+        "ephemeral_id": "d1032859-fd44-410c-9960-dde7dcbc3a2e",
+        "id": "4a3373c9-b63f-4544-a929-761b42f50054",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -198,15 +198,15 @@ An example event for `inspector` looks as following:
         "version": "8.2.0"
     },
     "elastic_agent": {
-        "id": "22812f4f-4283-4359-85bc-eccd9bd57c54",
+        "id": "4a3373c9-b63f-4544-a929-761b42f50054",
         "snapshot": false,
         "version": "8.4.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2022-11-03T06:38:06.812Z",
+        "created": "2022-11-17T13:05:04.253Z",
         "dataset": "aws.inspector",
-        "ingested": "2022-11-03T06:38:10Z",
+        "ingested": "2022-11-17T13:05:07Z",
         "kind": "event",
         "original": "{\"awsAccountId\":\"123456789\",\"description\":\"Findins message\",\"findingArn\":\"arn:aws:s3:::sample\",\"firstObservedAt\":\"1.663703546405E9\",\"inspectorScore\":1.2,\"inspectorScoreDetails\":{\"adjustedCvss\":{\"adjustments\":[{\"metric\":\"Base\",\"reason\":\"use Base metric\"}],\"cvssSource\":\"scope1\",\"score\":8.9,\"scoreSource\":\"scope2\",\"scoringVector\":\"Attack Vector\",\"version\":\"v3.1\"}},\"lastObservedAt\":\"1.663703546405E9\",\"networkReachabilityDetails\":{\"networkPath\":{\"steps\":[{\"componentId\":\"02ce3860-3126-42af-8ac7-c2a661134129\",\"componentType\":\"type\"}]},\"openPortRange\":{\"begin\":1234,\"end\":4567},\"protocol\":\"TCP\"},\"packageVulnerabilityDetails\":{\"cvss\":[{\"baseScore\":1.1,\"scoringVector\":\"Attack Vector\",\"source\":\"scope3\",\"version\":\"v3.1\"}],\"referenceUrls\":[\"https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-6111\"],\"relatedVulnerabilities\":[\"security\"],\"source\":\"example\",\"sourceUrl\":\"https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-6111\",\"vendorCreatedAt\":\"1.663703546405E9\",\"vendorSeverity\":\"basic\",\"vendorUpdatedAt\":\"1.663703546405E9\",\"vulnerabilityId\":\"123456789\",\"vulnerablePackages\":[{\"arch\":\"arch\",\"epoch\":123,\"filePath\":\"/example\",\"fixedInVersion\":\"3\",\"name\":\"example\",\"packageManager\":\"BUNDLER\",\"release\":\"release\",\"sourceLayerHash\":\"50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c\",\"version\":\"2.0\"}]},\"remediation\":{\"recommendation\":{\"Url\":\"https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-6111\",\"text\":\"example\"}},\"resources\":[{\"details\":{\"awsEc2Instance\":{\"iamInstanceProfileArn\":\"arn:aws:s3:::iam\",\"imageId\":\"123456789\",\"ipV4Addresses\":[\"89.160.20.128\",\"81.2.69.192\"],\"ipV6Addresses\":[\"2a02:cf40::\"],\"keyName\":\"sample\",\"launchedAt\":\"1.663703546405E9\",\"platform\":\"EC2\",\"subnetId\":\"123456\",\"type\":\"Instance\",\"vpcId\":\"3265875\"},\"awsEcrContainerImage\":{\"architecture\":\"arch\",\"author\":\"example\",\"imageHash\":\"50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545d\",\"imageTags\":[\"sample\"],\"platform\":\"ECR\",\"pushedAt\":\"1.663703546405E9\",\"registry\":\"ecr registry\",\"repositoryName\":\"sample\"}},\"id\":\"12345678\",\"partition\":\"partition\",\"region\":\"us-east-1\",\"tags\":{\"string1\":\"string1\",\"string2\":\"string2\"},\"type\":\"AWS_EC2_INSTANCE\"}],\"severity\":\"INFORMATIONAL\",\"status\":\"ACTIVE\",\"title\":\"sample findings\",\"type\":\"NETWORK_REACHABILITY\",\"updatedAt\":\"1.663703546405E9\"}",
         "type": [
@@ -340,14 +340,15 @@ An example event for `inspector` looks as following:
 | aws.inspector.type | The type of the finding. | keyword |
 | aws.inspector.updated_at | The date and time the finding was last updated at. | date |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.instance.id | Instance ID of the host machine. | keyword |
 | cloud.instance.name | Instance name of the host machine. | keyword |
 | cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
 | cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host is running. | keyword |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |
 | container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels | Image labels. | object |
@@ -370,14 +371,14 @@ An example event for `inspector` looks as following:
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
 | host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
 | host.ip | Host ip addresses. | ip |
-| host.mac | Host mac addresses. | keyword |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
 | host.os.kernel | Operating system kernel version as a raw string. | keyword |
 | host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
 | host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
