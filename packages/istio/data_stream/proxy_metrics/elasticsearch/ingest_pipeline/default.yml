@@ -1,0 +1,34 @@
+---
+description: Pipeline for renaming object
+processors:
+  - remove:
+      field:
+        - metricset.name
+        - service.address
+        - service.type
+      ignore_missing: true
+  - set:
+      field: ecs.version
+      value: '8.4.0'
+  - set:
+      field: event.module
+      value: istio
+  - set:
+      field: event.kind
+      value: metric
+  - rename:
+      field: prometheus.labels
+      target_field: istio.proxy.labels
+      ignore_missing: true
+  - set:
+      field: istio.proxy.labels.job
+      value: istio
+      override: true
+  - rename:
+      field: prometheus
+      target_field: istio.proxy.metrics
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'
