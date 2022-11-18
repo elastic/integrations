@@ -757,11 +757,9 @@ processors:
       type: long
       ignore_missing: true
       on_failure:
-        - remove:
+        - rename:
             field: panw.panos.certificate.size
-        - append:
-            field: error.message
-            value: "{{{_ingest.on_failure_message}}}"
+            target_field: panw.panos.certificate.raw_size
   - convert:
       field: tls.client.x509.public_key_size
       type: long
@@ -769,9 +767,6 @@ processors:
       on_failure:
         - remove:
             field: tls.client.x509.public_key_size
-        - append:
-            field: error.message
-            value: "{{{_ingest.on_failure_message}}}"
   - convert:
       field: panw.panos.issuer_common_name.length
       type: long
