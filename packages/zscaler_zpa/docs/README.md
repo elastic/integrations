@@ -210,9 +210,9 @@ An example event for `app_connector_status` looks as following:
 {
     "@timestamp": "2019-07-03T05:17:22.000Z",
     "agent": {
-        "ephemeral_id": "5879b806-6298-48ab-89a6-19ddcf612162",
+        "ephemeral_id": "3822f64e-da38-4bc8-ba94-142dfb616687",
         "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -231,18 +231,22 @@ An example event for `app_connector_status` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
         "snapshot": false,
         "version": "7.16.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "package",
+        "category": [
+            "package"
+        ],
         "dataset": "zscaler_zpa.app_connector_status",
-        "ingested": "2022-02-03T13:30:46Z",
+        "ingested": "2022-11-10T07:09:35Z",
         "kind": "event",
         "original": "{\"LogTimestamp\":\"Wed Jul 3 05:17:22 2019\",\"Customer\":\"Customer Name\",\"SessionID\":\"8A64Qwj9zCkfYDGJVoUZ\",\"SessionType\":\"ZPN_ASSISTANT_BROKER_CONTROL\",\"SessionStatus\":\"ZPN_STATUS_AUTHENTICATED\",\"Version\":\"19.20.3\",\"Platform\":\"el7\",\"ZEN\":\"US-NY-8179\",\"Connector\":\"Some App Connector\",\"ConnectorGroup\":\"Some App Connector Group\",\"PrivateIP\":\"10.0.0.4\",\"PublicIP\":\"0.0.0.0\",\"Latitude\":47,\"Longitude\":-122,\"CountryCode\":\"\",\"TimestampAuthentication\":\"2019-06-27T05:05:23.348Z\",\"TimestampUnAuthentication\":\"\",\"CPUUtilization\":1,\"MemUtilization\":20,\"ServiceCount\":2,\"InterfaceDefRoute\":\"eth0\",\"DefRouteGW\":\"10.0.0.1\",\"PrimaryDNSResolver\":\"168.63.129.16\",\"HostStartTime\":\"1513229995\",\"HostUpTime\":\"1513229995\",\"ConnectorUpTime\":\"1555920005\",\"ConnectorStartTime\":\"1555920005\",\"NumOfInterfaces\":2,\"BytesRxInterface\":319831966346,\"PacketsRxInterface\":1617569938,\"ErrorsRxInterface\":0,\"DiscardsRxInterface\":0,\"BytesTxInterface\":192958782635,\"PacketsTxInterface\":1797471190,\"ErrorsTxInterface\":0,\"DiscardsTxInterface\":0,\"TotalBytesRx\":10902554,\"TotalBytesTx\":48931771}",
-        "type": "info"
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "cpu": {
@@ -262,7 +266,7 @@ An example event for `app_connector_status` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:33226"
+            "address": "192.168.64.5:34894"
         }
     },
     "observer": {
@@ -272,9 +276,7 @@ An example event for `app_connector_status` looks as following:
                 "lon": -122
             }
         },
-        "ip": [
-            "0.0.0.0"
-        ],
+        "ip": "0.0.0.0",
         "os": {
             "platform": "el7"
         },
@@ -399,6 +401,7 @@ An example event for `app_connector_status` looks as following:
 | observer.geo.location | Longitude and latitude. | geo_point |
 | organization.id | Unique identifier for the organization. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | tags | List of keywords used to tag each event. | keyword |
@@ -431,9 +434,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-17T04:29:38.000Z",
     "agent": {
-        "ephemeral_id": "75bcfb32-c04c-4455-88ed-41a659043c80",
+        "ephemeral_id": "b0c4f708-5ee5-49b4-ab18-0a6ff88d2773",
         "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -447,7 +450,7 @@ An example event for `audit` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -459,7 +462,7 @@ An example event for `audit` looks as following:
         "created": "2021-11-17T04:29:38.000Z",
         "dataset": "zscaler_zpa.audit",
         "id": "11111111-1111-1111-1111-111111111111",
-        "ingested": "2022-02-03T13:32:04Z",
+        "ingested": "2022-11-10T07:10:25Z",
         "kind": "event",
         "type": [
             "creation"
@@ -470,7 +473,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:54030"
+            "address": "192.168.64.5:39804"
         }
     },
     "organization": {
@@ -479,6 +482,10 @@ An example event for `audit` looks as following:
     "related": {
         "ip": [
             "1.0.0.1"
+        ],
+        "user": [
+            "12345678901234567",
+            "zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com"
         ]
     },
     "server": {
@@ -581,6 +588,7 @@ An example event for `audit` looks as following:
 | organization.name | Organization name. | keyword |
 | organization.name.text | Multi-field of `organization.name`. | match_only_text |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.port | Port of the server. | long |
 | tags | List of keywords used to tag each event. | keyword |
@@ -632,9 +640,9 @@ An example event for `browser_access` looks as following:
 {
     "@timestamp": "2019-07-03T05:12:25.000Z",
     "agent": {
-        "ephemeral_id": "10484a2f-b664-42ef-a849-7386c8257491",
+        "ephemeral_id": "338de6ad-2610-4b2b-8cbf-2a77afef812a",
         "hostname": "docker-fleet-agent",
-        "id": "acf7dca8-817d-4681-bad3-1cc9bfefc49c",
+        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -664,7 +672,7 @@ An example event for `browser_access` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "acf7dca8-817d-4681-bad3-1cc9bfefc49c",
+        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
         "snapshot": false,
         "version": "7.16.2"
     },
@@ -675,9 +683,11 @@ An example event for `browser_access` looks as following:
             "session"
         ],
         "dataset": "zscaler_zpa.browser_access",
-        "ingested": "2022-02-14T07:28:10Z",
+        "ingested": "2022-11-10T07:11:15Z",
         "kind": "event",
-        "type": "connection"
+        "type": [
+            "connection"
+        ]
     },
     "http": {
         "request": {
@@ -698,7 +708,7 @@ An example event for `browser_access` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.26.0.7:47148"
+            "address": "192.168.64.5:33318"
         }
     },
     "organization": {
@@ -708,6 +718,9 @@ An example event for `browser_access` looks as following:
         "ip": [
             "81.2.69.144",
             "81.2.69.193"
+        ],
+        "user": [
+            "admin@zdemo.net"
         ]
     },
     "server": {
@@ -843,6 +856,7 @@ An example event for `browser_access` looks as following:
 | organization.name.text | Multi-field of `organization.name`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | tags | List of keywords used to tag each event. | keyword |
@@ -902,9 +916,9 @@ An example event for `user_activity` looks as following:
 {
     "@timestamp": "2019-05-31T17:35:42.000Z",
     "agent": {
-        "ephemeral_id": "2686f611-4bf3-4df9-8934-843cbd32d161",
+        "ephemeral_id": "3b924e2c-d231-430d-9bc4-fb9ac69c36d3",
         "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -928,15 +942,17 @@ An example event for `user_activity` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
         "snapshot": false,
         "version": "7.16.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "iam",
+        "category": [
+            "iam"
+        ],
         "dataset": "zscaler_zpa.user_activity",
-        "ingested": "2022-02-03T13:34:37Z",
+        "ingested": "2022-11-10T07:12:07Z",
         "kind": "event",
         "type": [
             "info",
@@ -951,7 +967,7 @@ An example event for `user_activity` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:59296"
+            "address": "192.168.64.5:35194"
         }
     },
     "network": {
@@ -968,6 +984,9 @@ An example event for `user_activity` looks as following:
             "81.2.69.193",
             "175.16.199.1",
             "67.43.156.12"
+        ],
+        "user": [
+            "ZPA LSS Client"
         ]
     },
     "server": {
@@ -1113,6 +1132,7 @@ An example event for `user_activity` looks as following:
 | organization.name.text | Multi-field of `organization.name`. | match_only_text |
 | related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
 | server.geo.country_iso_code | Country ISO code. | keyword |
 | server.geo.location | Longitude and latitude. | geo_point |
 | tags | List of keywords used to tag each event. | keyword |
@@ -1145,9 +1165,9 @@ An example event for `user_status` looks as following:
 {
     "@timestamp": "2019-05-31T17:34:48.000Z",
     "agent": {
-        "ephemeral_id": "24dbe515-d3ac-4cb8-aa21-eeee2c2f9204",
+        "ephemeral_id": "2c5da853-11d2-42f5-b4c9-ab10130d5a20",
         "hostname": "docker-fleet-agent",
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.16.2"
@@ -1171,15 +1191,17 @@ An example event for `user_status` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "d03794ae-c5b7-46b2-8a63-42f00010ac23",
+        "id": "bd852834-2771-4c96-b2b6-2b6de67a2c01",
         "snapshot": false,
         "version": "7.16.2"
     },
     "event": {
         "agent_id_status": "verified",
-        "category": "iam",
+        "category": [
+            "iam"
+        ],
         "dataset": "zscaler_zpa.user_status",
-        "ingested": "2022-02-03T13:36:02Z",
+        "ingested": "2022-11-10T07:12:57Z",
         "kind": "state",
         "type": [
             "info",
@@ -1197,7 +1219,7 @@ An example event for `user_status` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.21.0.7:57146"
+            "address": "192.168.64.5:51934"
         }
     },
     "organization": {
@@ -1206,6 +1228,9 @@ An example event for `user_status` looks as following:
     "related": {
         "ip": [
             "81.2.69.144"
+        ],
+        "user": [
+            "ZPA LSS Client"
         ]
     },
     "server": {
