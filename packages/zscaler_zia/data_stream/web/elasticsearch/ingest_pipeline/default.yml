@@ -1,5 +1,5 @@
 ---
-description: Pipeline for Zscaler web logs
+description: Pipeline for Zscaler web logs.
 processors:
   - set:
       field: ecs.version
@@ -14,7 +14,7 @@ processors:
       ignore_failure: true
   - remove:
       field: json
-      if: ctx?.input?.type == 'http_endpoint'
+      if: ctx.input?.type == 'http_endpoint'
       ignore_missing: true
   - rename:
       field: resp.event
@@ -25,27 +25,32 @@ processors:
       ignore_missing: true
   - date:
       field: json.time
-      target_field: "@timestamp"
-      ignore_failure: true
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
         - yyyy-MM-dd HH:mm:ss
+      if: ctx.json?.time != null && ctx.json.time != ''
+      on_failure:
+        - remove:
+            field: json.time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.datetime
-      target_field: "@timestamp"
-      ignore_failure: true
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
         - E MMM d HH:mm:ss yyyy
         - yyyy-MM-dd HH:mm:ss
-  - remove:
-      field:
-        - json.time
-        - json.datetime
-      ignore_missing: true
+      if: ctx.json?.datetime != null && ctx.json.datetime != ''
+      on_failure:
+        - remove:
+            field: json.datetime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: event.category
       value: web
@@ -55,39 +60,62 @@ processors:
   - append:
       field: event.type
       value: info
-  - rename:
+  - convert:
       field: json.cip
       target_field: source.nat.ip
-      if: ctx?.json?.cip != ctx?.json?.cintip
+      if: ctx.json?.cip != ctx.json?.cintip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.cip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{source.nat.ip}}}"
-      if: ctx?.source?.nat?.ip != null
+      value: '{{{source.nat.ip}}}'
+      if: ctx.source?.nat?.ip != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
+  - convert:
       field: json.sip
       target_field: destination.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.sip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{destination.ip}}}"
-      if: ctx?.destination?.ip != null
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.deviceowner
       target_field: source.user.name
       ignore_missing: true
+  - append:
+      field: related.user
+      value: '{{{source.user.name}}}'
+      if: ctx.source?.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
   - convert:
       field: json.reqsize
       target_field: http.request.bytes
       type: long
-      ignore_failure: true
-  - remove:
-      field: json.reqsize
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.reqsize
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.reqmethod
       target_field: http.request.method
@@ -104,18 +132,24 @@ processors:
       field: json.respsize
       target_field: http.response.bytes
       type: long
-      ignore_failure: true
-  - remove:
-      field: json.respsize
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.respsize
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.respcode
       target_field: http.response.status_code
       type: long
-      ignore_failure: true
-  - remove:
-      field: json.respcode
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.respcode
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.rulelabel
       target_field: rule.name
@@ -132,7 +166,7 @@ processors:
       field: network.protocol
       ignore_missing: true
   - script:
-      description: Build URI for parsing
+      description: Build URI for parsing.
       tag: Build URI for parsing
       lang: painless
       params:
@@ -144,39 +178,31 @@ processors:
         if (ctx.network?.protocol == null || ctx.json?.eurl == null) {
           return;
         }
-        
         // Remap network.protocol to a valid value, if necessary.
         if (params.valid_protocols.contains(ctx.network.protocol)) {
-          ctx.json["url"] = ctx.network.protocol + "://" + ctx.json.eurl;
+          ctx.json['url'] = ctx.network.protocol + '://' + ctx.json.eurl;
         } else {
-          ctx.json["url"] = params.default_protocol + "://" + ctx.json.eurl;
+          ctx.json['url'] = params.default_protocol + '://' + ctx.json.eurl;
         }
   - uri_parts:
       field: json.url
       on_failure:
       - set:
           field: url.original
-          value: "{{{json.eurl}}}"
+          value: '{{{json.eurl}}}'
           if: ctx.json?.eurl != null
           ignore_failure: true
-  - remove:
-      field:
-        - json.eurl
-        - json.url
-      ignore_missing: true
   - set:
       field: url.full
-      value: "{{{url.original}}}"
+      value: '{{{url.original}}}'
       ignore_failure: true
   - urldecode:
       field: url.original
       ignore_missing: true
+      ignore_failure: true
   - user_agent:
       field: json.ua
       ignore_failure: true
-  - remove:
-      field: json.ua
-      ignore_missing: true
   - rename:
       field: json.login
       target_field: user.email
@@ -200,18 +226,24 @@ processors:
       field: json.stime
       target_field: zscaler_zia.web.stime
       type: long
-      ignore_failure: true
-  - remove:
-      field: json.stime
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.stime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.ctime
       target_field: zscaler_zia.web.ctime
       type: long
-      ignore_failure: true
-  - remove:
-      field: json.ctime
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.ctime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.urlclass
       target_field: zscaler_zia.web.url.class
@@ -235,11 +267,14 @@ processors:
   - convert:
       field: json.riskscore
       target_field: event.risk_score
-      type: long
-      ignore_failure: true
-  - remove:
-      field: json.riskscore
+      type: double
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.riskscore
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.dlpeng
       target_field: zscaler_zia.web.dpl.engine
@@ -266,22 +301,29 @@ processors:
       ignore_missing: true
   - append:
       field: related.hosts
-      value: "{{{zscaler_zia.web.device.hostname}}}"
-      if: ctx?.zscaler_zia?.web?.device?.hostname != null
+      value: '{{{zscaler_zia.web.device.hostname}}}'
+      if: ctx.zscaler_zia?.web?.device?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
       field: json.bwthrottle
       target_field: zscaler_zia.web.bandwidth_throttle
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.cintip
       target_field: source.ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.cintip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      value: "{{{source.ip}}}"
-      if: ctx?.source?.ip != null
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -312,16 +354,37 @@ processors:
       field: json.totalsize
       target_field: zscaler_zia.web.total.size
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.totalsize
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - remove:
-      field: json.totalsize
+      field:
+        - json.time
+        - json.datetime
+        - json.cip
+        - json.sip
+        - json.reqsize
+        - json.respsize
+        - json.respcode
+        - json.eurl
+        - json.url
+        - json.ua
+        - json.stime
+        - json.ctime
+        - json.riskscore
+        - json.cintip
+        - json.totalsize
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively
+      description: Drops null/empty values recursively.
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -334,7 +397,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - script:
-      description: Adds all the remaining fields in fields under zscaler_zia.web
+      description: Adds all the remaining fields in fields under zscaler_zia.web.
       lang: painless
       if: ctx.json != null
       source: |
@@ -346,10 +409,10 @@ processors:
       ignore_missing: true
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:
-- set:
+- append:
     field: error.message
-    value: "{{{ _ingest.on_failure_message }}}"
+    value: '{{{ _ingest.on_failure_message }}}'
