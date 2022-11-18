@@ -57,7 +57,14 @@ See: [View the SQL Server error log in SQL Server Management Studio](https://doc
 
 ### performance metrics
 
-Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
+Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter as an input.
+This input can be a regular expression which will filter results based on pattern.
+For example, if %grant% is given as input, it will enable metrics collection for all of the counters with name like 'Memory Grants Pending', 'Active memory grants count' etc.
+MSSQL supports limited set of RegExp, See [here] (https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms187489(v=sql.105)?redirectedfrom=MSDN) for details.
+
+>Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lower case and remove special characters and these fields will not have any static field mappings.
+
+The feature `merge_results` has been introduced in 8.4 beats which create a single event by combining the metrics together in a single event. See [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event) for details.
 
 See: [Instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15)
 
@@ -344,13 +351,13 @@ An example event for `performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-08T13:35:05.558Z",
+    "@timestamp": "2022-11-15T10:59:06.048Z",
     "agent": {
-        "ephemeral_id": "16ad2de8-8ba3-496f-98d1-cbe19441c168",
-        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
+        "ephemeral_id": "c15c314e-c8ef-41f0-8697-eefd3aa8d0a1",
+        "id": "c305f9fa-07c8-41b9-b950-fa4652b743bb",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "cloud": {
         "account": {},
@@ -376,36 +383,37 @@ An example event for `performance` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "848cea0e-c052-49b3-983d-64e13d3b9a6f",
-        "snapshot": true,
-        "version": "8.3.0"
+        "id": "c305f9fa-07c8-41b9-b950-fa4652b743bb",
+        "snapshot": false,
+        "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.performance",
-        "duration": 7151724,
-        "ingested": "2022-06-08T13:35:06Z",
+        "duration": 40261000,
+        "ingested": "2022-11-15T10:59:07Z",
         "module": "sql"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.18.0.4"
+            "172.31.0.7"
         ],
         "mac": [
-            "02:42:ac:12:00:04"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.10.16.3-microsoft-standard-WSL2",
+            "kernel": "5.10.104-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -414,11 +422,26 @@ An example event for `performance` looks as following:
     },
     "mssql": {
         "metrics": {
+            "active_temp_tables": 0,
+            "batch_requests_per_sec": 65,
+            "buffer_cache_hit_ratio": 74,
+            "buffer_checkpoint_pages_per_sec": 274,
+            "buffer_database_pages": 2215,
+            "buffer_page_life_expectancy": 30,
+            "buffer_target_pages": 2408448,
+            "compilations_per_sec": 83,
+            "lock_waits_per_sec": 3,
+            "logins_per_sec": 20,
+            "logouts_per_sec": 19,
+            "memory_grants_pending": 0,
+            "page_splits_per_sec": 9,
+            "re_compilations_per_sec": 0,
+            "transactions": 0,
             "user_connections": 1
         }
     },
     "service": {
-        "address": "elastic-package-service-microsoft_sqlserver-1:1433",
+        "address": "elastic-package-service_microsoft_sqlserver_1",
         "type": "sql"
     }
 }
@@ -442,11 +465,10 @@ An example event for `performance` looks as following:
 | mssql.metrics.buffer_target_pages | Ideal number of pages in the buffer pool. | long |  |
 | mssql.metrics.compilations_per_sec | Number of SQL compilations per second. Indicates the number of times the compile code path is entered. Includes compiles caused by statement-level recompilations in SQL Server. After SQL Server user activity is stable, this value reaches a steady state. | float | gauge |
 | mssql.metrics.connection_reset_per_sec | Total number of logins started per second from the connection pool. | float | gauge |
-| mssql.metrics.dynamic_counter.name | Dynamic counter name is given by user. | keyword |  |
-| mssql.metrics.dynamic_counter.value | Dynamic counter value is fetched from performance table for the dynamic counter name which is provided by user. | long |  |
 | mssql.metrics.lock_waits_per_sec | Number of lock requests per second that required the caller to wait. | float | gauge |
 | mssql.metrics.logins_per_sec | Total number of logins started per second. This does not include pooled connections. | float | gauge |
 | mssql.metrics.logouts_per_sec | Total number of logout operations started per second. | float | gauge |
+| mssql.metrics.memory_grants_pending | This is generated from the default pattern given for Dynamic Counter Name variable. This counter tells us how many processes are waiting for the memory to be assigned to them so they can get started. | long |  |
 | mssql.metrics.page_splits_per_sec | Number of page splits per second that occur as the result of overflowing index pages. | float | gauge |
 | mssql.metrics.re_compilations_per_sec | Number of statement recompiles per second. Counts the number of times statement recompiles are triggered. Generally, you want the recompiles to be low. | float | gauge |
 | mssql.metrics.transactions | Total number of transactions | long |  |
