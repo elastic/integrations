@@ -4,10 +4,66 @@
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "panw.panos"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "panw.panos"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "panw.panos.type",
+                            "negate": false,
+                            "params": [
+                                "START",
+                                "END"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "panw.panos.type": "START"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "panw.panos.type": "END"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"panw.panos\" and (panw.panos.type : \"START\" or panw.panos.type : \"END\")"
+                    "query": ""
                 }
             }
         },
@@ -85,7 +141,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"panw.panos\" and panw.panos.type : \"START\" or panw.panos.type : \"END\""
+                                "query": ""
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -217,7 +273,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"panw.panos\" and panw.panos.type : \"START\" or panw.panos.type : \"END\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -324,7 +380,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"panw.panos\" and panw.panos.type : \"START\" or panw.panos.type : \"END\""
+                                "query": ""
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -456,7 +512,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"panw.panos\" and panw.panos.type : \"START\" or panw.panos.type : \"END\""
+                                "query": ""
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -634,7 +690,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"panw.panos\" and panw.panos.type : \"START\" or panw.panos.type : \"END\""
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -704,6 +760,16 @@
         "dashboard": "8.2.0"
     },
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "dd9f7550-60d1-47eb-8eeb-52083aa4ca44:indexpattern-datasource-current-indexpattern",

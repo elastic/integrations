@@ -78,26 +78,26 @@ processors:
       ignore_failure: true
 
   - date:
-      if: "ctx.panw?.panos?.factorcompletiontime != null && ctx.event.timezone == null"
-      field: "panw.panos.factorcompletiontime"
-      target_field: "panw.panos.factorcompletiontime"
+      if: ctx.panw?.panos?.factorcompletiontime != null && ctx.event?.timezone == null
+      field: panw.panos.factorcompletiontime
+      target_field: panw.panos.factorcompletiontime
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+        - 'yyyy/MM/dd HH:mm:ss'
+      on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
   - date:
-      if: "ctx.panw?.panos?.factorcompletiontime != null && ctx.event.timezone != null"
-      field: "panw.panos.factorcompletiontime"
-      target_field: "panw.panos.factorcompletiontime"
+      if: ctx.panw?.panos?.factorcompletiontime != null && ctx.event?.timezone != null
+      field: panw.panos.factorcompletiontime
+      target_field: panw.panos.factorcompletiontime
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-      timezone: "{{{ event.timezone }}}"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+        - 'yyyy/MM/dd HH:mm:ss'
+      timezone: '{{{ event.timezone }}}'
+      on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
 
 on_failure:
   - append:
       field: error.message
       value: >-
         error in User ID pipeline:
-        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
-        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
-        {{ _ingest.on_failure_message }}
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{ _ingest.on_failure_message }}}}

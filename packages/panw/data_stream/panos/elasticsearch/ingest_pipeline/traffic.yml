@@ -117,7 +117,7 @@ processors:
   - set:
       field: http.version
       value: '2'
-      if: ctx.panw?.panos?.http2_connection != null && ctx.panw?.panos?.http2_connection != 0 && ctx.panw?.panos?.http2_connection != "0"
+      if: ctx.panw?.panos?.http2_connection != null && ctx.panw.panos.http2_connection != 0 && ctx.panw.panos.http2_connection != '0'
 
 # Set event.category.
   - set:
@@ -259,9 +259,9 @@ processors:
       value: inbound
       if: >
         ctx._temp_?.external_zones != null &&
-        ctx._temp_?.internal_zones != null &&
+        ctx._temp_.internal_zones != null &&
         ctx.observer?.ingress?.zone != null &&
-        ctx.observer?.egress?.zone != null &&
+        ctx.observer.egress?.zone != null &&
         ctx._temp_.external_zones.contains(ctx.observer.ingress.zone) &&
         ctx._temp_.internal_zones.contains(ctx.observer.egress.zone)
   - set:
@@ -269,9 +269,9 @@ processors:
       value: outbound
       if: >
         ctx._temp_?.external_zones != null &&
-        ctx._temp_?.internal_zones != null &&
+        ctx._temp_.internal_zones != null &&
         ctx.observer?.ingress?.zone != null &&
-        ctx.observer?.egress?.zone != null &&
+        ctx.observer.egress?.zone != null &&
         ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
         ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
   - set:
@@ -280,7 +280,7 @@ processors:
       if: >
         ctx._temp_?.internal_zones != null &&
         ctx.observer?.ingress?.zone != null &&
-        ctx.observer?.egress?.zone != null &&
+        ctx.observer.egress?.zone != null &&
         ctx._temp_.internal_zones.contains(ctx.observer.egress.zone) &&
         ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
   - set:
@@ -289,7 +289,7 @@ processors:
       if: >
         ctx._temp_?.external_zones != null &&
         ctx.observer?.ingress?.zone != null &&
-        ctx.observer?.egress?.zone != null &&
+        ctx.observer.egress?.zone != null &&
         ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
         ctx._temp_.external_zones.contains(ctx.observer.ingress.zone)
   - set:
@@ -297,42 +297,42 @@ processors:
       value: unknown
       if: >
         ctx._temp_?.external_zones != null &&
-        ctx._temp_?.internal_zones != null &&
+        ctx._temp_.internal_zones != null &&
         (
           (
-            !ctx._temp_.external_zones.contains(ctx.observer?.egress?.zone) &&
-            !ctx._temp_.internal_zones.contains(ctx.observer?.egress?.zone)
+            !ctx._temp_.external_zones.contains(ctx.observer.egress.zone) &&
+            !ctx._temp_.internal_zones.contains(ctx.observer.egress.zone)
           ) ||
           (
-            !ctx._temp_.external_zones.contains(ctx.observer?.ingress?.zone) &&
-            !ctx._temp_.internal_zones.contains(ctx.observer?.ingress?.zone)
+            !ctx._temp_.external_zones.contains(ctx.observer.ingress.zone) &&
+            !ctx._temp_.internal_zones.contains(ctx.observer.ingress.zone)
           )
         )
 
 # Time the parent_session of the tunnel started.
   - date:
-      if: "ctx.event?.timezone == null && ctx.panw?.panos?.parent_session?.start_time != null"
-      field: "panw.panos.parent_session.start_time"
-      target_field: "panw.panos.parent_session.start_time"
+      if: ctx.event?.timezone == null && ctx.panw?.panos?.parent_session?.start_time != null
+      field: panw.panos.parent_session.start_time
+      target_field: panw.panos.parent_session.start_time
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+        - 'yyyy/MM/dd HH:mm:ss'
+        - 'strict_date_optional_time_nanos'
+      on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
   - date:
-      if: "ctx.event?.timezone != null && ctx.panw?.panos?.parent_session?.start_time != null"
-      field: "panw.panos.parent_session.start_time"
-      target_field: "panw.panos.parent_session.start_time"
-      timezone: "{{{ event.timezone }}}"
+      if: ctx.event?.timezone != null && ctx.panw?.panos?.parent_session?.start_time != null
+      field: panw.panos.parent_session.start_time
+      target_field: panw.panos.parent_session.start_time
+      timezone: '{{{ event.timezone }}}'
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
-      on_failure: [{"append": {"field": "error.message", "value": "{{ _ingest.on_failure_message }}"}}]
+        - 'yyyy/MM/dd HH:mm:ss'
+        - 'strict_date_optional_time_nanos'
+      on_failure: [{'append': {'field': 'error.message', 'value': '{{{ _ingest.on_failure_message }}}'}}]
 
 on_failure:
   - append:
       field: error.message
       value: >-
         error in Traffic pipeline:
-        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
-        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
-        {{ _ingest.on_failure_message }}
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{ _ingest.on_failure_message }}}

@@ -116,35 +116,55 @@ processors:
       field: panw.panos.certificate.not_after
       target_field: panw.panos.certificate.not_after
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
-      ignore_failure: true
+        - 'yyyy/MM/dd HH:mm:ss'
+        - 'strict_date_optional_time_nanos'
+      on_failure:
+        - remove:
+            field: panw.panos.certificate.not_after
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.event?.timezone != null
       field: panw.panos.certificate.not_after
       target_field: panw.panos.certificate.not_after
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
+        - 'yyyy/MM/dd HH:mm:ss'
+        - 'strict_date_optional_time_nanos'
       timezone: '{{{ event.timezone }}}'
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: panw.panos.certificate.not_after
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.event?.timezone == null
       field: panw.panos.certificate.not_before
       target_field: panw.panos.certificate.not_before
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
-      ignore_failure: true
+        - 'yyyy/MM/dd HH:mm:ss'
+        - 'strict_date_optional_time_nanos'
+      on_failure:
+        - remove:
+            field: panw.panos.certificate.not_before
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.event?.timezone != null
       field: panw.panos.certificate.not_before
       target_field: panw.panos.certificate.not_before
       formats:
-        - "yyyy/MM/dd HH:mm:ss"
-        - "strict_date_optional_time_nanos"
+        - 'yyyy/MM/dd HH:mm:ss'
+        - 'strict_date_optional_time_nanos'
       timezone: '{{{ event.timezone }}}'
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: panw.panos.certificate.not_before
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
 
 # Set event.kind & event.category field.
   - set:
