@@ -76,7 +76,7 @@ The last one in the list is the release of your instance. In the example above, 
 
 ### Prerequisite
 
-In order to use this integration, you will need to create a new SFDC Application using OAuth. More details can be found [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
+In order to use this integration, you will need to create a new Salesforce Application using OAuth. More details can be found [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
 
 Create a Connected App in Salesforce:
 
@@ -119,8 +119,8 @@ An example event for `login_rest` looks as following:
 {
     "@timestamp": "2021-10-06T07:13:07.550Z",
     "agent": {
-        "ephemeral_id": "6b3d1472-d978-4a2d-83bc-8255bbe23e89",
-        "id": "dbe82fcc-9eea-4080-91fe-9f4a6afa87ee",
+        "ephemeral_id": "b6d0da5c-093b-4a3b-966d-bf5e6843265d",
+        "id": "3d3cf027-e6f4-4b74-844e-8b33881d3e2a",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -134,7 +134,7 @@ An example event for `login_rest` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "dbe82fcc-9eea-4080-91fe-9f4a6afa87ee",
+        "id": "3d3cf027-e6f4-4b74-844e-8b33881d3e2a",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -144,9 +144,9 @@ An example event for `login_rest` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-10-04T11:41:58.932Z",
+        "created": "2022-11-21T07:10:15.731Z",
         "dataset": "salesforce.login_rest",
-        "ingested": "2022-10-04T11:42:02Z",
+        "ingested": "2022-11-21T07:10:19Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"9998.0\",\"AUTHENTICATION_METHOD_REFERENCE\":\"\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\",\"CIPHER_SUITE\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"CLIENT_IP\":\"43.200.10.11\",\"CPU_TIME\":\"30\",\"DB_TOTAL_TIME\":\"52435102\",\"EVENT_TYPE\":\"Login\",\"LOGIN_KEY\":\"QfNecrLXSII6fsBq\",\"LOGIN_STATUS\":\"LOGIN_NO_ERROR\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"4ehU_U-nbQyAPFl1cJILm-\",\"REQUEST_STATUS\":\"Success\",\"RUN_TIME\":\"83\",\"SESSION_KEY\":\"\",\"SOURCE_IP\":\"43.200.10.11\",\"TIMESTAMP\":\"20211006071307.550\",\"TIMESTAMP_DERIVED\":\"2021-10-06T07:13:07.550Z\",\"TLS_PROTOCOL\":\"TLSv1.2\",\"URI\":\"/index.jsp\",\"URI_ID_DERIVED\":\"s4heK3WbH-lcJIL3-n\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_NAME\":\"user@elastic.co\",\"USER_TYPE\":\"Standard\"}",
@@ -174,7 +174,7 @@ An example event for `login_rest` looks as following:
             "client_ip": "43.200.10.11",
             "cpu_time": 30,
             "db_time": {
-                "total": 52435104
+                "total": 52.435104
             },
             "event_type": "Login",
             "key": "QfNecrLXSII6fsBq",
@@ -239,7 +239,7 @@ An example event for `login_rest` looks as following:
 | salesforce.login.auth.service_id | The authentication method used by a third-party identification provider for an OpenID Connect single sign-on protocol. | keyword |  |  |
 | salesforce.login.client_ip | The IP address of the client that's using Salesforce services. | keyword |  |  |
 | salesforce.login.cpu_time | The CPU time in milliseconds used to complete the request. This field indicates the amount of activity taking place in the app server layer. | float | ms | gauge |
-| salesforce.login.db_time.total | The time in nanoseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and DB_CPU_TIME. Compare this field to CPU_TIME to determine whether performance issues are occurring in the database layer or in your own code. | float | nanos | gauge |
+| salesforce.login.db_time.total | The time in milliseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and db_time.total. Compare this field to cpu_time to determine whether performance issues are occurring in the database layer or in your own code. | float | ms | gauge |
 | salesforce.login.event_type | The type of event. The value is always Login. | keyword |  |  |
 | salesforce.login.key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |  |  |
 | salesforce.login.organization_id | The 15-character ID of the organization. | keyword |  |  |

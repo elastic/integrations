@@ -76,7 +76,7 @@ The last one in the list is the release of your instance. In the example above, 
 
 ### Prerequisite
 
-In order to use this integration, you will need to create a new SFDC Application using OAuth. More details can be found [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
+In order to use this integration, you will need to create a new Salesforce Application using OAuth. More details can be found [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
 
 Create a Connected App in Salesforce:
 

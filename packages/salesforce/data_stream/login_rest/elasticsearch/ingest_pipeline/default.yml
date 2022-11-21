@@ -79,36 +79,36 @@ processors:
     target_field: salesforce.login.organization_id
     ignore_failure: true
     ignore_missing: true
-- rename:
+- convert:
     field: json.RUN_TIME
+    type: float
     target_field: salesforce.login.run_time
     ignore_failure: true
     ignore_missing: true
 - convert:
-    field: salesforce.login.run_time
-    type: float
-    ignore_failure: true
-    ignore_missing: true
-- rename:
     field: json.CPU_TIME
+    type: float
     target_field: salesforce.login.cpu_time
     ignore_failure: true
     ignore_missing: true
 - convert:
-    field: salesforce.login.cpu_time
-    type: float
-    ignore_failure: true
-    ignore_missing: true
-- rename:
     field: json.DB_TOTAL_TIME
+    type: float
     target_field: salesforce.login.db_time.total
     ignore_failure: true
     ignore_missing: true
-- convert:
-    field: salesforce.login.db_time.total
-    type: float
+- script:
+    description: Convert db_time.total field from nanos (nanoseconds) to ms (milliseconds).
+    lang: painless
     ignore_failure: true
-    ignore_missing: true
+    source: |
+        def convert(def nanos){
+            def ms = (nanos/1000000);
+            return ms;
+        }
+        if(ctx.salesforce?.login?.db_time?.total != null || ctx.salesforce?.login?.db_time?.total != ""){
+            ctx.salesforce.login.db_time.total = convert(ctx.salesforce.login.db_time.total);
+        }
 - rename:
     field: json.CLIENT_IP
     target_field: salesforce.login.client_ip
