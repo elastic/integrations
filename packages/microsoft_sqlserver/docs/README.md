@@ -465,12 +465,7 @@ An example event for `performance` looks as following:
 | mssql.metrics.buffer_target_pages | Ideal number of pages in the buffer pool. | long |  |
 | mssql.metrics.compilations_per_sec | Number of SQL compilations per second. Indicates the number of times the compile code path is entered. Includes compiles caused by statement-level recompilations in SQL Server. After SQL Server user activity is stable, this value reaches a steady state. | float | gauge |
 | mssql.metrics.connection_reset_per_sec | Total number of logins started per second from the connection pool. | float | gauge |
-<<<<<<< HEAD
-| mssql.metrics.dynamic_counter.name | Dynamic counter name is given by user. | keyword |  |
-| mssql.metrics.dynamic_counter.value | Dynamic counter value is fetched from performance table for the dynamic counter name which is provided by user. | long |  |
 | mssql.metrics.instance_name | Name of the mssql connected instance. | keyword |  |
-=======
->>>>>>> main
 | mssql.metrics.lock_waits_per_sec | Number of lock requests per second that required the caller to wait. | float | gauge |
 | mssql.metrics.logins_per_sec | Total number of logins started per second. This does not include pooled connections. | float | gauge |
 | mssql.metrics.logouts_per_sec | Total number of logout operations started per second. | float | gauge |
