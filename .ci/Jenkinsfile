@@ -279,7 +279,7 @@ def isPrAffected(integrationName) {
     from = "origin/${env.BRANCH_NAME}"
     // Check with GIT_PREVIOUS_SUCCESSFUL_COMMIT to check if the branch is still healthy.
     // If this value is not available, check with last commit.
-    to = "${env.GIT_PREVIOUS_SUCCESSFUL_COMMIT?.trim()}" ? env.GIT_PREVIOUS_SUCCESSFUL_COMMIT : "origin/${env.BRANCH_NAME}^"
+    to = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT?.trim() ? env.GIT_PREVIOUS_SUCCESSFUL_COMMIT : "origin/${env.BRANCH_NAME}^"
   } else {
     // Source: https://github.com/elastic/apm-pipeline-library/blob/721115cf0fdb2b5a4e1cb6a576bfbb7035d14485/vars/getGitMatchingGroup.groovy#L40-L41
     from = env.CHANGE_TARGET?.trim() ? "origin/${env.CHANGE_TARGET}" : "${env.GIT_PREVIOUS_COMMIT?.trim() ? env.GIT_PREVIOUS_COMMIT : env.GIT_BASE_COMMIT}"
