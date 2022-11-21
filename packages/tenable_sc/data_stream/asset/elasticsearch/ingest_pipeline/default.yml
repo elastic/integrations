@@ -31,7 +31,7 @@ processors:
       field: event.category
       value: [host]
   - script:
-      if: ctx.json.uniqueness != ''
+      if: ctx.json?.uniqueness != null && ctx.json.uniqueness != ''
       lang: painless
       source: >-
         def keys = ctx.json.uniqueness.toString().splitOnToken(',');
@@ -182,6 +182,7 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
+      if: ctx.json?.dnsName != null && ctx.json.dnsName != ''
       source: |
         def domain = '';
         def nameArray = ctx.json.dnsName.toString().splitOnToken('.');
