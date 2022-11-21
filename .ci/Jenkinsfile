@@ -282,8 +282,8 @@ def isPrAffected(integrationName) {
   // If this value is not available, check with last commit.
   if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('backport-')) {
     echo "[${integrationName}] PR is affected: running on ${env.BRANCH_NAME} branch"
-    from = "origin/${env.BRANCH_NAME}"
-    to = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT?.trim() ? env.GIT_PREVIOUS_SUCCESSFUL_COMMIT : "origin/${env.BRANCH_NAME}^"
+    from = env.GIT_PREVIOUS_SUCCESSFUL_COMMIT?.trim() ? env.GIT_PREVIOUS_SUCCESSFUL_COMMIT : "origin/${env.BRANCH_NAME}^"
+    to = "origin/${env.BRANCH_NAME}"
   }
 
   def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS)'", returnStatus: true)
