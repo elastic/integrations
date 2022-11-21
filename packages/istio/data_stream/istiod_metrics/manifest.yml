@@ -1,0 +1,58 @@
+title: "Istiod Metrics"
+release: experimental
+type: metrics
+streams:
+  - input: prometheus/metrics
+    title: Istiod metrics
+    description: Collect Istiod metrics
+    vars:
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - ${kubernetes.pod.ip}:15014
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        multi: false
+        required: true
+        show_user: true
+        default:
+          - /metrics
+      - name: condition
+        title: Condition
+        description: Condition to filter when to apply this datastream
+        type: text
+        multi: false
+        required: true
+        show_user: true
+        default: ${kubernetes.labels.app} == 'istiod' and ${kubernetes.annotations.prometheus.io/scrape} == 'true'
+      - name: metrics_filters.exclude
+        type: text
+        title: Metrics Filters Exclude
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - "^up$"
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - "galley_*"
+          - "pilot_*"
+          - "citadel_*"
+          - "istio_*"
