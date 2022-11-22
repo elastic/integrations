@@ -30,6 +30,7 @@ Host Configuration Format: `http[s]://host[:port]`
 Example Host Configuration: `http://localhost:9080`
 
 ## Metrics reference
+
 ### Interface
 
 This is the `interface` data stream. The Citrix ADC interfaces are numbered in slot/port notation. In addition to modifying the characteristics of individual interfaces, you can configure virtual LANs to restrict traffic to specific groups of hosts.
