@@ -15,40 +15,40 @@ streams:
       - name: process_context_matchers
         type: yaml
         title: Process context matchers
-        default: |
-          - name: k8s-node-exe-update
-            orchestrators: [kubernetes] # matches if running anywhere this environment (e.g. k8s node). If empty or absent matches any env
-            containers-only: true    # matches any process in a container scheduled by the orchestrator but not the surrounding node. Defaults to false.
-            k8s-pod-labels: []       # OR-list of k8s Pod label constraints. Matches any if empty or absent
-            k8s-namespaces: []       # OR-list of k8s cluster namespaces. Matches any if empty or absent. No cluster instance constraints offered.
-            container-images: []     # [ nginx:2.7, nginx:3.2, apache ]. URL with OCI registry portion allowed. Matches any if empty or absent
-            excluded-container-images: [apache:27.3] # exclude a subset of container images from line above
-            memfd: true                  # whether to match on memfd as well (no path other than /proc/(pid)/fd/(n)). Defaults to true if absent
-            paths: [/sbin/**,/usr/bin/*,/bin/nmap] # absolute paths of matching directories or files. Matches any if empty or absent. "/**" all subdirs. "/*" only directory direct child entries
-            excluded-paths: [/sbin/test/**,/usr/bin/ls] # unmatch/exclude these from matches in "paths"; excludes none if empty or absent
-            action: create-modify-executable  # what action is being matched. Future poss: read, write, delete, rename, exec
         description: |
           A list of matchers to implement
+        default: |
+          - name: k8s_node_exe_update
+            orchestrators: [kubernetes] # matches if running anywhere this environment (e.g. k8s node). If empty or absent matches any env
+            containers_only: true    # matches any process in a container scheduled by the orchestrator but not the surrounding node. Defaults to false.
+            k8s_pod_labels: []       # OR-list of k8s Pod label constraints. Matches any if empty or absent
+            k8s_namespaces: []       # OR-list of k8s cluster namespaces. Matches any if empty or absent. No cluster instance constraints offered.
+            container_images: []     # [ nginx:2.7, nginx:3.2, apache ]. URL with OCI registry portion allowed. Matches any if empty or absent
+            excluded_container_images: [apache:27.3] # exclude a subset of container images from line above
+            memfd: true                  # whether to match on memfd as well (no path other than /proc/(pid)/fd/(n)). Defaults to true if absent
+            paths: [/sbin/**,/usr/bin/*,/bin/nmap] # absolute paths of matching directories or files. Matches any if empty or absent. "/**" all subdirs. "/*" only directory direct child entries
+            excluded_paths: [/sbin/test/**,/usr/bin/ls] # unmatch/exclude these from matches in "paths"; excludes none if empty or absent
+            action: create_modify_executable  # what action is being matched. Future poss: read, write, delete, rename, exec
       - name: matchers_response_bindings
         type: yaml
         title: Matchers response bindings
         description: |
           A list of matcher to response action bindings
         default: |
-          - match: [k8s-node-exe-update] # OR-list. Run this response action If any specified matcher matches
-            response: alerting-block # block or allow, default to allow
+          - match: [k8s_node_exe_update] # OR-list. Run this response action If any specified matcher matches
+            response: alerting_block # block or allow, default to allow
 
-          # default rule (at end of action responses list, has empty or absent match list )
-          - response: alerting-allow # create alerts for these so we can tune the rules above for them
+          # default response (at end of action responses list, has empty or absent match list )
+          - response: alerting_allow
       - name: responses
         type: yaml
         title: Responses
         description: |
           A list of named response actions.
         default: |
-          - name: alerting-block
+          - name: alerting_block
             record: [alert] # list of how matching events are recorded. Nothing recorded if empty or absent
             response: block
-          - name: alerting-allow
+          - name: alerting_allow
             record: [alert]
             response: allow
