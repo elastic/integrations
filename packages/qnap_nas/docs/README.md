@@ -14,11 +14,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-10-30T20:24:24.000Z",
     "agent": {
-        "ephemeral_id": "b6db294f-f5fd-4570-9d9c-cd0a74001651",
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "ephemeral_id": "70560290-2c53-41c4-b32b-d4b76b6a6b18",
+        "id": "2d8f9f42-f276-4b2a-9082-a758a08f49f2",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.0.0-beta1"
+        "version": "8.1.0"
     },
     "data_stream": {
         "dataset": "qnap_nas.log",
@@ -29,9 +29,9 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "b1d83907-ff3e-464a-b79a-cf843f6f0bba",
+        "id": "2d8f9f42-f276-4b2a-9082-a758a08f49f2",
         "snapshot": false,
-        "version": "8.0.0-beta1"
+        "version": "8.1.0"
     },
     "event": {
         "action": "create-directory",
@@ -41,7 +41,7 @@ An example event for `log` looks as following:
         ],
         "created": "2022-10-30T20:24:24.000Z",
         "dataset": "qnap_nas.log",
-        "ingested": "2022-01-02T09:51:24Z",
+        "ingested": "2022-11-22T20:22:19Z",
         "kind": "event",
         "provider": "conn-log",
         "timezone": "+00:00",
@@ -56,11 +56,11 @@ An example event for `log` looks as following:
         "name": "qnap-nas01"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.18.0.7:46086"
+            "address": "192.168.80.6:41074"
         },
         "syslog": {
             "priority": 30
