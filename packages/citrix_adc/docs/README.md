@@ -4,13 +4,13 @@
 
 The Citrix ADC integration allows you to monitor your Citrix ADC instance. Citrix ADC is an application delivery controller that performs application-specific traffic analysis to intelligently distribute, optimize, and secure Layer 4 - Layer 7 (L4–L7) network traffic for web applications.
 
-Use the Citrix ADC integration to collect metrics related to the interface. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
+Use the Citrix ADC integration to collect metrics related to the interface and service. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
 
 ## Data streams
 
 The Citrix ADC integration collects metrics data.
 
-Metrics give you insight into the statistics of the Citrix ADC. Metrics data streams collected by the Citrix ADC integration include [interface](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/network/interface/), so that the user could monitor and troubleshoot the performance of the Citrix ADC instances.
+Metrics give you insight into the statistics of the Citrix ADC. Metrics data streams collected by the Citrix ADC integration include [interface](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/network/interface/) and [service](https://developer-docs.citrix.com/projects/netscaler-nitro-api/en/12.0/statistics/basic/service/), so that the user could monitor and troubleshoot the performance of the Citrix ADC instances.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for Citrix ADC in the logs-* index pattern from `Discover`.
@@ -241,5 +241,176 @@ An example event for `interface` looks as following:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
 | input.type | Type of Filebeat input. | keyword |  |  |
 | interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |  |  |
+| tags | List of keywords used to tag each event. | keyword |  |  |
+
+
+### Service
+
+This is the `service` data stream. With the help of the service endpoint, metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources.
+
+An example event for `service` looks as following:
+
+```json
+{
+    "@timestamp": "2022-10-07T06:26:11.339Z",
+    "agent": {
+        "ephemeral_id": "2fa2a685-d35a-40a6-8212-7a9dd581d647",
+        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.1"
+    },
+    "citrix_adc": {
+        "service": {
+            "client_connection": {
+                "count": 8
+            },
+            "primary": {
+                "ip_address": "127.0.0.1",
+                "port": 80
+            },
+            "request": {
+                "bytes": {
+                    "rate": 139,
+                    "value": 8334520
+                },
+                "count": 15133,
+                "rate": 0
+            },
+            "response": {
+                "bytes": {
+                    "rate": 316,
+                    "value": 26482988
+                },
+                "count": 15133,
+                "rate": 0
+            },
+            "reuse_pool": 2,
+            "server": {
+                "connection": {
+                    "count": 2,
+                    "established": {
+                        "count": 2
+                    }
+                },
+                "time_to_first_byte": {
+                    "avg": 34
+                }
+            },
+            "surge_queue": {
+                "count": 0
+            },
+            "throughput": {
+                "rate": 0,
+                "value": 0
+            },
+            "transaction": {
+                "active": {
+                    "count": 0
+                },
+                "frustrating": {
+                    "count": 0
+                },
+                "time_to_last_byte": {
+                    "count": 0
+                },
+                "tolerable": {
+                    "count": 0
+                }
+            }
+        }
+    },
+    "data_stream": {
+        "dataset": "citrix_adc.service",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.4.0"
+    },
+    "elastic_agent": {
+        "id": "6713ae74-2a36-4e79-bc7b-954d6b48d5bd",
+        "snapshot": false,
+        "version": "8.4.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "created": "2022-10-07T06:26:11.339Z",
+        "dataset": "citrix_adc.service",
+        "ingested": "2022-10-07T06:26:14Z",
+        "kind": "event",
+        "module": "citrix_adc",
+        "original": "{\"activetransactions\":\"0\",\"avgsvrttfb\":\"34\",\"curclntconnections\":\"8\",\"curload\":\"0\",\"curreusepool\":\"2\",\"cursrvrconnections\":\"2\",\"curtflags\":\"0\",\"frustratingttlbtransactions\":\"0\",\"httpmaxhdrfldlenpkts\":\"0\",\"httpmaxhdrszpkts\":\"0\",\"maxclients\":\"0\",\"name\":\"nshttpd-gui-127.0.0.1-80\",\"primaryipaddress\":\"127.0.0.1\",\"primaryport\":80,\"requestbytesrate\":139,\"requestsrate\":0,\"responsebytesrate\":316,\"responsesrate\":0,\"serviceorder\":\"0\",\"servicetype\":\"HTTP\",\"state\":\"UP\",\"surgecount\":\"0\",\"svrestablishedconn\":\"2\",\"tcpmaxooopkts\":\"0\",\"throughput\":\"0\",\"throughputrate\":0,\"toleratingttlbtransactions\":\"0\",\"totalconnreassemblyqueue75\":\"0\",\"totalconnreassemblyqueueflush\":\"0\",\"totalrequestbytes\":\"8334520\",\"totalrequests\":\"15133\",\"totalresponsebytes\":\"26482988\",\"totalresponses\":\"15133\",\"totsvrttlbtransactions\":\"0\",\"vsvrservicehits\":\"0\",\"vsvrservicehitsrate\":0}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "related": {
+        "ip": [
+            "127.0.0.1"
+        ]
+    },
+    "service": {
+        "name": "nshttpd-gui-127.0.0.1-80",
+        "state": "UP",
+        "type": "HTTP"
+    },
+    "tags": [
+        "preserve_original_event",
+        "citrix_adc-service",
+        "forwarded"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| citrix_adc.service.client_connection.count | Number of current client connections. | float |  | counter |
+| citrix_adc.service.primary.ip_address | The IP address on which specific service is running. | ip |  |  |
+| citrix_adc.service.primary.port | The port on which the service is running. | long |  |  |
+| citrix_adc.service.request.bytes.rate | Rate (/s) counter for totalrequestbytes. | float |  | gauge |
+| citrix_adc.service.request.bytes.value | Total number of request bytes received on specific service or virtual server. | float | byte | counter |
+| citrix_adc.service.request.count | Total number of requests received on specific service or virtual server. | float |  | counter |
+| citrix_adc.service.request.rate | Rate (/s) counter for totalrequests. | float |  | gauge |
+| citrix_adc.service.response.bytes.rate | Rate (/s) counter for totalresponsebytes. | float |  | gauge |
+| citrix_adc.service.response.bytes.value | Number of response bytes received by specific service or virtual server. | float | byte | counter |
+| citrix_adc.service.response.count | Number of responses received on specific service or virtual server. | float |  | counter |
+| citrix_adc.service.response.rate | Rate (/s) counter for totalresponses. | float |  | gauge |
+| citrix_adc.service.reuse_pool | Number of requests in the idle queue/reuse pool. | float |  |  |
+| citrix_adc.service.server.connection.count | Number of current connections to the actual servers behind the virtual server. | float |  | counter |
+| citrix_adc.service.server.connection.established.count | Number of server connections in ESTABLISHED state. | float |  | counter |
+| citrix_adc.service.server.time_to_first_byte.avg | Average TTFB (Time To First Byte) between the NetScaler appliance and the server. | float |  | gauge |
+| citrix_adc.service.surge_queue.count | Number of requests in the surge queue. | float |  | counter |
+| citrix_adc.service.throughput.rate | Rate (/s) counter for throughput. | float |  | gauge |
+| citrix_adc.service.throughput.value | Number of bytes received or sent by specific service (Mbps). | float |  | counter |
+| citrix_adc.service.transaction.active.count | Number of active transactions handled by specific service. | float |  | counter |
+| citrix_adc.service.transaction.frustrating.count | Frustrating transactions based on APDEX (Application Performance Index) threshold (\>4T). | float |  | gauge |
+| citrix_adc.service.transaction.time_to_last_byte.count | Total transactions where server TTLB (Time To Last Byte) is calculated. | float |  | counter |
+| citrix_adc.service.transaction.tolerable.count | Tolerable transactions based on APDEX (Application Performance Index) threshold (\>T ;; \<4T). | float |  | counter |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
+| error.message | Error message. | match_only_text |  |  |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |  |  |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |  |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |  |  |
+| input.type | Type of Filebeat input. | keyword |  |  |
+| related.ip | All of the IPs seen on your event. | ip |  |  |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |  |  |
+| service.state | Current state of the service. | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 | tags | List of keywords used to tag each event. | keyword |  |  |
 
