@@ -24,11 +24,88 @@ In order to ingest data from the Google Reports API you must:
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for your ServiceAccount.
 
-This module will make use of the following *oauth2 scope*:
+This integration will make use of the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
+
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `admin`, `drive`, `groups`, `login`, `saml`, and `user accounts` logs.
+
+# Google Workspace Alert
+
+The [Google Workspace](https://developers.google.com/admin-sdk/alertcenter) Integration collects and parses data received from the Google Workspace Alert Center API using HTTP JSON Input.
+
+## Compatibility
+
+- Alert Data Stream has been tested against `Google Workspace Alert Center API (v1)`.
+
+- Following Alert types have been supported in the current integration version:
+    1. Customer takeout initiated
+    2. Malware reclassification
+    3. Misconfigured whitelist
+    4. Phishing reclassification
+    5. Suspicious message reported
+    6. User reported phishing
+    7. User reported spam spike
+    8. Leaked password
+    9. Suspicious login
+    10. Suspicious login (less secure app)
+    11. Suspicious programmatic login
+    12. User suspended
+    13. User suspended (spam)
+    14. User suspended (spam through relay)
+    15. User suspended (suspicious activity)
+    16. Google Operations
+    17. Configuration problem
+    18. Government attack warning
+    19. Device compromised
+    20. Suspicious activity
+    21. AppMaker Default Cloud SQL setup
+    22. Activity Rule
+    23. Data Loss Prevention
+    24. Apps outage
+    25. Primary admin changed
+    26. SSO profile added
+    27. SSO profile updated
+    28. SSO profile deleted
+    29. Super admin password reset
+    30. Account suspension warning
+    31. Calendar settings changed
+    32. Chrome devices auto-update expiration warning
+    33. Customer takeout initiated
+    34. Drive settings changed
+    35. Email settings changed
+    36. Gmail potential employee spoofing
+    37. Mobile settings changed
+    38. New user added
+    39. Reporting Rule
+    40. Suspended user made active
+    41. User deleted
+    42. User granted Admin privilege
+    43. User suspended (spam)
+    44. User's Admin privileges revoked
+    45. Users password changed
+    46. Google Voice configuration problem detected
+
+
+## Requirements
+
+In order to ingest data from the Google Alert Center API, you must:
+
+- Have an *administrator account*.
+- [Set up a ServiceAccount](https://support.google.com/workspacemigrate/answer/9222993?hl=en) using the Administrator Account.
+- [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
+- [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for the ServiceAccount.
+
+This integration will make use of the following *oauth2 scope*:
+
+- `https://www.googleapis.com/auth/apps.alerts`
+
+Once Service Account credentials are downloaded as a JSON file, then the integration can be setup to collect data.
+
+
+>  Note: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
 ## Logs
 
@@ -94,3 +171,11 @@ This is the `groups` dataset.
 {{event "groups"}}
 
 {{fields "groups"}}
+
+### Alert
+
+This is the `alert` dataset.
+
+{{event "alert"}}
+
+{{fields "alert"}}
