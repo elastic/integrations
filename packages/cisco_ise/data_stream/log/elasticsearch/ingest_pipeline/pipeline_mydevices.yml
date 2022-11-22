@@ -11,22 +11,46 @@ processors:
       value: [info]
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats: 
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - kv:
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
@@ -35,9 +59,9 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      if: ctx?.cisco_ise?.log?.message?.description != null
+      if: ctx.cisco_ise?.log?.message?.description != null
       source:
-        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+        ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
   - rename:
       field: cisco_ise.log.log_details.UserName
       target_field: user.name
@@ -46,7 +70,7 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -63,8 +87,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{source.ip}}}' 
-      if: ctx?.source?.ip != null
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -100,12 +124,12 @@ processors:
   - uppercase:
       field: cisco_ise.log.ep.mac_address
       ignore_missing: true
-  - rename: 
+  - rename:
       field: cisco_ise.log.log_details.EPIdentityGroup
       target_field: cisco_ise.log.ep.identity_group
       ignore_failure: true
       ignore_missing: true
-  - convert: 
+  - convert:
       field: cisco_ise.log.log_details.Staticassignment
       target_field: cisco_ise.log.static.assignment
       type: boolean
@@ -116,29 +140,28 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: cisco_ise.log.log_details.Staticassignment
-      ignore_failure: true
       ignore_missing: true
-  - rename: 
+  - rename:
       field: cisco_ise.log.log_details.EndPointProfiler
       target_field: cisco_ise.log.endpoint.profiler
       ignore_failure: true
       ignore_missing: true
-  - rename: 
+  - rename:
       field: cisco_ise.log.log_details.EndPointPolicy
       target_field: cisco_ise.log.endpoint.policy
       ignore_failure: true
       ignore_missing: true
-  - rename: 
+  - rename:
       field: cisco_ise.log.log_details.DeviceName
       target_field: cisco_ise.log.device.name
       ignore_failure: true
       ignore_missing: true
-  - rename: 
+  - rename:
       field: cisco_ise.log.log_details.DeviceRegistrationStatus
       target_field: cisco_ise.log.device.registration_status
       ignore_failure: true
       ignore_missing: true
-  - convert: 
+  - convert:
       field: cisco_ise.log.log_details.ResponseTime
       target_field: cisco_ise.log.response.time
       type: long
@@ -150,7 +173,7 @@ processors:
   - remove:
       field: cisco_ise.log.log_details.ResponseTime
       ignore_missing: true
-  - rename: 
+  - rename:
       field: cisco_ise.log.log_details.EndpointCoA
       target_field: cisco_ise.log.endpoint.coa
       ignore_failure: true
