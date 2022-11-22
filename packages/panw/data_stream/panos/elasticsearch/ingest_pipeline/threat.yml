@@ -123,17 +123,17 @@ processors:
   - set:
       field: http.version
       value: '2'
-      if: ctx.panw?.panos?.http2_connection != null && ctx.panw?.panos?.http2_connection != 0 && ctx.panw?.panos?.http2_connection != "0"
+      if: ctx.panw?.panos?.http2_connection != null && ctx.panw.panos.http2_connection != 0 && ctx.panw.panos.http2_connection != '0'
 
 # Set network.direction from threat direction (Threat logs).
   - set:
       field: network.direction
       value: inbound
-      if: ctx._temp_?.direction == "0" || ctx._temp_?.direction == "client-to-server"
+      if: ctx._temp_?.direction == '0' || ctx._temp_.direction == 'client-to-server'
   - set:
       field: network.direction
       value: outbound
-      if: ctx._temp_?.direction == "1" || ctx._temp_?.direction == "server-to-client"
+      if: ctx._temp_?.direction == '1' || ctx._temp_.direction == 'server-to-client'
   - set:
       field: network.direction
       value: unknown
@@ -149,6 +149,19 @@ processors:
         - intrusion_detection
         - threat
         - network
+
+# Set event.outcome from panw.panos.action: allowable values:
+#  alert, allow, deny, drop, reset-client, reset-server, reset-both, block-url,
+#  block-ip, random-drop, sinkhole, syncookie-sent, block-continue, continue,
+#  block-override, override-lockout, override and block
+  - set:
+      if: ctx.panw?.panos?.action != null && ["alert", "allow", "continue"].contains(ctx.panw.panos.action)
+      field: event.outcome
+      value: success
+  - set:
+      if: ctx.event?.outcome == null || ctx.event.outcome == ""
+      field: event.outcome
+      value: failure
 
 # Set network.forwarded_ip field
   - convert:
@@ -288,6 +301,6 @@ on_failure:
       field: error.message
       value: >-
         error in Threat pipeline:
-        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
-        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
-        {{ _ingest.on_failure_message }}
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{ _ingest.on_failure_message }}}

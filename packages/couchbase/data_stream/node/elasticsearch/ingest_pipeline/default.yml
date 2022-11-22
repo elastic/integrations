@@ -1,0 +1,174 @@
+---
+description: Pipeline for parsing Couchbase Node metrics
+processors:
+  - set:
+      field: ecs.version
+      value: 8.3.0
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.type
+      value: [info]
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.kind
+      value: metric
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.category
+      value: [database]
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.module
+      value: couchbase
+      override: true
+      ignore_failure: true
+      ignore_empty_value: true  
+  - json:
+      field: message
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.cmd_get
+      target_field: couchbase.node.commands.get.count
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.couch_docs_data_size
+      target_field: couchbase.node.couch.docs.data_size.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.couch_docs_actual_disk_size
+      target_field: couchbase.node.couch.docs.disk_size.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.couch_spatial_data_size
+      target_field: couchbase.node.couch.spatial.data_size.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.couch_spatial_disk_size
+      target_field: couchbase.node.couch.spatial.disk_size.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.couch_views_data_size
+      target_field: couchbase.node.couch.views.data_size.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.couch_views_actual_disk_size
+      target_field: couchbase.node.couch.views.disk_size.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.systemStats.cpu_utilization_rate
+      target_field: couchbase.node.cpu_utilization_rate.pct
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.curr_items_tot
+      target_field: couchbase.node.current_items.total
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.curr_items
+      target_field: couchbase.node.current_items.value
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.ep_bg_fetched
+      target_field: couchbase.node.ep_bg_fetched
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.get_hits
+      target_field: couchbase.node.get.hits
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.hostname
+      target_field: couchbase.node.hostname
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.mcdMemoryAllocated
+      target_field: couchbase.node.memcached.allocated.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.mcdMemoryReserved
+      target_field: couchbase.node.memcached.reserved.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.memoryFree
+      target_field: couchbase.node.memory.free.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.memoryTotal
+      target_field: couchbase.node.memory.total.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.mem_used
+      target_field: couchbase.node.memory.used.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.ops
+      target_field: couchbase.node.operations.count
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.systemStats.swap_total
+      target_field: couchbase.node.swap.total.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.systemStats.swap_used
+      target_field: couchbase.node.swap.used.bytes
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      field: message.uptime
+      target_field: couchbase.node.uptime.sec
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: message.interestingStats.vb_replica_curr_items
+      target_field: couchbase.node.vb_replica.items.current
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field: message
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      description: Drops null/empty values recursively
+      lang: painless
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+on_failure:
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
+
