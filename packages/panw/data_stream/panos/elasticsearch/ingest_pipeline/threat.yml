@@ -123,17 +123,17 @@ processors:
   - set:
       field: http.version
       value: '2'
-      if: ctx.panw?.panos?.http2_connection != null && ctx.panw?.panos?.http2_connection != 0 && ctx.panw?.panos?.http2_connection != "0"
+      if: ctx.panw?.panos?.http2_connection != null && ctx.panw.panos.http2_connection != 0 && ctx.panw.panos.http2_connection != '0'
 
 # Set network.direction from threat direction (Threat logs).
   - set:
       field: network.direction
       value: inbound
-      if: ctx._temp_?.direction == "0" || ctx._temp_?.direction == "client-to-server"
+      if: ctx._temp_?.direction == '0' || ctx._temp_.direction == 'client-to-server'
   - set:
       field: network.direction
       value: outbound
-      if: ctx._temp_?.direction == "1" || ctx._temp_?.direction == "server-to-client"
+      if: ctx._temp_?.direction == '1' || ctx._temp_.direction == 'server-to-client'
   - set:
       field: network.direction
       value: unknown
@@ -301,6 +301,6 @@ on_failure:
       field: error.message
       value: >-
         error in Threat pipeline:
-        error in [{{_ingest.on_failure_processor_type}}] processor{{#_ingest.on_failure_processor_tag}}
-        with tag [{{_ingest.on_failure_processor_tag }}]{{/_ingest.on_failure_processor_tag}}
-        {{ _ingest.on_failure_message }}
+        error in [{{{_ingest.on_failure_processor_type}}}] processor{{{#_ingest.on_failure_processor_tag}}}
+        with tag [{{{_ingest.on_failure_processor_tag }}}]{{{/_ingest.on_failure_processor_tag}}}
+        {{{ _ingest.on_failure_message }}}
