@@ -10,6 +10,8 @@ processors:
 - json:
     field: event.original
     target_field: json
+- drop:
+    if: ctx.json?.entities instanceof List && ctx.json.entities.length == 0
 - set:
     field: _tmp.timestamp
     copy_from: json.timestamp
