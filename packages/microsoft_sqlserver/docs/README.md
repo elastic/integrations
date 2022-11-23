@@ -351,10 +351,10 @@ An example event for `performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-15T10:59:06.048Z",
+    "@timestamp": "2022-11-23T05:03:28.987Z",
     "agent": {
-        "ephemeral_id": "c15c314e-c8ef-41f0-8697-eefd3aa8d0a1",
-        "id": "c305f9fa-07c8-41b9-b950-fa4652b743bb",
+        "ephemeral_id": "70f5c0c1-37b1-486b-9806-8105b2cdcd20",
+        "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.5.0"
@@ -383,15 +383,15 @@ An example event for `performance` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "c305f9fa-07c8-41b9-b950-fa4652b743bb",
+        "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
         "snapshot": false,
         "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.performance",
-        "duration": 40261000,
-        "ingested": "2022-11-15T10:59:07Z",
+        "duration": 41134100,
+        "ingested": "2022-11-23T05:03:30Z",
         "module": "sql"
     },
     "host": {
@@ -400,10 +400,10 @@ An example event for `performance` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.31.0.7"
+            "172.18.0.5"
         ],
         "mac": [
-            "02-42-AC-1F-00-07"
+            "02-42-AC-12-00-05"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -423,19 +423,21 @@ An example event for `performance` looks as following:
     "mssql": {
         "metrics": {
             "active_temp_tables": 0,
-            "batch_requests_per_sec": 65,
-            "buffer_cache_hit_ratio": 74,
-            "buffer_checkpoint_pages_per_sec": 274,
+            "batch_requests_per_sec": 54,
+            "buffer_cache_hit_ratio": 24,
+            "buffer_checkpoint_pages_per_sec": 105,
             "buffer_database_pages": 2215,
-            "buffer_page_life_expectancy": 30,
+            "buffer_page_life_expectancy": 16,
             "buffer_target_pages": 2408448,
-            "compilations_per_sec": 83,
-            "lock_waits_per_sec": 3,
-            "logins_per_sec": 20,
-            "logouts_per_sec": 19,
+            "compilations_per_sec": 80,
+            "instance_name": "MSSQLSERVER",
+            "lock_waits_per_sec": 4,
+            "logins_per_sec": 16,
+            "logouts_per_sec": 15,
             "memory_grants_pending": 0,
             "page_splits_per_sec": 9,
             "re_compilations_per_sec": 0,
+            "server_name": "d10aad520431",
             "transactions": 0,
             "user_connections": 1
         }
@@ -487,50 +489,86 @@ An example event for `transaction_log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-08T10:20:14.787809Z",
-    "mssql": {
-        "metrics": {
-            "database_name": "msdb",
-            "database_id": 1,
-            "used_log_space_bytes": 41.17647171020508,
-            "log_space_in_bytes_since_last_backup": 397312,
-            "total_log_size_bytes": 2088960,
-            "used_log_space_pct": 860160
+    "@timestamp": "2022-11-23T04:53:03.582Z",
+    "agent": {
+        "ephemeral_id": "70f5c0c1-37b1-486b-9806-8105b2cdcd20",
+        "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
+        "name": "docker-fleet-agent",
+        "type": "metricbeat",
+        "version": "8.5.0"
+    },
+    "cloud": {
+        "account": {},
+        "instance": {
+            "id": "b30e45e6-7900-4900-8d67-e37cb13374bc",
+            "name": "obs-int-windows-dev"
+        },
+        "machine": {
+            "type": "Standard_D16ds_v5"
+        },
+        "provider": "azure",
+        "region": "CentralIndia",
+        "service": {
+            "name": "Virtual Machines"
         }
     },
-    "metricset": {
-        "period": 10000,
-        "name": "query"
-    },
-    "agent": {
-        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
-        "ephemeral_id": "d1a76cf4-2463-478a-a474-36e771218467",
-        "type": "metricbeat",
-        "version": "8.3.0"
-    },
-    "service": {
-        "address": "54.90.251.237:1433",
-        "type": "sql"
-    },
-    "elastic_agent": {
-        "id": "e7b17c22-4223-46c3-b982-ff0d570b5fa6",
-        "version": "8.3.0",
-        "snapshot": true
-    },
-    "event": {
-        "duration": 5595352584,
-        "agent_id_status": "verified",
-        "ingested": "2022-05-23T10:20:21Z",
-        "module": "sql",
-        "dataset": "microsoft_sqlserver.transaction_log"
-    },
     "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "microsoft_sqlserver.transaction_log"
+        "dataset": "microsoft_sqlserver.transaction_log",
+        "namespace": "ep",
+        "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
+        "snapshot": false,
+        "version": "8.5.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "microsoft_sqlserver.transaction_log",
+        "duration": 1438164400,
+        "ingested": "2022-11-23T04:53:06Z",
+        "module": "sql"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
+        "ip": [
+            "172.18.0.5"
+        ],
+        "mac": [
+            "02-42-AC-12-00-05"
+        ],
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
+    },
+    "metricset": {
+        "name": "query",
+        "period": 60000
+    },
+    "mssql": {
+        "metrics": {
+            "database_id": 1,
+            "database_name": "master",
+            "instance_name": "MSSQLSERVER",
+            "server_name": "obs-service-int"
+        }
+    },
+    "service": {
+        "address": "20.121.218.233",
+        "type": "sql"
     }
 }
 ```
