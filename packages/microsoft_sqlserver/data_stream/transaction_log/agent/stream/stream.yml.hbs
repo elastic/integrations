@@ -7,6 +7,7 @@ driver: mssql
 raw_data.enabled: true
 # Collect the transaction logs from the system database
 sql_queries:
+{{#if databases}}
 {{#each databases as |database_name i|}}
     - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', database_id FROM sys.databases WHERE name='{{database_name}}';"
       response_format: table
@@ -15,5 +16,4 @@ sql_queries:
     - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_in_bytes As total_log_size_bytes, l.used_log_space_in_bytes As used_log_space_bytes, l.used_log_space_in_percent As used_log_space_pct, l.log_space_in_bytes_since_last_backup from sys.dm_db_log_space_usage l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID('{{database_name}}') ;"
       response_format: table
 {{/each}}
-{{#if user_databases}}
 {{/if}}
