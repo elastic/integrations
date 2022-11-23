@@ -1,0 +1,55 @@
+title: "Istio Proxy Metrics"
+release: experimental
+type: metrics
+streams:
+  - input: prometheus/metrics
+    title: Istio Proxy metrics
+    description: Collect Istio Proxy metrics
+    vars:
+      - name: period
+        type: text
+        title: Period
+        multi: false
+        required: true
+        show_user: true
+        default: 10s
+      - name: hosts
+        type: text
+        title: Hosts
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - ${kubernetes.pod.ip}:15020
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        multi: false
+        required: true
+        show_user: true
+        default:
+          - /stats/prometheus
+      - name: condition
+        title: Condition
+        description: Condition for Istio Container name
+        type: text
+        multi: false
+        required: true
+        show_user: true
+        default: ${kubernetes.container.name} == 'istio-proxy' and ${kubernetes.annotations.prometheus.io/scrape} == 'true'
+      - name: metrics_filters.exclude
+        type: text
+        title: Metrics Filters Exclude
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - "^up$"
+      - name: metrics_filters.include
+        type: text
+        title: Metrics Filters Include
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - "istio_*"
