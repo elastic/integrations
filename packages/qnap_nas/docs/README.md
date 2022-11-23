@@ -14,8 +14,8 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-10-30T20:24:24.000Z",
     "agent": {
-        "ephemeral_id": "70560290-2c53-41c4-b32b-d4b76b6a6b18",
-        "id": "2d8f9f42-f276-4b2a-9082-a758a08f49f2",
+        "ephemeral_id": "b04b6107-ca2b-4adb-90c0-2c86f2ebc578",
+        "id": "44d6209a-f153-4ff2-bcce-819a164c5aca",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.1.0"
@@ -29,7 +29,7 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "2d8f9f42-f276-4b2a-9082-a758a08f49f2",
+        "id": "44d6209a-f153-4ff2-bcce-819a164c5aca",
         "snapshot": false,
         "version": "8.1.0"
     },
@@ -41,7 +41,7 @@ An example event for `log` looks as following:
         ],
         "created": "2022-10-30T20:24:24.000Z",
         "dataset": "qnap_nas.log",
-        "ingested": "2022-11-22T20:22:19Z",
+        "ingested": "2022-11-22T20:55:17Z",
         "kind": "event",
         "provider": "conn-log",
         "timezone": "+00:00",
@@ -60,7 +60,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.80.6:41074"
+            "address": "192.168.112.4:36880"
         },
         "syslog": {
             "priority": 30
