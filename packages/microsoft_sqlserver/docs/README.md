@@ -489,7 +489,7 @@ An example event for `transaction_log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-23T04:53:03.582Z",
+    "@timestamp": "2022-11-23T10:53:05.080Z",
     "agent": {
         "ephemeral_id": "70f5c0c1-37b1-486b-9806-8105b2cdcd20",
         "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
@@ -528,8 +528,8 @@ An example event for `transaction_log` looks as following:
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.transaction_log",
-        "duration": 1438164400,
-        "ingested": "2022-11-23T04:53:06Z",
+        "duration": 1449739900,
+        "ingested": "2022-11-23T10:53:07Z",
         "module": "sql"
     },
     "host": {
@@ -563,7 +563,11 @@ An example event for `transaction_log` looks as following:
             "database_id": 1,
             "database_name": "master",
             "instance_name": "MSSQLSERVER",
-            "server_name": "obs-service-int"
+            "log_space_in_bytes_since_last_backup": 139264,
+            "server_name": "obs-service-int",
+            "total_log_size_bytes": 2088960,
+            "used_log_space_bytes": 626688,
+            "used_log_space_pct": 30
         }
     },
     "service": {
