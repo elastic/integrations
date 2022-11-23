@@ -26,12 +26,11 @@ An example event for `result` looks as following:
 {
     "@timestamp": "2018-01-08T14:51:55.000Z",
     "agent": {
-        "ephemeral_id": "a893e713-eedc-4ae1-8951-0a0ca7f783de",
-        "hostname": "docker-fleet-agent",
-        "id": "5e42424f-8ff5-4c7b-8a60-617548fd6b6a",
+        "ephemeral_id": "207a0fe6-de4f-434f-9c34-d0898df6ac96",
+        "id": "eaaf0f0c-2e54-4bd7-a0cc-9968349277bc",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.1.0"
     },
     "data_stream": {
         "dataset": "osquery.result",
@@ -42,16 +41,16 @@ An example event for `result` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "5e42424f-8ff5-4c7b-8a60-617548fd6b6a",
+        "id": "eaaf0f0c-2e54-4bd7-a0cc-9968349277bc",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.1.0"
     },
     "event": {
         "action": "added",
         "agent_id_status": "verified",
-        "created": "2022-11-14T15:11:13.595Z",
+        "created": "2022-11-22T19:16:32.440Z",
         "dataset": "osquery.result",
-        "ingested": "2022-11-14T15:11:17Z",
+        "ingested": "2022-11-22T19:16:35Z",
         "kind": "event",
         "type": "info"
     },
@@ -61,10 +60,10 @@ An example event for `result` looks as following:
         "hostname": "ubuntu-xenial",
         "id": "72E1287B-D1BC-4FC6-B9D8-64F4352776A9",
         "ip": [
-            "192.168.128.7"
+            "172.25.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:80:07"
+            "02:42:ac:19:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
