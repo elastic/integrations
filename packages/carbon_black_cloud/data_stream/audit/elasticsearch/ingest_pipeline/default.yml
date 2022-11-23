@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing Carbon Black Cloud audit logs
+description: Pipeline for parsing Carbon Black Cloud audit logs.
 processors:
   - set:
       field: ecs.version
@@ -14,63 +14,93 @@ processors:
       ignore_failure: true
   - date:
       field: json.eventTime
-      target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.eventTime != null && ctx.json.eventTime != ''
       formats:
         - UNIX_MS
+      on_failure:
+        - remove:
+            field: json.eventTime
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: event
   - set:
       field: event.outcome
       value: success
-  - set: 
+  - convert:
+      field: json.flagged
+      target_field: carbon_black_cloud.audit.flagged
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.flagged
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
       field: event.outcome
       value: failure
-      if: ctx?.json?.flagged == true
-  - rename: 
+      if: ctx.json?.flagged == true
+  - rename:
       field: json.description
       target_field: event.reason
-  - rename: 
+      ignore_missing: true
+  - convert:
       field: json.clientIp
       target_field: client.ip
+      type: ip
       ignore_missing: true
-  - rename: 
+      on_failure:
+        - remove:
+            field: json.clientIp
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
       field: json.loginName
       target_field: client.user.id
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.eventId
       target_field: event.id
       ignore_missing: true
-  - rename: 
+  - rename:
       field: json.orgName
       target_field: organization.name
       ignore_missing: true
-  - urldecode: 
+  - urldecode:
       field: json.requestUrl
       target_field: url.original
       ignore_missing: true
-  - rename: 
+  - convert:
       field: json.verbose
       target_field: carbon_black_cloud.audit.verbose
+      type: boolean
       ignore_missing: true
-  - rename: 
-      field: json.flagged
-      target_field: carbon_black_cloud.audit.flagged
-      ignore_missing: true
-  - append:
-      field: related.ip
-      value: "{{{client.ip}}}"
-      allow_duplicates: false
+      on_failure:
+        - remove:
+            field: json.verbose
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: json
+      ignore_missing: true
   - script:
-      description: Drops null/empty values recursively
+      description: Drops null/empty values recursively.
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -84,10 +114,10 @@ processors:
         dropEmptyFields(ctx);
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: '{{{_ingest.on_failure_message}}}'
