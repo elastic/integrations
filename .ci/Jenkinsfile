@@ -39,6 +39,7 @@ pipeline {
     PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH = "gs://elastic-bekitzur-package-storage-internal/queue-publishing/${env.REPO_BUILD_TAG}"
 
     INTEGRATIONS_TESTED = "0"
+    FORCE_CHECK_ALL = "${params.force_check_all}"
   }
   options {
     timeout(time: 4, unit: 'HOURS')
@@ -55,6 +56,7 @@ pipeline {
   }
   parameters {
     string(name: 'stackVersion', defaultValue: '', description: 'Version of the stack to use for testing.')
+    booleanParam(name: 'force_check_all', defaultValue: false, description: 'Force checking all integrations.')
   }
   stages {
     stage('Prepare workspace') {
@@ -270,6 +272,11 @@ def isPrAffected(integrationName) {
         return false
       }
     }
+  }
+
+  if (env.FORCE_CHECK_ALL == "true") {
+    echo "[${integrationName}] PR is affected: \"force_check_all\" parameter enabled"
+    return true
   }
 
   // Setting default values for a PR.
