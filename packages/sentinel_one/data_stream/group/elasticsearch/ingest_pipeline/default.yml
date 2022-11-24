@@ -23,23 +23,30 @@ processors:
       ignore_failure: true
   - fingerprint:
       fields:
-        - json.createdAt  
-        - json.updatedAt 
-        - json.id 
+        - json.createdAt
+        - json.updatedAt
+        - json.id
       target_field: _id
       ignore_missing: true
-  - date: 
+  - date:
       field: json.updatedAt
-      target_field: '@timestamp'
+      if: ctx.json?.updatedAt != null
       formats:
         - ISO8601
-      ignore_failure: true
-  - date: 
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
       field: json.createdAt
+      if: ctx.json?.createdAt != null
       target_field: sentinel_one.group.created_at
       formats:
         - ISO8601
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.creator
       target_field: user.full_name
@@ -70,12 +77,26 @@ processors:
       field: json.inherits
       target_field: sentinel_one.group.inherits
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.inherits
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
-      field: json.isDefault 
+      field: json.isDefault
       target_field: sentinel_one.group.is_default
       type: boolean
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.isDefault
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.name
       target_field: group.name
@@ -84,20 +105,34 @@ processors:
       field: json.rank
       target_field: sentinel_one.group.rank
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.rank
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.registrationToken
       target_field: sentinel_one.group.registration_token
       ignore_missing: true
   - rename:
-      field: json.siteId 
+      field: json.siteId
       target_field: sentinel_one.group.site.id
       ignore_missing: true
   - convert:
       field: json.totalAgents
       target_field: sentinel_one.group.agent.count
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.totalAgents
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.type
       target_field: sentinel_one.group.type
@@ -113,9 +148,9 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source: 
+      source:
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -128,6 +163,6 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-- set:
-    field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'

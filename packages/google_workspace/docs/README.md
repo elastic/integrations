@@ -24,11 +24,88 @@ In order to ingest data from the Google Reports API you must:
 - [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
 - [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for your ServiceAccount.
 
-This module will make use of the following *oauth2 scope*:
+This integration will make use of the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/admin.reports.audit.readonly`
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
+
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `admin`, `drive`, `groups`, `login`, `saml`, and `user accounts` logs.
+
+# Google Workspace Alert
+
+The [Google Workspace](https://developers.google.com/admin-sdk/alertcenter) Integration collects and parses data received from the Google Workspace Alert Center API using HTTP JSON Input.
+
+## Compatibility
+
+- Alert Data Stream has been tested against `Google Workspace Alert Center API (v1)`.
+
+- Following Alert types have been supported in the current integration version:
+    1. Customer takeout initiated
+    2. Malware reclassification
+    3. Misconfigured whitelist
+    4. Phishing reclassification
+    5. Suspicious message reported
+    6. User reported phishing
+    7. User reported spam spike
+    8. Leaked password
+    9. Suspicious login
+    10. Suspicious login (less secure app)
+    11. Suspicious programmatic login
+    12. User suspended
+    13. User suspended (spam)
+    14. User suspended (spam through relay)
+    15. User suspended (suspicious activity)
+    16. Google Operations
+    17. Configuration problem
+    18. Government attack warning
+    19. Device compromised
+    20. Suspicious activity
+    21. AppMaker Default Cloud SQL setup
+    22. Activity Rule
+    23. Data Loss Prevention
+    24. Apps outage
+    25. Primary admin changed
+    26. SSO profile added
+    27. SSO profile updated
+    28. SSO profile deleted
+    29. Super admin password reset
+    30. Account suspension warning
+    31. Calendar settings changed
+    32. Chrome devices auto-update expiration warning
+    33. Customer takeout initiated
+    34. Drive settings changed
+    35. Email settings changed
+    36. Gmail potential employee spoofing
+    37. Mobile settings changed
+    38. New user added
+    39. Reporting Rule
+    40. Suspended user made active
+    41. User deleted
+    42. User granted Admin privilege
+    43. User suspended (spam)
+    44. User's Admin privileges revoked
+    45. Users password changed
+    46. Google Voice configuration problem detected
+
+
+## Requirements
+
+In order to ingest data from the Google Alert Center API, you must:
+
+- Have an *administrator account*.
+- [Set up a ServiceAccount](https://support.google.com/workspacemigrate/answer/9222993?hl=en) using the Administrator Account.
+- [Set up access to the Admin SDK API](https://support.google.com/workspacemigrate/answer/9222865?hl=en) for the ServiceAccount.
+- [Enable Domain-Wide Delegation](https://developers.google.com/admin-sdk/reports/v1/guides/delegation) for the ServiceAccount.
+
+This integration will make use of the following *oauth2 scope*:
+
+- `https://www.googleapis.com/auth/apps.alerts`
+
+Once Service Account credentials are downloaded as a JSON file, then the integration can be setup to collect data.
+
+
+>  Note: The default value of the "Page Size" is set to 1000. This option is available under 'Alert' Advance options. Set the parameter "Page Size" according to the requirement. For Alert Data Stream, The default value of "Alert Center API Host" is `https://alertcenter.googleapis.com`. The Alert Center API Host will be used for collecting alert logs only.
 
 ## Logs
 
@@ -1498,4 +1575,377 @@ An example event for `groups` looks as following:
 | user.target.id | Unique identifier of the user. | keyword |
 | user.target.name | Short name or login of the user. | keyword |
 | user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
+
+
+### Alert
+
+This is the `alert` dataset.
+
+An example event for `alert` looks as following:
+
+```json
+{
+    "@timestamp": "2022-07-01T10:49:29.436Z",
+    "agent": {
+        "ephemeral_id": "b9cea70b-4beb-4d6f-8df8-f4bc6bfefc8a",
+        "id": "c365aab8-f383-4f35-971f-0e22b72992a0",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.4.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.alert",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.5.0"
+    },
+    "elastic_agent": {
+        "id": "c365aab8-f383-4f35-971f-0e22b72992a0",
+        "snapshot": false,
+        "version": "8.4.0"
+    },
+    "email": {
+        "attachments": {
+            "file": {
+                "hash": {
+                    "sha256": [
+                        "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c",
+                        "228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2",
+                        "5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56"
+                    ]
+                }
+            }
+        },
+        "delivery_timestamp": [
+            "2022-07-01T10:38:13.194Z"
+        ],
+        "message_id": [
+            "decedih843@example.com",
+            "decedih@example.com"
+        ],
+        "subject": [
+            "Sales",
+            "RE: Example salesorderspca JSON request"
+        ],
+        "to": {
+            "address": [
+                "example@example.com"
+            ]
+        }
+    },
+    "event": {
+        "action": "Gmail phishing",
+        "agent_id_status": "verified",
+        "category": [
+            "email",
+            "threat",
+            "malware"
+        ],
+        "created": "2022-11-07T09:26:33.088Z",
+        "dataset": "google_workspace.alert",
+        "end": "2022-07-01T10:47:04.530Z",
+        "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7",
+        "ingested": "2022-11-07T09:26:36Z",
+        "kind": "alert",
+        "original": "{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"createTime\":\"2022-07-01T10:49:29.436394Z\",\"customerId\":\"02umwv6u\",\"data\":{\"@type\":\"type.googleapis.com/google.apps.alertcenter.type.MailPhishing\",\"domainId\":{\"customerPrimaryDomain\":\"example.com\"},\"isInternal\":true,\"maliciousEntity\":{\"displayName\":\"string\",\"entity\":{\"displayName\":\"example\",\"emailAddress\":\"example@example.com\"},\"fromHeader\":\"header@example.com\"},\"messages\":[{\"attachmentsSha256Hash\":[\"50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c\",\"228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2\"],\"date\":\"2022-07-01T10:38:13.194711Z\",\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings from sales \",\"messageId\":\"decedih843@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"Sales\"},{\"attachmentsSha256Hash\":[\"5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56\"],\"md5HashMessageBody\":\"d29343907090dff4cec4a9a0efb80d20\",\"md5HashSubject\":\"a3708f8228384d932237f85980ff8283\",\"messageBodySnippet\":\" hi greetings \",\"messageId\":\"decedih@example.com\",\"recipient\":\"example@example.com\",\"subjectText\":\"RE: Example salesorderspca JSON request\"}],\"systemActionType\":\"NO_OPERATION\"},\"deleted\":false,\"endTime\":\"2022-07-01T10:47:04.530834Z\",\"etag\":\"wF2Ix2DWDv8=\",\"metadata\":{\"alertId\":\"91840a82-3af0-46d7-95ec-625c1cf0c3f7\",\"assignee\":\"example@example.com\",\"customerId\":\"02umwv6u\",\"etag\":\"wF2Ix2DWDv8=\",\"severity\":\"HIGH\",\"status\":\"NOT_STARTED\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"},\"securityInvestigationToolLink\":\"string\",\"source\":\"Gmail phishing\",\"startTime\":\"2022-07-01T10:38:13.194711Z\",\"type\":\"User reported phishing\",\"updateTime\":\"2022-07-01T10:49:29.436394Z\"}",
+        "start": "2022-07-01T10:38:13.194Z",
+        "type": [
+            "info"
+        ]
+    },
+    "google_workspace": {
+        "alert": {
+            "create_time": "2022-07-01T10:49:29.436Z",
+            "customer": {
+                "id": "02umwv6u"
+            },
+            "data": {
+                "domain_id": {
+                    "customer_primary_domain": "example.com"
+                },
+                "is_internal": true,
+                "malicious_entity": {
+                    "display_name": "string",
+                    "entity": {
+                        "display_name": "example",
+                        "email_address": "example@example.com"
+                    },
+                    "from_header": "header@example.com"
+                },
+                "messages": [
+                    {
+                        "attachments_sha256_hash": [
+                            "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c",
+                            "228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2"
+                        ],
+                        "date": "2022-07-01T10:38:13.194Z",
+                        "id": "decedih843@example.com",
+                        "md5": {
+                            "hash": {
+                                "message_body": "d29343907090dff4cec4a9a0efb80d20",
+                                "subject": "a3708f8228384d932237f85980ff8283"
+                            }
+                        },
+                        "message_body_snippet": " hi greetings from sales ",
+                        "recipient_email": "example@example.com",
+                        "subject_text": "Sales"
+                    },
+                    {
+                        "attachments_sha256_hash": [
+                            "5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56"
+                        ],
+                        "id": "decedih@example.com",
+                        "md5": {
+                            "hash": {
+                                "message_body": "d29343907090dff4cec4a9a0efb80d20",
+                                "subject": "a3708f8228384d932237f85980ff8283"
+                            }
+                        },
+                        "message_body_snippet": " hi greetings ",
+                        "recipient_email": "example@example.com",
+                        "subject_text": "RE: Example salesorderspca JSON request"
+                    }
+                ],
+                "system_action_type": "NO_OPERATION",
+                "type": "type.googleapis.com/google.apps.alertcenter.type.MailPhishing"
+            },
+            "deleted": false,
+            "end_time": "2022-07-01T10:47:04.530Z",
+            "etag": "wF2Ix2DWDv8=",
+            "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7",
+            "metadata": {
+                "alert": {
+                    "id": "91840a82-3af0-46d7-95ec-625c1cf0c3f7"
+                },
+                "assignee": "example@example.com",
+                "customer": {
+                    "id": "02umwv6u"
+                },
+                "etag": "wF2Ix2DWDv8=",
+                "severity": "HIGH",
+                "status": "NOT_STARTED",
+                "update_time": "2022-07-01T10:49:29.436Z"
+            },
+            "security_investigation_tool_link": "string",
+            "source": "Gmail phishing",
+            "start_time": "2022-07-01T10:38:13.194Z",
+            "type": "User reported phishing",
+            "update_time": "2022-07-01T10:49:29.436Z"
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "organization": {
+        "id": "02umwv6u"
+    },
+    "related": {
+        "hash": [
+            "a3708f8228384d932237f85980ff8283",
+            "50d858e0985ecc7f60418aaf0cc5ab587f42c2570a884095a9e8ccacd0f6545c",
+            "228b48a56dbc2ecf10393227ac9c9dc943881fd7a55452e12a09107476bef2b2",
+            "5fb1679e08674059b72e271d8902c11a127bb5301b055dc77fa03932ada56a56"
+        ],
+        "user": [
+            "example"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-alert"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": [
+            "example@example.com"
+        ],
+        "name": "example"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.account.id | The cloud account or organization ID used to identify different entities in a multi-tenant environment. Examples: AWS account ID, Google Cloud ORG ID, or other unique identifier. | keyword |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
+| cloud.instance.name | Instance name of the host machine. | keyword |
+| cloud.machine.type | Machine type of the host machine. | keyword |
+| cloud.project.id | Name of the project in Google Cloud. | keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
+| cloud.region | Region in which this host is running. | keyword |
+| container.id | Unique container ID. | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels | Image labels. | object |
+| container.name | Container name. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| email.attachments.file.hash.sha256 | SHA256 hash. | keyword |
+| email.delivery_timestamp | The date and time when the email message was received by the service or client. | date |
+| email.message_id | Identifier from the RFC 5322 `Message-ID:` email header that refers to a particular email message. | wildcard |
+| email.subject | A brief summary of the topic of the message. | keyword |
+| email.subject.text | Multi-field of `email.subject`. | match_only_text |
+| email.to.address | The email address of recipient | keyword |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.dataset | Event dataset. | constant_keyword |
+| event.end | event.end contains the date when the event ended or when the activity was last observed. | date |
+| event.id | Unique ID to describe the event. | keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.start | event.start contains the date when the event started or when the activity was first observed. | date |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| google_workspace.alert.create_time | The time this alert was created. | date |
+| google_workspace.alert.customer.id | The unique identifier of the Google account of the customer. | keyword |
+| google_workspace.alert.data.action.name | List of action names associated with the rule threshold. | keyword |
+| google_workspace.alert.data.actor.email | Email of person who performed the action. | keyword |
+| google_workspace.alert.data.affected.user_emails | The list of emails which correspond to the users directly affected by the incident. | keyword |
+| google_workspace.alert.data.alert_details | alert details of google workspace alert. | keyword |
+| google_workspace.alert.data.appeal_window | appeal window of alert. | keyword |
+| google_workspace.alert.data.attachment.data.csv.data_rows.entries | The data entries in a CSV file row, as a string array rather than a single comma-separated string. | keyword |
+| google_workspace.alert.data.attachment.data.csv.headers | The list of headers for data columns in a CSV file. | keyword |
+| google_workspace.alert.data.create_time | Rule create timestamp. | date |
+| google_workspace.alert.data.dashboard.uri | Link to the outage event in Google Workspace Status Dashboard. | keyword |
+| google_workspace.alert.data.description | A detailed, freeform incident description. | text |
+| google_workspace.alert.data.display.name | Alert display name. | keyword |
+| google_workspace.alert.data.domain | Customer domain for email template personalization. | keyword |
+| google_workspace.alert.data.domain_id.customer_primary_domain | The primary domain for the customer. | keyword |
+| google_workspace.alert.data.email | The email of the user that this event belongs to. | keyword |
+| google_workspace.alert.data.event_time | The time at which event occurred. | date |
+| google_workspace.alert.data.events.device.id | The device ID. | keyword |
+| google_workspace.alert.data.events.device.model | The model of the device. | keyword |
+| google_workspace.alert.data.events.device.property | The device property which was changed. | keyword |
+| google_workspace.alert.data.events.device.type | The type of the device. | keyword |
+| google_workspace.alert.data.events.device_compromised_state | The device compromised state. Possible values are "Compromised" or "Not Compromised". | keyword |
+| google_workspace.alert.data.events.ios_vendor.id | Required for iOS, empty for others. | keyword |
+| google_workspace.alert.data.events.new_value | The new value of the device property after the change. | keyword |
+| google_workspace.alert.data.events.old_value | The old value of the device property before the change. | keyword |
+| google_workspace.alert.data.events.resource.id | The device resource ID. | keyword |
+| google_workspace.alert.data.events.serial.number | The serial number of the device. | keyword |
+| google_workspace.alert.data.header | A header to display above the incident message. Typically used to attach a localized notice on the timeline for followup comms translations. | keyword |
+| google_workspace.alert.data.incident_tracking.id | Incident tracking ID. | keyword |
+| google_workspace.alert.data.is_internal | If true, the email originated from within the organization. | boolean |
+| google_workspace.alert.data.login_details.ip_address | The human-readable IP address that is associated with the warning event. | ip |
+| google_workspace.alert.data.login_details.login_time | The successful login time that is associated with the warning event. This isn't present for blocked login attempts. | date |
+| google_workspace.alert.data.malicious_entity.display_name | The header from display name. | keyword |
+| google_workspace.alert.data.malicious_entity.entity.display_name | Display name of the user. | keyword |
+| google_workspace.alert.data.malicious_entity.entity.email_address | Email address of the user. | keyword |
+| google_workspace.alert.data.malicious_entity.from_header | The sender email address. | keyword |
+| google_workspace.alert.data.merge_info.new_alert.id | New alert ID. Reference the `google.apps.alertcenter.Alert` with this ID for the current state. | keyword |
+| google_workspace.alert.data.merge_info.new_incident_tracking.id | The new tracking ID from the parent incident. | keyword |
+| google_workspace.alert.data.messages.attachments_sha256_hash | The SHA256 hash of email's attachment and all MIME parts. | keyword |
+| google_workspace.alert.data.messages.date | The date of the event related to this email. | date |
+| google_workspace.alert.data.messages.id | The message ID. | keyword |
+| google_workspace.alert.data.messages.md5.hash.message_body | The hash of the message body text. | keyword |
+| google_workspace.alert.data.messages.md5.hash.subject | The MD5 Hash of email's subject (only available for reported emails). | keyword |
+| google_workspace.alert.data.messages.message_body_snippet | The snippet of the message body text (only available for reported emails). | keyword |
+| google_workspace.alert.data.messages.recipient | The recipient of this email. | keyword |
+| google_workspace.alert.data.messages.subject_text | The email subject text (only available for reported emails). | keyword |
+| google_workspace.alert.data.name | Rule name. | keyword |
+| google_workspace.alert.data.next_update_time | Timestamp by which the next update is expected to arrive. | date |
+| google_workspace.alert.data.primary.admin.changed_event.domain | domain in which actioned occurred. | keyword |
+| google_workspace.alert.data.primary.admin.changed_event.previous_admin_email | Email of person who was the primary admin before the action. | keyword |
+| google_workspace.alert.data.primary.admin.changed_event.updated_admin_email | Email of person who is the primary admin after the action. | keyword |
+| google_workspace.alert.data.products | List of products impacted by the outage. | keyword |
+| google_workspace.alert.data.query | Query that is used to get the data from the associated source. | keyword |
+| google_workspace.alert.data.request.info.app.developer_email | List of app developers who triggered notifications for above application. | keyword |
+| google_workspace.alert.data.request.info.app.key | The application that requires the SQL setup. | keyword |
+| google_workspace.alert.data.request.info.number_of_requests | Number of requests sent for this application to set up default SQL instance. | keyword |
+| google_workspace.alert.data.resolution_time | Timestamp when the outage is expected to be resolved, or has confirmed resolution. Provided only when known. | date |
+| google_workspace.alert.data.rule.violation_info.data.source | Source of the data. | keyword |
+| google_workspace.alert.data.rule.violation_info.match_info.predefined_detector.name | Name that uniquely identifies the detector. | keyword |
+| google_workspace.alert.data.rule.violation_info.match_info.user_defined_detector.display.name | Display name of the detector. | keyword |
+| google_workspace.alert.data.rule.violation_info.match_info.user_defined_detector.resource.name | Resource name that uniquely identifies the detector. | keyword |
+| google_workspace.alert.data.rule.violation_info.recipients | For Drive, they are grantees that the Drive file was shared with at the time of rule triggering. Valid values include user emails, group emails, domains, or 'anyone' if the file was publicly accessible. If the file was private the recipients list will be empty. For Gmail, they are emails of the users or groups that the Gmail message was sent to. | keyword |
+| google_workspace.alert.data.rule.violation_info.resource_info.document.id | Drive file ID. | keyword |
+| google_workspace.alert.data.rule.violation_info.resource_info.resource.title | Title of the resource, for example email subject, or document title. | keyword |
+| google_workspace.alert.data.rule.violation_info.rule_info.display.name | User provided name of the rule. | keyword |
+| google_workspace.alert.data.rule.violation_info.rule_info.resource.name | Resource name that uniquely identifies the rule. | keyword |
+| google_workspace.alert.data.rule.violation_info.suppressed.action.types | Actions suppressed due to other actions with higher priority. | keyword |
+| google_workspace.alert.data.rule.violation_info.trigger.user.email | Email of the user who caused the violation. Value could be empty if not applicable, for example, a violation found by drive continuous scan. | keyword |
+| google_workspace.alert.data.rule.violation_info.trigger.value | Trigger of the rule. | keyword |
+| google_workspace.alert.data.rule.violation_info.triggered.action.info | Metadata related to the triggered actions. | nested |
+| google_workspace.alert.data.rule.violation_info.triggered.action.types | Actions applied as a consequence of the rule being triggered. | keyword |
+| google_workspace.alert.data.rule_description | Description of the rule. | text |
+| google_workspace.alert.data.source.ip | The source IP address of the malicious email. | ip |
+| google_workspace.alert.data.sso_profile.created_event.inbound_sso.profile_name | sso profile name which got created. | keyword |
+| google_workspace.alert.data.sso_profile.deleted_event.inbound_sso.profile_name | sso profile name which got deleted. | keyword |
+| google_workspace.alert.data.sso_profile.updated_event.inbound_sso.profile_changes | changes made to sso profile. | keyword |
+| google_workspace.alert.data.sso_profile.updated_event.inbound_sso.profile_name | sso profile name which got updated. | keyword |
+| google_workspace.alert.data.state | state of alert. | keyword |
+| google_workspace.alert.data.status | Current outage status. | keyword |
+| google_workspace.alert.data.super_admin_password_reset_event.user.email | email of person whose password was reset. | keyword |
+| google_workspace.alert.data.superseded_alerts | List of alert IDs superseded by this alert. It is used to indicate that this alert is essentially extension of superseded alerts and we found the relationship after creating these alerts. | keyword |
+| google_workspace.alert.data.superseding_alert | Alert ID superseding this alert. It is used to indicate that superseding alert is essentially extension of this alert and we found the relationship after creating both alerts. | keyword |
+| google_workspace.alert.data.suspension_details.abuse_reason | abuse reason for suspension details. | keyword |
+| google_workspace.alert.data.suspension_details.product_name | product name for suspension details. | keyword |
+| google_workspace.alert.data.system_action_type | System actions on the messages. | keyword |
+| google_workspace.alert.data.takeout.request.id | The takeout request ID. | keyword |
+| google_workspace.alert.data.threshold | Alert threshold is for example “COUNT \> 5”. | keyword |
+| google_workspace.alert.data.title | A one-line incident description. | keyword |
+| google_workspace.alert.data.trigger.source | The trigger sources for this rule. | keyword |
+| google_workspace.alert.data.type | The type of the alert with alert data. | keyword |
+| google_workspace.alert.data.update_time | The timestamp of the last update to the rule. | date |
+| google_workspace.alert.data.window_size | Rule window size. Possible values are 1 hour or 24 hours. | keyword |
+| google_workspace.alert.deleted | True if this alert is marked for deletion. | boolean |
+| google_workspace.alert.end_time | The time the event that caused this alert ceased being active. If provided, the end time must not be earlier than the start time. If not provided, it indicates an ongoing alert. | date |
+| google_workspace.alert.etag | etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of an alert from overwriting each other. | keyword |
+| google_workspace.alert.id | The unique identifier for the alert. | keyword |
+| google_workspace.alert.metadata.alert.id | The alert identifier. | keyword |
+| google_workspace.alert.metadata.assignee | The email address of the user assigned to the alert. | keyword |
+| google_workspace.alert.metadata.customer.id | The unique identifier of the Google account of the customer. | keyword |
+| google_workspace.alert.metadata.etag | etag is used for optimistic concurrency control as a way to help prevent simultaneous updates of an alert metadata from overwriting each other. | keyword |
+| google_workspace.alert.metadata.severity | The severity value of the alert. Alert Center will set this field at alert creation time, default's to an empty string when it could not be determined. | keyword |
+| google_workspace.alert.metadata.status | The current status of the alert. | keyword |
+| google_workspace.alert.metadata.update_time | The time this metadata was last updated. | date |
+| google_workspace.alert.security_investigation_tool_link | An optional Security Investigation Tool query for this alert. | keyword |
+| google_workspace.alert.source | A unique identifier for the system that reported the alert. This is output only after alert is created. | keyword |
+| google_workspace.alert.start_time | The time the event that caused this alert was started or detected. | date |
+| google_workspace.alert.type | The type of the alert. This is output only after alert is created. | keyword |
+| google_workspace.alert.update_time | The time this alert was last updated. | date |
+| host.architecture | Operating system architecture. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
+| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
+| host.id | Unique host ID. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
+| host.ip | Host IP addresses. | ip |
+| host.mac | Host mac addresses. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |
+| organization.id | Unique identifier for the organization. | keyword |
+| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| rule.description | The description of the rule generating the event. | keyword |
+| rule.name | The name of the rule or signature generating the event. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| source.user.email | User email address. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
