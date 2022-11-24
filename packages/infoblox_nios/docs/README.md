@@ -155,11 +155,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2011-10-19T12:43:47.375Z",
     "agent": {
-        "ephemeral_id": "2e374708-8607-4a70-9e22-01c78d86eecc",
-        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
+        "ephemeral_id": "1edc3f76-8448-4268-a90b-1b60477e6c1e",
+        "id": "92aa2eef-241b-4b33-9081-97ab6be6cbc4",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.5.2"
     },
     "data_stream": {
         "dataset": "infoblox_nios.log",
@@ -170,16 +170,16 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "19f05486-b68d-449a-9bdd-1493d2f3b55d",
+        "id": "92aa2eef-241b-4b33-9081-97ab6be6cbc4",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.5.2"
     },
     "event": {
         "action": "first_login",
         "agent_id_status": "verified",
         "created": "2022-03-22T14:26:54.000Z",
         "dataset": "infoblox_nios.log",
-        "ingested": "2022-11-04T13:33:34Z",
+        "ingested": "2022-11-24T07:31:21Z",
         "original": "\u003c29\u003eMar 22 14:26:54 10.0.0.1 httpd: 2011-10-19 12:43:47.375Z [user]: First_Login - - to=AdminConnector ip=10.0.0.2 auth=LOCAL group=admin-group apparently_via=GUI\\040first\\040login"
     },
     "host": {
@@ -203,7 +203,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.0.6:58634"
+            "address": "172.24.0.6:59560"
         },
         "syslog": {
             "priority": 29
@@ -313,7 +313,6 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dhcp.message |  | text |
 | infoblox_nios.log.dhcp.network |  | keyword |
 | infoblox_nios.log.dhcp.offered.duration |  | long |
-| infoblox_nios.log.dhcp.offered.message |  | keyword |
 | infoblox_nios.log.dhcp.peer_address |  | keyword |
 | infoblox_nios.log.dhcp.relay.interface.ip |  | ip |
 | infoblox_nios.log.dhcp.relay.interface.name |  | keyword |
