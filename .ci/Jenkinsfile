@@ -445,7 +445,8 @@ def packageStoragePublish() {
       dir("${it}") {
         def manifest = readYaml(file: "manifest.yml")
         if (manifest != null && manifest["version"] != null) {
-          def packageZip = it + "-" + manifest["version"] + ".zip"
+          // package name is retrieved from the manifest in case name it differs from folder name
+          def packageZip = manifest["name"]+ "-" + manifest["version"] + ".zip"
           if (isAlreadyPublished(packageZip)) {
             return
           }
