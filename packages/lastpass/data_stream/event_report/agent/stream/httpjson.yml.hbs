@@ -37,11 +37,11 @@ request.transforms:
 response.pagination:
   - set:
       target: body.data.from
-      value: '[[if (ne .last_response.body.next nil)]][[.last_response.url.params.Get "from"]][[else]][[.last_response.terminate_pagination]][[end]]'
+      value: '[[if (ne .last_response.body.next nil)]][[.last_response.url.params.Get "from"]][[end]]'
       fail_on_template_error: true
   - set:
       target: body.data.to
-      value: '[[if (ne .last_response.body.next nil)]][[formatDate (parseTimestampMilli (div (toInt .last_response.body.next) 1000)) "2006-01-02 15:04:05" "Local"]][[else]][[.last_response.terminate_pagination]][[end]]'
+      value: '[[if (ne .last_response.body.next nil)]][[formatDate (parseTimestampMilli (div (toInt .last_response.body.next) 1000)) "2006-01-02 15:04:05" "Local"]][[end]]'
       fail_on_template_error: true
 response.split:
   target: body.data
