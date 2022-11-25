@@ -49,8 +49,8 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2030-04-30T00:01:16.000Z",
     "agent": {
-        "ephemeral_id": "11b64a19-0682-4a33-b385-4e6142171d69",
-        "id": "fcbfb418-43b4-4893-b170-e74a040560f2",
+        "ephemeral_id": "7717b66b-35a2-4bba-a822-2dcb46850be1",
+        "id": "a5749379-c237-4177-814a-af92fb682de1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -64,7 +64,7 @@ An example event for `alert` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "fcbfb418-43b4-4893-b170-e74a040560f2",
+        "id": "a5749379-c237-4177-814a-af92fb682de1",
         "snapshot": false,
         "version": "8.4.0"
     },
@@ -73,10 +73,10 @@ An example event for `alert` looks as following:
         "category": [
             "email"
         ],
-        "created": "2022-09-30T11:50:26.826Z",
+        "created": "2022-11-07T08:25:59.849Z",
         "dataset": "trend_micro_vision_one.alert",
         "id": "WB-9002-20200427-0002",
-        "ingested": "2022-09-30T11:50:30Z",
+        "ingested": "2022-11-07T08:26:03Z",
         "kind": "alert",
         "original": "{\"alertProvider\":\"SAE\",\"createdDateTime\":\"2020-04-30T00:01:15Z\",\"description\":\"A backdoor was possibly implanted after a user received a possible spear phishing email message.\",\"id\":\"WB-9002-20200427-0002\",\"impactScope\":{\"accountCount\":0,\"desktopCount\":0,\"emailAddressCount\":0,\"entities\":[{\"entityId\":\"5257b401-2fd7-469c-94fa-39a4f11eb925\",\"entityType\":\"host\",\"entityValue\":\"user@email.com\",\"provenance\":[\"Alert\"],\"relatedEntities\":[\"CODERED\\\\\\\\user\"],\"relatedIndicatorIds\":[1]}],\"serverCount\":0},\"indicators\":[{\"field\":\"request url\",\"filterIds\":[\"f862df72-7f5e-4b2b-9f7f-9148e875f908\"],\"id\":1,\"provenance\":[\"Alert\"],\"relatedEntities\":[\"user@example.com\"],\"type\":\"url\",\"value\":\"http://www.example.com/ab001.zip\"}],\"investigationStatus\":\"New\",\"matchedRules\":[{\"id\":\"5f52d1f1-53e7-411a-b74f-745ee81fa30b\",\"matchedFilters\":[{\"id\":\"ccf86fc1-688f-4131-a46f-1d7a6ee2f88e\",\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"matchedEvents\":[{\"matchedDateTime\":\"2019-08-02T04:00:01Z\",\"type\":\"TELEMETRY_REGISTRY\",\"uuid\":\"fa9ff47c-e1b8-459e-a3d0-a5b104b854a5\"}],\"mitreTechniqueIds\":[\"T1192\"],\"name\":\"(T1192) Spearphishing Link\"}],\"name\":\"Possible SpearPhishing Email\"}],\"model\":\"Possible APT Attack\",\"schemaVersion\":\"1.0\",\"score\":63,\"severity\":\"critical\",\"updatedDateTime\":\"2030-04-30T00:01:16Z\",\"workbenchLink\":\"https://THE_WORKBENCH_URL\"}",
         "severity": 63,
@@ -306,8 +306,8 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-24T07:29:48.000Z",
     "agent": {
-        "ephemeral_id": "804f8045-e600-48a3-85fc-958312d96c71",
-        "id": "fcbfb418-43b4-4893-b170-e74a040560f2",
+        "ephemeral_id": "3321dee9-a107-4a97-95fd-ecc725ae5be8",
+        "id": "a5749379-c237-4177-814a-af92fb682de1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -321,7 +321,7 @@ An example event for `audit` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "fcbfb418-43b4-4893-b170-e74a040560f2",
+        "id": "a5749379-c237-4177-814a-af92fb682de1",
         "snapshot": false,
         "version": "8.4.0"
     },
@@ -330,9 +330,9 @@ An example event for `audit` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-09-30T11:51:11.031Z",
+        "created": "2022-11-07T08:26:45.689Z",
         "dataset": "trend_micro_vision_one.audit",
-        "ingested": "2022-09-30T11:51:14Z",
+        "ingested": "2022-11-07T08:26:49Z",
         "kind": "event",
         "original": "{\"accessType\":\"Console\",\"activity\":\"string\",\"category\":\"Logon and Logoff\",\"details\":{\"property1\":\"string\",\"property2\":\"string\"},\"loggedDateTime\":\"2022-02-24T07:29:48Z\",\"loggedRole\":\"Master Administrator\",\"loggedUser\":\"Root Account\",\"result\":\"Unsuccessful\"}",
         "outcome": "failure",
@@ -451,8 +451,8 @@ An example event for `detection` looks as following:
 {
     "@timestamp": "2020-10-15T01:16:32.000Z",
     "agent": {
-        "ephemeral_id": "c1aa9508-1cfd-4e4e-892e-6537d5fd053d",
-        "id": "fcbfb418-43b4-4893-b170-e74a040560f2",
+        "ephemeral_id": "7c837c93-5352-4f1d-b3c4-74228cf55b40",
+        "id": "a5749379-c237-4177-814a-af92fb682de1",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.0"
@@ -473,7 +473,7 @@ An example event for `detection` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "fcbfb418-43b4-4893-b170-e74a040560f2",
+        "id": "a5749379-c237-4177-814a-af92fb682de1",
         "snapshot": false,
         "version": "8.4.0"
     },
@@ -483,10 +483,10 @@ An example event for `detection` looks as following:
         "category": [
             "intrusion_detection"
         ],
-        "created": "2022-09-30T11:51:54.629Z",
+        "created": "2022-11-07T08:27:28.682Z",
         "dataset": "trend_micro_vision_one.detection",
         "id": "100117",
-        "ingested": "2022-09-30T11:51:58Z",
+        "ingested": "2022-11-07T08:27:32Z",
         "kind": "event",
         "original": "{\"act\":\"Clean\",\"actResult\":\"Quarantined successfully\",\"app\":\"HTTP\",\"appGroup\":\"HTTP\",\"aptRelated\":\"0\",\"behaviorCat\":\"Grey-Detection\",\"blocking\":\"Web reputation\",\"cat\":50,\"cccaDetection\":\"Yes\",\"cccaDetectionSource\":\"GLOBAL_INTELLIGENCE\",\"cccaRiskLevel\":3,\"clientFlag\":\"dst\",\"cnt\":\"1\",\"component\":[\"PATTERN_VSAPI 17.101.92 2021-09-30 04:23:27-07:00\"],\"compressedFileSize\":\"0\",\"detectionType\":\"File\",\"deviceDirection\":\"outbound\",\"deviceGUID\":\"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\",\"deviceMacAddress\":\"00-00-5E-00-53-23\",\"deviceProcessName\":\"/snap/core/10126/usr/lib/snapd/snapd\",\"dhost\":\"samplehost\",\"domainName\":\"Workgroup\",\"dpt\":53,\"dst\":[\"81.2.69.142\"],\"dstGroup\":\"Default\",\"end\":\"2021-09-30T09:40:04-08:00\",\"endpointGUID\":\"1234-1234-1234\",\"endpointHostName\":\"abc-docker\",\"endpointIp\":[\"81.2.69.142\"],\"endpointMacAddress\":\"00-00-5E-00-53-23\",\"engType\":\"Virus Scan Engine (OS 2003, x64)\",\"engVer\":\"12.500.1004\",\"eventId\":\"100117\",\"eventName\":\"INTEGRITY_MONITORING_EVENT\",\"eventSubName\":\"Attack Discovery\",\"eventTime\":1602724592000,\"eventTimeDT\":\"2021-06-10T01:38:38+00:00\",\"fileHash\":\"3395856ce81f2b7382dee72602f798b642f14140\",\"fileName\":[\"Unconfirmed 145081.crdownload\"],\"fileOperation\":\"Deleted\",\"filePath\":\"/etc/systemd/system\",\"filePathName\":\"/etc/systemd/system/snap-xxxx-1246.xxxx\",\"fileSize\":\"0\",\"firstAct\":\"Clean\",\"firstActResult\":\"Unable to clean file\",\"fullPath\":\"C:\\\\\\\\Users\\\\\\\\user1\\\\\\\\Downloads\\\\\\\\Unconfirmed 145081.crdownload\",\"hostName\":\"samplehost\",\"httpReferer\":\"http://www.example.com/\",\"interestedHost\":\"abc-docker\",\"interestedIp\":[\"81.2.69.192\"],\"interestedMacAddress\":\"00-00-5E-00-53-23\",\"mDevice\":[\"81.2.69.192\"],\"mDeviceGUID\":\"C5B09EDD-C725-907F-29D9-B8C30D18C48F\",\"malName\":\"Eicar_test_1\",\"malType\":\"Virus/Malware\",\"mitreMapping\":[\"T1090 (TA0005)\"],\"mitreVersion\":\"v6\",\"mpname\":\"Cloud One - Workload Security\",\"mpver\":\"Deep Security/20.0.222\",\"objectCmd\":[\"C:\\\\\\\\Program Files (x86)\\\\\\\\Microsoft\\\\\\\\Edge\\\\\\\\Application\\\\\\\\msedge.exe --profile-directory=Default\"],\"objectFileHashMd5\":\"761AEFF7E6B110970285B9C20C9E1DCA\",\"objectFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"objectFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"objectFileName\":\"Unconfirmed 142899.crdownload:SmartScreen\",\"objectFilePath\":\"C:\\\\\\\\Users\\\\\\\\user1\\\\\\\\Downloads\\\\\\\\Unconfirmed 142899.crdownload:SmartScreen\",\"objectName\":\"CloudEndpointService.exe\",\"objectPid\":7660,\"objectSigner\":[\"OS\"],\"parentCmd\":\"C:\\\\\\\\os\\\\\\\\system32\\\\\\\\svchost.exe -k DcomLaunch -p\",\"parentFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"parentFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"parentFilePath\":\"C:\\\\\\\\os\\\\\\\\System32\\\\\\\\svchost.exe\",\"peerHost\":\"samplehost\",\"peerIp\":[\"81.2.69.192\"],\"pname\":\"Apex One\",\"processCmd\":\"-ServerName:App.AppX9yct9q388jvt4h7y0gn06smzkxcsnt8m.mca\",\"processFileHashMd5\":\"761AEFF7E6B110970285B9C20C9E1DCA\",\"processFileHashSha1\":\"00496B4D53CEFE031B9702B3385C9F4430999932\",\"processFileHashSha256\":\"7778ED68F4646BAA38C4F36B16A1AE393ACECD694948102B5CF0773AB08237D7\",\"processFilePath\":\"C:\\\\\\\\Program Files (x86)\\\\\\\\os\\\\\\\\Application\\\\\\\\msedge.exe\",\"processName\":\"string\",\"processPid\":0,\"processSigner\":\"OS Publisher\",\"productCode\":\"sao\",\"pver\":\"20.0.0.877\",\"request\":\"https://example.com\",\"requestClientApplication\":\"Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1\",\"rt\":\"2020-10-15T01:16:32.000Z\",\"rt_utc\":\"2020-10-15T01:16:32.000Z\",\"searchDL\":\"DDL\",\"spt\":58871,\"src\":\"81.2.69.192\",\"srcGroup\":\"Default\",\"tacticId\":[\"TA0005\"],\"tags\":[\"XSAE.F2140\",\"XSAE.F3066\"],\"threatName\":\"Malicious_identified_CnC_querying_on_UDP_detected\",\"uuid\":\"1234-1234-1234\"}",
         "severity": 50,
