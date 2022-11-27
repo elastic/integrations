@@ -9,7 +9,7 @@ processors:
     value: "issues"
 - set:
     field: event.kind
-    value: "alert"
+    value: "state"
 - rename:
     field: message
     target_field: event.original
@@ -18,9 +18,9 @@ processors:
     field: event.original
     target_field: github.issues
 - fingerprint:
+    if: ctx.github?.issues?.url != null
     fields: 
-        - github.issues.number
-        - github.issues.updated_at
+        - github.issues.url
     target_field: "_id"
     ignore_missing: true
 - date:
@@ -30,6 +30,13 @@ processors:
     timezone: UTC
     target_field: "event.created"
     if: ctx.github.issues?.created_at != null
+- set:
+    field: github.issues.is_pr
+    value: false
+- set:
+    if: ctx.github?.issues?.pull_request != null
+    field: github.issues.is_pr
+    value: true
 - date:
     field: github.issues.created_at
     formats:
@@ -37,203 +44,343 @@ processors:
     timezone: UTC
     target_field: "@timestamp"
     if: ctx.github.issues?.created_at != null
-- date:
-    field: github.issues.updated_at
-    formats:
-    - ISO8601
-    timezone: UTC
-    target_field: "@timestamp"
-    if: ctx.github.issues?.updated_at != null
-- rename:
-    target_field: _temp
-    field: github.issues.repository
-    ignore_missing: true
-- rename:
-    field: _temp.id
-    target_field: github.repository.id
-    ignore_missing: true
-- rename:
-    field: _temp.name
-    target_field: github.repository.name
-    ignore_missing: true
-- rename:
-    field: _temp.full_name
-    target_field: github.repository.full_name
-    ignore_missing: true
-- rename:
-    field: _temp.private
-    target_field: github.repository.private
-    ignore_missing: true
-- rename:
-    field: _temp.html_url
-    target_field: github.repository.html_url
-    ignore_missing: true
-- rename:
-    field: _temp.url
-    target_field: github.repository.url
-    ignore_missing: true
-- rename:
-    field: _temp.description
-    target_field: github.repository.description
-    ignore_missing: true
-- rename:
-    field: _temp.fork
-    target_field: github.repository.fork
-    ignore_missing: true
-- rename:
-    field: _temp.owner.login
-    target_field: github.repository.owner.login
-    ignore_missing: true
-- rename:
-    field: _temp.owner.id
-    target_field: github.repository.owner.id
-    ignore_missing: true
-- rename:
-    field: _temp.owner.url
-    target_field: github.repository.owner.url
-    ignore_missing: true
-- rename:
-    field: _temp.owner.html_url
-    target_field: github.repository.owner.html_url
-    ignore_missing: true
-- rename:
-    field: _temp.owner.type
-    target_field: github.repository.owner.type
-    ignore_missing: true
-- rename:
-    field: _temp.owner.site_admin
-    target_field: github.repository.owner.site_admin
-    ignore_missing: true
+# - date:
+#     field: github.issues.updated_at
+#     formats:
+#     - ISO8601
+#     timezone: UTC
+#     target_field: "@timestamp"
+#     if: ctx.github.issues?.updated_at != null
 - dissect:
     field: github.issues.url
-    pattern: "https://api.github.com/repos/%{_temp.owner}/%{_temp.repository}/code-scanning/alerts/%{_temp.number}"
+    pattern: "https://api.github.com/repos/%{_temp.owner}/%{_temp.repository}/issues/%{_temp.number}"
     ignore_missing: true
+- set:
+    field: github.repository.name
+    value: "{{_temp.repository}}"
+    if: "ctx._temp?.repository != null"
 - set:
     field: github.repository.html_url
     value: "https://github.com/{{_temp.owner}}/{{_temp.repository}}"
-    if: "ctx.github.repository?.html_url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
+    if: "ctx._temp?.owner != null && ctx._temp?.repository != null"
 - set:
     field: github.repository.url
     value: "https://api.github.com/repos/{{_temp.owner}}/{{_temp.repository}}"
-    if: "ctx.github.repository?.url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
-- rename:
-    field: _temp.repository
-    target_field: github.repository.name
-    if: ctx.github.repository?.name == null
-    ignore_missing: true
-- rename:
-    field: _temp.owner
-    target_field: github.repository.owner.login
-    if: ctx.github.repository?.owner?.login == null
-    ignore_missing: true
-- rename:
-    field: _temp.number
-    target_field: github.issues.number
-    if: ctx.github.issues?.number == null
-    ignore_missing: true
-- lowercase:
-    field: github.issues.state
-    ignore_missing: true
-- lowercase:
-    field: github.issues.rule.security_severity_level
-    ignore_missing: true
+    if: "ctx._temp?.owner != null && ctx._temp?.repository != null"
 - set:
-    field: github.severity
-    value: "{{github.issues.rule.security_severity_level}}"
-    if: ctx.github.issues?.rule?.security_severity_level != null
-- set:
-    field: github.severity
-    value: "undefined"
-    if: ctx.github.severity == null
+    field: github.repository.owner.login
+    value: "{{_temp.owner}}"
+    if: "ctx._temp?.owner != null"
 - set: 
     field: github.state
     value: "{{github.issues.state}}"
     if: ctx.github.issues?.state != null
-- rename: 
-    target_field: _temp.dismissed_by
-    field: github.issues.dismissed_by
+- rename:
+    target_field: _temp.user
+    field: github.issues.user
+    ignore_missing: true
+- rename:
+    field: _temp.user.login
+    target_field: github.issues.user.login
+    ignore_missing: true
+- rename:
+    field: _temp.user.id
+    target_field: github.issues.user.id
+    ignore_missing: true
+- rename:
+    field: _temp.user.url
+    target_field: github.issues.user.url
+    ignore_missing: true
+- rename:
+    field: _temp.user.html_url
+    target_field: github.issues.user.html_url
+    ignore_missing: true
+- rename:
+    field: _temp.user.type
+    target_field: github.issues.user.type
+    ignore_missing: true
+- rename:
+    field: _temp.user.site_admin
+    target_field: github.issues.user.site_admin
+    ignore_missing: true
+- rename:
+    target_field: _temp.labels
+    field: github.issues.labels
+    ignore_missing: true
+# - rename:
+#     field: _temp.labels.name
+#     target_field: github.issues.labels.name
+#     ignore_missing: true
+# - rename:
+#     field: _temp.labels.description
+#     target_field: github.issues.labels.description
+#     ignore_missing: true
+
+# - foreach:
+#     field: github.issues.labels
+#     ignore_missing: true
+#     processor:
+#       remove:
+#         field: github.issues.labels.id
+#         if: ctx.github?.issues?.labels?.id != null
+
+- script:
+    lang: painless
+    description: Remove unwanted fields from labels
+    if: ctx._temp?.labels != null
+    source: |
+        Map label;
+        List labels = new ArrayList();
+        List labels_raw = ctx._temp.labels;
+        for (Map label_raw: labels_raw) {
+            label = new HashMap();
+            label.put("name", label_raw.name);
+            label.put("description", label_raw.description);
+            labels.add(label);
+        }
+        ctx.github.issues.labels = labels;
+- rename:
+    target_field: _temp.assignee
+    field: github.issues.assignee
+    ignore_missing: true
+- rename:
+    field: _temp.assignee.login
+    target_field: github.issues.assignee.login
+    ignore_missing: true
+- rename:
+    field: _temp.assignee.id
+    target_field: github.issues.assignee.id
+    ignore_missing: true
+- rename:
+    field: _temp.assignee.url
+    target_field: github.issues.assignee.url
+    ignore_missing: true
+- rename:
+    field: _temp.assignee.html_url
+    target_field: github.issues.assignee.html_url
+    ignore_missing: true
+- rename:
+    field: _temp.assignee.type
+    target_field: github.issues.assignee.type
+    ignore_missing: true
+- rename:
+    field: _temp.assignee.site_admin
+    target_field: github.issues.assignee.site_admin
+    ignore_missing: true
+- rename:
+    target_field: _temp.closed_by
+    field: github.issues.closed_by
+    ignore_missing: true
+- rename:
+    field: _temp.closed_by.login
+    target_field: github.issues.closed_by.login
+    ignore_missing: true
+- rename:
+    field: _temp.closed_by.id
+    target_field: github.issues.closed_by.id
+    ignore_missing: true
+- rename:
+    field: _temp.closed_by.url
+    target_field: github.issues.closed_by.url
+    ignore_missing: true
+- rename:
+    field: _temp.closed_by.html_url
+    target_field: github.issues.closed_by.html_url
+    ignore_missing: true
+- rename:
+    field: _temp.closed_by.type
+    target_field: github.issues.closed_by.type
+    ignore_missing: true
+- rename:
+    field: _temp.closed_by.site_admin
+    target_field: github.issues.closed_by.site_admin
     ignore_missing: true
 - remove:
-    field: github.issues.dismissed_by
+    if: ctx.github?.issues?.milestone != null
+    field: github.issues.milestone
     ignore_missing: true
-- rename:
-    field: _temp.dismissed_by.login
-    target_field: github.issues.dismissed_by.login
-    ignore_missing: true
-- rename:
-    field: _temp.dismissed_by.id
-    target_field: github.issues.dismissed_by.id
-    ignore_missing: true
-- rename:
-    field: _temp.dismissed_by.url
-    target_field: github.issues.dismissed_by.url
-    ignore_missing: true
-- rename:
-    field: _temp.dismissed_by.html_url
-    target_field: github.issues.dismissed_by.html_url
-    ignore_missing: true
-- rename:
-    field: _temp.dismissed_by.type
-    target_field: github.issues.dismissed_by.type
-    ignore_missing: true
-- rename:
-    field: _temp.dismissed_by.site_admin
-    target_field: github.issues.dismissed_by.site_admin
-    ignore_missing: true
-- rename:
-    field: github.issues.most_recent_instance.message.text
-    target_field: message
+- remove:
+    if: ctx.github?.issues?.reactions != null
+    field: github.issues.reactions
     ignore_missing: true
 - script:
     lang: painless
-    description: Calculate time taken to resolve the alerts
-    if: ctx.github.issues?.fixed_at != null || ctx.github.issues?.dismissed_at != null
+    description: Calculate time taken to close an issue
+    if: ctx.github.issues?.closed_at != null
     source: |
-        def time_to_resolution = new HashMap();
-        def fixedAtDt = ctx.github.issues.fixed_at;
-        def dismissedAtDt = ctx.github.issues.dismissed_at;
+        def time_to_close = new HashMap();
+        def closedAtDt = ctx.github.issues.closed_at;
         def createdAtDt = ctx.github.issues.created_at;
         ZonedDateTime zdt = ZonedDateTime.parse(createdAtDt);
         long createdAtEpoch = zdt.toEpochSecond();
-        if (fixedAtDt != null) {
-            zdt = ZonedDateTime.parse(fixedAtDt);
-            long fixedAtEpoch = zdt.toEpochSecond();
-            time_to_resolution.put("sec", fixedAtEpoch - createdAtEpoch);
-            ctx.github.issues.time_to_resolution = time_to_resolution;
-        }
-        else {
-            zdt = ZonedDateTime.parse(dismissedAtDt);
-            long dismissedAtEpoch = zdt.toEpochSecond();
-            time_to_resolution.put("sec", dismissedAtEpoch - createdAtEpoch);
-            ctx.github.issues.time_to_resolution = time_to_resolution;
-        }
+        zdt = ZonedDateTime.parse(closedAtDt);
+        long closedAtEpoch = zdt.toEpochSecond();
+        time_to_close.put("sec", closedAtEpoch - createdAtEpoch);
+        ctx.github.issues.time_to_close = time_to_close;
 
-  ###################
-  # Rule ECS Fields #
-  ###################
-- rename:
-    field: github.issues.rule.id
-    target_field: rule.id
-    if: ctx.github.issues?.rule?.id != null
-- rename:
-    field: github.issues.rule.name
-    target_field: rule.name
-    if: ctx.github.issues?.rule?.name != null
-- rename:
-    field: github.issues.rule.description
-    target_field: rule.description
-    if: ctx.github.issues?.rule?.description != null
-- foreach:
-    field: "github.issues.rule.tags"
-    processor:
-        append:
-            field: tags
-            value: "{{_ingest._value}}"
-    ignore_missing: true
-    if: ctx.github.issues?.rule?.tags != null
-- remove: 
-    field: github.issues.rule.tags
-    ignore_missing: true
+# - rename:
+#     target_field: _temp
+#     field: github.issues.repository
+#     ignore_missing: true
+# - rename:
+#     field: _temp.id
+#     target_field: github.repository.id
+#     ignore_missing: true
+# - rename:
+#     field: _temp.name
+#     target_field: github.repository.name
+#     ignore_missing: true
+# - rename:
+#     field: _temp.full_name
+#     target_field: github.repository.full_name
+#     ignore_missing: true
+# - rename:
+#     field: _temp.private
+#     target_field: github.repository.private
+#     ignore_missing: true
+# - rename:
+#     field: _temp.html_url
+#     target_field: github.repository.html_url
+#     ignore_missing: true
+# - rename:
+#     field: _temp.url
+#     target_field: github.repository.url
+#     ignore_missing: true
+# - rename:
+#     field: _temp.description
+#     target_field: github.repository.description
+#     ignore_missing: true
+# - rename:
+#     field: _temp.fork
+#     target_field: github.repository.fork
+#     ignore_missing: true
+# - rename:
+#     field: _temp.owner.login
+#     target_field: github.repository.owner.login
+#     ignore_missing: true
+# - rename:
+#     field: _temp.owner.id
+#     target_field: github.repository.owner.id
+#     ignore_missing: true
+# - rename:
+#     field: _temp.owner.url
+#     target_field: github.repository.owner.url
+#     ignore_missing: true
+# - rename:
+#     field: _temp.owner.html_url
+#     target_field: github.repository.owner.html_url
+#     ignore_missing: true
+# - rename:
+#     field: _temp.owner.type
+#     target_field: github.repository.owner.type
+#     ignore_missing: true
+# - rename:
+#     field: _temp.owner.site_admin
+#     target_field: github.repository.owner.site_admin
+#     ignore_missing: true
+# - dissect:
+#     field: github.issues.url
+#     pattern: "https://api.github.com/repos/%{_temp.owner}/%{_temp.repository}/code-scanning/alerts/%{_temp.number}"
+#     ignore_missing: true
+# - set:
+#     field: github.repository.html_url
+#     value: "https://github.com/{{_temp.owner}}/{{_temp.repository}}"
+#     if: "ctx.github.repository?.html_url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
+# - set:
+#     field: github.repository.url
+#     value: "https://api.github.com/repos/{{_temp.owner}}/{{_temp.repository}}"
+#     if: "ctx.github.repository?.url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
+# - rename:
+#     field: _temp.repository
+#     target_field: github.repository.name
+#     if: ctx.github.repository?.name == null
+#     ignore_missing: true
+# - rename:
+#     field: _temp.owner
+#     target_field: github.repository.owner.login
+#     if: ctx.github.repository?.owner?.login == null
+#     ignore_missing: true
+# - rename:
+#     field: _temp.number
+#     target_field: github.issues.number
+#     if: ctx.github.issues?.number == null
+#     ignore_missing: true
+# - lowercase:
+#     field: github.issues.state
+#     ignore_missing: true
+# - lowercase:
+#     field: github.issues.rule.security_severity_level
+#     ignore_missing: true
+# - set:
+#     field: github.severity
+#     value: "{{github.issues.rule.security_severity_level}}"
+#     if: ctx.github.issues?.rule?.security_severity_level != null
+# - set:
+#     field: github.severity
+#     value: "undefined"
+#     if: ctx.github.severity == null
+# - set: 
+#     field: github.state
+#     value: "{{github.issues.state}}"
+#     if: ctx.github.issues?.state != null
+# - rename: 
+#     target_field: _temp.dismissed_by
+#     field: github.issues.dismissed_by
+#     ignore_missing: true
+# - remove:
+#     field: github.issues.dismissed_by
+#     ignore_missing: true
+# - rename:
+#     field: _temp.dismissed_by.login
+#     target_field: github.issues.dismissed_by.login
+#     ignore_missing: true
+# - rename:
+#     field: _temp.dismissed_by.id
+#     target_field: github.issues.dismissed_by.id
+#     ignore_missing: true
+# - rename:
+#     field: _temp.dismissed_by.url
+#     target_field: github.issues.dismissed_by.url
+#     ignore_missing: true
+# - rename:
+#     field: _temp.dismissed_by.html_url
+#     target_field: github.issues.dismissed_by.html_url
+#     ignore_missing: true
+# - rename:
+#     field: _temp.dismissed_by.type
+#     target_field: github.issues.dismissed_by.type
+#     ignore_missing: true
+# - rename:
+#     field: _temp.dismissed_by.site_admin
+#     target_field: github.issues.dismissed_by.site_admin
+#     ignore_missing: true
+# - rename:
+#     field: github.issues.most_recent_instance.message.text
+#     target_field: message
+#     ignore_missing: true
+# - script:
+#     lang: painless
+#     description: Calculate time taken to resolve the alerts
+#     if: ctx.github.issues?.fixed_at != null || ctx.github.issues?.dismissed_at != null
+#     source: |
+#         def time_to_resolution = new HashMap();
+#         def fixedAtDt = ctx.github.issues.fixed_at;
+#         def dismissedAtDt = ctx.github.issues.dismissed_at;
+#         def createdAtDt = ctx.github.issues.created_at;
+#         ZonedDateTime zdt = ZonedDateTime.parse(createdAtDt);
+#         long createdAtEpoch = zdt.toEpochSecond();
+#         if (fixedAtDt != null) {
+#             zdt = ZonedDateTime.parse(fixedAtDt);
+#             long fixedAtEpoch = zdt.toEpochSecond();
+#             time_to_resolution.put("sec", fixedAtEpoch - createdAtEpoch);
+#             ctx.github.issues.time_to_resolution = time_to_resolution;
+#         }
+#         else {
+#             zdt = ZonedDateTime.parse(dismissedAtDt);
+#             long dismissedAtEpoch = zdt.toEpochSecond();
+#             time_to_resolution.put("sec", dismissedAtEpoch - createdAtEpoch);
+#             ctx.github.issues.time_to_resolution = time_to_resolution;
+#         }
 
   ###########
   # Cleanup #
