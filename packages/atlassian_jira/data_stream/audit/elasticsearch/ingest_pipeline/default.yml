@@ -10,6 +10,8 @@ processors:
 - json:
     field: event.original
     target_field: json
+- drop:
+    if: ctx.json?.records instanceof List && ctx.json.records.length == 0
 - pipeline:
     name: '{{ IngestPipeline "cloud" }}'
     if: "ctx._config?.atlassian_cloud != null"
