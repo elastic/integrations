@@ -74,7 +74,7 @@ The last one in the list is the release of your instance. In the example above, 
 - Then, click over to `Version Settings` tab
 - Reference the `Version` drop down for the API Version number.
 
-### Prerequisite
+### Create Client Key and Client Secret for Authentication
 
 In order to use this integration, you will need to create a new Salesforce Application using OAuth. More details can be found [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
 
@@ -106,6 +106,28 @@ Create a Connected App in Salesforce:
 11. Click Save. It can take about 10 minutes for the changes to take effect.
 
 12. Take Consumer Key and Secret from the Connected App API section.
+
+13. Consumer Key and Consumer Secret must be populated as value to Client ID and Client Secret in the configuration.
+
+### Required Permission
+
+In order to use this integration, you will need `API Enabled permission`.
+
+### Steps to find out the `API Enabled Permission`
+
+- Admin needs to check the `profile` associated with the `User Account` used for data collection.
+- Under `Setup` > `Administrator` > `Users`, check for the profile associated with the account.
+- Check if the Profile has `API Enabled permission` is enabled. If not enable it for data collection.
+- Under `Setup` > `Administrator` > `Profiles`, select the `profile` associated with the `User Account` and check for the `API Enabled permission` under `System Permissions`.
+
+## Troubleshooting
+
+- In case of data ingestion if the user finds following type of error logs:
+```
+{"log.level":"error","@timestamp":"2022-11-24T12:59:36.835+0530","log.logger":"input.httpjson-cursor","log.origin":{"[file.name](http://file.name/)":"compat/compat.go","file.line":124},"message":"Input 'httpjson-cursor' failed with: input.go:130: input 8A049E17A5CA661D failed (id=8A049E17A5CA661D)\n\toauth2 client: error loading credentials using user and password: oauth2: cannot fetch token: 400 Bad Request\n\tResponse: {\"error\":\"invalid_grant\",\"error_description\":\"authentication failure\"}","[service.name](http://service.name/)":"filebeat","id":"8A049E17A5CA661D","ecs.version":"1.6.0"}
+```
+- Please check if the `API Enabled permission` is provided to the `profile` associated with the `username` used as part of the integration.
+- Please refer `Steps to find out the API Enabled permission` section for more information.
 
 ## Logs reference
 

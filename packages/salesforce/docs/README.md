@@ -74,7 +74,7 @@ The last one in the list is the release of your instance. In the example above, 
 - Then, click over to `Version Settings` tab
 - Reference the `Version` drop down for the API Version number.
 
-### Prerequisite
+### Create Client Key and Client Secret for Authentication
 
 In order to use this integration, you will need to create a new Salesforce Application using OAuth. More details can be found [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
 
@@ -107,6 +107,28 @@ Create a Connected App in Salesforce:
 
 12. Take Consumer Key and Secret from the Connected App API section.
 
+13. Consumer Key and Consumer Secret must be populated as value to Client ID and Client Secret in the configuration.
+
+### Required Permission
+
+In order to use this integration, you will need `API Enabled permission`.
+
+### Steps to find out the `API Enabled Permission`
+
+- Admin needs to check the `profile` associated with the `User Account` used for data collection.
+- Under `Setup` > `Administrator` > `Users`, check for the profile associated with the account.
+- Check if the Profile has `API Enabled permission` is enabled. If not enable it for data collection.
+- Under `Setup` > `Administrator` > `Profiles`, select the `profile` associated with the `User Account` and check for the `API Enabled permission` under `System Permissions`.
+
+## Troubleshooting
+
+- In case of data ingestion if the user finds following type of error logs:
+```
+{"log.level":"error","@timestamp":"2022-11-24T12:59:36.835+0530","log.logger":"input.httpjson-cursor","log.origin":{"[file.name](http://file.name/)":"compat/compat.go","file.line":124},"message":"Input 'httpjson-cursor' failed with: input.go:130: input 8A049E17A5CA661D failed (id=8A049E17A5CA661D)\n\toauth2 client: error loading credentials using user and password: oauth2: cannot fetch token: 400 Bad Request\n\tResponse: {\"error\":\"invalid_grant\",\"error_description\":\"authentication failure\"}","[service.name](http://service.name/)":"filebeat","id":"8A049E17A5CA661D","ecs.version":"1.6.0"}
+```
+- Please check if the `API Enabled permission` is provided to the `profile` associated with the `username` used as part of the integration.
+- Please refer `Steps to find out the API Enabled permission` section for more information.
+
 ## Logs reference
 
 ### Login Rest
@@ -117,10 +139,10 @@ An example event for `login_rest` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-06T07:13:07.550Z",
+    "@timestamp": "2022-11-22T04:46:15.591Z",
     "agent": {
-        "ephemeral_id": "b6d0da5c-093b-4a3b-966d-bf5e6843265d",
-        "id": "3d3cf027-e6f4-4b74-844e-8b33881d3e2a",
+        "ephemeral_id": "0f111524-46fb-4012-a000-a486afb3c536",
+        "id": "6adb1777-f02e-498c-87a9-c6fca04e403c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -134,7 +156,7 @@ An example event for `login_rest` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "3d3cf027-e6f4-4b74-844e-8b33881d3e2a",
+        "id": "6adb1777-f02e-498c-87a9-c6fca04e403c",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -144,12 +166,12 @@ An example event for `login_rest` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-11-21T07:10:15.731Z",
+        "created": "2022-11-25T10:49:21.665Z",
         "dataset": "salesforce.login_rest",
-        "ingested": "2022-11-21T07:10:19Z",
+        "ingested": "2022-11-25T10:49:26Z",
         "kind": "event",
         "module": "salesforce",
-        "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"9998.0\",\"AUTHENTICATION_METHOD_REFERENCE\":\"\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\",\"CIPHER_SUITE\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"CLIENT_IP\":\"43.200.10.11\",\"CPU_TIME\":\"30\",\"DB_TOTAL_TIME\":\"52435102\",\"EVENT_TYPE\":\"Login\",\"LOGIN_KEY\":\"QfNecrLXSII6fsBq\",\"LOGIN_STATUS\":\"LOGIN_NO_ERROR\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"4ehU_U-nbQyAPFl1cJILm-\",\"REQUEST_STATUS\":\"Success\",\"RUN_TIME\":\"83\",\"SESSION_KEY\":\"\",\"SOURCE_IP\":\"43.200.10.11\",\"TIMESTAMP\":\"20211006071307.550\",\"TIMESTAMP_DERIVED\":\"2021-10-06T07:13:07.550Z\",\"TLS_PROTOCOL\":\"TLSv1.2\",\"URI\":\"/index.jsp\",\"URI_ID_DERIVED\":\"s4heK3WbH-lcJIL3-n\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_NAME\":\"user@elastic.co\",\"USER_TYPE\":\"Standard\"}",
+        "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"9998.0\",\"AUTHENTICATION_METHOD_REFERENCE\":\"\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\",\"CIPHER_SUITE\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"30\",\"DB_TOTAL_TIME\":\"52435102\",\"EVENT_TYPE\":\"Login\",\"LOGIN_KEY\":\"QfNecrLXSII6fsBq\",\"LOGIN_STATUS\":\"LOGIN_NO_ERROR\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"4ehU_U-nbQyAPFl1cJILm-\",\"REQUEST_STATUS\":\"Success\",\"RUN_TIME\":\"83\",\"SESSION_KEY\":\"\",\"SOURCE_IP\":\"81.2.69.142\",\"TIMESTAMP\":\"20221122044615.591\",\"TIMESTAMP_DERIVED\":\"2022-11-22T04:46:15.591Z\",\"TLS_PROTOCOL\":\"TLSv1.2\",\"URI\":\"/index.jsp\",\"URI_ID_DERIVED\":\"s4heK3WbH-lcJIL3-n\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_NAME\":\"user@elastic.co\",\"USER_TYPE\":\"Standard\"}",
         "outcome": "success",
         "type": [
             "info"
@@ -161,7 +183,7 @@ An example event for `login_rest` looks as following:
     },
     "related": {
         "ip": [
-            "43.200.10.11"
+            "81.2.69.142"
         ]
     },
     "salesforce": {
@@ -171,7 +193,7 @@ An example event for `login_rest` looks as following:
                 "type": "Feed",
                 "version": "9998.0"
             },
-            "client_ip": "43.200.10.11",
+            "client_ip": "81.2.69.142",
             "cpu_time": 30,
             "db_time": {
                 "total": 52.435104
@@ -187,7 +209,19 @@ An example event for `login_rest` looks as following:
         }
     },
     "source": {
-        "ip": "43.200.10.11"
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.142"
     },
     "tags": [
         "preserve_original_event",
@@ -252,8 +286,7 @@ An example event for `login_rest` looks as following:
 | source.geo.continent_name | Name of the continent. | keyword |  |  |
 | source.geo.country_iso_code | Country ISO code. | keyword |  |  |
 | source.geo.country_name | Country name. | keyword |  |  |
-| source.geo.location.lat | Longitude and latitude. | geo_point |  |  |
-| source.geo.location.lon | Longitude and latitude. | geo_point |  |  |
+| source.geo.location | Longitude and latitude. | geo_point |  |  |
 | source.geo.region_iso_code | Region ISO code. | keyword |  |  |
 | source.geo.region_name | Region name. | keyword |  |  |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |  |  |
