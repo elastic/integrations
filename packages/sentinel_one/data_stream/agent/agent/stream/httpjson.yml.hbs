@@ -9,7 +9,7 @@ request.ssl: {{ssl}}
 request.method: GET
 request.url: {{url}}/web/api/v2.1/agents
 request.transforms:
-  - set: 
+  - set:
       target: header.Authorization
       value: 'ApiToken {{api_token}}'
   - set:
@@ -25,10 +25,10 @@ request.transforms:
       target: url.params.updatedAt__gte
       value: '[[formatDate (parseDate .cursor.last_update_at)]]'
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
-response.pagination: 
+response.pagination:
   - set:
       target: url.params.cursor
-      value: '[[if (ne .last_response.body.pagination.nextCursor nil)]][[.last_response.body.pagination.nextCursor]][[else]][[.last_response.terminate_pagination]][[end]]'
+      value: '[[if (ne .last_response.body.pagination.nextCursor nil)]][[.last_response.body.pagination.nextCursor]][[end]]'
       fail_on_template_error: true
 cursor:
   last_update_at:
