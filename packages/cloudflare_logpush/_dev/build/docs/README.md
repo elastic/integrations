@@ -39,7 +39,7 @@ This module has been tested against **Cloudflare version v4**.
 
 ## Setup
 
-### 
+### To collect data from AWS S3 Bucket, follow the below steps:
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to ingest data into an AWS S3 bucket.
 - The default value of the "Bucket List Prefix" is listed below. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
 
