@@ -1,4 +1,4 @@
-# Azure Logs Integration
+# Azure Frontdoor Logs Integration
 
 The azure frontdoor logs integration retrieves different types of log data from AFD.
 Azure Front Door provides different logging to help you track, monitor, and debug your Front Door.
@@ -8,10 +8,14 @@ Azure Front Door provides different logging to help you track, monitor, and debu
 - Health Probe logs provides the logs for every failed probe to your origin.
 - Web Application Firewall (WAF) logs provide detailed information of requests that gets logged through either detection or prevention mode of an Azure Front Door endpoint. A custom domain that gets configured with WAF can also be viewed through these logs.
 
-The package contains the following data streams:
+## Data streams
+
+This integration collects two types of data streams:
 
 - access log
 - waf logs
+
+## Requirements
 
 ### Credentials
 
