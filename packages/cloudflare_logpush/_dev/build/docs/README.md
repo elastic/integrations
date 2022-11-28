@@ -40,6 +40,7 @@ This module has been tested against **Cloudflare version v4**.
 ## Setup
 
 ### To collect data from AWS S3 Bucket, follow the below steps:
+
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to ingest data into an AWS S3 bucket.
 - The default value of the "Bucket List Prefix" is listed below. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
 
@@ -73,6 +74,7 @@ This module has been tested against **Cloudflare version v4**.
 **Note**:
 - The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
 - The GCS input currently only accepts a service account json key or a service account json file for authentication.
+- The GCS input currently only supports JSON data.
 
 ### To collect data from the Cloudflare HTTP Endpoint, follow the below steps:
 - Reference link to [Enable HTTP destination](https://developers.cloudflare.com/logs/get-started/enable-destinations/http/) for Cloudflare Logpush.
