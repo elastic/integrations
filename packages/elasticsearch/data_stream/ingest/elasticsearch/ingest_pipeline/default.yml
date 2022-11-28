@@ -1,29 +1,52 @@
 ---
 description: Pipeline for parsing pipeline ingest stats
 processors:
-    - set: 
-        field: "message"
-        ignore_empty_value: true
-        copy_from: "event.original"
-    - json: 
-        field: "message"
-    - set: 
-        field: "elasticsearch.ingest.pipeline.name"
-        copy_from: "message.ingest.pipelines.pipeline_id"
-    - set: 
-        field: "elasticsearch.node.id"
-        copy_from: "message.node_id"
-    - set: 
-        field: "elasticsearch.ingest.pipeline.total.count"
-        copy_from: "message.ingest.pipelines.count"
-    - set: 
-        field: "elasticsearch.ingest.pipeline.total.current"
-        copy_from: "message.ingest.pipelines.current"
-    - set: 
-        field: "elasticsearch.ingest.pipeline.total.failed"
-        copy_from: "message.ingest.pipelines.failed"
-    - set: 
-        field: "elasticsearch.ingest.pipeline.total.cpu_time"
-        copy_from: "message.ingest.pipelines.time_in_millis"
-    - remove: 
-        field: "message"
+  - set:
+      ignore_empty_value: true
+      field: "event.original"
+      copy_from: "message"
+  - set:
+      field: "elasticsearch.ingest.pipeline.name"
+      copy_from: "message.ingest.pipelines.pipeline_id"
+  - set:
+      field: "elasticsearch.node.id"
+      copy_from: "message.node_id"
+  - set:
+      field: "elasticsearch.ingest.pipeline.total.count"
+      copy_from: "message.ingest.pipelines.count"
+  - set:
+      field: "elasticsearch.ingest.pipeline.total.failed"
+      copy_from: "message.ingest.pipelines.failed"
+  - set:
+      field: "elasticsearch.ingest.pipeline.total.total_cpu_time"
+      copy_from: "message.ingest.pipelines.time_in_millis"
+  - script:
+      lang: painless
+      source: |
+        Map pipeline = ctx['message']['ingest']['pipelines'];
+        long self_cpu_time = pipeline['time_in_millis'];
+        long count_processors = 0;
+        def processors = new ArrayList();
+
+        for (processor in pipeline['processors']) {
+          String pName = processor.keySet().toArray()[0];
+          Map p = processor[pName];
+          if (p['type'] == 'pipeline') {
+              self_cpu_time -= p['stats']['time_in_millis'];
+          }
+
+          Map pp = new HashMap();
+          pp.put('index', count_processors);
+          pp.put('name', pName);
+          pp.put('type', p['type']);
+          pp.put('total_cpu_time', p['stats']['time_in_millis']);
+          pp.put('count', p['stats']['count']);
+          processors.add(pp);
+          count_processors++;
+        }
+
+        ctx['elasticsearch']['ingest']['pipeline']['total']['self_cpu_time'] = self_cpu_time;
+        ctx['elasticsearch']['ingest']['pipeline']['total']['processors_count'] = count_processors;
+        ctx['elasticsearch']['ingest']['pipeline']['processors'] = processors;
+  - remove: 
+      field: "message"

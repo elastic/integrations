@@ -22,3 +22,16 @@ response:
       target: body.ingest.pipelines
       keep_parent: true
       key_field: pipeline_id
+
+processors:
+- decode_json_fields:
+    fields: ["message"]
+- drop_event:
+    when:
+      and:
+        - equals:
+            message.ingest.pipelines.count: 0
+        - equals:
+            message.ingest.pipelines.failed: 0
+        - equals:
+            message.ingest.pipelines.time_in_millis: 0
