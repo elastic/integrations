@@ -33,7 +33,7 @@ Example Host Configuration: `http://localhost:9080`
 
 ### Interface
 
-This is the `interface` data stream. The Citrix ADC interfaces are numbered in slot/port notation. In addition to modifying the characteristics of individual interfaces, you can configure virtual LANs to restrict traffic to specific groups of hosts.
+This is the `interface` data stream. The Citrix ADC interfaces are numbered in slot/port notation. In addition to modifying the characteristics of individual interfaces, you can configure virtual LANs to restrict traffic to specific groups of hosts. `interface` data stream collects metrics related to id, state, inbound packets, outbound packets, and received packets.
 
 An example event for `interface` looks as following:
 
@@ -246,7 +246,7 @@ An example event for `interface` looks as following:
 
 ### Load Balancing Virtual Server
 
-This is the `lbvserver` data stream. lbvserver stands for Load Balancing Virtual Server. The load balancing server is logically located between the client and the server farm, and manages traffic flow to the servers in the server farm. 
+This is the `lbvserver` data stream. The load balancing server is logically located between the client and the server farm, and manages traffic flow to the servers in the server farm. `lbvserver` data stream collects metrics related to name, state, client connections, requests, and responses.
 
 An example event for `lbvserver` looks as following:
 
@@ -425,7 +425,7 @@ An example event for `lbvserver` looks as following:
 | citrix_adc.lbvserver.client.response_time.application_performance_index | Vserver APDEX (Application Performance Index) index based on client response times. | float |  |  |
 | citrix_adc.lbvserver.connections.actual.count | Number of current connections to the actual servers behind the virtual server. | float |  | gauge |
 | citrix_adc.lbvserver.down.backup.hits | Number of times traffic was diverted to the backup vserver since the primary vserver was DOWN. | float |  | counter |
-| citrix_adc.lbvserver.health | Health of the vserver. | float |  |  |
+| citrix_adc.lbvserver.health | Health of the vserver. This gives percentage of UP services bound to the vserver. | float |  |  |
 | citrix_adc.lbvserver.hit.count | Total vserver hits. | float |  | counter |
 | citrix_adc.lbvserver.hit.rate | Rate (/s) counter for tothits. | float |  | gauge |
 | citrix_adc.lbvserver.name | Name of the virtual server. | keyword |  |  |
@@ -475,7 +475,7 @@ An example event for `lbvserver` looks as following:
 
 ### Service
 
-This is the `service` data stream. With the help of the service endpoint, metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources.
+This is the `service` data stream. With the help of the service endpoint, metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources. `service` data stream collects metrics related to name, IP address, port, throughput, and transactions.
 
 An example event for `service` looks as following:
 

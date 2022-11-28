@@ -33,7 +33,7 @@ Example Host Configuration: `http://localhost:9080`
 
 ### Interface
 
-This is the `interface` data stream. The Citrix ADC interfaces are numbered in slot/port notation. In addition to modifying the characteristics of individual interfaces, you can configure virtual LANs to restrict traffic to specific groups of hosts.
+This is the `interface` data stream. The Citrix ADC interfaces are numbered in slot/port notation. In addition to modifying the characteristics of individual interfaces, you can configure virtual LANs to restrict traffic to specific groups of hosts. `interface` data stream collects metrics related to id, state, inbound packets, outbound packets, and received packets.
 
 {{event "interface"}}
 
@@ -41,7 +41,7 @@ This is the `interface` data stream. The Citrix ADC interfaces are numbered in s
 
 ### Load Balancing Virtual Server
 
-This is the `lbvserver` data stream. lbvserver stands for Load Balancing Virtual Server. The load balancing server is logically located between the client and the server farm, and manages traffic flow to the servers in the server farm. 
+This is the `lbvserver` data stream. The load balancing server is logically located between the client and the server farm, and manages traffic flow to the servers in the server farm. `lbvserver` data stream collects metrics related to name, state, client connections, requests, and responses.
 
 {{event "lbvserver"}}
 
@@ -49,7 +49,7 @@ This is the `lbvserver` data stream. lbvserver stands for Load Balancing Virtual
 
 ### Service
 
-This is the `service` data stream. With the help of the service endpoint, metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources.
+This is the `service` data stream. With the help of the service endpoint, metrics like throughput, client-server connections, request bytes can be collected along with other statistics for Service resources. `service` data stream collects metrics related to name, IP address, port, throughput, and transactions.
 
 {{event "service"}}
 
