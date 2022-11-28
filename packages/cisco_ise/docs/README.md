@@ -37,9 +37,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-03-02T09:04:59.136Z",
     "agent": {
-        "ephemeral_id": "5acea6c8-492b-4d58-9911-015e4da2b70e",
+        "ephemeral_id": "6c81deb9-5835-43f1-9d1f-edc94dec6ba1",
         "hostname": "docker-fleet-agent",
-        "id": "5e5dc5f4-7d71-4c27-8bf1-6ad1da214da4",
+        "id": "9d2542b5-1b01-47d2-90e4-99e17586d095",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "7.17.0"
@@ -169,6 +169,20 @@ An example event for `log` looks as following:
     "client": {
         "ip": "81.2.69.193"
     },
+    "cloud": {
+        "availability_zone": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n",
+        "instance": {
+            "id": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n",
+            "name": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n"
+        },
+        "machine": {
+            "type": "\u003c!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"\u003e\r\n\u003chtml xmlns=\"http://www.w3.org/1999/xhtml\"\u003e\r\n    \u003chead\u003e\r\n        \u003cmeta content=\"text/html; charset=utf-8\" http-equiv=\"Content-Type\" /\u003e\r\n        \u003cmeta content=\"no-cache\" http-equiv=\"Pragma\" /\u003e\r\n        \u003ctitle\u003eWaiting...\u003c/title\u003e\r\n        \u003cscript type=\"text/javascript\"\u003e\r\n            var pageName = '/';\r\n            top.location.replace(pageName);\r\n        \u003c/script\u003e\r\n    \u003c/head\u003e\r\n    \u003cbody\u003e\u003c/body\u003e\r\n\u003c/html\u003e\r\n"
+        },
+        "provider": "openstack",
+        "service": {
+            "name": "Nova"
+        }
+    },
     "data_stream": {
         "dataset": "cisco_ise.log",
         "namespace": "ep",
@@ -181,7 +195,7 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "5e5dc5f4-7d71-4c27-8bf1-6ad1da214da4",
+        "id": "9d2542b5-1b01-47d2-90e4-99e17586d095",
         "snapshot": false,
         "version": "7.17.0"
     },
@@ -193,7 +207,7 @@ An example event for `log` looks as following:
             "session"
         ],
         "dataset": "cisco_ise.log",
-        "ingested": "2022-11-21T09:02:44Z",
+        "ingested": "2022-11-28T06:02:24Z",
         "kind": "event",
         "sequence": 75131,
         "timezone": "+00:00",
@@ -211,7 +225,7 @@ An example event for `log` looks as following:
     "log": {
         "level": "notice",
         "source": {
-            "address": "192.168.160.7:50670"
+            "address": "172.19.0.6:50562"
         },
         "syslog": {
             "priority": 181,

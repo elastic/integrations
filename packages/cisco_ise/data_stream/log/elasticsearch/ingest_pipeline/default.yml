@@ -8,9 +8,6 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
-  - trim:
-      field: event.original
-      ignore_failure: true
   - grok:
       field: event.original
       patterns:
@@ -21,6 +18,9 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - trim:
+      field: message
+      ignore_failure: true
   - convert:
       if: ctx.host?.hostname != null && ctx.host.hostname != ''
       field: host.hostname
