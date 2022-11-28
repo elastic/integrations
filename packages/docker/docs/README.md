@@ -3,7 +3,7 @@
 This Integration collects metrics and logs from [Docker](https://www.docker.com/) containers. 
 The default data streams for metrics collection are: `container`, `cpu`, `diskio`, `healthcheck`, `info`, `memory`
 and `network`. The `image` metricset is not enabled by default.
-The `docker_logs` data stream for containers' logs collection is enabled by default.
+The `container_logs` data stream for containers' logs collection is enabled by default.
 
 ## Compatibility
 
@@ -1067,9 +1067,9 @@ An example event for `network` looks as following:
 }
 ```
 
-### Docker_logs
+### container_logs
 
-The Docker `docker_logs` data stream collects container logs.
+The Docker `container_logs` data stream collects container logs.
 
 **Exported fields**
 
@@ -1110,7 +1110,7 @@ The Docker `docker_logs` data stream collects container logs.
 | stream | Container log stream | keyword |
 
 
-An example event for `docker` looks as following:
+An example event for `container` looks as following:
 
 ```json
 {
@@ -1185,7 +1185,7 @@ An example event for `docker` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "logs",
-        "dataset": "docker.docker_logs"
+        "dataset": "docker.container_logs"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -1212,7 +1212,7 @@ An example event for `docker` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2022-11-24T10:16:42Z",
-        "dataset": "docker.docker_logs"
+        "dataset": "docker.container_logs"
     }
 }
 ```

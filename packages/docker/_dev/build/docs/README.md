@@ -3,7 +3,7 @@
 This Integration collects metrics and logs from [Docker](https://www.docker.com/) containers. 
 The default data streams for metrics collection are: `container`, `cpu`, `diskio`, `healthcheck`, `info`, `memory`
 and `network`. The `image` metricset is not enabled by default.
-The `docker_logs` data stream for containers' logs collection is enabled by default.
+The `container_logs` data stream for containers' logs collection is enabled by default.
 
 ## Compatibility
 
@@ -134,10 +134,10 @@ The Docker `network` data stream collects network metrics.
 
 {{event "network"}}
 
-### Docker_logs
+### container_logs
 
-The Docker `docker_logs` data stream collects container logs.
+The Docker `container_logs` data stream collects container logs.
 
-{{fields "docker_logs"}}
+{{fields "container_logs"}}
 
-{{event "docker_logs"}}
+{{event "container_logs"}}
