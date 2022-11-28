@@ -28,7 +28,7 @@ docker run -d \
 For log collection since the discovery of the containers happen automatically, again access to `unix:///var/run/docker.sock`
 will be needed so as Agent to be able to watch for Container events.
 In addition, access is required to the containers' logs files which by default follows the pattern of
-`/var/lib/docker/containers/${docker.container.id}/${docker.container.id}-json.log`
+`/var/lib/docker/containers/${docker.container.id}/*-json.log`
 If Elastic Agent is running inside docker, you'll need to mount the logs' directory too inside the container:
 
 
