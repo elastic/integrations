@@ -11,46 +11,46 @@ processors:
       value: [info]
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: cisco_ise.log.log_details_raw
-      if: ctx?.cisco_ise?.log?.message?.code == "70001" 
-      patterns: 
+      if: ctx.cisco_ise?.log?.message?.code == "70001"
+      patterns:
         - "^ConfigVersionId=%{INT:cisco_ise.log.log_details.ConfigVersionId}, SysStatsAcsProcessHealth= %{GREEDYDATA:_tmp.SysStatsAcsProcessHealth}"
-  - kv: 
-      if: ctx?.cisco_ise?.log?.message?.code == "70001"
+  - kv:
+      if: ctx.cisco_ise?.log?.message?.code == "70001"
       field: _tmp.SysStatsAcsProcessHealth
       target_field: cisco_ise.log.log_details.SysStatsAcsProcessHealth
       field_split: '; '
       value_split: =
       ignore_failure: true
-  - kv: 
-      if: ctx?.cisco_ise?.log?.message?.code != "70001"
+  - kv:
+      if: ctx.cisco_ise?.log?.message?.code != "70001"
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
-  - kv: 
+  - kv:
       field: cisco_ise.log.log_details.OperationCounters
       target_field: _tmp
       field_split: ', '
       value_split: =
-      if: ctx?.cisco_ise?.log?.message?.code == "70011"
+      if: ctx.cisco_ise?.log?.message?.code == "70011"
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - kv: 
-      if: ctx?.cisco_ise?.log?.message?.code == "70011"
+  - kv:
+      if: ctx.cisco_ise?.log?.message?.code == "70011"
       field: _tmp.Counter
       target_field: cisco_ise.log.log_details.Counters
       field_split: ","
@@ -62,31 +62,50 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: cisco_ise.log.log_details.OperationCounters
-      if: ctx?.cisco_ise?.log?.log_details?.Counters != null
+      if: ctx.cisco_ise?.log?.log_details?.Counters != null
       ignore_missing: true
   - date:
       field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats: 
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.category
+      value: host
+      if: ctx.cisco_ise?.log?.message?.code != null && ['70000','70011'].contains(ctx.cisco_ise.log.message.code)
       ignore_failure: true
-  - script:
-      lang: painless
-      if: ctx?.cisco_ise?.log?.message?.code != null
-      source: |
-        def eventCategory = new ArrayList();
-        def categoryReferenceTable = [
-          ["messageCodeArray": ["70000","70011"], "name": "host"],
-          ["messageCodeArray": ["70001"], "name": "process"]
-        ];
-        for (entry in categoryReferenceTable) {
-          if (entry.messageCodeArray.contains(ctx.cisco_ise.log.message.code)) {
-            eventCategory.add(entry.name);
-          }
-        }
-        ctx.event.category = eventCategory.length > 0 ? eventCategory : null;
+  - append:
+      field: event.category
+      value: process
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '70001'
+      ignore_failure: true
   - convert:
       field: cisco_ise.log.log_details.ActiveSessionCount
       target_field: cisco_ise.log.active_session.count
@@ -212,7 +231,7 @@ processors:
       field: cisco_ise.log.log_details.SysStatsUtilizationDiskIO
       target_field: cisco_ise.log.sysstats.utilization.disk.io
       type: double
-      ignore_failure: true
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -229,7 +248,7 @@ processors:
       field: cisco_ise.log.log_details.SysStatsUtilizationLoadAvg
       target_field: cisco_ise.log.sysstats.utilization.load_avg
       type: double
-      ignore_failure: true
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -246,7 +265,7 @@ processors:
       field: cisco_ise.log.log_details.SysStatsUtilizationMemory
       target_field: cisco_ise.log.sysstats.utilization.memory
       type: double
-      ignore_failure: true
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message

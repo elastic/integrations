@@ -11,13 +11,13 @@ processors:
       value: [info]
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       field: _tmp.timestamp
@@ -26,24 +26,53 @@ processors:
         - ISO8601
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
-      ignore_failure: true
-  - kv: 
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: "{{ _ingest.on_failure_message }}"
+  - kv:
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
-  - script:
-      lang: painless
-      if: ctx?.cisco_ise?.log?.message?.description != null
-      source:
-        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+  - grok:
+      field: cisco_ise.log.message.description
+      if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
+      patterns:
+        - "^%{DATA:event.action}:"
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
   - convert:
       field: cisco_ise.log.log_details.Device IP Address
       target_field: client.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -53,8 +82,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{client.ip}}}' 
-      if: ctx?.client?.ip != null
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -82,7 +111,7 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -99,8 +128,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{cisco_ise.log.nas.ip}}}' 
-      if: ctx?.cisco_ise?.log?.nas?.ip != null
+      value: '{{{cisco_ise.log.nas.ip}}}'
+      if: ctx.cisco_ise?.log?.nas?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -129,8 +158,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{cisco_ise.log.framed.ip}}}' 
-      if: ctx?.cisco_ise?.log?.framed?.ip != null
+      value: '{{{cisco_ise.log.framed.ip}}}'
+      if: ctx.cisco_ise?.log?.framed?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -183,11 +212,11 @@ processors:
       target_field: cisco_ise.log.step
       ignore_failure: true
       ignore_missing: true
-  - date: 
+  - date:
       field: cisco_ise.log.log_details.Event-Timestamp
       target_field: cisco_ise.log.event.timestamp
-      if: ctx?.cisco_ise?.log?.log_details['Event-Timestamp'] != null
-      formats: 
+      if: ctx.cisco_ise?.log?.log_details['Event-Timestamp'] != null
+      formats:
         - UNIX
       on_failure:
         - append:
@@ -286,12 +315,12 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: cisco_ise.log.log_details.Acct-Input-Octets
-      ignore_missing: true  
+      ignore_missing: true
   - convert:
       field: cisco_ise.log.log_details.Acct-Output-Octets
       target_field: cisco_ise.log.acct.output.octets
       type: long
-      ignore_failure: true
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -303,7 +332,7 @@ processors:
       field: cisco_ise.log.log_details.Acct-Input-Packets
       target_field: cisco_ise.log.acct.input.packets
       type: long
-      ignore_failure: true
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -315,7 +344,7 @@ processors:
       field: cisco_ise.log.log_details.Acct-Output-Packets
       target_field: cisco_ise.log.acct.output.packets
       type: long
-      ignore_failure: true
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message

@@ -1,0 +1,1842 @@
+{
+    "attributes": {
+        "description": "This dashboard shows AAA diagnostics logs collected by the Cisco ISE integration.",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "cisco_ise.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "cisco_ise.log"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "cisco_ise.log.category.name",
+                            "negate": false,
+                            "params": [
+                                "CISE_Authentication_Flow_Diagnostics",
+                                "CISE_Guest",
+                                "CISE_MyDevices",
+                                "CISE_Identity_Stores_Diagnostics",
+                                "CISE_Policy_Diagnostics",
+                                "CISE_RADIUS_Diagnostics",
+                                "CISE_AD_Connector"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "cisco_ise.log.category.name": "CISE_Authentication_Flow_Diagnostics"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "cisco_ise.log.category.name": "CISE_Guest"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "cisco_ise.log.category.name": "CISE_MyDevices"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "cisco_ise.log.category.name": "CISE_Identity_Stores_Diagnostics"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "cisco_ise.log.category.name": "CISE_Policy_Diagnostics"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "cisco_ise.log.category.name": "CISE_RADIUS_Diagnostics"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "cisco_ise.log.category.name": "CISE_AD_Connector"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": true,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ab03f67f-51c1-48de-a002-6ade7cad0bc5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "ab03f67f-51c1-48de-a002-6ade7cad0bc5": {
+                                            "columnOrder": [
+                                                "cf839b7d-3138-49b5-bcfa-c8f08794be68",
+                                                "a1eab008-c10f-400b-9b4f-28e3a0afe916"
+                                            ],
+                                            "columns": {
+                                                "a1eab008-c10f-400b-9b4f-28e3a0afe916": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "cf839b7d-3138-49b5-bcfa-c8f08794be68": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Guest User Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a1eab008-c10f-400b-9b4f-28e3a0afe916",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.guest.user.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "cf839b7d-3138-49b5-bcfa-c8f08794be68"
+                                    },
+                                    {
+                                        "columnId": "a1eab008-c10f-400b-9b4f-28e3a0afe916"
+                                    }
+                                ],
+                                "layerId": "ab03f67f-51c1-48de-a002-6ade7cad0bc5",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "4968810a-e87c-4eb5-962c-c649dd2c28ee",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "4968810a-e87c-4eb5-962c-c649dd2c28ee",
+                "title": "Top 10 Guest User Name [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-240515bc-731d-4710-9c52-18957e8e7fc7",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "240515bc-731d-4710-9c52-18957e8e7fc7": {
+                                            "columnOrder": [
+                                                "86cb32f9-318b-45f4-bf76-cb08b5133fa9",
+                                                "05ab4004-167d-48c6-ac7f-590d0f15fa58"
+                                            ],
+                                            "columns": {
+                                                "05ab4004-167d-48c6-ac7f-590d0f15fa58": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "86cb32f9-318b-45f4-bf76-cb08b5133fa9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Device Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "05ab4004-167d-48c6-ac7f-590d0f15fa58",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.device.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "86cb32f9-318b-45f4-bf76-cb08b5133fa9"
+                                    },
+                                    {
+                                        "columnId": "05ab4004-167d-48c6-ac7f-590d0f15fa58"
+                                    }
+                                ],
+                                "layerId": "240515bc-731d-4710-9c52-18957e8e7fc7",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "8323cb08-ce09-487a-9a83-141de55bf43b",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "8323cb08-ce09-487a-9a83-141de55bf43b",
+                "title": "Top 10 Device Name for My Devices [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f3d8312f-d82a-4a8b-b5f2-f3a9a29fbb94",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "f3d8312f-d82a-4a8b-b5f2-f3a9a29fbb94": {
+                                            "columnOrder": [
+                                                "f5423bcb-d211-4d6d-9a58-a4506a52d139",
+                                                "02106684-cdd1-49b3-8b3c-ad9be71a4109"
+                                            ],
+                                            "columns": {
+                                                "02106684-cdd1-49b3-8b3c-ad9be71a4109": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "f5423bcb-d211-4d6d-9a58-a4506a52d139": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Policy Type",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "02106684-cdd1-49b3-8b3c-ad9be71a4109",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.policy.type"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "f5423bcb-d211-4d6d-9a58-a4506a52d139"
+                                        ],
+                                        "layerId": "f3d8312f-d82a-4a8b-b5f2-f3a9a29fbb94",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "02106684-cdd1-49b3-8b3c-ad9be71a4109",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "c77ce6e1-e797-4c42-bb8b-73051e10125a",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "c77ce6e1-e797-4c42-bb8b-73051e10125a",
+                "title": "Distribution of Policy Diagnostics by Policy Type [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-4f91a333-748a-4e7d-a935-c6c24283b4d5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "4f91a333-748a-4e7d-a935-c6c24283b4d5": {
+                                            "columnOrder": [
+                                                "e5e34e63-237a-4159-ae8b-e75a6d2f8b78",
+                                                "471331fe-be42-4af4-9ac0-83dd131db727"
+                                            ],
+                                            "columns": {
+                                                "471331fe-be42-4af4-9ac0-83dd131db727": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "e5e34e63-237a-4159-ae8b-e75a6d2f8b78": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "AD Hostname",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "471331fe-be42-4af4-9ac0-83dd131db727",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.ad.hostname"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "e5e34e63-237a-4159-ae8b-e75a6d2f8b78"
+                                        ],
+                                        "layerId": "4f91a333-748a-4e7d-a935-c6c24283b4d5",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "471331fe-be42-4af4-9ac0-83dd131db727",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "2aee9b15-5050-48a0-ae68-799ff5d534a0",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "2aee9b15-5050-48a0-ae68-799ff5d534a0",
+                "title": "Distribution of AD Connector Events by AD Hostname [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-bf69ce62-0f93-4872-a4ee-6f1a75352390",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "bf69ce62-0f93-4872-a4ee-6f1a75352390": {
+                                            "columnOrder": [
+                                                "b879f8f0-c74f-4883-90a6-bb7d32c7cf9c",
+                                                "9997a631-31a7-4327-bb43-0b46df5eb497"
+                                            ],
+                                            "columns": {
+                                                "9997a631-31a7-4327-bb43-0b46df5eb497": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "b879f8f0-c74f-4883-90a6-bb7d32c7cf9c": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "AD IP Address",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "9997a631-31a7-4327-bb43-0b46df5eb497",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.ad.ip"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "b879f8f0-c74f-4883-90a6-bb7d32c7cf9c"
+                                    },
+                                    {
+                                        "columnId": "9997a631-31a7-4327-bb43-0b46df5eb497"
+                                    }
+                                ],
+                                "layerId": "bf69ce62-0f93-4872-a4ee-6f1a75352390",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "0cf9f3bd-0f93-42fe-b2cc-88510892f995",
+                    "w": 24,
+                    "x": 0,
+                    "y": 30
+                },
+                "panelIndex": "0cf9f3bd-0f93-42fe-b2cc-88510892f995",
+                "title": "Top 10 AD IP Address for AD Connector [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-1293163b-1464-4a99-9ecd-977ec53085f0",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "1293163b-1464-4a99-9ecd-977ec53085f0": {
+                                            "columnOrder": [
+                                                "3d847072-3f86-4fa3-8eff-81c0b0cd59a3",
+                                                "444b932a-bef8-4eed-8e75-d765be508e0f"
+                                            ],
+                                            "columns": {
+                                                "3d847072-3f86-4fa3-8eff-81c0b0cd59a3": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "User Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "444b932a-bef8-4eed-8e75-d765be508e0f",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.name"
+                                                },
+                                                "444b932a-bef8-4eed-8e75-d765be508e0f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "3d847072-3f86-4fa3-8eff-81c0b0cd59a3"
+                                    },
+                                    {
+                                        "columnId": "444b932a-bef8-4eed-8e75-d765be508e0f"
+                                    }
+                                ],
+                                "layerId": "1293163b-1464-4a99-9ecd-977ec53085f0",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "45e734b7-45df-463c-8131-e28c0d8a4a72",
+                    "w": 24,
+                    "x": 24,
+                    "y": 30
+                },
+                "panelIndex": "45e734b7-45df-463c-8131-e28c0d8a4a72",
+                "title": "Top 10 User Name [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ee70fe32-6e9a-4846-a997-1c2243dbb083",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "ee70fe32-6e9a-4846-a997-1c2243dbb083": {
+                                            "columnOrder": [
+                                                "fa52c26c-36b3-4f54-a042-37242a13beeb",
+                                                "d919589b-edd6-485c-8752-02e9f94d0f81"
+                                            ],
+                                            "columns": {
+                                                "d919589b-edd6-485c-8752-02e9f94d0f81": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "fa52c26c-36b3-4f54-a042-37242a13beeb": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Device IP Address",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d919589b-edd6-485c-8752-02e9f94d0f81",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "client.ip"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "fa52c26c-36b3-4f54-a042-37242a13beeb"
+                                    },
+                                    {
+                                        "columnId": "d919589b-edd6-485c-8752-02e9f94d0f81"
+                                    }
+                                ],
+                                "layerId": "ee70fe32-6e9a-4846-a997-1c2243dbb083",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "f39abb0e-ec25-4dfc-8028-ca213d752509",
+                    "w": 24,
+                    "x": 0,
+                    "y": 45
+                },
+                "panelIndex": "f39abb0e-ec25-4dfc-8028-ca213d752509",
+                "title": "Top 10 Device IP [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-23e65fac-4c63-4da2-af9e-ccaa978e3875",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "23e65fac-4c63-4da2-af9e-ccaa978e3875": {
+                                            "columnOrder": [
+                                                "5b6aa9f3-3ddf-4a72-a579-08cf776d56d8",
+                                                "2054dbb9-2ccb-4bee-876d-d8b69a3a7907"
+                                            ],
+                                            "columns": {
+                                                "2054dbb9-2ccb-4bee-876d-d8b69a3a7907": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "5b6aa9f3-3ddf-4a72-a579-08cf776d56d8": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Source IP Address",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "2054dbb9-2ccb-4bee-876d-d8b69a3a7907",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.ip"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "5b6aa9f3-3ddf-4a72-a579-08cf776d56d8"
+                                    },
+                                    {
+                                        "columnId": "2054dbb9-2ccb-4bee-876d-d8b69a3a7907"
+                                    }
+                                ],
+                                "layerId": "23e65fac-4c63-4da2-af9e-ccaa978e3875",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "eccab3db-c02a-41ad-8654-be4c9e8cd4e3",
+                    "w": 24,
+                    "x": 24,
+                    "y": 45
+                },
+                "panelIndex": "eccab3db-c02a-41ad-8654-be4c9e8cd4e3",
+                "title": "Top 10 IP Address for AAA Diagnostics [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-2b1ca9cd-9420-4a32-b40b-eb5418d2a6b3",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "2b1ca9cd-9420-4a32-b40b-eb5418d2a6b3": {
+                                            "columnOrder": [
+                                                "b712aa4a-350f-4500-b246-3e6b5c5ef9fe",
+                                                "f25f36fe-24e4-4407-b563-0ff8a475eb80"
+                                            ],
+                                            "columns": {
+                                                "b712aa4a-350f-4500-b246-3e6b5c5ef9fe": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Authentication Method",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f25f36fe-24e4-4407-b563-0ff8a475eb80",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.authentication.method"
+                                                },
+                                                "f25f36fe-24e4-4407-b563-0ff8a475eb80": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "f25f36fe-24e4-4407-b563-0ff8a475eb80"
+                                        ],
+                                        "layerId": "2b1ca9cd-9420-4a32-b40b-eb5418d2a6b3",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "b712aa4a-350f-4500-b246-3e6b5c5ef9fe"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "6cfc9161-427e-42ba-8175-21968893b84b",
+                    "w": 24,
+                    "x": 0,
+                    "y": 60
+                },
+                "panelIndex": "6cfc9161-427e-42ba-8175-21968893b84b",
+                "title": "Distribution of Events by Authentication Method for AAA Diagnostics [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f0508514-4c3a-4400-a2ff-04b2a847031c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "f0508514-4c3a-4400-a2ff-04b2a847031c": {
+                                            "columnOrder": [
+                                                "1c62bc1a-5faa-4531-8978-f374662f610a",
+                                                "84219aca-229a-4b21-bcdc-caeba0b2a77b"
+                                            ],
+                                            "columns": {
+                                                "1c62bc1a-5faa-4531-8978-f374662f610a": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Current ID Store Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "84219aca-229a-4b21-bcdc-caeba0b2a77b",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.currentid.store_name"
+                                                },
+                                                "84219aca-229a-4b21-bcdc-caeba0b2a77b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "84219aca-229a-4b21-bcdc-caeba0b2a77b"
+                                        ],
+                                        "layerId": "f0508514-4c3a-4400-a2ff-04b2a847031c",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "xAccessor": "1c62bc1a-5faa-4531-8978-f374662f610a"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "91ebb354-5963-4d3c-80a5-9342957cad08",
+                    "w": 24,
+                    "x": 24,
+                    "y": 60
+                },
+                "panelIndex": "91ebb354-5963-4d3c-80a5-9342957cad08",
+                "title": "Distribution of Events by Current ID Store Name [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-0884aca8-5fef-4f99-ab27-7dce37d81293",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "0884aca8-5fef-4f99-ab27-7dce37d81293": {
+                                            "columnOrder": [
+                                                "c1216af4-29e5-47c3-af44-298e086ff01d",
+                                                "49347994-386b-4a60-a0aa-c45a3dab30f1"
+                                            ],
+                                            "columns": {
+                                                "49347994-386b-4a60-a0aa-c45a3dab30f1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "c1216af4-29e5-47c3-af44-298e086ff01d": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Selected Access Service",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "49347994-386b-4a60-a0aa-c45a3dab30f1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.selected.access.service"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "c1216af4-29e5-47c3-af44-298e086ff01d"
+                                        ],
+                                        "layerId": "0884aca8-5fef-4f99-ab27-7dce37d81293",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "49347994-386b-4a60-a0aa-c45a3dab30f1",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "4c5dea27-55c5-4e60-bab9-604201fe6c02",
+                    "w": 24,
+                    "x": 0,
+                    "y": 75
+                },
+                "panelIndex": "4c5dea27-55c5-4e60-bab9-604201fe6c02",
+                "title": "Distribution of Events by Selected Access Service [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a3e02354-e7a3-41f0-832d-6fe7a020cc3c",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "a3e02354-e7a3-41f0-832d-6fe7a020cc3c": {
+                                            "columnOrder": [
+                                                "15a34a23-6e32-4eb6-8a78-57fbe38b05d6",
+                                                "b91332a2-7a99-4b8c-860d-e9ebed53a419"
+                                            ],
+                                            "columns": {
+                                                "15a34a23-6e32-4eb6-8a78-57fbe38b05d6": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Authentication Identity Store",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b91332a2-7a99-4b8c-860d-e9ebed53a419",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.authentication.identity_store"
+                                                },
+                                                "b91332a2-7a99-4b8c-860d-e9ebed53a419": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "15a34a23-6e32-4eb6-8a78-57fbe38b05d6"
+                                        ],
+                                        "layerId": "a3e02354-e7a3-41f0-832d-6fe7a020cc3c",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "b91332a2-7a99-4b8c-860d-e9ebed53a419",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "2d1c5d59-5ed0-4f44-b06a-23c9d1c7d166",
+                    "w": 24,
+                    "x": 24,
+                    "y": 75
+                },
+                "panelIndex": "2d1c5d59-5ed0-4f44-b06a-23c9d1c7d166",
+                "title": "Distribution of Events by Authentication Identity Store [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-19f0c74d-03ae-43ba-b02c-bbfb43ad3968",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "19f0c74d-03ae-43ba-b02c-bbfb43ad3968": {
+                                            "columnOrder": [
+                                                "f3833618-aba1-4ea4-8f52-64629387db69",
+                                                "52c03246-a92d-43b5-9e1e-df7df27b898d"
+                                            ],
+                                            "columns": {
+                                                "52c03246-a92d-43b5-9e1e-df7df27b898d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "f3833618-aba1-4ea4-8f52-64629387db69": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "EAP Authentication",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "52c03246-a92d-43b5-9e1e-df7df27b898d",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.eap.authentication"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "f3833618-aba1-4ea4-8f52-64629387db69"
+                                        ],
+                                        "layerId": "19f0c74d-03ae-43ba-b02c-bbfb43ad3968",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "52c03246-a92d-43b5-9e1e-df7df27b898d",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "12e6d367-bfc5-4a4c-966c-c73b389addd8",
+                    "w": 24,
+                    "x": 0,
+                    "y": 90
+                },
+                "panelIndex": "12e6d367-bfc5-4a4c-966c-c73b389addd8",
+                "title": "Distribution of Radius Diagnostics by EAP Authentication [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-1256dd2b-d830-4b0b-b0ad-bd9bacad2cb5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "1256dd2b-d830-4b0b-b0ad-bd9bacad2cb5": {
+                                            "columnOrder": [
+                                                "c54f3f70-13df-481d-a0d2-ea40ff1f70db",
+                                                "ea44bc3b-177f-4f29-bc1b-05f5026fc38c"
+                                            ],
+                                            "columns": {
+                                                "c54f3f70-13df-481d-a0d2-ea40ff1f70db": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "EAP Tunnel",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ea44bc3b-177f-4f29-bc1b-05f5026fc38c",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.eap.tunnel"
+                                                },
+                                                "ea44bc3b-177f-4f29-bc1b-05f5026fc38c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "c54f3f70-13df-481d-a0d2-ea40ff1f70db"
+                                        ],
+                                        "layerId": "1256dd2b-d830-4b0b-b0ad-bd9bacad2cb5",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metric": "ea44bc3b-177f-4f29-bc1b-05f5026fc38c",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "0fa04ecb-2e18-44c7-802d-f600514bb4c1",
+                    "w": 24,
+                    "x": 24,
+                    "y": 90
+                },
+                "panelIndex": "0fa04ecb-2e18-44c7-802d-f600514bb4c1",
+                "title": "Distribution of Radius Diagnostics by EAP Tunnel [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ed4834b4-7a33-4d21-b51c-63f21ec53f40",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "ed4834b4-7a33-4d21-b51c-63f21ec53f40": {
+                                            "columnOrder": [
+                                                "fc2c1bb8-9d18-49a1-88c5-e74d75d4b95b",
+                                                "27f7a9a9-9f74-4f0d-a7b0-dc5e917ff255"
+                                            ],
+                                            "columns": {
+                                                "27f7a9a9-9f74-4f0d-a7b0-dc5e917ff255": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "fc2c1bb8-9d18-49a1-88c5-e74d75d4b95b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Portal Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "27f7a9a9-9f74-4f0d-a7b0-dc5e917ff255",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "cisco_ise.log.portal.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "fc2c1bb8-9d18-49a1-88c5-e74d75d4b95b"
+                                    },
+                                    {
+                                        "columnId": "27f7a9a9-9f74-4f0d-a7b0-dc5e917ff255"
+                                    }
+                                ],
+                                "layerId": "ed4834b4-7a33-4d21-b51c-63f21ec53f40",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "d5d83248-e10f-483a-91d2-ccf55af44df9",
+                    "w": 24,
+                    "x": 0,
+                    "y": 105
+                },
+                "panelIndex": "d5d83248-e10f-483a-91d2-ccf55af44df9",
+                "title": "Top 10 Portal Name [Logs Cisco ISE]",
+                "type": "lens",
+                "version": "7.17.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "941178b6-0625-45d3-a262-f91b3eb03e7d",
+                    "w": 24,
+                    "x": 24,
+                    "y": 105
+                },
+                "panelIndex": "941178b6-0625-45d3-a262-f91b3eb03e7d",
+                "panelRefName": "panel_941178b6-0625-45d3-a262-f91b3eb03e7d",
+                "type": "search",
+                "version": "7.17.0"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs Cisco ISE] AAA Diagnostics",
+        "version": 1
+    },
+    "coreMigrationVersion": "7.17.0",
+    "id": "cisco_ise-506e8200-39a5-11ed-a2b2-1d4b9d412e28",
+    "migrationVersion": {
+        "dashboard": "7.17.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4968810a-e87c-4eb5-962c-c649dd2c28ee:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4968810a-e87c-4eb5-962c-c649dd2c28ee:indexpattern-datasource-layer-ab03f67f-51c1-48de-a002-6ade7cad0bc5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8323cb08-ce09-487a-9a83-141de55bf43b:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8323cb08-ce09-487a-9a83-141de55bf43b:indexpattern-datasource-layer-240515bc-731d-4710-9c52-18957e8e7fc7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c77ce6e1-e797-4c42-bb8b-73051e10125a:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "c77ce6e1-e797-4c42-bb8b-73051e10125a:indexpattern-datasource-layer-f3d8312f-d82a-4a8b-b5f2-f3a9a29fbb94",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2aee9b15-5050-48a0-ae68-799ff5d534a0:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2aee9b15-5050-48a0-ae68-799ff5d534a0:indexpattern-datasource-layer-4f91a333-748a-4e7d-a935-c6c24283b4d5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0cf9f3bd-0f93-42fe-b2cc-88510892f995:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0cf9f3bd-0f93-42fe-b2cc-88510892f995:indexpattern-datasource-layer-bf69ce62-0f93-4872-a4ee-6f1a75352390",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "45e734b7-45df-463c-8131-e28c0d8a4a72:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "45e734b7-45df-463c-8131-e28c0d8a4a72:indexpattern-datasource-layer-1293163b-1464-4a99-9ecd-977ec53085f0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f39abb0e-ec25-4dfc-8028-ca213d752509:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f39abb0e-ec25-4dfc-8028-ca213d752509:indexpattern-datasource-layer-ee70fe32-6e9a-4846-a997-1c2243dbb083",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "eccab3db-c02a-41ad-8654-be4c9e8cd4e3:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "eccab3db-c02a-41ad-8654-be4c9e8cd4e3:indexpattern-datasource-layer-23e65fac-4c63-4da2-af9e-ccaa978e3875",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6cfc9161-427e-42ba-8175-21968893b84b:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6cfc9161-427e-42ba-8175-21968893b84b:indexpattern-datasource-layer-2b1ca9cd-9420-4a32-b40b-eb5418d2a6b3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "91ebb354-5963-4d3c-80a5-9342957cad08:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "91ebb354-5963-4d3c-80a5-9342957cad08:indexpattern-datasource-layer-f0508514-4c3a-4400-a2ff-04b2a847031c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4c5dea27-55c5-4e60-bab9-604201fe6c02:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4c5dea27-55c5-4e60-bab9-604201fe6c02:indexpattern-datasource-layer-0884aca8-5fef-4f99-ab27-7dce37d81293",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2d1c5d59-5ed0-4f44-b06a-23c9d1c7d166:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2d1c5d59-5ed0-4f44-b06a-23c9d1c7d166:indexpattern-datasource-layer-a3e02354-e7a3-41f0-832d-6fe7a020cc3c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "12e6d367-bfc5-4a4c-966c-c73b389addd8:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "12e6d367-bfc5-4a4c-966c-c73b389addd8:indexpattern-datasource-layer-19f0c74d-03ae-43ba-b02c-bbfb43ad3968",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0fa04ecb-2e18-44c7-802d-f600514bb4c1:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0fa04ecb-2e18-44c7-802d-f600514bb4c1:indexpattern-datasource-layer-1256dd2b-d830-4b0b-b0ad-bd9bacad2cb5",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d5d83248-e10f-483a-91d2-ccf55af44df9:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d5d83248-e10f-483a-91d2-ccf55af44df9:indexpattern-datasource-layer-ed4834b4-7a33-4d21-b51c-63f21ec53f40",
+            "type": "index-pattern"
+        },
+        {
+            "id": "cisco_ise-39e47010-a09b-11ec-a0a2-1598702abf83",
+            "name": "941178b6-0625-45d3-a262-f91b3eb03e7d:panel_941178b6-0625-45d3-a262-f91b3eb03e7d",
+            "type": "search"
+        }
+    ],
+    "type": "dashboard"
+}

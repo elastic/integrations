@@ -8,23 +8,47 @@ processors:
       value: [info]
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
         - '%{GREEDYDATA:cisco_ise.log.log_details_raw},'
   - date:
       field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats: 
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
-      ignore_failure: true
-  - kv: 
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - kv:
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
       field_split: ', '
@@ -43,21 +67,24 @@ processors:
       field_split: '; '
       value_split: =
       ignore_failure: true
-  - script:
-      lang: painless
-      if: ctx?.cisco_ise?.log?.message?.code != null
-      source: |
-        def eventCategory = new ArrayList(["iam"]);
-        def categoryReferenceTable = [
-          ["messageCodeArray": ["22040","22057","22061","22060","22037"], "name": "authentication"]
-        ];
-        for (entry in categoryReferenceTable) {
-          if (entry.messageCodeArray.contains(ctx.cisco_ise.log.message.code)) {
-            eventCategory.add(entry.name);
-          }
-        }
-        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
-        ctx.event.category = eventCategory;
+  - grok:
+      field: cisco_ise.log.message.description
+      if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
+      patterns:
+        - "^%{DATA:event.action}:"
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: iam
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ['22040','22057','22061','22060','22037'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
   - rename:
       field: cisco_ise.log.log_details.AcsSessionID
       target_field: cisco_ise.log.acs.session.id
@@ -92,7 +119,7 @@ processors:
       field: cisco_ise.log.log_details.DestinationIPAddress
       target_field: destination.ip
       type: ip
-      if: ctx?.cisco_ise?.log?.log_details?.DestinationIPAddress != null
+      if: ctx.cisco_ise?.log?.log_details?.DestinationIPAddress != null
       ignore_missing: true
       on_failure:
         - append:
@@ -104,14 +131,15 @@ processors:
   - append:
       field: related.ip
       value: "{{{destination.ip}}}"
-      if: ctx?.destination?.ip != null
+      if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
       field: cisco_ise.log.log_details.NAS-IP-Address
       target_field: cisco_ise.log.nas.ip
       type: ip
-      if: ctx?.cisco_ise?.log?.log_details['NAS-IP-Address'] != null
+      if: ctx.cisco_ise?.log?.log_details['NAS-IP-Address'] != null
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -122,19 +150,19 @@ processors:
   - append:
       field: related.ip
       value: '{{{cisco_ise.log.nas.ip}}}'
-      if: ctx?.cisco_ise?.log?.nas?.ip != null
+      if: ctx.cisco_ise?.log?.nas?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: user.name
       value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.OriginalUserName != null
+      if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.user
       value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.OriginalUserName != null
+      if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
@@ -143,13 +171,13 @@ processors:
   - append:
       field: user.name
       value: '{{{cisco_ise.log.log_details.UserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.UserName != null
+      if: ctx.cisco_ise?.log?.log_details?.UserName != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.user
       value: '{{{cisco_ise.log.log_details.UserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.UserName != null
+      if: ctx.cisco_ise?.log?.log_details?.UserName != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
@@ -164,8 +192,8 @@ processors:
       field: cisco_ise.log.log_details.WorkflowCurrentIDStoreIndex
       target_field: cisco_ise.log.workflow.current_id.store_index
       type: long
-      if: ctx?.cisco_ise?.log?.log_details?.WorkflowCurrentIDStoreIndex != null
-      ignore_failure: true
+      if: ctx.cisco_ise?.log?.log_details?.WorkflowCurrentIDStoreIndex != null
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message

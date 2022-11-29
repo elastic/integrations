@@ -11,33 +11,61 @@ processors:
       value: [info]
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats: 
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - kv:
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
-  - script:
-      lang: painless
-      if: ctx?.cisco_ise?.log?.message?.description != null
-      source:
-        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+  - grok:
+      field: cisco_ise.log.message.description
+      if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
+      patterns:
+        - "^%{DATA:event.action}:"
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
   - convert:
       field: cisco_ise.log.log_details.Device IP Address
       target_field: client.ip
@@ -52,8 +80,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{client.ip}}}' 
-      if: ctx?.client?.ip != null
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -63,11 +91,11 @@ processors:
   - lowercase:
       field: network.protocol
       ignore_missing: true
-  - date: 
+  - date:
       field: cisco_ise.log.log_details.RequestReceivedTime
       target_field: cisco_ise.log.request.received_time
-      if: ctx?.cisco_ise?.log?.log_details?.RequestReceivedTime != null
-      formats: 
+      if: ctx.cisco_ise?.log?.log_details?.RequestReceivedTime != null
+      formats:
         - UNIX
       on_failure:
         - append:
@@ -107,13 +135,13 @@ processors:
   - append:
       field: user.name
       value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.OriginalUserName != null
+      if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.user
       value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.OriginalUserName != null
+      if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
@@ -130,13 +158,13 @@ processors:
   - append:
       field: user.name
       value: '{{{cisco_ise.log.log_details.UserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.UserName != null
+      if: ctx.cisco_ise?.log?.log_details?.UserName != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.user
       value: '{{{cisco_ise.log.log_details.UserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.UserName != null
+      if: ctx.cisco_ise?.log?.log_details?.UserName != null
       allow_duplicates: false
       ignore_failure: true
   - remove:

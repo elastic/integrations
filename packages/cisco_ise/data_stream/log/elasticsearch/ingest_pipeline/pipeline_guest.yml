@@ -11,22 +11,46 @@ processors:
       value: [info]
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats: 
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - kv:
       field: cisco_ise.log.log_details_raw
       field_split: ', '
@@ -35,9 +59,9 @@ processors:
       target_field: cisco_ise.log.log_details
   - script:
       lang: painless
-      if: ctx?.cisco_ise?.log?.message?.description != null
-      source: 
-        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+      if: ctx.cisco_ise?.log?.message?.description != null
+      source:
+        ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
   - rename:
       field: cisco_ise.log.log_details.UserType
       target_field: cisco_ise.log.user.type
@@ -51,7 +75,7 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -69,7 +93,7 @@ processors:
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
-      if: ctx?.source?.ip != null
+      if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -117,6 +141,6 @@ processors:
   - append:
       field: related.user.name
       value: '{{{cisco_ise.log.guest.user.name}}}'
-      if: ctx?.cisco_ise?.log?.guest?.user?.name != null
+      if: ctx.cisco_ise?.log?.guest?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
