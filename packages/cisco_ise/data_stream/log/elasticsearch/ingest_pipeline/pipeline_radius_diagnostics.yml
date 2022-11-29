@@ -5,61 +5,101 @@ processors:
       value: event
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} RADIUS: An Access-Request MUST contain at least a NAS-IP-Address, NAS-IPv6-Address, or a NAS-Identifier; Continue processing, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - set:
       field: cisco_ise.log.message.description
-      value: "RADIUS: An Access-Request MUST contain at least a NAS-IP-Address NAS-IPv6-Address, or a NAS-Identifier; Continue processing"
-      if: ctx?.cisco_ise?.log?.message?.code == "11015"  
+      value: 'RADIUS: An Access-Request MUST contain at least a NAS-IP-Address NAS-IPv6-Address, or a NAS-Identifier; Continue processing'
+      if: ctx.cisco_ise?.log?.message?.code == '11015'
   - date:
       field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats: 
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - grok:
+      field: cisco_ise.log.message.description
+      if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
+      patterns:
+        - "^%{DATA:event.action}:"
       ignore_failure: true
-  - script:
-      lang: painless
-      if: ctx?.cisco_ise?.log?.message?.code != null
-      source: |
-        def eventCategory = new ArrayList();
-        def eventType = new ArrayList();
-        def categoryReferenceTable = [
-          ["messageCodeArray": ["11001","11002","11004","11005","11006","11015"], "name": "iam"],
-          ["messageCodeArray": ["11036","11038","11507","11823","12300","12301","12302","12305","12307","12309","12318","12500","12814","12817"], "name": "authentication"],
-          ["messageCodeArray": ["11027","12500","12800","12805","12814","12817"], "name": "network"],
-          ["messageCodeArray": ["11117"], "name": "session"],
-          ["messageCodeArray": ["11017","11018"], "name": "configuration"]
-        ];
-        def typeReferenceTable = [
-          ["messageCodeArray": ["11001","11002","11004","11005","11006","11015","11017","11018","11027","11036","11038","11117","11507","11823","12300","12301","12302","12305","12307","12309","12318","12500","12800","12805","12814","12817"], "name": "info"],
-          ["messageCodeArray": ["11823","12307","12309","12817"], "name": "end"],
-          ["messageCodeArray": ["11117"], "name": "start"]
-        ];
-
-        for (entry in categoryReferenceTable) {
-          if (entry.messageCodeArray.contains(ctx.cisco_ise.log.message.code)) {
-            eventCategory.add(entry.name);
-          }
-        }
-        for (entry in typeReferenceTable) {
-          if (entry.messageCodeArray.contains(ctx.cisco_ise.log.message.code)) {
-            eventType.add(entry.name);
-          }
-        }
-
-        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
-        ctx.event.category = eventCategory;
-        ctx.event.type = eventType;
-  - gsub: 
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: iam
+      if: ctx.cisco_ise?.log?.message?.code != null && ['11001','11002','11004','11005','11006','11015'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ['11036','11038','11507','11823','12300','12301','12302','12305','12307','12309','12318','12500','12814','12817'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: network
+      if: ctx.cisco_ise?.log?.message?.code != null && ['11027','12500','12800','12805','12814','12817'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: session
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '11117'
+      ignore_failure: true
+  - append:
+      field: event.category
+      value: configuration
+      if: ctx.cisco_ise?.log?.message?.code != null && ['11017','11018'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: info
+      if: ctx.cisco_ise?.log?.message?.code != null && ['11001','11002','11004','11005','11006','11015','11017','11018','11027','11036','11038','11117','11507','11823','12300','12301','12302','12305','12307','12309','12318','12500','12800','12805','12814','12817'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: end
+      if: ctx.cisco_ise?.log?.message?.code != null && ['11823','12307','12309','12817'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: start
+      if: ctx.cisco_ise?.log?.message?.code != null && ctx.cisco_ise.log.message.code == '11117'
+      ignore_failure: true
+  - gsub:
       field: cisco_ise.log.log_details_raw
       pattern: \\,
       replacement: ''
@@ -114,6 +154,12 @@ processors:
       target_field: cisco_ise.log.calling_station.id
       ignore_failure: true
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: ConfigVersionId
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: cisco_ise.log.log_details.CPMSessionID
       target_field: cisco_ise.log.cpm.session.id
@@ -148,8 +194,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{cisco_ise.log.nas.ip}}}' 
-      if: ctx?.cisco_ise?.log?.nas?.ip != null
+      value: '{{{cisco_ise.log.nas.ip}}}'
+      if: ctx.cisco_ise?.log?.nas?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -227,7 +273,7 @@ processors:
       field: cisco_ise.log.log_details.DestinationIPAddress
       target_field: destination.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -238,7 +284,7 @@ processors:
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
-      if: ctx?.destination?.ip != null
+      if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -267,8 +313,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{client.ip}}}' 
-      if: ctx?.client?.ip != null
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
