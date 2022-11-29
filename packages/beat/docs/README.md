@@ -15,26 +15,13 @@ An example event for `stats` looks as following:
 
 ```json
 {
+    "@timestamp": "2022-11-23T17:09:28.634Z",
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "de291921-7d38-4a60-89ca-cb6080ca6aa7",
         "ephemeral_id": "552bd946-18b1-44bd-9cab-f6baa2dffe3d",
+        "id": "de291921-7d38-4a60-89ca-cb6080ca6aa7",
+        "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.5.0"
-    },
-    "@timestamp": "2022-11-23T17:48:11.187Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "service": {
-        "address": "http://host.docker.internal:5066/stats",
-        "name": "beat",
-        "type": "beat"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "beats.stack_monitoring.stats"
     },
     "beat": {
         "elasticsearch": {
@@ -42,426 +29,219 @@ An example event for `stats` looks as following:
                 "id": "TtFsAyBvS-GP8YnmKAaCgg"
             }
         },
+        "id": "ffcdfb5e-178d-4e2e-a466-16fa4d6c0933",
         "stats": {
-            "apm_server": {
-                "server": {
-                    "request": {
-                        "count": 0
-                    },
-                    "response": {
-                        "valid": {
-                            "notmodified": 0,
-                            "count": 0,
-                            "accepted": 0,
-                            "ok": 0
+            "beat": {
+                "host": "c1a3fc7d1437",
+                "name": "c1a3fc7d1437",
+                "type": "metricbeat",
+                "uuid": "ffcdfb5e-178d-4e2e-a466-16fa4d6c0933",
+                "version": "8.5.0"
+            },
+            "cgroup": {
+                "cpu": {
+                    "cfs": {
+                        "period": {
+                            "us": 100000
                         },
-                        "count": 0,
-                        "errors": {
-                            "ratelimit": 0,
-                            "internal": 0,
-                            "toolarge": 0,
-                            "method": 0,
-                            "unavailable": 0,
-                            "forbidden": 0,
-                            "count": 0,
-                            "decode": 0,
-                            "timeout": 0,
-                            "unauthorized": 0,
-                            "notfound": 0,
-                            "closed": 0,
-                            "invalidquery": 0,
-                            "queue": 0,
-                            "validate": 0
+                        "quota": {
+                            "us": 0
                         }
                     },
-                    "unset": 0
-                },
-                "profiling": {
-                    "indexer": {
-                        "document": {
-                            "stacktraces": {
-                                "total": {
-                                    "count": 0
-                                },
-                                "failure": {
-                                    "count": 0
-                                }
-                            },
-                            "executables": {
-                                "total": {
-                                    "count": 0
-                                },
-                                "failure": {
-                                    "count": 0
-                                }
-                            },
-                            "stackframes": {
-                                "total": {
-                                    "count": 0
-                                },
-                                "failure": {
-                                    "count": 0
-                                }
-                            },
-                            "events": {
-                                "total": {
-                                    "count": 0
-                                },
-                                "failure": {
-                                    "count": 0
-                                }
-                            }
-                        }
-                    },
-                    "unrecoverable_error": {
-                        "count": 0
-                    },
-                    "grpc": {
-                        "collect": {
-                            "request": {
-                                "count": 0
-                            },
-                            "response": {
-                                "valid": {
-                                    "count": 0
-                                },
-                                "count": 0,
-                                "errors": {
-                                    "ratelimit": 0,
-                                    "unauthorized": 0,
-                                    "count": 0,
-                                    "timeout": 0
-                                }
-                            }
+                    "id": "/",
+                    "stats": {
+                        "periods": 0,
+                        "throttled": {
+                            "ns": 0,
+                            "periods": 0
                         }
                     }
                 },
-                "root": {
-                    "request": {
-                        "count": 0
-                    },
-                    "response": {
-                        "valid": {
-                            "notmodified": 0,
-                            "count": 0,
-                            "accepted": 0,
-                            "ok": 0
-                        },
-                        "count": 0,
-                        "errors": {
-                            "ratelimit": 0,
-                            "toolarge": 0,
-                            "internal": 0,
-                            "method": 0,
-                            "unavailable": 0,
-                            "forbidden": 0,
-                            "count": 0,
-                            "decode": 0,
-                            "timeout": 0,
-                            "unauthorized": 0,
-                            "notfound": 0,
-                            "closed": 0,
-                            "invalidquery": 0,
-                            "queue": 0,
-                            "validate": 0
-                        }
-                    },
-                    "unset": 0
-                },
-                "sampling": {
-                    "transactions_dropped": 0
-                },
-                "acm": {
-                    "request": {
-                        "count": 0
-                    },
-                    "response": {
-                        "valid": {
-                            "notmodified": 0,
-                            "count": 0,
-                            "accepted": 0,
-                            "ok": 0
-                        },
-                        "count": 0,
-                        "errors": {
-                            "ratelimit": 0,
-                            "internal": 0,
-                            "toolarge": 0,
-                            "method": 0,
-                            "unavailable": 0,
-                            "forbidden": 0,
-                            "count": 0,
-                            "decode": 0,
-                            "timeout": 0,
-                            "unauthorized": 0,
-                            "notfound": 0,
-                            "closed": 0,
-                            "invalidquery": 0,
-                            "queue": 0,
-                            "validate": 0
-                        }
-                    },
-                    "unset": 0
-                },
-                "aggregation": {
-                    "txmetrics": {
-                        "active_groups": 0,
-                        "overflowed": 0
+                "cpuacct": {
+                    "id": "/",
+                    "total": {
+                        "ns": 406604151
                     }
                 },
-                "decoder": {
-                    "deflate": {
-                        "content-length": 0,
-                        "count": 0
-                    },
-                    "reader": {
-                        "count": 0
-                    },
-                    "gzip": {
-                        "content-length": 0,
-                        "count": 0
-                    },
-                    "uncompressed": {
-                        "content-length": 0,
-                        "count": 0
-                    },
-                    "missing-content-length": {
-                        "count": 0
-                    }
-                },
-                "otlp": {
-                    "http": {
-                        "traces": {
-                            "request": {
-                                "count": 0
-                            },
-                            "response": {
-                                "valid": {
-                                    "count": 0
-                                },
-                                "count": 0,
-                                "errors": {
-                                    "ratelimit": 0,
-                                    "unauthorized": 0,
-                                    "count": 0,
-                                    "timeout": 0
-                                }
-                            }
+                "memory": {
+                    "id": "/",
+                    "mem": {
+                        "limit": {
+                            "bytes": 9223372036854772000
                         },
-                        "metrics": {
-                            "request": {
-                                "count": 0
-                            },
-                            "response": {
-                                "valid": {
-                                    "count": 0
-                                },
-                                "count": 0,
-                                "errors": {
-                                    "ratelimit": 0,
-                                    "unauthorized": 0,
-                                    "count": 0,
-                                    "timeout": 0
-                                }
-                            },
-                            "consumer": {
-                                "unsupported_dropped": 0
-                            }
-                        },
-                        "logs": {
-                            "request": {
-                                "count": 0
-                            },
-                            "response": {
-                                "valid": {
-                                    "count": 0
-                                },
-                                "count": 0,
-                                "errors": {
-                                    "ratelimit": 0,
-                                    "unauthorized": 0,
-                                    "count": 0,
-                                    "timeout": 0
-                                }
-                            }
-                        }
-                    },
-                    "grpc": {
-                        "traces": {
-                            "request": {
-                                "count": 0
-                            },
-                            "response": {
-                                "valid": {
-                                    "count": 0
-                                },
-                                "count": 0,
-                                "errors": {
-                                    "ratelimit": 0,
-                                    "unauthorized": 0,
-                                    "count": 0,
-                                    "timeout": 0
-                                }
-                            }
-                        },
-                        "metrics": {
-                            "request": {
-                                "count": 0
-                            },
-                            "response": {
-                                "valid": {
-                                    "count": 0
-                                },
-                                "count": 0,
-                                "errors": {
-                                    "ratelimit": 0,
-                                    "unauthorized": 0,
-                                    "count": 0,
-                                    "timeout": 0
-                                }
-                            },
-                            "consumer": {
-                                "unsupported_dropped": 0
-                            }
-                        },
-                        "logs": {
-                            "request": {
-                                "count": 0
-                            },
-                            "response": {
-                                "valid": {
-                                    "count": 0
-                                },
-                                "count": 0,
-                                "errors": {
-                                    "ratelimit": 0,
-                                    "unauthorized": 0,
-                                    "count": 0,
-                                    "timeout": 0
-                                }
-                            }
-                        }
-                    }
-                },
-                "processor": {
-                    "stream": {
-                        "accepted": 0,
-                        "errors": {
-                            "toolarge": 0,
-                            "invalid": 0
-                        }
-                    }
-                },
-                "jaeger": {
-                    "grpc": {
-                        "sampling": {
-                            "request": {
-                                "count": 0
-                            },
-                            "response": {
-                                "valid": {
-                                    "count": 0
-                                },
-                                "count": 0,
-                                "errors": {
-                                    "count": 0
-                                }
-                            },
-                            "event": {
-                                "received": {
-                                    "count": 0
-                                }
-                            }
-                        },
-                        "collect": {
-                            "request": {
-                                "count": 0
-                            },
-                            "response": {
-                                "valid": {
-                                    "count": 0
-                                },
-                                "count": 0,
-                                "errors": {
-                                    "ratelimit": 0,
-                                    "unauthorized": 0,
-                                    "count": 0,
-                                    "timeout": 0
-                                }
-                            }
+                        "usage": {
+                            "bytes": 40849408
                         }
                     }
                 }
             },
-            "beat": {
-                "name": "kevins-macbook-pro.home",
-                "host": "kevins-macbook-pro.home",
-                "type": "apm-server",
-                "uuid": "5877a00d-57b0-44dc-84f1-3158bbc8262b",
-                "version": "8.5.2"
+            "cpu": {
+                "system": {
+                    "ticks": 130,
+                    "time": {
+                        "ms": 130
+                    }
+                },
+                "total": {
+                    "ticks": 360,
+                    "time": {
+                        "ms": 360
+                    },
+                    "value": 360
+                },
+                "user": {
+                    "ticks": 230,
+                    "time": {
+                        "ms": 230
+                    }
+                }
+            },
+            "handles": {
+                "limit": {
+                    "hard": 1048576,
+                    "soft": 1048576
+                },
+                "open": 15
+            },
+            "info": {
+                "ephemeral_id": "3dc76b1b-a3bf-4354-b038-5b6092bcc559",
+                "name": "metricbeat",
+                "uptime": {
+                    "ms": 13839
+                },
+                "version": "8.5.0"
             },
             "libbeat": {
+                "config": {
+                    "reloads": 0,
+                    "running": 0,
+                    "starts": 0,
+                    "stops": 0
+                },
                 "output": {
+                    "events": {
+                        "acked": 2,
+                        "active": 0,
+                        "batches": 2,
+                        "dropped": 0,
+                        "duplicates": 0,
+                        "failed": 0,
+                        "toomany": 0,
+                        "total": 2
+                    },
+                    "read": {
+                        "bytes": 4340,
+                        "errors": 0
+                    },
                     "type": "elasticsearch",
                     "write": {
-                        "bytes": 0
-                    },
-                    "events": {
-                        "batches": 0,
-                        "total": 0,
-                        "toomany": 0,
-                        "active": 0,
-                        "failed": 0,
-                        "acked": 0
+                        "bytes": 4658,
+                        "errors": 0
                     }
                 },
                 "pipeline": {
+                    "clients": 2,
                     "events": {
-                        "total": 0
+                        "active": 1,
+                        "dropped": 0,
+                        "failed": 0,
+                        "filtered": 0,
+                        "published": 3,
+                        "retry": 1,
+                        "total": 3
+                    },
+                    "queue": {
+                        "acked": 2
                     }
                 }
+            },
+            "memstats": {
+                "gc_next": 23947368,
+                "memory": {
+                    "alloc": 18478576,
+                    "total": 38256424
+                },
+                "rss": 142700544
+            },
+            "runtime": {
+                "goroutines": 32
+            },
+            "state": {
+                "events": 1,
+                "failures": 0,
+                "success": 1
+            },
+            "system": {
+                "cpu": {
+                    "cores": 10
+                },
+                "load": {
+                    "1": 2.36,
+                    "15": 1.51,
+                    "5": 1.82,
+                    "norm": {
+                        "1": 0.236,
+                        "15": 0.151,
+                        "5": 0.182
+                    }
+                }
+            },
+            "uptime": {
+                "ms": 13839
             }
         },
-        "id": "5877a00d-57b0-44dc-84f1-3158bbc8262b",
-        "type": "apm-server"
+        "type": "metricbeat"
+    },
+    "data_stream": {
+        "dataset": "beats.stack_monitoring.stats",
+        "namespace": "ep",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
     },
     "elastic_agent": {
         "id": "de291921-7d38-4a60-89ca-cb6080ca6aa7",
-        "version": "8.5.0",
-        "snapshot": false
+        "snapshot": false,
+        "version": "8.5.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "beats.stack_monitoring.stats",
+        "duration": 6892400,
+        "ingested": "2022-11-23T17:09:29Z",
+        "module": "beat"
     },
     "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.47-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "20.04.5 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
+        "architecture": "x86_64",
         "containerized": true,
+        "hostname": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
             "192.168.192.7"
         ],
-        "name": "docker-fleet-agent",
-        "id": "66392b0697b84641af8006d87aeb89f1",
         "mac": [
             "02-42-C0-A8-C0-07"
         ],
-        "architecture": "x86_64"
+        "name": "docker-fleet-agent",
+        "os": {
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.5 LTS (Focal Fossa)"
+        }
     },
     "metricset": {
-        "period": 10000,
-        "name": "stats"
+        "name": "stats",
+        "period": 10000
     },
-    "event": {
-        "duration": 4129800,
-        "agent_id_status": "verified",
-        "ingested": "2022-11-23T17:48:12Z",
-        "module": "beat",
-        "dataset": "beats.stack_monitoring.stats"
+    "service": {
+        "address": "http://elastic-package-service_beat_1:5066/stats",
+        "name": "beat",
+        "type": "beat"
     }
 }
 ```
@@ -802,10 +582,10 @@ An example event for `state` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-29T18:38:05.443Z",
+    "@timestamp": "2022-11-23T17:08:54.575Z",
     "agent": {
-        "ephemeral_id": "8d020ba8-b508-4317-a51f-691393b23698",
-        "id": "a5b58ea2-61ef-4711-9928-26a0927114c4",
+        "ephemeral_id": "552bd946-18b1-44bd-9cab-f6baa2dffe3d",
+        "id": "de291921-7d38-4a60-89ca-cb6080ca6aa7",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.5.0"
@@ -813,19 +593,19 @@ An example event for `state` looks as following:
     "beat": {
         "elasticsearch": {
             "cluster": {
-                "id": "FhIjkXeERgim13-hecC0bA"
+                "id": "TtFsAyBvS-GP8YnmKAaCgg"
             }
         },
         "state": {
             "beat": {
-                "host": "8f59cbbbf97d",
-                "name": "8f59cbbbf97d",
-                "type": "apm-server",
-                "uuid": "22595421-c062-4be4-bb2a-a3f7c78320d3",
+                "host": "7db5d44ab310",
+                "name": "7db5d44ab310",
+                "type": "metricbeat",
+                "uuid": "8bf6384a-5ade-4097-b270-fa7acec60ed0",
                 "version": "8.5.0"
             },
             "cluster": {
-                "uuid": "FhIjkXeERgim13-hecC0bA"
+                "uuid": "TtFsAyBvS-GP8YnmKAaCgg"
             },
             "host": {
                 "containerized": "containerized",
@@ -839,6 +619,9 @@ An example event for `state` looks as following:
             "management": {
                 "enabled": false
             },
+            "module": {
+                "count": 2
+            },
             "output": {
                 "name": "elasticsearch"
             },
@@ -846,8 +629,8 @@ An example event for `state` looks as following:
                 "name": "mem"
             },
             "service": {
-                "id": "22595421-c062-4be4-bb2a-a3f7c78320d3",
-                "name": "apm-server",
+                "id": "8bf6384a-5ade-4097-b270-fa7acec60ed0",
+                "name": "metricbeat",
                 "version": "8.5.0"
             }
         }
@@ -861,15 +644,15 @@ An example event for `state` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "a5b58ea2-61ef-4711-9928-26a0927114c4",
+        "id": "de291921-7d38-4a60-89ca-cb6080ca6aa7",
         "snapshot": false,
         "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "beats.stack_monitoring.state",
-        "duration": 2605790,
-        "ingested": "2022-11-29T18:38:06Z",
+        "duration": 3815000,
+        "ingested": "2022-11-23T17:08:55Z",
         "module": "beat"
     },
     "host": {
@@ -878,10 +661,10 @@ An example event for `state` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.24.0.7"
+            "192.168.192.7"
         ],
         "mac": [
-            "02-42-AC-18-00-07"
+            "02-42-C0-A8-C0-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
