@@ -8,8 +8,8 @@
             "icon": "machineLearningApp"
         },
         "query": {
-          "bool": {
-            "must_not": [
+            "bool": {
+              "must_not": [
               {
                 "terms": {
                   "user.name": [
@@ -76,10 +76,10 @@
                             }
                         ],
                         "influencers": [
-                              "host.name",
-                              "user.name",
-                              "process.name"
-                            ]
+                            "host.name",
+                            "user.name",
+                            "process.name"
+                        ]
                     },
                     "data_description": {
                         "time_field": "@timestamp",
@@ -110,10 +110,10 @@
                             }
                         ],
                         "influencers": [
-                              "host.name",
-                              "user.name",
-                              "process.name"
-                            ]
+                            "host.name",
+                            "user.name",
+                            "process.name"
+                        ]
                     },
                     "data_description": {
                         "time_field": "@timestamp",
@@ -135,7 +135,7 @@
                     "analysis_config": {
                         "bucket_span": "15m",
                         "detectors": [
-                            {
+                           {
                                 "detector_description": "rare by \"file.extension\" partitionfield=\"host.name\"",
                                 "function": "rare",
                                 "by_field_name": "file.extension",
@@ -144,10 +144,10 @@
                             }
                         ],
                         "influencers": [
-                              "host.name",
-                              "user.name",
-                              "file.name"
-                            ]
+                            "host.name",
+                            "user.name",
+                            "file.name"
+                        ]
                     },
                     "data_description": {
                         "time_field": "@timestamp",
@@ -178,10 +178,10 @@
                             }
                         ],
                         "influencers": [
-                              "host.name",
-                              "user.name",
-                              "file.path"
-                            ]
+                            "host.name",
+                            "user.name",
+                            "file.path"
+                        ]
                     },
                     "data_description": {
                         "time_field": "@timestamp",
@@ -191,8 +191,9 @@
                         "created_by": "ml-module-lmd"
                     }
                 }
-            },
-          "datafeeds": [
+            }
+        ],
+        "datafeeds": [
             {
                 "id": "datafeed-high-count-remote-file-transfer",
                 "job_id": "high-count-remote-file-transfer",
@@ -202,7 +203,7 @@
                     ],
                     "job_id": "high-count-remote-file-transfer",
                     "query": {
-                      "bool": {
+                       "bool": {
                         "must_not": [
                           {
                             "terms": {
@@ -260,7 +261,7 @@
                     ],
                     "job_id": "high-file-size-remote-file-transfer",
                     "query": {
-                      "bool": {
+                        "bool": {
                         "must_not": [
                           {
                             "terms": {
@@ -318,7 +319,7 @@
                     ],
                     "job_id": "rare-file-extension-remote-transfer",
                     "query": {
-                      "bool": {
+                        "bool": {
                         "must_not": [
                           {
                             "terms": {
@@ -368,15 +369,15 @@
                 }
             },
             {
-              "id": "datafeed-rare-file-path-remote-transfer",
-              "job_id": "rare-file-path-remote-transfer",
-              "config": {
-                "indices": [
-                  "INDEX_PATTERN_NAME"
-                ],
+                "id": "datafeed-rare-file-path-remote-transfer",
                 "job_id": "rare-file-path-remote-transfer",
-                "query": {
-                  "bool": {
+                "config": {
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "job_id": "rare-file-path-remote-transfer",
+                    "query": {
+                        "bool": {
                     "must_not": [
                       {
                         "terms": {
@@ -422,27 +423,15 @@
                       }
                     ]
                   }
-                },
-                 "runtime_mappings": {
-      "file_directory": {
-        "type": "keyword",
-        "script": {
-          "source": """def st=new String();def st1=new String();if(doc.containsKey('file.path')  && doc['file.path'].size() != 0 ){st=doc['file.path'].value.replace('/','\\').splitOnToken('\\')[-1];st1=doc['file.path'].value.replace(st,"");emit((st1));} else { emit('None');}"""
                     }
-                  }
                 }
-              }
             }
-          ]
-        },
-            "id": "lmd-ml",
-            "migrationVersion": {
-                  "search": "7.16.0"
-          },
-          "references": [],
-          "type": "ml-module"
-          }
-
-
-
-
+        ]
+    },
+    "id": "lmd-ml",
+    "migrationVersion": {
+        "search": "7.16.0"
+    },
+    "references": [],
+    "type": "ml-module"
+}
