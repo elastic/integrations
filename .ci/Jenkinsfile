@@ -112,7 +112,7 @@ pipeline {
                                 ''')
                               sh(label: "Benchmark integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package benchmark -v --report-format xUnit --report-output file
+                                ../../build/elastic-package benchmark -v --report-format json --report-output file
                                 ''')
                             }
                           }
@@ -178,9 +178,9 @@ def gitHubCommentWithBenchmarkReport() {
     def benchmarkResults = 'benchmark-results'
     def currentBenchmarkResults = "build/${benchmarkResults}"
     def baseline = "build/${env.CHANGE_TARGET}/${benchmarkResults}"
-    def detailLevel = "short"
+    def isFullReport = "false"
     if (env.GITHUB_COMMENT?.contains('benchmark fullreport')) {
-      detailLevel = "full"
+      isFullReport = "true"
     }
     dir("${BASE_DIR}") {
       // download artifacts for this PR
@@ -207,9 +207,7 @@ def gitHubCommentWithBenchmarkReport() {
       }
 
       // run the benchmark diff generator
-      withMageEnv(){
-        sh(label: 'mage GetGithubMarkdownBenchReport', script: "mage GetGithubMarkdownBenchReport ${currentBenchmarkResults} ${baseline} ${env.BENCHMARK_THRESHOLD} ${benchmarkGitHubFile} ${detailLevel}")
-      }
+      sh(label: 'elastic-package report benchmark', script: "elastic-package report benchmark --fail-on-missing=false --new=\"${currentBenchmarkResults}\" --old=\"${baseline}\" --threshold=${env.BENCHMARK_THRESHOLD} --report-output-path=\"${benchmarkGitHubFile}\" --full=${isFullReport}")
 
       // report back with a github comment the benchmark diff
       try {
