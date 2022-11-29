@@ -5,49 +5,65 @@ processors:
       value: event
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats: 
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - grok:
+      field: cisco_ise.log.message.description
+      if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
+      patterns:
+        - "^%{DATA:event.action}:"
       ignore_failure: true
-  - script:
-      lang: painless
-      if: ctx?.cisco_ise?.log?.message?.code != null
-      source: |
-        def eventCategory = new ArrayList();
-        def eventType = new ArrayList();
-        def categoryReferenceTable = [
-          ["messageCodeArray": ["5200","5231","5233","5239"], "name": "authentication"]
-        ];
-        def typeReferenceTable = [
-          ["messageCodeArray": ["5200","5231","5233","5239"], "name": "info"]
-        ];
-
-        for (entry in categoryReferenceTable) {
-          if (entry.messageCodeArray.contains(ctx.cisco_ise.log.message.code)) {
-            eventCategory.add(entry.name);
-          }
-        }
-        for (entry in typeReferenceTable) {
-          if (entry.messageCodeArray.contains(ctx.cisco_ise.log.message.code)) {
-            eventType.add(entry.name);
-          }
-        }
-
-        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
-        ctx.event.category = eventCategory;
-        ctx.event.type = eventType;
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - append:
+      field: event.category
+      value: authentication
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5231','5233','5239'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
+  - append:
+      field: event.type
+      value: info
+      if: ctx.cisco_ise?.log?.message?.code != null && ['5200','5231','5233','5239'].contains(ctx.cisco_ise.log.message.code)
+      ignore_failure: true
   - kv:
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
@@ -108,7 +124,7 @@ processors:
       target_field: cisco_ise.log.calling_station.id
       ignore_missing: true
   - foreach:
-      if: "ctx?.cisco_ise?.log?.log_details['cisco-av-pair'] != null && ctx?.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List"
+      if: "ctx.cisco_ise?.log?.log_details['cisco-av-pair'] != null && ctx.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List"
       field: cisco_ise.log.log_details.cisco-av-pair
       processor:
         kv:
@@ -122,7 +138,7 @@ processors:
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_missing: true
   - kv:
-      if: "ctx?.cisco_ise?.log?.log_details['cisco-av-pair'] != null && !(ctx?.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List)"
+      if: "ctx.cisco_ise?.log?.log_details['cisco-av-pair'] != null && !(ctx.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List)"
       field : cisco_ise.log.log_details.cisco-av-pair
       target_field: cisco_ise.log.cisco_av_pair
       field_split: ', '
@@ -157,7 +173,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
         - remove:
             field: cisco_ise.log.cisco_av_pair.cts-environment-version
-            ignore_missing: true   
+            ignore_missing: true
   - convert:
       field: cisco_ise.log.log_details.ClientLatency
       target_field: cisco_ise.log.client.latency
@@ -227,8 +243,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{source.ip}}}' 
-      if: ctx?.source?.ip != null
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -283,7 +299,7 @@ processors:
   - append:
       field: related.ip
       value: '{{{cisco_ise.log.nas.ip}}}'
-      if: ctx?.cisco_ise?.log?.nas?.ip != null
+      if: ctx.cisco_ise?.log?.nas?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -297,7 +313,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: cisco_ise.log.log_details.NAS-Port
-      ignore_missing: true      
+      ignore_missing: true
   - rename:
       field: cisco_ise.log.log_details.NAS-Port-Id
       target_field: cisco_ise.log.nas.port.id
@@ -437,13 +453,13 @@ processors:
   - append:
       field: user.name
       value: '{{{cisco_ise.log.log_details.UserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.UserName != null
+      if: ctx.cisco_ise?.log?.log_details?.UserName != null
       ignore_failure: true
       allow_duplicates: false
   - append:
       field: related.user
       value: '{{{cisco_ise.log.log_details.UserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.UserName != null
+      if: ctx.cisco_ise?.log?.log_details?.UserName != null
       ignore_failure: true
       allow_duplicates: false
   - remove:
@@ -452,13 +468,13 @@ processors:
   - append:
       field: user.name
       value: '{{{cisco_ise.log.log_details.User-Name}}}'
-      if: ctx?.cisco_ise?.log?.log_details['User-Name'] != null
+      if: ctx.cisco_ise?.log?.log_details['User-Name'] != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.user
       value: '{{{cisco_ise.log.log_details.lUser-Name}}}'
-      if: ctx?.cisco_ise?.log?.log_details['User-Name'] != null
+      if: ctx.cisco_ise?.log?.log_details['User-Name'] != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
@@ -467,13 +483,13 @@ processors:
   - append:
       field: user.name
       value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.OriginalUserName != null
+      if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
       allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.user
       value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
-      if: ctx?.cisco_ise?.log?.log_details?.OriginalUserName != null
+      if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
@@ -493,8 +509,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{destination.ip}}}' 
-      if: ctx?.destination?.ip != null
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
@@ -523,8 +539,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{client.ip}}}' 
-      if: ctx?.client?.ip != null
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
