@@ -106,9 +106,12 @@ processors:
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
+  - append: 
+      field: x509.issuer.common_name
+      value: '{{{json.CertificateCN}}}'
+      if: ctx.json?.CertificateCN != null
+  - remove:
       field: json.CertificateCN
-      target_field: x509.issuer.common_name
       ignore_missing: true
   - rename:
       field: json.SessionID
