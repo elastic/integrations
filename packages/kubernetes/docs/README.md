@@ -3,6 +3,11 @@
 This integration is used to collect logs and metrics from 
 [Kubernetes clusters](https://kubernetes.io/).
 
+| |
+| ------------- | 
+| **This integration requires kube-state-metrics, which is not included with Kubernetes by default. For dashboards to properly populate, the [kube-state-metrics service must be deployed to your Kubernetes cluster](https://github.com/kubernetes/kube-state-metrics)** |
+
+
 As one of the main pieces provided for Kubernetes monitoring, this integration is capable of fetching metrics from several components:
 
 - [kubelet](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet/)
@@ -38,17 +43,15 @@ which is used in some configuration examples. But in general, and lately, this e
 
 #### state_* and event
 
+State_* datasets are enabled by default.
+
 All datasets with the `state_` prefix require `hosts` field pointing to `kube-state-metrics`
 service within the cluster. As the service provides cluster-wide metrics, there's no need to fetch them per node,
 hence the recommendation is to run these datasets as part of an `Agent Deployment` with one only replica.
 
-> Note: 
-> Kube-state-metrics is not deployed by default in Kubernetes. For these cases, see Kubernetes's instructions on [Kubernetes Deployment](https://github.com/kubernetes/kube-state-metrics#kubernetes-deployment). 
-
-Generally `kube-state-metrics` runs a `Deployment` and is accessible via a service called `kube-state-metrics` on
+ Generally `kube-state-metrics` runs a `Deployment` and is accessible via a service called `kube-state-metrics` on
 `kube-system` namespace, which will be the service to use in our configuration.
 
-state_* datasets are not enabled by default.
 
 ### apiserver
 

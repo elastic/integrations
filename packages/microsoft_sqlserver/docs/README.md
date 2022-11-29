@@ -57,7 +57,12 @@ See: [View the SQL Server error log in SQL Server Management Studio](https://doc
 
 ### performance metrics
 
-Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter name as an input.
+Collects the `performance` counter metrics. Dynamic counter feature provides flexibility to collect metrics by providing the counter as an input.
+This input can be a regular expression which will filter results based on pattern.
+For example, if %grant% is given as input, it will enable metrics collection for all of the counters with name like 'Memory Grants Pending', 'Active memory grants count' etc.
+MSSQL supports limited set of RegExp, See [here] (https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms187489(v=sql.105)?redirectedfrom=MSDN) for details.
+
+>Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lower case and remove special characters and these fields will not have any static field mappings.
 
 The feature `merge_results` has been introduced in 8.4 beats which create a single event by combining the metrics together in a single event. See [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event) for details.
 
@@ -346,10 +351,10 @@ An example event for `performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-04T12:33:59.171Z",
+    "@timestamp": "2022-11-15T10:59:06.048Z",
     "agent": {
-        "ephemeral_id": "54815e19-bc14-40d2-b1e0-c16234963b52",
-        "id": "bd4366c7-33ba-4d56-8c63-fc6a15c98c17",
+        "ephemeral_id": "c15c314e-c8ef-41f0-8697-eefd3aa8d0a1",
+        "id": "c305f9fa-07c8-41b9-b950-fa4652b743bb",
         "name": "docker-fleet-agent",
         "type": "metricbeat",
         "version": "8.5.0"
@@ -378,15 +383,15 @@ An example event for `performance` looks as following:
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "bd4366c7-33ba-4d56-8c63-fc6a15c98c17",
+        "id": "c305f9fa-07c8-41b9-b950-fa4652b743bb",
         "snapshot": false,
         "version": "8.5.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.performance",
-        "duration": 42729100,
-        "ingested": "2022-11-04T12:34:00Z",
+        "duration": 40261000,
+        "ingested": "2022-11-15T10:59:07Z",
         "module": "sql"
     },
     "host": {
@@ -395,10 +400,10 @@ An example event for `performance` looks as following:
         "hostname": "docker-fleet-agent",
         "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "172.18.0.7"
+            "172.31.0.7"
         ],
         "mac": [
-            "02-42-AC-12-00-07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -418,20 +423,17 @@ An example event for `performance` looks as following:
     "mssql": {
         "metrics": {
             "active_temp_tables": 0,
-            "batch_requests_per_sec": 59,
-            "buffer_cache_hit_ratio": 990,
-            "buffer_checkpoint_pages_per_sec": 105,
+            "batch_requests_per_sec": 65,
+            "buffer_cache_hit_ratio": 74,
+            "buffer_checkpoint_pages_per_sec": 274,
             "buffer_database_pages": 2215,
-            "buffer_page_life_expectancy": 18,
+            "buffer_page_life_expectancy": 30,
             "buffer_target_pages": 2408448,
-            "compilations_per_sec": 81,
-            "dynamic_counter": {
-                "name": "Memory Grants Pending                                                                                                           ",
-                "value": 0
-            },
-            "lock_waits_per_sec": 6,
-            "logins_per_sec": 18,
-            "logouts_per_sec": 17,
+            "compilations_per_sec": 83,
+            "lock_waits_per_sec": 3,
+            "logins_per_sec": 20,
+            "logouts_per_sec": 19,
+            "memory_grants_pending": 0,
             "page_splits_per_sec": 9,
             "re_compilations_per_sec": 0,
             "transactions": 0,
@@ -463,11 +465,10 @@ An example event for `performance` looks as following:
 | mssql.metrics.buffer_target_pages | Ideal number of pages in the buffer pool. | long |  |
 | mssql.metrics.compilations_per_sec | Number of SQL compilations per second. Indicates the number of times the compile code path is entered. Includes compiles caused by statement-level recompilations in SQL Server. After SQL Server user activity is stable, this value reaches a steady state. | float | gauge |
 | mssql.metrics.connection_reset_per_sec | Total number of logins started per second from the connection pool. | float | gauge |
-| mssql.metrics.dynamic_counter.name | Dynamic counter name is given by user. | keyword |  |
-| mssql.metrics.dynamic_counter.value | Dynamic counter value is fetched from performance table for the dynamic counter name which is provided by user. | long |  |
 | mssql.metrics.lock_waits_per_sec | Number of lock requests per second that required the caller to wait. | float | gauge |
 | mssql.metrics.logins_per_sec | Total number of logins started per second. This does not include pooled connections. | float | gauge |
 | mssql.metrics.logouts_per_sec | Total number of logout operations started per second. | float | gauge |
+| mssql.metrics.memory_grants_pending | This is generated from the default pattern given for Dynamic Counter Name variable. This counter tells us how many processes are waiting for the memory to be assigned to them so they can get started. | long |  |
 | mssql.metrics.page_splits_per_sec | Number of page splits per second that occur as the result of overflowing index pages. | float | gauge |
 | mssql.metrics.re_compilations_per_sec | Number of statement recompiles per second. Counts the number of times statement recompiles are triggered. Generally, you want the recompiles to be low. | float | gauge |
 | mssql.metrics.transactions | Total number of transactions | long |  |
