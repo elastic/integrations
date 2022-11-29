@@ -120,6 +120,10 @@ In order to use this integration, you will need `API Enabled permission`.
 - Check if the Profile has `API Enabled permission` is enabled. If not enable it for data collection.
 - Under `Setup` > `Administrator` > `Profiles`, select the `profile` associated with the `User Account` and check for the `API Enabled permission` under `System Permissions`.
 
+## Compatibility
+
+This integration has been tested against Salesforce `Spring '22 (v54.0) release`.
+
 ## Troubleshooting
 
 - In case of data ingestion if the user finds following type of error logs:
@@ -141,8 +145,8 @@ An example event for `login_rest` looks as following:
 {
     "@timestamp": "2022-11-22T04:46:15.591Z",
     "agent": {
-        "ephemeral_id": "0f111524-46fb-4012-a000-a486afb3c536",
-        "id": "6adb1777-f02e-498c-87a9-c6fca04e403c",
+        "ephemeral_id": "ce504617-c797-4257-845c-f1d8f57cc9bd",
+        "id": "4a8a40ad-666c-45db-a9d1-3b027852bef0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.4.1"
@@ -156,7 +160,7 @@ An example event for `login_rest` looks as following:
         "version": "8.4.0"
     },
     "elastic_agent": {
-        "id": "6adb1777-f02e-498c-87a9-c6fca04e403c",
+        "id": "4a8a40ad-666c-45db-a9d1-3b027852bef0",
         "snapshot": false,
         "version": "8.4.1"
     },
@@ -166,9 +170,9 @@ An example event for `login_rest` looks as following:
         "category": [
             "authentication"
         ],
-        "created": "2022-11-25T10:49:21.665Z",
+        "created": "2022-11-29T07:28:46.257Z",
         "dataset": "salesforce.login_rest",
-        "ingested": "2022-11-25T10:49:26Z",
+        "ingested": "2022-11-29T07:28:50Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"API_TYPE\":\"f\",\"API_VERSION\":\"9998.0\",\"AUTHENTICATION_METHOD_REFERENCE\":\"\",\"BROWSER_TYPE\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36\",\"CIPHER_SUITE\":\"ECDHE-RSA-AES256-GCM-SHA384\",\"CLIENT_IP\":\"81.2.69.142\",\"CPU_TIME\":\"30\",\"DB_TOTAL_TIME\":\"52435102\",\"EVENT_TYPE\":\"Login\",\"LOGIN_KEY\":\"QfNecrLXSII6fsBq\",\"LOGIN_STATUS\":\"LOGIN_NO_ERROR\",\"ORGANIZATION_ID\":\"00D5j000000VI3n\",\"REQUEST_ID\":\"4ehU_U-nbQyAPFl1cJILm-\",\"REQUEST_STATUS\":\"Success\",\"RUN_TIME\":\"83\",\"SESSION_KEY\":\"\",\"SOURCE_IP\":\"81.2.69.142\",\"TIMESTAMP\":\"20221122044615.591\",\"TIMESTAMP_DERIVED\":\"2022-11-22T04:46:15.591Z\",\"TLS_PROTOCOL\":\"TLSv1.2\",\"URI\":\"/index.jsp\",\"URI_ID_DERIVED\":\"s4heK3WbH-lcJIL3-n\",\"USER_ID\":\"0055j000000utlP\",\"USER_ID_DERIVED\":\"0055j000000utlPAAQ\",\"USER_NAME\":\"user@elastic.co\",\"USER_TYPE\":\"Standard\"}",
@@ -187,6 +191,7 @@ An example event for `login_rest` looks as following:
         ]
     },
     "salesforce": {
+        "instance_url": "http://elastic-package-service_salesforce_1:8010",
         "login": {
             "access_mode": "rest",
             "api": {
@@ -267,6 +272,7 @@ An example event for `login_rest` looks as following:
 | event.url | URL linking to an external system to continue investigation of this event. This URL links to another system where in-depth investigation of the specific occurrence of this event can take place. Alert events, indicated by `event.kind:alert`, are a common use case for this field. | keyword |  |  |
 | input.type | Input type. | keyword |  |  |
 | related.ip | All of the IPs seen on your event. | ip |  |  |
+| salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |  |  |
 | salesforce.login.access_mode | Mode of API from which the event is collected. | keyword |  |  |
 | salesforce.login.api.type | The type of API request. | keyword |  |  |
 | salesforce.login.api.version | The version of the API that's being used. | keyword |  |  |

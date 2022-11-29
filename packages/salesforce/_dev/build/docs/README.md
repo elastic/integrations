@@ -120,6 +120,10 @@ In order to use this integration, you will need `API Enabled permission`.
 - Check if the Profile has `API Enabled permission` is enabled. If not enable it for data collection.
 - Under `Setup` > `Administrator` > `Profiles`, select the `profile` associated with the `User Account` and check for the `API Enabled permission` under `System Permissions`.
 
+## Compatibility
+
+This integration has been tested against Salesforce `Spring '22 (v54.0) release`.
+
 ## Troubleshooting
 
 - In case of data ingestion if the user finds following type of error logs:
