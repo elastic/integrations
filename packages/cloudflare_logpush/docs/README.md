@@ -72,7 +72,7 @@ This module has been tested against **Cloudflare version v4**.
 
 **Note**:
 - The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
-- The GCS input currently only accepts a service account json key or a service account json file for authentication.
+- The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
 - The GCS input currently only supports json data.
 
 ### To collect data from the Cloudflare HTTP Endpoint, follow the below steps:
