@@ -11,30 +11,54 @@ processors:
       value: [info]
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number == 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
         - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - grok:
       field: message
-      if: ctx?.cisco_ise?.log?.segment?.number > 0
-      patterns: 
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       field: _tmp.timestamp
-      target_field: '@timestamp'
-      formats: 
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
       timezone: '{{{event.timezone}}}'
-      ignore_failure: true
-  - kv: 
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - kv:
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
       field_split: ', '
       value_split: =
       ignore_failure: true
   - foreach:
-      if: "ctx?.cisco_ise?.log?.log_details.AVPair != null && ctx?.cisco_ise?.log?.log_details.AVPair instanceof List"
+      if: "ctx.cisco_ise?.log?.log_details.AVPair != null && ctx.cisco_ise?.log?.log_details.AVPair instanceof List"
       field: cisco_ise.log.log_details.AVPair
       processor:
         kv:
@@ -51,7 +75,7 @@ processors:
       field: cisco_ise.log.log_details.AVPair
       ignore_missing: true
   - kv:
-      if: "ctx?.cisco_ise?.log?.log_details['cisco-av-pair'] != null && !(ctx?.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List)"
+      if: "ctx.cisco_ise?.log?.log_details['cisco-av-pair'] != null && !(ctx.cisco_ise?.log?.log_details['cisco-av-pair'] instanceof List)"
       field : cisco_ise.log.log_details.cisco-av-pair
       target_field: cisco_ise.log.avpair
       field_split: ', '
@@ -66,14 +90,14 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      if: ctx?.cisco_ise?.log?.message?.description != null
+      if: ctx.cisco_ise?.log?.message?.description != null
       source:
-        ctx.event.action = ctx?.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
+        ctx.event.action = ctx.cisco_ise?.log?.message?.description?.splitOnToken(":")[0]?.toLowerCase();
   - convert:
       field: cisco_ise.log.log_details.Device IP Address
       target_field: client.ip
-      type: ip 
-      ignore_failure: true
+      type: ip
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -83,8 +107,8 @@ processors:
       ignore_missing: true
   - append:
       field: related.ip
-      value: '{{{client.ip}}}' 
-      if: ctx?.client?.ip != null
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -118,7 +142,7 @@ processors:
       field: cisco_ise.log.log_details.Privilege-Level
       target_field: cisco_ise.log.privilege.level
       type: long
-      ignore_failure: true
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -139,7 +163,7 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      if: ctx?.user?.name != null
+      if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -151,7 +175,7 @@ processors:
       field: cisco_ise.log.log_details.Remote-Address
       target_field: destination.ip
       type: ip
-      ignore_failure: true
+      ignore_missing: true
       on_failure:
         - append:
             field: error.message
@@ -162,7 +186,7 @@ processors:
   - append:
       field: related.ip
       value: '{{{destination.ip}}}'
-      if: ctx?.destination?.ip != null
+      if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -170,12 +194,12 @@ processors:
       target_field: cisco_ise.log.authen_method
       ignore_failure: true
       ignore_missing: true
-  - date: 
+  - date:
       field: cisco_ise.log.avpair.start_time
       target_field: cisco_ise.log.avpair.start_time
-      if: ctx?.cisco_ise?.log?.avpair?.start_time != "0"
+      if: ctx.cisco_ise?.log?.avpair?.start_time != "0"
       ignore_failure: true
-      formats: 
+      formats:
         - UNIX
       on_failure:
         - append:
@@ -242,11 +266,11 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
         - remove:
             field: cisco_ise.log.avpair.elapsed_time
-  - date: 
+  - date:
       field: cisco_ise.log.avpair.stop_time
       target_field: cisco_ise.log.avpair.stop_time
-      if: ctx?.cisco_ise?.log?.avpair?.stop_time != null
-      formats: 
+      if: ctx.cisco_ise?.log?.avpair?.stop_time != null
+      formats:
         - UNIX
       on_failure:
         - append:
