@@ -338,8 +338,11 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.esa.attachment_details |  | text |
 | cisco_secure_email_gateway.log.esa.av_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.content_filter_verdict |  | keyword |
+| cisco_secure_email_gateway.log.esa.dane.host |  | keyword |
+| cisco_secure_email_gateway.log.esa.dane.ip |  | ip |
+| cisco_secure_email_gateway.log.esa.dane.status |  | keyword |
 | cisco_secure_email_gateway.log.esa.delivery_connection_id |  | keyword |
-| cisco_secure_email_gateway.log.esa.dha_source |  | keyword |
+| cisco_secure_email_gateway.log.esa.dha_source |  | ip |
 | cisco_secure_email_gateway.log.esa.dkim_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.dlp_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.dmarc_verdict |  | keyword |
@@ -351,8 +354,10 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.esa.injection_connection_id |  | keyword |
 | cisco_secure_email_gateway.log.esa.mail_auto_remediation_action |  | text |
 | cisco_secure_email_gateway.log.esa.mail_flow_policy |  | keyword |
+| cisco_secure_email_gateway.log.esa.mar_action |  | keyword |
 | cisco_secure_email_gateway.log.esa.mf_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.msg_size |  | long |
+| cisco_secure_email_gateway.log.esa.msg_too_big |  | keyword |
 | cisco_secure_email_gateway.log.esa.msg_too_big_from_sender |  | boolean |
 | cisco_secure_email_gateway.log.esa.outbreak_filter_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.rate_limited_ip |  | keyword |
@@ -360,6 +365,13 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.esa.sdr_consolidated_domain_age |  | text |
 | cisco_secure_email_gateway.log.esa.sender_group |  | keyword |
 | cisco_secure_email_gateway.log.esa.spf_verdict |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.domain |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.in.cipher |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.in.connection_status |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.in.protocol |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.out.cipher |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.out.connection_status |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.out.protocol |  | keyword |
 | cisco_secure_email_gateway.log.esa.url_details |  | text |
 | cisco_secure_email_gateway.log.estimated.quarantine | Estimated number of messages in the Spam quarantine. | long |
 | cisco_secure_email_gateway.log.estimated.quarantine_release_queue | Estimated number of messages in the Spam quarantine release queue. | long |
