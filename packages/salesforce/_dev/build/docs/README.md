@@ -8,20 +8,6 @@ Use the Salesforce integration to get visibility into the Salesforce Org operati
 
 For example, if you want to check the number of successful and failed login attempts over time, you could check the same based on the ingested events or the visualization. Then you can create visualizations, alerts and troubleshoot by looking at the documents ingested in Elasticsearch.
 
-## Data streams
-
-The Salesforce integration collects log events using REST API of Salesforce.
-
-**Logs** help you keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm).
-
-Data streams:
-- `login_rest`: Tracks login activity of users who log in to Salesforce.
-
-## Compatibility
-
-This integration has been tested against Salesforce `Spring '22 (v54.0) release`.
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
@@ -123,6 +109,16 @@ In order to use this integration, you will need `API Enabled permission`.
 ## Compatibility
 
 This integration has been tested against Salesforce `Spring '22 (v54.0) release`.
+
+## Data streams
+
+The Salesforce integration collects log events using REST API of Salesforce.
+
+**Logs** help you keep a record of events happening in Salesforce.
+Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm).
+
+Data streams:
+- `login_rest`: Tracks login activity of users who log in to Salesforce.
 
 ## Troubleshooting
 
