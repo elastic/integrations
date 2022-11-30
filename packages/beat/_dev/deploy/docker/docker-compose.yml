@@ -1,10 +1,10 @@
 version: "2.3"
 services:
   beat:
-    image: "${ELASTIC_IMAGE}:${ELASTIC_VERSION:-8.5.0}"
+    image: "${ELASTIC_IMAGE:-docker.elastic.co/beats/metricbeat}:${ELASTIC_VERSION:-8.5.0}"
     command: --strict.perms=false
     user: root
     volumes:
-      - "./config/${CONFIG_PATH}:/usr/share/${CONFIG_PATH}"
+      - "./config/${CONFIG_PATH:-metricbeat/metricbeat.yml}:/usr/share/${CONFIG_PATH:-metricbeat/metricbeat.yml}"
     ports:
       - "127.0.0.1:5066:5066"
