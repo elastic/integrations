@@ -41,12 +41,12 @@ processors:
       type: integer
       ignore_failure: true
   - set:
-      if: ctx?.forgerock?.response?.status == "SUCCESSFUL"
+      if: ctx.forgerock?.response?.status == "SUCCESSFUL"
       field: event.outcome
       value: "success"
       ignore_failure: true
   - set:
-      if: ctx?.forgerock?.response?.status == "FAILED"
+      if: ctx.forgerock?.response?.status == "FAILED"
       field: event.outcome
       value: "failure"
       ignore_failure: true
@@ -57,7 +57,7 @@ processors:
       ignore_failure: true
   - script:
       lang: painless
-      if: ctx.event?.duration != null && ctx.forgerock?.response.elapsedTimeUnits == 'MILLISECONDS'
+      if: ctx.event?.duration != null && ctx.forgerock?.response?.elapsedTimeUnits == 'MILLISECONDS'
       params:
         MS_TO_NS: 1000000
       source: >-
