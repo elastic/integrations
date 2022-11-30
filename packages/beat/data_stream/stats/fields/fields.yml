@@ -5,9 +5,120 @@
     - name: apm_server
       type: group
       fields:
+        - name: root
+          type: group
+          fields:
+            - name: unset
+              type: long
+            - name: request.count
+              type: long
+            - name: response
+              type: group
+              fields:
+                - name: count
+                  type: long
+                - name: errors.closed
+                  type: long
+                - name: errors.count
+                  type: long
+                - name: errors.decode
+                  type: long
+                - name: errors.forbidden
+                  type: long
+                - name: errors.internal
+                  type: long
+                - name: errors.invalidquery
+                  type: long
+                - name: errors.method
+                  type: long
+                - name: errors.notfound
+                  type: long
+                - name: errors.queue
+                  type: long
+                - name: errors.ratelimit
+                  type: long
+                - name: errors.timeout
+                  type: long
+                - name: errors.toolarge
+                  type: long
+                - name: errors.unauthorized
+                  type: long
+                - name: errors.unavailable
+                  type: long
+                - name: errors.validate
+                  type: long
+                - name: valid.accepted
+                  type: long
+                - name: valid.count
+                  type: long
+                - name: valid.notmodified
+                  type: long
+                - name: valid.ok
+                  type: long
+        - name: sampling
+          type: group
+          fields:
+            - name: transactions_dropped
+              type: long
+        - name: profiling
+          type: group
+          fields:
+            - name: grpc
+              type: group
+              fields:
+                - name: collect
+                  type: group
+                  fields:
+                    - name: request.count
+                      type: long
+                    - name: response
+                      type: group
+                      fields:
+                        - name: count
+                          type: long
+                        - name: errors.count
+                          type: long
+                        - name: errors.ratelimit
+                          type: long
+                        - name: errors.timeout
+                          type: long
+                        - name: errors.unauthorized
+                          type: long
+                        - name: valid.count
+                          type: long
+            - name: unrecoverable_error.count
+              type: long
+            - name: indexer
+              type: group
+              fields:
+                - name: document
+                  type: group
+                  fields:
+                    - name: events.failure.count
+                      type: long
+                    - name: events.total.count
+                      type: long
+                    - name: executables.failure.count
+                      type: long
+                    - name: executables.total.count
+                      type: long
+                    - name: stackframes.failure.count
+                      type: long
+                    - name: stackframes.total.count
+                      type: long
+                    - name: stacktraces.failure.count
+                      type: long
+                    - name: stacktraces.total.count
+                      type: long
         - name: processor
           type: group
           fields:
+            - name: stream.accepted
+              type: long
+            - name: stream.errors.invalid
+              type: long
+            - name: stream.errors.toolarge
+              type: long
             - name: span.transformations
               type: long
             - name: error
@@ -118,6 +229,8 @@
         - name: server
           type: group
           fields:
+            - name: unset
+              type: long
             - name: request.count
               type: long
             - name: concurrent.wait.ms
@@ -135,6 +248,8 @@
                     - name: accepted
                       type: long
                     - name: count
+                      type: long
+                    - name: notmodified
                       type: long
                 - name: errors
                   type: group
@@ -163,7 +278,198 @@
                       type: long
                     - name: method
                       type: long
+                    - name: invalidquery
+                      type: long
+                    - name: notfound
+                      type: long
+                    - name: timeout
+                      type: long
+                    - name: unavailable
+                      type: long
+        - name: otlp
+          type: group
+          fields:
+            - name: http
+              type: group
+              fields:
+                - name: traces
+                  type: group
+                  fields:
+                    - name: request.count
+                      type: long
+                    - name: response.count
+                      type: long
+                    - name: response.errors.count
+                      type: long
+                    - name: response.errors.ratelimit
+                      type: long
+                    - name: response.errors.timeout
+                      type: long
+                    - name: response.errors.unauthorized
+                      type: long
+                    - name: response.valid.count
+                      type: long
+                - name: metrics
+                  type: group
+                  fields:
+                    - name: consumer.unsupported_dropped
+                      type: long
+                    - name: request.count
+                      type: long
+                    - name: response.count
+                      type: long
+                    - name: response.errors.count
+                      type: long
+                    - name: response.errors.ratelimit
+                      type: long
+                    - name: response.errors.timeout
+                      type: long
+                    - name: response.errors.unauthorized
+                      type: long
+                    - name: response.valid.count
+                      type: long
+                - name: logs
+                  type: group
+                  fields:
+                    - name: request.count
+                      type: long
+                    - name: response.count
+                      type: long
+                    - name: response.errors.count
+                      type: long
+                    - name: response.errors.ratelimit
+                      type: long
+                    - name: response.errors.timeout
+                      type: long
+                    - name: response.errors.unauthorized
+                      type: long
+                    - name: response.valid.count
+                      type: long
+            - name: grpc
+              type: group
+              fields:
+                - name: traces
+                  type: group
+                  fields:
+                    - name: request.count
+                      type: long
+                    - name: response.count
+                      type: long
+                    - name: response.errors.count
+                      type: long
+                    - name: response.errors.ratelimit
+                      type: long
+                    - name: response.errors.timeout
+                      type: long
+                    - name: response.errors.unauthorized
+                      type: long
+                    - name: response.valid.count
+                      type: long
+                - name: metrics
+                  type: group
+                  fields:
+                    - name: consumer.unsupported_dropped
+                      type: long
+                    - name: request.count
+                      type: long
+                    - name: response.count
+                      type: long
+                    - name: response.errors.count
+                      type: long
+                    - name: response.errors.ratelimit
+                      type: long
+                    - name: response.errors.timeout
+                      type: long
+                    - name: response.errors.unauthorized
+                      type: long
+                    - name: response.valid.count
+                      type: long
+                - name: logs
+                  type: group
+                  fields:
+                    - name: request.count
+                      type: long
+                    - name: response.count
+                      type: long
+                    - name: response.errors.count
+                      type: long
+                    - name: response.errors.ratelimit
+                      type: long
+                    - name: response.errors.timeout
+                      type: long
+                    - name: response.errors.unauthorized
+                      type: long
+                    - name: response.valid.count
+                      type: long
+        - name: jaeger
+          type: group
+          fields:
+            - name: grpc
+              type: group
+              fields:
+                - name: logs
+                  type: group
+                  fields:
+                    - name: request.count
+                      type: long
+                    - name: response.count
+                      type: long
+                    - name: response.errors.count
+                      type: long
+                    - name: response.errors.ratelimit
+                      type: long
+                    - name: response.errors.timeout
+                      type: long
+                    - name: response.errors.unauthorized
+                      type: long
+                    - name: response.valid.count
+                      type: long
+                - name: sampling
+                  type: group
+                  fields:
+                    - name: event.received.count
+                      type: long
+                    - name: request.count
+                      type: long
+                    - name: response.count
+                      type: long
+                    - name: response.errors.count
+                      type: long
+                    - name: response.valid.count
+                      type: long
+                - name: collect
+                  type: group
+                  fields:
+                    - name: request.count
+                      type: long
+                    - name: response
+                      type: group
+                      fields:
+                        - name: count
+                          type: long
+                        - name: errors.count
+                          type: long
+                        - name: errors.ratelimit
+                          type: long
+                        - name: errors.timeout
+                          type: long
+                        - name: errors.unauthorized
+                          type: long
+                        - name: valid.count
+                          type: long
+        - name: aggregation
+          type: group
+          fields:
+            - name: txmetrics
+              type: group
+              fields:
+                - name: active_groups
+                  type: long
+                - name: overflowed
+                  type: long
         - name: acm.request.count
+          type: long
+        - name: acm.unset
           type: long
         - name: acm.response
           type: group
@@ -215,6 +521,8 @@
                 - name: closed
                   type: long
                 - name: unauthorized
+                  type: long
+                - name: timeout
                   type: long
     - name: info
       type: group
