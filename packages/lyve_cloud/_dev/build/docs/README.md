@@ -18,7 +18,7 @@ Before adding the integration, you must complete the following tasks in the Lyve
 
 # Configuration
 1. Click on "Add Lyve Cloud" button on the upper right side of the agent configuration screen to create a policy for an elastic agent.
-2. Turn on the switch for Collecting logs from lyve cloud, under "Change defaults" fill in the reqired information for ingesting the correct logs *access key*, *secret key*, *bucket name*, *endpoint* .
+2. Turn on the switch for Collecting logs from lyve cloud, under "Change defaults" fill in the reqired information for ingesting the correct logs *access key*, *secret key*, *bucket name* and *endpoint* .
 3. Give A "New agent policy name", click on "Save and continue" and click on "Add to hosts".
 4. Follow Elastic's instructions to add an agent and you're set to go.
 
