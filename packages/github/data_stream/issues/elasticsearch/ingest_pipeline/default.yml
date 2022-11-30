@@ -132,10 +132,22 @@ processors:
         Map label;
         List labels = new ArrayList();
         List labels_raw = ctx._temp.labels;
+        String label_key, label_value;
         for (Map label_raw: labels_raw) {
             label = new HashMap();
             label.put("name", label_raw.name);
             label.put("description", label_raw.description);
+            //if (label_raw.name.contains(":")){
+            if (label_raw.name =~ /\:/){
+                def label_arr = label_raw.name.splitOnToken(":");
+                if (label_arr.length > 0){
+                    label_key = label_arr[0];
+                    label_value = label_arr[1];
+                    if (label_key.equals("Team") || label_key.equals("Integration")) {
+                        label.put(label_key.toLowerCase(), label_value);
+                    }
+                }
+            }
             labels.add(label);
         }
         ctx.github.issues.labels = labels;
