@@ -3,10 +3,10 @@ description: Pipeline for processing azure frontdoor waf logs
 processors:
   - set:
       field: event.ingested
-      value: '{{_ingest.timestamp}}'
+      value: "{{_ingest.timestamp}}"
   - set:
       field: ecs.version
-      value: '1.12.0'
+      value: "1.12.0"
   - rename:
       field: message
       target_field: event.original
@@ -14,21 +14,9 @@ processors:
   - set:
       field: cloud.provider
       value: azure
-#  - grok:
-#      field: event.original
-#      patterns:
-#              - '{ body: %{GREEDYDATA:body}, properties: %{WORD:properties}, offset: %{NUMBER:offset}, sequence_number: %{NUMBER:sequence_number}, enqueued_time=%{GREEDYDATA:enqueued_time} }'
-#      ignore_failure: true
-#  - gsub:
-#      field: body
-#      pattern: \'
-#      replacement: ""
-#  - json:
-#      field: body
-#      target_field: azure.frontdoor_waf
   - drop:
       description: Drop if  inavlid json
-      if: "ctx?.event.original.contains('\"records\"')"
+      if: 'ctx?.event.original.contains(''"records"'')'
   - json:
       field: event.original
       target_field: azure.frontdoor.waf
@@ -81,7 +69,7 @@ processors:
       target_field: azure.frontdoor.waf.policy
       ignore_missing: true
   - rename:
-      field: azure.frontdoor.waf.properties.policyMode 
+      field: azure.frontdoor.waf.properties.policyMode
       target_field: azure.frontdoor.waf.policy_mode
       ignore_missing: true
   - rename:
@@ -95,22 +83,10 @@ processors:
 
   - date:
       field: azure.frontdoor.waf.time
-      target_field: '@timestamp'
+      target_field: "@timestamp"
       ignore_failure: true
       formats:
-        - ISO8601   
-
-#  - grok:
-#      field: azure.resource_id
-#      patterns:
-#      - /SUBSCRIPTIONS/%{SUBID:azure.subscription_id}/RESOURCEGROUPS/%{GROUPID:azure.resource.group}/PROVIDERS/%{PROVIDERNAME:azure.resource.provider}/NAMESPACES/%{NAMESPACE:azure.resource.namespace}
-#      - /subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/namespaces/%{NAMESPACE:azure.resource.namespace}
-#      pattern_definitions:
-#        SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
-#        GROUPID: .+
-#        PROVIDERNAME: .+
-#        NAMESPACE: .+
-#      ignore_failure: true
+        - ISO8601
 
   - remove:
       field:
@@ -141,6 +117,6 @@ processors:
       ignore_missing: true
 
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
