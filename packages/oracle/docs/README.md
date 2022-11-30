@@ -37,21 +37,15 @@ If the listener is not running, use the command to start:
 
 Then, Metricbeat can be launched.
 
-*Host Configuration*
+*Oracle DSN Configuration*
 
-The following two types of host configurations are supported:
+The supported configuration takes one of the forms
+- `oracle://<user>:<password>@<connection_string>`
+- `<user>:<password>@<connection_string>`
 
-1. Old style host configuration for backwards compatibility:
-    - `hosts: ["user/pass@0.0.0.0:1521/ORCLPDB1.localdomain"]`
-    - `hosts: ["user/password@0.0.0.0:1521/ORCLPDB1.localdomain as sysdba"]`
-
-2. DSN host configuration:
-    - `hosts: ['user="user" password="pass" connectString="0.0.0.0:1521/ORCLPDB1.localdomain"']`
-    - `hosts: ['user="user" password="password" connectString="host:port/service_name" sysdba=true']`
-
-
-Note: If the password contains the backslash (`\`) character, it must be escaped with a backslash. For example, if the password is `my\_password`, it should be written as `my\\_password`.
-
+Examples of supported configurations are as below:
+- `oracle://sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
+- `sys:Oradoc_db1@0.0.0.0:1521/ORCLCDB.localdomain?sysdba=1`
 
 ## Compatibility
 
