@@ -262,3 +262,19 @@ rules:
         body: |
           {"kind": "reports#auditActivities","items": [{"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"events":[{"name":"2sv_disable","type":"2sv_change"},{"name":"2sv_enroll","type":"2sv_change"},{"name":"password_edit","type":"password_change"},{"name":"recovery_email_edit","type":"recovery_info_change"},{"name":"recovery_phone_edit","type":"recovery_info_change"},{"name":"recovery_secret_qa_edit","type":"recovery_info_change"},
           {"name":"titanium_enroll","type":"titanium_change"},{"name":"titanium_unenroll","type":"titanium_change"}],"id":{"applicationName":"user_accounts","customerId":"1","time":"{{.request.vars.startTime}}","uniqueQualifier":1},"ipAddress":"98.235.162.24","kind":"admin#reports#activity","ownerDomain":"elastic.com"}]}
+  - path: /admin/reports/v1/activity/users/all/applications/rules
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {"kind": "reports#auditActivities","items": [{"kind":"admin#reports#activity","id":{"time":"2020-10-02T15:00:00Z","uniqueQualifier":1,"applicationName":"rules","customerId":"1"},"actor":{"callerType":"USER","email":"foo@bar.com","profileId":1},"ownerDomain":"elastic.com","ipAddress":"67.43.156.13","events":[{"type":"rule_match_type","name":"rule_match","parameters":[{"name":"has_alert","boolValue":"true"},{"name":"actor_ip_address","value":"127.0.0.0"},{"name":"resource_recipients_omitted_count","intValue":"1234"},{"name":"rule_name","multiValue":["managers"]},{"name":"rule_id","multiIntValue":["12"]}]}]}]}

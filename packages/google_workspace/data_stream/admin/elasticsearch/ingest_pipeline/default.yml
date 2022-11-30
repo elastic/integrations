@@ -15,6 +15,9 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - set:
+      field: event.kind
+      value: event
   - date:
       field: json.id.time
       timezone: UTC
@@ -48,6 +51,10 @@ processors:
       field: json.actor.email
       target_field: source.user.email
       ignore_missing: true
+  - set: 
+      field: user.email
+      copy_from: source.user.email
+      ignore_failure: true
   - rename: 
       field: json.actor.profileId
       target_field: source.user.id

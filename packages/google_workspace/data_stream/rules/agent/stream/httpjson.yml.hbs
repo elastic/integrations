@@ -1,0 +1,74 @@
+config_version: "2"
+interval: {{interval}}
+auth.oauth2.provider: google
+auth.oauth2.google.jwt_file: {{jwt_file}}
+auth.oauth2.google.jwt_json: {{jwt_json}}
+auth.oauth2.google.delegated_account: {{delegated_account}}
+auth.oauth2.scopes:
+  - https://www.googleapis.com/auth/admin.reports.audit.readonly
+request.url: {{api_host}}/admin/reports/v1/activity/users/{{user_key}}/applications/rules
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: url.params.startTime
+      value: '[[.cursor.last_execution_datetime]]'
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
+response.split:
+  target: body.items
+  split:
+    target: body.events
+    keep_parent: true
+response.pagination:
+  - set:
+      target: url.params.startTime
+      value: '[[.last_response.url.params.Get "startTime"]]'
+      fail_on_template_error: true
+  - set:
+      target: url.params.pageToken
+      value: >-
+        [[- if index .last_response.body "nextPageToken" -]]
+          [[- .last_response.body.nextPageToken -]]
+        [[- end -]]
+      fail_on_template_error: true
+cursor:
+  last_execution_datetime:
+    value: >-
+      [[- $time := .last_event.id.time -]]
+      [[- if not (parseDate $time "RFC3339").IsZero -]]
+        [[- $time -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05") -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05Z").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05Z") -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05.999Z").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05.999Z") -]]
+      [[- else if not (parseDate $time "2006-01-02T15:04:05 MST").IsZero -]]
+        [[- formatDate (parseDate $time "2006-01-02T15:04:05 MST") -]]
+      [[- else -]]
+        [[- formatDate now -]]
+      [[- end -]]
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

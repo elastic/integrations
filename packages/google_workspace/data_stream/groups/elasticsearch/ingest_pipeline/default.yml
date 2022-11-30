@@ -10,6 +10,9 @@ processors:
   - append: 
       field: event.type
       value: group
+  - set:
+      field: event.kind
+      value: event
   - rename:
       field: message
       target_field: event.original
@@ -52,6 +55,10 @@ processors:
       field: json.actor.email
       target_field: source.user.email
       ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: source.user.email
+      ignore_failure: true
   - convert:
       field: json.actor.profileId
       target_field: source.user.id
