@@ -200,25 +200,20 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2003-01-29T00:06:30.000Z",
+    "@timestamp": "2022-03-17T18:24:37.000Z",
     "agent": {
-        "ephemeral_id": "ab82be79-d8e4-4040-9682-84f0c4a8d908",
-        "id": "1e26c946-6d54-4898-8ba3-0b3ba2eba188",
+        "ephemeral_id": "38022101-9955-4beb-9142-36413c6c6010",
+        "id": "6ce78c06-320a-45a5-9cba-1c0a31e69ae0",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.3"
+        "version": "8.5.0"
     },
     "cisco_secure_email_gateway": {
         "log": {
-            "bounce_type": "Bounced",
             "category": {
-                "name": "bounces"
+                "name": "amp"
             },
-            "delivery_connection_id": "2",
-            "error_code": "5.1.0",
-            "message": "Bounced: DCID 2 MID 15232 From:\u003cexample.com\u003e To:\u003cexample.com\u003e RID 0 - 5.1.0 - Unknown address error ('550', ['5.1.1 The email account that you tried to reach does not exist. Please try', \"5.1.1 double-checking the recipient's email address for typos or\", '5.1.1 unnecessary spaces. Learn more at', '5.1.1  xxxxx ay44si12078156oib.94 - gsmtp'])",
-            "recipient_id": "0",
-            "response": "'550', ['5.1.1 The email account that you tried to reach does not exist. Please try', \"5.1.1 double-checking the recipient's email address for typos or\", '5.1.1 unnecessary spaces. Learn more at', '5.1.1  xxxxx ay44si12078156oib.94 - gsmtp']"
+            "message": "File reputation query initiating. File Name = 'mod-6.exe', MID = 5, File Size = 1673216 bytes, File Type = application/x-dosexec"
         }
     },
     "data_stream": {
@@ -230,35 +225,37 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "1e26c946-6d54-4898-8ba3-0b3ba2eba188",
+        "id": "6ce78c06-320a-45a5-9cba-1c0a31e69ae0",
         "snapshot": false,
-        "version": "8.4.3"
+        "version": "8.5.0"
     },
     "email": {
-        "from": {
-            "address": "example.com"
+        "attachments": {
+            "file": {
+                "name": "mod-6.exe",
+                "size": 1673216
+            }
         },
-        "message_id": "15232",
-        "to": {
-            "address": "example.com"
-        }
+        "content_type": "application/x-dosexec",
+        "message_id": "5"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "cisco_secure_email_gateway.log",
-        "ingested": "2022-11-07T09:35:24Z",
-        "kind": "event",
-        "reason": "Unknown address error"
+        "ingested": "2022-11-30T07:27:39Z",
+        "kind": "event"
     },
     "input": {
-        "type": "log"
+        "type": "udp"
     },
     "log": {
-        "file": {
-            "path": "/tmp/service_logs/bounces.@123456789.s"
-        },
         "level": "info",
-        "offset": 0
+        "source": {
+            "address": "172.23.0.4:55374"
+        },
+        "syslog": {
+            "priority": 166
+        }
     },
     "tags": [
         "forwarded",
@@ -341,20 +338,26 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.esa.attachment_details |  | text |
 | cisco_secure_email_gateway.log.esa.av_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.content_filter_verdict |  | keyword |
+| cisco_secure_email_gateway.log.esa.dane.host |  | keyword |
+| cisco_secure_email_gateway.log.esa.dane.ip |  | ip |
+| cisco_secure_email_gateway.log.esa.dane.status |  | keyword |
 | cisco_secure_email_gateway.log.esa.delivery_connection_id |  | keyword |
-| cisco_secure_email_gateway.log.esa.dha_source |  | keyword |
+| cisco_secure_email_gateway.log.esa.dha_source |  | ip |
 | cisco_secure_email_gateway.log.esa.dkim_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.dlp_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.dmarc_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.final_action_details |  | text |
 | cisco_secure_email_gateway.log.esa.friendly_from |  | keyword |
 | cisco_secure_email_gateway.log.esa.graymail_verdict |  | keyword |
+| cisco_secure_email_gateway.log.esa.helo.domain |  | keyword |
 | cisco_secure_email_gateway.log.esa.helo.ip |  | ip |
 | cisco_secure_email_gateway.log.esa.injection_connection_id |  | keyword |
 | cisco_secure_email_gateway.log.esa.mail_auto_remediation_action |  | text |
 | cisco_secure_email_gateway.log.esa.mail_flow_policy |  | keyword |
+| cisco_secure_email_gateway.log.esa.mar_action |  | keyword |
 | cisco_secure_email_gateway.log.esa.mf_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.msg_size |  | long |
+| cisco_secure_email_gateway.log.esa.msg_too_big |  | keyword |
 | cisco_secure_email_gateway.log.esa.msg_too_big_from_sender |  | boolean |
 | cisco_secure_email_gateway.log.esa.outbreak_filter_verdict |  | keyword |
 | cisco_secure_email_gateway.log.esa.rate_limited_ip |  | keyword |
@@ -362,6 +365,13 @@ An example event for `log` looks as following:
 | cisco_secure_email_gateway.log.esa.sdr_consolidated_domain_age |  | text |
 | cisco_secure_email_gateway.log.esa.sender_group |  | keyword |
 | cisco_secure_email_gateway.log.esa.spf_verdict |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.domain |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.in.cipher |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.in.connection_status |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.in.protocol |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.out.cipher |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.out.connection_status |  | keyword |
+| cisco_secure_email_gateway.log.esa.tls.out.protocol |  | keyword |
 | cisco_secure_email_gateway.log.esa.url_details |  | text |
 | cisco_secure_email_gateway.log.estimated.quarantine | Estimated number of messages in the Spam quarantine. | long |
 | cisco_secure_email_gateway.log.estimated.quarantine_release_queue | Estimated number of messages in the Spam quarantine release queue. | long |
