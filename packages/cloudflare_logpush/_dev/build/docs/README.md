@@ -65,6 +65,16 @@ This module has been tested against **Cloudflare version v4**.
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 
+### To collect data from GCS Buckets, follow the below steps:
+- Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/google-cloud-storage/) to ingest data into a GCS bucket.
+- Configure the GCS bucket names and credentials along with the required configs under the "Collect Cloudflare Logpush logs via Google Cloud Storage" section. 
+- Make sure the service account and authentication being used, has proper levels of access to the GCS bucket [Manage Service Account Keys](https://cloud.google.com/iam/docs/creating-managing-service-account-keys/)
+
+**Note**:
+- The GCS input currently does not support fetching of buckets using bucket prefixes, so the bucket names have to be configured manually for each data stream.
+- The GCS input currently only accepts a service account JSON key or a service account JSON file for authentication.
+- The GCS input currently only supports json data.
+
 ### To collect data from the Cloudflare HTTP Endpoint, follow the below steps:
 - Reference link to [Enable HTTP destination](https://developers.cloudflare.com/logs/get-started/enable-destinations/http/) for Cloudflare Logpush.
 - Add same custom header along with its value on both the side for additional security.
@@ -88,7 +98,7 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 2. In the integrations search bar type **Cloudflare Logpush**.
 3. Click the **Cloudflare Logpush** integration from the search results.
 4. Click the **Add Cloudflare Logpush** button to add Cloudflare Logpush integration.
-5. Enable the Integration with the HTTP Endpoint or AWS S3 input.
+5. Enable the Integration with the HTTP Endpoint, AWS S3 input or GCS input.
 6. Under the AWS S3 input, there are two types of inputs: using AWS S3 Bucket or using SQS.
 7. Configure Cloudflare to send logs to the Elastic Agent.
 
