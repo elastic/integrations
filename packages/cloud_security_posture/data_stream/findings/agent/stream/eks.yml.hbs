@@ -1,5 +1,16 @@
-name: Findings
-# Defines how often an event is sent to the output
+config:
+  v1:
+    posture: {{posture}}
+    deployment: {{deployment}}
+    benchmark: cis_eks
+    aws:
+      credentials:
+        access_key_id: {{aws.credentials.access_key_id}}
+        session_token: {{aws.credentials.session_token}}
+        secret_access_key: {{aws.credentials.secret_access_key}}
+        type: {{aws.credentials.type}}
+
+
 fetchers:
   - name: kube-api
   - name: process
@@ -18,6 +29,8 @@ fetchers:
 processors:
   - add_cluster_id: ~
 
+
+{{!-- BACKWARD COMPATIBILITY cloudbeat 8.5 & 8.6 --}}
 
 runtime_cfg:
   activated_rules:
@@ -50,21 +63,21 @@ runtime_cfg:
       - cis_5_4_3
       - cis_5_4_5
 
-{{#if access_key_id}}
-access_key_id: {{access_key_id}}
+{{#if aws.credentials.access_key_id}}
+access_key_id: {{aws.credentials.access_key_id}}
 {{/if}}
-{{#if secret_access_key}}
-secret_access_key: {{secret_access_key}}
+{{#if aws.credentials.secret_access_key}}
+secret_access_key: {{aws.credentials.secret_access_key}}
 {{/if}}
-{{#if session_token}}
-session_token: {{session_token}}
+{{#if aws.credentials.session_token}}
+session_token: {{aws.credentials.session_token}}
 {{/if}}
-{{#if shared_credential_file}}
-shared_credential_file: {{shared_credential_file}}
+{{#if aws.credentials.shared_credential_file}}
+shared_credential_file: {{aws.credentials.shared_credential_file}}
 {{/if}}
-{{#if credential_profile_name}}
-credential_profile_name: {{credential_profile_name}}
+{{#if aws.credentials.credential_profile_name}}
+credential_profile_name: {{aws.credentials.credential_profile_name}}
 {{/if}}
-{{#if role_arn}}
-role_arn: {{role_arn}}
+{{#if aws.credentials.role_arn}}
+role_arn: {{aws.credentials.role_arn}}
 {{/if}}
