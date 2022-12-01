@@ -8,7 +8,7 @@ PHP-FPM (FastCGI Process Manager) is a web tool used to speed up the performance
 
 The PHP-FPM integration collects metrics data.
 
-Metrics give you insight into the statistics of the PHP-FPM. Metrics data streams collected by the PHP-FPM integration include [pool](https://www.php.net/manual/en/fpm.status.php#:~:text=Basic%20information%20%2D%20Always%20displayed%20on%20the%20status%20page) so that the user could monitor and troubleshoot the performance of the PHP-FPM instances.
+Metrics give you insight into the statistics of the PHP-FPM. Metrics data streams collected by the PHP-FPM integration include [pool](https://www.php.net/manual/en/fpm.status.php#:~:text=Basic%20information%20%2D%20Always%20displayed%20on%20the%20status%20page) and [process](https://www.php.net/manual/en/fpm.status.php#:~:text=Per%2Dprocess%20information%20%2D%20only%20displayed%20in%20full%20output%20mode) so that the user can monitor and troubleshoot the performance of the PHP-FPM instances.
 
 Note:
 - Users can monitor and see the metrics inside the ingested documents for PHP-FPM in the logs-* index pattern from `Discover`.
@@ -40,3 +40,11 @@ This is the `pool` data stream. `pool` data stream collects metrics related to t
 {{event "pool"}}
 
 {{fields "pool"}}
+
+### Process
+
+This is the `process` data stream. `process` data stream collects metrics like request duration, content length, process state, etc.
+
+{{event "process"}}
+
+{{fields "process"}}
