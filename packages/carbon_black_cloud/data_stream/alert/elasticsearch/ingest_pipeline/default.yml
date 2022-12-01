@@ -21,10 +21,27 @@ processors:
       ignore_missing: true
   - date:
       field: json.create_time
-      target_field: "@timestamp"
-      ignore_failure: true
+      if: ctx.json?.create_time != null && ctx.json.create_time != ''
       formats:
         - ISO8601
+      on_failure:
+        - remove:
+            field: json.create_time
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+     field: json.last_update_time
+     target_field: carbon_black_cloud.alert.last_update_time
+     if: ctx.json?.last_update_time != null && ctx.json.last_update_time != ''
+     formats:
+       - ISO8601
+     on_failure:
+       - remove:
+           field: json.last_update_time
+       - append:
+           field: error.message
+           value: '{{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: alert
@@ -32,22 +49,46 @@ processors:
       field: json.id
       target_field: event.id
       ignore_missing: true
-  - rename:
-      field: json.first_event_time
-      target_field: event.start
-      ignore_missing: true
-  - rename:
-      field: json.last_event_time
-      target_field: event.end
-      ignore_missing: true
-  - rename:
+  - date:
+     field: json.first_event_time
+     target_field: event.start
+     if: ctx.json?.first_event_time != null && ctx.json.first_event_time != ''
+     formats:
+       - ISO8601
+     on_failure:
+       - remove:
+           field: json.first_event_time
+       - append:
+           field: error.message
+           value: '{{{_ingest.on_failure_message}}}'
+  - date:
+     field: json.last_event_time
+     target_field: event.end
+     if: ctx.json?.last_event_time != null && ctx.json.last_event_time != ''
+     formats:
+       - ISO8601
+     on_failure:
+       - remove:
+            field: json.last_event_time
+       - append:
+           field: error.message
+           value: '{{{_ingest.on_failure_message}}}'
+  - convert:
       field: json.severity
       target_field: event.severity
+      type: long
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.severity
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - urldecode:
       field: json.alert_url
       target_field: event.url
       ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.reason
       target_field: event.reason
@@ -57,21 +98,19 @@ processors:
       target_field: host.id
       type: string
       ignore_missing: true
+      ignore_failure: true
   - set:
       field: host.os.type
       value: windows
-      if: ctx?.json?.device_os == "WINDOWS"
+      if: ctx.json?.device_os == 'WINDOWS'
   - set:
       field: host.os.type
       value: linux
-      if: ctx?.json?.device_os == "LINUX"
+      if: ctx.json?.device_os == 'LINUX'
   - set:
       field: host.os.type
       value: macos
-      if: ctx?.json?.device_os == "MAC"
-  - set:
-      field: event.kind
-      value: alert
+      if: ctx.json?.device_os == 'MAC'
   - rename:
       field: json.device_os_version
       target_field: host.os.version
@@ -88,18 +127,12 @@ processors:
       ignore_failure: true
   - set:
       field: host.name
-      value: "{{{host.hostname}}}"
+      value: '{{{host.hostname}}}'
       ignore_failure: true
   - append:
-      field: host.ip
-      value: "{{{json.device_internal_ip}}}"
-      if: ctx?.json?.device_internal_ip != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: host.ip
-      value: "{{{json.device_external_ip}}}"
-      if: ctx?.json?.device_external_ip != null
+      field: related.hosts
+      value: '{{{host.hostname}}}'
+      if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
@@ -113,28 +146,17 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
-      field: related.ip
-      value: 
-        - "{{{json.device_internal_ip}}}"
-        - "{{{json.device_external_ip}}}"
+      field: related.hosts
+      value: '{{{user.domain}}}'
+      if: ctx.user?.domain != null
       allow_duplicates: false
+      ignore_failure: true
   - append:
       field: related.user
-      value: 
-        - "{{{user.name}}}"
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
       allow_duplicates: false
-  - append:
-      field: related.hosts
-      value: 
-        - "{{{host.hostname}}}"
-        - "{{{user.domain}}}"
-      allow_duplicates: false
-  - append:
-      field: related.hash
-      value:
-        - "{{{json.threat_cause_actor_md5}}}"
-        - "{{{json.threat_cause_actor_sha256}}}"
-      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.process_name
       target_field: process.name
@@ -199,10 +221,22 @@ processors:
       field: json.threat_cause_actor_sha256
       target_field: carbon_black_cloud.alert.threat_cause.actor.sha256
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.threat_cause.actor.sha256}}}'
+      if: ctx.carbon_black_cloud?.alert?.threat_cause?.actor?.sha256 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.threat_cause_actor_md5
       target_field: carbon_black_cloud.alert.threat_cause.actor.md5
       ignore_missing: true
+  - append:
+      field: related.hash
+      value: '{{{carbon_black_cloud.alert.threat_cause.actor.md5}}}'
+      if: ctx.carbon_black_cloud?.alert?.threat_cause?.actor?.md5 != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: json.threat_cause_cause_event_id
       target_field: carbon_black_cloud.alert.threat_cause.cause_event_id
@@ -235,6 +269,28 @@ processors:
       field: json.ioc_hit
       target_field: carbon_black_cloud.alert.ioc.hit
       ignore_missing: true
+  - convert:
+      field: json.count
+      target_field: carbon_black_cloud.alert.count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.count
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.notes_present
+      target_field: carbon_black_cloud.alert.notes_present
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.notes_present
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ioc_id
       target_field: carbon_black_cloud.alert.ioc.id
@@ -259,43 +315,107 @@ processors:
       field: json.device_os
       target_field: carbon_black_cloud.alert.device.os
       ignore_missing: true
-  - rename:
+  - convert:
       field: json.device_internal_ip
       target_field: carbon_black_cloud.alert.device.internal_ip
+      type: ip
       ignore_missing: true
-  - rename:
+      on_failure:
+        - remove:
+            field: json.device_internal_ip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      value: '{{{carbon_black_cloud.alert.device.internal_ip}}}'
+      if: ctx.carbon_black_cloud?.alert?.device?.internal_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{carbon_black_cloud.alert.device.internal_ip}}}'
+      if: ctx.carbon_black_cloud?.alert?.device?.internal_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
       field: json.device_external_ip
       target_field: carbon_black_cloud.alert.device.external_ip
+      type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.device_external_ip
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: host.ip
+      value: '{{{carbon_black_cloud.alert.device.external_ip}}}'
+      if: ctx.carbon_black_cloud?.alert?.device?.external_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{carbon_black_cloud.alert.device.external_ip}}}'
+      if: ctx.carbon_black_cloud?.alert?.device?.external_ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.workflow
+      target_field: carbon_black_cloud.alert.workflow
+      ignore_missing: true
+  - date:
+     field: carbon_black_cloud.alert.workflow.last_update_time
+     target_field: carbon_black_cloud.alert.workflow.last_update_time
+     if: ctx.carbon_black_cloud?.alert?.workflow?.last_update_time != null && ctx.carbon_black_cloud.alert.workflow.last_update_time != ''
+     formats:
+       - ISO8601
+     on_failure:
+       - remove:
+           field: carbon_black_cloud.alert.workflow.last_update_time
+       - append:
+           field: error.message
+           value: '{{{_ingest.on_failure_message}}}'
   - remove:
       field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
       ignore_failure: true
       ignore_missing: true
   - lowercase:
       field: json.category
       ignore_missing: true
+  - remove:
+      field:
+        - json.severity
+        - json.create_time
+        - json.last_event_time
+        - json.last_update_time
+        - json.first_event_time
+        - json.device_id
+        - json.alert_url
+        - json.count
+        - json.notes_present
+        - json.device_internal_ip
+        - json.device_external_ip
+      ignore_missing: true
   - script:
-      description: Adds all the remaining fields in fields under carbon_black_cloud.alert
+      description: Adds all the remaining fields in fields under carbon_black_cloud.alert.
       lang: painless
-      if: ctx?.json != null
+      if: ctx.json != null
       source: |
         for (Map.Entry m : ctx.json.entrySet()) {
           ctx.carbon_black_cloud.alert[m.getKey()] = m.getValue();
         }
   - remove:
-      field:
-        - json
-        - carbon_black_cloud.alert.create_time
-        - carbon_black_cloud.alert.device_id
-        - carbon_black_cloud.alert.alert_url
+      field: json
       ignore_missing: true
   - script:
-      description: Drops null/empty values recursively
+      description: Drops null/empty values recursively.
       lang: painless
       source: |
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == "") {
+          if (object == null || object == '') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -308,6 +428,6 @@ processors:
         }
         dropEmptyFields(ctx);
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: '{{{_ingest.on_failure_message}}}'
