@@ -84,6 +84,9 @@ pipeline {
     stage('Check integrations') {
       steps {
         script {
+          if (!fileExists("${BASE_DIR}/packages")) {
+            error "Has the stage been restarted? This pipeline requires to be restarted running all stages."
+          }
           dir("${BASE_DIR}/packages") {
             def integrations = [:]
             // Include hack to skip temporary files with "@tmp" suffix.
