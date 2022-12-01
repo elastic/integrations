@@ -8,13 +8,14 @@
         "index": [
             "winlogbeat-*",
             "logs-endpoint.events.*",
-            "logs-windows.*"
+            "logs-windows.*",
+            "endgame-*"
         ],
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Scheduled Tasks AT Command Enabled",
         "note": "",
-        "query": "registry where\n registry.path : \"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Schedule\\\\Configuration\\\\EnableAt\" and\n registry.data.strings : (\"1\", \"0x00000001\")\n",
+        "query": "registry where\n  registry.path : (\n    \"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Schedule\\\\Configuration\\\\EnableAt\",\n    \"\\\\REGISTRY\\\\MACHINE\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Schedule\\\\Configuration\\\\EnableAt\"\n  ) and registry.data.strings : (\"1\", \"0x00000001\")\n",
         "references": [
             "https://docs.microsoft.com/en-us/windows/win32/cimwin32prov/win32-scheduledjob"
         ],
@@ -39,7 +40,8 @@
             "Host",
             "Windows",
             "Threat Detection",
-            "Defense Evasion"
+            "Defense Evasion",
+            "Elastic Endgame"
         ],
         "threat": [
             {
@@ -67,7 +69,7 @@
         ],
         "timestamp_override": "event.ingested",
         "type": "eql",
-        "version": 100
+        "version": 101
     },
     "id": "9aa0e1f6-52ce-42e1-abb3-09657cee2698",
     "type": "security-rule"
