@@ -260,6 +260,10 @@ def isPrAffected(integrationName) {
   // Packages supported in Kibana >= 8.0.0, shouldn't be included in daily tests of the stack 7.x
   if (manifest != null && manifest['conditions'] != null) {
     def kibanaVersionCondition = manifest['conditions']['kibana.version']
+    if (kibanaVersionCondition == null) {
+      kibanaVersionCondition = manifest['conditions']['kibana']['version']
+    }
+
     if (kibanaVersionCondition != null) {
       if (!kibanaVersionCondition.contains('^7.') && "${env.STACK_VERSION}".startsWith('7.')) {
         echo "[${integrationName}] PR is not affected: unsupported stack (7.x)"
