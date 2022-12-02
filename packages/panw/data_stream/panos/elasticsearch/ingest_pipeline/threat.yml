@@ -287,8 +287,32 @@ processors:
       field: source.user.name
       copy_from: panw.panos.source.user
       ignore_failure: true
+  - uri_parts:
+      if: ctx.panw?.panos?.sub_type == 'url'
+      field: panw.panos.misc
+      on_failure:
+      - set:
+          field: url.original
+          copy_from: panw.panos.misc
+          ignore_failure: true
   - set:
-      field: url.original
+      if: ctx.panw?.panos?.sub_type == 'file' && (ctx.panw?.panos?.misc instanceof String) && (ctx.panw.panos.misc.contains('/') || ctx.panw.panos.misc.contains('\\'))
+      field: file.path
+      copy_from: panw.panos.misc
+      ignore_failure: true
+  - script:
+      if: ctx.file?.path instanceof String
+      lang: painless
+      source: |-
+        // For file.path to be set it must have had one of '/' or '\' present.
+        int idx = ctx.file.path.lastIndexOf('/');
+        if (idx == -1) {
+          idx = ctx.file.path.lastIndexOf('\\');
+        }
+        ctx.file["name"] = ctx.file.path.substring(idx+1);
+  - set:
+      if: ctx.panw?.panos?.sub_type == 'file' && (ctx.panw?.panos?.misc instanceof String) && !(ctx.panw.panos.misc.contains('/') || ctx.panw.panos.misc.contains('\\'))
+      field: file.name
       copy_from: panw.panos.misc
       ignore_failure: true
   - set:
