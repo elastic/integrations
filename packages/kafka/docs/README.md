@@ -216,13 +216,8 @@ An example event for `consumergroup` looks as following:
     },
     "kafka": {
         "consumergroup": {
-            "topic": "messages",
             "error": {
                 "code": 0
-            },
-            "broker": {
-                "id": 0,
-                "address": "kafka-01:9092"
             },
             "id": "console-consumer-99447",
             "offset": -1,
@@ -232,7 +227,6 @@ An example event for `consumergroup` looks as following:
                 "id": "consumer-console-consumer-99447-1",
                 "host": "127.0.0.1"
             },
-            "partition": 0,
             "meta": ""
         },
         "broker": {
@@ -306,8 +300,6 @@ An example event for `consumergroup` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | kafka.broker.address | Broker advertised address | keyword |
 | kafka.broker.id | Broker id | long |
-| kafka.consumergroup.broker.address | Broker address | keyword |
-| kafka.consumergroup.broker.id | Broker id | long |
 | kafka.consumergroup.client.host | Client host | keyword |
 | kafka.consumergroup.client.id | Client ID (kafka setting client.id) | keyword |
 | kafka.consumergroup.client.member_id | internal consumer group member ID | keyword |
@@ -316,8 +308,6 @@ An example event for `consumergroup` looks as following:
 | kafka.consumergroup.id | Consumer Group ID | keyword |
 | kafka.consumergroup.meta | custom consumer meta data string | keyword |
 | kafka.consumergroup.offset | consumer offset into partition being read | long |
-| kafka.consumergroup.partition | Partition ID | long |
-| kafka.consumergroup.topic | Topic name | keyword |
 | kafka.partition.id | Partition id. | long |
 | kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
@@ -351,17 +341,9 @@ An example event for `partition` looks as following:
             "id": 0,
             "topic_id": "0-messages",
             "topic_broker_id": "0-messages-0",
-            "topic": {
-                "name": "messages"
-            },
-            "broker": {
-                "id": 0,
-                "address": "kafka-01:9092"
-            },
             "partition": {
                 "is_leader": true,
                 "insync_replica": true,
-                "id": 0,
                 "leader": 0,
                 "replica": 0
             }
@@ -436,20 +418,14 @@ An example event for `partition` looks as following:
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | kafka.broker.address | Broker advertised address | keyword |
 | kafka.broker.id | Broker id | long |
-| kafka.partition.broker.address | Broker address | keyword |
-| kafka.partition.broker.id | Broker id | long |
 | kafka.partition.id | Partition id. | long |
 | kafka.partition.offset.newest | Newest offset of the partition. | long |
 | kafka.partition.offset.oldest | Oldest offset of the partition. | long |
 | kafka.partition.partition.error.code | Error code from fetching partition. | long |
-| kafka.partition.partition.id | Partition id. | long |
 | kafka.partition.partition.insync_replica | Indicates if replica is included in the in-sync replicate set (ISR). | boolean |
 | kafka.partition.partition.is_leader | Indicates if replica is the leader | boolean |
-| kafka.partition.partition.isr | List of isr ids. | keyword |
 | kafka.partition.partition.leader | Leader id (broker). | long |
 | kafka.partition.partition.replica | Replica id (broker). | long |
-| kafka.partition.topic.error.code | topic error code. | long |
-| kafka.partition.topic.name | Topic name | keyword |
 | kafka.partition.topic_broker_id | Unique id of the partition in the topic and the broker. | keyword |
 | kafka.partition.topic_id | Unique id of the partition in the topic. | keyword |
 | kafka.topic.error.code | Topic error code. | long |
