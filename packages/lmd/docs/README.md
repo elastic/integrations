@@ -12,7 +12,7 @@ Then use these detection rules and anomaly detection jobs for lateral movement d
 
 In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Lateral Movement Detection (LMD). When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment.
 
-### (Optional) Enable Security rules
+### Enable Security rules
 
 To maximize the benefit of the LMD detection framework, you might consider activating detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
