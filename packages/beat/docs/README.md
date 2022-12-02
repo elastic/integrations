@@ -389,6 +389,10 @@ An example event for `stats` looks as following:
 | beat.stats.apm_server.profiling.grpc.collect.response.errors.timeout |  | long |
 | beat.stats.apm_server.profiling.grpc.collect.response.errors.unauthorized |  | long |
 | beat.stats.apm_server.profiling.grpc.collect.response.valid.count |  | long |
+| beat.stats.apm_server.profiling.ilm.custom_ilm.execution.count |  | long |
+| beat.stats.apm_server.profiling.ilm.custom_ilm.failed.count |  | long |
+| beat.stats.apm_server.profiling.ilm.custom_ilm.skipped_for_time_constraints.count |  | long |
+| beat.stats.apm_server.profiling.ilm.custom_ilm.undeleted_index.count |  | long |
 | beat.stats.apm_server.profiling.indexer.document.events.failure.count |  | long |
 | beat.stats.apm_server.profiling.indexer.document.events.total.count |  | long |
 | beat.stats.apm_server.profiling.indexer.document.executables.failure.count |  | long |
