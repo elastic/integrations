@@ -8,6 +8,10 @@ TBD
 
 ### Example event
 
+
+An example event for pta looks as following:
+
+```json
 {
     "@timestamp": "2022-11-06T18:16:43.813Z",
     "agent": {
@@ -74,6 +78,7 @@ TBD
         "id": "id=d7cd65bf-743c-4753-a78f-a20daae7e3bf,ou=user,ou=am-config"
     }
 }
+```
 
 **Exported fields**
 
