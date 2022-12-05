@@ -28,8 +28,6 @@ Filter out the Lyve Cloud logs using -
 ```data_stream.dataset:"lyve_cloud.audit" ```
 when using Lyve Cloud example dashboard or in other Analytics search fields inside the filter box.
 
-Exported fields
-
 **Exported fields**
 
 | Field | Description | Type |
@@ -120,9 +118,6 @@ An example event for `audit` looks as following:
     "ecs": {
         "version": "8.5.0"
     },
-    "event": {
-        "original": "{\"auditEntry\": {\"api\": {\"name\": \"HeadObject\", \"bucket\": \"sasha-t10\", \"object\": \"c\", \"status\": \"OK\", \"statusCode\": 200, \"timeToResponse\": \"601866322ns\"}, \"time\": \"2022-10-24T08:37:41.232759412Z\", \"version\": \"1\", \"requestID\": \"1720F4788755136D\", \"userAgent\": \"aws-cli/2.7.7 Python/3.9.11 Linux/5.15.0-52-generic exe/x86_64.ubuntu.20 prompt/off command/s3api.head-object\", \"deploymentid\": \"8fe8887f-d1e2-4918-9e33-52bfba3b0de8\", \"requestHeader\": {\"X-Real-Ip\": \"10.213.135.144:28911\", \"User-Agent\": \"aws-cli/2.7.7 Python/3.9.11 Linux/5.15.0-52-generic exe/x86_64.ubuntu.20 prompt/off command/s3api.head-object\", \"X-Amz-Date\": \"20221024T083808Z\", \"Authorization\": \"AWS4-HMAC-SHA256 Credential=\u003credacted\u003e/20221024/us-east-1/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=\u003credacted\u003e\", \"Accept-Encoding\": \"identity\", \"X-Forwarded-For\": \"85.237.127.129, 10.213.135.144\", \"X-Forwarded-Host\": \"s3.us-east-1.lyvecloud.seagate.com\", \"X-Forwarded-Proto\": \"https\", \"X-Amz-Content-Sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"}, \"responseHeader\": {\"ETag\": \"b1946ac92492d2347c6235b4d2611184\", \"Vary\": \"Origin\", \"Content-Type\": \"application/octet-stream\", \"Accept-Ranges\": \"bytes\", \"Last-Modified\": \"Sun, 23 Oct 2022 12:51:23 GMT\", \"Content-Length\": \"6\", \"X-Amz-Request-Id\": \"1720F4788755136D\", \"X-Xss-Protection\": \"1; mode=block\", \"x-amz-version-id\": \"ab44978d-0929-4c3a-8d52-17157c1fb6ad\", \"X-Amz-Bucket-Region\": \"us-east-1\", \"X-Amz-Object-Lock-Mode\": \"COMPLIANCE\", \"Content-Security-Policy\": \"block-all-mixed-content\", \"X-Amz-Server-Side-Encryption\": \"AES256\", \"X-Amz-Object-Lock-Retain-Until-Date\": \"2022-10-27T12:51:23.250Z\"}}, \"serviceAccountName\": \"sasha-terraform\", \"serviceAccountCreatorId\": \"alexander.chernin@seagate.com\"}"
-    },
     "http": {
         "response": {
             "body": {
@@ -143,14 +138,14 @@ An example event for `audit` looks as following:
                 "api": {
                     "bucket": "bucket-name",
                     "name": "HeadObject",
-                    "object": "c",
+                    "object": "object name",
                     "status": "OK",
                     "timeToResponse": 601866322
                 },
                 "requestHeader": {
-                    "X-Forwarded-For": "85.237.127.129, 10.213.135.144",
+                    "X-Forwarded-For": "8.37.27.129, 1.2.3.4",
                     "X-Forwarded-Host": "s3.us-east-1.lyvecloud.seagate.com",
-                    "X-Real-Ip": "10.213.135.144:28911"
+                    "X-Real-Ip": "1.2.3.4:28911"
                 },
                 "responseHeader": {
                     "Accept-Ranges": "bytes",
@@ -172,9 +167,9 @@ An example event for `audit` looks as following:
         "preserve_original_event"
     ],
     "user": {
-        "email": "alexander.chernin@seagate.com",
-        "id": "alexander.chernin@seagate.com",
-        "name": "sasha-terraform"
+        "email": "name.last@company.com",
+        "id": "name.last@company.com",
+        "name": "bucket-service-account-name"
     },
     "user_agent": {
         "device": {
