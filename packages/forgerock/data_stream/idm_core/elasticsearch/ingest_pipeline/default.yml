@@ -1,5 +1,5 @@
 ---
-description: Pipeline for ForgeRock am-core debug logs
+description: Pipeline for ForgeRock idm-core debug logs
 processors: 
   - set:
       field: ecs.version
@@ -13,15 +13,7 @@ processors:
       ignore_missing: true
   - json:
       field: event.original
-      target_field: json
-  - rename:
-      field: json.payload
       target_field: forgerock
-
-  - set: 
-      field: transaction.id
-      copy_from: forgerock.transactionId
-      ignore_failure: true
 
   - date:
       field: forgerock.timestamp
@@ -34,47 +26,23 @@ processors:
             field: error.message
             value: '{{ _ingest.on_failure_message }}'
 
-  # am-core processing
   - set:
       field: event.reason
-      copy_from: forgerock.message
+      copy_from: forgerock.payload
       ignore_failure: true
-  - set:
-      field: log.level
-      copy_from: forgerock.level
-      ignore_failure: true
-  - set:
-      field: log.logger
-      copy_from: forgerock.logger
-      ignore_failure: true
-  - set:
-      field: process.name
-      copy_from: forgerock.thread
-      ignore_failure: true
-  - set:
-      field: error.stack_trace
-      copy_from: forgerock.exception
-      ignore_failure: true
-
+  
   # cleaning up
   - remove:
       field:
-        - json.timestamp
-        - json.type
-        - forgerock.mdc.transactionId
+        - forgerock.timestamp
+        - forgerock.type
+        - forgerock.source
       ignore_failure: true
 
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
-        - json
-        - forgerock.timestamp
-        - forgerock.transactionId
-        - forgerock.message
-        - forgerock.level
-        - forgerock.logger
-        - forgerock.thread
-        - forgerock.exception
+        - forgerock.payload
       ignore_failure: true
       ignore_missing: true
 
