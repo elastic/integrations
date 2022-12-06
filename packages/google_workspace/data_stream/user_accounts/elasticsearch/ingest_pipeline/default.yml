@@ -4,6 +4,9 @@ processors:
   - set:
       field: ecs.version
       value: '8.5.0'
+  - set:
+      field: event.kind
+      value: event
   - append:
       field: event.type
       value: change
@@ -55,6 +58,10 @@ processors:
       field: json.actor.email
       target_field: source.user.email
       ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: source.user.email
+      ignore_failure: true
   - convert:
       field: json.actor.profileId
       target_field: source.user.id

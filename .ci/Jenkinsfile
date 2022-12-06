@@ -84,6 +84,9 @@ pipeline {
     stage('Check integrations') {
       steps {
         script {
+          if (!fileExists("${BASE_DIR}/packages")) {
+            error "Has the stage been restarted? This pipeline requires to be restarted running all stages."
+          }
           dir("${BASE_DIR}/packages") {
             def integrations = [:]
             // Include hack to skip temporary files with "@tmp" suffix.
@@ -112,7 +115,7 @@ pipeline {
                                 ''')
                               sh(label: "Benchmark integration: ${it}", script: '''
                                 eval "$(../../build/elastic-package stack shellinit)"
-                                ../../build/elastic-package benchmark -v --report-format xUnit --report-output file
+                                ../../build/elastic-package benchmark -v --report-format json --report-output file
                                 ''')
                             }
                           }
@@ -178,9 +181,9 @@ def gitHubCommentWithBenchmarkReport() {
     def benchmarkResults = 'benchmark-results'
     def currentBenchmarkResults = "build/${benchmarkResults}"
     def baseline = "build/${env.CHANGE_TARGET}/${benchmarkResults}"
-    def detailLevel = "short"
+    def isFullReport = "false"
     if (env.GITHUB_COMMENT?.contains('benchmark fullreport')) {
-      detailLevel = "full"
+      isFullReport = "true"
     }
     dir("${BASE_DIR}") {
       // download artifacts for this PR
@@ -207,9 +210,7 @@ def gitHubCommentWithBenchmarkReport() {
       }
 
       // run the benchmark diff generator
-      withMageEnv(){
-        sh(label: 'mage GetGithubMarkdownBenchReport', script: "mage GetGithubMarkdownBenchReport ${currentBenchmarkResults} ${baseline} ${env.BENCHMARK_THRESHOLD} ${benchmarkGitHubFile} ${detailLevel}")
-      }
+      sh(label: 'elastic-package report benchmark', script: "elastic-package report benchmark --fail-on-missing=false --new=\"${currentBenchmarkResults}\" --old=\"${baseline}\" --threshold=${env.BENCHMARK_THRESHOLD} --report-output-path=\"${benchmarkGitHubFile}\" --full=${isFullReport}")
 
       // report back with a github comment the benchmark diff
       try {
@@ -262,6 +263,10 @@ def isPrAffected(integrationName) {
   // Packages supported in Kibana >= 8.0.0, shouldn't be included in daily tests of the stack 7.x
   if (manifest != null && manifest['conditions'] != null) {
     def kibanaVersionCondition = manifest['conditions']['kibana.version']
+    if (kibanaVersionCondition == null) {
+      kibanaVersionCondition = manifest['conditions']['kibana']['version']
+    }
+
     if (kibanaVersionCondition != null) {
       if (!kibanaVersionCondition.contains('^7.') && "${env.STACK_VERSION}".startsWith('7.')) {
         echo "[${integrationName}] PR is not affected: unsupported stack (7.x)"
