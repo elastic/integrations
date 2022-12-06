@@ -3,6 +3,7 @@ description: Pipeline for Jamf Compliance Reporter xprotect event logs.
 processors:
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.activity_identifier
@@ -13,9 +14,11 @@ processors:
       field: jamf_compliance_reporter.log.event_attributes.activity_identifier
       target_field: jamf_compliance_reporter.log.event_attributes.activity_identifier
       type: string
+      ignore_missing: true
       ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         foreach:
           field: _ingest._value.backtrace.frames
@@ -29,9 +32,14 @@ processors:
       field: jamf_compliance_reporter.log.event_attributes.backtrace.frames.image_offset
       target_field: jamf_compliance_reporter.log.event_attributes.backtrace.frames.image_offset
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         foreach:
           field: _ingest._value.backtrace.frames
@@ -43,6 +51,7 @@ processors:
               ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.category
@@ -51,6 +60,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.event.message
@@ -59,6 +69,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.event.type
@@ -67,6 +78,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.format_string
@@ -75,14 +87,22 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         convert:
           field: _ingest._value.machTimestamp
           target_field: jamf_compliance_reporter.log.event_attributes.mach_timestamp
           type: string
-          ignore_failure: true
+          on_failure:
+            - remove:
+                field: _ingest._value.machTimestamp
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: event.type
@@ -94,6 +114,7 @@ processors:
       ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.parent_activity_identifier
@@ -104,9 +125,11 @@ processors:
       field: jamf_compliance_reporter.log.event_attributes.parent_activity_identifier
       target_field: jamf_compliance_reporter.log.event_attributes.parent_activity_identifier
       type: string
+      ignore_missing: true
       ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.process.id
@@ -117,9 +140,14 @@ processors:
       field: jamf_compliance_reporter.log.event_attributes.process.id
       target_field: jamf_compliance_reporter.log.event_attributes.process.id
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.process.image.path
@@ -128,6 +156,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.process.image.uuid
@@ -136,6 +165,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.sender.image.path
@@ -144,6 +174,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.sender.image.uuid
@@ -152,6 +183,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.sender.program_counter
@@ -162,9 +194,14 @@ processors:
       field: jamf_compliance_reporter.log.event_attributes.sender.program_counter
       target_field: jamf_compliance_reporter.log.event_attributes.sender.program_counter
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.source
@@ -173,6 +210,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.subsystem
@@ -181,6 +219,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.thread_id
@@ -191,17 +230,27 @@ processors:
       field: jamf_compliance_reporter.log.event_attributes.thread_id
       target_field: jamf_compliance_reporter.log.event_attributes.thread_id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         date:
           field: _ingest._value.timestamp
           target_field: jamf_compliance_reporter.log.event_attributes.timestamp
           formats:
             - yyyy-MM-dd HH:mm:ss.SSSSSSZ
+          on_failure:
+            - remove:
+                field: _ingest._value.timestamp
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: '{{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.timezone_name
@@ -210,6 +259,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.timezoneName
@@ -218,6 +268,7 @@ processors:
           ignore_failure: true
   - foreach:
       field: json.event_attributes
+      if: ctx.json?.event_attributes instanceof List
       processor:
         append:
           field: jamf_compliance_reporter.log.event_attributes.trace_id
@@ -228,4 +279,5 @@ processors:
       field: jamf_compliance_reporter.log.event_attributes.trace_id
       target_field: jamf_compliance_reporter.log.event_attributes.trace_id
       type: string
+      ignore_missing: true
       ignore_failure: true

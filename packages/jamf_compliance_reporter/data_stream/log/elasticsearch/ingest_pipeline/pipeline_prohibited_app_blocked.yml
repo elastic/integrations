@@ -67,31 +67,37 @@ processors:
       field: json.identity.signer_id
       target_field: jamf_compliance_reporter.log.identity.signer.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.identity.signer_id_truncated
       target_field: jamf_compliance_reporter.log.identity.signer.id_truncated
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.identity.signer_type
       target_field: jamf_compliance_reporter.log.identity.signer.type
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.identity.team_id
       target_field: jamf_compliance_reporter.log.identity.team.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.identity.team_id_truncated
       target_field: jamf_compliance_reporter.log.identity.team.id_truncated
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.subject.audit_id
       target_field: process.real_user.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.subject.audit_user_name
@@ -101,6 +107,7 @@ processors:
       field: json.subject.effective_group_id
       target_field: jamf_compliance_reporter.log.subject.effective.group.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.subject.effective_group_name
@@ -110,6 +117,7 @@ processors:
       field: json.subject.effective_user_id
       target_field: user.effective.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - set:
       field: jamf_compliance_reporter.log.subject.effective.user.id
@@ -139,6 +147,7 @@ processors:
       field: json.subject.group_id
       target_field: user.group.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.subject.group_name
@@ -158,7 +167,11 @@ processors:
       field: json.subject.process_id
       target_field: jamf_compliance_reporter.log.subject.process.pid
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.subject.process_information
       target_field: jamf_compliance_reporter.log.subject.process.information
@@ -171,6 +184,7 @@ processors:
       field: json.subject.responsible_process_id
       target_field: jamf_compliance_reporter.log.subject.responsible.process.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - rename:
       field: json.subject.responsible_process_name
@@ -180,12 +194,20 @@ processors:
       field: json.subject.session_id
       target_field: jamf_compliance_reporter.log.subject.session.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.subject.terminal_id.ip_address
       target_field: json.subject.terminal_id.ip_address
       type: ip
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.subject.terminal_id.ip_address
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - append:
       field: host.ip
       value: '{{{json.subject.terminal_id.ip_address}}}'
@@ -202,16 +224,22 @@ processors:
       field: json.subject.terminal_id.port
       target_field: jamf_compliance_reporter.log.subject.terminal_id.port
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.subject.terminal_id.type
       target_field: jamf_compliance_reporter.log.subject.terminal_id.type
       type: string
+      ignore_missing: true
       ignore_failure: true
   - convert:
       field: json.subject.user_id
       target_field: user.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - append:
       field: user.name
