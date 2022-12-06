@@ -9,7 +9,7 @@ TBD
 ### Example event
 
 
-An example event for ForgeRock looks as following:
+An example event for pta looks as following:
 
 ```json
 {
@@ -22,7 +22,7 @@ An example event for ForgeRock looks as following:
         "version": "8.3.2"
     },
     "data_stream": {
-        "dataset": "forgerock.am_activity",
+        "dataset": "forgerock.audit",
         "namespace": "ep",
         "type": "logs"
     },
