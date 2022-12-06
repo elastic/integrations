@@ -23,11 +23,44 @@ icons:
     type: image/svg+xml
 policy_templates:
   - name: cloud_defend
-    title: Defend for containers
-    description: Collects cloud defend service alerts and metrics.
+    title: Cloud Defend for Containers
+    description: Collects cloud defend service events, alerts and metrics.
     inputs:
-      - type: cloud_defend
-        title: Cloud defend stream
-        description: Collects cloud defend service alerts and metrics.
+      - type: cloud_defend/drift_prevention
+        title: Drift prevention
+        description: Enables container drift prevention.
+        vars:
+          - name: configuration
+            type: yaml
+            title: Configuration for Cloud Defend
+            description: |
+              Configures selectors, responses and other parameters for Cloud Defend
+            default: |
+              selectors:
+                #default selector (user can modify or remove if they want)
+                - name: default
+                  activity: [createExecutable, modifyExecutable]
+
+                # example custom selector
+                - name: nginxOnly
+                  containerImageName:
+                    - nginx
+
+                # example selector used for exclude
+                - name: excludeCustomNginxBuild
+                  containerImageTag:
+                    - staging
+
+              # responses are evaluated from top to bottom
+              # only the first response with a match will run its actions
+              responses:
+                - match: [nginxOnly]
+                  exclude: [excludeCustomNginxBuild]
+                  actions: [alert, block]
+
+                # default response
+                # delete this if no default response needed
+                - match: [default]
+                  actions: [alert]
 owner:
   github: elastic/awp-viz
