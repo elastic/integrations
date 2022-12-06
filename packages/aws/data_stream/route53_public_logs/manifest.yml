@@ -1,0 +1,106 @@
+title: AWS Route 53 Public Zone Logs
+type: logs
+streams:
+  - input: aws-cloudwatch
+    template_path: aws-cloudwatch.yml.hbs
+    title: AWS Route 53 Logs
+    description: Collect AWS Route 53 Logs using Cloudwatch
+    vars:
+      - name: log_group_arn
+        type: text
+        title: Log Group ARN
+        description: "ARN of the log group to collect logs from.  See [Documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-cloudwatch.html#_log_group_arn)."
+        multi: false
+        show_user: true
+        required: false
+      - name: log_group_name
+        type: text
+        title: Log Group Name
+        description: "Name of the log group to collect logs from. See [Documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-cloudwatch.html#_log_group_name)."
+        multi: false
+        show_user: false
+        required: false
+      - name: log_group_name_prefix
+        type: text
+        title: Log Group Name Prefix
+        description: "The prefix for a group of log group names. See [Documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-cloudwatch.html#_log_group_name_prefix)."
+        multi: false
+        show_user: false
+        required: false
+      - name: log_streams
+        type: text
+        title: Log Streams
+        description: Required when using `Log Group Name Prefix` or `Log Group Name`.
+        multi: false
+        show_user: false
+        required: false
+      - name: log_stream_prefix
+        type: text
+        title: Log Streams Prefix
+        description: A list of strings of log streams names that Filebeat collect log events from.
+        multi: false
+        show_user: false
+        required: false
+      - name: region_name
+        type: text
+        title: Region Name
+        description: A string to filter the results to include only log events from log streams that have names starting with this prefix.
+        multi: false
+        show_user: false
+        required: false
+      - name: start_position
+        type: text
+        title: Start Position
+        description: Allows user to specify if this input should read log files from the beginning or from the end.
+        multi: false
+        show_user: false
+        required: true
+        default: beginning
+      - name: scan_frequency
+        type: text
+        title: Scan Frequency
+        description: This config parameter sets how often Filebeat checks for new log events from the specified log group in seconds. Default scan_frequency is 1 minute.
+        multi: false
+        show_user: false
+        required: true
+        default: 1m
+      - name: api_timeout
+        type: text
+        title: API Timeout
+        multi: false
+        required: false
+        show_user: false
+        description: The maximum duration of AWS API can take. The maximum is half of the visibility timeout value.
+      - name: api_sleep
+        type: text
+        title: API Sleep
+        description: This is used to sleep between AWS FilterLogEvents API calls inside the same collection period. FilterLogEvents API has a quota of 5 transactions per second (TPS)/account/Region. By default, api_sleep is 200 ms.
+        multi: false
+        show_user: false
+        required: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - aws-route53_public-logs
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false

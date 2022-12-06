@@ -27,6 +27,20 @@ As part of the field definition, there are two settings that add metadata which 
 
 Elasticsearch docs details the [expected values for these two fields](https://www.elastic.co/guide/en/elasticsearch/reference/master/mapping-field-meta.html).
 
+##### Specify dimensions
+
+A set of fields of a data stream can be defined as dimensions. A set of dimensions
+with the same values identify a single time serie. It is important to choose wisely
+the set of fields, they should be the minimal set of dimensions required to
+properly identify any time serie included in the data stream. Too few dimensions can
+mix data of multiple time series into a single one, too many can impact performance.
+
+A field can be configured as a dimension by setting `dimension: true` on its
+definition.
+
+Only fields of certain data types can be defined as dimensions. These data types
+include keywords, IPs and numeric types.
+
 #### Logs and Metrics UI compatibility
 
 When applicable an integrataion package should provide the relevant fields for the Logs and Metrics Apps. This is especially relevant for integrations that are focused on compute-resources (VMs, containers, etc.). 
@@ -79,14 +93,8 @@ In the majority of cases users stick to defaults, because they don’t really kn
 
 #### Updated docs
 
-Integration packages should provide consistent and comprehensive documentation that includes:
-
-- real-world configuration examples for both the package and the target system.
-- integration specific caveats (e.g. enabling this module will incur additional costs).
-- actual metric types (counters, gauges, histograms vs. longs and doubles).
-- metric formats (percent, bytes) with examples.
-- comprehensive description of collected fields.
-- target system compatibility and supported versions.
+Integration packages should provide consistent and comprehensive documentation.
+For more details, see the [Documentation guidelines](./documentation_guidelines.md).
 
 #### Updated integration content
 
@@ -98,7 +106,7 @@ Integration packages should provide out-of-the-box dashboards.
 
 #### Content for elastic.co/integrations
 
-Each integration will be listed on the public website elastic.co/integrations and the package registry will serve as the source of truth. As a result, our docs and screenshots should be high quality to showcase the integration. Any additional branding material should be reviewed, e.g.:
+Each integration will be listed on the public website elastic.co/integrations and the package registry will serve as the source of truth. As a result, our docs and screenshots should be high quality to showcase the integration. Please ensure to use `svg` for the logo and `png` for all other images. Any additional branding material should be reviewed, e.g.:
 
 - logo format and quality
 - permission to use logos and trademarks

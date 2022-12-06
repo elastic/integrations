@@ -44,6 +44,17 @@
             - name: policies
               type: keyword
               description: Policies is the list of policies that the authenticated user is associated with.
+            - name: policy_results.allowed
+              type: boolean
+            - name: policy_results.granting_policies
+              type: array
+              object_type: object
+            - name: policy_results.granting_policies.name
+              type: keyword
+            - name: policy_results.granting_policies.namespace_id
+              type: keyword
+            - name: policy_results.granting_policies.type
+              type: keyword
             - name: remaining_uses
               type: long
             - name: token_issue_time
@@ -55,12 +66,20 @@
               type: long
             - name: token_type
               type: keyword
+        - name: entity_created
+          type: boolean
+          description: entity_created is set to true if an entity is created as part of a login request.
         - name: error
           type: keyword
           description: If an error occurred with the request, the error message is included in this field's value.
         - name: request
           type: group
           fields:
+            - name: client_certificate_serial_number
+              type: keyword
+              description: Serial number from the client's certificate.
+            - name: client_id
+              type: keyword
             - name: client_token
               type: keyword
               description: This is an HMAC of the client's token ID.
@@ -76,6 +95,8 @@
             - name: id
               type: keyword
               description: This is the unique request identifier.
+            - name: mount_accessor
+              type: keyword
             - name: mount_type
               type: keyword
             - name: namespace.id
@@ -101,6 +122,12 @@
             - name: remote_address
               type: ip
               description: The IP address of the client making the request.
+            - name: remote_port
+              type: long
+              description: The remote port of the client making the request.
+            - name: replication_cluster
+              type: keyword
+              description: Name given to the replication secondary where this request originated.
             - name: wrap_ttl
               type: long
               description: If the token is wrapped, this displays configured wrapped TTL in seconds.
@@ -130,6 +157,7 @@
                 - name: num_uses
                   type: long
                 - name: policies
+                  type: keyword
                 - name: token_issue_time
                   type: date
                 - name: token_policies
@@ -147,6 +175,8 @@
               description: >
                 Headers will contain the http headers from the plugin that it wishes to have as part of the output.
 
+            - name: mount_accessor
+              type: keyword
             - name: mount_type
               type: keyword
             - name: redirect
@@ -154,6 +184,8 @@
               description: >
                 Redirect is an HTTP URL to redirect to for further authentication. This is only valid for credential backends. This will be blanked for any logical backend and ignored.
 
+            - name: warnings
+              type: keyword
             - name: wrap_info
               type: group
               description: Information for wrapping the response in a cubbyhole.

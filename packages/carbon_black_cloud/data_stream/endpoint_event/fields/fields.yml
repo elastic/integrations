@@ -1,0 +1,239 @@
+- name: carbon_black_cloud.endpoint_event
+  type: group
+  fields:
+    - name: alert_id
+      type: keyword
+      description: The ID of the Alert this event is associated with.
+    - name: backend
+      type: group
+      fields:
+        - name: timestamp
+          type: keyword
+          description: Time when the backend received the batch of events.
+    - name: childproc
+      type: group
+      fields:
+        - name: guid
+          type: keyword
+          description: Unique ID of the child process.
+        - name: hash
+          type: group
+          fields:
+            - name: md5
+              type: keyword
+              description: Cryptographic MD5 hashes of the executable file backing the child process.
+            - name: sha256
+              type: keyword
+              description: Cryptographic SHA256 hashes of the executable file backing the child process.
+        - name: name
+          type: keyword
+          description: Full path to the target of the crossproc event on the device's local file system.
+        - name: pid
+          type: long
+          description: OS-reported Process ID of the child process.
+        - name: publisher
+          type: group
+          description: Signature entry for the childproc as reported by the endpoint.
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the publisher.
+            - name: state
+              type: keyword
+              description: The state of the publisher.
+        - name: reputation
+          type: keyword
+          description: Carbon Black Cloud Reputation string for the childproc.
+        - name: username
+          type: keyword
+          description: The username associated with the user context that the child process was started under.
+    - name: crossproc
+      type: group
+      fields:
+        - name: action
+          type: keyword
+          description: The action taken on cross-process.
+        - name: api
+          type: keyword
+          description: Name of the operating system API called by the actor process.
+        - name: guid
+          type: keyword
+          description: Unique ID of the cross process.
+        - name: hash
+          type: group
+          fields:
+            - name: md5
+              type: keyword
+              description: Cryptographic MD5 hashes of the target of the crossproc event.
+            - name: sha256
+              type: keyword
+              description: Cryptographic SHA256 hashes of the target of the crossproc event.
+        - name: name
+          type: keyword
+          description: Full path to the target of the crossproc event on the device's local file system.
+        - name: publisher
+          type: group
+          description: Signature entry for the crossproc as reported by the endpoint.
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the publisher.
+            - name: state
+              type: keyword
+              description: The state of the publisher.
+        - name: reputation
+          type: keyword
+          description: Carbon Black Cloud Reputation string for the crossproc.
+        - name: target
+          type: boolean
+          description: True if the process was the target of the cross-process event; false if the process was the actor.
+    - name: device
+      type: group
+      fields:
+        - name: os
+          type: keyword
+          description: Os name.
+        - name: timestamp
+          type: keyword
+          description: Time seen on sensor.
+        - name: internal_ip
+          type: ip
+          description: Internal IP of the device.
+        - name: external_ip
+          type: ip
+          description: External IP of the device.
+    - name: event_origin
+      type: keyword
+      description: Indicates which product the event came from. "EDR" indicates the event originated from Enterprise EDR. "NGAV" indicates the event originated from Endpoint Standard.
+    - name: fileless_scriptload
+      type: group
+      fields:
+        - name: cmdline
+          type: keyword
+          description: Deobfuscated script content run in a fileless context by the process.
+        - name: cmdline_length
+          type: keyword
+          description: Character count of the deobfuscated script content run in a fileless context.
+        - name: hash
+          type: group
+          fields:
+            - name: md5
+              type: keyword
+              description: MD5 hash of the deobfuscated script content run by the process in a fileless context.
+            - name: sha256
+              type: keyword
+              description: SHA-256 hash of the deobfuscated script content run by the process in a fileless context.
+    - name: modload
+      type: group
+      fields:
+        - name: count
+          type: long
+          description: Count of modload events reported by the sensor since last initialization.
+        - name: effective_reputation
+          type: keyword
+          description: Effective reputation(s) of the loaded module(s); applied by the sensor when the event occurred.
+        - name: publisher
+          type: group
+          description: Signature entry for the moduleload as reported by the endpoint.
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the publisher.
+            - name: state
+              type: keyword
+              description: The state of the publisher.
+    - name: netconn
+      type: group
+      fields:
+        - name: proxy
+          type: group
+          fields:
+            - name: domain
+              type: keyword
+              description: DNS name associated with the "proxy" end of this network connection; may be empty if the name cannot be inferred or the connection is made direct to/from a proxy IP address.
+            - name: ip
+              type: ip
+              description: IPv4 or IPv6 address in string format associated with the "proxy" end of this network connection.
+            - name: port
+              type: keyword
+              description: UDP/TCP port number associated with the "proxy" end of this network connection.
+    - name: organization_key
+      type: keyword
+      description: The organization key associated with the console instance.
+    - name: process
+      type: group
+      fields:
+        - name: duration
+          type: long
+          description: The time difference in seconds between the process start and process terminate event.
+        - name: parent
+          type: group
+          fields:
+            - name: reputation
+              type: keyword
+              description: Reputation of the parent process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud.
+        - name: publisher
+          type: group
+          description: Signature entry for the process as reported by the endpoint.
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the publisher.
+            - name: state
+              type: keyword
+              description: The state of the publisher.
+        - name: reputation
+          type: keyword
+          description: Reputation of the actor process; applied when event is processed by the Carbon Black Cloud i.e. after sensor delivers event to the cloud.
+        - name: terminated
+          type: boolean
+          description: True if process was terminated elase false.
+        - name: username
+          type: keyword
+          description: The username associated with the user context that this process was started under.
+    - name: schema
+      type: long
+      description: The schema version. The current schema version is "1". This schema version will only be incremented if the field definitions are changed in a backwards-incompatible way.
+    - name: scriptload
+      type: group
+      fields:
+        - name: count
+          type: long
+          description: Count of scriptload events across all processes reported by the sensor since last initialization.
+        - name: effective_reputation
+          type: keyword
+          description: Effective reputation(s) of the script file(s) loaded at process launch; applied by the sensor when the event occurred.
+        - name: hash
+          type: group
+          fields:
+            - name: md5
+              type: keyword
+              description: Cryptographic MD5 hashes of the target of the scriptload event.
+            - name: sha256
+              type: keyword
+              description: Cryptographic SHA256 hashes of the target of the scriptload event.
+        - name: name
+          type: keyword
+          description: Full path to the target of the crossproc event on the device's local file system.
+        - name: publisher
+          type: group
+          description: Signature entry for the scriptload as reported by the endpoint.
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the publisher.
+            - name: state
+              type: keyword
+              description: The state of the publisher.
+        - name: reputation
+          type: keyword
+          description: Carbon Black Cloud Reputation string for the scriptload.
+    - name: sensor_action
+      type: keyword
+      description: The sensor action taken on event.
+    - name: target_cmdline
+      type: keyword
+      description: Process command line associated with the target process.
+    - name: type
+      type: keyword
+      description: The event type.

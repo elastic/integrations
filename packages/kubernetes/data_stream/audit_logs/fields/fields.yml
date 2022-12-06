@@ -1,0 +1,220 @@
+- name: kubernetes.audit
+  type: group
+  fields:
+    - name: apiVersion
+      type: keyword
+      description: Audit event api version
+    - name: kind
+      type: keyword
+      description: Kind of the audit event
+    - name: level
+      type: keyword
+      description: AuditLevel at which event was generated
+    - name: auditID
+      type: keyword
+      description: Unique audit ID, generated for each request
+    - name: stage
+      type: keyword
+      description: Stage of the request handling when this event instance was generated
+    - name: requestURI
+      type: keyword
+      description: RequestURI is the request URI as sent by the client to a server
+    - name: verb
+      type: keyword
+      description: Verb is the kubernetes verb associated with the request. For non-resource requests, this is the lower-cased HTTP method
+    - name: user
+      type: group
+      description: Authenticated user information
+      fields:
+        - name: groups
+          type: text
+          description: The names of groups this user is a part of
+        - name: username
+          type: keyword
+          description: The name that uniquely identifies this user among all active users
+        - name: uid
+          type: keyword
+          description: |
+            A unique value that identifies this user across time. If this user is deleted and another user
+            by the same name is added, they will have different UIDs
+        - name: extra.*
+          type: object
+          object_type: keyword
+          description: |
+            Any additional information provided by the authenticator
+    - name: impersonatedUser
+      type: group
+      description: Impersonated user information
+      fields:
+        - name: groups
+          type: text
+          description: The names of groups this user is a part of
+        - name: username
+          type: keyword
+          description: The name that uniquely identifies this user among all active users
+        - name: uid
+          type: keyword
+          description: |
+            A unique value that identifies this user across time. If this user is deleted and another user
+            by the same name is added, they will have different UIDs
+        - name: extra.*
+          type: object
+          object_type: keyword
+          object_type_mapping_type: "*"
+          description: Any additional information provided by the authenticator
+    - name: sourceIPs
+      type: text
+      description: Source IPs, from where the request originated and intermediate proxies
+    - name: userAgent
+      type: keyword
+      description: UserAgent records the user agent string reported by the client. Note that the UserAgent is provided by the client, and must not be trusted
+    - name: objectRef
+      type: group
+      description: Object reference this request is targeted at. Does not apply for List-type requests, or non-resource requests.
+      fields:
+        - name: resource
+          type: keyword
+        - name: namespace
+          type: keyword
+        - name: name
+          type: keyword
+        - name: uid
+          type: keyword
+        - name: apiGroup
+          type: keyword
+          description: The name of the API group that contains the referred object. The empty string represents the core API group.
+        - name: apiVersion
+          type: keyword
+          description: The version of the API group that contains the referred object
+        - name: resourceVersion
+          type: keyword
+        - name: subresource
+          type: keyword
+    - name: responseStatus
+      type: group
+      description: |
+        The response status, populated even when the ResponseObject is not a Status type.
+        For successful responses, this will only include the Code and StatusSuccess.
+        For non-status type error responses, this will be auto-populated with the error Message
+      fields:
+        - name: code
+          type: integer
+          description: Suggested HTTP return code for this status, 0 if not set
+        - name: status
+          type: keyword
+          description: Status of the operation
+        - name: message
+          type: text
+          description: A human-readable description of the status of this operation
+        - name: reason
+          type: keyword
+          description: A machine-readable description of why this operation is in the "Failure" status. If this value is empty there is no information available. A Reason clarifies an HTTP status code but does not override it
+    - name: requestObject
+      type: group
+      description: API object from the request, in JSON format
+      fields:
+        - name: spec
+          type: group
+          fields:
+            - name: type
+              type: keyword
+            - name: serviceAccountName
+              type: keyword
+            - name: restartPolicy
+              type: keyword
+            - name: hostNetwork
+              type: boolean
+            - name: hostIPC
+              type: boolean
+            - name: hostPID
+              type: boolean
+            - name: volumes.hostPath
+              type: flattened
+            - name: securityContext
+              type: group
+              fields:
+                - name: runAsUser
+                  type: integer
+                - name: runAsGroup
+                  type: integer
+                - name: runAsNonRoot
+                  type: boolean
+            - name: containers
+              type: group
+              fields:
+                - name: image
+                  type: text
+                - name: volumeMounts
+                  type: flattened
+                - name: securityContext
+                  type: group
+                  fields:
+                    - name: privileged
+                      type: boolean
+                    - name: allowPrivilegeEscalation
+                      type: boolean
+                    - name: runAsUser
+                      type: integer
+                    - name: runAsGroup
+                      type: integer
+                    - name: runAsNonRoot
+                      type: boolean
+                    - name: procMount
+                      type: keyword
+                    - name: capabilities.add
+                      type: keyword
+        - name: rules
+          dynamic: true
+          type: nested
+    - name: responseObject
+      type: group
+      description: API object returned in the response, in JSON format
+      fields:
+        - name: spec
+          type: group
+          fields:
+            - name: hostNetwork
+              type: boolean
+            - name: hostIPC
+              type: boolean
+            - name: hostPID
+              type: boolean
+            - name: volumes.hostPath
+              type: flattened
+            - name: restartPolicy
+              type: keyword
+            - name: containers
+              type: group
+              fields:
+                - name: volumeMounts
+                  type: flattened
+                - name: securityContext
+                  type: group
+                  fields:
+                    - name: privileged
+                      type: boolean
+                    - name: allowPrivilegeEscalation
+                      type: boolean
+                    - name: runAsUser
+                      type: integer
+        - name: rules
+          dynamic: true
+          type: nested
+        - name: roleRef
+          type: group
+          fields:
+            - name: kind
+              type: keyword
+    - name: requestReceivedTimestamp
+      type: date
+      description: Time the request reached the apiserver
+    - name: stageTimestamp
+      type: date
+      description: Time the request reached current audit stage
+    - name: annotations
+      type: group
+      fields:
+        - name: authorization_k8s_io/decision
+          type: keyword
+        - name: authorization_k8s_io/reason
+          type: text

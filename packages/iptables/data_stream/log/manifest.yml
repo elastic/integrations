@@ -1,6 +1,6 @@
 type: logs
 title: Iptables log logs
-release: experimental
+release: beta
 streams:
   - input: udp
     template_path: udp.yml.hbs
@@ -51,6 +51,9 @@ streams:
 
   - input: logfile
     enabled: false
+    template_path: log.yml.hbs
+    title: Iptables log logs
+    description: Collect iptables logs using log input
     vars:
       - name: paths
         type: text
@@ -86,6 +89,33 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. Changes made to event data can break processing that happens in Ingest Node. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-    template_path: log.yml.hbs
-    title: Iptables log logs
-    description: Collect iptables logs using log input
+  - input: journald
+    title: Iptables logs from journald
+    template_path: journald.yml.hbs
+    description: Collect iptables logs logged by the kernel to journald. The integration queries for
+    vars:
+      - name: paths
+        type: text
+        title: Journal paths
+        multi: true
+        show_user: false
+        description: >
+          List of journals to read from. Defaults to the system journal.
+
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - iptables-log
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+

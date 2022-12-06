@@ -1,0 +1,1014 @@
+---
+description: Pipeline for processing AWS Security Hub Insights logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.2.0'
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - rename:
+      field: json.Filters.AwsAccountId
+      target_field: aws.securityhub_insights.filters.aws_account_id
+      ignore_missing: true
+  - rename:
+      field: json.Filters.CompanyName
+      target_field: aws.securityhub_insights.filters.company.name
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ComplianceStatus
+      target_field: aws.securityhub_insights.filters.compliance.status
+      ignore_missing: true
+  - rename:
+      field: json.Filters.Confidence
+      target_field: aws.securityhub_insights.filters.confidence
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.CreatedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.CreatedAt != null && ctx.json?.Filters?.CreatedAt instanceof List
+  - foreach:
+      field: json.Filters.CreatedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.CreatedAt != null && ctx.json?.Filters?.CreatedAt instanceof List
+  - foreach:
+      field: json.Filters.CreatedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.CreatedAt != null && ctx.json?.Filters?.CreatedAt instanceof List
+  - foreach:
+      field: json.Filters.CreatedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.CreatedAt != null && ctx.json?.Filters?.CreatedAt instanceof List
+  - foreach:
+      field: json.Filters.CreatedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.CreatedAt != null && ctx.json?.Filters?.CreatedAt instanceof List
+  - rename:
+      field: json.Filters.CreatedAt
+      target_field: aws.securityhub_insights.filters.created_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.Criticality
+      target_field: aws.securityhub_insights.filters.criticality
+      ignore_missing: true
+  - rename:
+      field: json.Filters.Description
+      target_field: aws.securityhub_insights.filters.description
+      ignore_missing: true
+  - rename:
+      field: json.Filters.FindingProviderFieldsConfidence
+      target_field: aws.securityhub_insights.filters.finding_provider_fields.confidence
+      ignore_missing: true
+  - rename:
+      field: json.Filters.FindingProviderFieldsCriticality
+      target_field: aws.securityhub_insights.filters.finding_provider_fields.criticality
+      ignore_missing: true
+  - rename:
+      field: json.Filters.FindingProviderFieldsRelatedFindingsId
+      target_field: aws.securityhub_insights.filters.finding_provider_fields.related_findings.id
+      ignore_missing: true
+  - rename:
+      field: json.Filters.FindingProviderFieldsRelatedFindingsProductArn
+      target_field: aws.securityhub_insights.filters.finding_provider_fields.related_findings.product.arn
+      ignore_missing: true
+  - rename:
+      field: json.Filters.FindingProviderFieldsSeverityLabel
+      target_field: aws.securityhub_insights.filters.finding_provider_fields.severity.label
+      ignore_missing: true
+  - rename:
+      field: json.Filters.FindingProviderFieldsSeverityOriginal
+      target_field: aws.securityhub_insights.filters.finding_provider_fields.severity.original
+      ignore_missing: true
+  - rename:
+      field: json.Filters.FindingProviderFieldsTypes
+      target_field: aws.securityhub_insights.filters.finding_provider_fields.types
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.FirstObservedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.FirstObservedAt != null && ctx.json?.Filters?.FirstObservedAt instanceof List
+  - foreach:
+      field: json.Filters.FirstObservedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.FirstObservedAt != null && ctx.json?.Filters?.FirstObservedAt instanceof List
+  - foreach:
+      field: json.Filters.FirstObservedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.FirstObservedAt != null && ctx.json?.Filters?.FirstObservedAt instanceof List
+  - foreach:
+      field: json.Filters.FirstObservedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.FirstObservedAt != null && ctx.json?.Filters?.FirstObservedAt instanceof List
+  - foreach:
+      field: json.Filters.FirstObservedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.FirstObservedAt != null && ctx.json?.Filters?.FirstObservedAt instanceof List
+  - rename:
+      field: json.Filters.FirstObservedAt
+      target_field: aws.securityhub_insights.filters.first_observed_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.GeneratorId
+      target_field: aws.securityhub_insights.filters.generator.id
+      ignore_missing: true
+  - rename:
+      field: json.Filters.Id
+      target_field: aws.securityhub_insights.filters.id
+      ignore_missing: true
+  - rename:
+      field: json.Filters.Keyword
+      target_field: aws.securityhub_insights.filters.keyword
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.LastObservedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.LastObservedAt != null && ctx.json?.Filters?.LastObservedAt instanceof List
+  - foreach:
+      field: json.Filters.LastObservedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.LastObservedAt != null && ctx.json?.Filters?.LastObservedAt instanceof List
+  - foreach:
+      field: json.Filters.LastObservedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.LastObservedAt != null && ctx.json?.Filters?.LastObservedAt instanceof List
+  - foreach:
+      field: json.Filters.LastObservedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.LastObservedAt != null && ctx.json?.Filters?.LastObservedAt instanceof List
+  - foreach:
+      field: json.Filters.LastObservedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.LastObservedAt != null && ctx.json?.Filters?.LastObservedAt instanceof List
+  - rename:
+      field: json.Filters.LastObservedAt
+      target_field: aws.securityhub_insights.filters.last_observed_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.MalwareName
+      target_field: aws.securityhub_insights.filters.malware.name
+      ignore_missing: true
+  - rename:
+      field: json.Filters.MalwarePath
+      target_field: aws.securityhub_insights.filters.malware.path
+      ignore_missing: true
+  - rename:
+      field: json.Filters.MalwareState
+      target_field: aws.securityhub_insights.filters.malware.state
+      ignore_missing: true
+  - rename:
+      field: json.Filters.MalwareType
+      target_field: aws.securityhub_insights.filters.malware.type
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkDestinationDomain
+      target_field: aws.securityhub_insights.filters.network.destination.domain
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkDestinationIpV4
+      target_field: aws.securityhub_insights.filters.network.destination.ip.v4
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkDestinationIpV6
+      target_field: aws.securityhub_insights.filters.network.destination.ip.v6
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkDestinationPort
+      target_field: aws.securityhub_insights.filters.network.destination.port
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkDirection
+      target_field: aws.securityhub_insights.filters.network.direction
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkProtocol
+      target_field: aws.securityhub_insights.filters.network.protocol
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkSourceDomain
+      target_field: aws.securityhub_insights.filters.network.source.domain
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkSourceIpV4
+      target_field: aws.securityhub_insights.filters.network.source.ip.v4
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkSourceIpV6
+      target_field: aws.securityhub_insights.filters.network.source.ip.v6
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkSourceMac
+      target_field: aws.securityhub_insights.filters.network.source.mac
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NetworkSourcePort
+      target_field: aws.securityhub_insights.filters.network.source.port
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NoteText
+      target_field: aws.securityhub_insights.filters.note.text
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.NoteUpdatedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.NoteUpdatedAt != null && ctx.json?.Filters?.NoteUpdatedAt instanceof List
+  - foreach:
+      field: json.Filters.NoteUpdatedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.NoteUpdatedAt != null && ctx.json?.Filters?.NoteUpdatedAt instanceof List
+  - foreach:
+      field: json.Filters.NoteUpdatedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.NoteUpdatedAt != null && ctx.json?.Filters?.NoteUpdatedAt instanceof List
+  - foreach:
+      field: json.Filters.NoteUpdatedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.NoteUpdatedAt != null && ctx.json?.Filters?.NoteUpdatedAt instanceof List
+  - foreach:
+      field: json.Filters.NoteUpdatedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.NoteUpdatedAt != null && ctx.json?.Filters?.NoteUpdatedAt instanceof List
+  - rename:
+      field: json.Filters.NoteUpdatedAt
+      target_field: aws.securityhub_insights.filters.note.updated_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.NoteUpdatedBy
+      target_field: aws.securityhub_insights.filters.note.updated_by
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.ProcessLaunchedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ProcessLaunchedAt != null && ctx.json?.Filters?.ProcessLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ProcessLaunchedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ProcessLaunchedAt != null && ctx.json?.Filters?.ProcessLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ProcessLaunchedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ProcessLaunchedAt != null && ctx.json?.Filters?.ProcessLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ProcessLaunchedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ProcessLaunchedAt != null && ctx.json?.Filters?.ProcessLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ProcessLaunchedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ProcessLaunchedAt != null && ctx.json?.Filters?.ProcessLaunchedAt instanceof List
+  - rename:
+      field: json.Filters.ProcessLaunchedAt
+      target_field: aws.securityhub_insights.filters.process.launched_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ProcessName
+      target_field: aws.securityhub_insights.filters.process.name
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ProcessParentPid
+      target_field: aws.securityhub_insights.filters.process.parent.pid
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ProcessPath
+      target_field: aws.securityhub_insights.filters.process.path
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ProcessPid
+      target_field: aws.securityhub_insights.filters.process.pid
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.ProcessTerminatedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ProcessTerminatedAt != null && ctx.json?.Filters?.ProcessTerminatedAt instanceof List
+  - foreach:
+      field: json.Filters.ProcessTerminatedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ProcessTerminatedAt != null && ctx.json?.Filters?.ProcessTerminatedAt instanceof List
+  - foreach:
+      field: json.Filters.ProcessTerminatedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ProcessTerminatedAt != null && ctx.json?.Filters?.ProcessTerminatedAt instanceof List
+  - foreach:
+      field: json.Filters.ProcessTerminatedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ProcessTerminatedAt != null && ctx.json?.Filters?.ProcessTerminatedAt instanceof List
+  - foreach:
+      field: json.Filters.ProcessTerminatedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ProcessTerminatedAt != null && ctx.json?.Filters?.ProcessTerminatedAt instanceof List
+  - rename:
+      field: json.Filters.ProcessTerminatedAt
+      target_field: aws.securityhub_insights.filters.process.terminated_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ProductArn
+      target_field: aws.securityhub_insights.filters.product.arn
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ProductFields
+      target_field: aws.securityhub_insights.filters.product.fields
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ProductName
+      target_field: aws.securityhub_insights.filters.product.name
+      ignore_missing: true
+  - rename:
+      field: json.Filters.RecommendationText
+      target_field: aws.securityhub_insights.filters.recommendation_text
+      ignore_missing: true
+  - rename:
+      field: json.Filters.RecordState
+      target_field: aws.securityhub_insights.filters.record_state
+      ignore_missing: true
+  - rename:
+      field: json.Filters.Region
+      target_field: aws.securityhub_insights.filters.region
+      ignore_missing: true
+  - rename:
+      field: json.Filters.RelatedFindingsId
+      target_field: aws.securityhub_insights.filters.related_findings.id
+      ignore_missing: true
+  - rename:
+      field: json.Filters.RelatedFindingsProductArn
+      target_field: aws.securityhub_insights.filters.related_findings.product.arn
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsEc2InstanceIamInstanceProfileArn
+      target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.iam_instance_profile.arn
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsEc2InstanceImageId
+      target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.image.id
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsEc2InstanceIpV4Addresses
+      target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.ip.v4_addresses
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsEc2InstanceIpV6Addresses
+      target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.ip.v6_addresses
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsEc2InstanceKeyName
+      target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.key.name
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt != null && ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt != null && ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt != null && ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt != null && ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt != null && ctx.json?.Filters?.ResourceAwsEc2InstanceLaunchedAt instanceof List
+  - rename:
+      field: json.Filters.ResourceAwsEc2InstanceLaunchedAt
+      target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.launched_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsEc2InstanceSubnetId
+      target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.subnet.id
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsEc2InstanceType
+      target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.type
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsEc2InstanceVpcId
+      target_field: aws.securityhub_insights.filters.resource.aws_ec2_instance.vpc.id
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt != null && ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt != null && ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt != null && ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt != null && ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt != null && ctx.json?.Filters?.ResourceAwsIamAccessKeyCreatedAt instanceof List
+  - rename:
+      field: json.Filters.ResourceAwsIamAccessKeyCreatedAt
+      target_field: aws.securityhub_insights.filters.resource.aws_iam_access_key.created_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsIamAccessKeyPrincipalName
+      target_field: aws.securityhub_insights.filters.resource.aws_iam_access_key.principal.name
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsIamAccessKeyStatus
+      target_field: aws.securityhub_insights.filters.resource.aws_iam_access_key.status
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsIamAccessKeyUserName
+      target_field: aws.securityhub_insights.filters.resource.aws_iam_access_key.user.name
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsIamUserUserName
+      target_field: aws.securityhub_insights.filters.resource.aws_iam_user.user.name
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsS3BucketOwnerId
+      target_field: aws.securityhub_insights.filters.resource.aws_s3_bucket.owner.id
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceAwsS3BucketOwnerName
+      target_field: aws.securityhub_insights.filters.resource.aws_s3_bucket.owner.name
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceContainerImageId
+      target_field: aws.securityhub_insights.filters.resource.container.image.id
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceContainerImageName
+      target_field: aws.securityhub_insights.filters.resource.container.image.name
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.ResourceContainerLaunchedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceContainerLaunchedAt != null && ctx.json?.Filters?.ResourceContainerLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceContainerLaunchedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceContainerLaunchedAt != null && ctx.json?.Filters?.ResourceContainerLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceContainerLaunchedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceContainerLaunchedAt != null && ctx.json?.Filters?.ResourceContainerLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceContainerLaunchedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceContainerLaunchedAt != null && ctx.json?.Filters?.ResourceContainerLaunchedAt instanceof List
+  - foreach:
+      field: json.Filters.ResourceContainerLaunchedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ResourceContainerLaunchedAt != null && ctx.json?.Filters?.ResourceContainerLaunchedAt instanceof List
+  - rename:
+      field: json.Filters.ResourceContainerLaunchedAt
+      target_field: aws.securityhub_insights.filters.resource.container.launched_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceContainerName
+      target_field: aws.securityhub_insights.filters.resource.container.name
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceDetailsOther
+      target_field: aws.securityhub_insights.filters.resource.details_other
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceId
+      target_field: aws.securityhub_insights.filters.resource.id
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourcePartition
+      target_field: aws.securityhub_insights.filters.resource.partition
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceRegion
+      target_field: aws.securityhub_insights.filters.resource.region
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceTags
+      target_field: aws.securityhub_insights.filters.resource.tags
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ResourceType
+      target_field: aws.securityhub_insights.filters.resource.type
+      ignore_missing: true
+  - rename:
+      field: json.Filters.Sample
+      target_field: aws.securityhub_insights.filters.sample
+      ignore_missing: true
+  - rename:
+      field: json.Filters.SeverityLabel
+      target_field: aws.securityhub_insights.filters.severity.label
+      ignore_missing: true
+  - rename:
+      field: json.Filters.SeverityNormalized
+      target_field: aws.securityhub_insights.filters.severity.normalized
+      ignore_missing: true
+  - rename:
+      field: json.Filters.SeverityProduct
+      target_field: aws.securityhub_insights.filters.severity.product
+      ignore_missing: true
+  - rename:
+      field: json.Filters.SourceUrl
+      target_field: aws.securityhub_insights.filters.source_url
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ThreatIntelIndicatorCategory
+      target_field: aws.securityhub_insights.filters.threat_intel_indicator.category
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.ThreatIntelIndicatorLastObservedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt != null && ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt instanceof List
+  - foreach:
+      field: json.Filters.ThreatIntelIndicatorLastObservedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt != null && ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt instanceof List
+  - foreach:
+      field: json.Filters.ThreatIntelIndicatorLastObservedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt != null && ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt instanceof List
+  - foreach:
+      field: json.Filters.ThreatIntelIndicatorLastObservedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt != null && ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt instanceof List
+  - foreach:
+      field: json.Filters.ThreatIntelIndicatorLastObservedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt != null && ctx.json?.Filters?.ThreatIntelIndicatorLastObservedAt instanceof List
+  - rename:
+      field: json.Filters.ThreatIntelIndicatorLastObservedAt
+      target_field: aws.securityhub_insights.filters.threat_intel_indicator.last_observed_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ThreatIntelIndicatorSource
+      target_field: aws.securityhub_insights.filters.threat_intel_indicator.source
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ThreatIntelIndicatorSourceUrl
+      target_field: aws.securityhub_insights.filters.threat_intel_indicator.source_url
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ThreatIntelIndicatorType
+      target_field: aws.securityhub_insights.filters.threat_intel_indicator.type
+      ignore_missing: true
+  - rename:
+      field: json.Filters.ThreatIntelIndicatorValue
+      target_field: aws.securityhub_insights.filters.threat_intel_indicator.value
+      ignore_missing: true
+  - rename:
+      field: json.Filters.Title
+      target_field: aws.securityhub_insights.filters.title
+      ignore_missing: true
+  - rename:
+      field: json.Filters.Type
+      target_field: aws.securityhub_insights.filters.type
+      ignore_missing: true
+  - foreach:
+      field: json.Filters.UpdatedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Unit
+          target_field: _ingest._value.date_range.unit
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.UpdatedAt != null && ctx.json?.Filters?.UpdatedAt instanceof List
+  - foreach:
+      field: json.Filters.UpdatedAt
+      processor:
+        rename:
+          field: _ingest._value.DateRange.Value
+          target_field: _ingest._value.date_range.value
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.UpdatedAt != null && ctx.json?.Filters?.UpdatedAt instanceof List
+  - foreach:
+      field: json.Filters.UpdatedAt
+      processor:
+        date:
+          field: _ingest._value.End
+          target_field: _ingest._value.end
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.UpdatedAt != null && ctx.json?.Filters?.UpdatedAt instanceof List
+  - foreach:
+      field: json.Filters.UpdatedAt
+      processor:
+        date:
+          field: _ingest._value.Start
+          target_field: _ingest._value.start
+          formats:
+            - ISO8601
+            - 'yyyy-MM-dd HH:mm:ss.SSS'
+          ignore_failure: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.UpdatedAt != null && ctx.json?.Filters?.UpdatedAt instanceof List
+  - foreach:
+      field: json.Filters.UpdatedAt
+      processor:
+        remove:
+          field:
+            - _ingest._value.Start
+            - _ingest._value.End
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json?.Filters?.UpdatedAt != null && ctx.json?.Filters?.UpdatedAt instanceof List
+  - rename:
+      field: json.Filters.UpdatedAt
+      target_field: aws.securityhub_insights.filters.updated_at
+      ignore_missing: true
+  - rename:
+      field: json.Filters.UserDefinedFields
+      target_field: aws.securityhub_insights.filters.user_defined_fields
+      ignore_missing: true
+  - rename:
+      field: json.Filters.VerificationState
+      target_field: aws.securityhub_insights.filters.verification.state
+      ignore_missing: true
+  - rename:
+      field: json.Filters.WorkflowState
+      target_field: aws.securityhub_insights.filters.workflow.state
+      ignore_missing: true
+  - rename:
+      field: json.Filters.WorkflowStatus
+      target_field: aws.securityhub_insights.filters.workflow.status
+      ignore_missing: true
+  - rename:
+      field: json.GroupByAttribute
+      target_field: aws.securityhub_insights.group_by_attribute
+      ignore_missing: true
+  - rename:
+      field: json.InsightArn
+      target_field: aws.securityhub_insights.insight_arn
+      ignore_missing: true
+  - rename:
+      field: json.Name
+      target_field: aws.securityhub_insights.name
+      ignore_missing: true
+  - remove:
+      field:
+        - json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source:
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: '{{{ _ingest.on_failure_message }}}'

@@ -1,4 +1,6 @@
-# Zscaler integration
+# Zscaler integration (Deprecated)
+
+_This integration is deprecated. Please migrate to the Zscaler ZIA integration._
 
 This integration is for Zscaler device's logs. It includes the following
 datasets for receiving logs over syslog or read from a file:

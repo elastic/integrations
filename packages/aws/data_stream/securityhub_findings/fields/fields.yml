@@ -1,0 +1,797 @@
+- name: aws.securityhub_findings
+  type: group
+  fields:
+    - name: action
+      type: group
+      fields:
+        - name: aws_api_call
+          type: group
+          fields:
+            - name: affected_resources
+              type: flattened
+              description: Identifies the resources that were affected by the API call.
+            - name: api
+              type: keyword
+              description: The name of the API method that was issued.
+            - name: caller
+              type: group
+              fields:
+                - name: type
+                  type: keyword
+                  description: Indicates whether the API call originated from a remote IP address(remoteip) or from a DNS domain(domain).
+            - name: domain_details
+              type: group
+              fields:
+                - name: domain
+                  type: keyword
+                  description: The name of the DNS domain that issued the API call.
+            - name: first_seen
+              type: date
+              description: An ISO8601-formatted timestamp that indicates when the API call was first observed.
+            - name: last_seen
+              type: date
+              description: An ISO8601-formatted timestamp that indicates when the API call was most recently observed.
+            - name: remote_ip
+              type: group
+              fields:
+                - name: city
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The name of the city.
+                - name: country
+                  type: group
+                  fields:
+                    - name: code
+                      type: keyword
+                      description: The 2-letter ISO 3166 country code for the country.
+                    - name: name
+                      type: keyword
+                      description: The name of the country.
+                - name: geolocation
+                  type: group
+                  fields:
+                    - name: latitude
+                      type: double
+                      description: The longitude of the location.
+                    - name: longitude
+                      type: double
+                      description: The latitude of the location.
+                - name: ip
+                  type: group
+                  fields:
+                    - name: address_v4
+                      type: ip
+                      description: The IP address.
+                - name: organization
+                  type: group
+                  fields:
+                    - name: asn
+                      type: keyword
+                      description: The Autonomous System Number(ASN) of the internet provider.
+                    - name: asn_organization
+                      type: keyword
+                      description: The name of the organization that registered the ASN.
+                    - name: internet_service_provider
+                      type: keyword
+                      description: The name of the internet provider.
+                    - name: internet_provider
+                      type: keyword
+                      description: The ISP information for the internet provider.
+            - name: service
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the Amazon Web Services service that the API method belongs to.
+        - name: dns_request
+          type: group
+          fields:
+            - name: blocked
+              type: boolean
+              description: Indicates whether the DNS request was blocked.
+            - name: domain
+              type: keyword
+              description: The DNS domain that is associated with the DNS request.
+            - name: protocol
+              type: keyword
+              description: The protocol that was used for the DNS request.
+        - name: network_connection
+          type: group
+          fields:
+            - name: blocked
+              type: boolean
+              description: Indicates whether the network connection attempt was blocked.
+            - name: direction
+              type: keyword
+              description: The direction of the network connection request(IN or OUT).
+            - name: local
+              type: group
+              fields:
+                - name: port
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The port name of the local connection.
+                    - name: number
+                      type: long
+                      description: The number of the port.
+            - name: protocol
+              type: keyword
+              description: The protocol used to make the network connection request.
+            - name: remote
+              type: group
+              fields:
+                - name: port
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The port name of the remote connection.
+                    - name: number
+                      type: long
+                      description: The number of the port.
+            - name: remote_ip
+              type: group
+              fields:
+                - name: city
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The name of the city.
+                - name: country
+                  type: group
+                  fields:
+                    - name: code
+                      type: keyword
+                      description: The 2-letter ISO 3166 country code for the country.
+                    - name: name
+                      type: keyword
+                      description: The name of the country.
+                - name: geolocation
+                  type: group
+                  fields:
+                    - name: latitude
+                      type: double
+                      description: The longitude of the location.
+                    - name: longitude
+                      type: double
+                      description: The latitude of the location.
+                - name: ip
+                  type: group
+                  fields:
+                    - name: address_v4
+                      type: ip
+                      description: The IP address.
+                - name: organization
+                  type: group
+                  fields:
+                    - name: asn
+                      type: keyword
+                      description: The Autonomous System Number(ASN) of the internet provider.
+                    - name: asn_organization
+                      type: keyword
+                      description: The name of the organization that registered the ASN.
+                    - name: internet_service_provider
+                      type: keyword
+                      description: The name of the internet provider.
+                    - name: internet_provider
+                      type: keyword
+                      description: The ISP information for the internet provider.
+        - name: port_probe
+          type: group
+          fields:
+            - name: blocked
+              type: boolean
+              description: Indicates whether the port probe was blocked.
+            - name: details
+              type: group
+              fields:
+                - name: local
+                  type: group
+                  fields:
+                    - name: ip
+                      type: group
+                      fields:
+                        - name: address_v4
+                          type: ip
+                          description: The IP address.
+                    - name: port
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The port name of the local connection.
+                        - name: number
+                          type: long
+                          description: The number of the port.
+                - name: remote_ip
+                  type: group
+                  fields:
+                    - name: city
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                          description: The name of the city.
+                    - name: country
+                      type: group
+                      fields:
+                        - name: code
+                          type: keyword
+                          description: The 2-letter ISO 3166 country code for the country.
+                        - name: name
+                          type: keyword
+                          description: The name of the country.
+                    - name: geolocation
+                      type: group
+                      fields:
+                        - name: latitude
+                          type: double
+                          description: The longitude of the location.
+                        - name: longitude
+                          type: double
+                          description: The latitude of the location.
+                    - name: ip
+                      type: group
+                      fields:
+                        - name: address_v4
+                          type: ip
+                          description: The IP address.
+                    - name: organization
+                      type: group
+                      fields:
+                        - name: asn
+                          type: keyword
+                          description: The Autonomous System Number(ASN) of the internet provider.
+                        - name: asn_organization
+                          type: keyword
+                          description: The name of the organization that registered the ASN.
+                        - name: internet_service_provider
+                          type: keyword
+                          description: The name of the internet provider.
+                        - name: internet_provider
+                          type: keyword
+                          description: The ISP information for the internet provider.
+        - name: type
+          type: keyword
+          description: The type of action that was detected.
+    - name: aws_account_id
+      type: keyword
+      description: The Amazon Web Services account ID that a finding is generated in.
+    - name: company
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the company for the product that generated the finding.
+    - name: compliance
+      type: group
+      fields:
+        - name: related_requirements
+          type: keyword
+          description: For a control, the industry or regulatory framework requirements that are related to the control.
+        - name: status
+          type: keyword
+          description: The result of a standards check.
+        - name: status_reasons
+          type: group
+          fields:
+            - name: description
+              type: keyword
+              description: The corresponding description for the status reason code.
+            - name: reason_code
+              type: keyword
+              description: A code that represents a reason for the control status.
+    - name: confidence
+      type: long
+      description: A finding's confidence. Confidence is defined as the likelihood that a finding accurately identifies the behavior or issue that it was intended to identify.
+    - name: created_at
+      type: date
+      description: Indicates when the security-findings provider created the potential security issue that a finding captured.
+    - name: criticality
+      type: long
+      description: The level of importance assigned to the resources associated with the finding.
+    - name: description
+      type: keyword
+      description: A finding's description.
+    - name: first_observed_at
+      type: date
+      description: Indicates when the security-findings provider first observed the potential security issue that a finding captured.
+    - name: generator
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The identifier for the solution-specific component(a discrete unit of logic) that generated a finding. In various security-findings providers' solutions, this generator can be called a rule, a check, a detector, a plugin, etc.
+    - name: id
+      type: keyword
+      description: The security findings provider-specific identifier for a finding.
+    - name: last_observed_at
+      type: date
+      description: Indicates when the security-findings provider most recently observed the potential security issue that a finding captured.
+    - name: malware
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the malware that was observed.
+        - name: path
+          type: keyword
+          description: The file system path of the malware that was observed.
+        - name: state
+          type: keyword
+          description: The state of the malware that was observed.
+        - name: type
+          type: keyword
+          description: The type of the malware that was observed.
+    - name: network
+      type: group
+      fields:
+        - name: destination
+          type: group
+          fields:
+            - name: domain
+              type: keyword
+              description: The destination domain of network-related information about a finding.
+            - name: ip
+              type: group
+              fields:
+                - name: v4
+                  type: ip
+                  description: The destination IPv4 address of network-related information about a finding.
+                - name: v6
+                  type: ip
+                  description: The destination IPv6 address of network-related information about a finding.
+            - name: port
+              type: long
+              description: The destination port of network-related information about a finding.
+        - name: direction
+          type: keyword
+          description: The direction of network traffic associated with a finding.
+        - name: open_port_range
+          type: group
+          fields:
+            - name: begin
+              type: long
+              description: The first port in the port range.
+            - name: end
+              type: long
+              description: The last port in the port range.
+        - name: protocol
+          type: keyword
+          description: The protocol of network-related information about a finding.
+        - name: source
+          type: group
+          fields:
+            - name: domain
+              type: keyword
+              description: The source domain of network-related information about a finding.
+            - name: ip
+              type: group
+              fields:
+                - name: v4
+                  type: ip
+                  description: The source IPv4 address of network-related information about a finding.
+                - name: v6
+                  type: ip
+                  description: The source IPv6 address of network-related information about a finding.
+            - name: mac
+              type: keyword
+              description: The source media access control(MAC) address of network-related information about a finding.
+            - name: port
+              type: long
+              description: The source port of network-related information about a finding.
+    - name: network_path
+      type: group
+      fields:
+        - name: component
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The identifier of a component in the network path.
+            - name: type
+              type: keyword
+              description: The type of component.
+        - name: egress
+          type: group
+          fields:
+            - name: destination
+              type: group
+              fields:
+                - name: address
+                  type: keyword
+                  description: The IP addresses of the destination.
+                - name: port_ranges
+                  type: group
+                  fields:
+                    - name: begin
+                      type: long
+                      description: The first port in the port range.
+                    - name: end
+                      type: long
+                      description: The last port in the port range.
+            - name: protocol
+              type: keyword
+              description: The protocol used for the component.
+            - name: source
+              type: group
+              fields:
+                - name: address
+                  type: keyword
+                  description: The IP addresses of the destination.
+                - name: port_ranges
+                  type: group
+                  fields:
+                    - name: begin
+                      type: long
+                      description: The first port in the port range.
+                    - name: end
+                      type: long
+                      description: The last port in the port range.
+        - name: ingress
+          type: group
+          fields:
+            - name: destination
+              type: group
+              fields:
+                - name: address
+                  type: keyword
+                  description: The IP addresses of the destination.
+                - name: port_ranges
+                  type: group
+                  fields:
+                    - name: begin
+                      type: long
+                      description: The first port in the port range.
+                    - name: end
+                      type: long
+                      description: The last port in the port range.
+            - name: protocol
+              type: keyword
+              description: The protocol used for the component.
+            - name: source
+              type: group
+              fields:
+                - name: address
+                  type: keyword
+                  description: The IP addresses of the destination.
+                - name: port_ranges
+                  type: group
+                  fields:
+                    - name: begin
+                      type: long
+                      description: The first port in the port range.
+                    - name: end
+                      type: long
+                      description: The last port in the port range.
+    - name: note
+      type: group
+      fields:
+        - name: text
+          type: keyword
+          description: The text of a note.
+        - name: updated_at
+          type: date
+          description: The timestamp of when the note was updated.
+        - name: updated_by
+          type: keyword
+          description: The principal that created a note.
+    - name: patch_summary
+      type: group
+      fields:
+        - name: failed
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: The number of patches from the compliance standard that failed to install.
+        - name: id
+          type: keyword
+          description: The identifier of the compliance standard that was used to determine the patch compliance status.
+        - name: installed
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: The number of patches from the compliance standard that were installed successfully.
+            - name: other
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: The number of installed patches that are not part of the compliance standard.
+            - name: pending_reboot
+              type: long
+              description: The number of patches that were applied, but that require the instance to be rebooted in order to be marked as installed.
+            - name: rejected
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: The number of patches that are installed but are also on a list of patches that the customer rejected.
+        - name: missing
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: The number of patches that are part of the compliance standard but are not installed. The count includes patches that failed to install.
+        - name: operation
+          type: group
+          fields:
+            - name: end_time
+              type: date
+              description: Indicates when the operation completed.
+            - name: start_time
+              type: date
+              description: Indicates when the operation started.
+            - name: type
+              type: keyword
+              description: The type of patch operation performed. For Patch Manager, the values are SCAN and INSTALL.
+        - name: reboot_option
+          type: keyword
+          description: The reboot option specified for the instance.
+    - name: process
+      type: group
+      fields:
+        - name: launched_at
+          type: date
+          description: Indicates when the process was launched.
+        - name: name
+          type: keyword
+          description: The name of the process.
+        - name: parent
+          type: group
+          fields:
+            - name: pid
+              type: long
+              description: The parent process ID.
+        - name: path
+          type: keyword
+          description: The path to the process executable.
+        - name: pid
+          type: long
+          description: The process ID.
+        - name: terminated_at
+          type: date
+          description: Indicates when the process was terminated.
+    - name: product
+      type: group
+      fields:
+        - name: arn
+          type: keyword
+          description: The ARN generated by Security Hub that uniquely identifies a product that generates findings. This can be the ARN for a third-party product that is integrated with Security Hub, or the ARN for a custom integration.
+        - name: fields
+          type: flattened
+          description: A data type where security-findings providers can include additional solution-specific details that aren't part of the defined AwsSecurityFinding format.
+        - name: name
+          type: keyword
+          description: The name of the product that generated the finding.
+    - name: provider_fields
+      type: group
+      fields:
+        - name: confidence
+          type: long
+          description: A finding's confidence. Confidence is defined as the likelihood that a finding accurately identifies the behavior or issue that it was intended to identify.
+        - name: criticality
+          type: long
+          description: The level of importance assigned to the resources associated with the finding.
+        - name: related_findings
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The product-generated identifier for a related finding.
+            - name: product
+              type: group
+              fields:
+                - name: arn
+                  type: keyword
+                  description: The ARN of the product that generated a related finding.
+        - name: severity
+          type: group
+          fields:
+            - name: label
+              type: keyword
+              description: The severity label assigned to the finding by the finding provider.
+            - name: normalized
+              type: keyword
+              description: The normalized severity of a finding provider.
+            - name: original
+              type: keyword
+              description: The finding provider's original value for the severity.
+            - name: product
+              type: keyword
+              description: The finding provider's product for the severity.
+        - name: types
+          type: keyword
+          description: One or more finding types in the format of namespace/category/classifier that classify a finding.
+    - name: record_state
+      type: keyword
+      description: The record state of a finding.
+    - name: region
+      type: keyword
+      description: The Region from which the finding was generated.
+    - name: related_findings
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The product-generated identifier for a related finding.
+        - name: product
+          type: group
+          fields:
+            - name: arn
+              type: keyword
+              description: The ARN of the product that generated a related finding.
+    - name: remediation
+      type: group
+      fields:
+        - name: recommendation
+          type: group
+          fields:
+            - name: text
+              type: text
+              description: Describes the recommended steps to take to remediate an issue identified in a finding.
+            - name: url
+              type: keyword
+              description: A URL to a page or site that contains information about how to remediate a finding.
+    - name: resources
+      type: flattened
+      description: A set of resource data types that describe the resources that the finding refers to.
+    - name: sample
+      type: boolean
+      description: Indicates whether the finding is a sample finding.
+    - name: schema
+      type: group
+      fields:
+        - name: version
+          type: keyword
+          description: The schema version that a finding is formatted for.
+    - name: severity
+      type: group
+      fields:
+        - name: label
+          type: keyword
+          description: The severity value of the finding.
+        - name: normalized
+          type: keyword
+          description: The normalized severity of a finding.
+        - name: original
+          type: keyword
+          description: The native severity from the finding product that generated the finding.
+        - name: product
+          type: keyword
+          description: The native severity as defined by the Amazon Web Services service or integrated partner product that generated the finding.
+    - name: source_url
+      type: keyword
+      description: A URL that links to a page about the current finding in the security-findings provider's solution.
+    - name: threat_intel_indicators
+      type: group
+      fields:
+        - name: category
+          type: keyword
+          description: The category of a threat intelligence indicator.
+        - name: last_observed_at
+          type: date
+          description: Indicates when the most recent instance of a threat intelligence indicator was observed.
+        - name: source
+          type: keyword
+          description: The source of the threat intelligence indicator.
+        - name: source_url
+          type: keyword
+          description: The URL to the page or site where you can get more information about the threat intelligence indicator.
+        - name: type
+          type: keyword
+          description: The type of threat intelligence indicator.
+        - name: value
+          type: keyword
+          description: The value of a threat intelligence indicator.
+    - name: title
+      type: text
+      description: A finding's title.
+    - name: types
+      type: keyword
+      description: One or more finding types in the format of namespace/category/classifier that classify a finding.
+    - name: updated_at
+      type: date
+      description: Indicates when the security-findings provider last updated the finding record.
+    - name: user_defined_fields
+      type: flattened
+      description: A list of name/value string pairs associated with the finding. These are custom, user-defined fields added to a finding.
+    - name: verification_state
+      type: keyword
+      description: Indicates the veracity of a finding.
+    - name: vulnerabilities
+      type: group
+      fields:
+        - name: cvss
+          type: group
+          fields:
+            - name: adjustments
+              type: group
+              fields:
+                - name: metric
+                  type: keyword
+                  description: The metric to adjust.
+                - name: reason
+                  type: keyword
+                  description: The reason for the adjustment.
+            - name: base_score
+              type: double
+              description: The base CVSS score.
+            - name: base_vector
+              type: keyword
+              description: The base scoring vector for the CVSS score.
+            - name: source
+              type: keyword
+              description: The origin of the original CVSS score and vector.
+            - name: version
+              type: keyword
+              description: The version of CVSS for the CVSS score.
+        - name: id
+          type: keyword
+          description: The identifier of the vulnerability.
+        - name: reference_urls
+          type: keyword
+          description: A list of URLs that provide additional information about the vulnerability.
+        - name: related_vulnerabilities
+          type: keyword
+          description: List of vulnerabilities that are related to this vulnerability.
+        - name: vendor
+          type: group
+          fields:
+            - name: created_at
+              type: date
+              description: Indicates when the vulnerability advisory was created.
+            - name: name
+              type: keyword
+              description: The name of the vendor.
+            - name: severity
+              type: keyword
+              description: The severity that the vendor assigned to the vulnerability.
+            - name: updated_at
+              type: date
+              description: Indicates when the vulnerability advisory was last updated.
+            - name: url
+              type: keyword
+              description: The URL of the vulnerability advisory.
+        - name: vulnerable_packages
+          type: group
+          fields:
+            - name: architecture
+              type: keyword
+              description: The architecture used for the software package.
+            - name: epoch
+              type: keyword
+              description: The epoch of the software package.
+            - name: file_path
+              type: keyword
+              description: The file system path to the package manager inventory file.
+            - name: name
+              type: keyword
+              description: The name of the software package.
+            - name: package_manager
+              type: keyword
+              description: The source of the package.
+            - name: release
+              type: keyword
+              description: The release of the software package.
+            - name: version
+              type: keyword
+              description: The version of the software package.
+    - name: workflow
+      type: group
+      fields:
+        - name: state
+          type: keyword
+          description: The workflow state of a finding.
+        - name: status
+          type: keyword
+          description: The status of the investigation into the finding.
+- name: url.user_info
+  type: keyword

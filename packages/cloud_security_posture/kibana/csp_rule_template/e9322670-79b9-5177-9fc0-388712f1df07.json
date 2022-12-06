@@ -1,0 +1,38 @@
+{
+    "id": "e9322670-79b9-5177-9fc0-388712f1df07",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "e9322670-79b9-5177-9fc0-388712f1df07",
+            "name": "Ensure that the --streaming-connection-idle-timeout argument is not set to 0 (Manual)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Do not disable timeouts on streaming connections.\n",
+            "rationale": "Setting idle timeouts ensures that you are protected against Denial-of-Service attacks, inactive connections and running out of ephemeral ports. **Note:** By default, `--streaming-connection-idle-timeout` is set to 4 hours which might be too high for your environment. Setting this as appropriate would additionally ensure that such streaming connections are timed out after serving legitimate use cases.\n",
+            "audit": "**Audit Method 1:**\nIf using a Kubelet configuration file, check that there is an entry for\n`streamingConnectionIdleTimeout` is not set to `0`.\nFirst, SSH to the relevant node:\nRun the following command on each node to find the appropriate Kubelet config file:\n```\nps -ef | grep kubelet\n```\nThe output of the above command should return something similar to `--config`\n`/etc/kubernetes/kubelet/kubelet-config.json` which is the location of the Kubelet\nconfig file.\nOpen the Kubelet config file:\n```\ncat /etc/kubernetes/kubelet/kubelet-config.json\n```\nVerify that the `streamingConnectionIdleTimeout` argument is not set to `0`.\nIf the argument is not present, and there is a Kubelet config file specified by `--config`,\ncheck that it does not set `streamingConnectionIdleTimeout` to 0.\n**Audit Method 2:**\nIf using the api configz endpoint consider searching for the status of\n`\"streamingConnectionIdleTimeout\":\"4h0m0s\"` by extracting the live configuration from\nthe nodes running kubelet.\nSet the local proxy port and the following variables and provide proxy port number and\nnode name;\n`HOSTNAME_PORT=\"localhost-and-port-number\"`\n`NODE_NAME=\"The-Name-Of-Node-To-Extract-Configuration\" from the output of`\n`\"kubectl get nodes\"`\n```\nkubectl proxy --port=8001 \u0026\nexport HOSTNAME_PORT=localhost:8001 (example host and port number)\nexport NODE_NAME=ip-192.168.31.226.ec2.internal (example node name from\n\"kubectl get nodes\")\ncurl -sSL \"http://${HOSTNAME_PORT}/api/v1/nodes/${NODE_NAME}/proxy/configz\"\n```\n",
+            "remediation": "**Remediation Method 1:**\nIf modifying the Kubelet config file, edit the kubelet-config.json file\n`/etc/kubernetes/kubelet/kubelet-config.json` and set the below parameter to a non-\nzero value in the format of #h#m#s\n```\n\"streamingConnectionIdleTimeout\":\n```\n**Remediation Method 2:**\nIf using a Kubelet config file, edit the file to set `streamingConnectionIdleTimeout` to a\nvalue other than 0.\nIf using executable arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubelet-args.conf` on each worker node\nand add the below parameter at the end of the `KUBELET_ARGS` variable string.\n```\n--streaming-connection-idle-timeout=4h0m0s\n```\n**Remediation Method 3:**\nIf using the api configz endpoint consider searching for the status of\n`\"streamingConnectionIdleTimeout\":` by extracting the live configuration from the nodes\nrunning kubelet.\n**See detailed step-by-step configmap procedures in Reconfigure a Node's Kubelet in a Live\nCluster, and then rerun the curl statement from audit process to check for kubelet\nconfiguration changes\n```\nkubectl proxy --port=8001 \u0026\nexport HOSTNAME_PORT=localhost:8001 (example host and port number)\nexport NODE_NAME=ip-192.168.31.226.ec2.internal (example node name from\n\"kubectl get nodes\")\n\ncurl -sSL \"http://${HOSTNAME_PORT}/api/v1/nodes/${NODE_NAME}/proxy/configz\"\n```\n**For all three remediations:**\nBased on your system, restart the `kubelet` service and check status\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\nsystemctl status kubelet -l\n```\n",
+            "impact": "Long-lived connections could be interrupted.\n",
+            "default_value": "See the EKS documentation for the default value.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n2. https://github.com/kubernetes/kubernetes/pull/18552\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 3.2.5",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_3_2_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}

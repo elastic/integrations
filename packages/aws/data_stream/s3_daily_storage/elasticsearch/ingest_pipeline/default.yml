@@ -1,0 +1,20 @@
+---
+description: "Pipeline for S3 daily storage metrics"
+
+processors:
+  - rename:
+      field: aws.s3.metrics.NumberOfObjects.avg
+      target_field: aws.s3_daily_storage.number_of_objects
+      ignore_missing: true
+  - rename:
+      field: aws.s3.metrics.BucketSizeBytes.avg
+      target_field: aws.s3_daily_storage.bucket.size.bytes
+      ignore_missing: true
+  - rename:
+      field: aws.dimensions.BucketName
+      target_field: aws.s3.bucket.name
+      ignore_missing: true
+  - remove:
+      field:
+        - aws.s3.metrics
+      ignore_missing: true

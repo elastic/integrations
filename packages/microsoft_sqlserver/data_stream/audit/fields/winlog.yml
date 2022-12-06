@@ -1,0 +1,155 @@
+- name: winlog
+  type: group
+  description: >
+    All fields specific to the Windows Event Log are defined here.
+
+  fields:
+    - name: api
+      required: true
+      type: keyword
+      description: >
+        The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API.
+
+        The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs.
+
+    - name: activity_id
+      type: keyword
+      required: false
+      description: >
+        A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity.
+
+    - name: computer_name
+      type: keyword
+      required: true
+      description: >
+        The name of the computer that generated the record. When using Windows event forwarding, this name can differ from `agent.hostname`.
+
+    - name: event_data
+      type: object
+      object_type: keyword
+      required: false
+      description: >
+        The event-specific data. This field is mutually exclusive with `user_data`. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows.
+
+    - name: event_data
+      type: group
+      description: >
+        This is a non-exhaustive list of parameters that are used in Windows events. By having these fields defined in the template they can be used in dashboards and machine-learning jobs.
+
+      fields:
+        - name: param1
+          type: keyword
+        - name: param2
+          type: keyword
+        - name: param3
+          type: keyword
+        - name: param4
+          type: keyword
+        - name: param5
+          type: keyword
+        - name: param6
+          type: keyword
+        - name: param7
+          type: keyword
+        - name: param8
+          type: keyword
+    - name: event_id
+      type: keyword
+      required: true
+      description: >
+        The event identifier. The value is specific to the source of the event.
+
+    - name: keywords
+      type: keyword
+      required: false
+      description: >
+        The keywords are used to classify an event.
+
+    - name: channel
+      type: keyword
+      required: true
+      description: >
+        The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration.
+
+    - name: record_id
+      type: keyword
+      required: true
+      description: >
+        The record ID of the event log record. The first record written to an event log is record number 1, and other records are numbered sequentially. If the record number reaches the maximum value (2^32^ for the Event Logging API and 2^64^ for the Windows Event Log API), the next record number will be 0.
+
+    - name: related_activity_id
+      type: keyword
+      required: false
+      description: >
+        A globally unique identifier that identifies the activity to which control was transferred to. The related events would then have this identifier as their `activity_id` identifier.
+
+    - name: opcode
+      type: keyword
+      required: false
+      description: >
+        The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged.
+
+    - name: provider_guid
+      type: keyword
+      required: false
+      description: >
+        A globally unique identifier that identifies the provider that logged the event.
+
+    - name: process.pid
+      type: long
+      required: false
+      description: >
+        The process_id of the Client Server Runtime Process.
+
+    - name: provider_name
+      type: keyword
+      required: true
+      description: >
+        The source of the event log record (the application or service that logged the record).
+
+    - name: task
+      type: keyword
+      required: false
+      description: >
+        The task defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. The category used by the Event Logging API (on pre Windows Vista operating systems) is written to this field.
+
+    - name: process.thread.id
+      type: long
+      required: false
+    - name: user_data
+      type: object
+      object_type: keyword
+      required: false
+      description: >
+        The event specific data. This field is mutually exclusive with `event_data`.
+
+    - name: user.identifier
+      type: keyword
+      required: false
+      example: S-1-5-21-3541430928-2051711210-1391384369-1001
+      description: >
+        The Windows security identifier (SID) of the account associated with this event.
+
+        If Winlogbeat cannot resolve the SID to a name, then the `user.name`, `user.domain`, and `user.type` fields will be omitted from the event. If you discover Winlogbeat not resolving SIDs, review the log for clues as to what the problem may be.
+
+    - name: user.name
+      type: keyword
+      description: >
+        Name of the user associated with this event.
+
+    - name: user.domain
+      type: keyword
+      required: false
+      description: >
+        The domain that the account associated with this event is a member of.
+
+    - name: user.type
+      type: keyword
+      required: false
+      description: >
+        The type of account associated with this event.
+
+    - name: version
+      type: long
+      required: false
+      description: The version number of the event's definition.

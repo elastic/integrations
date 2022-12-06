@@ -1,0 +1,26 @@
+config_version: 2
+interval: {{period}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: GET
+request.url: {{hostname}}/actuator/httptrace
+{{#if proxy_url }} 
+request.proxy_url: {{proxy_url}}
+{{/if}}
+response.split:
+  target: body.traces
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

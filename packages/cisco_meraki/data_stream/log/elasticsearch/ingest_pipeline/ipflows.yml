@@ -1,0 +1,62 @@
+---
+description: Pipeline for Cisco Meraki ip_flow_start and ip_flow_end message type
+processors:
+- dissect:
+    description: Determine if the token is src= or operation
+    field: event.original
+    pattern: "%{} %{} %{} %{_temp.event_type} %{_temp.token} %{}"
+- dissect:
+    description: Case for src= follows ip_flow_start
+    field: event.original
+    pattern: "%{} ip_flow_start %{*src}=%{&src} %{*dst}=%{&dst} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport} %{*tsi}=%{&tsi} %{*tp}=%{&tp}"
+    if: ctx._temp.event_type == 'ip_flow_start' && ctx._temp.token.startsWith("src=") == true
+- dissect:
+    description: Case for src= follows ip_flow_end
+    field: event.original
+    pattern: "%{} ip_flow_end %{*src}=%{&src} %{*dst}=%{&dst} %{*prot}=%{&prot} %{*sport}=%{&sport} %{*dport}=%{&dport} %{*tsi_or_tdi}=%{&tsi_or_tdi} %{*tp}=%{&tp}"
+    if: ctx._temp.event_type == 'ip_flow_end' && ctx._temp.token.startsWith("src=") == true
+# source field IP:port handling
+- convert:
+    type: ip
+    field: translated_src_ip
+    target_field: source.ip
+    if: ctx?.translated_src_ip != null
+- convert:
+    type: ip
+    field: src
+    target_field: source.ip
+    if: ctx?.translated_src_ip == null && ctx?.src != null
+- convert:
+    field: translated_port
+    target_field: source.port
+    type: long
+    if: ctx?.translated_src_ip != null && ctx?.translated_port != null
+- convert:
+    field: sport
+    target_field: source.port
+    type: long
+    if: ctx?.translated_src_ip == null && ctx?.sport != null
+# destination field IP:port handling
+- convert:
+    type: ip
+    field: translated_dst_ip
+    target_field: destination.ip
+    if: ctx?.translated_dst_ip != null
+- convert:
+    type: ip
+    field: dst
+    target_field: destination.ip
+    if: ctx?.translated_dst_ip == null && ctx?.dst != null
+- convert:
+    field: translated_port
+    target_field: destination.port
+    type: long
+    if: ctx?.translated_dst_ip != null && ctx?.translated_port != null
+- convert:
+    field: dport
+    target_field: destination.port
+    type: long
+    if: ctx?.translated_dst_ip == null && ctx?.dport != null
+- rename:
+    field: protocol
+    target_field: network.protocol

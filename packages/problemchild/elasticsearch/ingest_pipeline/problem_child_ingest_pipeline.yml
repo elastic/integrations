@@ -1,0 +1,10 @@
+---
+description: "Pipelines for ProblemChild detection"
+processors:
+  - pipeline:
+      if: ctx.containsKey('event') && ctx['event'].containsKey('kind')  && ctx['event'].containsKey('category') && ctx['event']['kind'] == 'event' && ctx['event']['category'].contains('process') && ctx.containsKey('host') && ctx['host'].containsKey('os') && (ctx['host']['os'].containsKey('type') || ctx['host']['os'].containsKey('family') || ctx['host']['os'].containsKey('platform')) && (ctx['host']['os']['type'] == 'windows' || ctx['host']['os']['type'] == 'Windows' || ctx['host']['os']['family'] == 'windows' || ctx['host']['os']['family'] == 'Windows' || ctx['host']['os']['platform'] == 'windows' || ctx['host']['os']['platform'] == 'Windows')
+      name: '{{ IngestPipeline "problem_child_inference_pipeline" }}'
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

@@ -4,7 +4,7 @@ The `logstash` package collects metrics and logs of Logstash.
 
 ## Compatibility
 
-The `logstash` package works with Logstash 7.3.0 and later
+The `logstash` package works with Logstash 8.5.0 and later
 
 ## Logs
 

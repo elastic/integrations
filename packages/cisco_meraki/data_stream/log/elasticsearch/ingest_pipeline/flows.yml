@@ -1,0 +1,24 @@
+---
+description: Pipeline for Cisco Meraki flows message type
+processors:
+- grok:
+    field: event.original
+    patterns:
+      - "flows( %{NOTSPACE:cisco_meraki.flows.op})? src=%{IP:source.ip:ip} dst=%{IP:destination.ip:ip}( mac=%{MAC:source.mac})? protocol=%{NOTSPACE:network.protocol}( sport=%{NONNEGINT:source.port:long})?( dport=%{NONNEGINT:destination.port:long})?"
+- gsub:
+    field: source.mac
+    pattern: '[:.]'
+    replacement: '-'
+    ignore_missing: true
+- set:
+    field: cisco_meraki.event_subtype
+    value: "ip_session_initiated"
+    if: ctx.cisco_meraki?.flows?.op == null
+- set:
+    field: cisco_meraki.event_subtype
+    value: "flow_allowed"
+    if: ctx.cisco_meraki?.flows?.op == 'allow'
+- set:
+    field: cisco_meraki.event_subtype
+    value: "flow_denied"
+    if: ctx.cisco_meraki?.flows?.op == 'deny'

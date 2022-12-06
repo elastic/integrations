@@ -1,0 +1,38 @@
+{
+    "id": "2eaebbf1-4cd6-5e02-9f8d-fc2be36f3c86",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "2eaebbf1-4cd6-5e02-9f8d-fc2be36f3c86",
+            "name": "Minimize the admission of containers with allowPrivilegeEscalation (Automated)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Do not generally permit containers to be run with the\n`allowPrivilegeEscalation` flag set to true.\n",
+            "rationale": "A container running with the `allowPrivilegeEscalation` flag set to `true` may have processes that can gain more privileges than their parent. There should be at least one PodSecurityPolicy (PSP) defined which does not permit containers to allow privilege escalation. The option exists (and is defaulted to true) to permit setuid binaries to run. If you have need to run containers which use setuid binaries or require privilege escalation, this should be defined in a separate PSP and you should carefully check RBAC controls to ensure that only limited service accounts and users are given permission to access that PSP.\n",
+            "audit": "Get the set of PSPs with the following command:\n```\nkubectl get psp\n```\nFor each PSP, check whether privileged is enabled:\n```\nkubectl get psp \u003cname\u003e -o=jsonpath='{.spec.allowPrivilegeEscalation}'\n```\nVerify that there is at least one PSP which does not return true.\n",
+            "remediation": "Create a PSP as described in the Kubernetes documentation, ensuring that the\n`.spec.allowPrivilegeEscalation` field is omitted or set to false.\n",
+            "impact": "Pods defined with `spec.allowPrivilegeEscalation: true` will not be permitted unless they are run under a specific PSP.\n",
+            "default_value": "By default, PodSecurityPolicies are not defined.\n",
+            "references": "1. https://kubernetes.io/docs/concepts/policy/pod-security-policy\n",
+            "section": "Pod Security Policies",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 4.2.5",
+                "Pod Security Policies"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_4_2_5"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}

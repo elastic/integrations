@@ -1,0 +1,294 @@
+- name: apache_spark
+  type: group
+  fields:
+    - name: driver
+      type: group
+      fields:
+        - name: application_name
+          type: keyword
+          description: Name of the application.
+        - name: job_duration
+          type: long
+          description: Duration of the job.
+        - name: jobs
+          type: group
+          fields:
+            - name: failed
+              type: long
+              description: Number of failed jobs.
+            - name: succeeded
+              type: long
+              description: Number of successful jobs.
+        - name: stages
+          type: group
+          fields:
+            - name: completed_count
+              type: long
+              description: Total number of completed stages.
+            - name: failed_count
+              type: long
+              description: Total number of failed stages.
+            - name: skipped_count
+              type: long
+              description: Total number of skipped stages.
+        - name: tasks
+          type: group
+          fields:
+            - name: completed
+              type: long
+              description: Number of completed tasks.
+            - name: executors
+              type: group
+              fields:
+                - name: black_listed
+                  type: long
+                  description: Number of blacklisted executors for the tasks.
+                - name: excluded
+                  type: long
+                  description: Number of excluded executors for the tasks.
+                - name: unblack_listed
+                  type: long
+                  description: Number of unblacklisted executors for the tasks.
+                - name: unexcluded
+                  type: long
+                  description: Number of unexcluded executors for the tasks.
+            - name: failed
+              type: long
+              description: Number of failed tasks.
+            - name: killed
+              type: long
+              description: Number of killed tasks.
+            - name: skipped
+              type: long
+              description: Number of skipped tasks.
+        - name: disk.space_used
+          type: long
+          description: Amount of the disk space utilized in MB.
+        - name: memory
+          type: group
+          fields:
+            - name: max_mem
+              type: long
+              description: Maximum amount of memory available for storage, in MB.
+            - name: off_heap
+              type: group
+              fields:
+                - name: max
+                  type: long
+                  description: Maximum amount of off heap memory available, in MB.
+                - name: used
+                  type: long
+                  description: Total amount of off heap memory used, in MB.
+                - name: remaining
+                  type: long
+                  description: Remaining amount of off heap memory, in MB.
+            - name: on_heap
+              type: group
+              fields:
+                - name: max
+                  type: long
+                  description: Maximum amount of on heap memory available, in MB.
+                - name: used
+                  type: long
+                  description: Total amount of on heap memory used, in MB.
+                - name: remaining
+                  type: long
+                  description: Remaining amount of on heap memory, in MB.
+            - name: used
+              type: long
+              description: Total amount of memory used for storage, in MB.
+            - name: remaining
+              type: long
+              description: Remaining amount of storage memory, in MB.
+        - name: dag_scheduler
+          type: group
+          fields:
+            - name: job
+              type: group
+              fields:
+                - name: active
+                  type: long
+                  description: Number of active jobs.
+                - name: all
+                  type: long
+                  description: Total number of jobs.
+            - name: stages
+              type: group
+              fields:
+                - name: failed
+                  type: long
+                  description: Number of failed stages.
+                - name: running
+                  type: long
+                  description: Number of running stages.
+                - name: waiting
+                  type: long
+                  description: Number of waiting stages
+        - name: executors
+          type: group
+          fields:
+            - name: all
+              type: long
+              description: Total number of executors.
+            - name: decommission_unfinished
+              type: long
+              description: Total number of decommissioned unfinished executors.
+            - name: exited_unexpectedly
+              type: long
+              description: Total number of executors exited unexpectedly.
+            - name: gracefully_decommissioned
+              type: long
+              description: Total number of executors gracefully decommissioned.
+            - name: killed_by_driver
+              type: long
+              description: Total number of executors killed by driver.
+            - name: pending_to_remove
+              type: long
+              description: Total number of executors pending to be removed.
+            - name: to_add
+              type: long
+              description: Total number of executors to be added.
+            - name: max_needed
+              type: long
+              description: Maximum number of executors needed.
+            - name: target
+              type: long
+              description: Total number of target executors.
+        - name: executor_metrics
+          type: group
+          fields:
+            - name: memory
+              type: group
+              fields:
+                - name: direct_pool
+                  type: long
+                  description: Peak memory that the JVM is using for direct buffer pool.
+                - name: jvm
+                  type: group
+                  fields:
+                    - name: heap
+                      type: long
+                      description: Peak memory usage of the heap that is used for object allocation.
+                    - name: off_heap
+                      type: long
+                      description: Peak memory usage of non-heap memory that is used by the Java virtual machine.
+                - name: mapped_pool
+                  type: long
+                  description: Peak memory that the JVM is using for mapped buffer pool
+            - name: gc
+              type: group
+              fields:
+                - name: major
+                  type: group
+                  fields:
+                    - name: count
+                      type: long
+                      description: Total major GC count. For example, the garbage collector is one of MarkSweepCompact, PS MarkSweep, ConcurrentMarkSweep, G1 Old Generation and so on.
+                    - name: time
+                      type: long
+                      description: Elapsed total major GC time. The value is expressed in milliseconds.
+                - name: minor
+                  type: group
+                  fields:
+                    - name: count
+                      type: long
+                      description: Total minor GC count. For example, the garbage collector is one of Copy, PS Scavenge, ParNew, G1 Young Generation and so on.
+                    - name: time
+                      type: long
+                      description: Elapsed total minor GC time. The value is expressed in milliseconds.
+            - name: heap_memory
+              type: group
+              fields:
+                - name: 'off'
+                  type: group
+                  fields:
+                    - name: execution
+                      type: long
+                      description: Peak off heap execution memory in use, in bytes.
+                    - name: storage
+                      type: long
+                      description: Peak off heap storage memory in use, in bytes.
+                    - name: unified
+                      type: long
+                      description: Peak off heap memory (execution and storage).
+                - name: 'on'
+                  type: group
+                  fields:
+                    - name: execution
+                      type: long
+                      description: Peak on heap execution memory in use, in bytes.
+                    - name: storage
+                      type: long
+                      description: Peak on heap storage memory in use, in bytes.
+                    - name: unified
+                      type: long
+                      description: Peak on heap memory (execution and storage).
+            - name: process_tree
+              type: group
+              fields:
+                - name: jvm
+                  type: group
+                  fields:
+                    - name: rss_memory
+                      type: long
+                      description: 'Resident Set Size: number of pages the process has in real memory. This is just the pages which count toward text, data, or stack space. This does not include pages which have not been demand-loaded in, or which are swapped out.'
+                    - name: v_memory
+                      type: long
+                      description: Virtual memory size in bytes.
+                - name: other
+                  type: group
+                  fields:
+                    - name: rss_memory
+                      type: long
+                    - name: v_memory
+                      type: long
+                - name: python
+                  type: group
+                  fields:
+                    - name: rss_memory
+                      type: long
+                    - name: v_memory
+                      type: long
+        - name: hive_external_catalog
+          type: group
+          fields:
+            - name: file_cache_hits
+              type: long
+              description: Total number of file cache hits.
+            - name: files_discovered
+              type: long
+              description: Total number of files discovered.
+            - name: hive_client_calls
+              type: long
+              description: Total number of Hive Client calls.
+            - name: parallel_listing_job.count
+              type: long
+              description: Number of jobs running parallely.
+            - name: partitions_fetched
+              type: long
+              description: Number of partitions fetched.
+        - name: jvm.cpu.time
+          type: long
+          description: Elapsed CPU time the JVM spent.
+        - name: spark.streaming
+          type: group
+          fields:
+            - name: states
+              type: group
+              fields:
+                - name: rows.total
+                  type: long
+                  description: Total number of rows.
+                - name: used_bytes
+                  type: long
+                  description: Total number of bytes utilized.
+            - name: processing_rate.total
+              type: double
+              description: Total rate of processing.
+            - name: latency
+              type: long
+            - name: event_time.watermark
+              type: long
+            - name: input_rate.total
+              type: double
+              description: Total rate of the input.

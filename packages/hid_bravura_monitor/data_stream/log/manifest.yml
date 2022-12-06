@@ -1,0 +1,70 @@
+type: logs
+title: Hitachi ID Bravura Monitor
+streams:
+  - input: filestream
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - C:/Program Files/Hitachi ID/IDM Suite/Logs/default*/idmsuite*.log
+        description: "Path to IDM Suite log files"
+      - name: node
+        type: text
+        title: Node
+        multi: false
+        required: true
+        show_user: true
+        default: 0.0.0.0
+        description: "If set to 0.0.0.0, `hid_bravura_monitor.node` will be set to the value of `host.name`"
+      - name: instancename
+        type: text
+        title: Instance name
+        multi: false
+        required: true
+        show_user: true
+        default: default
+      - name: timezone
+        type: text
+        title: Timezone
+        multi: false
+        required: true
+        show_user: true
+        default: UTC
+      - name: environment
+        type: text
+        title: Environment
+        multi: false
+        required: true
+        show_user: true
+        default: PRODUCTION
+      - name: instancetype
+        type: text
+        title: Instance type
+        multi: false
+        required: true
+        show_user: true
+        default: Privilege-Identity-Password
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+    template_path: filestream.yml.hbs
+    title: Hitachi ID Bravura Monitor
+    description: Collect Hitachi ID Security Fabric logs using filestream input

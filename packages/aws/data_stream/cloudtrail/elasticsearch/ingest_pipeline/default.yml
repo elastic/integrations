@@ -4,6 +4,17 @@ processors:
   - rename:
       field: message
       target_field: event.original
+      if: 'ctx.event?.original == null'
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - set:
+      if: ctx['@timestamp'] != null
+      field: event.created
+      copy_from: '@timestamp'
   - json:
       field: event.original
       target_field: json
@@ -11,20 +22,14 @@ processors:
       if: ctx?.json?.preview != null
       name: '{{ IngestPipeline "third-party" }}'
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.0.0'
   - date:
       field: json.eventTime
       target_field: "@timestamp"
       ignore_failure: true
       formats:
         - ISO8601
-  - set:
-      field: event.created
-      value: '{{@timestamp}}'
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -123,10 +128,10 @@ processors:
       field: json.eventCategory
       target_field: aws.cloudtrail.event_category
       ignore_failure: true
-  - rename:
-      field: json.awsRegion
-      target_field: cloud.region
-      ignore_failure: true
+  - set:
+      field: cloud.region
+      copy_from: json.awsRegion
+      ignore_empty_value: true
   - rename:
       field: json.sourceIPAddress
       target_field: source.address
@@ -206,7 +211,7 @@ processors:
         }
       ignore_failure: true
   - rename:
-      field: json.requestId
+      field: json.requestID
       target_field: aws.cloudtrail.request_id
       ignore_failure: true
   - rename:
@@ -635,7 +640,7 @@ processors:
       target_field: cloud.account.id
       ignore_failure: true
   - rename:
-      field: json.previousDigestS3Object
+      field: json.digestS3Object
       target_field: file.path
       ignore_failure: true
   - rename:

@@ -4,6 +4,17 @@
     HTTP related fields.
 
   fields:
+    - name: request.url
+      level: extended
+      type: wildcard
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
+        - name: keyword
+          type: keyword
+      description: The request url
     - name: response
       type: group
       fields:
@@ -19,6 +30,11 @@
           type: keyword
           description: >
             List of redirects followed to arrive at final content. Last item on the list is the URL for which body content is shown.
+
+        - name: headers.etag
+          type: keyword
+          description: >
+            Identifier for a specific version of a resource
 
         - name: headers.*
           type: object

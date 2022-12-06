@@ -2,11 +2,8 @@
 description: Ingest pipeline for normalizing CrowdStrike Falcon logs
 processors:
   - set:
-      field: event.ingested
-      value: '{{_ingest.timestamp}}'
-  - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.5.0'
   - rename:
       field: message
       target_field: event.original
@@ -312,12 +309,14 @@ processors:
           commandLine = commandLine.trim();
 
           if (commandLine != "") {
-            def args = Arrays.asList(/ /.split(commandLine));
+            def args = new ArrayList(Arrays.asList(/ /.split(commandLine)));
             args.removeIf(arg -> arg == "");
 
-            ctx["process.command_line"] = commandLine;
-            ctx["process.args"] = args;
-            ctx["process.executable"] = args.get(0);
+            ctx.process = [
+              'command_line': commandLine,
+              'args': args,
+              'executable': args.get(0)
+            ]
           }
         }
   - pipeline:

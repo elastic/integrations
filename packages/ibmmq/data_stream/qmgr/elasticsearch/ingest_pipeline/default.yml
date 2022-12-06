@@ -1,0 +1,376 @@
+---
+description: Pipeline for processing IBM MQ Queue Manager performance metrics.
+processors:
+- set:
+    field: ecs.version
+    value: 8.2.0
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: event.kind
+    value: metric
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: event.module
+    value: ibmmq
+    override: true
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: event.type
+    value: info
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: service.type
+    value: ibmmq
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: event.category
+    value: web
+    ignore_empty_value: true
+    ignore_failure: true
+- set:
+    field: prometheus.labels.job
+    value: ibmmq
+    override: true
+    ignore_empty_value: true
+    ignore_failure: true
+- rename:
+    field: prometheus.labels.qmgr
+    target_field: ibmmq.labels.qmgr
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.labels.job
+    target_field: ibmmq.labels.job
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_commit_total
+    target_field: ibmmq.qmgr.messages.commit.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_mqcb_total
+    target_field: ibmmq.qmgr.calls.failed.callback.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_mqclose_total
+    target_field: ibmmq.qmgr.calls.failed.close.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_mqconn_mqconnx_total
+    target_field: ibmmq.qmgr.calls.failed.connections.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_mqget_total
+    target_field: ibmmq.qmgr.calls.failed.get.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_mqinq_total
+    target_field: ibmmq.qmgr.calls.failed.inquire.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_mqopen_total
+    target_field: ibmmq.qmgr.calls.failed.open.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_mqset_total
+    target_field: ibmmq.qmgr.calls.failed.set.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_mqsubrq_total
+    target_field: ibmmq.qmgr.calls.failed.subscription_request.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqcb_total
+    target_field: ibmmq.qmgr.calls.succeeded.callback.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqclose_total
+    target_field: ibmmq.qmgr.calls.succeeded.close.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqconn_mqconnx_total
+    target_field: ibmmq.qmgr.calls.succeeded.connections.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqctl_total
+    target_field: ibmmq.qmgr.calls.succeeded.control.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqdisc_total
+    target_field: ibmmq.qmgr.calls.succeeded.disconnect.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqinq_total
+    target_field: ibmmq.qmgr.calls.succeeded.inquire.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqopen_total
+    target_field: ibmmq.qmgr.calls.succeeded.open.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqset_total
+    target_field: ibmmq.qmgr.calls.succeeded.set.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqstat_total
+    target_field: ibmmq.qmgr.calls.succeeded.status.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqsubrq_total
+    target_field: ibmmq.qmgr.calls.succeeded.subscription_request.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_destructive_get_bytes_total
+    target_field: ibmmq.qmgr.destructive.get.bytes
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_destructive_get_total
+    target_field: ibmmq.qmgr.destructive.get.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_log_logical_written_bytes_total
+    target_field: ibmmq.qmgr.log.written.bytes.logical
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_log_physical_written_bytes_total
+    target_field: ibmmq.qmgr.log.written.bytes.physical
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_expired_message_total
+    target_field: ibmmq.qmgr.messages.expired.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_browse_total
+    target_field: ibmmq.qmgr.messages.failed.browse.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_mqput_total
+    target_field: ibmmq.qmgr.messages.failed.mq.put.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_mqput1_total
+    target_field: ibmmq.qmgr.messages.failed.mq.put1.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqput_mqput1_bytes_total
+    target_field: ibmmq.qmgr.messages.mq.put.bytes
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_mqput_mqput1_total
+    target_field: ibmmq.qmgr.messages.mq.put.count
+    ignore_missing: true
+    ignore_failure: 
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_non_persistent_message_browse_bytes_total
+    target_field: ibmmq.qmgr.messages.non_persistent.browse.bytes
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_non_persistent_message_browse_total
+    target_field: ibmmq.qmgr.messages.non_persistent.browse.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_non_persistent_message_destructive_get_total
+    target_field: ibmmq.qmgr.messages.non_persistent.destructive.get.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_non_persistent_message_get_bytes_total
+    target_field: ibmmq.qmgr.messages.non_persistent.get.bytes
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_non_persistent_message_mqput_total
+    target_field: ibmmq.qmgr.messages.non_persistent.mq.put.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_non_persistent_message_mqput1_total
+    target_field: ibmmq.qmgr.messages.non_persistent.mq.put1.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_non_persistent_message_put_bytes_total
+    target_field: ibmmq.qmgr.messages.non_persistent.put.bytes
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_persistent_message_browse_bytes_total
+    target_field: ibmmq.qmgr.messages.persistent.browse.bytes
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_persistent_message_browse_total
+    target_field: ibmmq.qmgr.messages.persistent.browse.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_persistent_message_destructive_get_total
+    target_field: ibmmq.qmgr.messages.persistent.destructive.get.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_persistent_message_get_bytes_total
+    target_field: ibmmq.qmgr.messages.persistent.get.bytes
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_persistent_message_mqput_total
+    target_field: ibmmq.qmgr.messages.persistent.mq.put.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_persistent_message_mqput1_total
+    target_field: ibmmq.qmgr.messages.persistent.mq.put1.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_persistent_message_put_bytes_total
+    target_field: ibmmq.qmgr.messages.persistent.put.bytes
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_published_to_subscribers_bytes_total
+    target_field: ibmmq.qmgr.messages.published.subscribers.bytes
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_published_to_subscribers_message_total
+    target_field: ibmmq.qmgr.messages.published.subscribers.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_purged_queue_total
+    target_field: ibmmq.qmgr.messages.purged.queue.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_rollback_total
+    target_field: ibmmq.qmgr.rollback.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_durable_subscription_alter_total
+    target_field: ibmmq.qmgr.subscription.durable.alter.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_durable_subscription_create_total
+    target_field: ibmmq.qmgr.subscription.durable.create.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_durable_subscription_delete_total
+    target_field: ibmmq.qmgr.subscription.durable.delete.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_durable_subscription_resume_total
+    target_field: ibmmq.qmgr.subscription.durable.resume.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_subscription_create_alter_resume_total
+    target_field: ibmmq.qmgr.subscription.failed.create_alter_resume.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_subscription_delete_total
+    target_field: ibmmq.qmgr.subscription.failed.delete.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_non_durable_subscription_create_total
+    target_field: ibmmq.qmgr.subscription.non_durable.create.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_non_durable_subscription_delete_total
+    target_field: ibmmq.qmgr.subscription.non_durable.delete.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_failed_topic_mqput_mqput1_total
+    target_field: ibmmq.qmgr.topic.mq.put.failed.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_topic_mqput_mqput1_total
+    target_field: ibmmq.qmgr.topic.mq.put.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_non_persistent_topic_mqput_mqput1_total
+    target_field: ibmmq.qmgr.topic.mq.put.non_persistent.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_persistent_topic_mqput_mqput1_total
+    target_field: ibmmq.qmgr.topic.mq.put.persistent.count
+    ignore_missing: true
+    ignore_failure: true
+- rename:
+    field: prometheus.metrics.ibmmq_qmgr_topic_put_bytes_total
+    target_field: ibmmq.qmgr.topic.put.bytes
+    ignore_missing: true
+    ignore_failure: true
+- remove:
+    field:
+    - prometheus
+    ignore_missing: true
+    ignore_failure: true
+- script:
+    description: Drops null/empty values recursively.
+    lang: painless
+    source: |
+        boolean drop(Object o) {
+            if (o == null || o == "") {
+            return true;
+            } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+            } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+            }
+            return false;
+        }
+        drop(ctx);
+on_failure:
+- set:
+    field: error.message
+    value: "{{{ _ingest.on_failure_message }}}"

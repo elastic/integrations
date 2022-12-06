@@ -1,0 +1,110 @@
+{
+    "attributes": {
+        "columns": [
+            "message",
+            "host.name",
+            "log.level",
+            "log.logger"
+        ],
+        "description": "",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "hid_bravura_monitor.log"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "hid_bravura_monitor.log"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "log.level",
+                            "negate": false,
+                            "params": [
+                                "Warning",
+                                "Error"
+                            ],
+                            "type": "phrases",
+                            "value": "Warning, Error"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "log.level": "Warning"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "log.level": "Error"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "highlightAll": true,
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                },
+                "version": true
+            }
+        },
+        "sort": [],
+        "title": "IDM Suite Errors and Warnings",
+        "version": 1
+    },
+    "coreMigrationVersion": "7.15.0",
+    "id": "hid_bravura_monitor-2ec4a850-1463-11eb-bb7b-bb041e8cf289",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "namespaces": [
+        "default"
+    ],
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "search"
+}

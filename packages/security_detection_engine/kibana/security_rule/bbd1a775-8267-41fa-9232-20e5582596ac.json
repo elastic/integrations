@@ -15,13 +15,57 @@
         "language": "kuery",
         "license": "Elastic License v2",
         "name": "Microsoft 365 Teams Custom Application Interaction Allowed",
-        "note": "## Config\n\nThe Microsoft 365 Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "note": "",
         "query": "event.dataset:o365.audit and event.provider:MicrosoftTeams and\nevent.category:web and event.action:TeamsTenantSettingChanged and\no365.audit.Name:\"Allow sideloading and interaction of custom apps\" and\no365.audit.NewValue:True and event.outcome:success\n",
         "references": [
             "https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload"
         ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": "^1.3.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.Name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.NewValue",
+                "type": "unknown"
+            }
+        ],
         "risk_score": 47,
         "rule_id": "bbd1a775-8267-41fa-9232-20e5582596ac",
+        "setup": "The Office 365 Logs Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
         "severity": "medium",
         "tags": [
             "Elastic",
@@ -29,11 +73,23 @@
             "Microsoft 365",
             "Continuous Monitoring",
             "SecOps",
-            "Configuration Audit"
+            "Configuration Audit",
+            "Persistence"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT\u0026CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": []
+            }
         ],
         "timestamp_override": "event.ingested",
         "type": "query",
-        "version": 4
+        "version": 101
     },
     "id": "bbd1a775-8267-41fa-9232-20e5582596ac",
     "type": "security-rule"

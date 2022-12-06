@@ -7,6 +7,9 @@
 package main
 
 import (
+	_ "golang.org/x/tools/cmd/goimports"
+
 	_ "github.com/elastic/elastic-package"
+	_ "github.com/elastic/go-licenser"
 	_ "github.com/elastic/package-registry"
 )

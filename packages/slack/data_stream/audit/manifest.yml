@@ -1,0 +1,62 @@
+type: logs
+title: Slack Audit Logs
+streams:
+  - input: httpjson
+    vars:
+      - name: oauth_token
+        type: password
+        title: OAuth API Token
+        description: The OAuth API Token used to authenticate with the Slack API
+        multi: false
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        description: Interval at which the logs will be pulled. The value must be between 2m and 1h.
+        default: 1h
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: false
+        description: Initial interval at which the logs will be pulled. Defaults to 30 days (720 hours).
+        default: 720h
+      - name: limit
+        type: integer
+        title: Limit
+        description: Number of events to fetch on each request. Max is 9999.
+        show_user: false
+        required: true
+        default: 9999
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - forwarded
+          - slack-audit
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
+    template_path: httpjson.yml.hbs
+    title: Slack Audit logs
+    description: Collect Slack Audit logs via the API

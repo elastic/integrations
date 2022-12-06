@@ -1,0 +1,781 @@
+{
+    "attributes": {
+        "description": "Dashboard providing statistics about indicators ingested from the Anomali integration",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "event.kind",
+                            "negate": false,
+                            "params": {
+                                "query": "enrichment"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "event.kind": "enrichment"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": [
+                                "ti_anomali.limo",
+                                "ti_anomali.threatstream"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "ti_anomali.limo"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "ti_anomali.threatstream"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n**[Anomali Overview (This Page)](/app/dashboards#/view/ti_anomali-96fe1e60-4261-11ec-b7be-d3026acdf1cf)**  \n[Anomali Files](/app/dashboards#/view/ti_anomali-207f3c40-45fb-11ec-ab0c-d7f52dcaa020)  \n[Anomali URLs](/app/dashboards#/view/ti_anomali-39699a60-45fc-11ec-ab0c-d7f52dcaa020)  \n[Anomali Other Indicators](/app/dashboards#/view/ti_anomali-78e08d20-45fc-11ec-ab0c-d7f52dcaa020)\n\n[Integrations Page](/app/integrations/detail/ti_anomali/overview)\n\n\n**Overview**\n\nThis dashboard is a health overview related to the Anomali integration.\n\nThe dashboard is made to provide general statistics and show the health of the ingestion of indicators from Anomali.  \n\nIt shows how many parts has been enabled (Limo and ThreatStream), the ingestion rates and provides a few filters for drilling down to specific indicator types retrieved from Anomali.",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 38,
+                    "i": "12dc83c2-c8cf-4583-88b5-48761c63a1f7",
+                    "w": 7,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "12dc83c2-c8cf-4583-88b5-48761c63a1f7",
+                "type": "visualization",
+                "version": "8.0.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "hidePanelTitles": false,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "controls": [
+                                {
+                                    "fieldName": "event.dataset",
+                                    "id": "1636972155400",
+                                    "indexPatternRefName": "control_d0d28809-695c-4190-9b91-b62c60dff1fe_0_index_pattern",
+                                    "label": "Feed Name",
+                                    "options": {
+                                        "dynamicOptions": true,
+                                        "multiselect": true,
+                                        "order": "desc",
+                                        "size": 5,
+                                        "type": "terms"
+                                    },
+                                    "parent": "",
+                                    "type": "list"
+                                },
+                                {
+                                    "fieldName": "threat.indicator.provider",
+                                    "id": "1636972320770",
+                                    "indexPatternRefName": "control_d0d28809-695c-4190-9b91-b62c60dff1fe_1_index_pattern",
+                                    "label": "Indicator Provider",
+                                    "options": {
+                                        "dynamicOptions": true,
+                                        "multiselect": true,
+                                        "order": "desc",
+                                        "size": 5,
+                                        "type": "terms"
+                                    },
+                                    "parent": "",
+                                    "type": "list"
+                                },
+                                {
+                                    "fieldName": "threat.indicator.type",
+                                    "id": "1636972345166",
+                                    "indexPatternRefName": "control_d0d28809-695c-4190-9b91-b62c60dff1fe_2_index_pattern",
+                                    "label": "Indicator Type",
+                                    "options": {
+                                        "dynamicOptions": true,
+                                        "multiselect": true,
+                                        "order": "desc",
+                                        "size": 5,
+                                        "type": "terms"
+                                    },
+                                    "parent": "",
+                                    "type": "list"
+                                }
+                            ],
+                            "pinFilters": false,
+                            "updateFiltersOnChange": false,
+                            "useTimeFilter": true
+                        },
+                        "title": "",
+                        "type": "input_control_vis",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 7,
+                    "i": "d0d28809-695c-4190-9b91-b62c60dff1fe",
+                    "w": 41,
+                    "x": 7,
+                    "y": 0
+                },
+                "panelIndex": "d0d28809-695c-4190-9b91-b62c60dff1fe",
+                "title": "Feed and Indicator Selector [Logs Anomali]",
+                "type": "visualization",
+                "version": "8.0.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-c28e58ec-5377-460f-9d19-81c5b0655d84",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "c28e58ec-5377-460f-9d19-81c5b0655d84": {
+                                            "columnOrder": [
+                                                "747a0b3c-a82b-4c1f-823e-3337619e6117"
+                                            ],
+                                            "columns": {
+                                                "747a0b3c-a82b-4c1f-823e-3337619e6117": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Datastreams",
+                                                    "operationType": "unique_count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.dataset"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "747a0b3c-a82b-4c1f-823e-3337619e6117",
+                                "layerId": "c28e58ec-5377-460f-9d19-81c5b0655d84",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "444bedab-0363-4e0c-81e3-d8e370ae3aec",
+                    "w": 6,
+                    "x": 7,
+                    "y": 7
+                },
+                "panelIndex": "444bedab-0363-4e0c-81e3-d8e370ae3aec",
+                "title": "Total Datastreams [Logs Anomali]",
+                "type": "lens",
+                "version": "8.0.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-78c9288e-227b-4cff-979b-d89a75ece8e7",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "78c9288e-227b-4cff-979b-d89a75ece8e7": {
+                                            "columnOrder": [
+                                                "ec9f1c6f-2142-4695-af89-30d613260474",
+                                                "a8876e88-a694-49b6-8117-6a949ecc994a"
+                                            ],
+                                            "columns": {
+                                                "a8876e88-a694-49b6-8117-6a949ecc994a": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "ec9f1c6f-2142-4695-af89-30d613260474": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of threat.indicator.provider",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "a8876e88-a694-49b6-8117-6a949ecc994a",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "threat.indicator.provider"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "a8876e88-a694-49b6-8117-6a949ecc994a"
+                                        ],
+                                        "layerId": "78c9288e-227b-4cff-979b-d89a75ece8e7",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "showGridlines": false,
+                                        "splitAccessor": "ec9f1c6f-2142-4695-af89-30d613260474"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "bar_horizontal",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "5809310f-2beb-446c-8b5d-c84f44c041b3",
+                    "w": 23,
+                    "x": 13,
+                    "y": 7
+                },
+                "panelIndex": "5809310f-2beb-446c-8b5d-c84f44c041b3",
+                "title": "Total Indicators per Provider [Logs Anomali]",
+                "type": "lens",
+                "version": "8.0.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-7fdc4f94-7863-4914-b99d-982d353a54ba",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "7fdc4f94-7863-4914-b99d-982d353a54ba": {
+                                            "columnOrder": [
+                                                "da5b8cdd-28c7-47ac-a991-4b995d7a62ec",
+                                                "0116942e-4077-43f5-9dc8-297c469d18d3"
+                                            ],
+                                            "columns": {
+                                                "0116942e-4077-43f5-9dc8-297c469d18d3": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                },
+                                                "da5b8cdd-28c7-47ac-a991-4b995d7a62ec": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of event.dataset",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0116942e-4077-43f5-9dc8-297c469d18d3",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.dataset"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "groups": [
+                                            "da5b8cdd-28c7-47ac-a991-4b995d7a62ec"
+                                        ],
+                                        "layerId": "7fdc4f94-7863-4914-b99d-982d353a54ba",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metric": "0116942e-4077-43f5-9dc8-297c469d18d3",
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent"
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "2c98de99-50a0-4a21-86f5-005f80dab887",
+                    "w": 12,
+                    "x": 36,
+                    "y": 7
+                },
+                "panelIndex": "2c98de99-50a0-4a21-86f5-005f80dab887",
+                "title": "Total Indicators per Datastream [Logs Anomali]",
+                "type": "lens",
+                "version": "8.0.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a531c764-6567-4a71-8bf7-c30e0f146526",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "a531c764-6567-4a71-8bf7-c30e0f146526": {
+                                            "columnOrder": [
+                                                "85c9e822-60d0-4aa5-b811-79b0c58aa6b6"
+                                            ],
+                                            "columns": {
+                                                "85c9e822-60d0-4aa5-b811-79b0c58aa6b6": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total Indicators",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "accessor": "85c9e822-60d0-4aa5-b811-79b0c58aa6b6",
+                                "layerId": "a531c764-6567-4a71-8bf7-c30e0f146526",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "4bf9c1a3-dd8e-4640-9a8e-8641d62a4c89",
+                    "w": 6,
+                    "x": 7,
+                    "y": 15
+                },
+                "panelIndex": "4bf9c1a3-dd8e-4640-9a8e-8641d62a4c89",
+                "title": "Total Indicators [Logs Anomali]",
+                "type": "lens",
+                "version": "8.0.0-SNAPSHOT"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-current-indexpattern",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8304fb06-3af2-4279-9b88-b3f18324c042",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "8304fb06-3af2-4279-9b88-b3f18324c042": {
+                                            "columnOrder": [
+                                                "645fb806-bad6-4c07-b65c-1e5eb559cc06",
+                                                "b9f443d8-7811-4d09-9339-135a3a850ca3",
+                                                "eab09cd9-8af1-43a9-bed1-7c88ea536fe1"
+                                            ],
+                                            "columns": {
+                                                "645fb806-bad6-4c07-b65c-1e5eb559cc06": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top values of event.dataset",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "eab09cd9-8af1-43a9-bed1-7c88ea536fe1",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "size": 3
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "event.dataset"
+                                                },
+                                                "b9f443d8-7811-4d09-9339-135a3a850ca3": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "eab09cd9-8af1-43a9-bed1-7c88ea536fe1": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "scale": "ratio",
+                                                    "sourceField": "Records"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "eab09cd9-8af1-43a9-bed1-7c88ea536fe1"
+                                        ],
+                                        "layerId": "8304fb06-3af2-4279-9b88-b3f18324c042",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "645fb806-bad6-4c07-b65c-1e5eb559cc06",
+                                        "xAccessor": "b9f443d8-7811-4d09-9339-135a3a850ca3"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full"
+                                },
+                                "yRightExtent": {
+                                    "mode": "full"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "aea6ddeb-b045-4372-bfe4-5eb52cd394db",
+                    "w": 41,
+                    "x": 7,
+                    "y": 23
+                },
+                "panelIndex": "aea6ddeb-b045-4372-bfe4-5eb52cd394db",
+                "type": "lens",
+                "version": "8.0.0-SNAPSHOT"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs Anomali] Overview",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.0.0",
+    "id": "ti_anomali-96fe1e60-4261-11ec-b7be-d3026acdf1cf",
+    "migrationVersion": {
+        "dashboard": "8.0.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d0d28809-695c-4190-9b91-b62c60dff1fe:control_d0d28809-695c-4190-9b91-b62c60dff1fe_0_index_pattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d0d28809-695c-4190-9b91-b62c60dff1fe:control_d0d28809-695c-4190-9b91-b62c60dff1fe_1_index_pattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d0d28809-695c-4190-9b91-b62c60dff1fe:control_d0d28809-695c-4190-9b91-b62c60dff1fe_2_index_pattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "444bedab-0363-4e0c-81e3-d8e370ae3aec:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "444bedab-0363-4e0c-81e3-d8e370ae3aec:indexpattern-datasource-layer-c28e58ec-5377-460f-9d19-81c5b0655d84",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5809310f-2beb-446c-8b5d-c84f44c041b3:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "5809310f-2beb-446c-8b5d-c84f44c041b3:indexpattern-datasource-layer-78c9288e-227b-4cff-979b-d89a75ece8e7",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2c98de99-50a0-4a21-86f5-005f80dab887:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2c98de99-50a0-4a21-86f5-005f80dab887:indexpattern-datasource-layer-7fdc4f94-7863-4914-b99d-982d353a54ba",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4bf9c1a3-dd8e-4640-9a8e-8641d62a4c89:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "4bf9c1a3-dd8e-4640-9a8e-8641d62a4c89:indexpattern-datasource-layer-a531c764-6567-4a71-8bf7-c30e0f146526",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "aea6ddeb-b045-4372-bfe4-5eb52cd394db:indexpattern-datasource-current-indexpattern",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "aea6ddeb-b045-4372-bfe4-5eb52cd394db:indexpattern-datasource-layer-8304fb06-3af2-4279-9b88-b3f18324c042",
+            "type": "index-pattern"
+        },
+        {
+            "id": "ti_anomali-94419670-4261-11ec-b7be-d3026acdf1cf",
+            "name": "tag-ti_anomali-94419670-4261-11ec-b7be-d3026acdf1cf",
+            "type": "tag"
+        }
+    ],
+    "type": "dashboard"
+}

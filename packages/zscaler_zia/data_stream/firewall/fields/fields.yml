@@ -1,0 +1,105 @@
+- name: zscaler_zia.firewall
+  type: group
+  fields:
+    - name: department
+      type: keyword
+      description: |
+        Department of the user.
+    - name: location
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            Name of the location from which the session was initiated.
+    - name: client
+      type: group
+      fields:
+        - name: destination
+          type: group
+          fields:
+            - name: port
+              type: long
+              description: |
+                Client destination port. For aggregated sessions, this is the client destination port of the last session in the aggregate.
+            - name: ip
+              type: ip
+              description: |
+                Client destination IP address. For aggregated sessions, this is the client destination IP address of the last session in the aggregate.
+    - name: server
+      type: group
+      fields:
+        - name: source
+          type: group
+          fields:
+            - name: port
+              type: long
+              description: |
+                Server source port. For aggregated sessions, this is the server source port of the last session in the aggregate.
+            - name: ip
+              type: ip
+              description: |
+                Server source IP address. For aggregated sessions, this is the server source IP address of the last session in the aggregate.
+    - name: tunnel
+      type: group
+      fields:
+        - name: ip
+          type: ip
+          description: |
+            Tunnel IP address of the client (source). For aggregated sessions, this is the client's tunnel IP address corresponding to the last session in the aggregate.
+        - name: port
+          type: long
+          description: |
+            Tunnel port on the client side. For aggregated sessions, this is the client's tunnel port corresponding to the last session in the aggregate.
+        - name: type
+          type: keyword
+          description: |
+            Traffic forwarding method used to send the traffic to the firewall.
+    - name: nat
+      type: keyword
+      description: |
+        Indicates if the destination NAT policy was applied.
+    - name: stateful
+      type: keyword
+    - name: aggregate
+      type: keyword
+    - name: ip_category
+      type: keyword
+      description: |
+        URL category that corresponds to the server IP address.
+    - name: duration
+      type: group
+      fields:
+        - name: avg
+          type: long
+          description: |
+            Average session duration, in milliseconds, if the sessions were aggregated.
+        - name: seconds
+          type: long
+          description: |
+            Average session duration, in milliseconds, if the sessions were aggregated.
+        - name: milliseconds
+          type: long
+          description: |
+            Session or request duration in milliseconds.
+    - name: session
+      type: group
+      fields:
+        - name: count
+          type: double
+          description: |
+            Number of sessions that were aggregated.
+    - name: threat
+      type: group
+      fields:
+        - name: category
+          type: keyword
+          description: |
+            Category of the threat in the Firewall session by the IPS engine.
+        - name: name
+          type: keyword
+          description: |
+            Name of the threat detected in the Firewall session by the IPS engine.
+- name: log.source.address
+  type: keyword
+  description: Source address from which the log event was read / sent from.

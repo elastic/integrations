@@ -1,0 +1,181 @@
+---
+processors:
+  - set:
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: [configuration]
+  - append:
+      field: event.type
+      value: [info]
+  - grok:
+      field: message
+      if: ctx.cisco_ise?.log?.segment?.number == 0
+      patterns:
+        - "^%{TIMESTAMP_ISO8601:_tmp.timestamp} %{ISO8601_TIMEZONE:event.timezone} %{DATA:event.sequence:long} %{DATA:cisco_ise.log.message.code} %{DATA:log.syslog.severity.name} %{DATA:cisco_ise.log.message.description}, %{GREEDYDATA:cisco_ise.log.log_details_raw},"
+  - grok:
+      field: message
+      if: ctx.cisco_ise?.log?.segment?.number > 0
+      patterns:
+        - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
+  - date:
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - date:
+      if: ctx.event?.timezone != null && ctx.event.timezone != ''
+      field: _tmp.timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+        - MMM d HH:mm:ss
+      timezone: '{{{event.timezone}}}'
+      on_failure:
+        - remove:
+            field: _tmp.timestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - kv:
+      field: cisco_ise.log.log_details_raw
+      target_field: cisco_ise.log.log_details
+      field_split: ', '
+      value_split: =
+      ignore_failure: true
+  - grok:
+      field: cisco_ise.log.message.description
+      if: ctx.cisco_ise?.log?.message?.description != null && ctx.cisco_ise.log.message.description != ''
+      patterns:
+        - "^%{DATA:event.action}:"
+      ignore_failure: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - convert:
+      field: cisco_ise.log.log_details.Device IP Address
+      target_field: client.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: cisco_ise.log.log_details.Device IP Address
+      ignore_missing: true
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}'
+      if: ctx.client?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: cisco_ise.log.log_details.Protocol
+      target_field: network.protocol
+      ignore_missing: true
+  - lowercase:
+      field: network.protocol
+      ignore_missing: true
+  - date:
+      field: cisco_ise.log.log_details.RequestReceivedTime
+      target_field: cisco_ise.log.request.received_time
+      if: ctx.cisco_ise?.log?.log_details?.RequestReceivedTime != null
+      formats:
+        - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: "{{ _ingest.on_failure_message }}"
+  - remove:
+      field: cisco_ise.log.log_details.RequestReceivedTime
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.PolicyType
+      target_field: cisco_ise.log.policy.type
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AcsSessionID
+      target_field: cisco_ise.log.acs.session.id
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.AuthorizationPolicyMatchedRule
+      target_field: cisco_ise.log.auth.policy.matched.rule
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.CurrentIDStoreName
+      target_field: cisco_ise.log.currentid.store_name
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.ISEPolicySetName
+      target_field: cisco_ise.log.ise.policy.set_name
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.IdentityPolicyMatchedRule
+      target_field: cisco_ise.log.identity.policy.matched.rule
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.IdentitySelectionMatchedRule
+      target_field: cisco_ise.log.identity.selection.matched.rule
+      ignore_missing: true
+  - append:
+      field: user.name
+      value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
+      if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{cisco_ise.log.log_details.OriginalUserName}}}'
+      if: ctx.cisco_ise?.log?.log_details?.OriginalUserName != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: cisco_ise.log.log_details.OriginalUserName
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.SelectedAccessService
+      target_field: cisco_ise.log.selected.access.service
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.SelectedAuthorizationProfiles
+      target_field: cisco_ise.log.selected.authorization.profiles
+      ignore_missing: true
+  - append:
+      field: user.name
+      value: '{{{cisco_ise.log.log_details.UserName}}}'
+      if: ctx.cisco_ise?.log?.log_details?.UserName != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{cisco_ise.log.log_details.UserName}}}'
+      if: ctx.cisco_ise?.log?.log_details?.UserName != null
+      allow_duplicates: false
+      ignore_failure: true
+  - remove:
+      field: cisco_ise.log.log_details.UserName
+      ignore_missing: true
+  - rename:
+      field: cisco_ise.log.log_details.CPMSessionID
+      target_field: cisco_ise.log.cpm.session.id
+      ignore_missing: true
+  - remove:
+      field:
+        - _tmp
+        - cisco_ise.log.log_details_raw
+      ignore_missing: true

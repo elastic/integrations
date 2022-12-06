@@ -1,0 +1,110 @@
+- name: etcd
+  type: group
+  fields:
+    - name: disk
+      type: group
+      fields:
+        - name: mvcc_db_total_size.bytes
+          type: long
+          description: |
+            Size of stored data at MVCC
+        - name: wal_fsync_duration.ns.bucket.*
+          type: object
+          description: |
+            Latency for writing ahead logs to disk
+        - name: wal_fsync_duration.ns.count
+          type: long
+          description: |
+            Write ahead logs count
+        - name: wal_fsync_duration.ns.sum
+          type: long
+          description: |
+            Write ahead logs latency sum
+        - name: backend_commit_duration.ns.bucket.*
+          type: object
+          description: |
+            Latency for writing backend changes to disk
+        - name: backend_commit_duration.ns.count
+          type: long
+          description: |
+            Backend commits count
+        - name: backend_commit_duration.ns.sum
+          type: long
+          description: |
+            Backend commits latency sum
+    - name: memory
+      type: group
+      fields:
+        - name: go_memstats_alloc
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: |
+                Memory allocated bytes as of MemStats Go
+    - name: network
+      type: group
+      fields:
+        - name: client_grpc_sent
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: |
+                gRPC sent bytes total
+        - name: client_grpc_received
+          type: group
+          fields:
+            - name: bytes
+              type: long
+              description: |
+                gRPC received bytes total
+    - name: server
+      type: group
+      fields:
+        - name: has_leader
+          type: byte
+          description: |
+            Whether a leader exists in the cluster
+        - name: leader_changes
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: |
+                Number of leader changes seen at the cluster
+        - name: proposals_committed
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: |
+                Number of consensus proposals commited
+        - name: proposals_pending
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: |
+                Number of consensus proposals pending
+        - name: proposals_failed
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: |
+                Number of consensus proposals failed
+        - name: grpc_started
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: |
+                Number of sent gRPC requests
+        - name: grpc_handled
+          type: group
+          fields:
+            - name: count
+              type: long
+              description: |
+                Number of received gRPC requests

@@ -1,0 +1,81 @@
+---
+description: Pipeline for processing Atlassian Jira Cloud audit logs.
+processors:
+- set:
+    field: _tmp.timestamp
+    copy_from: json.created
+    if: ctx.json?.created != null
+- convert:
+    field: json.id
+    target_field: event.id
+    type: string
+    ignore_missing: true
+- rename:
+    field: json.remoteAddress
+    target_field: source.address
+    ignore_missing: true
+- rename:
+    field: json.authorAccountId
+    target_field: user.id
+    ignore_missing: true
+- rename:
+    field: json.category
+    target_field: jira.audit.type.category
+    ignore_missing: true
+- rename:
+    field: json.summary
+    target_field: jira.audit.type.action
+    ignore_missing: true
+- set:
+    field: event.action
+    copy_from: jira.audit.type.action
+    ignore_empty_value: true
+- rename:
+    field: json.associatedItems
+    target_field: jira.audit.affected_objects
+    ignore_missing: true
+- rename:
+    field: json.changedValues
+    target_field: jira.audit.changed_values
+    ignore_missing: true
+- script:
+    lang: painless
+    description: Modify data to match Self Hosted 
+    source: >-
+        if(ctx.jira?.audit?.affected_objects == null) {
+            ArrayList items = new ArrayList();
+            ctx.jira?.audit.put("affected_objects", items);
+        }
+        if(ctx.json?.objectItem != null && !ctx.jira?.audit?.affected_objects.contains(ctx.json?.objectItem)) {
+            ctx.jira?.audit?.affected_objects.add(ctx.json?.objectItem);
+        }
+                
+        if(ctx.jira?.audit?.affected_objects != null) {
+            for (def j = 0; j < ctx.jira?.audit?.affected_objects.length; j++) {
+                if(ctx.jira.audit.affected_objects[j]?.typeName != null) {
+                    ctx.jira.audit.affected_objects[j].put('type', ctx.jira.audit.affected_objects[j].typeName);
+                    ctx.jira.audit.affected_objects[j].remove('typeName');
+                }
+            }
+        }
+        if(ctx.jira?.audit?.changed_values != null) {
+            for (def j = 0; j < ctx.jira?.audit?.changed_values.length; j++) {
+                if(ctx.jira.audit.changed_values[j]?.fieldName != null) {
+                    ctx.jira.audit.changed_values[j].put('i18nKey', ctx.jira.audit.changed_values[j].fieldName);
+                    ctx.jira.audit.changed_values[j].put('key', ctx.jira.audit.changed_values[j].fieldName);
+                    ctx.jira.audit.changed_values[j].remove('fieldName');
+                }
+                if(ctx.jira.audit.changed_values[j]?.changedTo != null) {
+                    ctx.jira.audit.changed_values[j].put('to', ctx.jira.audit.changed_values[j].changedTo);
+                    ctx.jira.audit.changed_values[j].remove('changedTo');
+                }
+                if(ctx.jira.audit.changed_values[j]?.changedFrom != null) {
+                    ctx.jira.audit.changed_values[j].put('from', ctx.jira.audit.changed_values[j].changedFrom);
+                    ctx.jira.audit.changed_values[j].remove('changedFrom');
+                }
+            }
+        }
+on_failure:
+- set:
+    field: error.message
+    value: '{{ _ingest.on_failure_message }}' 

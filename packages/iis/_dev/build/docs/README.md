@@ -1,4 +1,6 @@
-IIS (Internet Information Services) is a secure, reliable, and scalable Web server that provides an easy to manage platform for developing and hosting Web applications and services.
+# IIS (Internet Information Services)  integration
+
+IIS (Internet Information Services) is a secure, reliable, and scalable Web server that provides an easy to manage platform for developing and hosting Web applications and services. For more information, see: [IIS Logging](https://docs.microsoft.com/en-us/windows/win32/http/iis-logging).
 
 The `iis` package will periodically retrieve IIS related metrics using performance counters such as:
 
@@ -43,10 +45,10 @@ The fields reported are:
 
 ### Compatibility
 
-The IIS module has been tested with logs from version 7.5 and version 10.
+The IIS module has been tested with logs from version 7.5, 8 and version 10.
 
 ### access
-This dataset will collect and parse access IIS logs.
+This dataset will collect and parse access IIS logs. The supported log format is IIS (W3C).
 
 {{event "access"}}
 

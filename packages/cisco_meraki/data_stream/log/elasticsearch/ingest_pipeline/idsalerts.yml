@@ -1,0 +1,48 @@
+---
+description: Pipeline for Cisco Meraki ids-alerts type
+processors:
+- dissect:
+    description: Determine the ids-alerts security event type
+    field: event.original
+    pattern: "%{} ids-alerts %{*sig}=%{&sig} %{*pri}=%{&pri} %{*ts}=%{&ts} %{*dir}=%{&dir} %{*prot}=%{&prot} %{*src}=%{&src}"
+- set:
+    field: cisco_meraki.event_subtype
+    value: ids_alerted
+- rename:
+    field: priority
+    target_field: cisco_meraki.security.priority
+- rename:
+    field: signature
+    target_field: cisco_meraki.security.signature
+- date:
+    field: timestamp
+    target_field: threat.indicator.last_seen
+    formats: ['UNIX']
+- rename:
+    field: direction
+    target_field: network.direction
+- lowercase:
+    field: protocol
+    target_field: network.protocol
+- grok:
+    field: src
+    patterns:
+      - "^%{IPV4:_temp.src_ip}:%{PORT:sport}$"
+      - "^\\[%{IPV6:_temp.src_ip}\\]:%{PORT:sport}$"
+      - "^%{IPV6NOCOMPRESS:_temp.src_ip}:%{PORT:sport}$"
+      - "^%{IPV6:_temp.src_ip}%{IPV6PORTSEP}%{PORT:sport}$"
+    pattern_definitions:
+      IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+      IPV6PORTSEP: '(?: port |[p#.])'
+      PORT: '[0-9]+'
+    if: ctx?.src != null
+- convert:
+    type: ip
+    field: _temp.src_ip
+    target_field: source.ip
+    ignore_failure: true
+- convert:
+    field: sport
+    target_field: source.port
+    type: long
+    ignore_failure: true

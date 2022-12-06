@@ -1,0 +1,19 @@
+{
+    "attributes": {
+        "created_at": "2022-07-27T12:56:21.555Z",
+        "created_by": "elastic",
+        "description": "Get services that have unsigned executables, hash them, and provide a VirusTotal link for the analyst to check for signs of maliciousness.",
+        "id": "unsigned_services_vt_windows_elastic",
+        "interval": "3600",
+        "platform": "windows",
+        "query": "SELECT concat('https://www.virustotal.com/gui/file/', sha1) AS VtLink, name,\n    description, start_type, status, pid, services.path FROM services\nJOIN authenticode ON services.path = authenticode.path OR\n    services.module_path = authenticode.path\nJOIN hash ON services.path = hash.path\nWHERE authenticode.result != \"trusted\"",
+        "updated_at": "2022-07-27T12:56:21.555Z",
+        "updated_by": "elastic"
+    },
+    "coreMigrationVersion": "8.3.2",
+    "id": "osquery_manager-83869f40-0dab-11ed-a49c-6b13b058b135",
+    "references": [],
+    "type": "osquery-saved-query",
+    "updated_at": "2022-07-27T12:56:21.565Z",
+    "version": "WzIyMzk5LDJd"
+}

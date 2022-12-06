@@ -1,111 +1,29 @@
 - name: cassandra.metrics
   type: group
-  release: beta
   fields:
-    - name: system
+    - name: cache
       type: group
       fields:
-        - name: version
-          type: keyword
-        - name: cluster
-          type: keyword
-        - name: live_nodes
-          type: keyword
-        - name: unreachable_nodes
-          type: keyword
-        - name: leaving_nodes
-          type: keyword
-        - name: joining_nodes
-          type: keyword
-        - name: moving_nodes
-          type: keyword
-        - name: data_center
-          type: keyword
-        - name: rack
-          type: keyword
-    - name: storage
-      type: group
-      fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: total_hint_in_progress
-          type: long
-          description: The number of the total hits in progress
-        - name: total_hints
-          type: long
-          description: The number of the total hits
-        - name: exceptions
-          type: long
-          description: The number of the total exceptions
-        - name: load
-          type: long
-          description: Storage used for Cassandra data in bytes
-    - name: gc
-      type: group
-      fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: concurrent_mark_sweep
+        - name: key_cache
           type: group
           fields:
-            - name: collection_time
+            - name: capacity
               type: long
-              description: Approximate accumulated CMS collection elapsed time in milliseconds.
-            - name: collection_count
+            - name: one_minute_hit_rate
               type: long
-              description: Total number of CMS collections that have occurred.
-        - name: par_new
+            - name: requests.one_minute_rate
+              type: long
+        - name: row_cache
           type: group
           fields:
-            - name: collection_time
+            - name: capacity
               type: long
-              description: Approximate accumulated ParNew collection elapsed time in milliseconds.
-            - name: collection_count
+            - name: one_minute_hit_rate
               type: long
-              description: Total number of ParNew collections that have occurred.
-    - name: memory
-      type: group
-      fields:
-        - name: mbean
-          type: keyword
-          description: Mbean that this event is related to
-        - name: heap_usage
-          type: group
-          fields:
-            - name: committed
-              description: Committed heap memory usage
+            - name: requests.one_minute_rate
               type: long
-            - name: max
-              description: Max heap memory usage
-              type: long
-            - name: used
-              description: Used heap memory usage
-              type: long
-            - name: init
-              description: Initial heap memory usage
-              type: long
-        - name: other_usage
-          type: group
-          fields:
-            - name: committed
-              description: Committed non-heap memory usage
-              type: long
-            - name: max
-              description: Max non-heap memory usage
-              type: long
-            - name: used
-              description: Used non-heap memory usage
-              type: long
-            - name: init
-              description: Initial non-heap memory usage
-              type: long
-    - name: client
-      type: group
-      fields:
-        - name: connected_native_clients
-          type: long
+    - name: client.connected_native_clients
+      type: long
     - name: client_request
       type: group
       fields:
@@ -114,36 +32,36 @@
           fields:
             - name: count
               type: long
+            - name: one_minute_rate
+              type: double
+            - name: timeoutsms
+              type: double
             - name: total_latency
               type: double
             - name: timeouts
               type: double
-            - name: timeoutsms
-              type: double
             - name: unavailables
               type: double
             - name: unavailablesms
-              type: double
-            - name: one_minute_rate
               type: double
         - name: read
           type: group
           fields:
             - name: count
               type: long
-            - name: total_latency
+            - name: one_minute_rate
               type: double
             - name: timeouts
-              description: Number of read timeouts encountered
+              description: Number of read timeouts encountered.
+              type: double
+            - name: total_latency
               type: double
             - name: timeoutsms
               type: double
             - name: unavailables
-              description: Number of read unavailables encountered
+              description: Number of read unavailables encountered.
               type: double
             - name: unavailablesms
-              type: double
-            - name: one_minute_rate
               type: double
         - name: range_slice
           type: group
@@ -152,16 +70,21 @@
               type: double
             - name: total_latency
               type: double
-        - name: caswrite
-          type: group
-          fields:
-            - name: one_minute_rate
-              type: double
-        - name: casread
-          type: group
-          fields:
-            - name: one_minute_rate
-              type: double
+        - name: casread.one_minute_rate
+          type: double
+        - name: caswrite.one_minute_rate
+          type: double
+    - name: column_family.total_disk_space_used
+      type: long
+    - name: compaction
+      type: group
+      fields:
+        - name: completed
+          description: compaction completed tasks.
+          type: long
+        - name: pending
+          description: compaction pending tasks.
+          type: long
     - name: dropped_message
       type: group
       fields:
@@ -187,124 +110,154 @@
           type: long
         - name: trace
           type: long
-    - name: task
+    - name: gc
       type: group
       fields:
-        - name: complete
-          description: completed tasks
-          type: long
-        - name: pending
-          description: pending tasks
-          type: long
-        - name: total_commitlog_size
-          description: total commitlog size of tasks
-          type: long
-    - name: compaction
+        - name: concurrent_mark_sweep
+          type: group
+          fields:
+            - name: collection_count
+              type: long
+              description: Total number of CMS collections that have occurred.
+            - name: collection_time
+              type: long
+              description: Approximate accumulated CMS collection elapsed time in milliseconds.
+        - name: par_new
+          type: group
+          fields:
+            - name: collection_count
+              type: long
+              description: Total number of ParNew collections that have occurred.
+            - name: collection_time
+              type: long
+              description: Approximate accumulated ParNew collection elapsed time in milliseconds.
+    - name: memory
       type: group
       fields:
-        - name: completed
-          description: compaction completed tasks
+        - name: heap_usage
+          type: group
+          fields:
+            - name: committed
+              description: Committed heap memory usage.
+              type: long
+            - name: init
+              description: Initial heap memory usage.
+              type: long
+            - name: max
+              description: Max heap memory usage.
+              type: long
+            - name: used
+              description: Used heap memory usage.
+              type: long
+        - name: other_usage
+          type: group
+          fields:
+            - name: committed
+              description: Committed non-heap memory usage.
+              type: long
+            - name: init
+              description: Initial non-heap memory usage.
+              type: long
+            - name: max
+              description: Max non-heap memory usage.
+              type: long
+            - name: used
+              description: Used non-heap memory usage.
+              type: long
+    - name: storage
+      type: group
+      fields:
+        - name: exceptions
           type: long
-        - name: pending
-          description: compaction pending tasks
+          description: The number of the total exceptions.
+        - name: load
           type: long
+          description: Storage used for Cassandra data in bytes.
+        - name: total_hints
+          type: long
+          description: The number of the total hits.
+        - name: total_hint_in_progress
+          type: long
+          description: The number of the total hits in progress.
+    - name: system
+      type: group
+      fields:
+        - name: cluster
+          type: keyword
+        - name: data_center
+          type: keyword
+        - name: joining_nodes
+          type: keyword
+        - name: leaving_nodes
+          type: keyword
+        - name: live_nodes
+          type: keyword
+        - name: moving_nodes
+          type: keyword
+        - name: rack
+          type: keyword
+        - name: unreachable_nodes
+          type: keyword
+        - name: version
+          type: keyword
     - name: table
       type: group
       fields:
-        - name: live_ss_table_count
-          type: long
         - name: all_memtables_heap_size
           type: long
         - name: all_memtables_off_heap_size
           type: long
         - name: live_disk_space_used
           type: long
-    - name: cache
+        - name: live_ss_table_count
+          type: long
+    - name: task
       type: group
       fields:
-        - name: key_cache
-          type: group
-          fields:
-            - name: requests.one_minute_rate
-              type: long
-            - name: capacity
-              type: long
-            - name: one_minute_hit_rate
-              type: long
-        - name: row_cache
-          type: group
-          fields:
-            - name: requests.one_minute_rate
-              type: long
-            - name: capacity
-              type: long
-            - name: one_minute_hit_rate
-              type: long
+        - name: complete
+          description: completed tasks.
+          type: long
+        - name: pending
+          description: pending tasks.
+          type: long
+        - name: total_commitlog_size
+          description: total commitlog size of tasks.
+          type: long
     - name: thread_pools
       type: group
       fields:
-        - name: counter_mutation_stage
+        - name: counter_mutation_stage.request
           type: group
           fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-        - name: mutation_stage
+            - name: active
+              type: long
+            - name: pending
+              type: long
+        - name: mutation_stage.request
           type: group
           fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-        - name: read_repair_stage
+            - name: active
+              type: long
+            - name: pending
+              type: long
+        - name: read_repair_stage.request
           type: group
           fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-        - name: request_response_stage
+            - name: active
+              type: long
+            - name: pending
+              type: long
+        - name: read_stage.request
           type: group
           fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-        - name: request_response_stage
+            - name: active
+              type: long
+            - name: pending
+              type: long
+        - name: request_response_stage.request
           type: group
           fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-        - name: read_stage
-          type: group
-          fields:
-            - name: request
-              type: group
-              fields:
-                - name: pending
-                  type: long
-                - name: active
-                  type: long
-    - name: column_family
-      type: group
-      fields:
-        - name: total_disk_space_used
-          type: long
+            - name: active
+              type: long
+            - name: pending
+              type: long

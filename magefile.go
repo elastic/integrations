@@ -7,12 +7,15 @@
 package main
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
+
+	"github.com/elastic/integrations/dev/codeowners"
 )
 
 var (
@@ -26,7 +29,9 @@ var (
 func Check() error {
 	mg.Deps(build)
 	mg.Deps(format)
-	mg.Deps(modTidy)
+	mg.Deps(ModTidy)
+	mg.Deps(goTest)
+	mg.Deps(codeowners.Check)
 	return nil
 }
 
@@ -65,7 +70,7 @@ func format() {
 }
 
 func addLicenseHeaders() error {
-	return sh.RunV("go-licenser", "-license", "Elastic")
+	return sh.RunV("go", "run", "github.com/elastic/go-licenser", "-license", "Elastic")
 }
 
 func goImports() error {
@@ -80,10 +85,24 @@ func goImports() error {
 	}
 
 	args := append(
-		[]string{"-local", GoImportsLocalPrefix, "-l", "-w"},
+		[]string{"run", "golang.org/x/tools/cmd/goimports", "-local", GoImportsLocalPrefix, "-l", "-w"},
 		goFiles...,
 	)
-	return sh.RunV("goimports", args...)
+	return sh.RunV("go", args...)
+}
+
+func goTest() error {
+	args := []string{"test"}
+	stdout := io.Discard
+	stderr := io.Discard
+	if mg.Verbose() {
+		args = append(args, "-v")
+		stdout = os.Stdout
+		stderr = os.Stderr
+	}
+	args = append(args, "./dev/...")
+	_, err := sh.Exec(nil, stdout, stderr, "go", args...)
+	return err
 }
 
 func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]string, error) {
@@ -106,6 +125,6 @@ func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 	return matches, err
 }
 
-func modTidy() error {
+func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
 }

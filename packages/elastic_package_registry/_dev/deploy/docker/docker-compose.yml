@@ -1,0 +1,15 @@
+version: '2.3'
+services:
+  elastic_package_registry:
+    build: .
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      retries: 300
+      interval: 1s
+    environment:
+      - "EPR_ADDRESS=0.0.0.0:8081"
+      - "EPR_METRICS_ADDRESS=0.0.0.0:9110"
+      - "EPR_DISABLE_PACKAGE_VALIDATION=true"
+    ports:
+      - 9110
+      - 8081

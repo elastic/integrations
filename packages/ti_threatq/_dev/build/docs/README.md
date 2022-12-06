@@ -1,6 +1,6 @@
 # ThreatQuotient Integration
 
-The ThreatQuotient integration uses the available REST API to retrieve indicators and Threat Intelligence.
+The ThreatQuotient integration uses the available [ThreatQuotient](https://www.threatq.com/integrations/) REST API to retrieve indicators and Threat Intelligence.
 
 ## Logs
 

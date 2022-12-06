@@ -28,11 +28,11 @@ request.transforms:
   - set:
       target: url.params.start
       value: "[[.cursor.last_execution_datetime]]"
-      default: '[[formatDate (now (parseDuration "-{{interval}}"))]]'
+      default: '[[formatDate (((now).Add (parseDuration "-1m")).Add (parseDuration "-{{interval}}"))]]'
   - set:
       target: url.params.end
       value: '[[formatDate ((parseDate .cursor.last_execution_datetime).Add (parseDuration "{{interval}}"))]]'
-      default: '[[formatDate (now (parseDuration "-1m"))]]'
+      default: '[[formatDate ((now).Add (parseDuration "-1m"))]]'
   - set:
       target: url.params.fields
       value: CacheCacheStatus,CacheResponseBytes,CacheResponseStatus,CacheTieredFill,ClientASN,ClientCountry,ClientDeviceType,ClientIP,ClientIPClass,ClientRequestBytes,ClientRequestHost,ClientRequestMethod,ClientRequestPath,ClientRequestProtocol,ClientRequestReferer,ClientRequestURI,ClientRequestUserAgent,ClientSSLCipher,ClientSSLProtocol,ClientSrcPort,ClientXRequestedWith,EdgeColoCode,EdgeColoID,EdgeEndTimestamp,EdgePathingOp,EdgePathingSrc,EdgePathingStatus,EdgeRateLimitAction,EdgeRateLimitID,EdgeRequestHost,EdgeResponseBytes,EdgeResponseCompressionRatio,EdgeResponseContentType,EdgeResponseStatus,EdgeServerIP,EdgeStartTimestamp,FirewallMatchesActions,FirewallMatchesRuleIDs,FirewallMatchesSources,OriginIP,OriginResponseBytes,OriginResponseHTTPExpires,OriginResponseHTTPLastModified,OriginResponseStatus,OriginResponseTime,OriginSSLProtocol,ParentRayID,RayID,SecurityLevel,WAFAction,WAFFlags,WAFMatchedVar,WAFProfile,WAFRuleID,WAFRuleMessage,WorkerCPUTime,WorkerStatus,WorkerSubrequest,WorkerSubrequestCount,ZoneID,Action
@@ -41,7 +41,7 @@ response.decode_as: application/x-ndjson
 
 cursor:
   last_execution_datetime:
-    value: "[[.last_request.url.params.end]]"
+    value: '[[.last_response.url.params.Get "end"]]'
 
 {{#if tags.length}}
 tags:

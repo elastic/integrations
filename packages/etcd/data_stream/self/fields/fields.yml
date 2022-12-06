@@ -1,0 +1,70 @@
+- name: etcd.self
+  type: group
+  fields:
+    - name: id
+      type: keyword
+      description: |
+        The unique identifier for the member
+    - name: leaderinfo
+      type: group
+      fields:
+        - name: leader
+          type: keyword
+          description: |
+            ID of the current leader member
+        - name: start_time
+          type: keyword
+          description: |
+            The time when this node was started
+        - name: uptime
+          type: keyword
+          description: |
+            Amount of time the leader has been leader
+    - name: name
+      type: keyword
+      description: |
+        This member’s name
+    - name: recv
+      type: group
+      fields:
+        - name: append_request
+          type: group
+          fields:
+            - name: count
+              type: integer
+              description: |
+                Number of append requests this node has processed
+        - name: bandwidth_rate
+          type: scaled_float
+          description: |
+            Number of bytes per second this node is receiving (follower only)
+        - name: pkg_rate
+          type: scaled_float
+          description: |
+            Number of requests per second this node is receiving (follower only)
+    - name: send
+      type: group
+      fields:
+        - name: append_request
+          type: group
+          fields:
+            - name: count
+              type: integer
+              description: |
+                Number of requests that this node has sent
+        - name: bandwidth_rate
+          type: scaled_float
+          description: |
+            Number of bytes per second this node is sending (leader only). This value is undefined on single member clusters.
+        - name: pkg_rate
+          type: scaled_float
+          description: |
+            Number of requests per second this node is sending (leader only). This value is undefined on single member clusters.
+    - name: start_time
+      type: keyword
+      description: |
+        The time when this node was started
+    - name: state
+      type: keyword
+      description: |
+        Either leader or follower

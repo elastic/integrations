@@ -1,0 +1,21 @@
+version: '2.3'
+services:
+  auth0-webhook-http:
+    image: docker.elastic.co/observability/stream:v0.6.2
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:8383/auth0/logs
+      - STREAM_WEBHOOK_HEADER=Authorization=abc123
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/auth0-ndjson.log
+  auth0-webhook-https:
+    image: docker.elastic.co/observability/stream:v0.6.2
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=https://elastic-agent:8384/auth0/logs
+      - STREAM_WEBHOOK_HEADER=Authorization=abc123
+      - STREAM_INSECURE=true
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/auth0-ndjson.log

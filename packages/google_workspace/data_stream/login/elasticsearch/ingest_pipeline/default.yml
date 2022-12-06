@@ -2,11 +2,8 @@
 description: Pipeline for parsing google_workspace logs
 processors:
   - set:
-      field: event.ingested
-      value: "{{ _ingest.timestamp }}"
-  - set:
       field: ecs.version
-      value: '1.12.0'
+      value: '8.5.0'
   - append:
       field: event.category
       value: authentication
@@ -18,6 +15,9 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - set:
+      field: event.kind
+      value: event
   - date:
       field: json.id.time
       timezone: UTC
@@ -35,6 +35,7 @@ processors:
       description: Hashes the ID object and uses it as the document id to avoid duplicate events.
       fields:
         - json.id
+        - json.events
       target_field: _id
       ignore_missing: true
       ignore_failure: true
@@ -51,6 +52,10 @@ processors:
       field: json.actor.email
       target_field: source.user.email
       ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: source.user.email
+      ignore_failure: true
   - convert:
       field: json.actor.profileId
       target_field: source.user.id

@@ -1,0 +1,462 @@
+- name: sentinel_one.threat
+  type: group
+  fields:
+    - name: agent
+      type: group
+      fields:
+        - name: account
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Account id.
+            - name: name
+              type: keyword
+              description: Account name.
+        - name: active_threats
+          type: long
+          description: Active threats.
+        - name: decommissioned_at
+          type: boolean
+          description: Decommissioned at.
+        - name: group
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Group id.
+            - name: name
+              type: keyword
+              description: Group name.
+        - name: infected
+          type: boolean
+          description: Agent infected.
+        - name: is_active
+          type: boolean
+          description: Is active.
+        - name: is_decommissioned
+          type: boolean
+          description: Is decommissioned.
+        - name: machine_type
+          type: keyword
+          description: Machine type.
+        - name: mitigation_mode
+          type: keyword
+          description: Agent mitigation mode policy.
+        - name: network_interface
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Device's network interfaces id.
+            - name: inet
+              type: keyword
+              description: Device's network interfaces IPv4 addresses.
+            - name: inet6
+              type: keyword
+              description: Device's network interfaces IPv6 addresses.
+            - name: name
+              type: keyword
+              description: Device's network interfaces IPv4 Name.
+        - name: network_status
+          type: keyword
+          description: Network status.
+        - name: operational_state
+          type: keyword
+          description: Agent operational state.
+        - name: os
+          type: group
+          fields:
+            - name: version
+              type: keyword
+              description: OS revision.
+        - name: reboot_required
+          type: boolean
+          description: A reboot is required on the endpoint for at least one acton on the threat.
+        - name: scan
+          type: group
+          fields:
+            - name: aborted_at
+              type: keyword
+              description: Abort time of last scan (if applicable).
+            - name: finished_at
+              type: keyword
+              description: Finish time of last scan (if applicable).
+            - name: started_at
+              type: keyword
+              description: Start time of last scan.
+            - name: status
+              type: keyword
+              description: Scan status.
+        - name: site
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Site id.
+            - name: name
+              type: keyword
+              description: Site name.
+        - name: storage
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Storage Name.
+            - name: type
+              type: keyword
+              description: Storage Type.
+        - name: user_action_needed
+          type: keyword
+          description: 'A list of pending user actions. List items possible values: "none, reboot_needed, user_acton_needed, upgrade_needed, incompatible_os, unprotected, user_acton_needed_fda, user_acton_needed_rs_fda,user_acton_needed_network, rebootless_without_dynamic_detection, extended_exclusions_partially_accepted, user_action_needed_bluetooth_per".'
+        - name: uuid
+          type: keyword
+          description: UUID.
+    - name: analysis
+      type: group
+      fields:
+        - name: description
+          type: keyword
+          description: Analyst verdict description.
+        - name: verdict
+          type: keyword
+          description: Analyst verdict.
+    - name: automatically_resolved
+      type: boolean
+      description: Automatically resolved.
+    - name: browser_type
+      type: keyword
+      description: Browser type.
+    - name: certificate
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: File Certificate ID.
+    - name: classification
+      type: keyword
+      description: Classification of the threat.
+    - name: classification_source
+      type: keyword
+      description: Source of the threat Classification.
+    - name: cloudfiles_hash_verdict
+      type: keyword
+      description: Cloud files hash verdict.
+    - name: collection
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Collection id.
+    - name: confidence_level
+      type: keyword
+      description: SentinelOne threat confidence level.
+    - name: container
+      type: group
+      fields:
+        - name: labels
+          type: keyword
+          description: Container labels.
+    - name: created_at
+      type: date
+      description: Timestamp of date creation in the Management Console.
+    - name: detection
+      type: group
+      fields:
+        - name: account
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Orig account id.
+            - name: name
+              type: keyword
+              description: Orig account name.
+        - name: agent
+          type: group
+          fields:
+            - name: domain
+              type: keyword
+              description: Network domain.
+            - name: group
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Orig group id.
+                - name: name
+                  type: keyword
+                  description: Orig group name.
+            - name: ipv4
+              type: ip
+              description: Orig agent ipv4.
+            - name: ipv6
+              type: ip
+              description: Orig agent ipv6.
+            - name: last_logged_in
+              type: group
+              fields:
+                - name: upn
+                  type: keyword
+                  description: UPN of last logged in user.
+            - name: mitigation_mode
+              type: keyword
+              description: Agent mitigation mode policy.
+            - name: os
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Orig agent OS name.
+                - name: version
+                  type: keyword
+                  description: Orig agent OS revision.
+            - name: registered_at
+              type: date
+              description: Time of first registration to management console.
+            - name: site
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Orig site id.
+                - name: name
+                  type: keyword
+                  description: Orig site name.
+            - name: uuid
+              type: keyword
+              description: UUID of the agent.
+            - name: version
+              type: keyword
+              description: Orig agent version.
+        - name: cloud_providers
+          type: flattened
+          description: Cloud providers for this agent.
+        - name: engines
+          type: group
+          fields:
+            - name: key
+              type: keyword
+              description: List of engines that detected the threat key.
+            - name: title
+              type: keyword
+              description: List of engines that detected the threat title.
+        - name: state
+          type: keyword
+          description: The Agent's detection state at time of detection.
+        - name: type
+          type: keyword
+          description: Detection type.
+    - name: engines
+      type: keyword
+      description: List of engines that detected the threat.
+    - name: external_ticket
+      type: group
+      fields:
+        - name: exist
+          type: boolean
+          description: External ticket exists.
+        - name: id
+          type: keyword
+          description: External ticket id.
+    - name: failed_actions
+      type: boolean
+      description: At least one action failed on the threat.
+    - name: file
+      type: group
+      fields:
+        - name: extension
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: File extension type.
+        - name: identified_at
+          type: keyword
+          description: Identified at.
+        - name: verification_type
+          type: keyword
+          description: File verification type.
+    - name: id
+      type: keyword
+      description: Threat id.
+    - name: incident
+      type: group
+      fields:
+        - name: status
+          type: keyword
+          description: Incident status.
+        - name: status_description
+          type: keyword
+          description: Incident status description.
+    - name: indicators
+      type: group
+      fields:
+        - name: category
+          type: group
+          fields:
+            - name: id
+              type: long
+              description: Indicators Category Id.
+            - name: name
+              type: keyword
+              description: Indicators Category Name.
+        - name: description
+          type: keyword
+          description: Indicators Description.
+    - name: initiated
+      type: group
+      fields:
+        - name: description
+          type: keyword
+          description: Initiated by description.
+        - name: name
+          type: keyword
+          description: Source of threat.
+    - name: initiating_user
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Initiating user id.
+        - name: name
+          type: keyword
+          description: Initiating user username.
+    - name: is_fileless
+      type: boolean
+      description: Is fileless.
+    - name: is_valid_certificate
+      type: boolean
+      description: True if the certificate is valid.
+    - name: kubernetes
+      type: group
+      fields:
+        - name: cluster
+          type: keyword
+          description: Cluster.
+        - name: controller
+          type: group
+          fields:
+            - name: kind
+              type: keyword
+              description: Controller kind.
+            - name: labels
+              type: keyword
+              description: Controller labels.
+            - name: name
+              type: keyword
+              description: Controller name.
+        - name: namespace
+          type: group
+          fields:
+            - name: labels
+              type: keyword
+              description: Namespace labels.
+            - name: name
+              type: keyword
+              description: Namespace name.
+        - name: node
+          type: keyword
+          description: Node.
+        - name: pod
+          type: group
+          fields:
+            - name: labels
+              type: keyword
+              description: Pod labels.
+            - name: name
+              type: keyword
+              description: Pod name.
+    - name: malicious_process_arguments
+      type: keyword
+      description: Malicious process arguments.
+    - name: mitigated_preemptively
+      type: boolean
+      description: True is the threat was blocked before execution.
+    - name: mitigation
+      type: group
+      fields:
+        - name: description
+          type: keyword
+          description: Mitigation status description.
+        - name: status
+          type: keyword
+          description: Mitigation status.
+    - name: mitigation_status
+      type: group
+      fields:
+        - name: action
+          type: keyword
+          description: Action.
+        - name: action_counters
+          type: group
+          fields:
+            - name: failed
+              type: long
+              description: Actions counters Failed.
+            - name: not_found
+              type: long
+              description: Actions counters Not found.
+            - name: pending_reboot
+              type: long
+              description: Actions counters Pending reboot.
+            - name: success
+              type: long
+              description: Actions counters Success.
+            - name: total
+              type: long
+              description: Actions counters Total.
+        - name: agent_supports_report
+          type: keyword
+          description: The Agent generates a full mitigation report.
+        - name: group_not_found
+          type: keyword
+          description: Agent could not find the threat.
+        - name: last_update
+          type: keyword
+          description: Timestamp of last mitigation status update.
+        - name: latest_report
+          type: keyword
+          description: Report download URL. If None, there is no report.
+        - name: mitigation_ended_at
+          type: keyword
+          description: The time the Agent finished the mitigation.
+        - name: mitigation_started_at
+          type: keyword
+          description: The time the Agent started the mitigation.
+        - name: status
+          type: keyword
+          description: Status.
+    - name: name
+      type: keyword
+      description: Threat name.
+    - name: originator_process
+      type: keyword
+      description: Originator process.
+    - name: pending_actions
+      type: boolean
+      description: At least one action is pending on the threat.
+    - name: process_user
+      type: keyword
+      description: Process user.
+    - name: publisher
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Certificate publisher.
+    - name: reached_events_limit
+      type: boolean
+      description: Has number of OS events for this threat reached the limit, resulting in a partial attack storyline.
+    - name: reboot_required
+      type: boolean
+      description: A reboot is required on the endpoint for at least one threat.
+    - name: storyline
+      type: keyword
+      description: Storyline identifier from agent.
+    - name: threat_id
+      type: keyword
+      description: Threat id.
+    - name: whitening_option
+      type: keyword
+      description: Whitening options.

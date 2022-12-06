@@ -134,7 +134,7 @@ what's been already fixed, as the script has overridden part of it).
 11. Update docs template with sample events.
 
     The events collected by the agent slightly differ from original, Metricbeat's and Filebeat's, ones. Adjust the event
-    content manually basing on already migrated integrations (e.g. [MySQL integration](https://github.com/elastic/integrations/blob/master/packages/mysql/_dev/build/docs/README.md))
+    content manually basing on already migrated integrations (e.g. [MySQL integration](https://github.com/elastic/integrations/blob/main/packages/mysql/_dev/build/docs/README.md))
     or copy them once managed to run whole setup with real agent.
 
 12. Kibana: use `stream.data stream` field instead of `event.data stream`.

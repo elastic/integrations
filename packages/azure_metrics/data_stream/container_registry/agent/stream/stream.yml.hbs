@@ -1,4 +1,4 @@
-metricsets: ["container_registry"]
+metricsets: ["monitor"]
 period: {{period}}
 {{#if client_id}}
 client_id: {{client_id}}
@@ -26,10 +26,44 @@ resources:
 {{#if resource_groups}}
     {{#each resource_groups}}
         - resource_group: "{{this}}"
+          resource_type: "Microsoft.ContainerRegistry/registries"
+          metrics:
+          - name: ["TotalPullCount", "SuccessfulPullCount", "TotalPushCount", "SuccessfulPushCount","RunDuration", "AgentPoolCPUTime"]
+            namespace: "Microsoft.ContainerRegistry/registries"
+            timegrain: "PT5M"
+          - name: ["StorageUsed"]
+            namespace: "Microsoft.ContainerRegistry/registries"
+            timegrain: "PT1H"        
     {{/each}}
 {{/if}}
 {{#if resource_ids}}
     {{#each resource_ids}}
         - resource_id: "{{this}}"
+          timegrain: "PT5M"
+          metrics:
+          - name: ["TotalPullCount", "SuccessfulPullCount", "TotalPushCount", "SuccessfulPushCount","RunDuration", "AgentPoolCPUTime"]
+            namespace: "Microsoft.ContainerRegistry/registries"
+            timegrain: "PT5M"
+          - name: ["StorageUsed"]
+            namespace: "Microsoft.ContainerRegistry/registries"
+            timegrain: "PT1H"
     {{/each}}
 {{/if}}
+
+{{!
+    When no resource group and resource ID are specified by the user, we want to 
+    collect metrics for all the resource groups in the subscription.
+}}
+
+{{#unless resource_ids }}
+    {{#unless resource_groups }}
+        - resource_query: "resourceType eq 'Microsoft.ContainerRegistry/registries'"
+          metrics:
+          - name: ["TotalPullCount", "SuccessfulPullCount", "TotalPushCount", "SuccessfulPushCount","RunDuration", "AgentPoolCPUTime"]
+            namespace: "Microsoft.ContainerRegistry/registries"
+            timegrain: "PT5M"
+          - name: ["StorageUsed"]
+            namespace: "Microsoft.ContainerRegistry/registries"
+            timegrain: "PT1H"       
+    {{/unless}}
+{{/unless}}

@@ -1,0 +1,434 @@
+{
+    "attributes": {
+        "description": "This dashboard shows audit logs collected by the ActiveMQ logs integration.",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 23,
+                    "i": "f2a1e6f8-cd1a-4fbd-a0b1-da4ee9db7c54",
+                    "w": 48,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "f2a1e6f8-cd1a-4fbd-a0b1-da4ee9db7c54",
+                "panelRefName": "panel_f2a1e6f8-cd1a-4fbd-a0b1-da4ee9db7c54",
+                "type": "search",
+                "version": "8.2.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "drop_partials": false,
+                                        "extendToTimeRange": false,
+                                        "extended_bounds": {},
+                                        "field": "@timestamp",
+                                        "interval": "auto",
+                                        "min_doc_count": 1,
+                                        "scaleMetricValues": false,
+                                        "timeRange": {
+                                            "from": "now/w",
+                                            "to": "now/w"
+                                        },
+                                        "useNormalizedEsInterval": true,
+                                        "used_interval": "3h"
+                                    },
+                                    "schema": "segment",
+                                    "type": "date_histogram"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "filters": [
+                                            {
+                                                "input": {
+                                                    "language": "kuery",
+                                                    "query": "data_stream.dataset : \"activemq.audit\""
+                                                },
+                                                "label": ""
+                                            }
+                                        ]
+                                    },
+                                    "schema": "split",
+                                    "type": "filters"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "4",
+                                    "params": {
+                                        "field": "log.level",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 15
+                                    },
+                                    "schema": "group",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "activemq.audit"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.dataset": "activemq.audit"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "addLegend": true,
+                            "addTimeMarker": false,
+                            "addTooltip": true,
+                            "categoryAxes": [
+                                {
+                                    "id": "CategoryAxis-1",
+                                    "labels": {
+                                        "filter": true,
+                                        "show": true,
+                                        "truncate": 100
+                                    },
+                                    "position": "bottom",
+                                    "scale": {
+                                        "type": "linear"
+                                    },
+                                    "show": true,
+                                    "style": {},
+                                    "title": {},
+                                    "type": "category"
+                                }
+                            ],
+                            "detailedTooltip": true,
+                            "dimensions": {
+                                "series": [
+                                    {
+                                        "accessor": 1,
+                                        "aggType": "terms",
+                                        "format": {
+                                            "id": "terms",
+                                            "params": {
+                                                "id": "string",
+                                                "missingBucketLabel": "Missing",
+                                                "otherBucketLabel": "Other"
+                                            }
+                                        },
+                                        "params": {}
+                                    }
+                                ],
+                                "x": {
+                                    "accessor": 0,
+                                    "aggType": "date_histogram",
+                                    "format": {
+                                        "id": "date",
+                                        "params": {
+                                            "pattern": "HH:mm"
+                                        }
+                                    },
+                                    "params": {
+                                        "bounds": {
+                                            "max": "2019-12-01T16:41:18.507Z",
+                                            "min": "2019-11-30T16:41:18.507Z"
+                                        },
+                                        "date": true,
+                                        "format": "HH:mm",
+                                        "interval": "PT30M"
+                                    }
+                                },
+                                "y": [
+                                    {
+                                        "accessor": 2,
+                                        "aggType": "count",
+                                        "format": {
+                                            "id": "number"
+                                        },
+                                        "params": {}
+                                    }
+                                ]
+                            },
+                            "grid": {
+                                "categoryLines": false
+                            },
+                            "isVislibVis": true,
+                            "labels": {
+                                "show": false
+                            },
+                            "legendPosition": "right",
+                            "maxLegendLines": 1,
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            },
+                            "radiusRatio": 50,
+                            "row": true,
+                            "seriesParams": [
+                                {
+                                    "data": {
+                                        "id": "1",
+                                        "label": "Count"
+                                    },
+                                    "drawLinesBetweenPoints": true,
+                                    "mode": "normal",
+                                    "show": "true",
+                                    "showCircles": true,
+                                    "type": "histogram",
+                                    "valueAxis": "ValueAxis-1"
+                                }
+                            ],
+                            "thresholdLine": {
+                                "color": "#34130C",
+                                "show": false,
+                                "style": "full",
+                                "value": 10,
+                                "width": 1
+                            },
+                            "times": [],
+                            "truncateLegend": true,
+                            "type": "histogram",
+                            "valueAxes": [
+                                {
+                                    "id": "ValueAxis-1",
+                                    "labels": {
+                                        "filter": false,
+                                        "rotate": 0,
+                                        "show": true,
+                                        "truncate": 100
+                                    },
+                                    "name": "LeftAxis-1",
+                                    "position": "left",
+                                    "scale": {
+                                        "mode": "normal",
+                                        "type": "linear"
+                                    },
+                                    "show": true,
+                                    "style": {},
+                                    "title": {
+                                        "text": "Count"
+                                    },
+                                    "type": "value"
+                                }
+                            ]
+                        },
+                        "type": "histogram",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "235929e9-a371-4a1f-9a09-1cef28844b37",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "235929e9-a371-4a1f-9a09-1cef28844b37",
+                "title": "Audit Event Results [Logs ActiveMQ]",
+                "type": "visualization",
+                "version": "8.2.0"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {
+                                        "emptyAsNull": false
+                                    },
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "field": "user.name",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 15
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "activemq.audit"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.dataset": "activemq.audit"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "bucket": {
+                                "accessor": 0,
+                                "format": {
+                                    "id": "terms",
+                                    "params": {
+                                        "id": "string",
+                                        "missingBucketLabel": "Missing",
+                                        "otherBucketLabel": "Other"
+                                    }
+                                },
+                                "type": "vis_dimension"
+                            },
+                            "maxFontSize": 72,
+                            "metric": {
+                                "accessor": 1,
+                                "format": {
+                                    "id": "string",
+                                    "params": {}
+                                },
+                                "type": "vis_dimension"
+                            },
+                            "minFontSize": 18,
+                            "orientation": "single",
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            },
+                            "scale": "linear",
+                            "showLabel": false
+                        },
+                        "type": "tagcloud",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "3ccc2660-d137-4db1-adb7-578326ce1e1d",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "3ccc2660-d137-4db1-adb7-578326ce1e1d",
+                "title": "Audit Account Tag Cloud [Logs ActiveMQ]",
+                "type": "visualization",
+                "version": "8.2.0"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs ActiveMQ] Audit",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.2.0",
+    "id": "activemq-eac72840-f916-11ec-9736-016ee09668f5",
+    "migrationVersion": {
+        "dashboard": "8.2.0"
+    },
+    "references": [
+        {
+            "id": "activemq-896ef3a0-145f-11ea-8fd8-030a13064883",
+            "name": "f2a1e6f8-cd1a-4fbd-a0b1-da4ee9db7c54:panel_f2a1e6f8-cd1a-4fbd-a0b1-da4ee9db7c54",
+            "type": "search"
+        },
+        {
+            "id": "logs-*",
+            "name": "235929e9-a371-4a1f-9a09-1cef28844b37:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "235929e9-a371-4a1f-9a09-1cef28844b37:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3ccc2660-d137-4db1-adb7-578326ce1e1d:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3ccc2660-d137-4db1-adb7-578326ce1e1d:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}

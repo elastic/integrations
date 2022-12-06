@@ -1,15 +1,22 @@
 # Zeek Integration
 
-This is an integration for Zeek, which used to be called Bro. It
-parses logs that are in the [Zeek JSON
-format](https://www.zeek.org/manual/release/logs/index.html).
+This is an integration for [Zeek](https://www.zeek.org/), which was formerly
+named Bro. Zeek is a passive, open-source network traffic analyzer. This
+integrations ingests the logs Zeek produces about the network traffic that it
+analyzes.
+
+Zeek logs must be output in JSON format. This is normally done by appending the 
+[json-logs policy](https://docs.zeek.org/en/lts/scripts/policy/tuning/json-logs.zeek.html)
+to your `local.zeek` file. Add this line to your `local.zeek`.
+
+`@load policy/tuning/json-logs.zeek`
 
 ## Compatibility
-This module has been developed against Zeek 2.6.1, but is expected to
-work with other versions of Zeek.
+This module has been developed against Zeek 2.6.1, but is expected to work with
+other versions of Zeek.
 
 Zeek requires a Unix-like platform, and it currently supports Linux,
-FreeBSD, and Mac OS X.  Find out how to use Zeek [here](https://www.zeek.org/).
+FreeBSD, and Mac OS X.
 
 ## Logs
 ### capture_loss
@@ -102,6 +109,24 @@ The `kerberos` dataset collects the Zeek kerberos.log file, which
 contains kerberos data.
 
 {{fields "kerberos"}}
+
+### known_certs
+
+The `known_certs` dataset captures information about SSL/TLS certificates seen on the local network. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-certs-log) for more details.
+
+{{fields "known_certs"}}
+
+### known_hosts
+
+The `known_hosts` dataset simply records a timestamp and an IP address when Zeek observes a new system on the local network.. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-hosts-log) for more details.
+
+{{fields "known_hosts"}}
+
+### known_services
+
+The `known_services` dataset records a timestamp, IP, port number, protocol, and service (if available) when Zeek observes a system offering a new service on the local network. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-services-log) for more details.
+
+{{fields "known_services"}}
 
 ### modbus
 
@@ -228,6 +253,12 @@ The `socks` dataset collects the Zeek socks.log file, which contains
 SOCKS proxy requests.
 
 {{fields "socks"}}
+
+### software
+
+The `software` dataset collects details on applications operated by the hosts it sees on the local network. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#software-log) for more details.
+
+{{fields "software"}}
 
 ### ssh
 

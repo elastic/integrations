@@ -1,0 +1,70 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+request.ssl: {{ssl}}
+{{/if}}
+request.method: POST
+request.url: {{url}}
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: body.cid
+      value: '{{account_number}}'
+  - set:
+      target: body.provhash
+      value: '{{provisioning_hash}}'
+  - set:
+      target: body.cmd
+      value: 'reporting'
+  - set:
+      target: body.user
+      value: 'allusers'
+  - set:
+      target: body.data.from
+      value: '[[.cursor.last_time]]'
+      default: '[[formatDate (now (parseDuration "-{{initial_interval}}")) "2006-01-02 15:04:05" "Local"]]'
+  - set:
+      target: url.params.from
+      value: '[[.body.data.from]]'
+  - set:
+      target: body.data.to
+      value: '[[formatDate (now) "2006-01-02 15:04:05" "Local"]]'
+response.pagination:
+  - set:
+      target: body.data.from
+      value: '[[if (ne .last_response.body.next nil)]][[.last_response.url.params.Get "from"]][[end]]'
+      fail_on_template_error: true
+  - set:
+      target: body.data.to
+      value: '[[if (ne .last_response.body.next nil)]][[formatDate (parseTimestampMilli (div (toInt .last_response.body.next) 1000)) "2006-01-02 15:04:05" "Local"]][[end]]'
+      fail_on_template_error: true
+response.split:
+  target: body.data
+  type: map
+  keep_parent: false
+  key_field: id
+cursor:
+  last_time:
+    value: '[[if (eq .last_response.page 1)]][[formatDate (parseDate .last_response.body.data.Event1.Time "2006-01-02 15:04:05") "2006-01-02 15:04:05"]][[end]]'
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

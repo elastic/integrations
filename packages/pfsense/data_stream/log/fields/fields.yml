@@ -78,10 +78,6 @@
       type: long
       description: |
         ID of the echo request/reply
-    - name: seq
-      type: long
-      description: |
-        Sequence number of the echo request/reply
     - name: destination.ip
       type: ip
       description: Original destination address of the connection that caused this notification
@@ -116,10 +112,6 @@
       type: long
       description: |
         ICMP code.
-    - name: id
-      type: long
-      description: |
-        ICMP ID.
     - name: parameter
       type: long
       description: |
@@ -132,10 +124,37 @@
       type: long
       description: |
         ICMP sequence number.
-- name: pfsense.dhcp.hostname
-  type: keyword
-  description: |
-    Hostname of DHCP client
+- name: pfsense.dhcp
+  type: group
+  fields:
+    - name: hostname
+      type: keyword
+      description: |
+        Hostname of DHCP client
+    - name: age
+      type: long
+      description: |
+        Age of DHCP lease in seconds
+    - name: duid
+      type: keyword
+      description: |
+        The DHCP unique identifier (DUID) is used by a client to get an IP address from a DHCPv6 server.
+    - name: iaid
+      type: keyword
+      description: |
+        Identity Association Identifier used alongside the DUID to uniquely identify a DHCP client
+    - name: transaction_id
+      type: keyword
+      description: |
+        The DHCP transaction ID
+    - name: lease_time
+      type: long
+      description: |
+        The DHCP lease time in seconds
+    - name: subnet
+      type: keyword
+      description: |
+        The subnet for which the DHCP server is issuing IPs
 - name: pfsense.openvpn.peer_info
   type: keyword
   description: |-
@@ -252,3 +271,13 @@
     - name: connection_waiting_time_ms
       type: long
       description: Total time in milliseconds elapsed between the accept and the last close
+- name: squid
+  type: group
+  fields:
+    - name: request_status
+      type: keyword
+      description: |
+        The cache result code; how the cache responded to the request: HIT, MISS, and so on. Cache result codes are described [here](https://www.websense.com/content/support/library/web/v773/wcg_help/cachrslt.aspx#596301).
+    - name: hierarchy_status
+      type: keyword
+      description: The proxy hierarchy route; the route Content Gateway used to retrieve the object.

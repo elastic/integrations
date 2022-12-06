@@ -1,0 +1,28 @@
+title: "Kubernetes audit logs"
+type: logs
+release: experimental
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: false
+streams:
+  - input: filestream
+    enabled: false
+    title: Collect Kubernetes audit logs
+    description: Collect Kubernetes audit logs
+    vars:
+      - name: paths
+        type: text
+        required: true
+        title: Kubernetes audit log path
+        multi: true
+        default:
+          - /var/log/kubernetes/kube-apiserver-audit.log
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.

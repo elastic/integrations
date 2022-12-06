@@ -1,17 +1,24 @@
 name: Application
 condition: ${host.platform} == 'windows'
-ignore_older: 72h
 {{#if event_id}}
 event_id: {{event_id}}
 {{/if}}
-{{#if processors}}
+{{#if ignore_older}}
+ignore_older: {{ignore_older}}
+{{/if}}
+{{#if language}}
+language: {{language}}
+{{/if}}
+{{#if preserve_original_event}}
+include_xml: true
+{{/if}}
+{{#if processors.length}}
 processors:
 {{processors}}
 {{/if}}
+{{#if tags.length}}
 tags:
-{{#if preserve_original_event}}
-  - preserve_original_event
-{{/if}}
 {{#each tags as |tag i|}}
   - {{tag}}
 {{/each}}
+{{/if}}

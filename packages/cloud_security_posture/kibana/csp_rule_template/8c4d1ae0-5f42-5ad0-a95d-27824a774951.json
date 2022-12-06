@@ -1,0 +1,38 @@
+{
+    "id": "8c4d1ae0-5f42-5ad0-a95d-27824a774951",
+    "type": "csp-rule-template",
+    "attributes": {
+        "enabled": true,
+        "muted": false,
+        "metadata": {
+            "id": "8c4d1ae0-5f42-5ad0-a95d-27824a774951",
+            "name": "Ensure that the --read-only-port is secured (Manual)",
+            "profile_applicability": "* Level 1\n",
+            "description": "Disable the read-only port.\n",
+            "rationale": "The Kubelet process provides a read-only API in addition to the main Kubelet API. Unauthenticated access is provided to this read-only API which could possibly retrieve potentially sensitive information about the cluster.\n",
+            "audit": "If using a Kubelet configuration file, check that there is an entry for\n`authentication: anonymous: enabled` set to `0`.\nFirst, SSH to the relevant node:\nRun the following command on each node to find the appropriate Kubelet config file:\n```\nps -ef | grep kubelet\n```\nThe output of the above command should return something similar to `--config`\n`/etc/kubernetes/kubelet/kubelet-config.json` which is the location of the Kubelet\nconfig file.\nOpen the Kubelet config file:\n```\ncat /etc/kubernetes/kubelet/kubelet-config.json\n```\nVerify that the `--read-only-port argument` exists and is set to `0`.\nIf the `--read-only-port` argument is not present, check that there is a Kubelet config file\nspecified by `--config`. Check that if there is a `readOnlyPort` entry in the file, it is set to `0`.\n",
+            "remediation": "If modifying the Kubelet config file, edit the kubelet-config.json file\n`/etc/kubernetes/kubelet/kubelet-config.json` and set the below parameter to `false`\n```\nreadOnlyPort to 0\n```\nIf using executable arguments, edit the kubelet service file\n`/etc/systemd/system/kubelet.service.d/10-kubelet-args.conf` on each worker node\nand add the below parameter at the end of the `KUBELET_ARGS` variable string.\n```\n--read-only-port=0\n```\nFor all three remediations:\nBased on your system, restart the `kubelet` service and check status\n```\nsystemctl daemon-reload\nsystemctl restart kubelet.service\nsystemctl status kubelet -l\n```\n",
+            "impact": "Removal of the read-only port will require that any service which made use of it will need to be re-configured to use the main Kubelet API.\n",
+            "default_value": "See the Amazon EKS documentation for the default value.\n",
+            "references": "1. https://kubernetes.io/docs/admin/kubelet/\n",
+            "section": "Kubelet",
+            "version": "1.0",
+            "tags": [
+                "CIS",
+                "EKS",
+                "CIS 3.2.4",
+                "Kubelet"
+            ],
+            "benchmark": {
+                "name": "CIS Amazon Elastic Kubernetes Service (EKS) Benchmark",
+                "version": "v1.0.1",
+                "id": "cis_eks"
+            },
+            "rego_rule_id": "cis_3_2_4"
+        }
+    },
+    "migrationVersion": {
+        "csp-rule-template": "8.4.0"
+    },
+    "coreMigrationVersion": "8.4.0"
+}

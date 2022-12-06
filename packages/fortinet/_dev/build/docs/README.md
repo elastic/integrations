@@ -1,6 +1,9 @@
-# Fortinet Integration
+# Fortinet Integration (Deprecated)
 
-This integration is for Fortinet FortiOS and FortiClient Endpoint logs sent in the syslog format. It includes the following datasets for receiving logs:
+_This integration is deprecated. Please use one of the other Fortinet integrations
+that are specific to a Fortinet product._
+
+This integration is for Fortinet [FortiOS](https://docs.fortinet.com/product/fortigate/6.2) and [FortiClient](https://docs.fortinet.com/product/forticlient/) Endpoint logs sent in the syslog format. It includes the following datasets for receiving logs:
 
 - `firewall` dataset: consists of Fortinet FortiGate logs.
 - `clientendpoint` dataset: supports Fortinet FortiClient Endpoint Security logs.

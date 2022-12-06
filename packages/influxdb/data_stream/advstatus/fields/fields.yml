@@ -1,0 +1,65 @@
+- name: influxdb.advstatus
+  type: group
+  release: beta
+  fields:
+    - name: instance
+      type: keyword
+      description: |
+        InfluxDB instance.
+    - name: org
+      type: keyword
+      description: |
+        Organization id of the Organization created in InfluxDB.
+    - name: query_controller
+      type: group
+      fields:
+        - name: all_duration_seconds.histogram
+          type: histogram
+          description: |
+            Histogram of total times spent in all query states.
+        - name: compiling_duration_seconds.histogram
+          type: histogram
+          description: |
+            Histogram of times spent compiling queries.
+        - name: executing_duration_seconds.histogram
+          type: histogram
+          description: |
+            Histogram of times spent executing queries.
+    - name: storage
+      type: group
+      fields:
+        - name: compactions_duration_seconds.histogram
+          type: histogram
+          description: |
+            Histogram of compactions by level since startup.
+        - name: retention_check_duration.histogram
+          type: histogram
+          description: |
+            Histogram of duration of retention check in seconds.
+        - name: writer_dropped_points.histogram
+          type: histogram
+          description: |
+            Histogram of number of points dropped due to partial writes.
+        - name: writer_err_points.histogram
+          type: histogram
+          description: |
+            Histogram of number of points in errored shard write requests.
+        - name: writer_ok_points.histogram
+          type: histogram
+          description: |
+            Histogram of number of points in successful shard write requests.
+        - name: writer_req_points.histogram
+          type: histogram
+          description: |
+            Histogram of number of points requested to be written.
+    - name: tasks
+      type: group
+      fields:
+        - name: executor_run_latency_seconds.histogram
+          type: histogram
+          description: |
+            Records the latency between the time the run was due to run and the time the task started execution, by task type.
+        - name: executor_run_queue_delta.histogram
+          type: histogram
+          description: |
+            The duration in seconds between a run being due to start and actually starting.

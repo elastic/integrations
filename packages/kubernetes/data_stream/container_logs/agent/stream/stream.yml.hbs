@@ -1,7 +1,19 @@
+id: kubernetes-container-logs-${kubernetes.pod.name}-${kubernetes.container.id}
 paths:
 {{#each paths}}
   - {{this}}
 {{/each}}
 prospector.scanner.symlinks: {{ symlinks }}
+{{#if condition}}
+condition: {{ condition }}
+{{/if}}
 parsers:
-  - container: ~
+- container:
+    stream: {{ containerParserStream }}
+    format: {{ containerParserFormat }}
+{{ additionalParsersConfig }}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
