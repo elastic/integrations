@@ -1,4 +1,11 @@
 {
+    "id": "auditd-dfbb49f0-0a0f-11e7-8a62-2d05eaaac5cb",
+    "type": "dashboard",
+    "namespaces": [
+        "default"
+    ],
+    "updated_at": "2022-11-18T19:35:54.269Z",
+    "version": "WzU4MSwxXQ==",
     "attributes": {
         "description": "Dashboard for the Auditd Logs integration",
         "hits": 0,
@@ -19,7 +26,55 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "title": "Event types breakdown [Logs Auditd]",
+                        "description": "",
+                        "uiState": {},
+                        "params": {
+                            "addLegend": true,
+                            "addTooltip": true,
+                            "distinctColors": true,
+                            "isDonut": true,
+                            "legendPosition": "right",
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            }
+                        },
+                        "type": "pie",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "field": "event.action",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "size": 50
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        }
+                    }
                 },
                 "gridData": {
                     "h": 16,
@@ -29,7 +84,6 @@
                     "y": 0
                 },
                 "panelIndex": "1",
-                "panelRefName": "panel_1",
                 "type": "visualization",
                 "version": "8.0.0"
             },
@@ -43,6 +97,65 @@
                                 "direction": null
                             }
                         }
+                    },
+                    "savedVis": {
+                        "title": "Top Exec Commands [Logs Auditd]",
+                        "description": "",
+                        "uiState": {
+                            "vis": {
+                                "params": {
+                                    "sort": {
+                                        "columnIndex": null,
+                                        "direction": null
+                                    }
+                                }
+                            }
+                        },
+                        "params": {
+                            "perPage": 10,
+                            "showMeticsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": true,
+                            "showTotal": false,
+                            "sort": {
+                                "columnIndex": null,
+                                "direction": null
+                            },
+                            "totalFunc": "sum"
+                        },
+                        "type": "table",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "customLabel": "Command (arg 0)",
+                                        "field": "auditd.log.a0",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "size": 30
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": "event.action:\"EXECVE\" or event.action:\"execve\""
+                                }
+                            }
+                        }
                     }
                 },
                 "gridData": {
@@ -53,13 +166,26 @@
                     "y": 0
                 },
                 "panelIndex": "2",
-                "panelRefName": "panel_2",
                 "type": "visualization",
                 "version": "8.0.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "title": "Event Results [Logs Auditd]",
+                        "description": "",
+                        "uiState": {},
+                        "params": {
+                            "expression": ".es(q=\"data_stream.dataset:auditd.log NOT event.outcome:failure\").label(\"Success\"), .es(q=\"event.outcome:failed\").label(\"Failure\").title(\"Audit Event Results\")",
+                            "interval": "auto"
+                        },
+                        "type": "timelion",
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {}
+                        }
+                    }
                 },
                 "gridData": {
                     "h": 12,
@@ -69,13 +195,59 @@
                     "y": 16
                 },
                 "panelIndex": "3",
-                "panelRefName": "panel_3",
                 "type": "visualization",
                 "version": "8.0.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "title": "Event Account Tag Cloud [Logs Auditd]",
+                        "description": "",
+                        "uiState": {},
+                        "params": {
+                            "maxFontSize": 42,
+                            "minFontSize": 15,
+                            "orientation": "single",
+                            "palette": {
+                                "name": "kibana_palette",
+                                "type": "palette"
+                            },
+                            "scale": "linear"
+                        },
+                        "type": "tagcloud",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "field": "user.name",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "size": 15
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        }
+                    }
                 },
                 "gridData": {
                     "h": 16,
@@ -85,7 +257,6 @@
                     "y": 0
                 },
                 "panelIndex": "6",
-                "panelRefName": "panel_6",
                 "type": "visualization",
                 "version": "8.0.0"
             },
@@ -115,10 +286,20 @@
                 "version": "8.0.0"
             },
             {
+                "version": "8.1.0",
+                "type": "map",
+                "gridData": {
+                    "h": 12,
+                    "i": "09f4ba02-a62c-410f-8d43-31e9e5278826",
+                    "w": 24,
+                    "x": 24,
+                    "y": 16
+                },
+                "panelIndex": "09f4ba02-a62c-410f-8d43-31e9e5278826",
                 "embeddableConfig": {
                     "attributes": {
                         "description": "",
-                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true,\"lightModeDefault\":\"road_map_desaturated\"},\"id\":\"623a62b9-8745-4fec-8738-bbe6fb8c16aa\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"VECTOR_TILE\"},{\"alpha\":0.75,\"id\":\"efef3e71-f9ce-4a8e-8c27-68ad0d047d9b\",\"includeInFitToBounds\":true,\"joins\":[],\"label\":\"Event Address Geo Location [Logs Auditd]\",\"maxZoom\":24,\"minZoom\":0,\"sourceDescriptor\":{\"applyForceRefresh\":true,\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"geoField\":\"source.geo.location\",\"id\":\"8155deb8-6760-42ad-b14a-dd20958bcb52\",\"indexPatternId\":\"logs-*\",\"metrics\":[{\"type\":\"count\"}],\"requestType\":\"point\",\"resolution\":\"MOST_FINE\",\"type\":\"ES_GEO_GRID\"},\"style\":{\"isTimeAware\":true,\"properties\":{\"fillColor\":{\"options\":{\"color\":\"Yellow to Red\",\"colorCategory\":\"palette_0\",\"field\":{\"name\":\"doc_count\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":false,\"sigma\":3},\"type\":\"ORDINAL\"},\"type\":\"DYNAMIC\"},\"icon\":{\"options\":{\"value\":\"marker\"},\"type\":\"STATIC\"},\"iconOrientation\":{\"options\":{\"orientation\":0},\"type\":\"STATIC\"},\"iconSize\":{\"options\":{\"field\":{\"name\":\"doc_count\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":false,\"sigma\":3},\"maxSize\":18,\"minSize\":7},\"type\":\"DYNAMIC\"},\"labelBorderColor\":{\"options\":{\"color\":\"#FFFFFF\"},\"type\":\"STATIC\"},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}},\"labelColor\":{\"options\":{\"color\":\"#000000\"},\"type\":\"STATIC\"},\"labelSize\":{\"options\":{\"size\":14},\"type\":\"STATIC\"},\"labelText\":{\"options\":{\"value\":\"\"},\"type\":\"STATIC\"},\"lineColor\":{\"options\":{\"color\":\"#3d3d3d\"},\"type\":\"STATIC\"},\"lineWidth\":{\"options\":{\"size\":1},\"type\":\"STATIC\"},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}}},\"type\":\"VECTOR\"},\"type\":\"VECTOR\",\"visible\":true}]",
+                        "layerListJSON": "[{\"sourceDescriptor\":{\"type\":\"EMS_TMS\",\"isAutoSelect\":true,\"lightModeDefault\":\"road_map_desaturated\"},\"id\":\"623a62b9-8745-4fec-8738-bbe6fb8c16aa\",\"label\":null,\"minZoom\":0,\"maxZoom\":24,\"alpha\":1,\"visible\":true,\"style\":{\"type\":\"TILE\"},\"includeInFitToBounds\":true,\"type\":\"EMS_VECTOR_TILE\"},{\"alpha\":0.75,\"id\":\"efef3e71-f9ce-4a8e-8c27-68ad0d047d9b\",\"includeInFitToBounds\":true,\"joins\":[],\"label\":\"Event Address Geo Location [Logs Auditd]\",\"maxZoom\":24,\"minZoom\":0,\"sourceDescriptor\":{\"applyForceRefresh\":true,\"applyGlobalQuery\":true,\"applyGlobalTime\":true,\"geoField\":\"source.geo.location\",\"id\":\"8155deb8-6760-42ad-b14a-dd20958bcb52\",\"metrics\":[{\"type\":\"count\"}],\"requestType\":\"point\",\"resolution\":\"MOST_FINE\",\"type\":\"ES_GEO_GRID\",\"indexPatternRefName\":\"layer_1_source_index_pattern\"},\"style\":{\"isTimeAware\":true,\"properties\":{\"fillColor\":{\"options\":{\"color\":\"Yellow to Red\",\"colorCategory\":\"palette_0\",\"field\":{\"name\":\"doc_count\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":false,\"sigma\":3},\"type\":\"ORDINAL\"},\"type\":\"DYNAMIC\"},\"icon\":{\"options\":{\"value\":\"marker\"},\"type\":\"STATIC\"},\"iconOrientation\":{\"options\":{\"orientation\":0},\"type\":\"STATIC\"},\"iconSize\":{\"options\":{\"field\":{\"name\":\"doc_count\",\"origin\":\"source\"},\"fieldMetaOptions\":{\"isEnabled\":false,\"sigma\":3},\"maxSize\":18,\"minSize\":7},\"type\":\"DYNAMIC\"},\"labelBorderColor\":{\"options\":{\"color\":\"#FFFFFF\"},\"type\":\"STATIC\"},\"labelBorderSize\":{\"options\":{\"size\":\"SMALL\"}},\"labelColor\":{\"options\":{\"color\":\"#000000\"},\"type\":\"STATIC\"},\"labelSize\":{\"options\":{\"size\":14},\"type\":\"STATIC\"},\"labelText\":{\"options\":{\"value\":\"\"},\"type\":\"STATIC\"},\"lineColor\":{\"options\":{\"color\":\"#3d3d3d\"},\"type\":\"STATIC\"},\"lineWidth\":{\"options\":{\"size\":1},\"type\":\"STATIC\"},\"symbolizeAs\":{\"options\":{\"value\":\"circle\"}}},\"type\":\"VECTOR\"},\"type\":\"GEOJSON_VECTOR\",\"visible\":true}]",
                         "mapStateJSON": "{\"zoom\":1.78,\"center\":{\"lon\":0,\"lat\":16.40767},\"timeFilters\":{\"from\":\"now-15m\",\"to\":\"now\"},\"refreshConfig\":{\"isPaused\":true,\"interval\":0},\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"filters\":[],\"settings\":{\"autoFitToDataBounds\":false,\"backgroundColor\":\"#ffffff\",\"disableInteractive\":false,\"disableTooltipControl\":false,\"hideToolbarOverlay\":false,\"hideLayerControl\":false,\"hideViewControl\":false,\"initialLocation\":\"LAST_SAVED_LOCATION\",\"fixedLocation\":{\"lat\":0,\"lon\":0,\"zoom\":2},\"browserLocation\":{\"zoom\":2},\"maxZoom\":24,\"minZoom\":0,\"showScaleControl\":false,\"showSpatialFilters\":true,\"showTimesliderToggleButton\":true,\"spatialFiltersAlpa\":0.3,\"spatialFiltersFillColor\":\"#DA8B45\",\"spatialFiltersLineColor\":\"#DA8B45\"}}",
                         "references": [],
                         "title": "Event Address Geo Location [Logs Auditd]",
@@ -138,50 +319,16 @@
                         "lon": 0,
                         "zoom": 1.78
                     },
-                    "openTOCDetails": []
-                },
-                "gridData": {
-                    "h": 12,
-                    "i": "09f4ba02-a62c-410f-8d43-31e9e5278826",
-                    "w": 24,
-                    "x": 24,
-                    "y": 16
-                },
-                "panelIndex": "09f4ba02-a62c-410f-8d43-31e9e5278826",
-                "type": "map",
-                "version": "8.0.0"
+                    "openTOCDetails": [],
+                    "type": "map"
+                }
             }
         ],
         "timeRestore": false,
         "title": "[Logs Auditd] Audit Events",
         "version": 1
     },
-    "coreMigrationVersion": "8.0.0",
-    "id": "auditd-dfbb49f0-0a0f-11e7-8a62-2d05eaaac5cb",
-    "migrationVersion": {
-        "dashboard": "8.0.0"
-    },
     "references": [
-        {
-            "id": "auditd-6295bdd0-0a0e-11e7-825f-6748cda7d858",
-            "name": "1:panel_1",
-            "type": "visualization"
-        },
-        {
-            "id": "auditd-5ebdbe50-0a0f-11e7-825f-6748cda7d858",
-            "name": "2:panel_2",
-            "type": "visualization"
-        },
-        {
-            "id": "auditd-2bb0fa70-0a11-11e7-9e84-43da493ad0c7",
-            "name": "3:panel_3",
-            "type": "visualization"
-        },
-        {
-            "id": "auditd-c5411910-0a87-11e7-8b04-eb22a5669f27",
-            "name": "6:panel_6",
-            "type": "visualization"
-        },
         {
             "id": "auditd-4ac0a370-0a11-11e7-8b04-eb22a5669f27",
             "name": "7:panel_7",
@@ -191,7 +338,25 @@
             "id": "logs-*",
             "name": "09f4ba02-a62c-410f-8d43-31e9e5278826:layer_1_source_index_pattern",
             "type": "index-pattern"
+        },
+        {
+            "type": "index-pattern",
+            "name": "1:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "id": "logs-*"
+        },
+        {
+            "type": "index-pattern",
+            "name": "2:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "id": "logs-*"
+        },
+        {
+            "type": "index-pattern",
+            "name": "6:kibanaSavedObjectMeta.searchSourceJSON.index",
+            "id": "logs-*"
         }
     ],
-    "type": "dashboard"
+    "migrationVersion": {
+        "dashboard": "8.1.0"
+    },
+    "coreMigrationVersion": "8.1.0"
 }

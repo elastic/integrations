@@ -16,12 +16,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2016-01-03T00:37:51.394Z",
     "agent": {
-        "ephemeral_id": "ef6d17d9-f955-48be-a4c5-6b4ea1fe9772",
-        "hostname": "docker-fleet-agent",
-        "id": "f386c08a-1dcf-444a-a259-9c33fa001606",
+        "ephemeral_id": "d1c11b5c-1d3d-406c-a19f-372451326efa",
+        "id": "af0de6a6-4b25-4d81-827d-0f1c4811a8b3",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.17.0"
+        "version": "8.1.0"
     },
     "auditd": {
         "log": {
@@ -38,15 +37,15 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "f386c08a-1dcf-444a-a259-9c33fa001606",
+        "id": "af0de6a6-4b25-4d81-827d-0f1c4811a8b3",
         "snapshot": false,
-        "version": "7.17.0"
+        "version": "8.1.0"
     },
     "event": {
         "action": "proctitle",
         "agent_id_status": "verified",
         "dataset": "auditd.log",
-        "ingested": "2022-04-13T05:23:36Z",
+        "ingested": "2022-11-18T19:50:55Z",
         "kind": "event"
     },
     "host": {
@@ -54,10 +53,10 @@ An example event for `log` looks as following:
         "containerized": false,
         "hostname": "docker-fleet-agent",
         "ip": [
-            "172.19.0.7"
+            "192.168.16.7"
         ],
         "mac": [
-            "02:42:ac:13:00:07"
+            "02:42:c0:a8:10:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
