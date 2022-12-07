@@ -713,7 +713,9 @@ processors:
       source: |
         Long _temp_time = ctx.checkpoint.time;
         if (String.valueOf(_temp_time).length() > 10) {
-            ctx.checkpoint._temp_unixms = Instant.ofEpochMilli(_temp_time);
+            Instant instant = Instant.ofEpochMilli(_temp_time);
+            ZonedDateTime zdt = ZonedDateTime.ofInstant(instant, ZoneId.of('Z'));
+            ctx.checkpoint._temp_unixms = zdt;
         }
   - date:
       field: "checkpoint.time"
