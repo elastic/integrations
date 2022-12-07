@@ -1,4 +1,11 @@
 {
+    "id": "qnap_nas-32e28700-4b0c-11ec-b2cc-b9a3cc301b75",
+    "type": "dashboard",
+    "namespaces": [
+        "default"
+    ],
+    "updated_at": "2022-11-24T08:38:18.380Z",
+    "version": "WzYxNiwxXQ==",
     "attributes": {
         "description": "",
         "hits": 0,
@@ -20,7 +27,112 @@
             {
                 "embeddableConfig": {
                     "enhancements": {},
-                    "hidePanelTitles": true
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "title": "Controls [QNAP NAS]",
+                        "description": "",
+                        "uiState": {},
+                        "params": {
+                            "controls": [
+                                {
+                                    "fieldName": "source.ip",
+                                    "id": "1637528635830",
+                                    "indexPatternRefName": "control_0_index_pattern",
+                                    "label": "Source IP",
+                                    "options": {
+                                        "dynamicOptions": true,
+                                        "multiselect": true,
+                                        "order": "desc",
+                                        "size": 5,
+                                        "type": "terms"
+                                    },
+                                    "parent": "",
+                                    "type": "list"
+                                },
+                                {
+                                    "fieldName": "host.name",
+                                    "id": "1637528676545",
+                                    "indexPatternRefName": "control_1_index_pattern",
+                                    "label": "NAS Hostname",
+                                    "options": {
+                                        "dynamicOptions": true,
+                                        "multiselect": true,
+                                        "order": "desc",
+                                        "size": 5,
+                                        "type": "terms"
+                                    },
+                                    "parent": "",
+                                    "type": "list"
+                                },
+                                {
+                                    "fieldName": "user.name",
+                                    "id": "1637528892452",
+                                    "indexPatternRefName": "control_2_index_pattern",
+                                    "label": "User",
+                                    "options": {
+                                        "dynamicOptions": true,
+                                        "multiselect": true,
+                                        "order": "desc",
+                                        "size": 5,
+                                        "type": "terms"
+                                    },
+                                    "parent": "",
+                                    "type": "list"
+                                },
+                                {
+                                    "fieldName": "qnap.nas.connection_type",
+                                    "id": "1637530638172",
+                                    "indexPatternRefName": "control_3_index_pattern",
+                                    "label": "Connection Type",
+                                    "options": {
+                                        "dynamicOptions": true,
+                                        "multiselect": true,
+                                        "order": "desc",
+                                        "size": 5,
+                                        "type": "terms"
+                                    },
+                                    "parent": "",
+                                    "type": "list"
+                                }
+                            ],
+                            "pinFilters": false,
+                            "updateFiltersOnChange": false,
+                            "useTimeFilter": false
+                        },
+                        "type": "input_control_vis",
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "data_stream.dataset",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "qnap_nas.log"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "data_stream.dataset": "qnap_nas.log"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        }
+                    }
                 },
                 "gridData": {
                     "h": 7,
@@ -30,15 +142,100 @@
                     "y": 0
                 },
                 "panelIndex": "08e193f5-7994-4a34-8572-62dd8fb527fd",
-                "panelRefName": "panel_08e193f5-7994-4a34-8572-62dd8fb527fd",
                 "type": "visualization",
-                "version": "7.16.0-SNAPSHOT"
+                "version": "8.0.0"
             },
             {
                 "embeddableConfig": {
                     "enhancements": {},
                     "vis": {
                         "legendOpen": false
+                    },
+                    "savedVis": {
+                        "title": "File Actions [QNAP NAS]",
+                        "description": "",
+                        "uiState": {},
+                        "params": {
+                            "addLegend": false,
+                            "addTooltip": true,
+                            "distinctColors": false,
+                            "isDonut": false,
+                            "labels": {
+                                "last_level": false,
+                                "percentDecimals": 2,
+                                "position": "default",
+                                "show": true,
+                                "truncate": 100,
+                                "values": true,
+                                "valuesFormat": "percent"
+                            },
+                            "legendPosition": "right",
+                            "maxLegendLines": 1,
+                            "nestedLegend": false,
+                            "palette": {
+                                "name": "default",
+                                "type": "palette"
+                            },
+                            "truncateLegend": true,
+                            "type": "pie"
+                        },
+                        "type": "pie",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "field": "event.action",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.category",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "file"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.category": "file"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        }
                     }
                 },
                 "gridData": {
@@ -49,13 +246,80 @@
                     "y": 7
                 },
                 "panelIndex": "41e893ff-a7e2-4146-af96-35cd7fc9b5b9",
-                "panelRefName": "panel_41e893ff-a7e2-4146-af96-35cd7fc9b5b9",
                 "type": "visualization",
-                "version": "7.16.0-SNAPSHOT"
+                "version": "8.0.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "title": "Connection Types [QNAP NAS]",
+                        "description": "",
+                        "uiState": {
+                            "vis": {
+                                "legendOpen": false
+                            }
+                        },
+                        "params": {
+                            "addLegend": false,
+                            "addTooltip": true,
+                            "distinctColors": false,
+                            "isDonut": false,
+                            "labels": {
+                                "last_level": false,
+                                "percentDecimals": 2,
+                                "position": "default",
+                                "show": true,
+                                "truncate": 100,
+                                "values": true,
+                                "valuesFormat": "percent"
+                            },
+                            "legendPosition": "right",
+                            "maxLegendLines": 1,
+                            "nestedLegend": false,
+                            "palette": {
+                                "name": "default",
+                                "type": "palette"
+                            },
+                            "truncateLegend": true,
+                            "type": "pie"
+                        },
+                        "type": "pie",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "field": "qnap.nas.connection_type",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "segment",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        }
+                    }
                 },
                 "gridData": {
                     "h": 18,
@@ -65,9 +329,8 @@
                     "y": 7
                 },
                 "panelIndex": "3bef5ad2-ec7d-4cd0-b8af-255533d30f62",
-                "panelRefName": "panel_3bef5ad2-ec7d-4cd0-b8af-255533d30f62",
                 "type": "visualization",
-                "version": "7.16.0-SNAPSHOT"
+                "version": "8.0.0"
             },
             {
                 "embeddableConfig": {
@@ -86,6 +349,78 @@
                                 }
                             ]
                         }
+                    },
+                    "savedVis": {
+                        "title": "Top Accessed Files [QNAP NAS]",
+                        "description": "",
+                        "uiState": {},
+                        "params": {
+                            "autoFitRowToContent": false,
+                            "perPage": 10,
+                            "percentageCol": "",
+                            "showMetricsAtAllLevels": false,
+                            "showPartialRows": false,
+                            "showToolbar": false,
+                            "showTotal": false,
+                            "totalFunc": "sum"
+                        },
+                        "type": "table",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "field": "file.path",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 20
+                                    },
+                                    "schema": "bucket",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.provider",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "conn-log"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.provider": "conn-log"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        }
                     }
                 },
                 "gridData": {
@@ -96,13 +431,181 @@
                     "y": 7
                 },
                 "panelIndex": "20d36c90-71af-4062-94da-0374c871667e",
-                "panelRefName": "panel_20d36c90-71af-4062-94da-0374c871667e",
                 "type": "visualization",
-                "version": "7.16.0-SNAPSHOT"
+                "version": "8.0.0"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {}
+                    "enhancements": {},
+                    "savedVis": {
+                        "title": "Event Actions over Time",
+                        "description": "",
+                        "uiState": {},
+                        "params": {
+                            "addLegend": true,
+                            "addTimeMarker": false,
+                            "addTooltip": true,
+                            "categoryAxes": [
+                                {
+                                    "id": "CategoryAxis-1",
+                                    "labels": {
+                                        "filter": true,
+                                        "show": true,
+                                        "truncate": 100
+                                    },
+                                    "position": "bottom",
+                                    "scale": {
+                                        "type": "linear"
+                                    },
+                                    "show": true,
+                                    "style": {},
+                                    "title": {},
+                                    "type": "category"
+                                }
+                            ],
+                            "detailedTooltip": true,
+                            "grid": {
+                                "categoryLines": false
+                            },
+                            "labels": {
+                                "show": false
+                            },
+                            "legendPosition": "right",
+                            "maxLegendLines": 1,
+                            "palette": {
+                                "name": "default",
+                                "type": "palette"
+                            },
+                            "radiusRatio": 0,
+                            "seriesParams": [
+                                {
+                                    "circlesRadius": 3,
+                                    "data": {
+                                        "id": "1",
+                                        "label": "Count"
+                                    },
+                                    "drawLinesBetweenPoints": true,
+                                    "interpolate": "linear",
+                                    "lineWidth": 2,
+                                    "mode": "stacked",
+                                    "show": true,
+                                    "showCircles": true,
+                                    "type": "histogram",
+                                    "valueAxis": "ValueAxis-1"
+                                }
+                            ],
+                            "thresholdLine": {
+                                "color": "#E7664C",
+                                "show": false,
+                                "style": "full",
+                                "value": 10,
+                                "width": 1
+                            },
+                            "times": [],
+                            "truncateLegend": true,
+                            "type": "histogram",
+                            "valueAxes": [
+                                {
+                                    "id": "ValueAxis-1",
+                                    "labels": {
+                                        "filter": false,
+                                        "rotate": 0,
+                                        "show": true,
+                                        "truncate": 100
+                                    },
+                                    "name": "LeftAxis-1",
+                                    "position": "left",
+                                    "scale": {
+                                        "mode": "normal",
+                                        "type": "linear"
+                                    },
+                                    "show": true,
+                                    "style": {},
+                                    "title": {
+                                        "text": ""
+                                    },
+                                    "type": "value"
+                                }
+                            ]
+                        },
+                        "type": "histogram",
+                        "data": {
+                            "aggs": [
+                                {
+                                    "enabled": true,
+                                    "id": "1",
+                                    "params": {},
+                                    "schema": "metric",
+                                    "type": "count"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "2",
+                                    "params": {
+                                        "drop_partials": false,
+                                        "extended_bounds": {},
+                                        "field": "@timestamp",
+                                        "interval": "auto",
+                                        "min_doc_count": 1,
+                                        "scaleMetricValues": false,
+                                        "timeRange": {
+                                            "from": "now-1y/d",
+                                            "to": "now"
+                                        },
+                                        "useNormalizedEsInterval": true,
+                                        "used_interval": "1w"
+                                    },
+                                    "schema": "segment",
+                                    "type": "date_histogram"
+                                },
+                                {
+                                    "enabled": true,
+                                    "id": "3",
+                                    "params": {
+                                        "field": "event.action",
+                                        "missingBucket": false,
+                                        "missingBucketLabel": "Missing",
+                                        "order": "desc",
+                                        "orderBy": "1",
+                                        "otherBucket": false,
+                                        "otherBucketLabel": "Other",
+                                        "size": 5
+                                    },
+                                    "schema": "group",
+                                    "type": "terms"
+                                }
+                            ],
+                            "searchSource": {
+                                "filter": [
+                                    {
+                                        "$state": {
+                                            "store": "appState"
+                                        },
+                                        "meta": {
+                                            "alias": null,
+                                            "disabled": false,
+                                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                                            "key": "event.provider",
+                                            "negate": false,
+                                            "params": {
+                                                "query": "conn-log"
+                                            },
+                                            "type": "phrase"
+                                        },
+                                        "query": {
+                                            "match_phrase": {
+                                                "event.provider": "conn-log"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        }
+                    }
                 },
                 "gridData": {
                     "h": 17,
@@ -112,46 +615,78 @@
                     "y": 25
                 },
                 "panelIndex": "e0abcb09-b900-4d29-9146-02ab3aca914e",
-                "panelRefName": "panel_e0abcb09-b900-4d29-9146-02ab3aca914e",
                 "type": "visualization",
-                "version": "7.16.0-SNAPSHOT"
+                "version": "8.0.0"
             }
         ],
         "timeRestore": false,
         "title": "[QNAP NAS] Access Logs",
         "version": 1
     },
-    "coreMigrationVersion": "7.16.0",
-    "id": "qnap_nas-32e28700-4b0c-11ec-b2cc-b9a3cc301b75",
-    "migrationVersion": {
-        "dashboard": "7.16.0"
-    },
     "references": [
         {
-            "id": "qnap_nas-47e207a0-4b13-11ec-b2cc-b9a3cc301b75",
-            "name": "08e193f5-7994-4a34-8572-62dd8fb527fd:panel_08e193f5-7994-4a34-8572-62dd8fb527fd",
-            "type": "visualization"
+            "type": "index-pattern",
+            "name": "08e193f5-7994-4a34-8572-62dd8fb527fd:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "id": "logs-*"
         },
         {
-            "id": "qnap_nas-ae17aa40-4b0c-11ec-b2cc-b9a3cc301b75",
-            "name": "41e893ff-a7e2-4146-af96-35cd7fc9b5b9:panel_41e893ff-a7e2-4146-af96-35cd7fc9b5b9",
-            "type": "visualization"
+            "type": "index-pattern",
+            "name": "08e193f5-7994-4a34-8572-62dd8fb527fd:control_0_index_pattern",
+            "id": "logs-*"
         },
         {
-            "id": "qnap_nas-05c7ac80-4b0e-11ec-b2cc-b9a3cc301b75",
-            "name": "3bef5ad2-ec7d-4cd0-b8af-255533d30f62:panel_3bef5ad2-ec7d-4cd0-b8af-255533d30f62",
-            "type": "visualization"
+            "type": "index-pattern",
+            "name": "08e193f5-7994-4a34-8572-62dd8fb527fd:control_1_index_pattern",
+            "id": "logs-*"
         },
         {
-            "id": "qnap_nas-d315c4c0-4b0d-11ec-b2cc-b9a3cc301b75",
-            "name": "20d36c90-71af-4062-94da-0374c871667e:panel_20d36c90-71af-4062-94da-0374c871667e",
-            "type": "visualization"
+            "type": "index-pattern",
+            "name": "08e193f5-7994-4a34-8572-62dd8fb527fd:control_2_index_pattern",
+            "id": "logs-*"
         },
         {
-            "id": "qnap_nas-6cc17ac0-4b0d-11ec-b2cc-b9a3cc301b75",
-            "name": "e0abcb09-b900-4d29-9146-02ab3aca914e:panel_e0abcb09-b900-4d29-9146-02ab3aca914e",
-            "type": "visualization"
+            "type": "index-pattern",
+            "name": "08e193f5-7994-4a34-8572-62dd8fb527fd:control_3_index_pattern",
+            "id": "logs-*"
+        },
+        {
+            "type": "index-pattern",
+            "name": "41e893ff-a7e2-4146-af96-35cd7fc9b5b9:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "id": "logs-*"
+        },
+        {
+            "type": "search",
+            "name": "41e893ff-a7e2-4146-af96-35cd7fc9b5b9:search_0",
+            "id": "qnap_nas-50acdec0-4b0c-11ec-b2cc-b9a3cc301b75"
+        },
+        {
+            "type": "search",
+            "name": "3bef5ad2-ec7d-4cd0-b8af-255533d30f62:search_0",
+            "id": "qnap_nas-50acdec0-4b0c-11ec-b2cc-b9a3cc301b75"
+        },
+        {
+            "type": "index-pattern",
+            "name": "20d36c90-71af-4062-94da-0374c871667e:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "id": "logs-*"
+        },
+        {
+            "type": "search",
+            "name": "20d36c90-71af-4062-94da-0374c871667e:search_0",
+            "id": "qnap_nas-50acdec0-4b0c-11ec-b2cc-b9a3cc301b75"
+        },
+        {
+            "type": "index-pattern",
+            "name": "e0abcb09-b900-4d29-9146-02ab3aca914e:kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "id": "logs-*"
+        },
+        {
+            "type": "search",
+            "name": "e0abcb09-b900-4d29-9146-02ab3aca914e:search_0",
+            "id": "qnap_nas-50acdec0-4b0c-11ec-b2cc-b9a3cc301b75"
         }
     ],
-    "type": "dashboard"
+    "migrationVersion": {
+        "dashboard": "8.1.0"
+    },
+    "coreMigrationVersion": "8.1.0"
 }
