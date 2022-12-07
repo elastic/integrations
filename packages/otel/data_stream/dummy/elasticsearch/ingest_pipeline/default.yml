@@ -1,0 +1,22 @@
+---
+description: Pipeline for post-processing apm-server otel data. These mappings below are for illustrative purpose only. hostmetrics system.filesystem is used for mapping. This is not a complete mapping set.
+processors:
+  - set:
+      field: otel.processed
+      value: done
+      ignore_empty_value: true
+      ignore_failure: true
+  - dot_expander:
+       field: system.filesystem.usage
+  - rename:
+       field: labels.device
+       target_field: system.filesystem.device_name
+       ignore_missing: true
+  - rename:
+       field: labels.type
+       target_field: system.filesystem.type
+       ignore_missing: true
+  - rename:
+       field: labels.mountpoint
+       target_field: system.filesystem.mount_point
+       ignore_missing: true
