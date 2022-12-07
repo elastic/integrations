@@ -5,16 +5,22 @@ processors:
       field: json.event_attributes.job_completed_time
       target_field: jamf_compliance_reporter.log.event_attributes.job.completed_time
       if: ctx.json?.event_attributes?.job_completed_time != 0
-      ignore_failure: true
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - date:
       field: json.event_attributes.job_creation_time
       target_field: jamf_compliance_reporter.log.event_attributes.job.creation_time
       if: ctx.json?.event_attributes?.job_creation_time != 0
-      ignore_failure: true
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.job_destination
       target_field: jamf_compliance_reporter.log.event_attributes.job.destination
@@ -27,14 +33,18 @@ processors:
       field: json.event_attributes.job_id
       target_field: jamf_compliance_reporter.log.event_attributes.job.id
       type: string
+      ignore_missing: true
       ignore_failure: true
   - date:
       field: json.event_attributes.job_processing_time
       target_field: jamf_compliance_reporter.log.event_attributes.job.processing_time
       if: ctx.json?.event_attributes?.job_processing_time != 0
-      ignore_failure: true
       formats:
         - UNIX
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.event_attributes.job_size
       target_field: jamf_compliance_reporter.log.event_attributes.job.size

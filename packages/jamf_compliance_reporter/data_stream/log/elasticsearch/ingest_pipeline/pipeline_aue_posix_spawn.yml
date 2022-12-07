@@ -5,7 +5,11 @@ processors:
       field: json.arguments.child_PID
       target_field: jamf_compliance_reporter.log.arguments.child.pid
       type: long
-      ignore_failure: true
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.exec_args.args
       target_field: json.args

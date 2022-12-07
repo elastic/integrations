@@ -4,10 +4,32 @@
         "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "sentinel_one.threat"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "sentinel_one.threat"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"sentinel_one.threat\""
+                    "query": ""
                 }
             }
         },
@@ -60,7 +82,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "d8990d07-439a-4335-9646-8fbcab6e268d",
@@ -69,6 +91,7 @@
                             }
                         },
                         "title": "Total Number of Threats [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {}
@@ -154,7 +177,7 @@
                             ],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "831e34ee-b0d6-44b1-81b7-2bfee2a628ab",
@@ -163,6 +186,7 @@
                             }
                         },
                         "title": "Total Resolved Threats [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {}
@@ -248,7 +272,7 @@
                             ],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "f3d83b7a-fc35-4c85-83f8-b41e12baddf6",
@@ -257,6 +281,7 @@
                             }
                         },
                         "title": "Unresolved Threats [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -370,7 +395,7 @@
                             ],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "1ede434b-a316-4e79-85b6-ffbfc41f379a",
@@ -379,6 +404,7 @@
                             }
                         },
                         "title": "Active Threats [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -492,7 +518,7 @@
                             ],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "8ae53844-358d-4472-9d64-d7c2708fc29c",
@@ -501,6 +527,7 @@
                             }
                         },
                         "title": "Blocked Threats [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -614,7 +641,7 @@
                             ],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "eb8375d7-8836-43bb-840a-88c8c2f11b43",
@@ -623,6 +650,7 @@
                             }
                         },
                         "title": "Mitigated Threats [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -658,6 +686,11 @@
                             {
                                 "id": "logs-*",
                                 "name": "filter-index-pattern-0",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "filter-index-pattern-1",
                                 "type": "index-pattern"
                             }
                         ],
@@ -706,11 +739,32 @@
                                             "sentinel_one.threat.incident.status": "resolved"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "indexRefName": "filter-index-pattern-1",
+                                        "key": "sentinel_one.agent.console_migration_status",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "suspicious"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "sentinel_one.agent.console_migration_status": "suspicious"
+                                        }
+                                    }
                                 }
                             ],
                             "query": {
                                 "language": "kuery",
-                                "query": "sentinel_one.threat.mitigation.status : \"suspicious\" and data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "accessor": "9295a43b-ccd0-4d23-abf8-73586af8dac7",
@@ -719,6 +773,7 @@
                             }
                         },
                         "title": "Detected - Suspicious Threats [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
@@ -826,7 +881,7 @@
                             ],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -858,6 +913,7 @@
                             }
                         },
                         "title": "Most Prevalent Threats [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -936,7 +992,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -957,6 +1013,7 @@
                             }
                         },
                         "title": "Distribution of Detections by Engine [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {}
@@ -1065,7 +1122,7 @@
                             ],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -1086,6 +1143,7 @@
                             }
                         },
                         "title": "Distribution of Threats by Agent Status [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
@@ -1165,7 +1223,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -1186,6 +1244,7 @@
                             }
                         },
                         "title": "Distribution of Threats by Mitigation Status Action [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {}
@@ -1264,7 +1323,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -1285,6 +1344,7 @@
                             }
                         },
                         "title": "Distribution of Threats by Mitigation Status [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {}
@@ -1363,7 +1423,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -1395,6 +1455,7 @@
                             }
                         },
                         "title": "Distribution of Threats by Agent Mitigation Mode [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -1473,7 +1534,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -1505,6 +1566,7 @@
                             }
                         },
                         "title": "Distribution of Threats by Confidence Level [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -1583,7 +1645,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -1615,6 +1677,7 @@
                             }
                         },
                         "title": "Distribution of Threats by File Extension Type [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
@@ -1693,7 +1756,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -1711,6 +1774,7 @@
                             }
                         },
                         "title": "Top 10 File Extension [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {}
@@ -1789,7 +1853,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -1821,6 +1885,7 @@
                             }
                         },
                         "title": "Distribution of Threats by Incident Status [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
@@ -1877,7 +1942,7 @@
                                 "index": "logs-*",
                                 "query": {
                                     "language": "kuery",
-                                    "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                    "query": ""
                                 }
                             }
                         },
@@ -2002,7 +2067,7 @@
                             ],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "layers": [
@@ -2023,6 +2088,7 @@
                             }
                         },
                         "title": "Distribution of Threats by Infected Agents [Logs SentinelOne]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
@@ -2103,7 +2169,7 @@
                             "filters": [],
                             "query": {
                                 "language": "kuery",
-                                "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                "query": ""
                             },
                             "visualization": {
                                 "columns": [
@@ -2121,6 +2187,7 @@
                             }
                         },
                         "title": "Distribution of Threats by Detection Engine [Logs SentinelOne] ",
+                        "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {}
@@ -2175,7 +2242,7 @@
                                 "index": "logs-*",
                                 "query": {
                                     "language": "kuery",
-                                    "query": "data_stream.dataset : \"sentinel_one.threat\""
+                                    "query": ""
                                 }
                             }
                         },
@@ -2218,6 +2285,11 @@
         "dashboard": "7.17.0"
     },
     "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "ac59079e-c791-449b-aeeb-d47504921dff:indexpattern-datasource-current-indexpattern",
@@ -2331,6 +2403,11 @@
         {
             "id": "logs-*",
             "name": "14069c35-b940-4540-82f8-1ef2bb73dfe1:filter-index-pattern-0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "14069c35-b940-4540-82f8-1ef2bb73dfe1:filter-index-pattern-1",
             "type": "index-pattern"
         },
         {
