@@ -268,7 +268,7 @@ An example event for `process` looks as following:
 | input.type | Type of Filebeat input. | keyword |  |  |
 | php_fpm.process.pool.name | The name of the FPM process pool. | keyword |  |  |
 | php_fpm.process.request.count | The total number of requests served. | long |  | counter |
-| php_fpm.process.request.duration | The total time in seconds spent serving requests. | long | s | counter |
+| php_fpm.process.request.duration | The duration in microseconds of the requests. | long | micros | gauge |
 | php_fpm.process.request.last.cpu.pct | The %cpu of the last request. This will be 0 if the process is not Idle because the calculation is done when the request processing is complete. | long | percent | gauge |
 | php_fpm.process.request.last.memory | The maximum amount of memory consumed by the last request. This will be 0 if the process is not Idle because the calculation is done when the request processing is complete. | long |  | gauge |
 | php_fpm.process.script | The full path of the script executed by the last request. This will be '-' if not applicable (eg. status page requests). | keyword |  |  |
@@ -281,4 +281,3 @@ An example event for `process` looks as following:
 | url.original.text | Multi-field of `url.original`. | match_only_text |  |  |
 | user.name | Short name or login of the user. | keyword |  |  |
 | user.name.text | Multi-field of `user.name`. | match_only_text |  |  |
-
