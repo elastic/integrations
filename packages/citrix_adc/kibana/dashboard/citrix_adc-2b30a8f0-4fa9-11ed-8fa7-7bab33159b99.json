@@ -1,0 +1,726 @@
+{
+    "attributes": {
+        "description": "This Citrix ADC dashboard visualizes Load Balancing Virtual Server metrics.",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-8a7f37c1-312f-4aeb-90cd-bece74fd1af2",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3e48063b-2914-422f-963c-7dfd0b6b7eff",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "8a7f37c1-312f-4aeb-90cd-bece74fd1af2": {
+                                            "columnOrder": [
+                                                "c26583bc-e2e9-4cd7-9b7f-a5d7243e657d",
+                                                "0a9c4956-5a3c-48c9-8b34-02b1e55c0498",
+                                                "9313ff06-ccc2-4c69-927e-626be8ede57f"
+                                            ],
+                                            "columns": {
+                                                "0a9c4956-5a3c-48c9-8b34-02b1e55c0498": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "9313ff06-ccc2-4c69-927e-626be8ede57f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.packets.sent.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Packets sent",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.lbvserver.packets.sent.count"
+                                                },
+                                                "c26583bc-e2e9-4cd7-9b7f-a5d7243e657d": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of Load Balancing Virtual Server name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "9313ff06-ccc2-4c69-927e-626be8ede57f",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "citrix_adc.lbvserver.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "3e48063b-2914-422f-963c-7dfd0b6b7eff",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "citrix_adc.lbvserver"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "citrix_adc.lbvserver"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "9313ff06-ccc2-4c69-927e-626be8ede57f"
+                                        ],
+                                        "layerId": "8a7f37c1-312f-4aeb-90cd-bece74fd1af2",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "c26583bc-e2e9-4cd7-9b7f-a5d7243e657d",
+                                        "xAccessor": "0a9c4956-5a3c-48c9-8b34-02b1e55c0498"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "6963ede6-4a7a-4d62-9439-f6bdabefea49",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "6963ede6-4a7a-4d62-9439-f6bdabefea49",
+                "title": "Packets sent over time [Metrics Citrix ADC]",
+                "type": "lens",
+                "version": "8.4.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-5a544beb-a6ae-4c14-9427-955caee52bf9",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "1a3ede12-c809-46ab-a99c-95731d032b96",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "5a544beb-a6ae-4c14-9427-955caee52bf9": {
+                                            "columnOrder": [
+                                                "cb34e9d6-06d1-40a4-8a7b-9ce46f548fb9",
+                                                "5244fa9c-39b1-4ca4-ad1b-b9c17f63ac53",
+                                                "01f7a7da-f161-4332-9860-6f5cc2f1d198"
+                                            ],
+                                            "columns": {
+                                                "01f7a7da-f161-4332-9860-6f5cc2f1d198": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.packets.received.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Packets received",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.lbvserver.packets.received.count"
+                                                },
+                                                "5244fa9c-39b1-4ca4-ad1b-b9c17f63ac53": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "cb34e9d6-06d1-40a4-8a7b-9ce46f548fb9": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of Load Balancing Virtual Server name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "01f7a7da-f161-4332-9860-6f5cc2f1d198",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "citrix_adc.lbvserver.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "1a3ede12-c809-46ab-a99c-95731d032b96",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "citrix_adc.lbvserver"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "citrix_adc.lbvserver"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "01f7a7da-f161-4332-9860-6f5cc2f1d198"
+                                        ],
+                                        "layerId": "5a544beb-a6ae-4c14-9427-955caee52bf9",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "cb34e9d6-06d1-40a4-8a7b-9ce46f548fb9",
+                                        "xAccessor": "5244fa9c-39b1-4ca4-ad1b-b9c17f63ac53"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "97546882-61a8-40a9-b8bd-473bfc1def87",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "97546882-61a8-40a9-b8bd-473bfc1def87",
+                "title": "Packets received over time [Metrics Citrix ADC]",
+                "type": "lens",
+                "version": "8.4.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-1763a2d7-2bde-4a4c-8b91-3908be7ca25d",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "4c49a4dc-50ec-44b6-98a0-c6ae5196fbdb",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "1763a2d7-2bde-4a4c-8b91-3908be7ca25d": {
+                                            "columnOrder": [
+                                                "f1aea47c-9fec-45a6-bf16-642f5cdcf7f2",
+                                                "a20a67fd-31b9-4b48-ac68-0b1c7e386363",
+                                                "1ce65e57-89ec-476a-aa44-f1527abd4625"
+                                            ],
+                                            "columns": {
+                                                "1ce65e57-89ec-476a-aa44-f1527abd4625": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.spillover.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Spillovers",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.lbvserver.spillover.count"
+                                                },
+                                                "a20a67fd-31b9-4b48-ac68-0b1c7e386363": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "f1aea47c-9fec-45a6-bf16-642f5cdcf7f2": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of Load Balancing Server name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "1ce65e57-89ec-476a-aa44-f1527abd4625",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "citrix_adc.lbvserver.name"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "4c49a4dc-50ec-44b6-98a0-c6ae5196fbdb",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "citrix_adc.lbvserver"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "citrix_adc.lbvserver"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "1ce65e57-89ec-476a-aa44-f1527abd4625"
+                                        ],
+                                        "layerId": "1763a2d7-2bde-4a4c-8b91-3908be7ca25d",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "f1aea47c-9fec-45a6-bf16-642f5cdcf7f2",
+                                        "xAccessor": "a20a67fd-31b9-4b48-ac68-0b1c7e386363"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "21454c91-bf66-4747-bad9-68aa53a71720",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "21454c91-bf66-4747-bad9-68aa53a71720",
+                "title": "Spillovers over time [Metrics Citrix ADC]",
+                "type": "lens",
+                "version": "8.4.1"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-923b22b5-99bd-4a30-8ab4-0bbe86d9fe3e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "72df249a-03ce-455c-8cd5-3ce5d903659b",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "datasourceStates": {
+                                "indexpattern": {
+                                    "layers": {
+                                        "923b22b5-99bd-4a30-8ab4-0bbe86d9fe3e": {
+                                            "columnOrder": [
+                                                "6af7655d-01d9-44fa-a29a-6460652637a8",
+                                                "f5f52faf-edbe-447a-b45a-f9226a525a87",
+                                                "65ea194e-51fb-40c1-bc1f-f5639889d4ea"
+                                            ],
+                                            "columns": {
+                                                "65ea194e-51fb-40c1-bc1f-f5639889d4ea": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "citrix_adc.lbvserver.client.connections.current.count: *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Current client connections",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "citrix_adc.lbvserver.client.connections.current.count"
+                                                },
+                                                "6af7655d-01d9-44fa-a29a-6460652637a8": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of Load Balancing Virtual Server name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "65ea194e-51fb-40c1-bc1f-f5639889d4ea",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "citrix_adc.lbvserver.name"
+                                                },
+                                                "f5f52faf-edbe-447a-b45a-f9226a525a87": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "72df249a-03ce-455c-8cd5-3ce5d903659b",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "citrix_adc.lbvserver"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "citrix_adc.lbvserver"
+                                        }
+                                    }
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "65ea194e-51fb-40c1-bc1f-f5639889d4ea"
+                                        ],
+                                        "layerId": "923b22b5-99bd-4a30-8ab4-0bbe86d9fe3e",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "6af7655d-01d9-44fa-a29a-6460652637a8",
+                                        "xAccessor": "f5f52faf-edbe-447a-b45a-f9226a525a87"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "9bbb31bb-a788-4aa6-816e-c0c42e4ae35c",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "9bbb31bb-a788-4aa6-816e-c0c42e4ae35c",
+                "title": "Current client connections over time [Metrics Citrix ADC]",
+                "type": "lens",
+                "version": "8.4.1"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Metrics Citrix ADC] Load Balancing Virtual Server",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.4.1",
+    "id": "citrix_adc-2b30a8f0-4fa9-11ed-8fa7-7bab33159b99",
+    "migrationVersion": {
+        "dashboard": "8.4.0"
+    },
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "6963ede6-4a7a-4d62-9439-f6bdabefea49:indexpattern-datasource-layer-8a7f37c1-312f-4aeb-90cd-bece74fd1af2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6963ede6-4a7a-4d62-9439-f6bdabefea49:3e48063b-2914-422f-963c-7dfd0b6b7eff",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "97546882-61a8-40a9-b8bd-473bfc1def87:indexpattern-datasource-layer-5a544beb-a6ae-4c14-9427-955caee52bf9",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "97546882-61a8-40a9-b8bd-473bfc1def87:1a3ede12-c809-46ab-a99c-95731d032b96",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "21454c91-bf66-4747-bad9-68aa53a71720:indexpattern-datasource-layer-1763a2d7-2bde-4a4c-8b91-3908be7ca25d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "21454c91-bf66-4747-bad9-68aa53a71720:4c49a4dc-50ec-44b6-98a0-c6ae5196fbdb",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9bbb31bb-a788-4aa6-816e-c0c42e4ae35c:indexpattern-datasource-layer-923b22b5-99bd-4a30-8ab4-0bbe86d9fe3e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "9bbb31bb-a788-4aa6-816e-c0c42e4ae35c:72df249a-03ce-455c-8cd5-3ce5d903659b",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "dashboard"
+}
