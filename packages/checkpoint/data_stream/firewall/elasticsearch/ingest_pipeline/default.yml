@@ -702,10 +702,32 @@ processors:
       field: checkpoint.industry_reference
       target_field: vulnerability.id
       ignore_missing: true
+  - convert:
+      field: checkpoint.time
+      type: long
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+      lang: painless
+      if: "ctx.checkpoint?.time != null && (ctx.checkpoint?.time instanceof Long)"
+      source: |
+        Long _temp_time = ctx.checkpoint.time;
+        if (String.valueOf(_temp_time).length() > 10) {
+            ctx.checkpoint._temp_unixms = Instant.ofEpochMilli(_temp_time);
+        }
   - date:
       field: "checkpoint.time"
       formats: ["ISO8601", "UNIX"]
-      if: "ctx.checkpoint?.time != null"
+      if: "ctx.checkpoint?.time != null && ctx.checkpoint?._temp_unixms == null"
+  - rename:
+      field: checkpoint._temp_unixms
+      target_field: "@timestamp"
+      ignore_missing: true
+  - date:
+      field: checkpoint.lastupdatetime
+      formats: ["ISO8601", "UNIX"]
+      target_field: event.end
+      if: "ctx.checkpoint?.lastupdatetime != null"
   - rename:
       field: checkpoint.message
       target_field: message
@@ -881,6 +903,7 @@ processors:
         - checkpoint.__pos
         - checkpoint.hll_key
         - checkpoint.segment_time
+        - checkpoint.lastupdatetime
         - syslog5424_ts
         - _temp_
       ignore_missing: true
