@@ -13,11 +13,46 @@
         "hideChart": false,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "panw.panos.type",
+                            "negate": false,
+                            "params": [
+                                "HIP-MATCH",
+                                "HIPMATCH"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "panw.panos.type": "HIP-MATCH"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "panw.panos.type": "HIPMATCH"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset : \"panw.panos\" and (panw.panos.type : \"HIPMATCH\" or panw.panos.type: \"HIP-MATCH\")"
+                    "query": ""
                 }
             }
         },
@@ -38,6 +73,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
             "type": "index-pattern"
         }
     ],

@@ -1,0 +1,72 @@
+- name: php_fpm
+  type: group
+  fields:
+    - name: pool
+      type: group
+      fields:
+        - name: connections
+          type: group
+          fields:
+            - name: accepted
+              type: long
+              description: The total number of accepted connections.
+              metric_type: counter
+            - name: listen_queue
+              type: group
+              fields:
+                - name: max_size
+                  type: long
+                  description: The maximum allowed size of the listen queue.
+                  metric_type: gauge
+                - name: requests.max
+                  type: long
+                  description: The maximum number of requests seen in the listen queue at any one time.
+                  metric_type: gauge
+            - name: queued
+              type: long
+              description: The number of requests (backlog) currently waiting for a free process.
+              metric_type: gauge
+        - name: name
+          type: keyword
+          description: The name of the FPM process pool.
+        - name: process_manager.type
+          type: keyword
+          description: The process manager type - static, dynamic or ondemand.
+        - name: processes
+          type: group
+          fields:
+            - name: active
+              type: group
+              fields:
+                - name: count
+                  type: long
+                  description: The number of processes that are currently processing requests.
+                  metric_type: gauge
+                - name: max
+                  type: long
+                  description: The maximum number of concurrently active processes.
+                  metric_type: gauge
+            - name: children_reached.max
+              type: long
+              description: Has the maximum number of processes ever been reached? If so the displayed value is 1 otherwise the value is 0.
+            - name: count
+              type: long
+              description: The current total number of processes.
+              metric_type: gauge
+            - name: idle
+              type: long
+              description: The number of processes that are currently idle (waiting for requests).
+              metric_type: gauge
+        - name: slow_requests
+          type: long
+          description: The total number of requests that have hit the configured request_slowlog_timeout.
+          metric_type: counter
+        - name: start_since
+          type: long
+          description: The time in seconds since the process pool was last started.
+          metric_type: counter
+          unit: s
+        - name: start_time
+          type: long
+          description: The date/time that the process pool was last started.
+          metric_type: counter
