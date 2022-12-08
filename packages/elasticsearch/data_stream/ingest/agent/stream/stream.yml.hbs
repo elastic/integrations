@@ -9,7 +9,7 @@ auth.basic:
 
 request:
   method: "GET"
-  url: {{hosts.[0]}}/_nodes/stats/ingest?filter_path=nodes.*.ingest
+  url: {{hosts.[0]}}/_nodes/stats/ingest
   # timeout:
 
 response:
@@ -17,21 +17,23 @@ response:
     type: map
     target: body.nodes
     key_field: node_id
+    keep_parent: true
     split:
       type: map
-      target: body.ingest.pipelines
+      target: body.nodes.ingest.pipelines
       keep_parent: true
       key_field: pipeline_id
 
 processors:
-- decode_json_fields:
-    fields: ["message"]
-- drop_event:
-    when:
-      and:
-        - equals:
-            message.ingest.pipelines.count: 0
-        - equals:
-            message.ingest.pipelines.failed: 0
-        - equals:
-            message.ingest.pipelines.time_in_millis: 0
+  - decode_json_fields:
+      fields:
+        - message
+  - drop_event:
+      when:
+        and:
+          - equals:
+              message.nodes.ingest.pipelines.count: 0
+          - equals:
+              message.nodes.ingest.pipelines.failed: 0
+          - equals:
+              message.nodes.ingest.pipelines.time_in_millis: 0

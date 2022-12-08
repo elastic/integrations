@@ -2,28 +2,33 @@
 description: Pipeline for parsing pipeline ingest stats
 processors:
   - set:
-      ignore_empty_value: true
-      field: "event.original"
-      copy_from: "message"
-  - set:
-      field: "elasticsearch.ingest.pipeline.name"
-      copy_from: "message.ingest.pipelines.pipeline_id"
+      field: "elasticsearch.cluster.name"
+      copy_from: "message.cluster_name"
   - set:
       field: "elasticsearch.node.id"
-      copy_from: "message.node_id"
+      copy_from: "message.nodes.node_id"
+  - set:
+      field: "elasticsearch.node.name"
+      copy_from: "message.nodes.name"
+  - set:
+      field: "elasticsearch.node.roles"
+      copy_from: "message.nodes.roles"
+  - set:
+      field: "elasticsearch.ingest.pipeline.name"
+      copy_from: "message.nodes.ingest.pipelines.pipeline_id"
   - set:
       field: "elasticsearch.ingest.pipeline.total.count"
-      copy_from: "message.ingest.pipelines.count"
+      copy_from: "message.nodes.ingest.pipelines.count"
   - set:
       field: "elasticsearch.ingest.pipeline.total.failed"
-      copy_from: "message.ingest.pipelines.failed"
+      copy_from: "message.nodes.ingest.pipelines.failed"
   - set:
       field: "elasticsearch.ingest.pipeline.total.total_cpu_time"
-      copy_from: "message.ingest.pipelines.time_in_millis"
+      copy_from: "message.nodes.ingest.pipelines.time_in_millis"
   - script:
       lang: painless
       source: |
-        Map pipeline = ctx['message']['ingest']['pipelines'];
+        Map pipeline = ctx['message']['nodes']['ingest']['pipelines'];
         long self_cpu_time = pipeline['time_in_millis'];
         long count_processors = 0;
         def processors = new ArrayList();
