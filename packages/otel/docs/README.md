@@ -52,11 +52,6 @@ An example event for `dummy` looks as following:
             "type": "ext4"
         }
     },
-    "_metric_descriptions": {
-        "system.filesystem.usage": {
-            "type": "counter"
-        }
-    },
     "ecs": {
         "version": "1.12.0"
     },
