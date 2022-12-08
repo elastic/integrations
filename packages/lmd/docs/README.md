@@ -18,7 +18,7 @@ To maximize the benefit of the LMD detection framework, you might consider activ
 
 ## ML Modules
 
-### LMD
+### Lateral Movement Detection (LMD)
 
 Detects potential lateral movement activity by identifying malicious file transfers to a host.
 
