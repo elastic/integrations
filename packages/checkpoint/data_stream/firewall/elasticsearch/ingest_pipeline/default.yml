@@ -702,25 +702,26 @@ processors:
       field: checkpoint.industry_reference
       target_field: vulnerability.id
       ignore_missing: true
-  - convert:
-      field: checkpoint.time
-      type: long
-      ignore_failure: true
-      ignore_missing: true
   - script:
       lang: painless
-      if: "ctx.checkpoint?.time != null && (ctx.checkpoint?.time instanceof Long)"
+      if: "ctx.checkpoint?.time != null"
       source: |
-        Long _temp_time = ctx.checkpoint.time;
-        if (String.valueOf(_temp_time).length() > 10) {
-            Instant instant = Instant.ofEpochMilli(_temp_time);
-            ZonedDateTime zdt = ZonedDateTime.ofInstant(instant, ZoneId.of('Z'));
-            ctx.checkpoint._temp_unixms = zdt;
+        Instant instant;
+        ZonedDateTime zdt;
+        try {
+            long temp_time = Long.parseLong(ctx.checkpoint.time);
+            if (String.valueOf(temp_time).length() > 10) {
+                instant = Instant.ofEpochMilli(temp_time);
+            }
+            else {
+                instant = Instant.ofEpochMilli(temp_time * 1000L);
+            }
+            zdt = ZonedDateTime.ofInstant(instant, ZoneId.of('Z'));
         }
-  - date:
-      field: "checkpoint.time"
-      formats: ["ISO8601", "UNIX"]
-      if: "ctx.checkpoint?.time != null && ctx.checkpoint?._temp_unixms == null"
+        catch (NumberFormatException nfe) {
+            zdt = ZonedDateTime.parse(ctx.checkpoint.time);
+        }
+        ctx.checkpoint._temp_unixms = zdt;
   - rename:
       field: checkpoint._temp_unixms
       target_field: "@timestamp"
