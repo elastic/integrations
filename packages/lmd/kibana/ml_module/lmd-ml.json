@@ -3,7 +3,7 @@
         "id": "lmd-ml",
         "title": "Lateral Movement Detection (LMD)",
         "description": "Detects lateral movement activity by identifying malicious file transfers to a host.",
-        "type": "Lateral Movement Detection (LMD)",
+        "type": "LMD",
         "logo": {
             "icon": "machineLearningApp"
         },
@@ -424,14 +424,13 @@
                     ]
                   }
                     },
-                  "runtime_mappings": {
-      "file_directory": {
-        "type": "keyword",
-        "script": {
-          "source": "def st=new String();def st1=new String();if(doc.containsKey('file.path')  && doc['file.path'].size() != 0 ){st=doc['file.path'].value.replace('/','\\').splitOnToken('\\')[-1];st1=doc['file.path'].value.replace(st,'');emit((st1));} else { emit('None');}"
+                  "runtime_mappings":{
+                    "file_directory":
+                    {"type":"keyword","script":
+                    {"source":"def st=new String();\r\ndef st1=new String(); \r\nif(doc.containsKey('file.path') && doc['file.path'].size() != 0 )\r\n{st=doc['file.path'].value.replace('/','\\\\').splitOnToken('\\\\')[-1]; \r\nst1=doc['file.path'].value.replace(st,\"\");\r\n emit((st1));} else { emit('None');}"
+                     }
                     }
                   }
-                }
                 }
             }
         ]
