@@ -27,11 +27,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2022-10-24T17:05:31.000Z",
     "agent": {
-        "ephemeral_id": "f67e864f-2088-41cc-b597-3c6b835ccfe7",
-        "id": "f826df7a-a7a8-48a6-a78e-da9a92b7a790",
+        "ephemeral_id": "0ccb5087-29e5-4a64-a028-e51e06c2d944",
+        "id": "af423af4-492e-4074-bae6-f31a40d3fd91",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "data_stream": {
         "dataset": "sysmon_linux.log",
@@ -42,15 +42,15 @@ An example event for `log` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "f826df7a-a7a8-48a6-a78e-da9a92b7a790",
+        "id": "af423af4-492e-4074-bae6-f31a40d3fd91",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.5.0"
     },
     "event": {
         "action": "log",
         "agent_id_status": "verified",
         "dataset": "sysmon_linux.log",
-        "ingested": "2022-11-15T11:28:47Z",
+        "ingested": "2022-12-08T10:33:50Z",
         "kind": "event",
         "timezone": "+00:00"
     },
@@ -58,12 +58,12 @@ An example event for `log` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "5016511f0829451ea244f458eebf2212",
+        "id": "66392b0697b84641af8006d87aeb89f1",
         "ip": [
-            "192.168.144.7"
+            "192.168.48.7"
         ],
         "mac": [
-            "02:42:c0:a8:90:07"
+            "02-42-C0-A8-30-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -73,7 +73,7 @@ An example event for `log` looks as following:
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.4 LTS (Focal Fossa)"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "input": {
