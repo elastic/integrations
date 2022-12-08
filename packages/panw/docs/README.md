@@ -32,11 +32,11 @@ An example event for `panos` looks as following:
 {
     "@timestamp": "2012-04-10T04:39:56.000Z",
     "agent": {
-        "ephemeral_id": "afbf7bdf-6324-4fbe-b60f-71abb0fcbaf4",
-        "id": "a1f15364-9c85-4c4e-9ead-7c2365d6e481",
+        "ephemeral_id": "9e3b3c8d-17c2-445f-b267-6c483cd8663d",
+        "id": "5fd4ef6b-35cc-4249-8f3e-3765330ceec9",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.4.0"
+        "version": "8.4.1"
     },
     "data_stream": {
         "dataset": "panw.panos",
@@ -64,9 +64,9 @@ An example event for `panos` looks as following:
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "a1f15364-9c85-4c4e-9ead-7c2365d6e481",
+        "id": "5fd4ef6b-35cc-4249-8f3e-3765330ceec9",
         "snapshot": false,
-        "version": "8.4.0"
+        "version": "8.4.1"
     },
     "event": {
         "action": "url_filtering",
@@ -78,7 +78,7 @@ An example event for `panos` looks as following:
         ],
         "created": "2012-10-30T09:46:12.000Z",
         "dataset": "panw.panos",
-        "ingested": "2022-11-18T10:51:36Z",
+        "ingested": "2022-11-29T02:48:44Z",
         "kind": "alert",
         "original": "\u003c14\u003eNov 30 16:09:08 PA-220 1,2012/10/30 09:46:12,01606001116,THREAT,url,1,2012/04/10 04:39:56,192.168.0.2,175.16.199.1,0.0.0.0,0.0.0.0,rule1,crusher,,web-browsing,vsys1,trust,untrust,ethernet1/2,ethernet1/1,forwardAll,2012/04/10 04:39:58,25149,1,59309,80,0,0,0x208000,tcp,alert,\"lorexx.cn/loader.exe\",(9999),not-resolved,informational,client-to-server,0,0x0,192.168.0.0-192.168.255.255,United States,0,text/html",
         "outcome": "success",
@@ -89,7 +89,7 @@ An example event for `panos` looks as following:
         ]
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "labels": {
         "captive_portal": true,
@@ -98,7 +98,7 @@ An example event for `panos` looks as following:
     "log": {
         "level": "informational",
         "source": {
-            "address": "192.168.192.5:44573"
+            "address": "192.168.192.4:56960"
         },
         "syslog": {
             "facility": {
@@ -191,7 +191,9 @@ An example event for `panos` looks as following:
         "forwarded"
     ],
     "url": {
-        "original": "lorexx.cn/loader.exe"
+        "extension": "exe",
+        "original": "lorexx.cn/loader.exe",
+        "path": "lorexx.cn/loader.exe"
     }
 }
 ```
@@ -265,6 +267,9 @@ An example event for `panos` looks as following:
 | event.start | event.start contains the date when the event started or when the activity was first observed. | date |
 | event.timezone | This field should be populated when the event's timestamp does not include timezone information already (e.g. default Syslog timestamps). It's optional otherwise. Acceptable timezone formats are: a canonical ID (e.g. "Europe/Amsterdam"), abbreviated (e.g. "EST") or an HH:mm differential (e.g. "-05:00"). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| file.name | Name of the file including the extension, without the directory. | keyword |
+| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
+| file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.type | File type (file, dir, or symlink). | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
@@ -678,8 +683,11 @@ An example event for `panos` looks as following:
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
 | tls.version | Numeric part of the version parsed from the original string. | keyword |
 | tls.version_protocol | Normalized lowercase protocol name parsed from original string. | keyword |
+| url.extension | The field contains the file extension from the original request url, excluding the leading dot. The file extension is only set if it exists, as not every url has a file extension. The leading period must not be included. For example, the value must be "png", not ".png". Note that when the file name has multiple extensions (example.tar.gz), only the last one should be captured ("gz", not "tar.gz"). | keyword |
 | url.original | Unmodified original url as seen in the event source. Note that in network monitoring, the observed URL may be a full URL, whereas in access logs, the URL is often just represented as a path. This field is meant to represent the URL as it was observed, complete or not. | wildcard |
 | url.original.text | Multi-field of `url.original`. | match_only_text |
+| url.path | Path of the request, such as "/search". | wildcard |
+| url.query | The query field describes the query string of the request, such as "q=elasticsearch". The `?` is excluded from the query string. If a URL contains no `?`, there is no query field. If there is a `?` but no query, the query field exists with an empty string. The `exists` query can be used to differentiate between the two cases. | keyword |
 | user_agent.device.name | Name of the device. | keyword |
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |

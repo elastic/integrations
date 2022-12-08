@@ -1,6 +1,9 @@
 # Docker Integration
 
-This Integration fetches metrics from [Docker](https://www.docker.com/) containers. The default data streams are: `container`, `cpu`, `diskio`, `healthcheck`, `info`, `memory` and `network`. The `image` metricset is not enabled by default.
+This Integration collects metrics and logs from [Docker](https://www.docker.com/) containers. 
+The default data streams for metrics collection are: `container`, `cpu`, `diskio`, `healthcheck`, `info`, `memory`
+and `network`. The `image` metricset is not enabled by default.
+The `container_logs` data stream for containers' logs collection is enabled by default.
 
 ## Compatibility
 
@@ -21,6 +24,25 @@ docker run -d \
   docker.elastic.co/beats/metricbeat:latest metricbeat -e \
   -E output.elasticsearch.hosts=["elasticsearch:9200"]
 ```
+
+For log collection since the discovery of the containers happen automatically, again access to `unix:///var/run/docker.sock`
+will be needed so as Agent to be able to watch for Container events.
+In addition, access is required to the containers' logs files which by default follows the pattern of
+`/var/lib/docker/containers/${docker.container.id}/*-json.log`
+If Elastic Agent is running inside docker, you'll need to mount the logs' directory too inside the container:
+
+
+```
+docker run -d \
+  --name=metricbeat \
+  --user=root \
+  --volume="/var/run/docker.sock:/var/run/docker.sock:ro" \
+  --volume="/var/lib/docker/containers:/var/lib/docker/containers:ro" \
+  docker.elastic.co/beats/metricbeat:latest metricbeat -e \
+  -E output.elasticsearch.hosts=["elasticsearch:9200"]
+```
+
+In all cases make sure that Agent has the proper permissions to access these files.
 
 ## Module-specific configuration notes
 
@@ -1041,6 +1063,156 @@ An example event for `network` looks as following:
     "service": {
         "address": "/var/run/docker.sock",
         "type": "docker"
+    }
+}
+```
+
+### container_logs
+
+The Docker `container_logs` data stream collects container logs.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| container.id | Container ID | keyword |
+| container.image.name | Name of the image the container was built on. | keyword |
+| container.labels.\* | Container labels | object |
+| container.name | Container name. | keyword |
+| container.runtime | Runtime managing this container. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
+| host.architecture | Operating system architecture. | keyword |
+| host.ip | Host ip addresses. | ip |
+| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
+| host.os.full | Operating system name, including the version or code name. | keyword |
+| host.os.full.text | Multi-field of `host.os.full`. | match_only_text |
+| host.os.kernel | Operating system kernel version as a raw string. | keyword |
+| host.os.name | Operating system name, without the version. | keyword |
+| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
+| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
+| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.path | Path to the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+| message | Container log message | keyword |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| stream | Container log stream | keyword |
+
+
+An example event for `container` looks as following:
+
+```json
+{
+    "container": {
+        "image": {
+            "name": "docker.elastic.co/elastic-agent/elastic-agent-complete:8.5.0"
+        },
+        "name": "elastic-package-stack_elastic-agent_1",
+        "id": "cf67fae3321ec426e720311c345c758d5ceb5260e6ea171ea9ca509175458b04",
+        "labels": {
+            "io_k8s_display-name": "Elastic-Agent image",
+            "org_opencontainers_image_title": "Elastic-Agent",
+            "com_docker_compose_oneoff": "False",
+            "release": "1",
+            "com_docker_compose_project": "elastic-package-stack",
+            "org_opencontainers_image_created": "2022-10-24T20:20:43Z",
+            "description": "Agent manages other beats based on configuration provided.",
+            "maintainer": "infra@elastic.co",
+            "org_opencontainers_image_vendor": "Elastic",
+            "org_label-schema_vcs-url": "github.com/elastic/elastic-agent",
+            "org_label-schema_vcs-ref": "9da6ba5fce5d6b4d2c473c1f5ff6056794e9a644",
+            "vendor": "Elastic",
+            "org_label-schema_vendor": "Elastic",
+            "com_docker_compose_service": "elastic-agent",
+            "org_opencontainers_image_licenses": "Elastic License",
+            "io_k8s_description": "Agent manages other beats based on configuration provided.",
+            "org_label-schema_license": "Elastic License",
+            "org_label-schema_build-date": "2022-10-24T20:20:43Z",
+            "summary": "elastic-agent",
+            "com_docker_compose_config-hash": "877e65101e9a2d525e764de557ab89ee529bee1f43d36e1f458fd3f9def52cf8",
+            "org_label-schema_version": "8.5.0",
+            "com_docker_compose_project_config_files": "/home/chrismark/.elastic-package/profiles/default/stack/snapshot.yml",
+            "version": "8.5.0",
+            "url": "https://www.elastic.co/beats/elastic-agent",
+            "org_label-schema_name": "elastic-agent",
+            "license": "Elastic License",
+            "org_label-schema_schema-version": "1.0",
+            "name": "elastic-agent",
+            "com_docker_compose_container-number": "1",
+            "com_docker_compose_version": "1.29.2",
+            "com_docker_compose_project_working_dir": "/home/chrismark/.elastic-package/profiles/default/stack",
+            "org_label-schema_url": "https://www.elastic.co/beats/elastic-agent"
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "069c0cc8-d191-42b2-92c8-fe4dd065685b",
+        "type": "filebeat",
+        "ephemeral_id": "93ca0744-1bef-4a2a-8534-6cbd9e33287a",
+        "version": "8.5.0"
+    },
+    "log": {
+        "file": {
+            "path": "/var/lib/docker/containers/cf67fae3321ec426e720311c345c758d5ceb5260e6ea171ea9ca509175458b04/cf67fae3321ec426e720311c345c758d5ceb5260e6ea171ea9ca509175458b04-json.log"
+        },
+        "offset": 17027
+    },
+    "elastic_agent": {
+        "id": "069c0cc8-d191-42b2-92c8-fe4dd065685b",
+        "version": "8.5.0",
+        "snapshot": false
+    },
+    "message": "{\"log.level\":\"info\",\"@timestamp\":\"2022-11-24T10:16:39.493Z\",\"log.origin\":{\"file.name\":\"stateresolver/stateresolver.go\",\"file.line\":66},\"message\":\"Updating internal state\",\"ecs.version\":\"1.6.0\"}\n",
+    "input": {
+        "type": "filestream"
+    },
+    "@timestamp": "2022-11-24T10:16:39.493Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "stream": "stderr",
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "docker.container_logs"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.14.0-1054-oem",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.5 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": true,
+        "ip": [
+            "172.26.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "id": "66392b0697b84641af8006d87aeb89f1",
+        "mac": [
+            "02-42-AC-1A-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2022-11-24T10:16:42Z",
+        "dataset": "docker.container_logs"
     }
 }
 ```
