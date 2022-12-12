@@ -1256,9 +1256,18 @@ processors:
   - append:
       field: related.ip
       value: '{{{host.ip}}}'
-      if: ctx.host?.ip != null
+      if: ctx.host?.ip instanceof String
       allow_duplicates: false
       ignore_failure: true
+  - foreach:
+      field: host.ip
+      if: ctx.host?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
   - append:
       field: related.ip
       value: '{{{panw.panos.xff.ip}}}'
