@@ -9,6 +9,11 @@ processors:
   - rename:
       field: lyve_cloud.audit.serviceAccountName
       target_field: user.name
+
+  - set:
+      copy_from: user.name
+      field: related.user
+
   - rename:
       field: lyve_cloud.audit.serviceAccountCreatorId
       target_field: user.id
@@ -19,7 +24,7 @@ processors:
   - set:
       if: ctx?.log?.file?.path != null && ctx.log.file.path.contains("seagate.com")
       field: cloud.provider
-      value: "Seagate Lyve Cloud"
+      value: "lyvecloud"
 
 
   - date:
@@ -98,6 +103,7 @@ processors:
       target_field: lyve_cloud.audit.auditEntry.responseHeader.object_lock_retain_until_date
       ignore_missing: True
 
+      
 
   - date:
       if: ctx?.lyve_cloud?.audit?.auditEntry?.responseHeader?.ObjectLockRetainUntilDate != null && ctx.lyve_cloud.audit.auditEntry.responseHeader.ObjectLockRetainUntilDate!="" 
