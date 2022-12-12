@@ -20,7 +20,7 @@ Log data streams collected by the Salesforce integration include [Login](https:/
 
 Data streams:
 - `login_rest`: Tracks login activity of users who log in to Salesforce.
-- `logout_rest`: Tracks user UI logout. A logout event records a successful user logout from your organization’s UI.
+- `logout_rest`: Tracks logout activity of users who logout from Salesforce.
 
 ## Compatibility
 
@@ -32,7 +32,7 @@ In order to find out the Salesforce version of your Instance, see below:
 
 2. An alternative way to find out the version of Salesforce is by hitting the following URL:
 	- Format: (Salesforce Instance URL)/services/data
-	- Example: https://elastic1234-dev-ed.my.salesforce.com/services/data
+	- Example: `https://na9.salesforce.com/services/data`
 
 Example response:
 ```xml
@@ -79,11 +79,11 @@ You need the following information from your Salesforce instance to configure th
 
 The instance your Salesforce Organization uses is indicated in the URL of your browser's address bar in Salesforce Classic. The value before 'salesforce.com' is your Salesforce Instance.
 
-Example URL: https://na9.salesforce.com/home/home.jsp
+Example URL: `https://na9.salesforce.com/home/home.jsp`
 
 In the above example, the value before 'salesforce.com' is your Salesforce Instance. In this example, the Salesforce Organization is located on NA9. 
 
-The Salesforce Instance URL is: https://na9.salesforce.com
+The Salesforce Instance URL is: `https://na9.salesforce.com`
 
 In Salesforce Lightning, it is available under the user name in the “View Profile” tab.
 
@@ -460,19 +460,19 @@ An example event for `logout_rest` looks as following:
 | input.type | Input type. | keyword |
 | related.ip | All of the IPs seen on your event. | ip |
 | salesforce.instance_url | The Instance URL of the Salesforce instance. | keyword |
-| salesforce.logout.access_mode | Mode of API from which the event is collected. | keyword |
-| salesforce.logout.api.type | The type of API request. | keyword |
-| salesforce.logout.api.version | The version of the API that's being used. | keyword |
+| salesforce.logout.access_mode | Mode of Salesforce API from which the event is collected. | keyword |
+| salesforce.logout.api.type | The type of Salesforce API request. | keyword |
+| salesforce.logout.api.version | The version of the Salesforce API that's being used. | keyword |
 | salesforce.logout.app_type | The application type that was in use upon logging out. | keyword |
 | salesforce.logout.browser_type | The identifier string returned by the browser used at login. | keyword |
 | salesforce.logout.client_version | The version of the client that was in use upon logging out. | keyword |
 | salesforce.logout.event_type | The type of event. The value is always Logout. | keyword |
-| salesforce.logout.login_key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |
+| salesforce.logout.login_key | The string that ties together all events in a given user's logout session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |
 | salesforce.logout.organization_id | The 15-character ID of the organization. | keyword |
 | salesforce.logout.platform_type | The code for the client platform. If a timeout caused the logout, this field is null. | keyword |
 | salesforce.logout.resolution_type | TThe screen resolution of the client. If a timeout caused the logout, this field is null. | keyword |
-| salesforce.logout.session.level | The security level of the session that was used when logging out. | keyword |
-| salesforce.logout.session.type | The session type that was used when logging out. | keyword |
+| salesforce.logout.session.level | The security level of the session that was used when logging out (e.g. Standard Session or High-Assurance Session). | keyword |
+| salesforce.logout.session.type | The session type that was used when logging out (e.g. API, Oauth2 or UI). | keyword |
 | salesforce.logout.user_id | The 15-character ID of the user who's using Salesforce services through the UI or the API. | keyword |
 | salesforce.logout.user_initiated_logout | The value is 1 if the user intentionally logged out of the organization by clicking the Logout button. If the user's session timed out due to inactivity or another implicit logout action, the value is 0. | keyword |
 | source.geo.city_name | City name. | keyword |
