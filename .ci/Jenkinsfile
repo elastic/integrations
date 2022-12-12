@@ -11,7 +11,6 @@ pipeline {
     REPO = 'integrations'
     REPO_BUILD_TAG = "${env.REPO}/${env.BUILD_TAG}"
     BASE_DIR = "src/github.com/elastic/${REPO}"
-    GITHUB_TOKEN_CREDENTIALS = "2a9602aa-ab9f-4e52-baf3-b71ca88469c7"
     AWS_ACCOUNT_SECRET = "secret/observability-team/ci/elastic-observability-aws-account-auth"
     HOME = "${env.WORKSPACE}"
     KIND_VERSION = "v0.14.0"
@@ -117,15 +116,6 @@ pipeline {
                                 eval "$(../../build/elastic-package stack shellinit)"
                                 ../../build/elastic-package benchmark -v --report-format json --report-output file
                                 ''')
-                            }
-                          }
-
-                          // Publish package to the Package Storage
-                          if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('backport-')) {
-                            withCredentials([string(credentialsId: "${GITHUB_TOKEN_CREDENTIALS}", variable: 'GITHUB_TOKEN')]) {
-                              sh(label: 'Configure Git user.name', script: 'git config --global user.name "Elastic Machine"')
-                              sh(label: 'Configure Git user.email', script: 'git config --global user.email "elasticmachine@users.noreply.github.com"')
-                              sh(label: "Publish integration: ${it}", script: '../../build/elastic-package publish -v --fork=false')
                             }
                           }
                         }
