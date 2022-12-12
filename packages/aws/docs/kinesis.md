@@ -1,8 +1,10 @@
-# Amazon Kinesis
+# Amazon Kinesis Data Stream
 
-The Amazon Kinesis integration allows you to monitor [Amazon Kinesis](https://aws.amazon.com/kinesis/)—a streaming data processor.
+The Amazon Kinesis integration allows you to monitor [Amazon Kinesis Data Stream](https://aws.amazon.com/kinesis/data-streams/)—
+a serverless streaming data service that makes it easy to capture, process, and store data streams at any scale.
 
-Use the Amazon Kinesis integration to monitor Amazon Kinesis. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
+Use the Amazon Kinesis integration to monitor Amazon Kinesis Data Streams. Then visualize that data in Kibana, create 
+alerts to notify you if something goes wrong, and reference metrics when troubleshooting an issue.
 
 ## Data streams
 
