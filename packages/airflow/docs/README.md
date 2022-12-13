@@ -26,21 +26,21 @@ statsd_prefix =
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| airflow.\*.15m_rate | Airflow 15 rate timers metric | object |
-| airflow.\*.1m_rate | Airflow 1m rate timers metric | object |
-| airflow.\*.5m_rate | Airflow 5m rate timers metric | object |
 | airflow.\*.count | Airflow counters | object |
 | airflow.\*.max | Airflow max timers metric | object |
 | airflow.\*.mean | Airflow mean timers metric | object |
 | airflow.\*.mean_rate | Airflow mean rate timers metric | object |
 | airflow.\*.median | Airflow median timers metric | object |
 | airflow.\*.min | Airflow min timers metric | object |
-| airflow.\*.p75 | Airflow 75 percentile timers metric | object |
-| airflow.\*.p95 | Airflow 95 percentile timers metric | object |
-| airflow.\*.p99 | Airflow 99 percentile timers metric | object |
-| airflow.\*.p99_9 | Airflow 99.9 percentile timers metric | object |
 | airflow.\*.stddev | Airflow standard deviation timers metric | object |
 | airflow.\*.value | Airflow gauges | object |
+| airflow.dag_file | Airflow dag file metadata | keyword |
+| airflow.dag_id | Airflow dag id metadata | keyword |
+| airflow.job_name | Airflow job name metadata | keyword |
+| airflow.operator_name | Airflow operator name metadata | keyword |
+| airflow.pool_name | Airflow pool name metadata | keyword |
+| airflow.status | Airflow status metadata | keyword |
+| airflow.task_id | Airflow task id metadata | keyword |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
 | cloud.availability_zone | Availability zone in which this host is running. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
