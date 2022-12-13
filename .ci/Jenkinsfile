@@ -288,7 +288,7 @@ def isPrAffected(integrationName) {
     to = "origin/${env.BRANCH_NAME}"
   }
 
-  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS|.ci/Jenkinsfile)'", returnStatus: true)
+  def r = sh(label: "[${integrationName}] git-diff: check non-package files", script: "git diff --name-only \$(git merge-base ${from} ${to}) ${to} | egrep -v '^(packages/|.github/CODEOWNERS)'", returnStatus: true)
   if (r == 0) {
     echo "[${integrationName}] PR is affected: found non-package files"
     return true
@@ -426,7 +426,7 @@ def archiveArtifactsSafe(remotePath, artifacts) {
 def packageStoragePublish() {
   if (env.BRANCH_NAME != 'main' && !env.BRANCH_NAME.startsWith('backport-')) {
     echo "packageStoragePublish: not the main branch or a backport branch, nothing will be published"
-    // return
+    return
   }
 
   deleteDir()
@@ -442,10 +442,8 @@ def packageStoragePublish() {
         if (manifest != null && manifest["version"] != null && manifest["name"] != null) {
           // package name is retrieved from the manifest in case name it differs from folder name
           def packageZip = manifest["name"] + "-" + manifest["version"] + ".zip"
-          if (packageZip != "docker-2.3.0.zip" && packageZip != "elastic_package_registry-0.0.6.zip") {
           if (isAlreadyPublished(packageZip)) {
             return
-          }
           }
         }
 
@@ -466,15 +464,53 @@ def packageStoragePublish() {
     return
   }
 
-  echo "Listing packages built"
-
+  // Sign unpublished packages
   dir("${BASE_DIR}/build/packages") {
-    findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
-      def packageZip = it
-      echo "Package built ${packageZip}"
+    googleStorageUpload(bucket: "${env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH}",
+      credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
+      pattern: '*.zip',
+      sharedPublicly: false,
+      showInline: true)
+    withCredentials([string(credentialsId: env.JOB_SIGNING_CREDENTIALS, variable: 'TOKEN')]) {
+      triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
+        job: 'https://internal-ci.elastic.co/job/elastic+unified-release+master+sign-artifacts-with-gpg',
+        token: TOKEN,
+        parameters: [
+          gcs_input_path: env.INFRA_SIGNING_BUCKET_ARTIFACTS_PATH,
+        ],
+        useCrumbCache: false,
+        useJobInfoCache: false)
     }
+    googleStorageDownload(bucketUri: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_PATH}/*",
+      credentialsId: env.INTERNAL_CI_JOB_GCS_CREDENTIALS,
+      localDirectory: '.',
+      pathPrefix: "${env.INFRA_SIGNING_BUCKET_SIGNED_ARTIFACTS_SUBFOLDER}")
+      sh(label: 'Rename .asc to .sig', script: 'for f in *.asc; do mv "$f" "${f%.asc}.sig"; done')
   }
 
+  // Publish packages with signatures. Only packages with generated signatures haven't been published yet.
+  withGCPEnv(secret: env.PACKAGE_STORAGE_UPLOADER_GCP_SERVICE_ACCOUNT) {
+    withCredentials([string(credentialsId: env.PACKAGE_STORAGE_UPLOADER_CREDENTIALS, variable: 'TOKEN')]) {
+      dir("${BASE_DIR}/build/packages") {
+        findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
+          def packageZip = it
+          def packageZipSig = packageZip + ".sig"
+          sh(label: 'Upload package .zip file', script: "gsutil cp ${packageZip} ${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/")
+          sh(label: 'Upload package .sig file', script: "gsutil cp ${packageZipSig} ${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/")
+          triggerRemoteJob(auth: CredentialsAuth(credentials: 'local-readonly-api-token'),
+            job: 'https://internal-ci.elastic.co/job/package_storage/job/publishing-job-remote',
+            token: TOKEN,
+            parameters: [
+              dry_run: false,
+              gs_package_build_zip_path: "${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZip}",
+              gs_package_signature_path: "${env.PACKAGE_STORAGE_INTERNAL_BUCKET_QUEUE_PUBLISHING_PATH}/${packageZipSig}"
+            ],
+            useCrumbCache: true,
+            useJobInfoCache: true)
+        }
+      }
+    }
+  }
 }
 
 def isAlreadyPublished(packageZip) {
