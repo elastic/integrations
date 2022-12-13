@@ -1076,10 +1076,10 @@ The Docker `container_logs` data stream collects container logs.
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| container.id | Container ID | keyword |
+| container.id | Unique container id. | keyword |
 | container.image.name | Name of the image the container was built on. | keyword |
 | container.labels.\* | Container labels | object |
-| container.name | Container name. | keyword |
+| container.name | Container name | keyword |
 | container.runtime | Runtime managing this container. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
