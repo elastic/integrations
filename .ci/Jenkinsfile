@@ -452,7 +452,7 @@ def packageStoragePublish() {
         withEnv(["PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}"]) {
           catchError(message: 'Build package ${it} failed', buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
             sh(label: "Build integration as zip: ${it}", script: """
-              elastic-package check -v
+              elastic-package check
               elastic-package build --zip
               """)
           }
@@ -471,7 +471,7 @@ def packageStoragePublish() {
   dir("${BASE_DIR}/build/packages") {
     findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
       def packageZip = it
-      echo "Package built %{packageZip}"
+      echo "Package built ${packageZip}"
     }
   }
 
