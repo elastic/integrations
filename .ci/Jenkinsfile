@@ -464,6 +464,13 @@ def packageStoragePublish() {
     return
   }
 
+  dir("${BASE_DIR}/build/packages") {
+    findFiles()?.findAll{ it.name.endsWith('.zip') }?.collect{ it.name }?.sort()?.each {
+      def packageZip = it
+      echo "Package built %{packageZip}"
+    }
+  }
+
 }
 
 def isAlreadyPublished(packageZip) {
