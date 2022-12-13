@@ -6,7 +6,7 @@ The `beat` package collects metrics and logs of Beats and APM server.
 
 ### Usage for Stack Monitoring
 
-The `beats` package can be used to collect logs and metrics shown in our Stack Monitoring
+The `beat` package can be used to collect metrics shown in our Stack Monitoring
 UI in Kibana.
 
 ### Stats
