@@ -4,79 +4,108 @@ ForgeRock is a modern identity platform which helps organizations radically simp
 
 ### Configuration
 
-TBD
+Authorization parameters for the ForgeRock Identity Cloud API (`API Key ID`, and `API Key Secret`) can be created [in the Identity Cloud admin UI](https://backstage.forgerock.com/docs/idcloud/latest/developer-docs/authenticate-to-rest-api-with-api-key-and-secret.html#get_an_api_key_and_secret). 
 
 ### Example event
-
 
 An example event for pta looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-06T18:16:43.813Z",
-    "agent": {
-        "ephemeral_id": "a094e100-47c9-454c-864b-83b7c82a0ac6",
-        "id": "04d7a3b3-051e-4f00-9185-a836c4c49e52",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.3.2"
-    },
-    "data_stream": {
-        "dataset": "forgerock.audit",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.4.0"
-    },
-    "elastic_agent": {
-        "id": "04d7a3b3-051e-4f00-9185-a836c4c49e52",
-        "snapshot": false,
-        "version": "8.3.2"
-    },
-    "event": {
-        "action": "AM-SESSION-IDLE_TIMED_OUT",
-        "agent_id_status": "verified",
-        "created": "2022-11-14T19:49:14.594Z",
-        "dataset": "forgerock.audit",
-        "id": "688b24d9-968e-4a20-b471-9bd78f1e46ec-79599",
-        "ingested": "2022-11-14T19:49:18Z",
-        "original": "{\"payload\":{\"_id\":\"688b24d9-968e-4a20-b471-9bd78f1e46ec-79599\",\"component\":\"Session\",\"eventName\":\"AM-SESSION-IDLE_TIMED_OUT\",\"level\":\"INFO\",\"objectId\":\"688b24d9-968e-4a20-b471-9bd78f1e46ec-13901\",\"operation\":\"DELETE\",\"realm\":\"/\",\"runAs\":\"\",\"source\":\"audit\",\"timestamp\":\"2022-11-06T18:16:43.813Z\",\"topic\":\"activity\",\"trackingIds\":[\"688b24d9-968e-4a20-b471-9bd78f1e46ec-13901\"],\"transactionId\":\"688b24d9-968e-4a20-b471-9bd78f1e46ec-1\",\"userId\":\"id=d7cd65bf-743c-4753-a78f-a20daae7e3bf,ou=user,ou=am-config\"},\"source\":\"am-activity\",\"timestamp\":\"2022-11-06T18:16:43.814159262Z\",\"type\":\"application/json\"}",
-        "reason": "DELETE"
-    },
-    "forgerock": {
-        "level": "INFO",
-        "objectId": "688b24d9-968e-4a20-b471-9bd78f1e46ec-13901",
-        "realm": "/",
-        "source": "audit",
-        "topic": "activity",
-        "trackingIds": [
-            "688b24d9-968e-4a20-b471-9bd78f1e46ec-13901"
-        ]
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "observer": {
-        "vendor": "ForgeRock Identity Platform"
-    },
-    "service": {
-        "name": "Session"
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "forgerock-audit"
-    ],
-    "transaction": {
-        "id": "688b24d9-968e-4a20-b471-9bd78f1e46ec-1"
-    },
-    "user": {
-        "effective": {
-            "id": ""
-        },
-        "id": "id=d7cd65bf-743c-4753-a78f-a20daae7e3bf,ou=user,ou=am-config"
-    }
+	"tags": [
+		"forwarded",
+		"forgerock-audit",
+		"forgerock-am-access"
+	],
+	"input": {
+		"type": "httpjson"
+	},
+	"observer": {
+		"vendor": "ForgeRock Identity Platform"
+	},
+	"@timestamp": "2022-12-13T21:21:44.228Z",
+	"ecs": {
+		"version": "8.5.2"
+	},
+	"data_stream": {
+		"namespace": "default",
+		"type": "logs",
+		"dataset": "forgerock.am_access"
+	},
+	"service": {
+		"name": "OAuth"
+	},
+	"forgerock": {
+		"level": "INFO",
+		"response": {
+			"elapsedTimeUnits": "MILLISECONDS",
+			"detail": {
+				"scope": "fr:idm:*",
+				"active": true,
+				"token_type": "Bearer",
+				"client_id": "autoid-resource-server",
+				"username": "autoid-resource-server"
+			},
+			"elapsedTime": 17,
+			"status": "SUCCESSFUL"
+		},
+		"eventName": "AM-ACCESS-OUTCOME",
+		"http": {
+			"request": {
+				"headers": {
+					"host": [
+						"am.fr-platform"
+					],
+					"content-type": [
+						"application/x-www-form-urlencoded"
+					],
+					"accept": [
+						"application/json"
+					],
+					"user-agent": [
+						"Apache-HttpAsyncClient/4.1.4 (Java/11.0.17)"
+					]
+				},
+				"secure": true
+			}
+		},
+		"topic": "access",
+		"realm": "/",
+		"source": "audit",
+		"trackingIds": [
+			"acdb66cd-d964-4c92-ade5-8c1a9bfc4f8c-394538"
+		]
+	},
+	"client": {
+		"port": 43048,
+		"ip": "10.68.11.13"
+	},
+	"http": {
+		"request": {
+			"Path": "https://am.fr-platform/am/oauth2/introspect",
+			"method": "POST"
+		},
+		"response": {
+			"status_code": 200
+		}
+	},
+	"event": {
+		"duration": 17000000,
+		"agent_id_status": "verified",
+		"ingested": "2022-12-13T21:37:06Z",
+		"created": "2022-12-13T21:37:05.672Z",
+		"action": "AM-ACCESS-OUTCOME",
+		"id": "acdb66cd-d964-4c92-ade5-8c1a9bfc4f8c-394544",
+		"type": "access",
+		"dataset": "forgerock.am_access",
+		"outcome": "success"
+	},
+	"user": {
+		"id": "id=openidm-resource-server,ou=agent,ou=am-config"
+	},
+	"transaction": {
+		"id": "1670966504205-c228c1d5b34eae0061b9-38630/0/0/0"
+	}
 }
 ```
 
