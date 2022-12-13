@@ -1,0 +1,1334 @@
+---
+description: Pipeline for F5 BIG-IP Application Visibility and Reporting logs.
+processors:
+  - date:
+      field: json.EOCTimestamp
+      target_field: f5_bigip.log.eoc.timestamp
+      if: ctx.json?.EOCTimestamp != null && ctx.json.EOCTimestamp != ''
+      formats:
+        - UNIX
+      on_failure:
+      - append:
+          field: error.message
+          value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      copy_from: f5_bigip.log.eoc.timestamp
+      ignore_failure: true
+  - convert:
+      field: json.ClientIP
+      target_field: f5_bigip.log.client.ip
+      if: ctx.json?.ClientIP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.ip
+      copy_from: f5_bigip.log.client.ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{client.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.POOLIP
+      target_field: f5_bigip.log.pool.ip
+      if: ctx.json?.POOLIP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.ip
+      copy_from: f5_bigip.log.pool.ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.POOLPort
+      target_field: f5_bigip.log.pool.port
+      if: ctx.json?.POOLPort != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      copy_from: f5_bigip.log.pool.port
+      ignore_failure: true
+  - rename:
+      field: json.QueryName
+      target_field: f5_bigip.log.query.name
+      ignore_missing: true
+  - set:
+      field: dns.question.name
+      copy_from: f5_bigip.log.query.name
+      ignore_failure: true
+  - rename:
+      field: json.QueryType
+      target_field: f5_bigip.log.query.type
+      ignore_missing: true
+  - set:
+      field: dns.question.type
+      copy_from: f5_bigip.log.query.type
+      ignore_failure: true
+  - rename:
+      field: json.Action
+      target_field: f5_bigip.log.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: f5_bigip.log.action
+      ignore_failure: true
+  - rename:
+      field: json.CountryCode
+      target_field: f5_bigip.log.country_code
+      ignore_missing: true
+  - set:
+      field: host.geo.country_iso_code
+      copy_from: f5_bigip.log.country_code
+      ignore_failure: true
+  - rename:
+      field: json.GeoCountry
+      target_field: f5_bigip.log.geo.country
+      ignore_missing: true
+  - set:
+      field: host.geo.country_name
+      copy_from: f5_bigip.log.geo.country
+      ignore_failure: true
+  - rename:
+      field: json.DeviceId
+      target_field: f5_bigip.log.device.id
+      ignore_missing: true
+  - set:
+      field: host.id
+      copy_from: f5_bigip.log.device.id
+      ignore_failure: true
+  - append:
+      field: related.hosts
+      value: '{{{host.id}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.OsName
+      target_field: f5_bigip.log.osname
+      ignore_missing: true
+  - set:
+      field: host.os.name
+      copy_from: f5_bigip.log.osname
+      ignore_failure: true
+  - rename:
+      field: json.Method
+      target_field: f5_bigip.log.method
+      ignore_missing: true
+  - set:
+      field: http.request.method
+      copy_from: f5_bigip.log.method
+      ignore_failure: true
+  - convert:
+      field: json.ResponseCode
+      target_field: f5_bigip.log.response.code
+      if: ctx.json?.ResponseCode != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      copy_from: f5_bigip.log.response.code
+      ignore_failure: true
+  - rename:
+      field: json.Severity
+      target_field: f5_bigip.log.severity.name
+      ignore_missing: true
+  - set:
+      field: log.level
+      copy_from: f5_bigip.log.severity.name
+      ignore_failure: true
+  - lowercase:
+      field: log.level
+      ignore_failure: true
+  - rename:
+      field: json.NetworkProtocol
+      target_field: f5_bigip.log.network.protocol
+      ignore_missing: true
+  - set:
+      field: network.protocol
+      copy_from: f5_bigip.log.network.protocol
+      ignore_failure: true
+  - lowercase:
+      field: network.protocol
+      ignore_failure: true
+  - convert:
+      field: json.SourceIP
+      target_field: f5_bigip.log.source.ip
+      if: ctx.json?.SourceIP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      copy_from: f5_bigip.log.source.ip
+      ignore_failure: true
+  - append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.URL
+      target_field: f5_bigip.log.url
+      ignore_missing: true
+  - uri_parts:
+      field: f5_bigip.log.url
+      if: ctx.f5_bigip?.log?.url != null
+      on_failure:
+        - set:
+            field: url.original
+            copy_from: f5_bigip.log.url
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.UserAgent
+      target_field: f5_bigip.log.user.agent
+      ignore_missing: true
+  - user_agent:
+      field: f5_bigip.log.user.agent
+      on_failure:
+        - set:
+            field: user_agent.original
+            copy_from: f5_bigip.log.user.agent
+            ignore_failure: true
+  - rename:
+      field: json.UserName
+      target_field: f5_bigip.log.user.name
+      ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: f5_bigip.log.user.name
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.AggrInterval
+      target_field: f5_bigip.log.aggr_interval
+      if: ctx.json?.AggrInterval != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ApplicationName
+      target_field: f5_bigip.log.application_name
+      ignore_missing: true
+  - convert:
+      field: json.ApplicationResponseTime
+      target_field: f5_bigip.log.application.response.time
+      if: ctx.json?.ApplicationResponseTime != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.AVRProfileName
+      target_field: f5_bigip.log.profile.name
+      ignore_missing: true
+  - rename:
+      field: json.BrowserName
+      target_field: f5_bigip.log.browser_name
+      ignore_missing: true
+  - rename:
+      field: json.ClientIPRouteDomain
+      target_field: f5_bigip.log.client.ip_route_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{f5_bigip.log.client.ip_route_domain}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.ClientLatencyHitCount
+      target_field: f5_bigip.log.client.latency.hit_count
+      if: ctx.json?.ClientLatencyHitCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ClientLatencyMax
+      target_field: f5_bigip.log.client.latency.max
+      if: ctx.json?.ClientLatencyMax != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ClientLatencyTotal
+      target_field: f5_bigip.log.client.latency.total
+      if: ctx.json?.ClientLatencyTotal != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ClientSideNetworkLatency
+      target_field: f5_bigip.log.client_side.network.latency
+      if: ctx.json?.ClientSideNetworkLatency != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ClientTtfb
+      target_field: f5_bigip.log.client_ttfb.value
+      if: ctx.json?.ClientTtfb != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ClientTtfbHitcount
+      target_field: f5_bigip.log.client_ttfb.hit_count
+      if: ctx.json?.ClientTtfbHitcount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Entity
+      target_field: f5_bigip.log.entity
+      ignore_missing: true
+  - rename:
+      field: json.errdefs_msgno
+      target_field: f5_bigip.log.errdefs.msgno
+      ignore_missing: true
+  - rename:
+      field: json.GeoCode
+      target_field: f5_bigip.log.geo.code
+      ignore_missing: true
+  - convert:
+      field: json.HitCount
+      target_field: f5_bigip.log.hit_count
+      if: ctx.json?.HitCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.LatencyHistogram
+      target_field: f5_bigip.log.latency_histogram
+      ignore_missing: true
+  - convert:
+      field: json.MaxApplicationResponseTime
+      target_field: f5_bigip.log.application.response.max_time
+      if: ctx.json?.MaxApplicationResponseTime != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MaxClientSideNetworkLatency
+      target_field: f5_bigip.log.client_side.network.max_latency
+      if: ctx.json?.MaxClientSideNetworkLatency != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MaxClientTtfb
+      target_field: f5_bigip.log.client_ttfb.max
+      if: ctx.json?.MaxClientTtfb != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MaxRequestDuration
+      target_field: f5_bigip.log.request.max_duration
+      if: ctx.json?.MaxRequestDuration != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MaxResponseDuration
+      target_field: f5_bigip.log.response.max_duration
+      if: ctx.json?.MaxResponseDuration != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MaxServerSideNetworkLatency
+      target_field: f5_bigip.log.server_side.network.max_latency
+      if: ctx.json?.MaxServerSideNetworkLatency != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MinApplicationResponseTime
+      target_field: f5_bigip.log.application.response.min_time
+      if: ctx.json?.MinApplicationResponseTime != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MinClientSideNetworkLatency
+      target_field: f5_bigip.log.client_side.network.min_latency
+      if: ctx.json?.MinClientSideNetworkLatency != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MinClientTtfb
+      target_field: f5_bigip.log.client_ttfb.min
+      if: ctx.json?.MinClientTtfb != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MinRequestDuration
+      target_field: f5_bigip.log.request.min_duration
+      if: ctx.json?.MinRequestDuration != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MinResponseDuration
+      target_field: f5_bigip.log.response.min_duration
+      if: ctx.json?.MinResponseDuration != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MinServerSideNetworkLatency
+      target_field: f5_bigip.log.server_side.network.min_latency
+      if: ctx.json?.MinServerSideNetworkLatency != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.Module
+      target_field: f5_bigip.log.module
+      ignore_missing: true
+  - rename:
+      field: json.POOLIPRouteDomain
+      target_field: f5_bigip.log.pool.ip_route_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{f5_bigip.log.pool.ip_route_domain}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - convert:
+      field: json.RequestDuration
+      target_field: f5_bigip.log.request.duration
+      if: ctx.json?.RequestDuration != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.RequestDurationHitcount
+      target_field: f5_bigip.log.request.duration_hit_count
+      if: ctx.json?.RequestDurationHitcount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ResponseDuration
+      target_field: f5_bigip.log.response.duration
+      if: ctx.json?.ResponseDuration != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ResponseDurationHitcount
+      target_field: f5_bigip.log.response.duration_hit_count
+      if: ctx.json?.ResponseDurationHitcount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ServerHitcount
+      target_field: f5_bigip.log.server.hit_count
+      if: ctx.json?.ServerHitcount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ServerLatencyMax
+      target_field: f5_bigip.log.server.latency.max
+      if: ctx.json?.ServerLatencyMax != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ServerLatencyMin
+      target_field: f5_bigip.log.server.latency.min
+      if: ctx.json?.ServerLatencyMin != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ServerLatencyTotal
+      target_field: f5_bigip.log.server.latency.total
+      if: ctx.json?.ServerLatencyTotal != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ServerSideNetworkLatency
+      target_field: f5_bigip.log.server_side.network.latency
+      if: ctx.json?.ServerSideNetworkLatency != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.SlotId
+      target_field: f5_bigip.log.slot.id
+      ignore_missing: true
+  - convert:
+      field: json.SosApplicationResponseTime
+      target_field: f5_bigip.log.sos.application_response_time
+      if: ctx.json?.SosApplicationResponseTime != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.SosClientSideNetworkLatency
+      target_field: f5_bigip.log.sos.client_side_network_latency
+      if: ctx.json?.SosClientSideNetworkLatency != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.SosClientTtfb
+      target_field: f5_bigip.log.sos.client_ttfb
+      if: ctx.json?.SosClientTtfb != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.SosRequestDuration
+      target_field: f5_bigip.log.sos.request_duration
+      if: ctx.json?.SosRequestDuration != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.SosResponseDuration
+      target_field: f5_bigip.log.sos.response_duration
+      if: ctx.json?.SosResponseDuration != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.SosServerSideNetworkLatency
+      target_field: f5_bigip.log.sos.server_side_network_latency
+      if: ctx.json?.SosServerSideNetworkLatency != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.SubnetIP
+      target_field: f5_bigip.log.subnet.ip
+      if: ctx.json?.SubnetIP != ''
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      value: '{{{f5_bigip.log.subnet.ip}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.SubnetName
+      target_field: f5_bigip.log.subnet.name
+      ignore_missing: true
+  - rename:
+      field: json.SubnetRouteDomain
+      target_field: f5_bigip.log.subnet.route_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{f5_bigip.log.subnet.route_domain}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.telemetryEventCategory
+      target_field: f5_bigip.log.telemetry.event.category
+      ignore_missing: true
+  - convert:
+      field: json.ThroughputReqMaxPerSec
+      target_field: f5_bigip.log.throughput.req_per_sec.max
+      if: ctx.json?.ThroughputReqMaxPerSec != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ThroughputReqTotalPerInterval
+      target_field: f5_bigip.log.throughput.req_per_interval.total
+      if: ctx.json?.ThroughputReqTotalPerInterval != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ThroughputRespMaxPerSec
+      target_field: f5_bigip.log.throughput.resp_per_sec.max
+      if: ctx.json?.ThroughputRespMaxPerSec != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ThroughputRespTotalPerInterval
+      target_field: f5_bigip.log.throughput.resp_per_interval.total
+      if: ctx.json?.ThroughputRespTotalPerInterval != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TPSMax
+      target_field: f5_bigip.log.tps.max
+      if: ctx.json?.TPSMax != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.UserSessionsNewTotal
+      target_field: f5_bigip.log.user.sessions.new_total
+      if: ctx.json?.UserSessionsNewTotal != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.VSName
+      target_field: f5_bigip.log.vs_name
+      ignore_missing: true
+  - rename:
+      field: json.ObjectTagsList
+      target_field: f5_bigip.log.object_tags_list
+      ignore_missing: true
+  - rename:
+      field: json.DosProfileName
+      target_field: f5_bigip.log.dos.profile_name
+      ignore_missing: true
+  - rename:
+      field: json.AttackId
+      target_field: f5_bigip.log.attack.id
+      ignore_missing: true
+  - rename:
+      field: json.SourceIpRouteDomain
+      target_field: f5_bigip.log.source.ip_route_domain
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      value: '{{{f5_bigip.log.source.ip_route_domain}}}'
+      allow_duplicates: false
+      ignore_failure: true
+  - rename:
+      field: json.TransactionOutcome
+      target_field: f5_bigip.log.transaction_outcome
+      ignore_missing: true
+  - rename:
+      field: json.AttackVectorName
+      target_field: f5_bigip.log.attack.vector_name
+      ignore_missing: true
+  - rename:
+      field: json.AttackTriggerName
+      target_field: f5_bigip.log.attack.trigger_name
+      ignore_missing: true
+  - rename:
+      field: json.AttackMitigationName
+      target_field: f5_bigip.log.attack.mitigation_name
+      ignore_missing: true
+  - set:
+      field: f5_bigip.log.is_internal_activity
+      value: false
+      if: ctx.json?.IsInternalActivity == '0'
+  - set:
+      field: f5_bigip.log.is_internal_activity
+      value: true
+      if: ctx.json?.IsInternalActivity == '1'
+  - set:
+      field: f5_bigip.log.is_attacking_ip
+      value: false
+      if: ctx.json?.IsAttackingIp == '0'
+  - set:
+      field: f5_bigip.log.is_attacking_ip
+      value: true
+      if: ctx.json?.IsAttackingIp == '1'
+  - rename:
+      field: json.globalBigiqConf
+      target_field: f5_bigip.log.global_bigiq_conf
+      ignore_missing: true
+  - rename:
+      field: json.Policy
+      target_field: f5_bigip.log.policy.name
+      ignore_missing: true
+  - convert:
+      field: json.ViolationRating
+      target_field: f5_bigip.log.violation.rating
+      if: ctx.json?.ViolationRating != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.IPReputation
+      target_field: f5_bigip.log.ip_reputation
+      ignore_missing: true
+  - rename:
+      field: json.SessionID
+      target_field: f5_bigip.log.session.id
+      ignore_missing: true
+  - set:
+      field: f5_bigip.log.is_mobile_device
+      value: false
+      if: ctx.json?.IsMobileDevice == '0'
+  - set:
+      field: f5_bigip.log.is_mobile_device
+      value: true
+      if: ctx.json?.IsMobileDevice == '1'
+  - rename:
+      field: json.DosMobileAppClientType
+      target_field: f5_bigip.log.dos.mobile_app.client_type
+      ignore_missing: true
+  - rename:
+      field: json.DosMobileAppVersion
+      target_field: f5_bigip.log.dos.mobile_app.version
+      ignore_missing: true
+  - rename:
+      field: json.DosMobileAppDisplayName
+      target_field: f5_bigip.log.dos.mobile_app.display_name
+      ignore_missing: true
+  - rename:
+      field: json.STAT_SRC
+      target_field: f5_bigip.log.stat_src
+      ignore_missing: true
+  - rename:
+      field: json.AttackType
+      target_field: f5_bigip.log.attack.type
+      ignore_missing: true
+  - convert:
+      field: json.AttackCount
+      target_field: f5_bigip.log.attack.count
+      if: ctx.json?.AttackCount != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TotalEvents
+      target_field: f5_bigip.log.events.total
+      if: ctx.json?.TotalEvents != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.SoftwareDrops
+      target_field: f5_bigip.log.software_drops
+      if: ctx.json?.SoftwareDrops != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.HardwareDrops
+      target_field: f5_bigip.log.hardware_drops
+      if: ctx.json?.HardwareDrops != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.BadActorEvents
+      target_field: f5_bigip.log.bad_actor.events
+      if: ctx.json?.BadActorEvents != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.BadActorDrops
+      target_field: f5_bigip.log.bad_actor.drops
+      if: ctx.json?.BadActorDrops != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.WLEvents
+      target_field: f5_bigip.log.wl_events
+      if: ctx.json?.WLEvents != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.AvgDetection
+      target_field: f5_bigip.log.detection.avg
+      if: ctx.json?.AvgDetection != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MinMitigation
+      target_field: f5_bigip.log.mitigation.min
+      if: ctx.json?.MinMitigation != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MaxMitigation
+      target_field: f5_bigip.log.mitigation.max
+      if: ctx.json?.MaxMitigation != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.AvgBadActorDetection
+      target_field: f5_bigip.log.bad_actor.detection.avg
+      if: ctx.json?.AvgBadActorDetection != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MinBadActorMitigation
+      target_field: f5_bigip.log.bad_actor.mitigation.min
+      if: ctx.json?.MinBadActorMitigation != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MaxBadActorMitigation
+      target_field: f5_bigip.log.bad_actor.mitigation.max
+      if: ctx.json?.MaxBadActorMitigation != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.abandoned_conns
+      target_field: f5_bigip.log.abandoned_conns
+      if: ctx.json?.abandoned_conns != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.expired_conns
+      target_field: f5_bigip.log.expired_conns
+      if: ctx.json?.expired_conns != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.failed_conns
+      target_field: f5_bigip.log.failed_conns
+      if: ctx.json?.failed_conns != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.accept_fails
+      target_field: f5_bigip.log.accept_fails
+      if: ctx.json?.accept_fails != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.accepts
+      target_field: f5_bigip.log.accepts
+      if: ctx.json?.accepts != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.active_conns
+      target_field: f5_bigip.log.active_conns
+      if: ctx.json?.active_conns != ''
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.hw_cookie_valid
+      target_field: f5_bigip.log.hw.cookie_valid
+      if: ctx.json?.hw_cookie_valid != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.max_active_conns
+      target_field: f5_bigip.log.max_active_conns
+      if: ctx.json?.max_active_conns != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.new_conns
+      target_field: f5_bigip.log.new_conns
+      if: ctx.json?.new_conns != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.rxbad_cookie
+      target_field: f5_bigip.log.rxbad_cookie
+      if: ctx.json?.rxbad_cookie != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.rxbadseg
+      target_field: f5_bigip.log.rxbadseg
+      if: ctx.json?.rxbadseg != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.rxbadsum
+      target_field: f5_bigip.log.rxbadsum
+      if: ctx.json?.rxbadsum != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.rxcookie
+      target_field: f5_bigip.log.rxcookie
+      if: ctx.json?.rxcookie != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.rxooseg
+      target_field: f5_bigip.log.rxooseg
+      if: ctx.json?.rxooseg != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.rxrst
+      target_field: f5_bigip.log.rxrst
+      if: ctx.json?.rxrst != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.sndpack
+      target_field: f5_bigip.log.sndpack
+      if: ctx.json?.sndpack != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.syncacheover
+      target_field: f5_bigip.log.syncacheover
+      if: ctx.json?.syncacheover != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.tcp_prof
+      target_field: f5_bigip.log.tcp_prof
+      ignore_missing: true
+  - convert:
+      field: json.txrexmits
+      target_field: f5_bigip.log.txrexmits
+      if: ctx.json?.txrexmits != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.vip
+      target_field: f5_bigip.log.vip
+      ignore_missing: true
+  - rename:
+      field: json.tenant
+      target_field: f5_bigip.log.tenant
+      ignore_missing: true
+  - convert:
+      field: json.AvgConcurrentConnections
+      target_field: f5_bigip.log.concurrent.connections.avg
+      if: ctx.json?.AvgConcurrentConnections != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.AvgCpu
+      target_field: f5_bigip.log.cpu.avg
+      if: ctx.json?.AvgCpu != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.AvgCpuAnalysisPlane
+      target_field: f5_bigip.log.cpu.analysis_plane.avg
+      if: ctx.json?.AvgCpuAnalysisPlane != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.AvgCpuDataPlane
+      target_field: f5_bigip.log.cpu.data_plane.avg
+      if: ctx.json?.AvgCpuDataPlane != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.AvgMemory
+      target_field: f5_bigip.log.memory.avg
+      if: ctx.json?.AvgMemory != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.AvgThroughput
+      target_field: f5_bigip.log.throughput.avg
+      if: ctx.json?.AvgThroughput != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ConcurrentConnectionsHealth
+      target_field: f5_bigip.log.concurrent.connections.health
+      if: ctx.json?.ConcurrentConnectionsHealth != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.CpuHealth
+      target_field: f5_bigip.log.cpu.health
+      if: ctx.json?.CpuHealth != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MaxConcurrentConnections
+      target_field: f5_bigip.log.concurrent.connections.max
+      if: ctx.json?.MaxConcurrentConnections != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.MemoryHealth
+      target_field: f5_bigip.log.memory.health
+      if: ctx.json?.MemoryHealth != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.ThroughputHealth
+      target_field: f5_bigip.log.throughput.health
+      if: ctx.json?.ThroughputHealth != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.TotalBytes
+      target_field: f5_bigip.log.bytes.total
+      if: ctx.json?.TotalBytes != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.AvgCpuControlPlane
+      target_field: f5_bigip.log.cpu.control_plane.avg
+      if: ctx.json?.AvgCpuControlPlane != ''
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      field:
+        - f5_bigip.log.eoc.timestamp
+        - f5_bigip.log.client.ip
+        - f5_bigip.log.pool.ip
+        - f5_bigip.log.pool.port
+        - f5_bigip.log.query.name
+        - f5_bigip.log.query.type
+        - f5_bigip.log.action
+        - f5_bigip.log.country_code
+        - f5_bigip.log.geo.country
+        - f5_bigip.log.device.id
+        - f5_bigip.log.hostname
+        - f5_bigip.log.osname
+        - f5_bigip.log.method
+        - f5_bigip.log.response.code
+        - f5_bigip.log.severity.name
+        - f5_bigip.log.network.protocol
+        - f5_bigip.log.source.ip
+        - f5_bigip.log.url
+        - f5_bigip.log.user.agent
+        - f5_bigip.log.user.name
+        - f5_bigip.log.application.name
+      ignore_failure: true
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

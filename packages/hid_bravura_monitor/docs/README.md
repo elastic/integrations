@@ -155,12 +155,11 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-01-16T00:35:25.258Z",
     "agent": {
-        "ephemeral_id": "00124c53-af5e-4d5f-818c-ff189690109e",
-        "hostname": "docker-fleet-agent",
-        "id": "9bcd741c-af93-434c-ad55-1ec23d08ab89",
+        "ephemeral_id": "fa387b80-fca3-4488-ac1b-460792f3a8ea",
+        "id": "02ab444e-ca97-437b-85dc-d580f055047c",
         "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "7.16.0"
+        "version": "8.1.0"
     },
     "data_stream": {
         "dataset": "hid_bravura_monitor.log",
@@ -168,17 +167,17 @@ An example event for `log` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "9bcd741c-af93-434c-ad55-1ec23d08ab89",
-        "snapshot": true,
-        "version": "7.16.0"
+        "id": "02ab444e-ca97-437b-85dc-d580f055047c",
+        "snapshot": false,
+        "version": "8.1.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "hid_bravura_monitor.log",
-        "ingested": "2021-10-29T18:19:35Z",
+        "ingested": "2022-11-22T08:13:24Z",
         "original": "\u00182021-01-16 00:35:25.258.7085 - [] pamlws.exe [44408,52004] Error: LWS [HID-TEST] foundcomputer record not found",
         "timezone": "UTC"
     },
@@ -190,24 +189,23 @@ An example event for `log` looks as following:
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": true,
+        "containerized": false,
         "hostname": "docker-fleet-agent",
-        "id": "3bfbf225479aac5f850ea38f5d9d8a02",
         "ip": [
-            "192.168.192.7"
+            "172.29.0.7"
         ],
         "mac": [
-            "02:42:c0:a8:c0:07"
+            "02:42:ac:1d:00:07"
         ],
         "name": "docker-fleet-agent",
         "os": {
-            "codename": "Core",
-            "family": "redhat",
-            "kernel": "5.10.16.3-microsoft-standard-WSL2",
-            "name": "CentOS Linux",
-            "platform": "centos",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "7 (Core)"
+            "version": "20.04.3 LTS (Focal Fossa)"
         }
     },
     "input": {
@@ -525,7 +523,7 @@ An example event for `winlog` looks as following:
         "type": "filebeat"
     },
     "ecs": {
-        "version": "8.3.0"
+        "version": "8.5.0"
     }
 }
 ```
@@ -559,7 +557,7 @@ An example event for `winlog` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |
+| event.module | Event module | constant_keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
