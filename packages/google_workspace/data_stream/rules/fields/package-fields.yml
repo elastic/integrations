@@ -1,0 +1,77 @@
+- name: google_workspace
+  type: group
+  fields:
+    - name: actor
+      type: group
+      fields:
+        - name: email
+          type: keyword
+          description: The primary email address of the actor. May be absent if there is no email address associated with the actor.
+        - name: key
+          type: keyword
+          description: |
+            Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts.
+        - name: profile
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The unique Google Workspace profile ID of the actor. This value might be absent if the actor is not a Google Workspace user, or may be the number 105250506097979753968 which acts as a placeholder ID.
+        - name: type
+          type: keyword
+          description: |
+            The type of actor.
+            Values can be:
+              *USER*: Another user in the same domain.
+              *EXTERNAL_USER*: A user outside the domain.
+              *KEY*: A non-human actor.
+    - name: etag
+      type: keyword
+      description: ETag of the entry.
+    - name: event
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: |
+            Name of the event. This is the specific name of the activity reported by the API. And each eventName is related to a specific Google Workspace service or feature which the API organizes into types of events.
+            For eventName request parameters in general:
+              If no eventName is given, the report returns all possible instances of an eventName.
+              When you request an eventName, the API's response returns all activities which contain that eventName. It is possible that the returned activities will have other eventName properties in addition to the one requested.
+            For more information about eventName properties, see the list of event names for various applications above in applicationName.
+        - name: type
+          type: keyword
+          description: |
+            The type of Google Workspace event, mapped from `items[].events[].type` in the original payload. Each fileset can have a different set of values for it, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity).
+    - name: id
+      type: group
+      fields:
+        - name: application_name
+          type: keyword
+          description: Application name to which the event belongs. For possible values see the list of applications above in applicationName.
+        - name: customer
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier for a Google Workspace account.
+        - name: time
+          type: date
+          description: Time of occurrence of the activity. This is in UNIX epoch time in seconds.
+        - name: unique_qualifier
+          type: keyword
+          description: Unique qualifier if multiple events have the same time.
+    - name: ip_address
+      type: ip
+      description: IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6.
+    - name: kind
+      type: keyword
+      description: |
+        The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity).
+    - name: organization
+      type: group
+      fields:
+        - name: domain
+          type: keyword
+          description: |
+            The domain that is affected by the report's event.

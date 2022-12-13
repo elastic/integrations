@@ -2,43 +2,37 @@
 
 ## Overview
 
-The Salesforce integration allows you to monitor [Salesforce](https://www.salesforce.com/) instance. Salesforce provides customer relationship management service and also provides enterprise applications focused on customer service, marketing automation, analytics, and application development.
+The Salesforce integration allows you to monitor a [Salesforce](https://www.salesforce.com/) instance. Salesforce is a customer relationship management (CRM) platform. It provides an ecosystem for businesses to manage marketing, sales, commerce, service, and IT teams from anywhere with one integrated CRM platform.
 
-Use the Salesforce integration to get visibility into the Salesforce Org operations and hold Salesforce accountable to the Service Level Agreements. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference logs when troubleshooting an issue.
+Use the Salesforce integration to:
+- Gain insights into login and other operational activities by the users of your organization.
+- Create visualizations to monitor, measure and analyze the usage trend and key data, and derive business insights.
+- Create alerts to reduce the MTTD and also the MTTR by referencing relevant logs when troubleshooting an issue.
 
-For example, if you want to check the number of successful and failed login attempts over time, you could check the same based on the ingested events or the visualization. Then you can create visualizations, alerts and troubleshoot by looking at the documents ingested in Elasticsearch.
+As an example, you can use the data from this integration to understand the activity patterns of users based on region or the distribution of users by license type. 
 
 ## Data streams
 
-The Salesforce integration collects log events using REST and Streaming API of Salesforce.
+The Salesforce integration collects log events using the REST API of Salesforce.
 
 **Logs** help you keep a record of events happening in Salesforce.
-Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm) (using REST and Streaming API), [Logout](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm) (using REST and Streaming API), [Apex](https://developer.salesforce.com/docs/atlas.en-us.238.0.object_reference.meta/object_reference/sforce_api_objects_apexclass.htm), and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
+Log data streams collected by the Salesforce integration include [Login](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_login.htm), and [SetupAuditTrail](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm).
 
-Data stream names:
-- `login_rest`
-- `logout_rest`
-- `apex`
-- `setupaudittrail`
-- `login_stream`
-- `logout_stream`
+Data streams:
+- `login_rest`: Tracks login activity of users who log in to Salesforce.
+- `setupaudittrail`: Represents changes you or other admins made in your organization's Setup area for at least the last 180 days.
 
 ## Compatibility
 
 This integration has been tested against Salesforce `Spring '22 (v54.0) release`.
 
-## Requirements
+In order to find out the Salesforce version of your Instance, see below:
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+1. On the Home tab in Salesforce Classic, in the top right corner of the screen is a link to releases like `Summer '22`. This indicates your release.
 
-### Steps to find out the version of Salesforce
-
-On the Home tab in Salesforce Classic, on the top right of the screen is a link to release like `Summer '22`. This indicates your release.
-
-Another alternative to find out the version of Salesforce is hitting the following URL:
-- Format: (Salesforce Instance URL)/services/data
-- Example: https://elastic1234-dev-ed.my.salesforce.com/services/data
+2. An alternative way to find out the version of Salesforce is by hitting the following URL:
+	- Format: (Salesforce Instance URL)/services/data
+	- Example: `https://na9.salesforce.com/services/data`
 
 Example response:
 ```xml
@@ -60,49 +54,120 @@ Example response:
 	</Version>
 </Versions>
 ```
-The last one in the list is the release of your instance. In the example above, the version is `Summer '22` i.e. `v55.0`.
+The last one on the list is the release of your instance. In the example above, the version is `Summer '22` i.e. `v55.0`.
 
-### Steps to find out the API version
+## Prerequisites
 
-- Go to `Setup` > `Quick Find` > `Apex` > `Apex Classes`
-- Then, click `New` button
-- Then, click over to `Version Settings` tab
-- Reference the `Version` drop down for the API Version number.
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
+You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended or self-manage the Elastic Stack on your own hardware.
 
-### Prerequisite
+In your Salesforce instance, ensure that `API Enabled permission` is selected for the user profile. Follow the below steps to enable the same:
 
-In order to use this integration, you will need to create a new SFDC Application using OAuth. More details can be found [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
+1. Go to `Setup` > `Quick Find` > `Users`, and Click on `Users`.
+2. Click on the profile link associated with the `User Account` used for data collection.
+3. Search for `API Enabled` permission on the same page. In case it’s not present, search it under `System Permissions` and check if `API Enabled` privilege is selected. If not, enable it for data collection.
 
-Create a Connected App in Salesforce:
+## Set Up
 
-1. Login to [Salesforce](https://login.salesforce.com/) with the same user credentials that you want to collect data.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
 
-2. From Setup, enter "App Manager" in the Quick Find box, then select "App Manager".
+## Configuration
 
+You need the following information from your Salesforce instance to configure this integration in Elastic:
+
+### Salesforce Instance URL
+
+The instance your Salesforce Organization uses is indicated in the URL of your browser's address bar in Salesforce Classic. The value before 'salesforce.com' is your Salesforce Instance.
+
+Example URL: `https://na9.salesforce.com/home/home.jsp`
+
+In the above example, the value before 'salesforce.com' is your Salesforce Instance. In this example, the Salesforce Organization is located on NA9. 
+
+The Salesforce Instance URL is: `https://na9.salesforce.com`
+
+In Salesforce Lightning, it is available under the user name in the “View Profile” tab.
+
+### Client Key and Client Secret for Authentication
+
+In order to use this integration, you need to create a new Salesforce Application using OAuth. Follow the steps below to create a connected application in Salesforce:
+
+1. Login to [Salesforce](https://login.salesforce.com/) with the same user credentials that you want to collect data with.
+2. Click on Setup on the top right menu bar. On the Setup page search `App Manager` in the `Search Setup` search box at the top of the page, then select `App Manager`.
 3. Click *New Connected App*.
-
-4. Enter the connected app's name, which displays in the App Manager and on its App Launcher tile.
-
+4. Provide a name for the connected application. This will be displayed in the App Manager and on its App Launcher tile. 
 5. Enter the API name. The default is a version of the name without spaces. Only letters, numbers, and underscores are allowed. If the original app name contains any other characters, edit the default name.
-
 6. Enter the contact email for Salesforce.
+7. Under the API (Enable OAuth Settings) section of the page, select *Enable OAuth Settings*.
+8. In the Callback URL enter the Instance URL (Please refer to `Salesforce Instance URL`)
+9. Select the following OAuth scopes to apply to the connected app:
+	- Manage user data via APIs (api). 
+	- Perform requests at any time (refresh_token, offline_access).
+	- (Optional) In case of data collection, if any permission issues arise, add the Full access (full) scope.
+10. Select *Require Secret for the Web Server Flow* to require the app's client secret in exchange for an access token.
+11. Select *Require Secret for Refresh Token Flow* to require the app's client secret in the authorization request of a refresh token and hybrid refresh token flow.
+12. Click Save. It may take approximately 10 minutes for the changes to take effect.
+13. Click Continue and then under API details click Manage Consumer Details, Verify the user account using Verification Code.
+14. Copy `Consumer Key` and `Consumer Secret` from the Consumer Details section, which should be populated as value to Client ID and Client Secret respectively in the configuration.
 
-7. In the API (Enable OAuth Settings) area of the page, select *Enable OAuth Settings*.
+For more details on how to Create a Connected App refer to the salesforce documentation [here](https://help.salesforce.com/apex/HTViewHelpDoc?id=connected_app_create.htm).
 
-8. Select the following OAuth scopes to apply to the connected app:
-- Access and manage your data (API). 
-- Perform requests on your behalf at any time (refresh_token, offline_access).
-- (Optional) In case of data collection, if any permission issues arise, add the Full access (full) scope.
+### Username
 
-9. Select *Require Secret for the Web Server Flow* to require the app's client secret in exchange for an access token.
+User Id of the registered user in Salesforce.
 
-10. Select *Require Secret for Refresh Token Flow* to require the app's client secret in the authorization request of a refresh token and hybrid refresh token flow.
+### Password
 
-11. Click Save. It can take about 10 minutes for the changes to take effect.
+Password used for authenticating the above user.
 
-12. Take Consumer Key and Secret from the Connected App API section.
+## Additional Information
+
+Follow the steps below, in case you need to find the API version:
+
+1. Go to `Setup` > `Quick Find` > `Apex Classes`.
+2. Click the `New` button.
+3. Click the `Version Settings` tab.
+4. Refer to the `Version` dropdown for the API Version number.
+
+## Validation
+
+After the integration is successfully configured, clicking on the Assets tab of the Salesforce Integration should display a list of available dashboards. Click on the dashboard available for your configured datastream. It should be populated with the required data.
+
+## Troubleshooting
+
+- In case of data ingestion if the user finds the following type of error logs:
+```
+{
+    "log.level": "error",
+    "@timestamp": "2022-11-24T12:59:36.835+0530",
+    "log.logger": "input.httpjson-cursor",
+    "log.origin": {
+        "[file.name](http://file.name/)": "compat/compat.go",
+        "file.line": 124
+    },
+    "message": "Input 'httpjson-cursor' failed with: input.go:130: input 8A049E17A5CA661D failed (id=8A049E17A5CA661D)\n\toauth2 client: error loading credentials using user and password: oauth2: cannot fetch token: 400 Bad Request\n\tResponse: {\"error\":\"invalid_grant\",\"error_description\":\"authentication failure\"}",
+    "[service.name](http://service.name/)": "filebeat",
+    "id": "8A049E17A5CA661D",
+    "ecs.version": "1.6.0"
+}
+```
+Please check if the `API Enabled permission` is provided to the `profile` associated with the `username` used as part of the integration.
+Please refer to the Prerequisites section above for more information.
+
+If the error continues follow these steps:
+
+1. Go to `Setup` > `Quick Find` > `Manage Connected Apps`.
+2. Click on the Connected App name created by you to generate the client id and client secret (Refer to Client Key and Client Secret for Authentication) under the Master Label.
+3. Click on Edit Policies, and select `Relax IP restrictions` from the dropdown for IP Relaxation.
 
 ## Logs reference
+
+### Login Rest
+
+This is the `login_rest` data stream. It represents events containing details about your organization's user login history.
+
+{{event "login_rest"}}
+
+{{fields "login_rest"}}
 
 ### SetupAuditTrail
 
