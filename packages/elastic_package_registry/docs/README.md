@@ -49,7 +49,7 @@ You can verify that metrics endpoint is enabled by making an HTTP request to
 
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |  |
+| @timestamp | Event timestampA. | date |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
