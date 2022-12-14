@@ -449,7 +449,10 @@ def packageStoragePublish() {
 
         withEnv(["PATH=${env.WORKSPACE}/${BASE_DIR}/build:${env.PATH}"]) {
           catchError(message: 'Build package ${it} failed', buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-            sh(label: "Build integration as zip: ${it}", script: "elastic-package build --zip")
+            sh(label: "Build integration as zip: ${it}", script: """
+              elastic-package check
+              elastic-package build --zip
+              """)
           }
         }
         unpublishedPresent = true
