@@ -336,9 +336,19 @@ processors:
       field: panw_cortex.xdr.events.causality_actor_process_execution_time
       target_field: process.parent.uptime
       ignore_missing: true
-  - rename:
+
+# Parse user.domain from user.name
+  - grok:
       field: panw_cortex.xdr.events.user_name
-      target_field: user.name
+      ignore_missing: true
+      patterns:
+        - '^%{DATA:user.domain}\\\\%{DATA:user.name}$'
+        - '^%{DATA:user.domain}\\%{DATA:user.name}$'
+        - '^%{DATA:user.name}@%{DATA:user.domain}$'
+        - '^%{DATA:user.name}$'
+      if: ctx.panw_cortex?.xdr?.events?.user_name != null
+  - remove:
+      field: panw_cortex.xdr.events.user_name
       ignore_missing: true
   - rename:
       field: panw_cortex.xdr.events.fw_rule
