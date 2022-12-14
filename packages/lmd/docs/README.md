@@ -1,24 +1,24 @@
-# Lateral Movement Detection (LMD) Model
+# Lateral Movement Detection Model
 
-The LMD model package contains the lateral movement detection model and the associated assets. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
+The Lateral movement detection model package contains the lateral movement detection model and the associated assets. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under Elastic License v 1.0.
 
 ## Configuration
 
-To download the assets, click **Settings** > **Install LMD assets**. 
+To download the assets, click **Settings** > **Install Lateral Movement Detection assets**. 
 
 Then use these detection rules and anomaly detection jobs for lateral movement detection.
 
 ### Add preconfigured anomaly detection jobs
 
-In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Lateral Movement Detection (LMD). When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment.
+In **Machine Learning > Anomaly Detection**, when you create a job, you should see an option to `Use preconfigured jobs` with a card for Lateral Movement Detection. When you select the card, you will see a pre-configured anomaly detection job that you can enable depending on what makes the most sense for your environment.
 
 ### Enable Security rules
 
-To maximize the benefit of the LMD detection framework, you might consider activating detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
+To maximize the benefit of the Lateral movement detection framework, you might consider activating detection rules that are triggered when certain conditions for the anomaly detection jobs are satisfied. See the [documentation](https://www.elastic.co/guide/en/security/current/detection-engine-overview.html) for more information on importing and enabling the rules.
 
 ## ML Modules
 
-### Lateral Movement Detection (LMD)
+### Lateral Movement Detection 
 
 Detects potential lateral movement activity by identifying malicious file transfers to a host.
 
