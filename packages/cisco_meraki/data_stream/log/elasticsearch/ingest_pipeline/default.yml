@@ -16,6 +16,11 @@ processors:
     formats:
       - UNIX
     timezone: '{{{_conf.tz_offset}}}'
+    if: 'ctx._conf?.tz_offset != null && ctx._conf.tz_offset != "local"'
+    on_failure:
+      - append:
+          field: error.message
+          value: 'failed to parse time field ({{{ _temp.ts_nano }}}): {{{ _ingest.on_failure_message }}}'
 - pipeline:
     name: '{{ IngestPipeline "flows" }}'
     if: ctx.cisco_meraki.event_type == 'flows'
