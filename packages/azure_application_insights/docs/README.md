@@ -152,7 +152,7 @@ An example event for `app_insights` looks as following:
 | @timestamp | Event timestamp. | date |
 | azure.app_state.browser_timings_network_duration.avg | Browser timings network duration | float |
 | azure.app_state.browser_timings_processing_duration.avg | Browser timings processing duration | float |
-| azure.app_state.browser_timings_receive_uration.avg | Browser timings receive duration | float |
+| azure.app_state.browser_timings_receive_duration.avg | Browser timings receive duration | float |
 | azure.app_state.browser_timings_send_duration.avg | Browser timings send duration | float |
 | azure.app_state.browser_timings_total_duration.avg | Browser timings total duration | float |
 | azure.app_state.end_date | The end date | date |
