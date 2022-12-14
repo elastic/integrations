@@ -145,6 +145,13 @@ The default value is 10s.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -169,6 +176,13 @@ The default value is 10s.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -223,6 +237,13 @@ The default value is 10s.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -231,6 +252,13 @@ The default value is 10s.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -320,6 +348,13 @@ Fields published for AMQP packets.
 | amqp.type | Message type name. | keyword |
 | amqp.user-id | Creating user id. | keyword |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -344,6 +379,13 @@ Fields published for AMQP packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -399,6 +441,13 @@ Fields published for AMQP packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -407,6 +456,13 @@ Fields published for AMQP packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -417,13 +473,13 @@ An example event for `amqp` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-06-28T23:30:50.532Z",
+    "@timestamp": "2022-12-13T23:20:31.501Z",
     "agent": {
-        "ephemeral_id": "a929a7a7-1dba-4961-8b38-b7ef8ed7f1e2",
-        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
+        "ephemeral_id": "aa5ced14-2b74-4cf6-b122-067a35e57cd3",
+        "id": "00a75d9d-728c-4ab5-acb6-9f78082797e7",
         "name": "docker-fleet-agent",
         "type": "packetbeat",
-        "version": "8.2.3"
+        "version": "8.4.1"
     },
     "amqp": {
         "auto-delete": false,
@@ -437,7 +493,19 @@ An example event for `amqp` looks as following:
     },
     "client": {
         "bytes": 25,
-        "ip": "127.0.0.1",
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.1",
         "port": 34222
     },
     "data_stream": {
@@ -447,16 +515,28 @@ An example event for `amqp` looks as following:
     },
     "destination": {
         "bytes": 26,
-        "ip": "127.0.0.1",
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.1",
         "port": 5672
     },
     "ecs": {
         "version": "8.5.0"
     },
     "elastic_agent": {
-        "id": "827ce6a9-85bd-4e07-9a7a-4896c17144cd",
+        "id": "00a75d9d-728c-4ab5-acb6-9f78082797e7",
         "snapshot": false,
-        "version": "8.2.3"
+        "version": "8.4.1"
     },
     "event": {
         "action": "amqp.queue.declare",
@@ -465,11 +545,11 @@ An example event for `amqp` looks as following:
             "network"
         ],
         "dataset": "network_traffic.amqp",
-        "duration": 1407200,
-        "end": "2022-06-28T23:30:50.533Z",
-        "ingested": "2022-06-28T23:30:54Z",
+        "duration": 1201362,
+        "end": "2022-12-13T23:20:31.502Z",
+        "ingested": "2022-12-13T23:20:35Z",
         "kind": "event",
-        "start": "2022-06-28T23:30:50.532Z",
+        "start": "2022-12-13T23:20:31.501Z",
         "type": [
             "connection",
             "protocol"
@@ -479,11 +559,12 @@ An example event for `amqp` looks as following:
         "architecture": "x86_64",
         "containerized": false,
         "hostname": "docker-fleet-agent",
+        "id": "51511c1493f34922b559a964798246ec",
         "ip": [
-            "192.168.48.7"
+            "172.28.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-30-07"
+            "02-42-AC-1C-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -512,12 +593,36 @@ An example event for `amqp` looks as following:
     },
     "server": {
         "bytes": 26,
-        "ip": "127.0.0.1",
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.1",
         "port": 5672
     },
     "source": {
         "bytes": 25,
-        "ip": "127.0.0.1",
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.1",
         "port": 34222
     },
     "status": "OK",
@@ -638,6 +743,13 @@ Fields published for Apache Cassandra packets.
 | cassandra.response.supported | Indicates which startup options are supported by the server. This message comes as a response to an OPTIONS message. | flattened |
 | cassandra.response.warnings | The text of the warnings, only occur when Warning flag was set. | keyword |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -662,6 +774,13 @@ Fields published for Apache Cassandra packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -716,6 +835,13 @@ Fields published for Apache Cassandra packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -724,6 +850,13 @@ Fields published for Apache Cassandra packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -874,6 +1007,13 @@ Fields published for DHCPv4 packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -898,6 +1038,13 @@ Fields published for DHCPv4 packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | dhcpv4.assigned_ip | The IP address that the DHCP server is assigning to the client. This field is also known as "your" IP address. | ip |
@@ -985,6 +1132,13 @@ Fields published for DHCPv4 packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -993,6 +1147,13 @@ Fields published for DHCPv4 packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -1141,6 +1302,13 @@ Fields published for DNS packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -1165,6 +1333,13 @@ Fields published for DNS packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | dns.additionals | An array containing a dictionary for each additional section from the answer. | object |
@@ -1261,6 +1436,13 @@ Fields published for DNS packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -1269,6 +1451,13 @@ Fields published for DNS packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -1577,6 +1766,13 @@ Fields published for HTTP packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -1602,6 +1798,13 @@ Fields published for HTTP packets.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -1669,6 +1872,13 @@ Fields published for HTTP packets.
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -1677,6 +1887,13 @@ Fields published for HTTP packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -1858,6 +2075,13 @@ Fields published for ICMP packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -1882,6 +2106,13 @@ Fields published for ICMP packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -1943,6 +2174,13 @@ Fields published for ICMP packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -1951,6 +2189,13 @@ Fields published for ICMP packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -2116,6 +2361,13 @@ Fields published for Memcached packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -2140,6 +2392,13 @@ Fields published for Memcached packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -2238,6 +2497,13 @@ Fields published for Memcached packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -2246,6 +2512,13 @@ Fields published for Memcached packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -2407,6 +2680,13 @@ Fields published for MongoDB packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -2431,6 +2711,13 @@ Fields published for MongoDB packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -2496,6 +2783,13 @@ Fields published for MongoDB packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -2504,6 +2798,13 @@ Fields published for MongoDB packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -2651,6 +2952,13 @@ Fields published for MySQL packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -2675,6 +2983,13 @@ Fields published for MySQL packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -2736,6 +3051,13 @@ Fields published for MySQL packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -2744,6 +3066,13 @@ Fields published for MySQL packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -2874,6 +3203,13 @@ Fields published for NFS packets.
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
 | client.domain | The domain name of the client system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -2898,6 +3234,13 @@ Fields published for NFS packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -2967,6 +3310,13 @@ Fields published for NFS packets.
 | rpc.status | RPC message reply status. | keyword |
 | rpc.xid | RPC message transaction identifier. | keyword |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -2976,6 +3326,13 @@ Fields published for NFS packets.
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
 | source.domain | The domain name of the source system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -3135,6 +3492,13 @@ Fields published for PostgreSQL packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -3159,6 +3523,13 @@ Fields published for PostgreSQL packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -3218,6 +3589,13 @@ Fields published for PostgreSQL packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -3226,6 +3604,13 @@ Fields published for PostgreSQL packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -3361,6 +3746,13 @@ Fields published for Redis packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -3385,6 +3777,13 @@ Fields published for Redis packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -3443,6 +3842,13 @@ Fields published for Redis packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -3451,6 +3857,13 @@ Fields published for Redis packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -3588,6 +4001,13 @@ Fields published for SIP packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -3612,6 +4032,13 @@ Fields published for SIP packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -3675,6 +4102,13 @@ Fields published for SIP packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -3757,6 +4191,13 @@ Fields published for SIP packets.
 | sip.via.original | The original Via value. | keyword |
 | sip.via.original.text | Multi-field of `sip.via.original`. | text |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -4058,6 +4499,13 @@ Fields published for Thrift packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -4082,6 +4530,13 @@ Fields published for Thrift packets.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -4136,6 +4591,13 @@ Fields published for Thrift packets.
 | resource | The logical resource that this transaction refers to. For HTTP, this is the URL path up to the last slash (/). For example, if the URL is `/users/1`, the resource is `/users`. For databases, the resource is typically the table name. The field is not filled for all transaction types. | keyword |
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -4144,6 +4606,13 @@ Fields published for Thrift packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |
@@ -4338,6 +4807,13 @@ Fields published for TLS packets.
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | client.bytes | Bytes sent from the client to the server. | long |
+| client.geo.city_name | City name. | keyword |
+| client.geo.continent_name | Name of the continent. | keyword |
+| client.geo.country_iso_code | Country ISO code. | keyword |
+| client.geo.country_name | Country name. | keyword |
+| client.geo.location | Longitude and latitude. | geo_point |
+| client.geo.region_iso_code | Region ISO code. | keyword |
+| client.geo.region_name | Region name. | keyword |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | client.port | Port of the client. | long |
 | client.process.args | The command-line of the process that initiated the transaction. | keyword |
@@ -4363,6 +4839,13 @@ Fields published for TLS packets.
 | data_stream.type | Data stream type. | constant_keyword |
 | destination.bytes | Bytes sent from the destination to the source. | long |
 | destination.domain | The domain name of the destination system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| destination.geo.city_name | City name. | keyword |
+| destination.geo.continent_name | Name of the continent. | keyword |
+| destination.geo.country_iso_code | Country ISO code. | keyword |
+| destination.geo.country_name | Country name. | keyword |
+| destination.geo.location | Longitude and latitude. | geo_point |
+| destination.geo.region_iso_code | Region ISO code. | keyword |
+| destination.geo.region_name | Region name. | keyword |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
@@ -4419,6 +4902,13 @@ Fields published for TLS packets.
 | response | For text protocols, this is the response as seen on the wire (application layer only). For binary protocols this is our representation of the request. | text |
 | server.bytes | Bytes sent from the server to the client. | long |
 | server.domain | The domain name of the server system. This value may be a host name, a fully qualified domain name, or another host naming format. The value may derive from the original event or be added from enrichment. | keyword |
+| server.geo.city_name | City name. | keyword |
+| server.geo.continent_name | Name of the continent. | keyword |
+| server.geo.country_iso_code | Country ISO code. | keyword |
+| server.geo.country_name | Country name. | keyword |
+| server.geo.location | Longitude and latitude. | geo_point |
+| server.geo.region_iso_code | Region ISO code. | keyword |
+| server.geo.region_name | Region name. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
 | server.process.args | The command-line of the process that served the transaction. | keyword |
@@ -4427,6 +4917,13 @@ Fields published for TLS packets.
 | server.process.start | The time the server process started. | date |
 | server.process.working_directory | The working directory of the server process. | keyword |
 | source.bytes | Bytes sent from the source to the destination. | long |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
 | source.ip | IP address of the source (IPv4 or IPv6). | ip |
 | source.port | Port of the source. | long |
 | status | The high level status of the transaction. The way to compute this value depends on the protocol, but the result has a meaning independent of the protocol. | keyword |

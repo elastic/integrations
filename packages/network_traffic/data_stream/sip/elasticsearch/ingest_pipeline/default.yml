@@ -21,6 +21,14 @@ processors:
 - uppercase:
     field: host.mac
     ignore_missing: true
+
+- pipeline:
+    if: ctx._conf?.geoip_enrich != null && ctx._conf.geoip_enrich
+    name: '{{ IngestPipeline "geoip" }}'
+- remove:
+    field: _conf
+    ignore_missing: true
+
 # Remove invalid "protocol" term added by packetbeat prior to v7.17.4/8.2.1.
 - script:
     lang: painless
