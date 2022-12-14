@@ -7,27 +7,13 @@ driver: mssql
 raw_data.enabled: true
 # Collect the transaction logs from the system database
 sql_queries:
-    - query: "SELECT name As 'database_name', database_id FROM sys.databases WHERE database_id=1;"
+{{#if databases}}
+{{#each databases as |database_name i|}}
+    - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', database_id FROM sys.databases WHERE name='{{database_name}}';"
       response_format: table
-    - query: "SELECT 'master' As database_name, database_id,total_log_size_mb,active_log_size_mb,log_backup_time,log_since_last_log_backup_mb,log_since_last_checkpoint_mb,log_recovery_size_mb FROM sys.dm_db_log_stats(1) master"
+    - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_mb, l.active_log_size_mb,l.log_backup_time,l.log_since_last_log_backup_mb,l.log_since_last_checkpoint_mb,l.log_recovery_size_mb from sys.dm_db_log_stats(DB_ID('{{database_name}}')) l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID('{{database_name}}') ;"
       response_format: table
-    - query: "SELECT 'master' As 'database_name', total_log_size_in_bytes As total_log_size_bytes, used_log_space_in_bytes As used_log_space_bytes, used_log_space_in_percent As used_log_space_pct, log_space_in_bytes_since_last_backup FROM sys.dm_db_log_space_usage master"
+    - query: "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', l.database_id, l.total_log_size_in_bytes As total_log_size_bytes, l.used_log_space_in_bytes As used_log_space_bytes, l.used_log_space_in_percent As used_log_space_pct, l.log_space_in_bytes_since_last_backup from sys.dm_db_log_space_usage l INNER JOIN sys.databases s ON l.database_id = s.database_id WHERE s.database_id = DB_ID('{{database_name}}') ;"
       response_format: table
-    - query: "SELECT  name As 'database_name', database_id FROM sys.databases WHERE database_id=2;"
-      response_format: table
-    - query: "SELECT 'tempdb' As 'database_name', database_id,total_log_size_mb,active_log_size_mb As active_log_size,log_backup_time,log_since_last_log_backup_mb, log_since_last_checkpoint_mb,log_recovery_size_mb FROM sys.dm_db_log_stats(2) tempdb"
-      response_format: table
-    - query: "SELECT 'tempdb' As 'database_name', total_log_size_in_bytes As total_log_size_bytes, used_log_space_in_bytes As used_log_space_bytes, used_log_space_in_percent As used_log_space_pct, log_space_in_bytes_since_last_backup FROM sys.dm_db_log_space_usage tempdb"
-      response_format: table
-    - query: "SELECT  name As 'database_name', database_id FROM sys.databases WHERE database_id=3;"
-      response_format: table
-    - query: "SELECT 'model' As 'database_name', database_id,total_log_size_mb,active_log_size_mb As active_log_size,log_backup_time,log_since_last_log_backup_mb, log_since_last_checkpoint_mb,log_recovery_size_mb FROM sys.dm_db_log_stats(3) model"
-      response_format: table
-    - query: "SELECT 'model' As 'database_name', total_log_size_in_bytes As total_log_size_bytes, used_log_space_in_bytes As used_log_space_bytes, used_log_space_in_percent As used_log_space_pct, log_space_in_bytes_since_last_backup FROM sys.dm_db_log_space_usage model"
-      response_format: table
-    - query: "SELECT name As 'database_name', database_id FROM sys.databases WHERE database_id=4;"
-      response_format: table
-    - query: "SELECT 'msdb' As 'database_name', database_id,total_log_size_mb,active_log_size_mb As active_log_size,log_backup_time,log_since_last_log_backup_mb, log_since_last_checkpoint_mb,log_recovery_size_mb FROM sys.dm_db_log_stats(4) msdb"
-      response_format: table
-    - query: "SELECT 'msdb' As 'database_name', total_log_size_in_bytes As total_log_size_bytes, used_log_space_in_bytes As used_log_space_bytes, used_log_space_in_percent As used_log_space_pct, log_space_in_bytes_since_last_backup FROM sys.dm_db_log_space_usage msdb"
-      response_format: table
+{{/each}}
+{{/if}}
