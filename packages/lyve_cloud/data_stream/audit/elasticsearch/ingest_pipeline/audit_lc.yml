@@ -149,6 +149,20 @@ processors:
         - user_agent.os
       ignore_missing: True
 
+  - split:
+      field: lyve_cloud.audit.auditEntry.requestHeader.X-Forwarded-For
+      target_field: related.ip
+      separator: ","
+      ignore_missing: True
+  - foreach:
+      field: related.ip
+      processor:
+          trim:
+              field: "_ingest._value"
+      ignore_missing: True   
+
+    
+
 on_failure:
     - set:
         field: error.message

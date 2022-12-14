@@ -1,5 +1,7 @@
-# Lyve Cloud Log Integration
+# Lyve Cloud
+Lyve Cloud is your simple, trusted, and efficient on-demand solution for mass-capacity storage.Lyve Cloud is designed to be compatible with Amazon S3.
 
+# Lyve Cloud Log Integration
 The Lyve Cloud Log Integration offers users a way to collect logs from Lyve Cloud's [audit log bucket](https://www.seagate.com/gb/en/services/cloud/storage/)
 
 When setting up the Lyve Cloud Integration you will need the target bucket name and the secret credentials to access the bucket. You can then visualize that data in Kibana and reference data when troubleshooting an issue.
@@ -7,7 +9,6 @@ When setting up the Lyve Cloud Integration you will need the target bucket name 
 Using the s3 API audit log information you can identify which events have occurred, when they have occurred and the user who performed the actions. 
 
 # Setup
-
 Before adding the integration, you must complete the following tasks in the Lyve Cloud console to read the logs that are available in Lyve Cloud bucket:
 
 1. Login with an administrator account.
@@ -21,7 +22,7 @@ Before adding the integration, you must complete the following tasks in the Lyve
 # Dashboard and log monitoring
 Filter out the Lyve Cloud logs using -
 ```data_stream.dataset:"lyve_cloud.audit" ```
-when using Lyve Cloud example dashboard or in other Analytics search fields inside the filter box.
+when creating new dashboard or in other Analytics search fields inside the filter box.
 
 {{fields "audit"}}
 
