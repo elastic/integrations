@@ -160,7 +160,25 @@ processors:
           trim:
               field: "_ingest._value"
       ignore_missing: True   
+  
 
+
+  - set:
+      field: client.ip
+      value: 1.128.0.0
+
+  - script:
+      description: "setting client's ip as the last element of the ' related.ip ' field ( the rest are proxies)"
+      source: ctx['client']['ip']= ctx['related']['ip'][-1]
+
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+     
+    
+        
+    
+        
     
 
 on_failure:
