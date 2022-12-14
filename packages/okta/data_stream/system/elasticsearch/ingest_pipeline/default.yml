@@ -4,9 +4,17 @@ processors:
   - set:
       field: ecs.version
       value: '8.5.0'
+  # Keep message as event.original.
+  # Warn if event.original has already been set. This is most likely due to logstash ecs_compatibility setting.
+  - append:
+     if: ctx.event?.original != null
+     field: error.message
+     value: 'event.original is set before start of ingest pipeline'
+  # keep message as event.original if it has not already been set.
   - rename:
       field: message
       target_field: event.original
+      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: json
@@ -623,6 +631,6 @@ processors:
       ignore_failure: true
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
       value: "{{ _ingest.on_failure_message }}"
