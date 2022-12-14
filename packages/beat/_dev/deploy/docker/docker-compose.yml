@@ -8,3 +8,13 @@ services:
       - "./config/${CONFIG_PATH:-metricbeat/metricbeat.yml}:/usr/share/${CONFIG_PATH:-metricbeat/metricbeat.yml}"
     ports:
       - "127.0.0.1:5066:5066"
+      - "127.0.0.1:8200:8200"
+  event_generation:
+    user: root
+    environment:
+      - IS_APM_VARIANT
+    image: "alpine/curl:latest"
+    command: "./generate-events.sh"
+    volumes:
+      - ./scripts/generate-events.sh:/generate-events.sh
+      - ./scripts/events.ndjson:/events.ndjson
