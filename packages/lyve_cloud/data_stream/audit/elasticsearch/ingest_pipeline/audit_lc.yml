@@ -166,10 +166,26 @@ processors:
       field: client.ip
       target_field: client.geo
       ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
   - set:
       field: source
       copy_from: client
-      if: ctx.client?.ip != null
+      if: ctx.client != null
 
   - remove:
       field: 
