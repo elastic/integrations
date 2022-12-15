@@ -1,6 +1,9 @@
 ---
 description: Pipeline for parsing GCP CloudSQL PostgreSQL metrics.
 processors:
+  - drop:
+      description: Drop if database is not PostgreSQL.
+      if: "ctx?.gcp?.labels?.cloudsql?.name != 'postgres'"
   - rename:
       field: gcp.metrics.database.active_directory.domain_reachable.value
       target_field: gcp.cloudsql_postgresql.database.active_directory.domain_reachable
@@ -11,7 +14,7 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.auto_failover_request_count.value
-      target_field: gcp.cloudsql_postgresql.database.auto_failover_request_count
+      target_field: gcp.cloudsql_postgresql.database.auto_failover_request.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.available_for_failover.value
@@ -19,39 +22,39 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.cpu.reserved_cores.value
-      target_field: gcp.cloudsql_postgresql.database.cpu.reserved_cores
+      target_field: gcp.cloudsql_postgresql.database.cpu.reserved_cores.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.cpu.usage_time.value
-      target_field: gcp.cloudsql_postgresql.database.cpu.usage_time
+      target_field: gcp.cloudsql_postgresql.database.cpu.usage_time.sec
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.cpu.utilization.value
-      target_field: gcp.cloudsql_postgresql.database.cpu.utilization
+      target_field: gcp.cloudsql_postgresql.database.cpu.utilization.pct
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.bytes_used.value
-      target_field: gcp.cloudsql_postgresql.database.disk.bytes_used
+      target_field: gcp.cloudsql_postgresql.database.disk.bytes_used.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.bytes_used_by_data_type.value
-      target_field: gcp.cloudsql_postgresql.database.disk.bytes_used_by_data_type
+      target_field: gcp.cloudsql_postgresql.database.disk.bytes_used_by_data_type.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.quota.value
-      target_field: gcp.cloudsql_postgresql.database.disk.quota
+      target_field: gcp.cloudsql_postgresql.database.disk.quota.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.read_ops_count.value
-      target_field: gcp.cloudsql_postgresql.database.disk.read_ops_count
+      target_field: gcp.cloudsql_postgresql.database.disk.read_ops.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.utilization.value
-      target_field: gcp.cloudsql_postgresql.database.disk.utilization
+      target_field: gcp.cloudsql_postgresql.database.disk.utilization.pct
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.disk.write_ops_count.value
-      target_field: gcp.cloudsql_postgresql.database.disk.write_ops_count
+      target_field: gcp.cloudsql_postgresql.database.disk.write_ops.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.instance_state.value
@@ -59,39 +62,39 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.memory.quota.value
-      target_field: gcp.cloudsql_postgresql.database.memory.quota
+      target_field: gcp.cloudsql_postgresql.database.memory.quota.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.memory.total_usage.value
-      target_field: gcp.cloudsql_postgresql.database.memory.total_usage
+      target_field: gcp.cloudsql_postgresql.database.memory.total_usage.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.memory.usage.value
-      target_field: gcp.cloudsql_postgresql.database.memory.usage
+      target_field: gcp.cloudsql_postgresql.database.memory.usage.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.memory.utilization.value
-      target_field: gcp.cloudsql_postgresql.database.memory.utilization
+      target_field: gcp.cloudsql_postgresql.database.memory.utilization.pct
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.network.connections.value
-      target_field: gcp.cloudsql_postgresql.database.network.connections
+      target_field: gcp.cloudsql_postgresql.database.network.connections.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.network.received_bytes_count.value
-      target_field: gcp.cloudsql_postgresql.database.network.received_bytes_count
+      target_field: gcp.cloudsql_postgresql.database.network.received_bytes.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.network.sent_bytes_count.value
-      target_field: gcp.cloudsql_postgresql.database.network.sent_bytes_count
+      target_field: gcp.cloudsql_postgresql.database.network.sent_bytes.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.blocks_read_count.value
-      target_field: gcp.cloudsql_postgresql.database.blocks_read_count
+      target_field: gcp.cloudsql_postgresql.database.blocks_read.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.deadlock_count.value
-      target_field: gcp.cloudsql_postgresql.database.deadlock_count
+      target_field: gcp.cloudsql_postgresql.database.deadlock.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.external_sync.initial_sync_complete.value
@@ -99,7 +102,7 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.external_sync.max_replica_byte_lag.value
-      target_field: gcp.cloudsql_postgresql.database.external_sync.max_replica_byte_lag
+      target_field: gcp.cloudsql_postgresql.database.external_sync.max_replica_byte_lag.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.insights.aggregate.execution_time.value
@@ -119,11 +122,11 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.insights.aggregate.row_count.value
-      target_field: gcp.cloudsql_postgresql.database.insights.aggregate.row_count
+      target_field: gcp.cloudsql_postgresql.database.insights.aggregate.row.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.insights.aggregate.shared_blk_access_count.value
-      target_field: gcp.cloudsql_postgresql.database.insights.aggregate.shared_blk_access_count
+      target_field: gcp.cloudsql_postgresql.database.insights.aggregate.shared_blk_access.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.insights.perquery.execution_time.value
@@ -143,11 +146,11 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.insights.perquery.row_count.value
-      target_field: gcp.cloudsql_postgresql.database.insights.perquery.row_count
+      target_field: gcp.cloudsql_postgresql.database.insights.perquery.row.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.insights.perquery.shared_blk_access_count.value
-      target_field: gcp.cloudsql_postgresql.database.insights.perquery.shared_blk_access_count
+      target_field: gcp.cloudsql_postgresql.database.insights.perquery.shared_blk_access.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.insights.pertag.execution_time.value
@@ -167,43 +170,43 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.insights.pertag.row_count.value
-      target_field: gcp.cloudsql_postgresql.database.insights.pertag.row_count
+      target_field: gcp.cloudsql_postgresql.database.insights.pertag.row.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.insights.pertag.shared_blk_access_count.value
-      target_field: gcp.cloudsql_postgresql.database.insights.pertag.shared_blk_access_count
+      target_field: gcp.cloudsql_postgresql.database.insights.pertag.shared_blk_access.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.num_backends.value
-      target_field: gcp.cloudsql_postgresql.database.num_backends
+      target_field: gcp.cloudsql_postgresql.database.num_backends.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.num_backends_by_state.value
-      target_field: gcp.cloudsql_postgresql.database.num_backends_by_state
+      target_field: gcp.cloudsql_postgresql.database.num_backends_by_state.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.replication.replica_byte_lag.value
-      target_field: gcp.cloudsql_postgresql.database.replication.replica_byte_lag
+      target_field: gcp.cloudsql_postgresql.database.replication.replica_byte_lag.bytes
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.transaction_count.value
-      target_field: gcp.cloudsql_postgresql.database.transaction_count
+      target_field: gcp.cloudsql_postgresql.database.transaction.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.transaction_id_count.value
-      target_field: gcp.cloudsql_postgresql.database.transaction_id_count
+      target_field: gcp.cloudsql_postgresql.database.transaction_id.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.transaction_id_utilization.value
-      target_field: gcp.cloudsql_postgresql.database.transaction_id_utilization
+      target_field: gcp.cloudsql_postgresql.database.transaction_id_utilization.pct
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.tuple_size.value
-      target_field: gcp.cloudsql_postgresql.database.tuple_size
+      target_field: gcp.cloudsql_postgresql.database.tuple_size.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.tuples_processed_count.value
-      target_field: gcp.cloudsql_postgresql.database.tuples_processed_count
+      target_field: gcp.cloudsql_postgresql.database.tuples_processed.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.postgresql.vacuum.oldest_transaction_age.value
@@ -211,19 +214,19 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.replication.log_archive_failure_count.value
-      target_field: gcp.cloudsql_postgresql.database.replication.log_archive_failure_count
+      target_field: gcp.cloudsql_postgresql.database.replication.log_archive_failure.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.replication.log_archive_success_count.value
-      target_field: gcp.cloudsql_postgresql.database.replication.log_archive_success_count
+      target_field: gcp.cloudsql_postgresql.database.replication.log_archive_success.count
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.replication.network_lag.value
-      target_field: gcp.cloudsql_postgresql.database.replication.network_lag
+      target_field: gcp.cloudsql_postgresql.database.replication.network_lag.sec
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.replication.replica_lag.value
-      target_field: gcp.cloudsql_postgresql.database.replication.replica_lag
+      target_field: gcp.cloudsql_postgresql.database.replication.replica_lag.sec
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.replication.state.value
@@ -239,7 +242,7 @@ processors:
       ignore_missing: true
   - rename:
       field: gcp.metrics.database.uptime.value
-      target_field: gcp.cloudsql_postgresql.database.uptime
+      target_field: gcp.cloudsql_postgresql.database.uptime.sec
       ignore_missing: true
   - remove:
       field:
