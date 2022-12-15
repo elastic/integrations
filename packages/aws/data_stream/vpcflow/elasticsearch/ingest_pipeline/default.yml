@@ -24,6 +24,10 @@ processors:
       value: network
   - drop:
       if: 'ctx.event?.original.startsWith("version") || ctx.event?.original.startsWith("instance-id")'
+  - dissect:
+      field: event.original
+      pattern: '{\"message\":\"%{event.original}\"}'
+      ignore_failure: true
   - script:
       lang: painless
       if: ctx.event?.original != null
@@ -243,6 +247,8 @@ processors:
       if: 'ctx.source?.ip != null && ctx.destination?.ip != null'
       field: related.ip
       value: ["{{source.ip}}", "{{destination.ip}}"]
+  - dot_expander:
+      field: "*"
   - set:
       field: cloud.provider
       value: aws
